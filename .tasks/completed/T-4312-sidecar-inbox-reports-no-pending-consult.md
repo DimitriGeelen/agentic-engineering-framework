@@ -1,19 +1,23 @@
 ---
-id: T-4307
-name: "P-013 render gate false-positive on the task template comment mentioning web/app.py"
+id: T-4312
+name: "sidecar inbox reports 'no pending consults' when termlink is absent and FW_SIDECAR_HUB_ID
+  is set (default_reader swallows OSError)"
 description: >
-  Greenfield container run (dimitri-mint-dev T-126): the render-surface gate treats
-  a web/app.py mention in the task template's comment text as a render-touching change
-  and refuses the close.
+  Found by the T-4308 worker: lib/sidecar/inbox.py default_reader catches OSError
+  and returns [], so with FW_SIDECAR_HUB_ID set (or a cached hub id path that skips
+  hub_id()) and no termlink binary, fw sidecar inbox prints no pending consults, exit
+  0: a false green. The watcher also uses default_reader, so the fix must distinguish
+  could-not-read from empty for every caller. Also check fw sidecar inbox --show (_cmd_show)
+  for the T-4308 traceback.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, greenfield, gates]
-components: []
+horizon: null
+tags: [sidecar, bug, false-green]
+components: [lib/sidecar_cli.py]
 related_tasks: []
-origin: {kind: "peer", source: "dimitri-mint-dev"}
+origin: {kind: "agent", source: "T-4308"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -40,9 +44,9 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T13:49:02Z
-last_update: 2026-10-18T14:13:36Z
-date_finished:
+created: 2026-10-18T14:13:04Z
+last_update: 2026-10-18T14:39:22Z
+date_finished: 2026-10-18T14:39:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,7 +58,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-18T14:01:11Z'
+  - ts: '2026-10-18T14:15:34Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -64,7 +68,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-18T14:02:08Z'
+  - ts: '2026-10-18T14:16:24Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -83,7 +87,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4307: P-013 render gate false-positive on the task template comment mentioning web/app.py
+# T-4312: sidecar inbox reports 'no pending consults' when termlink is absent and FW_SIDECAR_HUB_ID is set (default_reader swallows OSError)
 
 ## Context
 
@@ -93,11 +97,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `lib/render_surface.sh` body-fallback scan ignores text inside HTML comments (`<!-- ... -->`), so a template comment naming `web/app.py` no longer makes a task render-touching
-- [x] A consumer-style task (unmodified template body + non-web change, no git commits for its id) is NOT classified render-surface by `task_touches_render_surface` (regression test fails before the fix)
-- [x] A task whose commits change `web/app.py` is STILL classified render-surface (git evidence path unchanged; regression test)
-- [x] A task whose body (outside comments) names `web/app.py` with no git evidence is STILL classified render-surface (fallback not gutted; regression test)
-- [x] Regression tests live in `tests/unit/t4307_render_surface_html_comment.bats` and pass; neighbouring `tests/unit/test_render_surface_gate.bats` stays green
+- [x] `fw sidecar inbox --peek` with FW_SIDECAR_HUB_ID set and no termlink on PATH prints `NOT CHECKED` and exits 3 (no false "no pending" exit 0)
+- [x] The same case with `--json` prints `{"checked": false, ...}` and exits 3
+- [x] `fw sidecar inbox --show ID` with no termlink on PATH prints no traceback (clean error or NOT CHECKED, non-traceback exit)
+- [x] The `default_reader` callers that legitimately treat an unreadable topic as empty (watcher ingest_hub, dm, retry, verdict_ledger, e2e) keep their behaviour, and the change is confined to the inbox CLI path
+- [x] A regression test fails before the fix and passes after, in tests/unit/test_sidecar_inbox_no_termlink_t4312.py or a sibling file (4 of 9 fail before the fix; the 5 controls pass both before and after)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,10 +151,6 @@ bvp_scores_proposed:
 
 ## Verification
 
-bats tests/unit/t4307_render_surface_html_comment.bats > /tmp/.t4307.out 2>&1 && ! grep -q "^not ok" /tmp/.t4307.out
-bats tests/unit/test_render_surface_gate.bats > /tmp/.t4307b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4307b.out
-bash -n lib/render_surface.sh
-bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -279,16 +279,41 @@ bin/fw vendor self --check
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest -q tests/unit/test_sidecar_inbox_no_termlink_t4312.py
+python3 -m pytest -q tests/unit/test_sidecar_inbox_no_termlink_t4308.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_alerts_t3856.py tests/unit/test_sidecar_dm.py tests/unit/test_sidecar_watcher_t3684.py
+bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** A consumer's greenfield task (body = unmodified template plus a non-web change) was refused at `--status work-completed` by the P-013 render-surface gate, which demanded a `[REVIEW]` Human AC.
+**Symptom:** With `FW_SIDECAR_HUB_ID` set (hub id known, so no CircuitError) and no
+`termlink` binary on PATH, `fw sidecar inbox --peek` printed
+`no pending consults on inbox:…` and exited 0. The same answer comes back when the hub
+refuses the read. An operator reads that as an empty inbox.
 
-**Root cause:** `lib/render_surface.sh:103-137` (`_render_surface_body_candidates`) is the fallback used when no commit carries the task id (`task_touches_render_surface`, `lib/render_surface.sh:139-179`). It runs a path regex over the whole body. The template's HTML comment (`.tasks/templates/default.md`, the "Render-touching build tasks ... web/app.py" block) contains the literal `web/app.py`, followed by a space, so the regex matches it and `_render_surface_path_matches` returns true.
+**Root cause:** `lib/sidecar/inbox.py` `default_reader` (line ~207) catches
+`OSError`/`SubprocessError` and returns `[]`, and returns `[]` on any nonzero exit.
+`pending()` takes that `[]` as an empty topic. `lib/sidecar_cli.py` `cmd_inbox` only
+mapped `CircuitError` (no hub anchor) to NOT CHECKED, so an unreadable hub with a known
+anchor fell through to the empty answer. The strict reader that tells "no mail" from
+"could not look" already existed as `lib/sidecar/alerts.py` `strict_reader`, used by
+`fw sidecar alerts`, but the inbox command never used it.
 
-**Why structurally allowed:** The fallback strips frontmatter but not HTML comments, which are inert template guidance. The existing fixtures in `tests/unit/test_render_surface_gate.bats` never put a render path inside a comment, so nothing exercised it.
+**Why structurally allowed:** The T-4308 fix covered only the anchor-missing branch, and
+its test removed `FW_SIDECAR_HUB_ID` on purpose, so the anchor-present branch was never
+exercised. `default_reader`'s lenient contract is correct for its other callers (watcher,
+dm, retry, verdict_ledger, e2e), so nothing at the library level flagged the CLI using it
+as a truth source.
 
-**Prevention:** Regression tests in `tests/unit/t4307_render_surface_html_comment.bats` pin both sides: comment-only mention is ignored, and a real `web/app.py` change (via commits and via body prose) is still refused.
+**Fix:** `cmd_inbox` reads with `reader=alerts.strict_reader` and maps `alerts.Unreadable`
+to the same NOT CHECKED / exit 3 as `CircuitError`. `default_reader` is unchanged.
+`--show` needed no change: it reads only the local receiver store and never reaches the
+hub, so it does not traceback without termlink (probed with a stored message and a
+missing id).
+
+**Prevention:** `tests/unit/test_sidecar_inbox_no_termlink_t4312.py` covers the anchor-known
+branch: text and JSON NOT CHECKED with no termlink, a hub refusing the read, controls for
+a real empty topic and an unknown topic (both still empty, exit 0), `--show` without
+termlink, and a pin that `default_reader` stays lenient. The Verification block runs it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -359,6 +384,13 @@ bin/fw vendor self --check
 
 ## Decisions
 
+**Read the inbox CLI through `alerts.strict_reader` rather than changing `default_reader`.**
+Alternatives: (a) make `default_reader` raise, which would change the watcher, dm, retry,
+verdict_ledger and e2e callers that treat an unreadable topic as empty on purpose; (b) add a
+new strict reader. Chose the existing one: `fw sidecar alerts` already uses it with the same
+"unknown topic is empty, anything else is unknown" rule, so the two commands now agree.
+`--show` is left unchanged because it does not touch the hub.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -380,10 +412,28 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-18T13:49:02Z — task-created [task-create-agent]
+### 2026-10-18T14:13:04Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4307-p-013-render-gate-false-positive-on-the-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4312-sidecar-inbox-reports-no-pending-consult.md
 - **Context:** Initial task creation
 
-### 2026-10-18T14:13:36Z — status-update [task-update-agent]
+### 2026-10-18T14:16:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-653de29e
+- **Timestamp:** 2026-10-18T14:40:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T14:39:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,18 +1,20 @@
 ---
-id: T-4296
-name: "fw init exits 1 silently when HOME does not exist: T-4251's _home_real assignment
-  is the last command of an && list under set -e"
+id: T-4308
+name: "fw inbox (T-4252) prints a Python traceback and exits 1 when termlink is not
+  installed"
 description: >
-  fw init exits 1 silently when HOME does not exist: T-4251's _home_real assignment
-  is the last command of an && list under set -e
+  Greenfield container run (dimitri-mint-dev T-126): with no termlink binary, the
+  T-4252 inbox verb raises a traceback, exit 1, instead of a one-line 'termlink not
+  installed' notice.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
+horizon: null
+tags: [bug, greenfield, sidecar]
+components: [lib/sidecar_cli.py]
 related_tasks: []
+origin: {kind: "peer", source: "dimitri-mint-dev"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -39,9 +41,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T09:47:43Z
-last_update: '2026-10-18T10:02:02Z'
-date_finished:
+created: 2026-10-18T13:49:19Z
+last_update: 2026-10-18T14:47:32Z
+date_finished: 2026-10-18T14:47:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -53,17 +55,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-18T10:00:47Z'
+  - ts: '2026-10-18T14:01:11Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=291,acs=5)
+      (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-18T10:02:02Z'
+  - ts: '2026-10-18T14:02:09Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -82,7 +84,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4296: fw init exits 1 silently when HOME does not exist: T-4251's _home_real assignment is the last command of an && list under set -e
+# T-4308: fw inbox (T-4252) prints a Python traceback and exits 1 when termlink is not installed
 
 ## Context
 
@@ -92,9 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] lib/init.sh resolves $HOME without aborting when HOME is unset or does not exist (an unresolvable HOME only means "no HOME repo to compare with")
-- [x] Regression test: fw init in an existing git project with HOME pointing at a missing dir exits 0 and seeds the onboarding tasks; t3636_objectives_seed.bats passes
-- [x] Vendored copy in sync
+- [x] `fw sidecar inbox --peek` with termlink absent from PATH prints no Python traceback and exits with the documented NOT CHECKED code (3), printing one line that says termlink is not installed and the inbox cannot be read
+- [x] Every termlink subprocess call on the inbox read path (`lib/sidecar/inbox.py` default_reader, pending, and any others reached from cmd_inbox) handles a missing binary (FileNotFoundError / OSError) the way the surrounding module does
+- [x] A regression test in tests/unit runs the verb with termlink stripped from PATH and asserts no "Traceback" in output and the documented exit code; it fails on the pre-fix code
+- [x] Existing sidecar inbox/dm tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -143,9 +146,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-out=$(bats tests/unit/t4296_init_missing_home.bats 2>&1); echo "$out" | grep -q '^ok' && ! echo "$out" | grep -q '^not ok'
-out=$(bats tests/unit/t3636_objectives_seed.bats 2>&1); echo "$out" | grep -q '^ok' && ! echo "$out" | grep -q '^not ok'
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -275,18 +275,11 @@ bin/fw vendor self --check
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest -q tests/unit/test_sidecar_inbox_no_termlink_t4308.py
+python3 -m pytest -q tests/unit/test_sidecar_receipts_t3684.py tests/unit/test_sidecar_cli_peer_frame.py tests/unit/test_sidecar_inbox.py
+bin/fw vendor self --check
 
 ## RCA
-
-**Symptom:** nightly unit suite 2026-10-18 01:03Z: t3636_objectives_seed test "fw init (existing project) seeds T-007" red; `fw init . --provider claude` with HOME pointing at a missing directory printed "Setting up agentic governance for existing..." and exited 1 with no message (bats misreported the failing line as the preceding `git init`).
-
-**Root cause:** T-4251 (c723d0a36) added to lib/init.sh `[ -n "${HOME:-}" ] && _home_real=$(cd "$HOME" 2>/dev/null && pwd -P)`. When HOME does not exist, the command substitution fails, the assignment returns 1, and as the LAST command of an && list under `set -e` it aborts the script silently.
-
-**Why nothing caught it:** T-4251's tests run with a real HOME; only a test with `env -i HOME=<missing>` (t3636) reaches the path, and the worker did not run t3636. The full nightly suite did.
-
-**Fix:** an explicit if-block with `|| _home_real=""`: an unresolvable HOME only means there is no HOME repo to compare with.
-
-**Prevention:** tests/unit/t4296_init_missing_home.bats (HOME missing, HOME unset) pins it; t3636 is green again.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -301,6 +294,14 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on a greenfield host with no `termlink` binary and no `.context/sidecar/hub-id` cache, `fw sidecar inbox --peek` prints a Python traceback and exits 1 instead of one NOT CHECKED line.
+
+**Root cause:** `lib/sidecar/circuit.py:124` `hub_id()` correctly converts the missing binary (`OSError`) into `CircuitError`, but `lib/sidecar_cli.py` `cmd_inbox` (line ~242) calls `inbox.pending()` with no handler, so `CircuitError` escapes to the top level. The sibling verbs already handle this: `cmd_alerts` catches its failure and prints `NOT CHECKED: <reason>` with exit 3, and `_inbound_or_unknown` catches `CircuitError` at the display boundary.
+
+**Why structurally allowed:** the `.context/sidecar/hub-id` cache hid the path on every host that had run the sidecar once, so no test or dogfood run ever reached `hub_id()` with termlink absent. The existing inbox tests monkeypatch `pending`/`read_topics`, so the address-derivation call was never exercised.
+
+**Prevention:** `tests/unit/test_sidecar_inbox_no_termlink_t4308.py` runs the real verb in an empty project with termlink stripped from PATH and no hub-id cache, asserting no traceback and exit 3 with the NOT CHECKED line.
 
 ## Evolution
 
@@ -378,7 +379,29 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-18T09:47:43Z — task-created [task-create-agent]
+### 2026-10-18T13:49:19Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4296-fw-init-exits-1-silently-when-home-does-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4308-fw-inbox-t-4252-prints-a-python-tracebac.md
 - **Context:** Initial task creation
+
+### 2026-10-18T14:07:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d39b87a2
+- **Timestamp:** 2026-10-18T14:47:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Every termlink subprocess call on the inbox read path (`lib/sidecar/inbox.py` default_reader, pending, and any others reached from cmd_inbox) handles a missing binary (FileNotFoundError / OSError) the
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/sidecar/inbox.py in: Every termlink subprocess call on the inbox read path (`lib/sidecar/inbox.py` default_reader, pending, and any others reached from cmd_inbox) handles `
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T14:47:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

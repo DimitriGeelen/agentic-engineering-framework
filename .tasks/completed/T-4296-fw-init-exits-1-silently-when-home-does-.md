@@ -1,18 +1,17 @@
 ---
-id: T-4264
-name: "Read-only allowlist misses `git -C <dir> <read-verb>`."
+id: T-4296
+name: "fw init exits 1 silently when HOME does not exist: T-4251's _home_real assignment
+  is the last command of an && list under set -e"
 description: >
-  agents/context/lib/safe-commands.sh:506-523 — skip `-C <dir>` / `--git-dir=` before
-  taking the sub-verb; bats case. Re-test the `2>&1` compound form from F-26 and include
-  it only if it reproduces. Findings (0909 run aef-install-20261017T144241Z): F-26.
-  Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-11.
+  fw init exits 1 silently when HOME does not exist: T-4251's _home_real assignment
+  is the last command of an && list under set -e
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/init.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,9 +39,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T15:27:26Z
-last_update: 2026-10-18T14:18:27Z
-date_finished:
+created: 2026-10-18T09:47:43Z
+last_update: 2026-10-18T10:11:26Z
+date_finished: 2026-10-18T10:11:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,17 +53,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-17T15:30:33Z'
+  - ts: '2026-10-18T10:00:47Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=287,acs=4)
+      (workflow:build); effort=8 (lines=291,acs=5)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-17T15:31:18Z'
+  - ts: '2026-10-18T10:02:02Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -83,7 +82,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4264: Read-only allowlist misses `git -C <dir> <read-verb>`.
+# T-4296: fw init exits 1 silently when HOME does not exist: T-4251's _home_real assignment is the last command of an && list under set -e
 
 ## Context
 
@@ -93,12 +92,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `git -C DIR <read-verb>` (status, log, diff, show, rev-parse, ls-files) is classified read-only by `is_bash_safe_command` / the git branch of the safe-commands function
-- [x] `git --git-dir=X` and `git --work-tree=X` (and `-c k=v`, `--no-pager`, `-P`) before a read-verb are classified read-only (`-c` keys that run a program, e.g. core.pager / core.fsmonitor, stay gated)
-- [x] Write verbs behind the same global options stay gated: `git -C DIR commit` and `git --git-dir=X commit`, `branch -D`, `tag -d` are NOT read-only (control cases). `git -C DIR push` / `add` now follow bare `git push` / `add`, which the existing code already admits (T-2462, T-2054)
-- [x] The `2>&1` compound form from F-26 is re-tested: bare `git status 2>&1` was already SAFE before the fix; `git -C DIR status 2>&1` reproduced (GATED) and is fixed by the same change, so it is in the test set
-- [x] Bats regression cases added in tests/unit/t4264_git_global_opts_safe.bats; the three reproducing forms are GATED at HEAD and SAFE after the fix
-- [x] `bash -n` passes on the edited safe-commands.sh
+- [x] lib/init.sh resolves $HOME without aborting when HOME is unset or does not exist (an unresolvable HOME only means "no HOME repo to compare with")
+- [x] Regression test: fw init in an existing git project with HOME pointing at a missing dir exits 0 and seeds the onboarding tasks; t3636_objectives_seed.bats passes
+- [x] Vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,9 +143,8 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-bash -n agents/context/lib/safe-commands.sh
-bats tests/unit/t4264_git_global_opts_safe.bats > .context/working/.t4264.out 2>&1 && ! grep -q "^not ok" .context/working/.t4264.out
+out=$(bats tests/unit/t4296_init_missing_home.bats 2>&1); echo "$out" | grep -q '^ok' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t3636_objectives_seed.bats 2>&1); echo "$out" | grep -q '^ok' && ! echo "$out" | grep -q '^not ok'
 bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -283,6 +278,16 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** nightly unit suite 2026-10-18 01:03Z: t3636_objectives_seed test "fw init (existing project) seeds T-007" red; `fw init . --provider claude` with HOME pointing at a missing directory printed "Setting up agentic governance for existing..." and exited 1 with no message (bats misreported the failing line as the preceding `git init`).
+
+**Root cause:** T-4251 (c723d0a36) added to lib/init.sh `[ -n "${HOME:-}" ] && _home_real=$(cd "$HOME" 2>/dev/null && pwd -P)`. When HOME does not exist, the command substitution fails, the assignment returns 1, and as the LAST command of an && list under `set -e` it aborts the script silently.
+
+**Why nothing caught it:** T-4251's tests run with a real HOME; only a test with `env -i HOME=<missing>` (t3636) reaches the path, and the worker did not run t3636. The full nightly suite did.
+
+**Fix:** an explicit if-block with `|| _home_real=""`: an unresolvable HOME only means there is no HOME repo to compare with.
+
+**Prevention:** tests/unit/t4296_init_missing_home.bats (HOME missing, HOME unset) pins it; t3636 is green again.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -296,14 +301,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `git -C /path status`, `git --git-dir=X log`, `git --work-tree=X diff` and `git -C DIR status 2>&1` are gated by the read-only allowlist (task gate fires on read-only inspection). Bare `git status` is admitted.
-
-**Root cause:** agents/context/lib/safe-commands.sh, git arm (`git_sub=$(echo "$cmd" | awk '{print $2}')`, was ~line 508): the sub-verb is taken as the second word. Git accepts its global options (`-C DIR`, `--git-dir=`, `--work-tree=`, `-c k=v`, `-P`, `--no-pager`) before the verb, so the word read is `-C`, which matches no arm and returns 1 (gated). The same first-word-keyed assumption as L-432 and the T-3344 wrapper/affix class.
-
-**Why structurally allowed:** the T-2888 sweep derived the git verb set from the verbs our tooling *uses*, and every fixture used the bare form (`git status`), so no test exercised a global option in front of the verb. The allowlist's positional reader was never tested against git's own grammar.
-
-**Prevention:** `_fw_git_skip_globals` strips git's global options before the verb is read, and refuses unknown globals and `-c` keys that run a program (fail closed). The git arm and `_fw_git_refverb_is_read` both judge the normalised command. tests/unit/t4264_git_global_opts_safe.bats pins the admitted forms and the write/fail-closed control cases, so a future reader that re-derives the verb from `$2` fails the suite.
 
 ## Evolution
 
@@ -381,11 +378,24 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-17T15:27:26Z — task-created [task-create-agent]
+### 2026-10-18T09:47:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4264-read-only-allowlist-misses-git--c-dir-re.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4296-fw-init-exits-1-silently-when-home-does-.md
 - **Context:** Initial task creation
 
-### 2026-10-18T14:18:27Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9de5488d
+- **Timestamp:** 2026-10-18T10:18:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T10:11:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

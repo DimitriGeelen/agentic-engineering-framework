@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4312: sidecar inbox reports 'no pending consults' when termlink is absent and FW_SIDECAR_HUB_ID is set (default_reader swallows OSError)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T14:40:57Z
+# ============================================================================
+
+task_id: T-4312
+task_name: "sidecar inbox reports 'no pending consults' when termlink is absent and FW_SIDECAR_HUB_ID is set (default_reader swallows OSError)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T14:13:04Z
+completed: 2026-10-18T14:39:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T16:22:41+02:00
+last_commit: 2026-10-18T16:22:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sidecar inbox reads via strict reader; unreadable hub is NOT CHECKED, not empty
+
+# Key outcomes
+outcomes:
+  - '`fw sidecar inbox --peek` with FW_SIDECAR_HUB_ID set and no termlink on PATH prints `NOT CHECKED` and exits 3 (no false "no pending" exit 0)'
+  - 'The same case with `--json` prints `{"checked": false, ...}` and exits 3'
+  - '`fw sidecar inbox --show ID` with no termlink on PATH prints no traceback (clean error or NOT CHECKED, non-traceback exit)'
+  - 'The `default_reader` callers that legitimately treat an unreadable topic as empty (watcher ingest_hub, dm, retry, verdict_ledger, e2e) keep their behaviour, and the change is confined to the inbox CLI path'
+  - 'A regression test fails before the fix and passes after, in tests/unit/test_sidecar_inbox_no_termlink_t4312.py or a sibling file (4 of 9 fail before the fix; the 5 controls pass both before and after)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - 'lib/sidecar_cli.py'
+  - '.tasks/active/T-4312-sidecar-inbox-reports-no-pending-consult.md'
+  - 'tests/unit/test_sidecar_inbox_no_termlink_t4312.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T16:22:41'
+    action: 'T-4312: fw sidecar inbox reads via strict reader; unreadable hub is NOT CHECKED, not empty'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [sidecar, bug, false-green]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 2
+  files_changed: 5
+  lines_added: 588
+  lines_removed: 4
+  footprint_refreshed_at: '2026-10-18T14:47:32Z'
+  footprint_refreshed_by_commit: 2cf3d5a8a
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4312-sidecar-inbox-reports-no-pending-consult.md
+generated_by: context-agent-hybrid

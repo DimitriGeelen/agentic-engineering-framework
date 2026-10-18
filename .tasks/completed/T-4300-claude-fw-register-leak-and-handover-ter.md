@@ -12,10 +12,10 @@ description: >
   the regression with a test, or show it is load-flaky (passes alone 3 times on tip)
   and say so.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T11:28:07Z
-last_update: 2026-10-18T13:52:44Z
-date_finished:
+last_update: 2026-10-18T14:41:55Z
+date_finished: 2026-10-18T14:41:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -99,7 +99,7 @@ cost_estimate_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Root cause of t3647_claude_fw_register_leak.bats and t4119_terminator_handover_git_extension.bats red on HEAD is localised to file:line (or shown load-flaky with 3 solo passes)
-- [ ] A regression test fails without the fix and passes with it
+- [x] A regression test fails without the fix and passes with it — t3647: the previous fixture fails 3/3 against the current wrapper, the fixed one passes 3/3. t4119 is a timing fixture: its 2 s form failed 3/3 under a 48-loop CPU load and the widened form passed; no fail-before test is possible for a load window (parent-reviewed wording)
 - [x] Both t3647 and t4119 bats files pass on HEAD with the fix applied (no `not ok`, no skips)
 - [x] Existing neighbouring bats (T-4249 / T-4283 touched files) still pass
 - [x] `bin/fw vendor self --check` clean after any bin/fw or lib/ edit
@@ -396,3 +396,20 @@ bin/fw vendor self --check
 
 ### 2026-10-18T11:28:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-14ca2714
+- **Timestamp:** 2026-10-18T14:43:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T14:41:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

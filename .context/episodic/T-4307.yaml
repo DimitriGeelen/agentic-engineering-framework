@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4307: P-013 render gate false-positive on the task template comment mentioning web/app.py
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T14:38:23Z
+# ============================================================================
+
+task_id: T-4307
+task_name: "P-013 render gate false-positive on the task template comment mentioning web/app.py"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T13:49:02Z
+completed: 2026-10-18T14:37:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T16:16:34+02:00
+last_commit: 2026-10-18T16:16:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  P-013 body fallback ignores HTML comments (template guidance named web/app.py)
+
+# Key outcomes
+outcomes:
+  - '`lib/render_surface.sh` body-fallback scan ignores text inside HTML comments (`<!-- ... -->`), so a template comment naming `web/app.py` no longer makes a task render-touching'
+  - 'A consumer-style task (unmodified template body + non-web change, no git commits for its id) is NOT classified render-surface by `task_touches_render_surface` (regression test fails before the fix)'
+  - 'A task whose commits change `web/app.py` is STILL classified render-surface (git evidence path unchanged; regression test)'
+  - 'A task whose body (outside comments) names `web/app.py` with no git evidence is STILL classified render-surface (fallback not gutted; regression test)'
+  - 'Regression tests live in `tests/unit/t4307_render_surface_html_comment.bats` and pass; neighbouring `tests/unit/test_render_surface_gate.bats` stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/render_surface.sh'
+  - 'lib/render_surface.sh'
+  - '.tasks/active/T-4307-p-013-render-gate-false-positive-on-the-.md'
+  - 'tests/unit/t4307_render_surface_html_comment.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T16:16:34'
+    action: 'T-4307: P-013 body fallback ignores HTML comments (template guidance named web/app.py)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 48 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, greenfield, gates]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 48
+  commits: 1
+  files_changed: 4
+  lines_added: 159
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4307-p-013-render-gate-false-positive-on-the-.md
+generated_by: context-agent-hybrid

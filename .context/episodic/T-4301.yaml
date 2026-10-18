@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4301: budget-gate classify, driver refusals and unit-suite partial-run tests red on the v1.8.11 tip only (t2919, t3254, t3602)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T14:31:24Z
+# ============================================================================
+
+task_id: T-4301
+task_name: "budget-gate classify, driver refusals and unit-suite partial-run tests red on the v1.8.11 tip only (t2919, t3254, t3602)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T11:28:25Z
+completed: 2026-10-18T14:29:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T16:06:25+02:00
+last_commit: 2026-10-18T16:06:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t2919 and t3254 tests hermetic to their checkout (FRAMEWORK_ROOT path; agents/ in driver fixture); t3602 classified load-flaky
+
+# Key outcomes
+outcomes:
+  - 't2919 root cause localised: tests/unit/t2919_budget_gate_command_classify.bats:127 hard-codes the checkout path; the committed test is red on the v1.8.11 tip clone (413701ff9) and the working-tree version is green there'
+  - 't3254 root cause localised: tests/unit/t3254_driver_refusals.bats A9 fixture has no agents/ dir, so bin/fw:1373 re-resolves FRAMEWORK_ROOT and the ceiling check never becomes unevaluable; the committed test is red on the tip, the working-tree version is green there'
+  - 't3602 classified: test 7 ("runner records per-file durations…", line 196 status check) went red once in the full suite and does not reproduce; 3 isolated runs on the main checkout and 4 on the tip pass; T-3794 (d6344344a) does not change any asserted field, so it is not the cause. Recorded as load-flaky, no code change'
+  - 'Each fix is test-side only (no bin/fw, lib/, agents/ edit), minimal, in the surrounding style'
+  - 'A regression test fails on the committed version and passes with the fix: t2919 control leg (cd into another install is refused) and t3254 re-resolve guard (`[[ "$output" != *"re-resolving"* ]]`)'
+  - 't2919 and t3254 bats files pass on the main checkout after the fix'
+  - 't3602 bats file passes on the main checkout (3 of 3 runs)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 't2919 and t3254 tests hermetic to their checkout (FRAMEWORK_ROOT path; agents/ in driver fixture); t3602 classified load-flaky'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4301-budget-gate-classify-driver-refusals-and.md'
+  - 'tests/unit/t2919_budget_gate_command_classify.bats'
+  - 'tests/unit/t3254_driver_refusals.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T16:06:25'
+    action: 'T-4301: t2919 and t3254 tests hermetic to their checkout (FRAMEWORK_ROOT path; agents/ in driver fixture); t3602 classified load-flaky'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 181 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 181
+  commits: 1
+  files_changed: 3
+  lines_added: 51
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4301-budget-gate-classify-driver-refusals-and.md
+generated_by: context-agent-hybrid

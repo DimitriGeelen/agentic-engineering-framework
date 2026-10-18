@@ -1,23 +1,25 @@
 ---
-id: T-4312
-name: "sidecar inbox reports 'no pending consults' when termlink is absent and FW_SIDECAR_HUB_ID
-  is set (default_reader swallows OSError)"
+id: T-4301
+name: "budget-gate classify, driver refusals and unit-suite partial-run tests red
+  on the v1.8.11 tip only (t2919, t3254, t3602)"
 description: >
-  Found by the T-4308 worker: lib/sidecar/inbox.py default_reader catches OSError
-  and returns [], so with FW_SIDECAR_HUB_ID set (or a cached hub id path that skips
-  hub_id()) and no termlink binary, fw sidecar inbox prints no pending consults, exit
-  0: a false green. The watcher also uses default_reader, so the fix must distinguish
-  could-not-read from empty for every caller. Also check fw sidecar inbox --show (_cmd_show)
-  for the T-4308 traceback.
+  v1.8.11 full-suite comparison (tip 413701ff9 vs v1.8.10 704c9988f; reports in .context/scratch/v1811/reports,
+  reruns in .context/scratch/v1811/reruns): t2919_budget_gate_command_classify.bats
+  ('the prescribed cd /path && cmd shape still passes'), t3254_driver_refusals.bats
+  (A9), t3602_unit_suite_partial_run.bats. Suspects: T-3794 (d6344344a, LAST-COMPLETE.yaml
+  / incomplete-run grading) for t3602; T-4284/T-3768/T-3746 gate changes for t2919.
+  Localise (rerun alone on both clones .context/scratch/v1811/tip and .context/scratch/v1811/base;
+  bisect with git log 704c9988f..413701ff9 on the files the test touches), then fix
+  the regression with a test, or show it is load-flaky (passes alone 3 times on tip)
+  and say so.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [sidecar, bug, false-green]
-components: []
+horizon: null
+tags: []
+components: [tests/unit/t2919_budget_gate_command_classify.bats, tests/unit/t3254_driver_refusals.bats]
 related_tasks: []
-origin: {kind: "agent", source: "T-4308"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -44,9 +46,9 @@ origin: {kind: "agent", source: "T-4308"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T14:13:04Z
-last_update: 2026-10-18T14:16:38Z
-date_finished:
+created: 2026-10-18T11:28:25Z
+last_update: 2026-10-18T14:29:35Z
+date_finished: 2026-10-18T14:29:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,18 +59,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-18T14:15:34Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=287,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-18T14:16:24Z'
+  - ts: '2026-10-18T11:28:53Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -85,9 +77,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-18T11:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4312: sidecar inbox reports 'no pending consults' when termlink is absent and FW_SIDECAR_HUB_ID is set (default_reader swallows OSError)
+# T-4301: budget-gate classify, driver refusals and unit-suite partial-run tests red on the v1.8.11 tip only (t2919, t3254, t3602)
 
 ## Context
 
@@ -97,11 +99,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw sidecar inbox --peek` with FW_SIDECAR_HUB_ID set and no termlink on PATH prints `NOT CHECKED` and exits 3 (no false "no pending" exit 0)
-- [x] The same case with `--json` prints `{"checked": false, ...}` and exits 3
-- [x] `fw sidecar inbox --show ID` with no termlink on PATH prints no traceback (clean error or NOT CHECKED, non-traceback exit)
-- [x] The `default_reader` callers that legitimately treat an unreadable topic as empty (watcher ingest_hub, dm, retry, verdict_ledger, e2e) keep their behaviour, and the change is confined to the inbox CLI path
-- [x] A regression test fails before the fix and passes after, in tests/unit/test_sidecar_inbox_no_termlink_t4312.py or a sibling file (4 of 9 fail before the fix; the 5 controls pass both before and after)
+- [x] t2919 root cause localised: tests/unit/t2919_budget_gate_command_classify.bats:127 hard-codes the checkout path; the committed test is red on the v1.8.11 tip clone (413701ff9) and the working-tree version is green there
+- [x] t3254 root cause localised: tests/unit/t3254_driver_refusals.bats A9 fixture has no agents/ dir, so bin/fw:1373 re-resolves FRAMEWORK_ROOT and the ceiling check never becomes unevaluable; the committed test is red on the tip, the working-tree version is green there
+- [x] t3602 classified: test 7 ("runner records per-file durations…", line 196 status check) went red once in the full suite and does not reproduce; 3 isolated runs on the main checkout and 4 on the tip pass; T-3794 (d6344344a) does not change any asserted field, so it is not the cause. Recorded as load-flaky, no code change
+- [x] Each fix is test-side only (no bin/fw, lib/, agents/ edit), minimal, in the surrounding style
+- [x] A regression test fails on the committed version and passes with the fix: t2919 control leg (cd into another install is refused) and t3254 re-resolve guard (`[[ "$output" != *"re-resolving"* ]]`)
+- [x] t2919 and t3254 bats files pass on the main checkout after the fix
+- [x] t3602 bats file passes on the main checkout (3 of 3 runs)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -150,6 +154,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/t2919_budget_gate_command_classify.bats > .context/scratch/t4301/t2919.out 2>&1 && ! grep -q "^not ok" .context/scratch/t4301/t2919.out
+bats tests/unit/t3254_driver_refusals.bats > .context/scratch/t4301/t3254.out 2>&1 && ! grep -q "^not ok" .context/scratch/t4301/t3254.out
+bats tests/unit/t3602_unit_suite_partial_run.bats > .context/scratch/t4301/t3602.out 2>&1 && ! grep -q "^not ok" .context/scratch/t4301/t3602.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -279,41 +287,8 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-python3 -m pytest -q tests/unit/test_sidecar_inbox_no_termlink_t4312.py
-python3 -m pytest -q tests/unit/test_sidecar_inbox_no_termlink_t4308.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_alerts_t3856.py tests/unit/test_sidecar_dm.py tests/unit/test_sidecar_watcher_t3684.py
-bin/fw vendor self --check
 
 ## RCA
-
-**Symptom:** With `FW_SIDECAR_HUB_ID` set (hub id known, so no CircuitError) and no
-`termlink` binary on PATH, `fw sidecar inbox --peek` printed
-`no pending consults on inbox:…` and exited 0. The same answer comes back when the hub
-refuses the read. An operator reads that as an empty inbox.
-
-**Root cause:** `lib/sidecar/inbox.py` `default_reader` (line ~207) catches
-`OSError`/`SubprocessError` and returns `[]`, and returns `[]` on any nonzero exit.
-`pending()` takes that `[]` as an empty topic. `lib/sidecar_cli.py` `cmd_inbox` only
-mapped `CircuitError` (no hub anchor) to NOT CHECKED, so an unreadable hub with a known
-anchor fell through to the empty answer. The strict reader that tells "no mail" from
-"could not look" already existed as `lib/sidecar/alerts.py` `strict_reader`, used by
-`fw sidecar alerts`, but the inbox command never used it.
-
-**Why structurally allowed:** The T-4308 fix covered only the anchor-missing branch, and
-its test removed `FW_SIDECAR_HUB_ID` on purpose, so the anchor-present branch was never
-exercised. `default_reader`'s lenient contract is correct for its other callers (watcher,
-dm, retry, verdict_ledger, e2e), so nothing at the library level flagged the CLI using it
-as a truth source.
-
-**Fix:** `cmd_inbox` reads with `reader=alerts.strict_reader` and maps `alerts.Unreadable`
-to the same NOT CHECKED / exit 3 as `CircuitError`. `default_reader` is unchanged.
-`--show` needed no change: it reads only the local receiver store and never reaches the
-hub, so it does not traceback without termlink (probed with a stored message and a
-missing id).
-
-**Prevention:** `tests/unit/test_sidecar_inbox_no_termlink_t4312.py` covers the anchor-known
-branch: text and JSON NOT CHECKED with no termlink, a hub refusing the read, controls for
-a real empty topic and an unknown topic (both still empty, exit 0), `--show` without
-termlink, and a pin that `default_reader` stays lenient. The Verification block runs it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -328,6 +303,17 @@ termlink, and a pin that `default_reader` stays lenient. The Verification block 
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on the v1.8.11 tip clone only (413701ff9), t2919 ("the prescribed cd /path && cmd shape still passes"), t3254 (A9, unevaluable ceiling) and t3602 (partial-run report, test 7) were red in the full-suite comparison (docs/reports/T-4246-full-suite-comparison.md). They were green on the base clone.
+
+**Root cause:**
+- t2919: tests/unit/t2919_budget_gate_command_classify.bats:127 (committed) hard-codes `/opt/999-Agentic-Engineering-Framework` in the "prescribed shape" assertion. The gate is right: `cd <another install> && bin/fw handover` is refused ("launcher is not this project's own", T-4125). Only the test was checkout-specific.
+- t3254: tests/unit/t3254_driver_refusals.bats A9 (committed, ~l.203) builds a FRAMEWORK_ROOT fixture with lib/ and bin/ but no agents/. bin/fw:1373 (T-4248) rejects that root and re-resolves to the real checkout, which has the injector, so the "unevaluable ceiling" branch is never reached and the output is not JSON.
+- t3602: test 7 (tests/unit/t3602_unit_suite_partial_run.bats:~190-205) asserts several per-file fields after running agents/audit/unit-suite.sh with FILE_TIMEOUT=5. Its verdict depends on a cold python/pytest start finishing inside 5 s. Not reproduced: isolated, 6-way concurrent, and 48-busy-loop saturation runs all pass. T-3794 (d6344344a) only adds a LAST-COMPLETE.yaml write and changes no asserted field, so it is ruled out as the cause.
+
+**Why structurally allowed:** the tests encode the environment (a checkout path; a fixture that has to satisfy a validator added later, T-4248) and nothing checks that a bats file is hermetic to the checkout it runs from. The t3602 timing assertions have no slack and nothing flags that.
+
+**Prevention:** the t2919 and t3254 fixes make both tests hermetic (FRAMEWORK_ROOT-relative path; agents/ in the fixture) and the t2919 control leg proves the refusal side is exercised, not only the allow side. Hermeticity of FRAMEWORK_ROOT-based fixtures is a candidate for a lint (not built here). t3602 test 7 is left as-is and recorded as load-flaky; widening its per-file cap would be the next step if it recurs in a full-suite run.
 
 ## Evolution
 
@@ -384,13 +370,6 @@ termlink, and a pin that `default_reader` stays lenient. The Verification block 
 
 ## Decisions
 
-**Read the inbox CLI through `alerts.strict_reader` rather than changing `default_reader`.**
-Alternatives: (a) make `default_reader` raise, which would change the watcher, dm, retry,
-verdict_ledger and e2e callers that treat an unreadable topic as empty on purpose; (b) add a
-new strict reader. Chose the existing one: `fw sidecar alerts` already uses it with the same
-"unknown topic is empty, anything else is unknown" rule, so the two commands now agree.
-`--show` is left unchanged because it does not touch the hub.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -412,11 +391,27 @@ new strict reader. Chose the existing one: `fw sidecar alerts` already uses it w
 
 ## Updates
 
-### 2026-10-18T14:13:04Z — task-created [task-create-agent]
+### 2026-10-18T11:28:25Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4312-sidecar-inbox-reports-no-pending-consult.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4301-budget-gate-classify-driver-refusals-and.md
 - **Context:** Initial task creation
 
-### 2026-10-18T14:16:38Z — status-update [task-update-agent]
+### 2026-10-18T11:28:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-61bdfe3f
+- **Timestamp:** 2026-10-18T14:31:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T14:29:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

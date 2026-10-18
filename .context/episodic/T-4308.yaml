@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4308: fw inbox (T-4252) prints a Python traceback and exits 1 when termlink is not installed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T14:48:06Z
+# ============================================================================
+
+task_id: T-4308
+task_name: "fw inbox (T-4252) prints a Python traceback and exits 1 when termlink is not installed"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T13:49:19Z
+completed: 2026-10-18T14:47:32Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T16:12:11+02:00
+last_commit: 2026-10-18T16:12:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar inbox prints NOT CHECKED (exit 3) when termlink is absent, not a traceback
+
+# Key outcomes
+outcomes:
+  - '`fw sidecar inbox --peek` with termlink absent from PATH prints no Python traceback and exits with the documented NOT CHECKED code (3), printing one line that says termlink is not installed and the inbox cannot be read'
+  - 'Every termlink subprocess call on the inbox read path (`lib/sidecar/inbox.py` default_reader, pending, and any others reached from cmd_inbox) handles a missing binary (FileNotFoundError / OSError) the way the surrounding module does'
+  - 'A regression test in tests/unit runs the verb with termlink stripped from PATH and asserts no "Traceback" in output and the documented exit code; it fails on the pre-fix code'
+  - 'Existing sidecar inbox/dm tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - 'lib/sidecar_cli.py'
+  - '.tasks/active/T-4308-fw-inbox-t-4252-prints-a-python-tracebac.md'
+  - 'tests/unit/test_sidecar_inbox_no_termlink_t4308.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T16:12:11'
+    action: 'T-4308: sidecar inbox prints NOT CHECKED (exit 3) when termlink is absent, not a traceback'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 58 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, greenfield, sidecar]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 58
+  commits: 1
+  files_changed: 4
+  lines_added: 152
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4308-fw-inbox-t-4252-prints-a-python-tracebac.md
+generated_by: context-agent-hybrid

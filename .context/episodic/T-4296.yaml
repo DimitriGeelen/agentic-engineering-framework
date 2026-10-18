@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4296: fw init exits 1 silently when HOME does not exist: T-4251's _home_real assignment is the last command of an && list under set -e
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T10:18:35Z
+# ============================================================================
+
+task_id: T-4296
+task_name: "fw init exits 1 silently when HOME does not exist: T-4251's _home_real assignment is the last command of an && list under set -e"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T09:47:43Z
+completed: 2026-10-18T10:11:26Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-18T12:11:24+02:00
+last_commit: 2026-10-18T12:11:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init no longer aborts silently when HOME is missing or unset (set -e && list in T-4251's HOME resolution); regression test
+
+# Key outcomes
+outcomes:
+  - 'lib/init.sh resolves $HOME without aborting when HOME is unset or does not exist (an unresolvable HOME only means "no HOME repo to compare with")'
+  - 'Regression test: fw init in an existing git project with HOME pointing at a missing dir exits 0 and seeds the onboarding tasks; t3636_objectives_seed.bats passes'
+  - 'Vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - 'lib/init.sh'
+  - '.tasks/active/T-4296-fw-init-exits-1-silently-when-home-does-.md'
+  - 'tests/unit/t4296_init_missing_home.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T12:11:24'
+    action: 'T-4296: fw init no longer aborts silently when HOME is missing or unset (set -e && list in T-4251''s HOME resolution); regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23
+  commits: 1
+  files_changed: 4
+  lines_added: 430
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4296-fw-init-exits-1-silently-when-home-does-.md
+generated_by: context-agent-hybrid
