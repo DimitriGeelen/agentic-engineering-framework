@@ -45,6 +45,12 @@ run_install() {
 }
 
 @test "T-4298: bin/fw hook calls never print the inherited-root warning" {
-    run bash -c "FRAMEWORK_ROOT='$BAD' bash '$FRAMEWORK_ROOT/bin/fw' hook nonexistent-hook-x 2>&1"
+    # A throwaway project: a missing hook is logged to PROJECT_ROOT's crash log, and
+    # without its own project this test wrote into the real repo's .hook-crashes.log.
+    local proj
+    proj="$(mktemp -d)"
+    mkdir -p "$proj/.tasks" "$proj/.context/working"
+    run bash -c "cd '$proj' && PROJECT_ROOT='$proj' CLAUDE_PROJECT_DIR='$proj' FRAMEWORK_ROOT='$BAD' bash '$FRAMEWORK_ROOT/bin/fw' hook nonexistent-hook-x 2>&1"
     [[ "$output" != *"re-resolving"* ]]
+    rm -rf "$proj"
 }
