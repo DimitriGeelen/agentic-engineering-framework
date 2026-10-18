@@ -105,7 +105,7 @@ bvp_scores_proposed:
 - [x] An entry in the vendored .agentic-framework/.secret-scan-allowlist still suppresses a finding (union, not replacement)
 - [x] With neither allowlist file present the scanner still runs and reports the finding (exit 1, no error)
 - [x] The pre-commit block message (agents/git/lib/hooks.sh) and the audit finding (agents/audit/audit.sh) name the PROJECT-ROOT .secret-scan-allowlist, not the vendored copy
-- [ ] Regression bats tests/unit/t4316_secret_scan_allowlist_union.bats passes; test_secret_scan.bats and upgrade_fresh_machine_simulation.bats stay green; vendor self --check clean
+- [x] Regression bats tests/unit/t4316_secret_scan_allowlist_union.bats passes; test_secret_scan.bats and upgrade_fresh_machine_simulation.bats stay green; vendor self --check clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
