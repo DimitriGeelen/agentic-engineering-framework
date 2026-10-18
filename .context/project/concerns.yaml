@@ -5531,3 +5531,20 @@ concerns:
   detection_gap: the governance-section sync compares nothing with the consumer's text; upgrade reports success
   what_remains: T-4232 makes the sync detect consumer edits and refuse or merge them. Close when an upgrade of a
     consumer-edited section in the fresh-machine simulation keeps the edit or stops with a clear message.
+- id: G-118
+  type: gap
+  title: One unfinished edit to bin/fw takes every hook down, and with them the operator's only way to reach the session
+  description: 'On 2026-10-18 a dispatched worker (T-4298) saved an edit to bin/fw that left a block unclosed at
+    line 1354. Every Claude Code hook runs "bin/fw hook <name>", and the hook router sits at bin/fw:10553 of 11528,
+    so bash failed at line 11555 ("unexpected end of file") on every call. UserPromptSubmit hooks blocked every
+    operator prompt and all peer mail; all five running workers stalled on their own Stop hook; the operator saw
+    only "operation blocked by hook". Reported by 055 (msg 0baa5ed5).'
+  severity: high
+  status: open
+  detected_in: T-4303
+  observed: '2026-10-18'
+  reported_by: 055-agentic-fleet-cockpit (msg 0baa5ed5)
+  blast_radius: this repo and every consumer whose vendored .agentic-framework/bin/fw stops parsing
+  detection_gap: nothing checks that bin/fw parses after an edit; the hook error names neither the cause nor the fix
+  what_remains: T-4303. Close when a bin/fw with a parse error below its preamble still routes hooks, and the
+    error for a parse error in the preamble names bin/fw and the repair.
