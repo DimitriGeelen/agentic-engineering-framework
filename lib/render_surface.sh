@@ -126,7 +126,10 @@ if fm_match:
 
 # Body file references — any token matching a path-like shape.
 # Conservative: only relative paths starting with a known repo dir.
+# HTML comments are template guidance, not work done (T-4307): the task
+# template's own comment names web/app.py, which must not trip the gate.
 body = text[fm_match.end():] if fm_match else text
+body = re.sub(r"<!--.*?-->", "", body, flags=re.DOTALL)
 body_paths = re.findall(
     r"(?:^|[\s`'\"\(])((?:web|lib|bin|agents|tests|tools|prompts|policy|deploy|docs|\.tasks|\.context|\.fabric)/[A-Za-z0-9_/.-]+\.(?:html|j2|css|js|py|md|yaml|yml|sh|bats|json|toml))",
     body

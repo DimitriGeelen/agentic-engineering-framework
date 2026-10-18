@@ -2,9 +2,11 @@
 id: T-4307
 name: "P-013 render gate false-positive on the task template comment mentioning web/app.py"
 description: >
-  Greenfield container run (dimitri-mint-dev T-126): the render-surface gate treats a web/app.py mention in the task template's comment text as a render-touching change and refuses the close.
+  Greenfield container run (dimitri-mint-dev T-126): the render-surface gate treats
+  a web/app.py mention in the task template's comment text as a render-touching change
+  and refuses the close.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +41,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T13:49:02Z
-last_update: 2026-10-18T13:49:02Z
-date_finished: null
+last_update: 2026-10-18T14:13:36Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +53,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T14:01:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T14:02:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4307: P-013 render gate false-positive on the task template comment mentioning web/app.py
@@ -63,8 +93,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/render_surface.sh` body-fallback scan ignores text inside HTML comments (`<!-- ... -->`), so a template comment naming `web/app.py` no longer makes a task render-touching
+- [x] A consumer-style task (unmodified template body + non-web change, no git commits for its id) is NOT classified render-surface by `task_touches_render_surface` (regression test fails before the fix)
+- [x] A task whose commits change `web/app.py` is STILL classified render-surface (git evidence path unchanged; regression test)
+- [x] A task whose body (outside comments) names `web/app.py` with no git evidence is STILL classified render-surface (fallback not gutted; regression test)
+- [x] Regression tests live in `tests/unit/t4307_render_surface_html_comment.bats` and pass; neighbouring `tests/unit/test_render_surface_gate.bats` stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -114,6 +147,10 @@ date_finished: null
 
 ## Verification
 
+bats tests/unit/t4307_render_surface_html_comment.bats > /tmp/.t4307.out 2>&1 && ! grep -q "^not ok" /tmp/.t4307.out
+bats tests/unit/test_render_surface_gate.bats > /tmp/.t4307b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4307b.out
+bash -n lib/render_surface.sh
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -245,6 +282,14 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** A consumer's greenfield task (body = unmodified template plus a non-web change) was refused at `--status work-completed` by the P-013 render-surface gate, which demanded a `[REVIEW]` Human AC.
+
+**Root cause:** `lib/render_surface.sh:103-137` (`_render_surface_body_candidates`) is the fallback used when no commit carries the task id (`task_touches_render_surface`, `lib/render_surface.sh:139-179`). It runs a path regex over the whole body. The template's HTML comment (`.tasks/templates/default.md`, the "Render-touching build tasks ... web/app.py" block) contains the literal `web/app.py`, followed by a space, so the regex matches it and `_render_surface_path_matches` returns true.
+
+**Why structurally allowed:** The fallback strips frontmatter but not HTML comments, which are inert template guidance. The existing fixtures in `tests/unit/test_render_surface_gate.bats` never put a render path inside a comment, so nothing exercised it.
+
+**Prevention:** Regression tests in `tests/unit/t4307_render_surface_html_comment.bats` pin both sides: comment-only mention is ignored, and a real `web/app.py` change (via commits and via body prose) is still refused.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -339,3 +384,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4307-p-013-render-gate-false-positive-on-the-.md
 - **Context:** Initial task creation
+
+### 2026-10-18T14:13:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
