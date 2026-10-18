@@ -1,0 +1,21 @@
+id: lib/sidecar/identity.py
+name: identity
+type: script
+subsystem: framework-core
+location: lib/sidecar/identity.py
+tags: []
+
+purpose: "The termlink signing identity every sidecar termlink call runs under (T-4311)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-18
+created_by: unknown

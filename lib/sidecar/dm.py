@@ -43,7 +43,7 @@ import shutil
 import subprocess
 from datetime import datetime, timedelta, timezone
 
-from . import inbox
+from . import identity, inbox
 
 DM_PREFIX = "dm:"
 
@@ -115,12 +115,36 @@ def identity_is_host_shared(*, runner=subprocess.run, timeout: int = 15) -> bool
         return False
     if not any(os.environ.get(k) for k in _IDENTITY_ENV):
         return True
+    return _host_fingerprint(runner=runner, timeout=timeout) == ours
+
+
+def _host_fingerprint(*, runner=subprocess.run, timeout: int = 15) -> str | None:
+    """The fingerprint termlink reports with every identity selector stripped:
+    the host default, measured rather than hard-coded."""
     saved = {k: os.environ.pop(k) for k in _IDENTITY_ENV if k in os.environ}
     try:
-        host = identity_fingerprint(runner=runner, timeout=timeout)
+        return identity_fingerprint(runner=runner, timeout=timeout)
     finally:
         os.environ.update(saved)
-    return host == ours
+
+
+def legacy_host_fingerprint(*, runner=subprocess.run, timeout: int = 15) -> str | None:
+    """The host key this process was moved off by `identity.apply()` (T-4311),
+    while the transition is on — else None.
+
+    Peers that DM'd us before the switch wrote to rails keyed by the host
+    fingerprint; without this those rails drop out of `rails_for_key()` the
+    moment our own key changes and their unread DMs are never seen. Only set
+    when apply() did the switching (an operator-exported TERMLINK_IDENTITY_FILE
+    is a key they chose, not a transition we caused), and turned off with
+    SIDECAR_HOST_DM_TRANSITION=0 once peers address the project key."""
+    if os.environ.get("FW_SIDECAR_IDENTITY_FP"):
+        return None
+    if not os.environ.get(identity.APPLIED_MARKER) or not identity.host_dm_transition():
+        return None
+    host = _host_fingerprint(runner=runner, timeout=timeout)
+    ours = identity_fingerprint(runner=runner, timeout=timeout)
+    return host if host and host != ours else None
 
 
 def default_lister(*, binary: str | None = None, timeout: int = 20) -> list[dict]:
@@ -143,12 +167,19 @@ def default_lister(*, binary: str | None = None, timeout: int = 20) -> list[dict
 
 
 def rails_for_key(key: str | None = None, *, lister=default_lister) -> list[dict]:
-    """`dm:*` rails where `key` (default: our own identity fingerprint) is
+    """`dm:*` rails where `key` (default: our own identity fingerprint, plus
+    the host key `legacy_host_fingerprint()` names during a T-4311 switch) is
     either side — `dm:<key>:*` or `dm:*:<key>`. Rows pass through from
     `lister()` unchanged. A topic that is not a clean two-party `dm:a:b`
     shape is skipped rather than guessed at."""
-    key = key if key is not None else identity_fingerprint()
-    if not key:
+    if key is not None:
+        keys = {key} if key else set()
+    else:
+        # T-4311: our own key, plus the host key we moved off while the
+        # transition lasts. Cursors live in one store keyed by topic name,
+        # so the old rails keep the cursors they already had.
+        keys = {k for k in (identity_fingerprint(), legacy_host_fingerprint()) if k}
+    if not keys:
         return []
     out = []
     for topic in lister():
@@ -158,7 +189,7 @@ def rails_for_key(key: str | None = None, *, lister=default_lister) -> list[dict
         parts = name[len(DM_PREFIX):].split(":")
         if len(parts) != 2:
             continue
-        if key in parts:
+        if keys & set(parts):
             out.append(topic)
     return out
 

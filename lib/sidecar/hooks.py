@@ -45,7 +45,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     __package__ = "lib.sidecar"
 
-from . import adapter, circuit, direct, inject, lifecycle, receiver  # noqa: E402
+from . import adapter, circuit, direct, identity, inject, lifecycle, receiver  # noqa: E402
 
 BODY_CAP = 4000
 # T-3840: Claude Code keeps a hook's additionalContext inline only up to ~10,000
@@ -443,6 +443,7 @@ def finalize(transcript: str, msg_ids: list[str], wait_s: float = FINALIZE_WAIT_
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     which = argv[0] if argv else ""
+    identity.apply()  # T-4311: sign as the project key when configured
     try:
         raw = sys.stdin.read() if which != "finalize" and not sys.stdin.isatty() else ""
         hook_input = json.loads(raw) if raw.strip() else {}

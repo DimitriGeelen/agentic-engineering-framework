@@ -31,7 +31,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     __package__ = "lib.sidecar"
 
-from . import direct, inject, lifecycle, receipts, receiver  # noqa: E402
+from . import direct, identity, inject, lifecycle, receipts, receiver  # noqa: E402
 
 MAX_BODY = 10 * 1024 * 1024
 
@@ -214,6 +214,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="arc-011 receiver sidecar (foreground)")
     ap.add_argument("--port", type=int, default=0)
     ap.add_argument("--agent", required=True)
+    identity.apply()  # T-4311: sign as the project key when configured
     args = ap.parse_args(argv)
     return serve(args.port, args.agent)
 

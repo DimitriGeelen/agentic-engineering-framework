@@ -34,6 +34,7 @@ from lib.sidecar import addressing, circuit, delivery, dm, e2e, inbox, outbox, r
 from lib.sidecar import termlink_transport as transport, receiver, lifecycle, adapter, direct, inject  # noqa: E402
 from lib.sidecar import latency as latency_mod, receipts, watcher  # noqa: E402
 from lib.sidecar import waiting as waiting_mod  # noqa: E402
+from lib.sidecar import identity  # noqa: E402
 
 
 def cmd_whoami(args) -> int:
@@ -1439,6 +1440,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv=None) -> int:
+    identity.apply()  # T-4311: sign as the project key when configured
     args = build_parser().parse_args(argv)
     return args.func(args)
 

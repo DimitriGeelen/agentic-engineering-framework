@@ -616,4 +616,6 @@ def held_unsurfaced(threshold_hours: float = 24, now: datetime | None = None) ->
 
 
 if __name__ == "__main__":
+    from . import identity
+    identity.apply()  # T-4311: sign as the project key when configured
     print(json.dumps(deliver_pending(os.environ.get("FW_INJECT_TRIGGER", "manual"))))
