@@ -11,16 +11,20 @@ setup() {
     ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
     LIB="$ROOT/agents/context/lib/safe-commands.sh"
     source "$LIB"
+    # T-4343: -C / --git-dir / --work-tree are SAFE only inside PROJECT_ROOT, so the
+    # SAFE cases below use the project itself. The /tmp cases stay as NOT-SAFE controls.
+    export PROJECT_ROOT="$ROOT"
+    export _FW_PAYLOAD_CWD="$ROOT"
 }
 
 # ── read verbs behind value-taking globals ───────────────────────────────────
 
 @test "T-4264: git -C DIR status is SAFE" {
-    is_bash_safe_command "git -C /tmp status"
+    is_bash_safe_command "git -C $ROOT status"
 }
 
 @test "T-4264: git -C DIR log is SAFE" {
-    is_bash_safe_command "git -C /tmp log --oneline -3"
+    is_bash_safe_command "git -C $ROOT log --oneline -3"
 }
 
 @test "T-4264: git --git-dir=X log is SAFE" {
@@ -32,7 +36,7 @@ setup() {
 }
 
 @test "T-4264: git -C DIR rev-parse is SAFE" {
-    is_bash_safe_command "git -C /tmp rev-parse --show-toplevel"
+    is_bash_safe_command "git -C $ROOT rev-parse --show-toplevel"
 }
 
 # ── flag-only globals ────────────────────────────────────────────────────────
@@ -94,7 +98,7 @@ setup() {
 # reproduced F-26 is the one with a global option in front of the verb.
 
 @test "T-4264: git -C DIR status 2>&1 is SAFE (F-26 compound form)" {
-    is_bash_safe_command "git -C /tmp status 2>&1"
+    is_bash_safe_command "git -C $ROOT status 2>&1"
 }
 
 @test "T-4264 control: git -C DIR commit 2>&1 is NOT-SAFE" {
