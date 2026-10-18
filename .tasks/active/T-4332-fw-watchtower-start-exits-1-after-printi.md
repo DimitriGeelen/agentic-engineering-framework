@@ -6,10 +6,10 @@ description: >
   exited 1. A success message with a failure exit is the worst combination for scripts
   and agents. Find the step after the health check that sets the exit code.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [watchtower, bug]
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T20:44:25Z
-last_update: '2026-10-18T20:45:28Z'
+last_update: 2026-10-18T21:12:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -63,6 +63,24 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T20:46:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4332: fw watchtower start exits 1 after printing 'Health check passed'
@@ -75,8 +93,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause reproduced: `bin/watchtower.sh start` on a free port with no `ip` command on PATH (container shape) printed "Health check passed" and exited 1
+- [x] `detect_lan_ip` in bin/watchtower.sh never returns non-zero (no global IPv4, or `ip` missing → empty output, status 0)
+- [x] Regression bats test starts a real Watchtower on a free port in a temp project with `ip` and `ufw` absent from PATH, asserts "Health check passed" AND exit 0, and stops the Watchtower it started
+- [x] Existing watchtower bats tests still pass; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -254,8 +274,20 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4332_watchtower_start_exit_zero.bats > /tmp/.t4332.out 2>&1 && ! grep -q "^not ok" /tmp/.t4332.out && grep -q "^ok 3 " /tmp/.t4332.out
+test "$(grep -c '# skip' /tmp/.t4332.out)" -eq 0
+bash -n bin/watchtower.sh
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** on dimitri-mint-dev's container (T-133 F-08), `fw watchtower start` printed "Health check passed (identity verified)." and exited 1, with no error line.
+
+**Root cause:** `bin/watchtower.sh:465` `lan_ip=$(detect_lan_ip)` runs under `set -euo pipefail` (line 11). `detect_lan_ip` (line 45) is the pipeline `ip -4 addr show scope global | grep inet | awk | cut | head`; with no `ip` binary or no global IPv4 address (the container shape) `grep` matches nothing and exits 1, pipefail makes the function return 1, the command-substitution assignment carries that status, and errexit ends the script silently — after the success line, before the port/url files are written. The same call in `do_status` and `do_url` (running branch) had the same silent exit. Not the firewall: `ensure_firewall_open` (lib/firewall.sh) returns 0 on every path, including T-4330's no-ufw note.
+
+**Why structurally allowed:** every existing start test (t4041, t3660, t4306…) runs on a host with `ip` and a LAN address, so the grep always matched; nothing ran `start` with the container's tool set. A helper whose empty output is a valid answer was allowed to signal it as failure under errexit.
+
+**Prevention:** `detect_lan_ip` now ends `|| true` (always status 0; empty = no LAN address). `tests/unit/t4332_watchtower_start_exit_zero.bats` runs a real start and `url` with `ip` and `ufw` removed from PATH and asserts "Health check passed" together with exit 0 — red before the fix (3 of 4 tests), green after.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -351,3 +383,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4332-fw-watchtower-start-exits-1-after-printi.md
 - **Context:** Initial task creation
+
+### 2026-10-18T21:12:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

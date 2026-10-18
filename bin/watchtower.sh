@@ -38,12 +38,16 @@ log_info()  { echo -e "${GREEN}[watchtower]${NC} $*"; }
 log_warn()  { echo -e "${YELLOW}[watchtower]${NC} $*"; }
 log_error() { echo -e "${RED}[watchtower]${NC} $*" >&2; }
 
+# T-4332: always status 0. Callers run `lan_ip=$(detect_lan_ip)` under
+# `set -euo pipefail`; with no `ip` binary or no global IPv4 (containers) the
+# grep stage exits 1 and errexit killed `start` right after "Health check passed".
+# Empty output already means "no LAN address" to every caller.
 detect_lan_ip() {
     ip -4 addr show scope global 2>/dev/null \
         | grep 'inet' \
         | awk '{print $2}' \
         | cut -d/ -f1 \
-        | head -n 1
+        | head -n 1 || true
 }
 
 get_pid() {
