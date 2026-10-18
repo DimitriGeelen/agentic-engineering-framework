@@ -31,7 +31,8 @@ _fw_host_is_loopback() {
 #   - otherwise: open the port only when the operator opted in
 #     (FW_WATCHTOWER_OPEN_FIREWALL=1, config WATCHTOWER_OPEN_FIREWALL); without it,
 #     print the exact ufw command and change nothing.
-# No-op if UFW is not installed or inactive, or the port is already allowed.
+# No-op if UFW is inactive or the port is already allowed; if UFW is not installed,
+# print one line saying no change was made (T-4330).
 ensure_firewall_open() {
     local port="$1"
     local comment="${2:-Agentic Framework}"
@@ -41,8 +42,10 @@ ensure_firewall_open() {
         return 0
     fi
 
-    # Skip if ufw is not installed
+    # ufw not installed: change nothing, but say so (T-4330) — silence left the
+    # operator not knowing whether the port is reachable.
     if ! command -v ufw >/dev/null 2>&1; then
+        _fw_log_warn "ufw not installed: no firewall change made; make sure port $port is reachable from your LAN if you need it."
         return 0
     fi
     # Skip if ufw is inactive

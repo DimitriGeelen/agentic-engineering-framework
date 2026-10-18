@@ -52,6 +52,30 @@ _open() {
     grep -q "allow 3011/tcp" "$CALLS"
 }
 
+_open_noufw() {
+    # $1 = bind host. PATH holds no ufw at all (an empty dir; bash is called by
+    # absolute path and the function needs only builtins).
+    local empty="$TEST_TEMP_DIR/noufw"
+    mkdir -p "$empty"
+    run env PATH="$empty" "$BASH" -c "source '$FRAMEWORK_ROOT/lib/firewall.sh'; ensure_firewall_open 3011 'Agentic Framework' '$1'"
+}
+
+@test "T-4330: LAN bind with ufw not installed prints one line, changes nothing" {
+    _open_noufw 0.0.0.0
+    [ "$status" -eq 0 ]
+    [ "${#lines[@]}" -eq 1 ]
+    echo "$output" | grep -q "ufw not installed"
+    echo "$output" | grep -q "port 3011"
+}
+
+@test "T-4330: loopback bind with ufw not installed stays silent" {
+    for h in 127.0.0.1 localhost ::1; do
+        _open_noufw "$h"
+        [ "$status" -eq 0 ]
+        [ -z "$output" ]
+    done
+}
+
 @test "T-4297: watchtower.sh passes the bind host to ensure_firewall_open" {
     grep -qE 'ensure_firewall_open "\$port" "Agentic Framework" "\$\{FW_HOST' "$FRAMEWORK_ROOT/bin/watchtower.sh"
 }

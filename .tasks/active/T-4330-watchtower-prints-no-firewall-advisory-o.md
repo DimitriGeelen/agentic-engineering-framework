@@ -9,10 +9,10 @@ description: >
   'ufw not installed: no firewall change made; port PORT must be reachable from the
   LAN').
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [firewall, watchtower]
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T20:43:50Z
-last_update: '2026-10-18T20:45:28Z'
+last_update: 2026-10-18T21:06:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,6 +66,24 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T20:46:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4330: Watchtower prints no firewall advisory on a LAN bind when ufw is absent
@@ -78,8 +96,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `ensure_firewall_open PORT COMMENT <LAN host>` with no `ufw` on PATH prints one line naming `ufw not installed` and the port, exits 0, changes nothing
+- [x] Loopback binds with no `ufw` on PATH stay silent (no output)
+- [x] `tests/unit/t4297_watchtower_firewall_consent.bats` has tests for both cases (no-ufw PATH) and the whole file passes; the LAN no-ufw test fails without the fix
+- [x] `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,8 +277,21 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+d=$(mktemp -d); env PATH="$d" /bin/bash -c 'source lib/firewall.sh; ensure_firewall_open 3011 x 0.0.0.0' > "$d/out" 2>&1 && grep -q "ufw not installed" "$d/out" && grep -q 3011 "$d/out"
+d=$(mktemp -d); env PATH="$d" /bin/bash -c 'source lib/firewall.sh; ensure_firewall_open 3011 x 127.0.0.1' > "$d/out" 2>&1 && test ! -s "$d/out"
+timeout 300 bats tests/unit/t4297_watchtower_firewall_consent.bats > /tmp/.t4330.out 2>&1 && ! grep -q "^not ok" /tmp/.t4330.out
+test "$(grep -c '# skip' /tmp/.t4330.out)" -eq 0
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** dimitri-mint-dev T-133 F-07 — on a host without ufw, a Watchtower LAN bind printed no firewall advisory at all, so the operator was never told whether the port is reachable.
+
+**Root cause:** `lib/firewall.sh` `ensure_firewall_open` returned 0 silently when `command -v ufw` failed (the "Skip if ufw is not installed" branch). T-4297 added the consent advisory only on the ufw-active path; the no-ufw path stayed a silent no-op from the pre-T-4297 design, when the function's only job was to open the port.
+
+**Why structurally allowed:** the T-4297 bats file stubbed ufw onto PATH for every test, so the no-ufw branch was never exercised; silence is indistinguishable from "nothing to say" in a test that never asserts output.
+
+**Prevention:** two new tests in `tests/unit/t4297_watchtower_firewall_consent.bats` run with a PATH that holds no ufw: a LAN bind must print the `ufw not installed` line, a loopback bind must stay silent.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -354,3 +387,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4330-watchtower-prints-no-firewall-advisory-o.md
 - **Context:** Initial task creation
+
+### 2026-10-18T21:06:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
