@@ -126,6 +126,29 @@ New, only visible on a clean machine: **blocker** — Watchtower cannot start, `
 PEP 668 blocks pip → T-4304. Also `/embeddings` 500 on an empty project → T-4305; `watchtower stop` reports failure on
 a zombie → T-4306; the P-013 render gate false-positives on the task template comment naming web/app.py → T-4307.
 
+## Release cut — 2026-10-18, master e42aa41bf, tag v1.8.11
+
+Operator answered "yes, release v1.8.11" after the explicit question (fixes without a positive field test were listed
+in it). Fixes that shipped with **no field result yet** — NOT EXERCISED, verified by tests and on this host only:
+
+| Fix | What | Re-test asked of |
+|---|---|---|
+| T-4303 | hooks route when bin/fw does not parse (G-118) | 055, 832 |
+| T-2746 | no implicit fw init outside a project | dimitri-mint-dev |
+| T-4298 | inherited-env notice once (install.sh), fw warns once per shell | dimitri-mint-dev |
+| T-4304 | Watchtower names missing Python modules | dimitri-mint-dev |
+| T-4305 | /embeddings empty state, no 500 | dimitri-mint-dev |
+| T-4307 | render gate ignores HTML comments | ring20 (T-2406), dimitri-mint-dev |
+| T-4308, T-4312 | inbox NOT CHECKED without termlink | dimitri-mint-dev |
+| T-4297 | no firewall change without opt-in | dimitri-mint-dev |
+| T-4264 | git global options read-only; git -c gated | 832 |
+| T-4232 | CLAUDE.md upgrade refuses instead of dropping project lines | 1409, 832 |
+| T-4286 | estate push-key leak | ring20-dashboard |
+| T-4296, T-4284, T-4283, T-4314 | init without HOME; boundary-gate false positives; orphan receiver; ledger audit outside git | — |
+| T-4249 | (from round 4) | 1409 |
+
+Test-only changes (no field test applicable): T-4293..T-4295, T-4300..T-4302, T-4313, T-4318.
+
 ## Findings
 
 - **T-4203** (055 item 7): `_fw_is_own_launcher` / `cmd_classify._Ctx` refuse a consumer's tracked

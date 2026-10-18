@@ -92,11 +92,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] docs/reports/field-test-v1.8.11-results.md lists every fix in the release with its field result (WORKS / BROKEN / NOT EXERCISED, which project, which head)
-- [ ] Full unit suite on the release head compared with v1.8.10 (scratch clone, not a worktree): no failure attributed to the release diff that is not baselined with an owner
-- [ ] `bin/fw release tag-and-release --bump patch --dry-run` clean on the pushed head; output kept in Updates
-- [ ] Operator decision recorded (yes/no) — fixes without a positive field test listed in the question
-- [ ] After a yes: tag v1.8.11, master fast-forwarded, GitHub release present, waiting projects notified (1409, 055, 832, 1023, ring20-dashboard)
+- [x] docs/reports/field-test-v1.8.11-results.md lists every fix in the release with its field result (WORKS / BROKEN / NOT EXERCISED, which project, which head)
+- [x] Full unit suite on the release head compared with v1.8.10 (scratch clone, not a worktree): no failure attributed to the release diff that is not baselined with an owner
+- [x] `bin/fw release tag-and-release --bump patch --dry-run` clean on the pushed head; output kept in Updates
+- [x] Operator decision recorded (yes/no) — fixes without a positive field test listed in the question
+- [x] After a yes: tag v1.8.11, master fast-forwarded, GitHub release present, waiting projects notified (1409, 055, 832, 1023, ring20-dashboard)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -366,6 +366,13 @@ bvp_scores_proposed:
      legacy tasks lacking this section. -->
 
 ## Updates
+
+### 2026-10-18T19:45Z — release cut [agent]
+- Dry run on pushed head b1c2952a1: `github/master` and `origin/master` ancestors of HEAD; would tag v1.8.11 (705 commits since v1.8.10, bump=patch); would reconcile VERSION 1.8.10 → 1.8.11; would fast-forward master by 710 commits.
+- Pre-push audit on bleeding-edge: Pass 42, Fail 0 (after operator baselined 6 load-flaky tests, owner T-4325, runme baseline-flakes-v1811).
+- Operator: "yes, release v1.8.11" (question listed the fixes with no positive field test).
+- Released: master = tag v1.8.11 = e42aa41bf on origin; GitHub Release https://github.com/DimitriGeelen/agentic-engineering-framework/releases/tag/v1.8.11; bleeding-edge pushed to e42aa41bf.
+- Notified: ring20, ring20-dashboard, dimitri-mint-dev, 832, 055, 1409, 1023 (cross-session). Field results to follow per docs/reports/field-test-v1.8.11-results.md §Release cut.
 
 ### 2026-10-17T13:50:24Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
