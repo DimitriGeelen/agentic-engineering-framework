@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4294: upgrade_marked_region.bats (6 tests) red since T-4232: fixtures put made-up governance text outside marked regions, which T-4232 now rightly refuses to overwrite
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T09:44:33Z
+# ============================================================================
+
+task_id: T-4294
+task_name: "upgrade_marked_region.bats (6 tests) red since T-4232: fixtures put made-up governance text outside marked regions, which T-4232 now rightly refuses to overwrite"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T09:14:07Z
+completed: 2026-10-18T09:40:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T11:38:59+02:00
+last_commit: 2026-10-18T11:38:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  marked-region fixtures use stock template governance; pin the T-4232 refusal
+
+# Key outcomes
+outcomes:
+  - 'Fixtures that reach the rebuild place only stock template governance text outside project-owned regions (no invented governance lines such as "This paragraph is framework governance"). The two marker-refusal fixtures (UNCLOSED, stray end) refuse before the governance check and are left unchanged.'
+  - 'The 6 previously red tests pass with lib/upgrade.sh unchanged: `bats tests/unit/upgrade_marked_region.bats` reports 0 not-ok'
+  - 'A new test pins the T-4232 contract: a made-up governance line outside regions makes do_upgrade refuse and leaves CLAUDE.md byte-identical'
+  - 'The [control] test still discriminates (the pre-change positional form still drops the region)'
+  - 'lib/upgrade.sh is not modified (git diff --quiet -- lib/upgrade.sh)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'marked-region fixtures use stock template governance; pin the T-4232 refusal'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4294-upgrademarkedregionbats-6-tests-red-sinc.md'
+  - 'tests/unit/upgrade_marked_region.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T11:38:59'
+    action: 'T-4294: marked-region fixtures use stock template governance; pin the T-4232 refusal'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 1
+  files_changed: 2
+  lines_added: 435
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4294-upgrademarkedregionbats-6-tests-red-sinc.md
+generated_by: context-agent-hybrid

@@ -1,26 +1,15 @@
 ---
-id: T-4294
-name: "upgrade_marked_region.bats (6 tests) red since T-4232: fixtures put made-up
-  governance text outside marked regions, which T-4232 now rightly refuses to overwrite"
+id: T-4293
+name: "Regression from T-4265: nested group (skip|status) in the bootstrap-verb regex breaks t2936's verb-set derivation (could not derive verb set from hook)"
 description: >
-  Nightly 2026-10-18 01:03Z: 6 of 8 tests in tests/unit/upgrade_marked_region.bats
-  fail with do_upgrade status 1. Cause (confirmed): the fixtures (heredocs at ~:78,
-  ~:165, ~:215, ~:250, ~:275, ~:325) place invented lines after '## Core Principle'
-  outside any project-owned region (e.g. 'This paragraph is framework governance and
-  is expected to be replaced.'); T-4232 (efcaedf8f) now refuses to rewrite governance
-  lines the template lacks, which is the intended protection. Fix the TESTS, not T-4232:
-  governance text outside marked regions must be the stock template text (use the
-  file's _template_governance helper), so the tests check what T-3150 means (marked
-  regions survive, the rest is the template), and the [control] test still discriminates.
-  Keep both behaviours pinned: add one test that a made-up governance line outside
-  regions now makes the upgrade refuse (T-4232 contract) and leaves CLAUDE.md byte-identical.
+  Regression from T-4265: nested group (skip|status) in the bootstrap-verb regex breaks t2936's verb-set derivation (could not derive verb set from hook)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, tests/unit/t2936_bootstrap_quoted_redirect.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T09:14:07Z
-last_update: '2026-10-18T09:15:38Z'
-date_finished:
+created: 2026-10-18T09:07:39Z
+last_update: 2026-10-18T09:10:38Z
+date_finished: 2026-10-18T09:10:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-18T09:14:56Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-18T09:15:38Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=290,acs=4)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4294: upgrade_marked_region.bats (6 tests) red since T-4232: fixtures put made-up governance text outside marked regions, which T-4232 now rightly refuses to overwrite
+# T-4293: Regression from T-4265: nested group (skip|status) in the bootstrap-verb regex breaks t2936's verb-set derivation (could not derive verb set from hook)
 
 ## Context
 
@@ -101,11 +62,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Fixtures that reach the rebuild place only stock template governance text outside project-owned regions (no invented governance lines such as "This paragraph is framework governance"). The two marker-refusal fixtures (UNCLOSED, stray end) refuse before the governance check and are left unchanged.
-- [x] The 6 previously red tests pass with lib/upgrade.sh unchanged: `bats tests/unit/upgrade_marked_region.bats` reports 0 not-ok
-- [x] A new test pins the T-4232 contract: a made-up governance line outside regions makes do_upgrade refuse and leaves CLAUDE.md byte-identical
-- [x] The [control] test still discriminates (the pre-change positional form still drops the region)
-- [x] lib/upgrade.sh is not modified (git diff --quiet -- lib/upgrade.sh)
+- [x] The three bootstrap-verb regexes in agents/context/check-active-task.sh (lines ~258, ~291, ~333) use a flat alternation (`onboarding[[:space:]]+skip|onboarding[[:space:]]+status`), matching exactly the same commands as before
+- [x] t2936_bootstrap_quoted_redirect.bats passes (verb set derivable again) and t4265_onboarding_remedy_passes_gate.bats still passes
+- [x] Vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -154,6 +113,10 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+out=$(bats tests/unit/t2936_bootstrap_quoted_redirect.bats 2>&1); echo "$out" | grep -q '^ok' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t4265_onboarding_remedy_passes_gate.bats 2>&1); echo "$out" | grep -q '^ok' && ! echo "$out" | grep -q '^not ok'
+! grep -q 'onboarding\[\[:space:\]\]+(skip|status)' agents/context/check-active-task.sh
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -283,19 +246,18 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-out=$(bats tests/unit/upgrade_marked_region.bats 2>&1); echo "$out" | grep -q '^1\.\.' && ! echo "$out" | grep -q '^not ok'
-git diff --quiet -- lib/upgrade.sh
-grep -q 'T-4232' tests/unit/upgrade_marked_region.bats && grep -q 'byte-identical' tests/unit/upgrade_marked_region.bats
 
 ## RCA
 
-**Symptom:** Nightly 2026-10-18 — 6 of 8 tests in tests/unit/upgrade_marked_region.bats fail with `do_upgrade` status 1 (the two unclosed/stray-marker tests pass because they refuse earlier, on the marker check).
+**Symptom:** the nightly unit suite (2026-10-18 01:03Z) went red on `t2936_bootstrap_quoted_redirect.bats` test 9: "could not derive verb set from hook".
 
-**Root cause:** the test fixtures (`_consumer_region_below`, and the bodies of the "two regions", "no markers", and "above" tests) put invented governance text after `## Core Principle` and outside any project-owned region (e.g. "stale governance", "## Some Stale Framework Section", "This paragraph is framework governance and is expected to be replaced."). T-4232 (`lib/upgrade.sh:1689-1725`, `_fw_governance_at_risk` at :991) refuses the rebuild when a non-blank governance line is absent from the new tail, unless the section equals the stock vendored template (`_gv_stock`). The fixtures are never stock, so the refusal fires. The fixtures were written for the pre-T-4232 behaviour, which silently deleted such lines. The code is right; the fixtures are not.
+**Root cause:** T-4265 (47f959dd2) added `onboarding[[:space:]]+(skip|status)` to the bootstrap-verb regex in agents/context/check-active-task.sh (3 sites). t2936's enumerating guard derives the verb set from that regex with a pattern that assumed every verb after the fixed prefix is a plain word, ending at the first `)`; a multi-word verb with `[[:space:]]+` and a nested group broke the extraction, so the guard checked nothing and failed.
 
-**Why structurally allowed:** the T-4232 commit changed a behaviour that the suite pins through fixtures, and nothing required the fixtures to be re-checked against the new refusal; the [control] test measures only the old positional form, so it stayed green while the fix-side tests went red.
+**Why nothing caught it at the time:** T-4265's worker ran the onboarding-gate suites and check_active_task_*, not t2936, which reads the same hook line from a different angle. Only the full suite covers every reader of a shared line.
 
-**Prevention:** (a) the fixtures build governance from `_template_governance` (stock text) so they exercise the region logic, not the refusal; (b) a new test pins the T-4232 contract (a made-up governance line outside regions refuses and leaves CLAUDE.md byte-identical), so the refusal itself is covered by a test rather than only by accident.
+**Fix:** flatten the hook's alternation (`onboarding[[:space:]]+skip|onboarding[[:space:]]+status`, same match set), and make t2936 take the whole group up to its closing paren, so multi-word verbs are enumerated too. t2936 now also checks onboarding skip/status against the quoted-redirect fix.
+
+**Prevention:** t2936 derives multi-word verbs, and a Verification line pins the flat form.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -387,10 +349,24 @@ grep -q 'T-4232' tests/unit/upgrade_marked_region.bats && grep -q 'byte-identica
 
 ## Updates
 
-### 2026-10-18T09:14:07Z — task-created [task-create-agent]
+### 2026-10-18T09:07:39Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4294-upgrademarkedregionbats-6-tests-red-sinc.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4293-regression-from-t-4265-nested-group-skip.md
 - **Context:** Initial task creation
 
-### 2026-10-18T09:14:55Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d6ac976a
+- **Timestamp:** 2026-10-18T09:11:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T09:10:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

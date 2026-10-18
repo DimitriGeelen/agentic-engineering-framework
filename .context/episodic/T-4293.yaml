@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4293: Regression from T-4265: nested group (skip|status) in the bootstrap-verb regex breaks t2936's verb-set derivation (could not derive verb set from hook)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T09:11:25Z
+# ============================================================================
+
+task_id: T-4293
+task_name: "Regression from T-4265: nested group (skip|status) in the bootstrap-verb regex breaks t2936's verb-set derivation (could not derive verb set from hook)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T09:07:39Z
+completed: 2026-10-18T09:10:38Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-18T11:10:36+02:00
+last_commit: 2026-10-18T11:10:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  flatten the bootstrap-verb alternation and let t2936 derive multi-word verbs (regression from T-4265, nightly red)
+
+# Key outcomes
+outcomes:
+  - 'The three bootstrap-verb regexes in agents/context/check-active-task.sh (lines ~258, ~291, ~333) use a flat alternation (`onboarding[[:space:]]+skip|onboarding[[:space:]]+status`), matching exactly the same commands as before'
+  - 't2936_bootstrap_quoted_redirect.bats passes (verb set derivable again) and t4265_onboarding_remedy_passes_gate.bats still passes'
+  - 'Vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - 'agents/context/check-active-task.sh'
+  - '.tasks/active/T-4293-regression-from-t-4265-nested-group-skip.md'
+  - 'tests/unit/t2936_bootstrap_quoted_redirect.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T11:10:36'
+    action: 'T-4293: flatten the bootstrap-verb alternation and let t2936 derive multi-word verbs (regression from T-4265, nightly red)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 366
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4293-regression-from-t-4265-nested-group-skip.md
+generated_by: context-agent-hybrid
