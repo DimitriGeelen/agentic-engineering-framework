@@ -10,6 +10,8 @@ THIS project's root is ours and must be reclaimed; one from another copy is not.
 Every process here is a fixture under tmp_path. The live AEF receiver is never
 touched.
 """
+import os
+import signal
 import subprocess
 import sys
 import time
@@ -159,21 +161,29 @@ def test_refused_start_leaves_the_live_stale_receiver_running(proj, tmp_path, mo
     the project was left with no receiver."""
     from lib.sidecar import watcher
 
-    ours, theirs = "t4283-ours", "t4283-theirs"
-    rc, _ = cli._start_receiver(ours, None, False, True)
-    assert rc == 0
-    info = lifecycle.read_triple_file()
-    elsewhere = tmp_path / "elsewhere"
-    elsewhere.mkdir()
-    foreign = _orphan(theirs, elsewhere, tmp_path)
-    monkeypatch.setattr(watcher, "is_stale", lambda pid: True)
+    # Unique per run: a receiver leaked by an earlier run of this test would otherwise
+    # still serve the fixed name, and this run's first start would be refused (seen
+    # 2026-10-18: passed once, then failed every run until the leak was killed).
+    ours, theirs = f"t4283-ours-{tmp_path.name[-12:]}", f"t4283-theirs-{tmp_path.name[-12:]}"
+    info, foreign = None, None
     try:
+        rc, _ = cli._start_receiver(ours, None, False, True)
+        assert rc == 0
+        info = lifecycle.read_triple_file()
+        elsewhere = tmp_path / "elsewhere"
+        elsewhere.mkdir()
+        foreign = _orphan(theirs, elsewhere, tmp_path)
+        monkeypatch.setattr(watcher, "is_stale", lambda pid: True)
         rc, got = cli._start_receiver(theirs, None, False, True)
         assert rc == 1 and got is None
         assert lifecycle.pid_alive(info["pid"]), "a refused start killed the live receiver"
         assert lifecycle.read_triple_file() == info, "a refused start cleared the triple file"
     finally:
-        foreign.kill()
-        foreign.wait()
+        if foreign is not None:
+            foreign.kill()
+            foreign.wait()
         monkeypatch.undo()
         cli.cmd_receiver_stop(type("A", (), {"quiet": True, "agent": ours})())
+        # cmd_receiver_stop alone left this receiver running: kill it by the pid it recorded.
+        if info and info.get("pid") and lifecycle.pid_alive(info["pid"]):
+            os.kill(int(info["pid"]), signal.SIGTERM)
