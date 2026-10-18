@@ -149,6 +149,32 @@ in it). Fixes that shipped with **no field result yet** — NOT EXERCISED, verif
 
 Test-only changes (no field test applicable): T-4293..T-4295, T-4300..T-4302, T-4313, T-4318.
 
+## Round 8 — on the released v1.8.11 (e42aa41bf), 2026-10-18 (T-4328)
+
+**ring20 (proxmox-ring20-management, T-2406, msg 69eca905):** upgrade 112c098b9 → v1.8.11 from a pinned tag clone,
+rc 0; 7 locally patched files 3-way merged clean; post-overlay verify 0 mismatches.
+
+| Fix | Verdict |
+|---|---|
+| T-4307 render gate ignores template comments | **WORKS** — fresh build task (unmodified template, 0 commits) closed with no render refusal |
+| T-4250 | **WORKS** (their G-235 closed) |
+| T-4232 CLAUDE.md refusal | NOT EXERCISED — "Already up to date", nothing of theirs inside managed sections |
+| T-4297 firewall | NOT EXERCISED — no ufw on that CT |
+
+**dimitri-mint-dev (T-130, msgs ecb1d433, e17f5580):** upgrade 1.8.10 → 1.8.11, doctor 0 failures; README A+
+byte-identical to their v2.2.1; testbed L1 against master: all 8 checks pass.
+
+| Fix | Verdict |
+|---|---|
+| T-4297 no firewall change without opt-in | **WORKS** — a Watchtower restart left ufw byte-identical |
+| T-4298 installer inherited-env warning | **WORKS** — L1 verdict diff vs bleeding-edge: T-4248-env-warning FAILS → WORKS |
+| T-4308 inbox exit 3 without termlink | **WORKS** (L1) |
+| T-4170, T-4171, T-4114/T-4126/T-4149 | **WORKS** |
+| T-4232 CLAUDE.md upgrade | WORKS — no project lines removed (their project section only names the project) |
+
+Pending from them: a level-2 run with prompt v2.2.1 for T-2746, T-4304, T-4305, T-4307, T-4312.
+Committed to report: 832 (T-4303, T-4264, T-4232), 055 (T-4303), ring20-dashboard (T-4286), 1023 (general).
+
 ## Findings
 
 - **T-4203** (055 item 7): `_fw_is_own_launcher` / `cmd_classify._Ctx` refuse a consumer's tracked
