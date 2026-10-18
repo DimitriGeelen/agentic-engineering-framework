@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4317: A session that cd's into a foreign project (its own .framework.yaml) is trapped: hooks re-derive PROJECT_ROOT from cwd, boundary gate blocks the cd back, budget gate reads the wrong CONTEXT_WINDOW
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T20:52:24Z
+# ============================================================================
+
+task_id: T-4317
+task_name: "A session that cd's into a foreign project (its own .framework.yaml) is trapped: hooks re-derive PROJECT_ROOT from cwd, boundary gate blocks the cd back, budget gate reads the wrong CONTEXT_WINDOW"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T17:02:52Z
+completed: 2026-10-18T20:46:32Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T19:05:50+02:00
+last_commit: 2026-10-18T22:30:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record dimitri-mint-dev's localisation (T-2446 cwd-wins branch applies in hook context). in fw hook context a valid CLAUDE_PROJECT_DIR wins over the cwd's project (T-2446 kept for non-hook calls)
+
+# Key outcomes
+outcomes:
+  - '`fw hook NAME` with a valid CLAUDE_PROJECT_DIR=A and cwd inside a foreign project B resolves PROJECT_ROOT=A (main path and G-118 fast path)'
+  - 'check-project-boundary allows `cd A` from a cwd inside foreign project B when CLAUDE_PROJECT_DIR=A'
+  - 'A non-hook fw call with a stale CLAUDE_PROJECT_DIR and cwd in project B still resolves B (T-2446 kept)'
+  - 'Regression bats `tests/unit/t4317_hook_project_dir_wins.bats` fails without the fix and passes with it; existing T-2390/T-2446 tests and upgrade_fresh_machine_simulation.bats stay green'
+  - 'Vendored copy synced (`bin/fw vendor self --check` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4317-a-session-that-cds-into-a-foreign-projec.md'
+  - 'tests/unit/t4317_hook_project_dir_wins.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T19:05:50'
+    action: 'T-4317: record dimitri-mint-dev''s localisation (T-2446 cwd-wins branch applies in hook context)'
+  - time: '2026-10-18T22:30:47'
+    action: 'T-4317: in fw hook context a valid CLAUDE_PROJECT_DIR wins over the cwd''s project (T-2446 kept for non-hook calls)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 223 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, hooks, project-root, greenfield]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 223
+  commits: 2
+  files_changed: 4
+  lines_added: 180
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4317-a-session-that-cds-into-a-foreign-projec.md
+generated_by: context-agent-hybrid

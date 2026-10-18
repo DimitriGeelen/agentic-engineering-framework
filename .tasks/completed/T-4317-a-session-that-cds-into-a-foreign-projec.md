@@ -1,27 +1,32 @@
 ---
-id: T-4315
-name: "Sidecar watcher was explicitly stopped at 2026-10-18T14:15:32Z by an unknown
-  caller; the keep-alive cron then leaves it down"
+id: T-4317
+name: "A session that cd's into a foreign project (its own .framework.yaml) is trapped:
+  hooks re-derive PROJECT_ROOT from cwd, boundary gate blocks the cd back, budget
+  gate reads the wrong CONTEXT_WINDOW"
 description: >
-  Evidence (.context/sidecar/watcher/events.jsonl, autostart.log): WATCHER_STOPPED
-  pid 1782010 and SUPERVISOR_STOPPED pid 1781797 at 14:15:32Z, a clean stop that marks
-  the sidecar 'explicitly stopped', so sidecar-ensure-1m and SessionStart autostart
-  both leave it down (autostart.log: 8 'explicitly stopped' lines). Doctor then FAILs
-  and pre-push FAILs 'Sidecar watcher NOT live'; this session had no peer-mail wake-up
-  until a manual fw sidecar start at 16:15Z. The time matches the operator restarting
-  the session; no hook in .claude/settings.json calls stop, and the only test that
-  stops a sidecar (t3959) uses a stub. Same day: WATCHER_DIED rc=-9 at 10:19Z, 24
-  WATCHER_HUNG_KILLED in the log. Find the caller: record argv/ppid/session in the
-  stop event, then decide whether an explicit stop should survive a session restart.
+  dimitri-mint-dev field case (msg f8eacc3f, 2026-10-18): one 'cd <unpacked test record>/proj/.context/...
+  && ls' in the orchestrator session; the record holds its own .framework.yaml. From
+  then on every hook resolved PROJECT_ROOT to the record: check-project-boundary blocked
+  cd back to the real root and Edit of the real .tasks; budget-gate read the record's
+  config (no CONTEXT_WINDOW -> default) and declared CRITICAL at 378K while the real
+  window is 800K; an auto-handover started and non-wrap-up Bash was blocked. Only
+  the operator's '! cd' freed it. Same class as greenfield run 4 F-20/F-21/F-25. bin/fw
+  prefers a valid CLAUDE_PROJECT_DIR (T-2390, bin/fw:270-290) only when PROJECT_ROOT
+  is empty or stale, and the G-118 hook fast path (bin/fw:81) likewise; find which
+  leg lets cwd win (an inherited PROJECT_ROOT, a hook script deriving the root itself,
+  or the consumer's vendored version). Fix direction: pin the project at session start
+  (CLAUDE_PROJECT_DIR) for every hook; at minimum check-project-boundary always allows
+  cd to the session-start root. Regression test: a hook run with CLAUDE_PROJECT_DIR=A
+  and cwd inside a foreign project B resolves A.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [sidecar, bug, reliability]
-components: []
+horizon: null
+tags: [bug, hooks, project-root, greenfield]
+components: [bin/fw]
 related_tasks: []
-origin: {kind: "agent", source: "T-4246"}
+origin: {kind: "peer", source: "dimitri-mint-dev"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -48,9 +53,9 @@ origin: {kind: "agent", source: "T-4246"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T16:43:22Z
-last_update: 2026-10-18T20:20:47Z
-date_finished:
+created: 2026-10-18T17:02:52Z
+last_update: 2026-10-18T20:46:32Z
+date_finished: 2026-10-18T20:46:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,17 +67,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-18T16:45:40Z'
+  - ts: '2026-10-18T17:15:47Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=287,acs=4)
+      (workflow:build); effort=8 (lines=296,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-18T16:46:41Z'
+  - ts: '2026-10-18T17:16:53Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -91,27 +96,30 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4315: Sidecar watcher was explicitly stopped at 2026-10-18T14:15:32Z by an unknown caller; the keep-alive cron then leaves it down
+# T-4317: A session that cd's into a foreign project (its own .framework.yaml) is trapped: hooks re-derive PROJECT_ROOT from cwd, boundary gate blocks the cd back, budget gate reads the wrong CONTEXT_WINDOW
 
 ## Context
 
-Second occurrence: WATCHER_STOPPED pid 3180730 / SUPERVISOR_STOPPED pid 3180667 at 2026-10-18T17:35:19Z, during the
-full unit-suite run (16:39:49Z-17:36:29Z), one minute before it finished. The 14:15:32Z stop also fell while workers
-were running test files. Strong suspect: a test that stops THIS project's sidecar rather than its fixture's. Candidates
-that call stop/disable: test_sidecar_watcher_t3684.py (_cli(root, "stop")), test_t4208_receiver_single_instance.py,
-test_sidecar_receiver_t3693.py, test_sidecar_waiting_t3782.py, test_t4283_orphan_receiver_reclaim.py
-(watcher.stop_all / disable; fixture sets PROJECT_ROOT to tmp, so probably not). Bisect by running each alone with the
-real watcher live and checking events.jsonl afterwards.
+Localised by dimitri-mint-dev (msg 8b238004), consistent with our tip: vendored 1.8.10; PROJECT_ROOT and
+FRAMEWORK_ROOT unset; hooks wired as `${CLAUDE_PROJECT_DIR}/.agentic-framework/bin/fw hook NAME` with a valid
+CLAUDE_PROJECT_DIR. The T-2446 branch (bin/fw ~285-320 at our tip) trusts CLAUDE_PROJECT_DIR only when the cwd is
+not "genuinely inside another project": find_project_root from the hook's cwd (the record, which has its own
+.framework.yaml) returns a different root, so PROJECT_ROOT becomes the cwd's root. T-2446 exists for long-lived
+daemon shells that inherit a stale CLAUDE_PROJECT_DIR; in a Claude Code hook the cwd is only where the agent last
+cd'd. Blocks seen: check-project-boundary (cd back, Edit of own .tasks), budget-gate (record's 300K default),
+check-active-task (record's empty focus). Fix direction: in hook context (`fw hook`, where Claude Code sets
+CLAUDE_PROJECT_DIR for this session), a valid CLAUDE_PROJECT_DIR wins; keep T-2446 for non-hook invocations; regression
+test for both.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] The test that stops this project's real sidecar is identified by running candidates alone against a live real watcher (named with file + test in ## RCA)
-- [x] That test's isolation is fixed so it cannot reach the real project's sidecar (PROJECT_ROOT / sidecar dirs pointed at tmp)
-- [x] WATCHER_STOPPED / SUPERVISOR_STOPPED events record who stopped them (pid, ppid, argv, PROJECT_ROOT)
-- [x] Regression test fails without the fix and passes with it
-- [x] Real watcher restarted and live at the end (bin/fw sidecar liveness)
+- [x] `fw hook NAME` with a valid CLAUDE_PROJECT_DIR=A and cwd inside a foreign project B resolves PROJECT_ROOT=A (main path and G-118 fast path)
+- [x] check-project-boundary allows `cd A` from a cwd inside foreign project B when CLAUDE_PROJECT_DIR=A
+- [x] A non-hook fw call with a stale CLAUDE_PROJECT_DIR and cwd in project B still resolves B (T-2446 kept)
+- [x] Regression bats `tests/unit/t4317_hook_project_dir_wins.bats` fails without the fix and passes with it; existing T-2390/T-2446 tests and upgrade_fresh_machine_simulation.bats stay green
+- [x] Vendored copy synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,22 +297,13 @@ real watcher live and checking events.jsonl afterwards.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4315_sidecar_stop_attribution.py > /tmp/.t4315a 2>&1 && grep -q "2 passed" /tmp/.t4315a
-python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4283_orphan_receiver_reclaim.py > /tmp/.t4315b 2>&1 && grep -q passed /tmp/.t4315b && ! grep -q failed /tmp/.t4315b
-! grep -qE "^\s*monkeypatch\.undo\(\)" tests/unit/test_t4283_orphan_receiver_reclaim.py
-grep -q "_tests_cannot_stop_the_real_sidecar" tests/unit/conftest.py
-grep -q '"STOP_REQUESTED"' lib/sidecar/watcher.py
+bash -n bin/fw
+timeout 300 bats tests/unit/t4317_hook_project_dir_wins.bats > /tmp/.t4317.out 2>&1 && ! grep -q "^not ok" /tmp/.t4317.out
+test "$(grep -c '# skip' /tmp/.t4317.out)" -eq 0
+timeout 600 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4317u.out 2>&1 && ! grep -q "^not ok" /tmp/.t4317u.out
 bin/fw vendor self --check
 
 ## RCA
-
-**Symptom:** the real watcher of this checkout was explicitly stopped three times on 2026-10-18 (14:15:32Z, 17:35:19Z, 19:09:33Z). The `stopped` marker made `sidecar-ensure-1m` and SessionStart autostart leave it down, so doctor and pre-push FAILed "Sidecar watcher NOT live" and peer mail stopped waking the session.
-
-**Root cause:** `tests/unit/test_t4283_orphan_receiver_reclaim.py::test_refused_start_leaves_the_live_stale_receiver_running`, in its `finally` (old line 185). It called `monkeypatch.undo()` to drop the `is_stale` patch, which also undid the fixture's `PROJECT_ROOT=<tmp>`. The next line, `cli.cmd_receiver_stop(...)`, then ran with the suite's PROJECT_ROOT. `agents/audit/unit-suite.sh:48` defaults that to the real checkout and exports it to every job. `cmd_receiver_stop` (lib/sidecar_cli.py) saw the real project enabled and called `watcher.stop_all()` on it, which writes the `stopped` marker and SIGTERMs the real supervisor and watcher; it also stopped the real receiver. The test's own comment, "cmd_receiver_stop alone left this receiver running", was this bug seen from the inside: the stop went to the wrong project. Confirmed by bisect: run alone with the real watcher live, this file and no other wrote the marker. The new attribution named the test (`caller_test` = that nodeid, `caller_project_root` = /opt/999-Agentic-Engineering-Framework). The pytest leg runs last, which is why the stops fell about a minute before suite end.
-
-**Why structurally allowed:** the test never failed. The stop happened in cleanup, against a project the assertions never looked at. `tests/unit/conftest.py` isolates the sidecar directories only for `test_sidecar_*` modules. The stop event was written by the watcher itself, which never learns who sent the SIGTERM, so nothing recorded the caller.
-
-**Prevention:** (1) `lib/sidecar/watcher.py` `stop_processes`/`stop_all` record `STOP_REQUESTED` with reason, caller pid/ppid/argv, parent cmdline, PROJECT_ROOT, cwd and the PYTEST/BATS test name before any signal is sent, so the next stop can be attributed. (2) The autouse fixture `_tests_cannot_stop_the_real_sidecar` in `tests/unit/conftest.py` fails any unit test that creates this checkout's `stopped` marker, naming the test. Verified: the unfixed test from HEAD errors under it. (3) The test now scopes its patch with `monkeypatch.context()` and asserts PROJECT_ROOT is still the fixture root before cleanup.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -319,6 +318,14 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after one `cd` into a directory holding its own `.framework.yaml` (an unpacked test record), every hook in the session resolved PROJECT_ROOT to that directory: check-project-boundary refused the `cd` back and Edits of the real `.tasks`, budget-gate read the record's (absent) CONTEXT_WINDOW and declared CRITICAL at 378K of 800K, check-active-task read the record's empty focus. Only an operator `! cd` freed the session.
+
+**Root cause:** `bin/fw` "Resolve PROJECT_ROOT" block, T-2446 branch (bin/fw:296-312 before the fix): a valid CLAUDE_PROJECT_DIR was trusted only when `find_project_root` from the cwd found no *other* real project. That rule exists for long-lived daemon shells that inherit a stale CLAUDE_PROJECT_DIR, but it applied to `fw hook NAME` too, where Claude Code sets CLAUDE_PROJECT_DIR for this session and the cwd is only where the agent last cd'd. The T-3285/T-4218 leaked-root block (bin/fw:~360) ranked cwd over CLAUDE_PROJECT_DIR the same way. (The G-118 degraded fast path at bin/fw:81 already preferred CLAUDE_PROJECT_DIR; it was not the leg.)
+
+**Why structurally allowed:** the T-2446 tests pinned resolution only through `fw version` (non-hook), so "hook vs daemon shell" was never a dimension of the contract; no test ran a hook with cwd inside a second project.
+
+**Prevention:** `tests/unit/t4317_hook_project_dir_wins.bats` runs the real `fw hook check-project-boundary` with CLAUDE_PROJECT_DIR=A and cwd inside foreign project B (plain and with a leaked `_FW_PATHS_DERIVED_BY` root) and asserts A is the root; t3 pins T-2446 for non-hook calls. Fixtures are under /var/tmp because the boundary gate allows any cd into /tmp, which would make the test pass vacuously.
 
 ## Evolution
 
@@ -396,11 +403,28 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-18T16:43:22Z — task-created [task-create-agent]
+### 2026-10-18T17:02:52Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4315-sidecar-watcher-was-explicitly-stopped-a.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4317-a-session-that-cds-into-a-foreign-projec.md
 - **Context:** Initial task creation
 
 ### 2026-10-18T20:20:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-701080da
+- **Timestamp:** 2026-10-18T20:52:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T20:46:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

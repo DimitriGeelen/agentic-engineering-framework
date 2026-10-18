@@ -1,20 +1,27 @@
 ---
-id: T-4228
-name: "fw verify-queue --task <id> on a red task refreshes its rotation timestamp,
-  so the next audit slice skips it while it is still red (CTL-013b): following the
-  rail's own mitigation clears the signal"
+id: T-4315
+name: "Sidecar watcher was explicitly stopped at 2026-10-18T14:15:32Z by an unknown
+  caller; the keep-alive cron then leaves it down"
 description: >
-  1023 msg cc1a5259 (re-probe on vendored 1.8.10; detail in their docs/reports/T-126-sq001-reprobe.md)
-  item 2. Fix: an explicit single-task verify must not advance the rotation ts of
-  a task that is still red (or must re-queue it).
+  Evidence (.context/sidecar/watcher/events.jsonl, autostart.log): WATCHER_STOPPED
+  pid 1782010 and SUPERVISOR_STOPPED pid 1781797 at 14:15:32Z, a clean stop that marks
+  the sidecar 'explicitly stopped', so sidecar-ensure-1m and SessionStart autostart
+  both leave it down (autostart.log: 8 'explicitly stopped' lines). Doctor then FAILs
+  and pre-push FAILs 'Sidecar watcher NOT live'; this session had no peer-mail wake-up
+  until a manual fw sidecar start at 16:15Z. The time matches the operator restarting
+  the session; no hook in .claude/settings.json calls stop, and the only test that
+  stops a sidecar (t3959) uses a stub. Same day: WATCHER_DIED rc=-9 at 10:19Z, 24
+  WATCHER_HUNG_KILLED in the log. Find the caller: record argv/ppid/session in the
+  stop event, then decide whether an explicit stop should survive a session restart.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
+horizon: null
+tags: [sidecar, bug, reliability]
+components: [lib/sidecar/watcher.py]
 related_tasks: []
+origin: {kind: "agent", source: "T-4246"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -41,9 +48,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T13:09:12Z
-last_update: 2026-10-18T20:38:40Z
-date_finished:
+created: 2026-10-18T16:43:22Z
+last_update: 2026-10-18T20:52:52Z
+date_finished: 2026-10-18T20:52:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,7 +62,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-17T13:15:29Z'
+  - ts: '2026-10-18T16:45:40Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -65,7 +72,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-17T13:16:16Z'
+  - ts: '2026-10-18T16:46:41Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -84,20 +91,27 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4228: fw verify-queue --task <id> on a red task refreshes its rotation timestamp, so the next audit slice skips it while it is still red (CTL-013b): following the rail's own mitigation clears the signal
+# T-4315: Sidecar watcher was explicitly stopped at 2026-10-18T14:15:32Z by an unknown caller; the keep-alive cron then leaves it down
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Second occurrence: WATCHER_STOPPED pid 3180730 / SUPERVISOR_STOPPED pid 3180667 at 2026-10-18T17:35:19Z, during the
+full unit-suite run (16:39:49Z-17:36:29Z), one minute before it finished. The 14:15:32Z stop also fell while workers
+were running test files. Strong suspect: a test that stops THIS project's sidecar rather than its fixture's. Candidates
+that call stop/disable: test_sidecar_watcher_t3684.py (_cli(root, "stop")), test_t4208_receiver_single_instance.py,
+test_sidecar_receiver_t3693.py, test_sidecar_waiting_t3782.py, test_t4283_orphan_receiver_reclaim.py
+(watcher.stop_all / disable; fixture sets PROJECT_ROOT to tmp, so probably not). Bisect by running each alone with the
+real watcher live and checking events.jsonl afterwards.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw verify-queue --task T-X` on a still-red task does not advance its rotation ts (lib/verify_queue.py), so it keeps its place at the head of the rotation
-- [x] A green task verified with --task still advances its ts
-- [x] Regression test in tests/unit/t2765_verify_queue.bats fails without the fix and passes with it
-- [x] `bin/fw vendor self --check` clean
+- [x] The test that stops this project's real sidecar is identified by running candidates alone against a live real watcher (named with file + test in ## RCA)
+- [x] That test's isolation is fixed so it cannot reach the real project's sidecar (PROJECT_ROOT / sidecar dirs pointed at tmp)
+- [x] WATCHER_STOPPED / SUPERVISOR_STOPPED events record who stopped them (pid, ppid, argv, PROJECT_ROOT)
+- [x] Regression test fails without the fix and passes with it
+- [x] Real watcher restarted and live at the end (bin/fw sidecar liveness)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -146,10 +160,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-bats tests/unit/t2765_verify_queue.bats > /tmp/.t4228.out 2>&1 && ! grep -q "^not ok" /tmp/.t4228.out
-grep -q "T-4228" tests/unit/t2765_verify_queue.bats
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -279,13 +289,22 @@ bin/fw vendor self --check
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4315_sidecar_stop_attribution.py > /tmp/.t4315a 2>&1 && grep -q "2 passed" /tmp/.t4315a
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4283_orphan_receiver_reclaim.py > /tmp/.t4315b 2>&1 && grep -q passed /tmp/.t4315b && ! grep -q failed /tmp/.t4315b
+! grep -qE "^\s*monkeypatch\.undo\(\)" tests/unit/test_t4283_orphan_receiver_reclaim.py
+grep -q "_tests_cannot_stop_the_real_sidecar" tests/unit/conftest.py
+grep -q '"STOP_REQUESTED"' lib/sidecar/watcher.py
+bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** `fw verify-queue --task T-X` on a red task made the next rotation treat it as freshly checked; the audit slice could PASS while the task was still red.
-**Root cause:** lib/verify_queue.py main() (~line 301) writes `state[tid]["ts"] = now` for every verified task regardless of verdict, including explicit `--task` runs; select() sorts by ts, so a red task drops to the back.
-**Why structurally allowed:** the rotation ts conflated "was looked at" with "was verified green"; no test pinned red-task rotation behaviour.
-**Prevention:** a red task keeps its prior ts (status/failed still recorded); regression test in t2765_verify_queue.bats.
+**Symptom:** the real watcher of this checkout was explicitly stopped three times on 2026-10-18 (14:15:32Z, 17:35:19Z, 19:09:33Z). The `stopped` marker made `sidecar-ensure-1m` and SessionStart autostart leave it down, so doctor and pre-push FAILed "Sidecar watcher NOT live" and peer mail stopped waking the session.
+
+**Root cause:** `tests/unit/test_t4283_orphan_receiver_reclaim.py::test_refused_start_leaves_the_live_stale_receiver_running`, in its `finally` (old line 185). It called `monkeypatch.undo()` to drop the `is_stale` patch, which also undid the fixture's `PROJECT_ROOT=<tmp>`. The next line, `cli.cmd_receiver_stop(...)`, then ran with the suite's PROJECT_ROOT. `agents/audit/unit-suite.sh:48` defaults that to the real checkout and exports it to every job. `cmd_receiver_stop` (lib/sidecar_cli.py) saw the real project enabled and called `watcher.stop_all()` on it, which writes the `stopped` marker and SIGTERMs the real supervisor and watcher; it also stopped the real receiver. The test's own comment, "cmd_receiver_stop alone left this receiver running", was this bug seen from the inside: the stop went to the wrong project. Confirmed by bisect: run alone with the real watcher live, this file and no other wrote the marker. The new attribution named the test (`caller_test` = that nodeid, `caller_project_root` = /opt/999-Agentic-Engineering-Framework). The pytest leg runs last, which is why the stops fell about a minute before suite end.
+
+**Why structurally allowed:** the test never failed. The stop happened in cleanup, against a project the assertions never looked at. `tests/unit/conftest.py` isolates the sidecar directories only for `test_sidecar_*` modules. The stop event was written by the watcher itself, which never learns who sent the SIGTERM, so nothing recorded the caller.
+
+**Prevention:** (1) `lib/sidecar/watcher.py` `stop_processes`/`stop_all` record `STOP_REQUESTED` with reason, caller pid/ppid/argv, parent cmdline, PROJECT_ROOT, cwd and the PYTEST/BATS test name before any signal is sent, so the next stop can be attributed. (2) The autouse fixture `_tests_cannot_stop_the_real_sidecar` in `tests/unit/conftest.py` fails any unit test that creates this checkout's `stopped` marker, naming the test. Verified: the unfixed test from HEAD errors under it. (3) The test now scopes its patch with `monkeypatch.context()` and asserts PROJECT_ROOT is still the fixture root before cleanup.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -377,11 +396,28 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-17T13:09:12Z — task-created [task-create-agent]
+### 2026-10-18T16:43:22Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4228-fw-verify-queue---task-id-on-a-red-task-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4315-sidecar-watcher-was-explicitly-stopped-a.md
 - **Context:** Initial task creation
 
-### 2026-10-18T20:38:40Z — status-update [task-update-agent]
+### 2026-10-18T20:20:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-53ed2346
+- **Timestamp:** 2026-10-18T20:53:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T20:52:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

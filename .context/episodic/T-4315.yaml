@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4315: Sidecar watcher was explicitly stopped at 2026-10-18T14:15:32Z by an unknown caller; the keep-alive cron then leaves it down
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T20:54:01Z
+# ============================================================================
+
+task_id: T-4315
+task_name: "Sidecar watcher was explicitly stopped at 2026-10-18T14:15:32Z by an unknown caller; the keep-alive cron then leaves it down"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T16:43:22Z
+completed: 2026-10-18T20:52:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T19:51:34+02:00
+last_commit: 2026-10-18T22:41:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  second occurrence during the unit-suite run (17:35:19Z); test pollution suspected, candidates listed. test_t4283 cleanup stopped the REAL sidecar; stop requests now record their caller
+
+# Key outcomes
+outcomes:
+  - 'The test that stops this project''s real sidecar is identified by running candidates alone against a live real watcher (named with file + test in ## RCA)'
+  - 'That test''s isolation is fixed so it cannot reach the real project''s sidecar (PROJECT_ROOT / sidecar dirs pointed at tmp)'
+  - 'WATCHER_STOPPED / SUPERVISOR_STOPPED events record who stopped them (pid, ppid, argv, PROJECT_ROOT)'
+  - 'Regression test fails without the fix and passes with it'
+  - 'Real watcher restarted and live at the end (bin/fw sidecar liveness)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/watcher.py'
+  - 'lib/sidecar/watcher.py'
+  - '.tasks/active/T-4315-sidecar-watcher-was-explicitly-stopped-a.md'
+  - 'tests/unit/conftest.py'
+  - 'tests/unit/test_t4283_orphan_receiver_reclaim.py'
+  - 'tests/unit/test_t4315_sidecar_stop_attribution.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T19:51:34'
+    action: 'T-4315: second occurrence during the unit-suite run (17:35:19Z); test pollution suspected, candidates listed'
+  - time: '2026-10-18T22:41:58'
+    action: 'T-4315: test_t4283 cleanup stopped the REAL sidecar; stop requests now record their caller'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 249 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [sidecar, bug, reliability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 249
+  commits: 2
+  files_changed: 6
+  lines_added: 209
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4315-sidecar-watcher-was-explicitly-stopped-a.md
+generated_by: context-agent-hybrid

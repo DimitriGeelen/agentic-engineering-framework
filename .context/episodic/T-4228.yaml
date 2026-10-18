@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4228: fw verify-queue --task <id> on a red task refreshes its rotation timestamp, so the next audit slice skips it while it is still red (CTL-013b): following the rail's own mitigation clears the signal
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T20:55:53Z
+# ============================================================================
+
+task_id: T-4228
+task_name: "fw verify-queue --task <id> on a red task refreshes its rotation timestamp, so the next audit slice skips it while it is still red (CTL-013b): following the rail's own mitigation clears the signal"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T13:09:12Z
+completed: 2026-10-18T20:55:17Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-18T22:40:38+02:00
+last_commit: 2026-10-18T22:40:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  verify-queue --task keeps the rotation ts of a still-red task (CTL-013b)
+
+# Key outcomes
+outcomes:
+  - '`fw verify-queue --task T-X` on a still-red task does not advance its rotation ts (lib/verify_queue.py), so it keeps its place at the head of the rotation'
+  - 'A green task verified with --task still advances its ts'
+  - 'Regression test in tests/unit/t2765_verify_queue.bats fails without the fix and passes with it'
+  - '`bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verify_queue.py'
+  - 'lib/verify_queue.py'
+  - '.tasks/active/T-4228-fw-verify-queue---task-id-on-a-red-task-.md'
+  - 'tests/unit/t2765_verify_queue.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T22:40:38'
+    action: 'T-4228: verify-queue --task keeps the rotation ts of a still-red task (CTL-013b)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1906 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1906
+  commits: 1
+  files_changed: 4
+  lines_added: 55
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4228-fw-verify-queue---task-id-on-a-red-task-.md
+generated_by: context-agent-hybrid

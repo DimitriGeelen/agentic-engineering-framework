@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4227: fw_hook_crash_trap classifies a usage-error exit 1 as a hook crash (HOOK CRASHED + .hook-crashes.log), and nothing acknowledges or rotates that log so doctor's WARN total never goes down
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T20:54:44Z
+# ============================================================================
+
+task_id: T-4227
+task_name: "fw_hook_crash_trap classifies a usage-error exit 1 as a hook crash (HOOK CRASHED + .hook-crashes.log), and nothing acknowledges or rotates that log so doctor's WARN total never goes down"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T13:08:51Z
+completed: 2026-10-18T20:54:24Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-17T15:10:58+02:00
+last_commit: 2026-10-18T22:38:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file 1023's 1.8.10 re-probe findings (T-4227..T-4231). usage errors no longer logged as hook crashes; lib/hook-crashes.sh acknowledge empties the crash log. fw doctor hook-crashes {count|show|acknowledge} route; doctor's crash WARN names it; route test (fixture made a project so it cannot read the live log). acknowledge 32 handled hook-crash entries (31 test-isolation noise, fixed; 1 crash from 2026-04-03) — doctor's crash count back to zero
+
+# Key outcomes
+outcomes:
+  - '`lib/config.sh` gains `fw_hook_usage_exit` (marks the exit as a usage error); `fw_hook_crash_trap` skips the banner and the log append when that marker is set'
+  - '`agents/context/checkpoint.sh` with no/unknown argument exits 1 via the usage path: prints its Usage line, no HOOK CRASHED, `.hook-crashes.log` untouched'
+  - 'A genuine crash (unmarked non-0/non-2 exit) still prints HOOK CRASHED and appends to `.hook-crashes.log`'
+  - '`lib/hook-crashes.sh acknowledge` moves live entries to `.hook-crashes.acknowledged.log` (history kept) and empties the live log, so doctor''s count returns to zero; `count` prints the live count'
+  - 'Regression bats `tests/unit/t4227_hook_usage_not_crash.bats` covers all three and passes; bin/fw route left to parent (not edited)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'acknowledge 32 handled hook-crash entries (31 test-isolation noise, fixed; 1 crash from 2026-04-03) — doctor''s crash count back to zero'
+    source: git-mined
+  - description: 'fw doctor hook-crashes {count|show|acknowledge} route; doctor''s crash WARN names it; route test (fixture made a project so it cannot read the live log)'
+    source: git-mined
+  - description: 'usage errors no longer logged as hook crashes; lib/hook-crashes.sh acknowledge empties the crash log'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/hook-crashes.sh'
+  - 'agents/context/checkpoint.sh'
+  - 'bin/fw'
+  - '.context/working/.hook-crashes.acknowledged.log'
+  - '.context/working/.hook-crashes.log'
+  - '.fabric/components/lib-hook-crashes.yaml'
+  - 'lib/config.sh'
+  - 'lib/hook-crashes.sh'
+  - '.tasks/active/T-4227-fwhookcrashtrap-classifies-a-usage-error.md'
+  - '.tasks/active/T-4228-fw-verify-queue---task-id-on-a-red-task-.md'
+  - '.tasks/active/T-4229-bvp-estimator-v1-heuristic-scores-d1-d4-.md'
+  - '.tasks/active/T-4230-fw-handover-auto-commit-is-attributed-to.md'
+  - '.tasks/active/T-4231-consumers-get-16-runtime-files-under-con.md'
+  - 'tests/unit/t4227_hook_usage_not_crash.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T15:10:58'
+    action: 'T-4227: file 1023''s 1.8.10 re-probe findings (T-4227..T-4231)'
+  - time: '2026-10-18T22:25:20'
+    action: 'T-4227: usage errors no longer logged as hook crashes; lib/hook-crashes.sh acknowledge empties the crash log'
+  - time: '2026-10-18T22:33:14'
+    action: 'T-4227: fw doctor hook-crashes {count|show|acknowledge} route; doctor''s crash WARN names it; route test (fixture made a project so it cannot read the live log)'
+  - time: '2026-10-18T22:38:20'
+    action: 'T-4227: acknowledge 32 handled hook-crash entries (31 test-isolation noise, fixed; 1 crash from 2026-04-03) — doctor''s crash count back to zero'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1905 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1905
+  commits: 4
+  files_changed: 17
+  lines_added: 2015
+  lines_removed: 36
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4227-fwhookcrashtrap-classifies-a-usage-error.md
+generated_by: context-agent-hybrid

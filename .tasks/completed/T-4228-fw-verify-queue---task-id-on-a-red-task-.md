@@ -1,21 +1,19 @@
 ---
-id: T-4227
-name: "fw_hook_crash_trap classifies a usage-error exit 1 as a hook crash (HOOK CRASHED
-  + .hook-crashes.log), and nothing acknowledges or rotates that log so doctor's WARN
-  total never goes down"
+id: T-4228
+name: "fw verify-queue --task <id> on a red task refreshes its rotation timestamp,
+  so the next audit slice skips it while it is still red (CTL-013b): following the
+  rail's own mitigation clears the signal"
 description: >
   1023 msg cc1a5259 (re-probe on vendored 1.8.10; detail in their docs/reports/T-126-sq001-reprobe.md)
-  item 1: repro PROJECT_ROOT=$(mktemp -d) bash agents/context/checkpoint.sh (no argument)
-  prints HOOK CRASHED and appends to .hook-crashes.log (lib/config.sh:172 fw_hook_crash_trap).
-  Fix: distinguish a usage error from a crash; add an acknowledge/rotate verb so doctor's
-  count can return to zero.
+  item 2. Fix: an explicit single-task verify must not advance the rotation ts of
+  a task that is still red (or must re-queue it).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/verify_queue.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,9 +41,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T13:08:51Z
-last_update: 2026-10-18T20:21:03Z
-date_finished:
+created: 2026-10-17T13:09:12Z
+last_update: 2026-10-18T20:55:17Z
+date_finished: 2026-10-18T20:55:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -86,7 +84,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4227: fw_hook_crash_trap classifies a usage-error exit 1 as a hook crash (HOOK CRASHED + .hook-crashes.log), and nothing acknowledges or rotates that log so doctor's WARN total never goes down
+# T-4228: fw verify-queue --task <id> on a red task refreshes its rotation timestamp, so the next audit slice skips it while it is still red (CTL-013b): following the rail's own mitigation clears the signal
 
 ## Context
 
@@ -96,11 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `lib/config.sh` gains `fw_hook_usage_exit` (marks the exit as a usage error); `fw_hook_crash_trap` skips the banner and the log append when that marker is set
-- [x] `agents/context/checkpoint.sh` with no/unknown argument exits 1 via the usage path: prints its Usage line, no HOOK CRASHED, `.hook-crashes.log` untouched
-- [x] A genuine crash (unmarked non-0/non-2 exit) still prints HOOK CRASHED and appends to `.hook-crashes.log`
-- [x] `lib/hook-crashes.sh acknowledge` moves live entries to `.hook-crashes.acknowledged.log` (history kept) and empties the live log, so doctor's count returns to zero; `count` prints the live count
-- [x] Regression bats `tests/unit/t4227_hook_usage_not_crash.bats` covers all three and passes; bin/fw route left to parent (not edited)
+- [x] `fw verify-queue --task T-X` on a still-red task does not advance its rotation ts (lib/verify_queue.py), so it keeps its place at the head of the rotation
+- [x] A green task verified with --task still advances its ts
+- [x] Regression test in tests/unit/t2765_verify_queue.bats fails without the fix and passes with it
+- [x] `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -149,6 +146,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/t2765_verify_queue.bats > /tmp/.t4228.out 2>&1 && ! grep -q "^not ok" /tmp/.t4228.out
+grep -q "T-4228" tests/unit/t2765_verify_queue.bats
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -278,13 +279,13 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-bash -n lib/config.sh && bash -n lib/hook-crashes.sh && bash -n agents/context/checkpoint.sh
-timeout 300 bats tests/unit/t4227_hook_usage_not_crash.bats > /tmp/.t4227.out 2>&1 && ! grep -q "^not ok" /tmp/.t4227.out
-test "$(grep -c '# skip' /tmp/.t4227.out)" -eq 0
-d=$(mktemp -d); mkdir -p "$d/.context/working"; out=$(PROJECT_ROOT="$d" bash agents/context/checkpoint.sh 2>&1); ! echo "$out" | grep -q "HOOK CRASHED" && test ! -s "$d/.context/working/.hook-crashes.log"
-bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** `fw verify-queue --task T-X` on a red task made the next rotation treat it as freshly checked; the audit slice could PASS while the task was still red.
+**Root cause:** lib/verify_queue.py main() (~line 301) writes `state[tid]["ts"] = now` for every verified task regardless of verdict, including explicit `--task` runs; select() sorts by ts, so a red task drops to the back.
+**Why structurally allowed:** the rotation ts conflated "was looked at" with "was verified green"; no test pinned red-task rotation behaviour.
+**Prevention:** a red task keeps its prior ts (status/failed still recorded); regression test in t2765_verify_queue.bats.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -299,14 +300,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `PROJECT_ROOT=$(mktemp -d) bash agents/context/checkpoint.sh` (no argument) prints the HOOK CRASHED banner and appends a CRASH line to `.context/working/.hook-crashes.log`; `fw doctor` then WARNs on hook crashes, and nothing ever lowers that count (1023 msg cc1a5259).
-
-**Root cause:** `fw_hook_crash_trap` (lib/config.sh:172-188) classifies purely by exit code: anything not 0 and not 2 is a crash. The hook's own usage branch (agents/context/checkpoint.sh:766-768) exits 1, so a deliberate usage refusal is indistinguishable from an unexpected failure. Separately, `.hook-crashes.log` is append-only with no consumer that acknowledges entries; doctor (bin/fw:4320) counts every line ever written.
-
-**Why structurally allowed:** the T-821 trap was written for PreToolUse payload paths, where exit 1 really is unexpected; the scripts' manual-invocation usage paths were never tested against it, and no test asserted that the log could return to empty.
-
-**Prevention:** usage paths now go through `fw_hook_usage_exit`, which marks the exit so the trap stays silent; `lib/hook-crashes.sh acknowledge` archives and empties the live log; `tests/unit/t4227_hook_usage_not_crash.bats` pins usage-silent, crash-still-logged and acknowledge-to-zero.
 
 ## Evolution
 
@@ -384,11 +377,28 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-17T13:08:51Z — task-created [task-create-agent]
+### 2026-10-17T13:09:12Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4227-fwhookcrashtrap-classifies-a-usage-error.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4228-fw-verify-queue---task-id-on-a-red-task-.md
 - **Context:** Initial task creation
 
-### 2026-10-18T20:21:03Z — status-update [task-update-agent]
+### 2026-10-18T20:38:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b4465c64
+- **Timestamp:** 2026-10-18T20:55:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T20:55:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
