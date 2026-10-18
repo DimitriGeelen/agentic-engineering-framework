@@ -457,6 +457,17 @@ do_project_init() {
     # variables. A leaked FRAMEWORK_ROOT or PROJECT_ROOT (from another install)
     # made it source <target>/lib/init.sh, so the run must not inherit them.
     # Its output is kept so a [x] step inside it counts against this install.
+    # T-4298: say so once, naming what was ignored — the silent ignore is what
+    # left the later fw calls warning with no explanation of where it came from.
+    local _v ignored_vars=""
+    for _v in FRAMEWORK_ROOT PROJECT_ROOT TASKS_DIR CONTEXT_DIR _FW_PATHS_DERIVED_BY FW_ROUTED_FROM; do
+        if [[ -n "${!_v:-}" ]]; then
+            ignored_vars+="${ignored_vars:+, }$_v"
+        fi
+    done
+    if [[ -n "$ignored_vars" ]]; then
+        info "Ignoring inherited environment for fw init (set in this shell): ${ignored_vars}"
+    fi
     local init_log init_rc=0
     init_log=$(mktemp -t agentic-fw-init-XXXXXX)
     (cd "$INSTALL_DIR" && env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR \

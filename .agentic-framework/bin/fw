@@ -1370,7 +1370,14 @@ fi
 # tree (lib/ and agents/ present). A leaked value pointing at a target project
 # (dimitri-mint-dev, 2026-10-17) made `fw init` source <target>/lib/init.sh.
 if [ -n "${FRAMEWORK_ROOT:-}" ] && { [ ! -d "$FRAMEWORK_ROOT/lib" ] || [ ! -d "$FRAMEWORK_ROOT/agents" ]; }; then
-    echo "fw: inherited FRAMEWORK_ROOT=$FRAMEWORK_ROOT has no lib/ or agents/ — re-resolving" >&2
+    # T-4298: warn once per calling shell (marker keyed on the parent pid, which is the
+    # shell exporting the stale value), never from `fw hook` (hook stderr is agent-visible
+    # noise on every tool call). The re-resolve itself always happens.
+    _t4298_marker="${TMPDIR:-/tmp}/fw-inherited-root-warned.$(id -u 2>/dev/null || echo 0).$PPID"
+    if [ "${1:-}" != "hook" ] && [ ! -e "$_t4298_marker" ]; then
+        echo "fw: inherited FRAMEWORK_ROOT=$FRAMEWORK_ROOT has no lib/ or agents/ — re-resolving (shown once per shell)" >&2
+        : > "$_t4298_marker" 2>/dev/null || true
+    fi
     FRAMEWORK_ROOT=""
 fi
 if [ -z "${FRAMEWORK_ROOT:-}" ]; then

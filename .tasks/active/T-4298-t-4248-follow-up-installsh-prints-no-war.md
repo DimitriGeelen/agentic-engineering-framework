@@ -1,13 +1,19 @@
 ---
 id: T-4298
-name: "T-4248 follow-up: install.sh prints no warning when it ignores an inherited FRAMEWORK_ROOT; the vendored fw warns instead on every later call (noise) (dimitri-mint-dev v2.2 F-01/F-12)"
+name: "T-4248 follow-up: install.sh prints no warning when it ignores an inherited
+  FRAMEWORK_ROOT; the vendored fw warns instead on every later call (noise) (dimitri-mint-dev
+  v2.2 F-01/F-12)"
 description: >
-  Greenfield run 4: the env leak itself is fixed (WORKS), but the 'with a warning' half FAILS: install.sh says nothing; afterwards every fw call in the new project prints the inherited-FRAMEWORK_ROOT warning. Fix: install.sh warns once (naming the ignored variables) when it runs init under env -u; the vendored fw warns at most once per session or only when the inherited root is actually used for something.
+  Greenfield run 4: the env leak itself is fixed (WORKS), but the 'with a warning'
+  half FAILS: install.sh says nothing; afterwards every fw call in the new project
+  prints the inherited-FRAMEWORK_ROOT warning. Fix: install.sh warns once (naming
+  the ignored variables) when it runs init under env -u; the vendored fw warns at
+  most once per session or only when the inherited root is actually used for something.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T10:01:04Z
-last_update: 2026-10-18T10:01:04Z
-date_finished: null
+last_update: 2026-10-18T14:29:08Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T10:15:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T10:16:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4298: T-4248 follow-up: install.sh prints no warning when it ignores an inherited FRAMEWORK_ROOT; the vendored fw warns instead on every later call (noise) (dimitri-mint-dev v2.2 F-01/F-12)
@@ -62,8 +96,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] install.sh with FRAMEWORK_ROOT/PROJECT_ROOT set in its environment prints exactly one info line naming every ignored variable (test in tests/unit/t4298_inherited_root_warning.bats)
+- [x] install.sh with a clean environment prints no ignored-variable line (test in the same bats file)
+- [x] Two consecutive `bin/fw` calls with the same polluted FRAMEWORK_ROOT (no lib/ or agents/) print the "inherited FRAMEWORK_ROOT ... re-resolving" warning exactly once in total, not once per call (test in the same bats file)
+- [x] The new regression tests are run red before the source fix (recorded in the RCA) and green after it
+- [x] Existing T-4248 and T-4295 install/fixture tests stay green
+- [x] `bin/fw vendor self --check` is clean after the vendored-path edits
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,6 +150,11 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 600 bats tests/unit/t4298_inherited_root_warning.bats > .context/working/t4298-bats.out 2>&1 && ! grep -q "^not ok" .context/working/t4298-bats.out
+test "$(grep -c '# skip' .context/working/t4298-bats.out)" -eq 0
+timeout 600 bats tests/unit/t4248_install_inherited_env.bats > .context/working/t4298-t4248.out 2>&1 && ! grep -q "^not ok" .context/working/t4298-t4248.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -244,6 +287,11 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** install.sh silently ignored an inherited FRAMEWORK_ROOT/PROJECT_ROOT for fw init; afterwards every fw call in that shell printed "inherited FRAMEWORK_ROOT ... re-resolving".
+**Root cause:** install.sh do_project_init ran `env -u ...` with no notice; bin/fw (~line 1372) echoed the warning unconditionally on every invocation while the shell kept the stale export.
+**Why structurally allowed:** T-4248 tested only that init succeeded, never that the ignore was announced or the warning bounded. Red evidence: pre-fix bin/fw printed the warning 2x for 2 calls; post-fix 1x.
+**Prevention:** tests/unit/t4298_inherited_root_warning.bats (install notice once, none in clean env, fw once per shell, none on hook).
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -313,6 +361,11 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-18 — once-only mechanism
+- **Chose:** marker file ${TMPDIR:-/tmp}/fw-inherited-root-warned.<uid>.<PPID> (PPID = the calling shell that exported the stale value); skipped entirely when $1 is `hook`.
+- **Why:** bin/fw cannot unset the parent's env, so per-shell state must live outside the process; PPID gives "once per shell" and works without a TTY (testable; CI logs still show it once).
+- **Rejected:** TTY-only (hides it in logs); marker under .context/working (the stale root has no project, would write into the wrong tree); first-command-only (undetectable).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -338,3 +391,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4298-t-4248-follow-up-installsh-prints-no-war.md
 - **Context:** Initial task creation
+
+### 2026-10-18T11:29:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
