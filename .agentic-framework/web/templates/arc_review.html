@@ -93,9 +93,15 @@
 <div class="empty-rec" data-testid="arc-rec-missing">
     <strong>No close recommendation yet.</strong>
     {# T-3843: the close-out task (arc `close_task:`) carries it; the anchor is the fallback. #}
-    Neither the close-out task nor the anchor task has a <code>## Recommendation</code> block.
-    {% if recommendation and recommendation.expected_task %}
-    Open <a href="/tasks/{{ recommendation.expected_task }}">{{ recommendation.expected_task }}</a> and write one before closing
+    The agent has not filed a close recommendation (<code>CLOSE</code> or <code>KEEP-OPEN</code>) in the close-out or anchor task.
+    {% if recommendation and recommendation.ignored_task %}
+    <span data-testid="arc-rec-ignored">Task <a href="/tasks/{{ recommendation.ignored_task }}">{{ recommendation.ignored_task }}</a>
+    holds a <strong>{{ recommendation.ignored_verdict }}</strong> recommendation — a decision about starting the arc,
+    not whether it is done.</span>
+    {% endif %}
+    {% set _target = recommendation.expected_task if recommendation and recommendation.expected_task and not (recommendation.ignored_task and not arc.get('close_task')) else '' %}
+    {% if _target %}
+    Open <a href="/tasks/{{ _target }}">{{ _target }}</a> and write one before closing
     (<code>**Recommendation:** CLOSE</code> or KEEP-OPEN, <code>**Rationale:**</code>, <code>**Evidence:**</code>).
     {% else %}
     Set <code>close_task:</code> in the arc file to name the close-out task, and write one there.

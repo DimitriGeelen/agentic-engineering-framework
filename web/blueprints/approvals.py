@@ -788,7 +788,14 @@ def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
                      or str(arc.get("anchor_task") or "").strip())
         _rec_role = "close-out task" if str(arc.get("close_task") or "").strip() else "anchor"
         blocked_reason = ""
-        if not rec.get("present"):
+        if not rec.get("present") and rec.get("ignored_task"):
+            # T-4320: a GO / NO-GO / DEFER is about starting the arc, not closing it.
+            blocked_reason = (
+                f"{rec['ignored_task']} holds only Recommendation: {rec.get('ignored_verdict') or '?'} "
+                f"— not a close verdict (CLOSE or KEEP-OPEN). The agent sets close_task: on "
+                f"the arc and writes one there, with demo evidence."
+            )
+        elif not rec.get("present"):
             blocked_reason = (
                 f"{_rec_role} {anchor_id or '(none set)'} has no Recommendation section — the agent "
                 f"advisory that closure review reads. Until it is written the arc cannot be "

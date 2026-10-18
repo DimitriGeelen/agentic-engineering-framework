@@ -1353,7 +1353,32 @@ arc_review() {
         # shellcheck source=lib/task-audit.sh
         source "${FRAMEWORK_ROOT:-${PROJECT_ROOT:-.}}/lib/task-audit.sh" 2>/dev/null || true
     fi
-    if [ -z "$rec_file" ] || ! audit_inception_recommendation "$rec_file" 2>/dev/null; then
+    # T-4320: only CLOSE / KEEP-OPEN is a close verdict. An anchor inception's GO
+    # (or NO-GO / DEFER) decided whether to START the arc; accepting it here let
+    # that day-one verdict stand in for a close recommendation nobody had filed.
+    local rec_verdict=""
+    if [ -n "$rec_file" ] && audit_inception_recommendation "$rec_file" 2>/dev/null; then
+        rec_verdict=$(awk '
+            /^## Recommendation[[:space:]]*$/ { in_rec=1; next }
+            in_rec && /^#{2,} / { exit }
+            in_rec && /<!--/ { in_c=1 }
+            in_rec && !in_c && /^[[:space:]]*[-*]?[[:space:]]*\*\*Recommendation:\*\*/ {
+                sub(/^[[:space:]]*[-*]?[[:space:]]*\*\*Recommendation:\*\*[[:space:]]*\**/, "")
+                match($0, /^[A-Za-z_-]+/)
+                v = toupper(substr($0, RSTART, RLENGTH)); gsub(/_/, "-", v)
+                print v; exit
+            }
+            in_rec && /-->/ { in_c=0 }
+        ' "$rec_file")
+        rec_verdict="${rec_verdict%-}"
+    fi
+    local wrong_verdict=""
+    case "$rec_verdict" in
+        CLOSE|KEEP-OPEN) ;;
+        "") ;;
+        *) wrong_verdict="$rec_verdict" ;;
+    esac
+    if [ -z "$rec_file" ] || [ -z "$rec_verdict" ] || [ -n "$wrong_verdict" ]; then
         if [ "${FW_ALLOW_EMPTY_RECOMMENDATION:-}" = "1" ]; then
             if ! declare -F _log_empty_recommendation_bypass >/dev/null 2>&1; then
                 # shellcheck source=lib/review.sh
@@ -1365,7 +1390,12 @@ arc_review() {
             echo "NOTE: arc '$id' has no close recommendation — emitting anyway (FW_ALLOW_EMPTY_RECOMMENDATION=1, logged)." >&2
         else
             echo "BLOCKED: arc '$id' has no close recommendation — no close URL emitted." >&2
-            if [ -n "$rec_task" ]; then
+            if [ -n "$wrong_verdict" ]; then
+                echo "  $rec_task holds **Recommendation:** $wrong_verdict — a decision about starting the arc, not a close verdict (CLOSE or KEEP-OPEN)." >&2
+            fi
+            if [ -n "$wrong_verdict" ] && [ -z "$close_task" ]; then
+                echo "  Agent action: set close_task: T-XXX in $arc_path (the close-out task) and write it there:" >&2
+            elif [ -n "$rec_task" ]; then
                 local _src="anchor_task"
                 [ -n "$close_task" ] && _src="close_task"
                 echo "  Write it in the ## Recommendation section of $rec_task ($_src):" >&2

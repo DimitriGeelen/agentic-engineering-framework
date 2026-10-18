@@ -2,12 +2,21 @@
 id: T-4320
 name: "Arc close accepts the anchor task's opening GO as a close recommendation"
 description: >
-  Peer report (1023, 2026-10-18, arc vault-mvp): with no close_task, fw arc review (lib/arc.sh:1341-1356) and the close page (web/blueprints/arcs.py _anchor_recommendation, line 608) fall back to anchor_task and accept ANY recommendation there (audit_inception_recommendation checks presence, not verdict). The anchor's day-one GO to START the arc then reads as the close recommendation, the page offers no demo evidence, and the operator has to ask the agent for it. Fix: only CLOSE or KEEP-OPEN counts as a close recommendation; without one, fw arc review refuses naming the agent action (set close_task and write CLOSE with demo evidence), and the close page says the agent has not filed a close recommendation instead of showing the anchor's GO. Tests for both surfaces; web/ change needs the render gate.
+  Peer report (1023, 2026-10-18, arc vault-mvp): with no close_task, fw arc review
+  (lib/arc.sh:1341-1356) and the close page (web/blueprints/arcs.py _anchor_recommendation,
+  line 608) fall back to anchor_task and accept ANY recommendation there (audit_inception_recommendation
+  checks presence, not verdict). The anchor's day-one GO to START the arc then reads
+  as the close recommendation, the page offers no demo evidence, and the operator
+  has to ask the agent for it. Fix: only CLOSE or KEEP-OPEN counts as a close recommendation;
+  without one, fw arc review refuses naming the agent action (set close_task and write
+  CLOSE with demo evidence), and the close page says the agent has not filed a close
+  recommendation instead of showing the anchor's GO. Tests for both surfaces; web/
+  change needs the render gate.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, arc, close]
 components: []
 related_tasks: []
@@ -39,8 +48,8 @@ origin: {kind: "peer", source: "1023-portable-encrypted-chromium-vault"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T18:28:10Z
-last_update: 2026-10-18T18:28:10Z
-date_finished: null
+last_update: 2026-10-18T20:20:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T18:30:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=288,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T18:31:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4320: Arc close accepts the anchor task's opening GO as a close recommendation
@@ -64,10 +101,20 @@ Also handle an arc with NEITHER close_task NOR anchor_task (1023's arc-002; 5 of
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw arc review` refuses (exit 1, BLOCKED, no close URL) when the only recommendation is the anchor's GO/NO-GO/DEFER, and the message names the agent action: set `close_task: T-XXX` and write `**Recommendation:** CLOSE` with demo evidence
+- [x] `fw arc review` refuses with the same action when the arc has neither `close_task` nor `anchor_task`, and when close_task's recommendation is GO (not CLOSE/KEEP-OPEN)
+- [x] `fw arc review` still emits the close URL when close_task (or anchor) carries `**Recommendation:** CLOSE` or `KEEP-OPEN`
+- [x] `_anchor_recommendation` returns present=False for a GO-only anchor and for an arc with no close_task/anchor_task; the close page then shows "The agent has not filed a close recommendation" and not the anchor's GO
+- [x] bats regression test `tests/unit/t4320_arc_close_verdict.bats` and pytest `tests/unit/test_t4320_arc_close_verdict.py` pass and fail without the fix; neighbouring tests stay green
+- [x] `bin/fw vendor self --check` clean; Watchtower restarted and `bin/fw watchtower current` passes
 
 ### Human
+- [ ] [REVIEW] Close page reads clearly when no close recommendation exists
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` and open `<url>/arcs` in a browser
+  2. Open the close page (`/arcs/<slug>/close`) of an in-progress arc that has no `close_task:` (its anchor holds only a GO)
+  **Expected:** The recommendation card says the agent has not filed a close recommendation and names what the agent must do (close_task + CLOSE with demo evidence); the anchor's GO is not shown as the close verdict
+  **If not:** Screenshot the card and note the arc slug
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -115,6 +162,11 @@ Also handle an arc with NEITHER close_task NOR anchor_task (1023's arc-002; 5 of
 
 ## Verification
 
+timeout 300 bats tests/unit/t4320_arc_close_verdict.bats > /tmp/.t4320-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4320-bats.out
+test "$(grep -c '# skip' /tmp/.t4320-bats.out)" -eq 0
+python3 -m pytest tests/unit/test_t4320_arc_close_verdict.py -q > /tmp/.t4320-py.out 2>&1 && grep -q passed /tmp/.t4320-py.out
+bin/fw vendor self --check
+bin/fw watchtower current
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -244,22 +296,6 @@ Also handle an arc with NEITHER close_task NOR anchor_task (1023's arc-002; 5 of
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
-
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -283,6 +319,13 @@ Also handle an arc with NEITHER close_task NOR anchor_task (1023's arc-002; 5 of
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** On arc vault-mvp (peer 1023) with no `close_task`, `fw arc review` emitted a close URL and the close page showed the anchor inception's opening GO as the agent's close recommendation, with no demo evidence.
+**Root cause:** `lib/arc.sh` arc_review (`rec_task="${close_task:-$anchor}"`, then `audit_inception_recommendation`) and `web/blueprints/arcs.py:_anchor_recommendation` (loop over close_task then anchor_task, `_REC_LINE_RE`) test only that a `**Recommendation:** <word>` line exists, never which word. Any verdict — including GO to START the arc — passed as a close verdict.
+**Why structurally allowed:** The gate reused the task-review predicate (presence of a recommendation), which is correct for tasks but not for arcs, where the question is CLOSE vs KEEP-OPEN. T-3894 noticed the anchor's GO is about starting and only stopped it pre-filling the decision; the card and the CLI gate kept accepting it. Tests covered presence/absence, never a wrong-verdict recommendation.
+**Prevention:** Both surfaces now require the verdict to be CLOSE or KEEP-OPEN; regression tests pin GO-only anchor, GO on close_task, and no close_task/anchor_task on both the CLI (bats) and the page (pytest).
 
 ## Recommendation
 
@@ -313,6 +356,15 @@ Also handle an arc with NEITHER close_task NOR anchor_task (1023's arc-002; 5 of
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** Both close surfaces now accept only CLOSE / KEEP-OPEN as a close verdict. A GO, NO-GO or DEFER on the anchor (or on close_task) no longer counts: `fw arc review` refuses and names the agent action, and the close and review pages show the "agent has not filed a close recommendation" card, which names the skipped task and verdict, instead of the anchor's GO. The only open item is the [REVIEW] check of how the card reads.
+**Evidence:**
+- `tests/unit/t4320_arc_close_verdict.bats`: 6/6 ok. Against pre-fix `lib/arc.sh`, tests 1-3 (GO anchor, GO close_task, NO_GO) fail.
+- `tests/unit/test_t4320_arc_close_verdict.py`: 9 passed. Neighbouring T-3843 bats (6) and pytest (T-3843, T-3841) all green.
+- Live: after `bin/fw watchtower restart`, `/arcs/arc-020/close` (no close_task, anchor holds a GO) renders `arc-rec-missing` + `arc-rec-ignored` and no GO badge.
+- `bin/fw vendor self --check` clean; `bin/fw watchtower current` exits 0.
+- `tests/web/test_approvals_blocked_arcs.py::test_threshold_still_bounds_the_queue` fails on a live-corpus ratio assertion that T-3552 made obsolete (it is about which arcs get listed, which this change does not touch). That failure is not from this change.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -340,3 +392,7 @@ Also handle an arc with NEITHER close_task NOR anchor_task (1023's arc-002; 5 of
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4320-arc-close-accepts-the-anchor-tasks-openi.md
 - **Context:** Initial task creation
+
+### 2026-10-18T20:20:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

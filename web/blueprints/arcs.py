@@ -604,6 +604,10 @@ _REC_LINE_RE = re.compile(
     r"^[ \t]*[-*]?[ \t]*\*\*Recommendation:\*\*[ \t]*\*{0,2}[A-Za-z]", re.MULTILINE
 )
 
+# T-4320: the verdicts that answer "is this arc done?" — GO / NO-GO / DEFER
+# answer a different question (whether to start it).
+_CLOSE_VERDICTS = ("CLOSE", "KEEP-OPEN")
+
 
 def _anchor_recommendation(arc: dict[str, Any]) -> dict[str, Any]:
     """T-1960: read the arc's anchor-task `## Recommendation` block and return
@@ -614,7 +618,9 @@ def _anchor_recommendation(arc: dict[str, Any]) -> dict[str, Any]:
     evidence text, '' when none), anchor_id (the task the recommendation was
     read from, '' when none), source ('close_task' | 'anchor_task' | ''),
     expected_task (where the agent should write one: close_task, else
-    anchor_task, else '').
+    anchor_task, else ''), ignored_task / ignored_verdict (T-4320: the first
+    task whose recommendation was skipped because its verdict is not CLOSE or
+    KEEP-OPEN, e.g. an anchor's opening GO; '' when none).
     All keys always present.
 
     T-3843 (055 T-454): the arc's close-out task (`close_task:`) is read first;
@@ -633,6 +639,8 @@ def _anchor_recommendation(arc: dict[str, Any]) -> dict[str, Any]:
         "anchor_id": "",
         "source": "",
         "expected_task": "",
+        "ignored_task": "",
+        "ignored_verdict": "",
     }
 
     def _tid(key: str) -> str:
@@ -663,6 +671,14 @@ def _anchor_recommendation(arc: dict[str, Any]) -> dict[str, Any]:
         # lib/task-audit.sh): a `**Recommendation:** <word>` line, so the page
         # and `fw arc review` never disagree about whether one exists.
         if r.get("raw") and _REC_LINE_RE.search(r["raw"]):
+            # T-4320: only CLOSE / KEEP-OPEN is a close verdict. An anchor
+            # inception's GO is the decision to START the arc; shown as the
+            # close recommendation it hid that none had been filed.
+            if r.get("verdict") not in _CLOSE_VERDICTS:
+                if not out["ignored_task"]:
+                    out["ignored_task"] = tid
+                    out["ignored_verdict"] = r.get("verdict") or "?"
+                continue
             rec = r
             out["anchor_id"] = tid
             out["source"] = source

@@ -120,10 +120,16 @@
    an arc close shows the same gap, visibly, instead of omitting the card. #}
 <section class="anchor-rec anchor-rec-missing" data-verdict="missing" data-testid="arc-rec-missing">
     <h2>No close recommendation yet</h2>
-    <p>The agent has not written a recommendation and rationale for closing this arc.
+    <p>The agent has not filed a close recommendation for this arc.
+    {% if recommendation and recommendation.ignored_task %}
+    <span data-testid="arc-rec-ignored">Task <a href="/tasks/{{ recommendation.ignored_task }}">{{ recommendation.ignored_task }}</a>
+    holds a <strong>{{ recommendation.ignored_verdict }}</strong> recommendation — a decision about starting the arc,
+    not whether it is done — so it is not shown as one.</span>
+    {% endif %}
+    {% set _target = recommendation.expected_task if recommendation and recommendation.expected_task and not (recommendation.ignored_task and not arc.get('close_task')) else '' %}
     It belongs in the <code>## Recommendation</code> section of
-    {% if recommendation and recommendation.expected_task %}task <a href="/tasks/{{ recommendation.expected_task }}">{{ recommendation.expected_task }}</a>{% else %}the arc's close-out task (set <code>close_task:</code> in the arc file){% endif %}:
-    <code>**Recommendation:** CLOSE</code> (or KEEP-OPEN), <code>**Rationale:**</code>, <code>**Evidence:**</code>.</p>
+    {% if _target %}task <a href="/tasks/{{ _target }}">{{ _target }}</a>{% else %}the arc's close-out task (the agent sets <code>close_task: T-XXX</code> in the arc file){% endif %}:
+    <code>**Recommendation:** CLOSE</code> (or KEEP-OPEN), <code>**Rationale:**</code>, <code>**Evidence:**</code> naming the demo.</p>
     <p>You can still close; you would be deciding without the agent's judgement.</p>
 </section>
 {% endif %}
