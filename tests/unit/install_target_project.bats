@@ -38,6 +38,7 @@ run_install() {
         GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@example.com \
         GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@example.com \
         PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+        ${RUN_TMPDIR:+TMPDIR="$RUN_TMPDIR"} \
         bash "$INSTALL" "$TEST_TARGET" --local "$FRAMEWORK_ROOT" --branch "$CURRENT_BRANCH" --no-scan
 }
 
@@ -81,14 +82,19 @@ run_install() {
         skip "detached HEAD -- --local install needs a real branch name"
     fi
 
-    local before after
-    before="$(compgen -G "${TMPDIR:-/tmp}/agentic-fw-fetch-*" || true)"
+    # T-4318: a private TMPDIR. The shared /tmp listing also changes when parallel
+    # tests create and remove their own agentic-fw-fetch-* dirs.
+    local after
+    RUN_TMPDIR="$(mktemp -d)"
+    export RUN_TMPDIR
 
     run run_install
     [ "$status" -eq 0 ]
 
-    after="$(compgen -G "${TMPDIR:-/tmp}/agentic-fw-fetch-*" || true)"
-    [ "$before" = "$after" ] || { echo "fetch dir leaked: $after"; false; }
+    after="$(compgen -G "$RUN_TMPDIR/agentic-fw-fetch-*" || true)"
+    rm -rf "$RUN_TMPDIR"
+    unset RUN_TMPDIR
+    [ -z "$after" ] || { echo "fetch dir leaked: $after"; false; }
 }
 
 @test "T-2809: re-running install.sh against an already-initialised target leaves it untouched" {
