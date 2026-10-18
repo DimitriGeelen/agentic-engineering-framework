@@ -50,7 +50,7 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T21:54:31Z
-last_update: 2026-10-18T21:57:35Z
+last_update: '2026-10-18T22:00:50Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,6 +80,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-18T22:00:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=293,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4339: Retrospective of the 22 external GitHub issues: draft and post release/status updates with test evidence and release reasoning
@@ -92,11 +102,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] docs/reports/T-4339-github-issue-retro.md exists and has a table row for each of the 22 issues (#13, #14, #85-#105), with author, title, ledger stage, linked task, task state, v1.8.11 status and field evidence
-- [ ] The report has one DRAFT comment per issue in the T-4039 template shape (stage marker, task id, links, footer); no comment is posted (read-only gh use)
-- [ ] Every task id, commit hash and path cited in the report resolves (verified by the Verification script)
-- [ ] Each #95-#105 draft has a classification and a recommended decision (accept / needs-info / duplicate / not-planned) with a one-line reason; code-reproduction and duplicate-search results are recorded
-- [ ] No GitHub write was made (no gh issue comment/edit/close/label) during this task
+- [x] docs/reports/T-4339-github-issue-retro.md exists and has a table row for each of the 22 issues (#13, #14, #85-#105), with author, title, ledger stage, linked task, task state, v1.8.11 status and field evidence
+- [x] The report has one DRAFT comment per issue in the T-4039 template shape (stage marker, task id, links, footer); no comment is posted (read-only gh use)
+- [x] Every task id, commit hash and path cited in the report resolves (verified by the Verification script)
+- [x] Each #95-#105 draft has a classification and a recommended decision (accept / needs-info / duplicate / not-planned) with a one-line reason; code-reproduction and duplicate-search results are recorded
+- [x] No GitHub write was made (no gh issue comment/edit/close/label) during this task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -274,6 +284,15 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+test -f docs/reports/T-4339-github-issue-retro.md
+for n in 13 14 $(seq 85 105); do grep -q "^| #$n |" docs/reports/T-4339-github-issue-retro.md || { echo "missing row $n"; false; }; done
+test -z "$(for t in $(grep -o 'T-[0-9][0-9]*' docs/reports/T-4339-github-issue-retro.md | sort -u); do ls .tasks/*/$t-*.md >/dev/null 2>&1 || echo $t; done)"
+test -z "$(for p in $(grep -oE '(docs|tests|lib|web|bin|agents)/[A-Za-z0-9_./-]+' docs/reports/T-4339-github-issue-retro.md | sed 's/[.]$//' | sort -u); do test -e "$p" || echo $p; done)"
+test -z "$(for c in $(grep -oE '\b[0-9a-f]{9}\b' docs/reports/T-4339-github-issue-retro.md | sort -u); do git cat-file -e $c^{commit} 2>/dev/null || echo $c; done)"
+git cat-file -e master:docs/reports/field-test-v1.8.11-results.md
+git cat-file -e master:docs/releases/v1.8.11-upgrade-notes.md
+bats tests/unit/t3886_upgrade_autoclone_history.bats tests/unit/t4040_seeds_pass_schema_gate.bats tests/unit/t4041_watchtower_fw_host.bats tests/unit/t4042_messaging_toolkit_optin.bats
+python3 -m pytest -q tests/web/test_t4043_docs_detail_title.py tests/web/test_t4044_task_page_doc_links.py tests/web/test_t4045_board_awaiting_review.py tests/web/test_t4046_inception_human_ac_tickable.py tests/web/test_t4047_inception_verification_verbatim.py tests/web/test_t4053_review_readiness.py -p no:cacheprovider
 
 ## RCA
 
