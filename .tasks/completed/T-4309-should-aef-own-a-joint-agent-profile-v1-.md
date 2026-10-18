@@ -9,17 +9,17 @@ description: >
   format (PROFILE/ROUTE/INSTANCE) as starting point; AEF asked to own the draft since
   it owns the harness adapters.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [orchestration, agent-profile]
 components: []
 related_tasks: []
 origin: {kind: "peer", source: "055"}
 created: 2026-10-18T13:49:36Z
-last_update: 2026-10-18T15:58:18Z
-date_finished:
+last_update: 2026-10-18T18:41:36Z
+date_finished: 2026-10-18T18:41:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -123,15 +123,15 @@ artifact docs/reports/T-4309-agent-profile-v1.md). Why now: three projects are a
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -185,7 +185,11 @@ artifact docs/reports/T-4309-agent-profile-v1.md). Why now: three projects are a
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: AEF already owns the ROUTE layer in practice (ring20 binds its routes to AEF's policy/review-backends.yaml) and holds most PROFILE facts in five differently shaped files, with no single answer to "what was this agent given". The proposed governance (operator-owned profiles, agents propose, narrowing-only auto-admit, sandbox enforces) matches AEF's own Authority Model. Own the schema, a validator and AEF's own consumption; do NOT own other orchestrators' launchers or sandboxes. Evidence and the field-by-field inventory: docs/reports/T-4309-agent-profile-v1.md.
+
+**Date**: 2026-10-18T18:41:35Z
 
 ## Updates
 
@@ -194,3 +198,33 @@ artifact docs/reports/T-4309-agent-profile-v1.md). Why now: three projects are a
 
 ### 2026-10-18T15:58:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-18T18:41:35Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** AEF already owns the ROUTE layer in practice (ring20 binds its routes to AEF's policy/review-backends.yaml) and holds most PROFILE facts in five differently shaped files, with no single answer to "what was this agent given". The proposed governance (operator-owned profiles, agents propose, narrowing-only auto-admit, sandbox enforces) matches AEF's own Authority Model. Own the schema, a validator and AEF's own consumption; do NOT own other orchestrators' launchers or sandboxes. Evidence and the field-by-field inventory: docs/reports/T-4309-agent-profile-v1.md.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cd76fded
+- **Timestamp:** 2026-10-18T18:41:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-57757b70
+- **Timestamp:** 2026-10-18T18:41:39Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-2403` | task | ✓ pass |
+| `T-4311` | task | ✓ pass |
+
+### 2026-10-18T18:41:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
