@@ -20,6 +20,8 @@ SETTINGS = [
     ("PORT_SCAN_BASE", "3000", "First port tried when a project has no PORT set: fw serve scans 100 ports up from here, skips any held by another service, and records the chosen port as PORT in .framework.yaml (T-3662)"),
     ("RAIL_IDENTITY_FILE", "", "Project-owned termlink signing identity for outbound rail posts (T-2904). Empty = sign as host key, which is indistinguishable from co-resident agents. Created on first use."),
     ("RAIL_PROJECT_LABEL", "", "Canonical from_project label attached to outbound rail posts (T-2905). Empty = derived from the project directory name, normalised. Emitted, never typed at a call site."),
+    ("SIDECAR_RAIL_IDENTITY", "0", "1 = the sidecar's termlink calls sign with RAIL_IDENTITY_FILE (the key fw rail uses) instead of the host-shared key, unless a TERMLINK_IDENTITY_* variable is already set (T-4311). Off by default: turning it on changes which dm:* rails address this project, so coordinate with peers"),
+    ("SIDECAR_HOST_DM_TRANSITION", "1", "While SIDECAR_RAIL_IDENTITY is on, also read dm:* rails addressed to the old host fingerprint so earlier DMs are not lost (T-4311). Set 0 once peers address the project key: host rails are shared by every co-resident project"),
     ("DISPATCH_LIMIT", "0", "Built-in harness sub-agent (Agent tool) dispatches allowed before the TermLink gate blocks. Default 0 (operator ruling 2026-10-06, T-3910): sub-agents run as TermLink workers, never through a vendor harness's dispatcher"),
     ("BUDGET_RECHECK_INTERVAL", "5", "Re-read transcript every N tool calls"),
     ("BUDGET_STATUS_MAX_AGE", "90", "Max seconds before cached budget status is stale"),
