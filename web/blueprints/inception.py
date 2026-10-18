@@ -1076,10 +1076,26 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
     """
     import subprocess
     import os  # T-2509: needed for the FW_ALLOW_MASTER_COMMIT env below
+    # T-2509: when the Watchtower serves from a checkout that sits on master
+    # with PROTECT_MASTER=1 (the T-100196 trunk-based flow), the T-2394
+    # master-guard pre-commit hook BLOCKS this direct commit ("master is
+    # merge-only"), leaving every operator decision recorded-but-uncommitted.
+    # A decision made through the Watchtower IS the human's sovereign act via
+    # the sanctioned surface (same principle as the --from-watchtower exemption
+    # for the CLAUDECODE agent-block, T-1262). FW_ALLOW_MASTER_COMMIT=1 is the
+    # master-guard's own documented Tier-2 bypass for exactly this "rare,
+    # deliberate" master write — it WARNs to stderr (auditable) and allows the
+    # commit. Scoped to THIS subprocess only (not os.environ) so agent/session
+    # commits on master stay guarded. Off master / on a feature branch the
+    # guard exits before the bypass matters, so this is a safe no-op there.
+    # T-4242: every git call below gets this env, stripped of git's repo-local
+    # variables - an inherited GIT_INDEX_FILE=.git/index.lock made the decision
+    # commit use the lock file as its index (see decide_runner.GIT_LOCAL_ENV_VARS).
+    _env = {**_dr.git_clean_env(), "FW_ALLOW_MASTER_COMMIT": "1"}
     try:
         status = subprocess.run(
             ["git", "status", "--porcelain", "--untracked-files=all"],
-            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30, env=_env,
         )
         if status.returncode != 0:
             return False, (_operator_facing_stderr(status.stderr or status.stdout or "")
@@ -1111,23 +1127,9 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
             # Nothing of ours to commit (already committed, or no files found).
             return True, "nothing to commit"
 
-        # T-2509: when the Watchtower serves from a checkout that sits on master
-        # with PROTECT_MASTER=1 (the T-100196 trunk-based flow), the T-2394
-        # master-guard pre-commit hook BLOCKS this direct commit ("master is
-        # merge-only"), leaving every operator decision recorded-but-uncommitted.
-        # A decision made through the Watchtower IS the human's sovereign act via
-        # the sanctioned surface (same principle as the --from-watchtower exemption
-        # for the CLAUDECODE agent-block, T-1262). FW_ALLOW_MASTER_COMMIT=1 is the
-        # master-guard's own documented Tier-2 bypass for exactly this "rare,
-        # deliberate" master write — it WARNs to stderr (auditable) and allows the
-        # commit. Scoped to THIS subprocess only (not os.environ) so agent/session
-        # commits on master stay guarded. Off master / on a feature branch the
-        # guard exits before the bypass matters, so this is a safe no-op there.
-        _env = {**os.environ, "FW_ALLOW_MASTER_COMMIT": "1"}
-
         # A decision is never the root commit of a repo (the old read-tree HEAD refused).
         if subprocess.run(["git", "rev-parse", "--verify", "-q", "HEAD"], cwd=PROJECT_ROOT,
-                          capture_output=True, timeout=30).returncode != 0:
+                          capture_output=True, timeout=30, env=_env).returncode != 0:
             return False, "git has no HEAD commit to commit the decision onto"
 
         # T-4127: drop paths git can know nothing about (deleted on disk and in neither
@@ -1139,9 +1141,9 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
                 addable.append(p)
                 continue
             in_head = subprocess.run(["git", "cat-file", "-e", f"HEAD:{p}"], cwd=PROJECT_ROOT,
-                                     capture_output=True, timeout=30).returncode == 0
+                                     capture_output=True, timeout=30, env=_env).returncode == 0
             in_index = subprocess.run(["git", "ls-files", "--error-unmatch", "--", p],
-                                      cwd=PROJECT_ROOT, capture_output=True, timeout=30).returncode == 0
+                                      cwd=PROJECT_ROOT, capture_output=True, timeout=30, env=_env).returncode == 0
             if in_head or in_index:
                 known.append(p)
             if in_index:
@@ -1175,10 +1177,10 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
         for p in wanted:
             if (os.path.exists(os.path.join(PROJECT_ROOT, p))
                     or subprocess.run(["git", "cat-file", "-e", f"HEAD:{p}"], cwd=PROJECT_ROOT,
-                                      capture_output=True, timeout=30).returncode == 0
+                                      capture_output=True, timeout=30, env=_env).returncode == 0
                     or subprocess.run(["git", "ls-files", "--error-unmatch", "--", p],
                                       cwd=PROJECT_ROOT, capture_output=True,
-                                      timeout=30).returncode == 0):
+                                      timeout=30, env=_env).returncode == 0):
                 live.append(p)
         wanted = live
         if not wanted:
@@ -1187,9 +1189,9 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
         # Our paths already equal HEAD (committed earlier; the `git add` above also
         # re-pointed any stale real-index entries at the working tree = HEAD).
         if subprocess.run(["git", "diff", "--cached", "--quiet", "HEAD", "--"] + wanted,
-                          cwd=PROJECT_ROOT, capture_output=True, timeout=30).returncode == 0 \
+                          cwd=PROJECT_ROOT, capture_output=True, timeout=30, env=_env).returncode == 0 \
                 and subprocess.run(["git", "diff", "--quiet", "HEAD", "--"] + wanted,
-                                   cwd=PROJECT_ROOT, capture_output=True, timeout=30).returncode == 0:
+                                   cwd=PROJECT_ROOT, capture_output=True, timeout=30, env=_env).returncode == 0:
             return True, "nothing to commit"
 
         # `--only`: git takes .git/index.lock on the REAL index before it builds the tree
@@ -1200,6 +1202,15 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
                              "git commit failed")
         if err:
             return False, err
+        # T-4242: HEAD alone is not success. `--only` leaves the real index equal to HEAD
+        # for these paths; if it is not, the next plain commit reverts the decision, so
+        # say so instead of reporting a clean commit.
+        if subprocess.run(["git", "diff", "--cached", "--quiet", "HEAD", "--"] + wanted,
+                          cwd=PROJECT_ROOT, capture_output=True, timeout=30,
+                          env=_env).returncode != 0:
+            return False, ("decision committed, but the git index still differs from HEAD "
+                           "for it; a plain commit now would revert it. Run: git restore "
+                           "--staged -- " + " ".join(wanted))[:400]
         return True, msg
     except Exception as e:  # never let a commit problem break the decision response
         return False, str(e)[:200]

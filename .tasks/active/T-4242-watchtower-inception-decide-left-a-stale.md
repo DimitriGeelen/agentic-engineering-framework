@@ -8,7 +8,7 @@ description: >
   + their T-117. The decide chain (T-4127 git commit --only path) must not leave the
   lock behind; find the leaking step, make it fail-safe, test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:44:00Z
-last_update: 2026-10-17T23:14:47Z
+last_update: 2026-10-17T23:59:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,10 +94,22 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of the stale `.git/index.lock` + stale index after a Watchtower decide commit is localised to a file:line and confirmed by a reproduction in a fixture repo (never the live repo/Watchtower)
+- [x] `_commit_decision` (web/blueprints/inception.py) never leaves `.git/index.lock` behind and never leaves the real index at pre-decision content: after a decide commit the index matches HEAD for the decision paths, and no lock file remains
+- [x] When the commit cannot finish cleanly (git killed / timed out / lock held), `_commit_decision` returns `(False, <reason naming the lock/index state>)` — it refuses loudly, never a silent half state
+- [x] Regression test under tests/unit/ reproduces the failure in a fixture repo, fails without the fix and passes with it
+- [x] Existing tests closest to the changed code still pass
+- [x] `bin/fw vendor self --check` is clean
 
 ### Human
+- [ ] [REVIEW] A Watchtower GO on a consumer leaves no `.git/index.lock` and a clean index
+  **Steps:**
+  1. Upgrade the consumer to a framework release containing T-4242, then: `cd /path/to/consumer && .agentic-framework/bin/fw watchtower restart`
+  2. Decide a throwaway inception GO on its `/inception/<id>` page and wait for the page to report the chain finished
+  3. `cd /path/to/consumer && ls -la .git/index.lock; git status --short -- .tasks .context/episodic`
+  **Expected:** `ls` reports no such file. `git status` shows nothing staged for the decided task or its episodic, and the decide commit is in `git log -1`.
+  **If not:** keep the state as it is (do not remove the lock). Send the output of `cat /proc/$(cat .context/working/watchtower.pid 2>/dev/null)/environ | tr '\0' '\n' | grep ^GIT_` plus the run's `.context/working/decide/*/status.json`.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -273,6 +285,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t4242_decide_inherited_git_env.py -q > /tmp/.t4242a 2>&1 && grep -q passed /tmp/.t4242a
+python3 -m pytest tests/unit/test_t4127_decision_commit_no_window.py tests/unit/test_t4081_watchtower_commit_keeps_real_index.py tests/unit/test_decide_commit.py tests/unit/test_inception_commit_rename_paths.py tests/unit/test_t3749_decide_detached.py -q > /tmp/.t4242b 2>&1 && grep -q passed /tmp/.t4242b
+bin/fw vendor self --check
+bin/fw watchtower current
 
 ## RCA
 
@@ -289,6 +305,16 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after a Watchtower GO (dimitri-mint-dev, vendored 1.8.10, twice) the decision commit landed, but `.git/index.lock` remained with no holder (fuser: none). The real index was stale: the task file was staged at its pre-decision content and the episodic was staged as deleted while present on disk. A later plain commit would have reverted the GO.
+
+**Root cause:** the decide path ran git with the process's inherited environment, including git's repo-local variables. The leaks were `web/decide_runner.py:202` (runner env = `os.environ` minus CLAUDECODE) and `web/blueprints/inception.py:1124` (`_env = {**os.environ, ...}`; the status/ls-files/diff calls passed no env at all). Git exports `GIT_INDEX_FILE=<repo>/.git/index.lock` to the hooks of `git commit -a` / `-i` (measured, git 2.43). Any Watchtower started from such a context inherits it, and so do its decide runner and the chain. Then every `git add` / `git mv` / `git commit --only` in the decide uses `.git/index.lock` *as its index*. Git creates that file, renames its own `index.lock.lock` onto it and never removes it, because to git it is an index, not a lock. So the commit lands in HEAD, the lock file stays behind with no holder, and the real `.git/index` is never touched: it keeps the post-`git mv` / pre-decision state. Reproduced in a fixture: `_commit_decision` returned `(True, ...)`, HEAD had the decision and episodic, `index.lock` existed, and `git status` showed `D  episodic` + `MM task`. These are exactly the reported symptoms.
+
+Ruled out first: (1) the 30 s subprocess timeout killing `git commit --only` mid-hook. A SIGKILL in pre-commit/commit-msg leaves a stale lock but NO commit; in post-commit the lock is already released, so a kill cannot produce commit + stale lock (fixture, git 2.43). (2) The chain's `git mv`/`git add` racing the commit: a contending git fails on the existing lock, it never writes a stale index.
+
+**Why structurally allowed:** every decide test ran under a clean pytest environment, and no test exercised an inherited git environment. `_commit_decision` reported success on HEAD alone. It never checked that the real index agreed with what it had just committed, so the half state read as a clean GO.
+
+**Prevention:** (a) `decide_runner.git_clean_env()` strips git's repo-local variables (the `git rev-parse --local-env-vars` list) from the runner launch, the chain and every git call in `_commit_decision`. (b) After committing, `_commit_decision` verifies that the real index matches HEAD for the decision paths. If it does not, it returns `(False, ...)` naming the paths and the index-only recovery, and never reports a half state as success. (c) The regression test `tests/unit/test_t4242_decide_inherited_git_env.py` runs the commit with `GIT_INDEX_FILE` pointed at `.git/index.lock` and with a pre-existing stale lock.
 
 ## Evolution
 
@@ -343,6 +369,13 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The reported half state was reproduced exactly in a fixture: commit landed, holderless `.git/index.lock`, episodic staged as deleted, task file at its pre-decision blob. The trigger is an inherited `GIT_INDEX_FILE=.git/index.lock`. The decide's git calls now never inherit git's repo-local env, and a commit whose index disagrees with HEAD is reported as a failure with the recovery command instead of as success. Remaining: the field check on a consumer, and identifying which launcher gave dimitri-mint-dev's Watchtower the git env. The fix does not depend on the second.
+**Evidence:**
+- `tests/unit/test_t4242_decide_inherited_git_env.py`: 5 passed with the fix; all 5 fail against HEAD's pre-fix `web/` (first failure: "stale .git/index.lock left behind")
+- 74 neighbouring decide tests pass (T-4127, T-4081, T-3749, decide_commit, rename_paths)
+- `bin/fw vendor self --check` clean; Watchtower restarted, `fw watchtower current` rc 0
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -385,3 +418,6 @@ bvp_scores_proposed:
 
 ### 2026-10-17T23:14:47Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-10-17T23:59:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

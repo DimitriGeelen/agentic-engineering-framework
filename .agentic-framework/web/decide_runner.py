@@ -45,6 +45,25 @@ from pathlib import Path
 
 STATE_SUBDIR = Path(".context") / "working" / "decide"
 
+# T-4242: git's repo-local variables (`git rev-parse --local-env-vars`, git 2.43).
+# Git exports GIT_INDEX_FILE=<repo>/.git/index.lock to the hooks of `git commit -a`;
+# a Watchtower started from there handed it to the chain and the decision commit,
+# which then used the LOCK FILE as their index: the commit landed, index.lock stayed
+# behind with no holder, and the real index kept the pre-decision entries (so the
+# next plain commit reverted the GO). The decide's git must always be the project's.
+GIT_LOCAL_ENV_VARS = frozenset((
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_CONFIG", "GIT_CONFIG_PARAMETERS",
+    "GIT_CONFIG_COUNT", "GIT_OBJECT_DIRECTORY", "GIT_DIR", "GIT_WORK_TREE",
+    "GIT_IMPLICIT_WORK_TREE", "GIT_GRAFT_FILE", "GIT_INDEX_FILE", "GIT_NO_REPLACE_OBJECTS",
+    "GIT_REPLACE_REF_BASE", "GIT_PREFIX", "GIT_SHALLOW_FILE", "GIT_COMMON_DIR",
+))
+
+
+def git_clean_env(env=None) -> dict:
+    """A copy of `env` (default os.environ) without git's repo-local variables (T-4242)."""
+    src = os.environ if env is None else env
+    return {k: v for k, v in src.items() if k not in GIT_LOCAL_ENV_VARS}
+
 # Outcomes of a Watchtower decide, as classify() reports them.
 NOT_LANDED = "not_landed"            # chain finished, no decision in the task
 PENDING = "pending"                  # chain still running, decision not yet written
@@ -199,7 +218,7 @@ def launch(task_id: str, decision: str, rationale: str, *,
         run_dir.mkdir()
         _write_status(run_dir, task_id=task_id, decision=decision, state="starting",
                       started=_now())
-        env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+        env = {k: v for k, v in git_clean_env().items() if k != "CLAUDECODE"}
         env["PROJECT_ROOT"] = str(project_root)
         # The runner module lives beside this file; framework_root only names
         # the fw that runs the chain (a test points it at a fake).
@@ -307,7 +326,7 @@ def _run(run_dir: Path, fw_bin: str, task_id: str, decision: str, rationale: str
             [fw_bin, "inception", "decide", task_id,
              decision, "--rationale", rationale, "--from-watchtower"],
             cwd=str(PROJECT_ROOT), stdin=subprocess.DEVNULL, stdout=out, stderr=err,
-            pass_fds=lock_fds,
+            pass_fds=lock_fds, env=git_clean_env(),
         )
         _write_status(run_dir, fw_pid=proc.pid)
         primary_committed = False
