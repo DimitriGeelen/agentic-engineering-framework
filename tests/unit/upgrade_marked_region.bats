@@ -73,7 +73,10 @@ _old_header_expr() {
 }
 
 # A consumer that put its own governance BELOW `## Core Principle`, inside a
-# marked region — the shape that lost content on every upgrade.
+# marked region — the shape that lost content on every upgrade. The governance
+# is the stock template text: T-4232 refuses to rewrite governance lines the
+# template lacks outside a region, so a fixture with invented lines there would
+# exercise that refusal instead of the region logic.
 _consumer_region_below() {
     cat <<'EOF'
 # CLAUDE.md
@@ -86,13 +89,9 @@ _consumer_region_below() {
 
 PROJECT_HEADER_MARKER_LINE
 
-## Core Principle
-
-**Nothing gets done without a task.** (stale copy of framework governance)
-
-## Some Stale Framework Section
-
-This paragraph is framework governance and is expected to be replaced.
+EOF
+    _template_governance
+    cat <<'EOF'
 
 <!-- project-owned: begin -->
 ## Project Completion Rules
@@ -121,8 +120,6 @@ EOF
     # The header still survives, and framework governance was refreshed.
     [[ "$out" == *"PROJECT_HEADER_MARKER_LINE"* ]]
     [[ "$out" == *"Four Constitutional Directives"* ]]
-    # The unmarked stale governance section was replaced, as before.
-    [[ "$out" != *"## Some Stale Framework Section"* ]]
     # Region sits AFTER governance, not spliced into it.
     local gov_line region_line
     gov_line=$(grep -n '^## Core Principle$' "$proj/CLAUDE.md" | head -1 | cut -d: -f1)
@@ -160,16 +157,17 @@ EOF
 
 @test "T-3150: BOTH marked regions survive — the second is not dropped" {
     local proj="$TEST_TEMP_DIR/two"
-    _mk_consumer "$proj" >/dev/null <<'EOF'
+    {
+        cat <<'EOF'
 # CLAUDE.md
 
 ## Project Overview
 
 **Project:** fixture-consumer
 
-## Core Principle
-
-stale governance
+EOF
+        _template_governance
+        cat <<'EOF'
 
 <!-- project-owned: begin -->
 ## First Project Section
@@ -177,16 +175,13 @@ stale governance
 REGION_ONE_PAYLOAD
 <!-- project-owned: end -->
 
-## Another Stale Framework Section
-
-replaced
-
 <!-- project-owned: begin -->
 ## Second Project Section
 
 REGION_TWO_PAYLOAD
 <!-- project-owned: end -->
 EOF
+    } | _mk_consumer "$proj" >/dev/null
 
     run do_upgrade "$proj"
     [ "$status" -eq 0 ]
@@ -195,7 +190,6 @@ EOF
     out=$(cat "$proj/CLAUDE.md")
     [[ "$out" == *"REGION_ONE_PAYLOAD"* ]]
     [[ "$out" == *"REGION_TWO_PAYLOAD"* ]]
-    [[ "$out" != *"## Another Stale Framework Section"* ]]
     # File order preserved.
     local one two
     one=$(grep -n 'REGION_ONE_PAYLOAD' "$proj/CLAUDE.md" | head -1 | cut -d: -f1)
@@ -208,7 +202,8 @@ EOF
 
 @test "T-3150: no markers => byte-identical to the pre-change positional rebuild" {
     local proj="$TEST_TEMP_DIR/nomarkers"
-    _mk_consumer "$proj" >/dev/null <<'EOF'
+    {
+        cat <<'EOF'
 # CLAUDE.md
 
 ## Project Overview
@@ -216,15 +211,9 @@ EOF
 **Project:** fixture-consumer
 
 PROJECT_HEADER_MARKER_LINE
-
-## Core Principle
-
-stale governance
-
-## Some Stale Framework Section
-
-replaced
 EOF
+        _template_governance
+    } | _mk_consumer "$proj" >/dev/null
     cp "$proj/CLAUDE.md" "$TEST_TEMP_DIR/pristine-nomarkers.md"
 
     run do_upgrade "$proj"
@@ -314,7 +303,8 @@ EOF
 
 @test "T-3150: a region ABOVE ## Core Principle is kept once, not duplicated" {
     local proj="$TEST_TEMP_DIR/above"
-    _mk_consumer "$proj" >/dev/null <<'EOF'
+    {
+        cat <<'EOF'
 # CLAUDE.md
 
 ## Project Overview
@@ -327,10 +317,9 @@ EOF
 REGION_ONE_PAYLOAD
 <!-- project-owned: end -->
 
-## Core Principle
-
-stale governance
 EOF
+        _template_governance
+    } | _mk_consumer "$proj" >/dev/null
 
     run do_upgrade "$proj"
     [ "$status" -eq 0 ]
@@ -343,4 +332,22 @@ EOF
     gov_line=$(grep -n '^## Core Principle$' "$proj/CLAUDE.md" | head -1 | cut -d: -f1)
     region_line=$(grep -n 'REGION_ONE_PAYLOAD' "$proj/CLAUDE.md" | head -1 | cut -d: -f1)
     [ "$region_line" -lt "$gov_line" ]
+}
+
+# T-4232: a governance line the template lacks, sitting OUTSIDE every marked
+# region, is the consumer's content the rebuild would delete. The upgrade refuses
+# before writing anything, names the line, and leaves CLAUDE.md byte-identical.
+@test "T-4232: a made-up governance line outside regions refuses the upgrade and leaves CLAUDE.md byte-identical" {
+    local proj="$TEST_TEMP_DIR/madeup"
+    _consumer_region_below | { cat; printf '\nMADE_UP_GOVERNANCE_LINE is not in the framework template.\n'; } \
+        | _mk_consumer "$proj" >/dev/null
+    cp "$proj/CLAUDE.md" "$TEST_TEMP_DIR/pristine.md"
+
+    run do_upgrade "$proj"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"line(s) in the CLAUDE.md governance section would be deleted"* ]]
+    [[ "$output" == *"MADE_UP_GOVERNANCE_LINE"* ]]
+
+    cmp -s "$proj/CLAUDE.md" "$TEST_TEMP_DIR/pristine.md"
+    [ ! -f "$proj/CLAUDE.md.bak" ]
 }
