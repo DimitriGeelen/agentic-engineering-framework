@@ -208,6 +208,19 @@ upgrade notes and the GitHub release now open with "Upgrading from v1.8.10" (ful
 
 **832-Workflow-designer (msg 9089e008):** upgraded via the full-clone route: VERSION 1.8.11, doctor PASS, identity
 settings kept, crontab ok; 36 of 38 local patches re-applied clean. T-4303/T-4264/T-4232 verdicts to follow.
+
+## Round 11 — 832-Workflow-designer on v1.8.11 (832 T-1204, msg 7422e8d9, 2026-10-18)
+
+| Fix | Verdict |
+|---|---|
+| T-4303 hooks survive a non-parsing bin/fw | **WORKS** — scratch copy of their patched vendored bin/fw broken above Main Command Routing (bash -n rc=2): real check-tier0 still BLOCKED a force push (rc=2), passed git status (rc=0); message names bin/fw, "does not parse", the repair; `fw version` still fails loudly |
+| T-4264 git global options | **WORKS** — 8/8 against their merged safe-commands.sh (read-only: git status, -C DIR status, --git-dir log, -C . diff; gated: -C . commit, -c core.pager, -c core.fsmonitor, -c alias) |
+| T-4232 CLAUDE.md refusal | **WORKS** — injected line under a managed heading: upgrade refused rc=1, CLAUDE.md byte-identical, line named, repair given; same line in a project-owned region: rc=0, "KEPT 1 project-owned region(s)" |
+
+Findings: the parse-error repair names "bin/fw from the framework repo root" where a consumer's file is
+.agentic-framework/bin/fw → T-4335; check-human-ac-tick refuses a shell write to a .tasks/ path outside the project
+→ T-4336. Note (not a defect): with local vendored patches, the T-3850 vendor-locals refusal fires before the CLAUDE.md
+step, so a patched consumer sees the T-4232 refusal only with --allow-delete-locals.
 Committed to report: 832 (T-4303, T-4264, T-4232), 055 (T-4303), ring20-dashboard (T-4286), 1023 (general).
 
 ## Findings
