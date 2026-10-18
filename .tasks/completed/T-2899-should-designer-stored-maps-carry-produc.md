@@ -6,17 +6,17 @@ description: >
   Inception: Should designer-stored maps carry producer provenance, or is the corpus-spec
   exporter stamp correctly export-only
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 origin: {kind: "agent", source: "", ref: "measured by the agent; reported to 832 at rail 494"}
 created: 2026-08-09T15:04:54Z
-last_update: 2026-10-05T20:07:14Z
-date_finished:
+last_update: 2026-10-18T19:21:43Z
+date_finished: 2026-10-18T19:21:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -158,15 +158,15 @@ producer, written after I named the class.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -224,7 +224,11 @@ Measured: tools/corpus_spec.py:407 emits exporter=aef-corpus-spec on generate() 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: Measured: tools/corpus_spec.py:407 emits exporter=aef-corpus-spec on generate() output, but 0 of 37 stored designer maps and 0 .bpmn files on disk anywhere carry it. designer_api.py:139 writes payloads verbatim, so this is not a save-path strip — nothing has ever round-tripped a stored map through 'generate --save'. NO-GO on propagating the stamp into the store to feed 832's T-406 identity gate: per rail 501, producer identity is the wrong axis at this seam, because a laundered AEF document carries OUR stamp, so their gate would preserve exactly the corruption it exists to suppress. Stamping would upgrade a default-branch outcome into a confidently-wrong one. The residual question is narrower and worth one spike: is the emitter stamp dead code, or correctly scoped to exports? Reported to 832 at rail 506 sections 2-3.
+
+**Date**: 2026-10-18T19:21:42Z
 
 ## Updates
 
@@ -233,3 +237,39 @@ Measured: tools/corpus_spec.py:407 emits exporter=aef-corpus-spec on generate() 
 
 ### 2026-08-09T15:06:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-18T19:21:42Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Measured: tools/corpus_spec.py:407 emits exporter=aef-corpus-spec on generate() output, but 0 of 37 stored designer maps and 0 .bpmn files on disk anywhere carry it. designer_api.py:139 writes payloads verbatim, so this is not a save-path strip — nothing has ever round-tripped a stored map through 'generate --save'. NO-GO on propagating the stamp into the store to feed 832's T-406 identity gate: per rail 501, producer identity is the wrong axis at this seam, because a laundered AEF document carries OUR stamp, so their gate would preserve exactly the corruption it exists to suppress. Stamping would upgrade a default-branch outcome into a confidently-wrong one. The residual question is narrower and worth one spike: is the emitter stamp dead code, or correctly scoped to exports? Reported to 832 at rail 506 sections 2-3.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c742922c
+- **Timestamp:** 2026-10-18T19:21:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-b0c6ba6a
+- **Timestamp:** 2026-10-18T19:21:45Z
+- **Overall:** CONFIRMED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `tools/corpus_spec.py:407` | file_line | ✓ pass |
+| `web/blueprints/designer_api.py:140` | file_line | ✓ pass |
+| `T-406` | task | ✓ pass |
+
+### 2026-10-18T19:21:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO
