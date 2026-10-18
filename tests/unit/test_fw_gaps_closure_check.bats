@@ -14,7 +14,9 @@
 setup() {
     REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
     TMPDIR="$(mktemp -d)"
-    mkdir -p "$TMPDIR/.context/project"
+    # T-4313: .tasks/ makes $TMPDIR a project; fw no longer auto-inits a
+    # non-project dir (T-2746), which is what this file used to rely on.
+    mkdir -p "$TMPDIR/.context/project" "$TMPDIR/.tasks"
     # Copy bin/fw so PROJECT_ROOT-routed lookups work from $TMPDIR.
     # The script reads concerns.yaml relative to PROJECT_ROOT, but bin/fw
     # itself can run from anywhere.
