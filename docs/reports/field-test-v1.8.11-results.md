@@ -106,6 +106,26 @@ New from this run: blocker cascade F-20 → F-21 → F-25 — a no-TTY `fw` call
 there (T-2746, promoted to now); the accidental project's hooks went live; T-559 then blocked the real target.
 Security F-34: `watchtower start` adds a UFW rule to Anywhere even for a loopback bind → T-4297.
 
+## Round 7 — dimitri-mint-dev greenfield level-2 run in a throwaway container (2026-10-18, msg 65d06812)
+
+Ubuntu 24.04 container, no mounts, Claude Code installed inside, dedicated token via `docker exec --env-file`
+(record grepped for the token: clean). Phase 1 (install) 205 s, phase 2 (fresh session in the project) 283 s,
+total 8 m 37 s; governance active after restart, first gate-authorised edit at 5 m 34 s. 19 findings (11 framework
+defects), against 43.6 min and 46 findings on the workstation (run 4). Level 1 (scripted, no credential): 3 m 25 s.
+
+| Fix | Verdict |
+|---|---|
+| T-4248 inherited env ignored, backup | PARTIAL — env ignored and backup WORKS; still no warning → T-4298 |
+| T-4251 own repo | WORKS |
+| T-4252 plain inbox safe | WORKS — but prints a traceback, exit 1, when termlink is absent → T-4308 |
+| T-4261 WARN count | PARTIAL (detail not given) |
+| T-4265 onboarding skip | WORKS |
+| T-3083 doctor speed | WORKS — 6 s |
+
+New, only visible on a clean machine: **blocker** — Watchtower cannot start, `markdown2` missing, nothing installs it,
+PEP 668 blocks pip → T-4304. Also `/embeddings` 500 on an empty project → T-4305; `watchtower stop` reports failure on
+a zombie → T-4306; the P-013 render gate false-positives on the task template comment naming web/app.py → T-4307.
+
 ## Findings
 
 - **T-4203** (055 item 7): `_fw_is_own_launcher` / `cmd_classify._Ctx` refuse a consumer's tracked

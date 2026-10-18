@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4310: Re-pin the workflow designer to 0.23.0
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T13:58:17Z
+# ============================================================================
+
+task_id: T-4310
+task_name: "Re-pin the workflow designer to 0.23.0"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T13:49:52Z
+completed: 2026-10-18T13:57:21Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T15:57:17+02:00
+last_commit: 2026-10-18T15:57:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  re-pin designer 0.22.0 -> 0.23.0 (832 T-1202: kit CONFORMANCE gains CONVENTIONAL class; no id or field change), sha256 verified
+
+# Key outcomes
+outcomes:
+  - 'policy/designer-pin.yaml pins 0.23.0 via `fw designer sync --from-tag designer-v0.23.0`; sha256 431cc5114d86b061ba12a92b8f2bcfa7c8d766bbc79a390803f561492b3857ee and 1171433 bytes verified (832 announce 590beaba)'
+  - 'Designer id tests and corpus lint still pass (0.23.0 changes no node ids, fields or validator output)'
+  - 'Watchtower restarted; /designer/app serves 0.23.0; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.23.0.html'
+  - 'policy/designer-pin.yaml'
+  - '.tasks/active/T-4310-re-pin-the-workflow-designer-to-0230.md'
+  - 'vendor/designer/aef-workflow-designer-0.23.0.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T15:57:17'
+    action: 'T-4310: re-pin designer 0.22.0 -> 0.23.0 (832 T-1202: kit CONFORMANCE gains CONVENTIONAL class; no id or field change), sha256 verified'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer, pin]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 5
+  lines_added: 13956
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4310-re-pin-the-workflow-designer-to-0230.md
+generated_by: context-agent-hybrid
