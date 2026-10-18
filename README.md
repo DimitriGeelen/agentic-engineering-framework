@@ -60,7 +60,8 @@ Code, Cursor, Aider, or any agent with shell access). Each is self-contained.
   an app.
 - **A+ — Greenfield, instrumented run:** path A, plus a findings harness. Every
   friction point, error and wrong instruction becomes a structured finding, so
-  the install also tests the framework. Revised from three live runs.
+  the install also tests the framework. Revised from four live runs, three of
+  them in throwaway containers.
 - **B — Existing codebase:** you want to govern code you already have. The
   agent installs and initialises in place, ingests the codebase into the
   Component Fabric, audits and heals to a clean baseline, then guides you into
@@ -141,23 +142,22 @@ THROUGHOUT
 </details>
 
 <details>
-<summary><b>A+ — Greenfield, instrumented run (v2.1): install AEF and record every finding</b></summary>
+<summary><b>A+ — Greenfield, instrumented run (v2.2.1): install AEF and record every finding</b></summary>
 
 Use this when you want the install to double as a test of the framework, its docs and the prompt itself.
 The agent keeps a findings record (one YAML file per finding, observation before interpretation) and
-can publish it over TermLink. v2.1 was revised from three live runs on fw v1.8.10.
-
-**Temporary sections.** The "Clean environment" section, the STEP 2 pre-checks, the onboarding skip path and
-the Watchtower URL note work around known defects (AEF T-4248, T-4251, T-4239, T-4252). They stay safe after
-the fixes ship and will be removed in v2.2, after a clean re-run on the fixed release.
+can publish it over TermLink. v2.2.1 is for fw v1.8.11: it was revised from a workstation run and three runs in
+throwaway containers, and drops the v2.1 workarounds that v1.8.11 makes unnecessary. On v1.8.10, use v2.1
+(docs/reports/T-4237-inputs/aef-greenfield-install-prompt-v2.1.md).
 
 ````markdown
-# AEF Greenfield Install — Instrumented Run (v2.1)
+# AEF Greenfield Install — Instrumented Run (v2.2.1)
 
-<!-- v2.1, 2026-10-17. Revised from v2 after three LIVE runs in /opt/0909-boot-into-timeshift-snapshots
-     (dimitri-mint-dev T-121; runs aef-install-20261017T141820Z / T142628Z / T144241Z; 49 findings in run 3).
-     Change per finding: docs/reports/T-121-greenfield-v2.1-changes-and-onboarding-evaluation.md.
-     v2 (review-only, T-118) is superseded. -->
+<!-- v2.2.1, 2026-10-18: v2.2 aligned with the final v1.8.11 behaviour after AEF's review (T-2746, T-4298, T-4308/T-4312,
+     T-4304, T-4307). v2.2, 2026-10-18. For AEF v1.8.11. Revised from v2.1 after run 4 on a workstation (dimitri-mint-dev T-125,
+     46 findings) and three runs in throwaway containers (T-126 / T-127: 19, 26 and 32 findings).
+     Change list: docs/reports/T-129-greenfield-v2.2-changes.md. On fw v1.8.10 use v2.1: its workarounds are still
+     needed there. -->
 
 **Bad-news-first rule.** If something fails, record it and keep evaluating every later step that can still run.
 A run that stops at the first failure tests one step; the rest of onboarding stays untested.
@@ -174,7 +174,7 @@ list is a deliverable of equal standing to the working project.** A run that ins
 a suspicious run, not a good one.
 
 Discover real command names with `fw help`, `fw <area> --help`, `termlink --help`. The verbs below were checked
-against fw v1.8.10. **A verb that does not exist as written here is itself a finding: record it, then discover the
+against fw v1.8.11. **A verb that does not exist as written here is itself a finding: record it, then discover the
 real one.** Never invent a command.
 
 **Gates vs self-heal.**
@@ -183,28 +183,47 @@ real one.** Never invent a command.
 - A *self-heal* is fixing your environment (PATH, a missing package, a busy port). It is allowed where this prompt
   says so, and it is always a finding.
 
+**Where to run.** A greenfield claim needs a clean machine. Prefer a throwaway container or VM (for example the
+`greenfield-testbed` runner). On a working machine:
+- other projects, leaked environment variables and shared TermLink state show up as findings the install did not
+  cause (run 4: 31 doctor warnings on a workstation against 6-8 in a clean container);
+- the install changes that machine: `~/.local/bin/{fw,claude-fw}` and possibly the firewall (STEP 4).
+
+Record which kind of machine this is in `run.yaml`.
+
 **Where you start:** the PARENT directory of the new project, in a fresh Claude Code session. You will restart once,
 inside the project, at STEP 3b.
 
-**Paths:** your shell state does not persist between commands. Always use absolute paths. After STEP 2 use
-`FW=<dir>/.agentic-framework/bin/fw` (the vendored copy), not a bare `fw`.
+**Paths and working directory — read twice.**
+- Your shell state does not persist between commands; use absolute paths.
+- **Run every `fw` command as `cd <dir> && .agentic-framework/bin/fw …`.** Never call fw by path from another
+  directory.
+  - Before v1.8.11, fw silently initialised a new AEF project in a non-project directory. Run 4: a read-only
+    `fw sidecar inbox --peek` vendored 44 MB there and its hooks then blocked the real install.
+  - v1.8.11 no longer does: without a terminal it exits 1 with `not in an AEF project: <dir>; run fw init ...`
+    (AEF T-2746). A silent init is a `framework-defect`.
+- **Never `cd` into another AEF project**, including an unpacked copy or test record. The hooks then treat it as your
+  project, and you cannot `cd` back (AEF T-4317). If it happens, stop and ask me to type `! cd <dir>`.
 
-**Clean environment.** If your session was started by, or inside, another AEF project (a `claude-fw` session, a
-TermLink dispatch worker), it carries that project's `FRAMEWORK_ROOT`, `PROJECT_ROOT`, `_FW_PATHS_DERIVED_BY`,
-`FW_ROUTED_FROM` (and possibly `TASKS_DIR`, `CONTEXT_DIR`). The installer inherits them and initialises the wrong
-place (fw v1.8.10: `<dir>/lib/init.sh: No such file or directory`). Until AEF fixes this (AEF T-4248):
-- record `env | grep -E '^(FRAMEWORK_ROOT|PROJECT_ROOT|TASKS_DIR|CONTEXT_DIR|_FW_PATHS_DERIVED_BY|FW_ROUTED_FROM)=' | cut -d= -f1`
-  in `run.yaml`;
-- prefix every install and `fw` command with
-  `env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM`;
-- note that this does NOT clean the environment your harness passes to hooks; only the STEP 3b restart does that.
+**Inherited environment.** A session started by, or inside, another AEF project (a `claude-fw` session, a TermLink
+dispatch worker) carries that project's `FRAMEWORK_ROOT`, `PROJECT_ROOT`, `_FW_PATHS_DERIVED_BY`, `FW_ROUTED_FROM`
+(and possibly `TASKS_DIR`, `CONTEXT_DIR`).
+- v1.8.11 ignores them (AEF T-4248); no `env -u` wrapper is needed any more.
+- Still record which are set, in `run.yaml`:
+  `env | grep -E '^(FRAMEWORK_ROOT|PROJECT_ROOT|TASKS_DIR|CONTEXT_DIR|_FW_PATHS_DERIVED_BY|FW_ROUTED_FROM)=' | cut -d= -f1`
+- Expect exactly one installer line `Ignoring inherited environment for fw init (set in this shell): <VARS>`
+  (AEF T-4298). The vendored fw warns about a stale FRAMEWORK_ROOT at most once per shell, never on hooks. No such
+  line, or repeated warnings, is a finding.
 
-**Headless / dispatched runs (no human to answer [ASK]).** The orchestrator must put the answers into the prompt.
-- Peer-consult checks: only `fw sidecar inbox --peek`. Plain `fw sidecar inbox` marks messages read, and in a fresh
-  project it resolves to the host-shared identity: one run marked 198 other projects' messages read (AEF T-4252).
-  Before the install there is no `fw` at all; skip the check and record it.
-- A dispatch wrapper may write its own result files into the target (e.g. `.context/dispatch-results/`). Treat them
-  as harness files, record them, and install anyway.
+**Headless / dispatched runs (no human to answer [ASK]).**
+- The orchestrator must put the answers into the prompt.
+- Peer-consult checks: plain `fw sidecar inbox` is safe in a fresh project on v1.8.11: summaries only, no cursor moved
+  (AEF T-4252). Prefer `--peek` for routine checks anyway.
+- Without TermLink, `fw sidecar inbox` prints `NOT CHECKED: termlink is not installed; the inbox cannot be read` and
+  exits 3, also when a hub id is cached (AEF T-4308, T-4312). A traceback, or "no pending consults" with exit 0, is a
+  finding.
+- A dispatch wrapper may write its own result files into the directory it starts in. Start the run from the parent,
+  not from the target.
 
 ---
 
@@ -220,7 +239,7 @@ project directory exists.
    - The record moves into the project at STEP 3 and becomes permanent there.
    - If the install fails, the record stays in `/tmp`; tell me so I can copy it out.
 3. Create `run.yaml`:
-   - run id, UTC start, host, OS + version, shell + version;
+   - run id, UTC start, host, OS + version, shell + version, machine kind (throwaway container/VM, or working machine);
    - this prompt's version line (top of file);
    - the path of your own session transcript, if your tool keeps one (Claude Code: `~/.claude/projects/…/<session>.jsonl`);
    - target dir and provider once known.
@@ -241,7 +260,9 @@ One file per finding: `findings/F-<nn>.yaml`.
 ```yaml
 finding_id: F-03
 run_id: <RUN>
-fingerprint: <step>:<surface>:<signature>     # recipe below
+fingerprint: <step>:<surface>:<8 hex>         # COMPUTED by the recipe below, never invented
+fingerprint_source: |
+  <the exact line the fingerprint was computed from: the first error line, else the one-line delta>
 observed_at: <UTC>
 step: STEP-2
 surface: install.sh | fw doctor | fw watchtower | fw <cmd> | gate:<policy-id> | docs | this-prompt | termlink | environment
@@ -269,10 +290,15 @@ fix_proposal: |
 authority: none
 ```
 
-**Fingerprint recipe** (stable across runs, so duplicates collapse): take the first error line. Replace paths with
-`<path>`, numbers, ids and timestamps with `<n>`, and the run id with `<run>`. Then
-`<step>:<surface>:<first 8 hex of sha1(normalised line)>`. For findings without an error line, hash the one-line
-`delta`.
+**Fingerprint recipe — compute it, do not write it by hand.** Fingerprints let the receiver match the same defect
+across runs. Two runs of the same build (2026-10-18) matched almost nothing, because agents wrote descriptive slugs
+instead of hashes.
+- Take `fingerprint_source`: the first error line; for findings without an error line, the one-line `delta`.
+- Normalise it: paths → `<path>`, numbers, ids and timestamps → `<n>`, the run id → `<run>`.
+- The fingerprint is `<step>:<surface>:` plus the first 8 hex of the sha1 of the normalised line. Compute it with a
+  command, for example:
+  `printf '%s' "$NORMALISED" | sha1sum | cut -c1-8`
+- `surface` uses exactly the values listed in the schema. No new spellings (`fw watchtower`, not `fw-watchtower`).
 
 ### Finding rules — read these twice
 
@@ -287,6 +313,7 @@ authority: none
 - **You will NOT clone, edit, branch, commit to, or open a PR against the AEF framework repo** in this session.
   Research is not authorization.
 - No `status` field. This record is append-only event data; status belongs to the receiver.
+- **Never print or record credentials:** no `env`/`printenv` dumps, nothing from `~/.claude`.
 
 ---
 
@@ -295,14 +322,18 @@ authority: none
 Check and record in `run.yaml`:
 - bash ≥ 4.4, git ≥ 2.20, python3 ≥ 3.8 (the installer checks these too; record both views);
 - `python3 -c "import yaml"` (PyYAML, required by most `fw` commands);
-- `python3 -c "import flask"` (Watchtower, needed in STEP 4).
+- `python3 -c "import flask, flask_socketio, markdown2"` (Watchtower, needed in STEP 4). On a clean machine
+  `markdown2` and `flask_socketio` are missing and nothing installs them (AEF T-4304); record it here, not first in
+  STEP 4. (v1.8.11's `watchtower start` then refuses with one line naming the missing modules and the apt command.)
 
 Self-heal, ask first:
 - **macOS bash 3.2:** `brew install bash`. Then remember its path as `BASH4` (e.g. `/opt/homebrew/bin/bash`) and use
   it in STEP 2. A plain `| bash` may still resolve to `/bin/bash` 3.2.
-- **Missing git / python3 / PyYAML / Flask stack:** [ASK] before installing. On Debian/Ubuntu/Mint, system-wide
-  `pip install` is refused (PEP 668, "externally-managed-environment"). Propose the platform package manager
-  (e.g. `apt install python3-yaml python3-flask`) or a venv, and tell me what you did.
+- **Missing git / python3 / PyYAML / Watchtower stack:** [ASK] before installing.
+  - On Debian/Ubuntu/Mint, system-wide `pip install` is refused (PEP 668, "externally-managed-environment"), and
+    stock python3 has no pip or venv.
+  - Propose the platform packages, e.g.
+    `apt install python3-yaml python3-flask python3-flask-socketio python3-markdown2`, and tell me what you did.
 
 **Capture:** any prerequisite that had to be installed is a finding (`environment`, or `doc-defect` if the
 requirement was not documented). A missing Watchtower dependency that no installer or doc mentions is
@@ -314,29 +345,27 @@ requirement was not documented). A missing Watchtower dependency that no install
 
 [ASK] Confirm with me:
 - (a) running a piped installer;
-- (b) the directory name;
+- (b) the directory name (it may not exist yet: the installer creates it);
 - (c) the provider: claude / cursor / generic.
 
 The installer's **default provider is `generic`**: if you omit `--provider claude`, a Claude Code project silently
 gets no pre-action hooks. Pick `claude` if you are Claude Code.
 
-Before the installer, three checks (each one a finding if it needs action):
-1. **Own git repository.** `git -C <dir> rev-parse --show-toplevel`. If it prints anything other than `<dir>`, or
-   fails, run `git init <dir>` first. The v1.8.10 installer does not create a repo when an enclosing one exists
-   (e.g. a repo rooted at `/`): task ids then continue from that repo's `.tasks`, its hook is written outside the
-   project, and the first commit fails (AEF T-4251).
-2. **Back up the PATH tools.** Copy `~/.local/bin/fw` and `~/.local/bin/claude-fw` (if present) to
-   `/tmp/aef-findings/$RUN/preinstall-backup/`. The installer replaces them without a warning; the new `claude-fw` is
-   a router that starts each project's own copy.
-3. **Clean environment.** See "Clean environment" above.
+Before the installer, record (no action needed on v1.8.11; each surprise is a finding):
+1. **Repository state:** `git -C <dir> rev-parse --show-toplevel` (it fails if `<dir>` does not exist yet). v1.8.11
+   creates the project's own repository when the directory is new, or when the enclosing repository is rooted at `/`
+   or `$HOME` (AEF T-4251).
+2. **PATH tools:** `sha256sum ~/.local/bin/fw ~/.local/bin/claude-fw` (if present). v1.8.11 backs up a CHANGED file
+   as `*.bak-<timestamp>` and says so; an identical file is left as is, silently (AEF T-4248).
 
-    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh \
-      | env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM \
-        "${BASH4:-bash}" -s -- <dir> --provider <choice> 2>&1 | tee /tmp/aef-findings/$RUN/install-stdout.log
+    cd <parent> && curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh \
+      | "${BASH4:-bash}" -s -- <dir> --provider <choice> 2>&1 | tee /tmp/aef-findings/$RUN/install-stdout.log
 
-**Do not trust the installer's last line.** fw v1.8.10 prints "Installation complete!" and exits 0 even after
-`[x] Step 1/3 .framework.yaml not found` (AEF T-4248). Check it yourself: `<dir>/.framework.yaml` and
-`<dir>/.agentic-framework/bin/fw` exist, and every `[x]` line becomes a finding.
+**Check the result yourself.**
+- v1.8.11 exits non-zero and prints "Installation FAILED" when a step reports `[x]` (AEF T-4248). Still verify:
+  `<dir>/.framework.yaml` and `<dir>/.agentic-framework/bin/fw` exist, and
+  `git -C <dir> rev-parse --show-toplevel` prints `<dir>`.
+- Every `[x]` and `[!]` line becomes a finding.
 
 What the installer does:
 - fetches the framework to a temporary dir;
@@ -355,32 +384,34 @@ Self-heal:
 
 **Capture:**
 - the installer exit code (`PIPESTATUS`);
-- `$FW version` output in `run.yaml` (the vendored copy has no git SHA; record that as well);
-- any write to `$HOME` beyond `.local/bin/{fw,claude-fw}`: `framework-defect`, `degraded`.
+- `$FW version` output in `run.yaml` (the vendored copy has no git SHA; record that as well, and the "Fetched <sha>"
+  line of the installer);
+- any write to `$HOME` beyond `.local/bin/{fw,claude-fw}` and their backups: `framework-defect`, `degraded`.
 
 ---
 
 ## STEP 3 — Verify health, then move the record into the project
 
-1. `$FW doctor` → save verbatim to `doctor-initial.txt` with its exit code.
-   - A non-zero exit: show me, fix what is clearly fixable (PATH; `$FW git install-hooks --force`), re-run, and save
+1. `cd <dir> && .agentic-framework/bin/fw doctor` → save verbatim to `doctor-initial.txt` with its exit code and
+   wall-clock time (v1.8.11: about 10-40 s; AEF T-3083).
+   - A non-zero exit: show me, fix what is clearly fixable (PATH; `fw git install-hooks --force`), re-run, and save
      `doctor-final.txt`.
    - Still failing: stop and report.
    - **Every warning on a fresh install is its own finding.** A fresh install that warns is either a framework
      defect or a doctor defect (checking something a new project cannot have yet).
-   - Expect many warnings on a fresh v1.8.10 install (run 3: 31, e.g. vector index not built, host-wide TermLink
-     DM backlog, cron registry not generated). Record each anyway; the receiver deduplicates by fingerprint.
-2. **Onboarding gate.** `fw init` seeds onboarding tasks T-001..T-007, and gate T-532 blocks every
+   - Record doctor's own count line (`N warning(s) (M host-level), no failures`, AEF T-4261). Expect about 6-8 on a
+     clean machine, more on a working machine.
+2. **Onboarding gate.** `fw init` seeds five onboarding tasks (T-001..T-005), and gate T-532 blocks every
    non-onboarding write until they are done or skipped. [ASK] Work through them, or skip?
-   - **Skip path that works on v1.8.10:** `$FW work-on T-001` → `$FW onboarding skip` → then your own task.
-   - The gate message advertises `fw onboarding skip` but blocks it when run directly (AEF finding F-28).
-   - Record the encounter.
+   - **Skip:** `cd <dir> && .agentic-framework/bin/fw onboarding skip` works directly on v1.8.11 (AEF T-4265).
+   - Look at `.context/bypass-log.yaml` afterwards: an agent-run skip is logged as `authorized_by: human`. Record it.
 3. Create your run task. Agent-owned, because a human-owned task with no Human ACs cannot be closed:
-   `cd <dir> && $FW work-on "Greenfield install + findings $RUN" --type test --owner agent`
+   `cd <dir> && .agentic-framework/bin/fw work-on "Greenfield install + findings $RUN" --type test --owner agent`
    Replace its placeholder acceptance criteria with real ones before any other edit (gate G-020).
    (Note: `fw work-on --help` prints no help; it treats `--help` as a task name. Read `fw help` instead.)
-4. Move the record: `<dir>/.context/install-findings/$RUN/` (copy, verify, then remove the `/tmp` copy). Commit it:
-   `$FW git commit -m "T-XXX: install findings $RUN (steps 0-3)"`.
+4. Move the record to `<dir>/.context/install-findings/$RUN/`: copy, verify, then remove the `/tmp` copy. Then commit
+   it. `fw git commit` leaves new untracked files out, so stage the directory first:
+   `cd <dir> && git add .context/install-findings/$RUN && .agentic-framework/bin/fw git commit -m "T-XXX: install findings $RUN (steps 0-3)"`
 
 ## STEP 3b — Restart inside the project (governance becomes active)
 
@@ -389,13 +420,14 @@ governed by the project you just installed.
 
 - Write the resume point to `<dir>/.context/install-findings/$RUN/RESUME.md`: next step = STEP 4, run id, task id.
 - Tell me: "Please restart me in `<dir>` with `claude-fw`, and paste: *resume the greenfield run from RESUME.md*."
-- After the restart: re-read this prompt and RESUME.md and continue.
-- **The restart must not inherit another project's environment.**
-  - Start the new session from a plain shell in `<dir>`, not from inside another project's `claude-fw`.
-  - In run 3, hooks loaded mid-session before the restart, and every gate crashed with `missing-hook` (fail-open,
-    nothing blocked); the cause was the inherited `FRAMEWORK_ROOT`.
+- After the restart:
+  - re-read this prompt and RESUME.md;
+  - run `fw work-on <run task>` again (focus is per session and does not survive the restart);
+  - continue.
+- **The restart must not inherit another project's environment.** Start the new session from a plain shell in
+  `<dir>`, not from inside another project's `claude-fw`.
 - **Prove governance is active.**
-  - Run `$FW doctor` and compare its hook-crash count with the pre-restart value: it must not grow.
+  - Run doctor again and compare its hook-crash line with the pre-restart value: it must not grow.
   - The first gate that fires after the restart must block, not log `missing-hook`.
   - A session where gates fail open is not a governed session. Record it and tell me.
 - Record as findings: whether the restart was needed (did a gate fire before it?), and whether `fw init` or the
@@ -405,23 +437,29 @@ governed by the project you just installed.
 
 ## STEP 4 — Start Watchtower (it does not auto-start)
 
-[ASK] Bind address. Watchtower binds **all interfaces (0.0.0.0) by default and has no login**. Default for this run:
-local only.
+[ASK] Bind address. Watchtower binds **all interfaces (0.0.0.0) by default and has no login**, and the dashboard
+includes a browser **terminal** page. Default for this run: local only.
 
-    FW_HOST=127.0.0.1 $FW watchtower start      # or without FW_HOST if I choose LAN
-    $FW watchtower status ; $FW watchtower port
+    cd <dir> && FW_HOST=127.0.0.1 .agentic-framework/bin/fw watchtower start      # or without FW_HOST if I choose LAN
+    cd <dir> && .agentic-framework/bin/fw watchtower status ; cd <dir> && .agentic-framework/bin/fw watchtower port
 
-- **Port:** v1.8.10 picks a free port itself if 3000 is busy and writes it into a tracked config file; read it with
-  `$FW watchtower port`.
-- **URL:** under a local-only bind, `fw watchtower url` still prints the LAN address, which is unreachable. Use
-  `http://127.0.0.1:<port>` (AEF finding F-36).
-- **Exposure:** under the default bind (0.0.0.0, no login), the dashboard includes a browser **terminal** page,
-  reachable from the LAN. Say this to me when asking the bind question.
-
-Self-heal: port busy → `$FW watchtower start --port <N>`. Missing Flask → back to STEP 1 (finding).
+- **Firewall (v1.8.11, AEF T-4297):**
+  - A loopback bind (127.0.0.1, localhost, ::1) never changes the host firewall.
+  - A LAN bind changes ufw only when the project has `fw config set WATCHTOWER_OPEN_FIREWALL 1`. Otherwise it prints
+    the exact `sudo ufw allow PORT/tcp` command and changes nothing.
+  - Record exactly what `start` printed about a firewall. **Any firewall change without that setting is a
+    `framework-defect`, `degraded`.**
+- **Port:** fw picks a port when none is configured and writes it into `.framework.yaml` (a tracked file; record
+  it). If the start fails because the port is busy, use `--port <N>` and record it.
+- **URL:** under a local-only bind, `fw watchtower url` may print nothing or an unreachable LAN address. Use
+  `http://127.0.0.1:<port>`.
+- **Missing modules** (`markdown2`, `flask_socketio`): v1.8.11 refuses to start with one line naming them and the apt
+  command. Expect that line; a traceback is a finding. Then back to STEP 1 (finding).
 
 Give me the URL. Open each page in the navigation (discover them; do not assume names) and say what it shows on an
-empty project.
+empty project. **Stop Watchtower at the end of the run** (`fw watchtower stop`) so no orphan server stays up. On
+v1.8.11, `stop` may report a failure although the server is gone (a zombie process, AEF T-4306): check that the port
+is closed, and record it as that known issue, not as a new one.
 
 **Capture:**
 - "Does not auto-start" once, as a finding with a fingerprint.
@@ -438,21 +476,24 @@ In one short message, tell me:
   before its first edit. You will hit gates if you skip this.
 - [ASK] Which way I want to begin:
   - **Explore first:**
-    `$FW inception start "<what we build>" --recommendation GO|NO-GO|DEFER --rationale "<evidence>"`
+    `fw inception start "<what we build>" --recommendation GO|NO-GO|DEFER --rationale "<evidence>"`
     Both flags are required when an agent files under Claude Code. Then, in this order:
-    - `$FW work-on T-XXX`: `inception start` sets focus but not `started-work`, and the task gate blocks the first
+    - `fw work-on T-XXX`: `inception start` sets focus but not `started-work`, and the task gate blocks the first
       edit without it;
     - add at least one open question `**IW-1: …**` to the task file (gate G-067);
     - create the research artifact `docs/reports/T-XXX-*.md` before researching (rule C-001).
 
     You propose an architecture; **I** record go / no-go (`fw inception decide` is mine).
-  - **Build now:** `$FW work-on "<first task>" --type build`, then replace the placeholder ACs and add
+  - **Build now:** `fw work-on "<first task>" --type build`, then replace the placeholder ACs and add
     `## Verification` before editing.
 
 Once I choose: create the task, set focus, start. From here:
 - every commit traces to a task;
 - **Tier-0 commands** (force push, hard reset, `rm -rf` of roots, DROP TABLE, …) wait for my approval;
 - the dashboard shows state.
+
+Satisfy every completion gate the way its message says, never with a bypass. On v1.8.11 the render gate ignores
+HTML comments in the task template (AEF T-4307), so a render-gate refusal on a non-web task is a finding.
 
 **Capture:**
 - **First gate encounter:** was the message alone enough to know what to do? If you needed `--help`, prior
@@ -461,7 +502,8 @@ Once I choose: create the task, set focus, start. From here:
   - the first edit;
   - the first edit made while gates were provably active;
   - the first gate-authorised edit to a project file.
-  (Run 3: 3 min 41 s / ~14 min / ~19.5 min.)
+  (Run 3, workstation: 3 min 41 s / ~14 min / ~19.5 min. Clean container, 2026-10-18: first gate-authorised edit
+  after ~5.5 min.)
 
 ---
 
@@ -483,7 +525,7 @@ record.
    new finding (`surface: termlink`), and move on. No retry loops.
 7. **Deliver to the AEF framework agents.** On a host with an AEF session, also send one pickup with the findings
    table:
-   `$FW pickup send --remote <hub> --session <aef-session-id> --type bug-report --summary … --detail …`
+   `cd <dir> && .agentic-framework/bin/fw pickup send --remote <hub> --session <aef-session-id> --type bug-report --summary … --detail …`
    - Always pass `--remote` and `--session`. Without them the envelope is silently kept in YOUR inbox (AEF T-4243).
    - Look up the session id with `termlink list` right before sending; session ids change after a restart.
    - Put the header counts in last, after the final finding, so they cover all findings.
@@ -499,13 +541,15 @@ as a schema question.
 ## STEP 7 — Final report and session close
 
 Report:
-- project path · provider · `fw` version · dashboard URL + bind · tasks created;
+- project path · provider · `fw` version (and the installer's fetched sha) · machine kind · dashboard URL + bind ·
+  tasks created;
 - doctor warnings, each mapped to its finding id;
-- **findings table:** id · step · surface · class · severity · one-line observation;
+- **findings table:** id · step · surface · class · severity · fingerprint · one-line observation;
 - counts by class and by severity · publish status · onboarding cost (STEP 2 → first authorised edit);
 - **top 3 to fix first:** a ranked proposal with reasoning, explicitly unratified. I decide.
 
-Then close the session the framework's way: commit the final record, `$FW handover --commit`.
+Then close the session the framework's way: commit the final record, `fw handover --commit`. Leave no uncommitted
+files in the record.
 
 ---
 
@@ -517,6 +561,7 @@ Then close the session the framework's way: commit the final record, `$FW handov
   severity say so.
 - **Research is not authorization.** A framework defect found here authorizes recording it, nothing more.
 - **The workaround is the finding.** Recovering silently is the one failure mode that makes this run worthless.
+- **The working directory is part of the instrument.** `cd <dir> &&` before every fw call; never into another project.
 - Stop at every [ASK] and before anything destructive. When unsure, ask "y / n".
 - If the harness breaks mid-run, stop and tell me. An uninstrumented install is a different task.
 ````
