@@ -173,6 +173,27 @@ byte-identical to their v2.2.1; testbed L1 against master: all 8 checks pass.
 | T-4232 CLAUDE.md upgrade | WORKS — no project lines removed (their project section only names the project) |
 
 Pending from them: a level-2 run with prompt v2.2.1 for T-2746, T-4304, T-4305, T-4307, T-4312.
+
+## Round 9 — dimitri-mint-dev level-2 container run on v1.8.11 (T-133, msg 3f53e5e9, 2026-10-18)
+
+master e42aa41bf, prompt v2.2.1, throwaway container, token from Infisical. Phase 1 208 s, phase 2 241 s, rc 0,
+leak-clean, 11 findings, all fingerprints in the computed format. Verdicts read from the record.
+
+| Fix | Verdict |
+|---|---|
+| T-4298 inherited-env line | **WORKS** — exactly one line naming FRAMEWORK_ROOT, PROJECT_ROOT; install landed in the target |
+| T-4248 backup, T-4251, T-4265, T-4261, T-3083 (doctor 9 s) | **WORKS** |
+| T-4308 / T-4312 inbox without termlink | **WORKS** — NOT CHECKED, exit 3 |
+| T-4304 Watchtower missing modules | **WORKS** — one line naming flask_socketio, markdown2 + apt command; no traceback (cosmetic F-05: a port-allocation line precedes it) |
+| T-4305 /embeddings | **WORKS** — HTTP 200; all 37 nav pages 200 |
+| T-4307 render gate | **WORKS** |
+| T-2746 no silent init | **WORKS** — re-tested by hand (the run's header used a non-existent verb; prompt defect on their side): exit 1 "not in an AEF project", nothing created |
+| T-4297 firewall | no change made; printed-advisory path NOT EXERCISED (no ufw) → F-07, T-4330 |
+
+New findings filed: F-07 → T-4330 (no advisory when ufw absent); F-02 → T-4331 (installer's doctor exit 2 vs manual 0);
+F-06 → T-4306 (stale pid now blocks start and restart); F-08 → T-4332 (start exits 1 after "Health check passed");
+F-03 → T-4333 (skipped onboarding tasks stay active); F-09 → T-4334 (G-020 title vs Policy label); F-11 → existing
+T-2054 (close clears focus; next commit blocked).
 Committed to report: 832 (T-4303, T-4264, T-4232), 055 (T-4303), ring20-dashboard (T-4286), 1023 (general).
 
 ## Findings
