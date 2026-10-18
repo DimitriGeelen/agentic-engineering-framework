@@ -518,7 +518,12 @@ verify() {
         # green checkmark. Report the WARN count and the first few lines.
         local doctor_out="" doctor_rc=0 warn_lines="" warn_count=0
         if [[ -x "$target_fw" ]]; then
-            doctor_out=$(cd "$TARGET_DIR" && "$target_fw" doctor 2>&1) || doctor_rc=$?
+            # T-4331: same env -u as do_project_init's fw init. An inherited
+            # PROJECT_ROOT/FRAMEWORK_ROOT pointed doctor at another (or a gone)
+            # project: exit 2 here, exit 0 from the operator's fresh shell.
+            doctor_out=$(cd "$TARGET_DIR" && env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR \
+                -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM \
+                "$target_fw" doctor 2>&1) || doctor_rc=$?
             warn_lines=$(printf '%s\n' "$doctor_out" | sed 's/\x1b\[[0-9;]*m//g' | grep -E '(^|[^A-Za-z])WARN' || true)
             [[ -n "$warn_lines" ]] && warn_count=$(printf '%s\n' "$warn_lines" | wc -l | tr -d ' ')
         else
@@ -532,7 +537,12 @@ verify() {
             echo "  To see all:"
             echo "    cd $TARGET_DIR && $target_fw doctor"
         else
-            warn "Step 3/3: fw doctor reported failures (exit ${doctor_rc}; ${warn_count} warning(s), non-fatal to install)"
+            warn "Step 3/3: fw doctor reported failures (exit ${doctor_rc}; ${warn_count} warning(s), non-fatal to install). First few:"
+            # T-4331: name what failed — an exit code alone left nothing to act on.
+            local fail_lines
+            fail_lines=$(printf '%s\n' "$doctor_out" | sed 's/\x1b\[[0-9;]*m//g' | grep -E '(^|[^A-Za-z])(FAIL|ERROR)|refusing' || true)
+            [[ -z "$fail_lines" ]] && fail_lines=$(printf '%s\n' "$doctor_out" | sed 's/\x1b\[[0-9;]*m//g' | grep -v '^[[:space:]]*$' | tail -5)
+            printf '%s\n' "$fail_lines" | head -5 | sed 's/^/    /'
             echo "  To see details:"
             echo "    cd $TARGET_DIR && $target_fw doctor"
         fi

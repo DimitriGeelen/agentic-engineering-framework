@@ -9,10 +9,10 @@ description: >
   before something is in place) or it misreads the exit code. Reproduce in a clean
   container, find which check fails only inside install.sh.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [install, doctor]
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T20:44:07Z
-last_update: '2026-10-18T20:45:28Z'
+last_update: 2026-10-18T21:06:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,6 +66,24 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T20:46:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4331: install.sh's post-install doctor reports failures (exit 2) while a manual fw doctor right after exits 0
@@ -78,8 +96,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of the install-only doctor failure is localised to a file:line and recorded in ## RCA
+- [x] install.sh's post-install doctor exits with the same code as a manual `fw doctor` run in the same fresh target (no install-only FAIL)
+- [x] When the post-install doctor does fail, install.sh prints the FAIL line(s), not just the exit code
+- [x] bats regression in tests/unit/ (next to install_target_project.bats) fails without the fix and passes with it
+- [x] tests/unit/install_target_project.bats and tests/unit/upgrade_fresh_machine_simulation.bats stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -232,6 +253,12 @@ cost_estimate_proposed:
 # both. Re-derive rather than trust this table — it is pinned, not asserted:
 #     bats tests/unit/t3203_p011_gate_semantics.bats
 #
+timeout 900 bats tests/unit/install_doctor_inherited_env.bats > /tmp/.t4331-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4331-a.out
+test "$(grep -c '# skip' /tmp/.t4331-a.out)" -eq 0
+timeout 900 bats tests/unit/install_target_project.bats > /tmp/.t4331-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4331-b.out
+timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4331-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4331-c.out
+bash -n install.sh
+#
 # ── `cmd1; cmd2` IS JUDGED ONLY ON cmd2 (T-3203) ──────────────────────────────
 #
 # The gate runs each line as the CONDITION of an `if` (update-task.sh:1215), and
@@ -273,6 +300,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** in the dimitri-mint-dev T-133 container run, install.sh printed "Step 3/3: fw doctor reported failures (exit 2; 0 warning(s))"; a manual `fw doctor` in the target right afterwards exited 0. The same run printed "Ignoring inherited environment for fw init: FRAMEWORK_ROOT, PROJECT_ROOT" (T-4298).
+
+**Root cause:** `install.sh` verify() ran the target's doctor (`install.sh:521`, pre-fix) with the installer's full environment, while `do_project_init` (`install.sh:470`) runs fw init under `env -u FRAMEWORK_ROOT -u PROJECT_ROOT …`. With a leaked PROJECT_ROOT naming another or a gone project, the target's bin/fw refused ("PROJECT_ROOT does not exist … refusing to run", exit 2) before any check ran — so 0 WARN lines and exit 2. The operator's later shell had no such variable, hence exit 0. Reproduced with `env -i … FRAMEWORK_ROOT=<gone> PROJECT_ROOT=<gone> bash install.sh <target> --local …`: exactly "exit 2; 0 warning(s)".
+
+**Why structurally allowed:** T-4248/T-4298 fixed the inherited-env class for the one fw call they were looking at (init) rather than for every fw call install.sh makes; the env -u list was inlined at one site. Every install test runs under `env -i` with no FRAMEWORK_ROOT/PROJECT_ROOT, so the leaked-env path was never exercised for doctor. The failure branch printed only the exit code, so the field report could not say which check failed.
+
+**Prevention:** doctor now runs under the same `env -u` list; the failure branch prints doctor's FAIL/refusal lines. `tests/unit/install_doctor_inherited_env.bats` runs install.sh with a leaked FRAMEWORK_ROOT/PROJECT_ROOT and asserts the installer's doctor verdict matches a clean-shell manual doctor, and that both fw calls carry the env -u list.
 
 ## Evolution
 
@@ -354,3 +389,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4331-installshs-post-install-doctor-reports-f.md
 - **Context:** Initial task creation
+
+### 2026-10-18T21:06:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
