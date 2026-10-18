@@ -4339,7 +4339,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
         local recent_crashes
         recent_crashes=$( { grep "$(date -u +%Y-%m-%d)" "$crash_log" 2>/dev/null || true; } | wc -l | tr -d '[:space:]')
         if [ "${recent_crashes:-0}" -gt 0 ]; then
-            echo -e "  ${YELLOW}WARN${NC}  Hook crashes: $recent_crashes today ($crash_count total) — check .context/working/.hook-crashes.log"
+            echo -e "  ${YELLOW}WARN${NC}  Hook crashes: $recent_crashes today ($crash_count total) — inspect: fw doctor hook-crashes show; once handled: fw doctor hook-crashes acknowledge"
             warnings=$((warnings + 1))
         else
             echo -e "  ${CYAN}INFO${NC}  Hook crash log: $crash_count historical entries (none today)"
@@ -10628,6 +10628,12 @@ PYSEARCH
         exec bash "$_he_script" "$@"
         ;;
     doctor)
+        # T-4227: `fw doctor hook-crashes {count|show|acknowledge}` — the crash
+        # log doctor counts can be read and emptied, not only grow.
+        if [ "${1:-}" = "hook-crashes" ]; then
+            shift
+            exec bash "$FW_LIB_DIR/hook-crashes.sh" "$@"
+        fi
         do_doctor "$@"
         ;;
     policy)

@@ -67,3 +67,16 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" == *"No unacknowledged"* ]]
 }
+
+@test "fw doctor hook-crashes routes to the crash-log tool (count, acknowledge)" {
+    # .tasks/ makes $PROJ a project; without it fw re-resolves to the real repo
+    # and would count (and acknowledge!) the live crash log.
+    mkdir -p "$PROJ/.tasks"
+    printf '[2026-10-18T00:00:00Z] CRASH: c exit=1\n' > "$LOG"
+    run env PROJECT_ROOT="$PROJ" bash "$REPO/bin/fw" doctor hook-crashes count
+    [ "$status" -eq 0 ]
+    [ "$output" = "1" ]
+    run env PROJECT_ROOT="$PROJ" bash "$REPO/bin/fw" doctor hook-crashes acknowledge
+    [ "$status" -eq 0 ]
+    [ ! -s "$LOG" ]
+}
