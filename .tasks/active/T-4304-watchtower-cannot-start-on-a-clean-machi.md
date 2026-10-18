@@ -100,7 +100,7 @@ bvp_scores_proposed:
 - [x] The pre-flight does NOT run sudo or `pip` automatically (bats test 5 records any call)
 - [x] Decision recorded in `## Decisions` on whether `fw init` / `install.sh` should offer the install, with evidence
 - [x] Bats regression test `tests/unit/t4304_watchtower_preflight_modules.bats` runs the pre-flight with markdown2 unimportable (PYTHONPATH stub); 4 of 6 tests fail on the pre-fix code (the 6th pins the required set; test 1 passes pre-fix only because the unfixed server exits 1 too)
-- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green (16/16 ok, exit 0, run alone)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
