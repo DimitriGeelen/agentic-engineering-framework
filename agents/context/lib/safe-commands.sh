@@ -107,8 +107,39 @@ _fw_chain_split() {
 # Failure direction is asymmetric and this errs the safe way: misjudging a safe
 # chain as unsafe merely sends it to the task gate, which allows it whenever a
 # task is active; misjudging an unsafe chain as safe skips every gate there is.
+# T-4343: advance the tracked cwd (_FW_GIT_CWD, a local of is_bash_safe_command)
+# past one chain segment that changes directory. Only a literal `cd <path>` whose
+# base is known moves it. Any other directory-changing segment (bare cd, cd -,
+# cd $VAR, pushd, source, eval) leaves it unknown, and so does a cd to something
+# that is not an existing directory: the shell would have stayed put, so the next
+# command's directory cannot be known. A relative -C then fails closed.
+_fw_track_cwd() {
+    _fw_segment_may_change_dir "$1" || return 0
+    local _s="$1" _t="" _base="${_FW_GIT_CWD:-}" _abs=""
+    _s="${_s#"${_s%%[![:space:]]*}"}"
+    if [[ "$_s" =~ ^cd[[:space:]]+([^[:space:]]+)[[:space:]]*$ ]]; then
+        _t="${BASH_REMATCH[1]}"
+    fi
+    _FW_GIT_CWD=""
+    [ -n "$_t" ] && [[ "$_t" =~ ^[A-Za-z0-9._/+:@%,=-]+$ ]] && [[ "$_t" != -* ]] || return 0
+    if [[ "$_t" == /* ]]; then
+        _abs="$_t"
+    elif [[ "$_base" == /* ]]; then
+        _abs="$_base/$_t"
+    else
+        return 0
+    fi
+    _abs="$(realpath -m -- "$_abs" 2>/dev/null)" || return 0
+    [ -d "$_abs" ] && _FW_GIT_CWD="$_abs"
+    return 0
+}
+
 is_bash_safe_command() {
     local _cmd="$1" _seg _n=0
+    # T-4343: the cwd the git arm resolves -C / --git-dir against. Top level starts at
+    # the shell's cwd from the hook payload. A nested call (F-15 `X=$(...)`) inherits
+    # the caller's value, and `local` keeps a cd inside it from leaking back out.
+    local _FW_GIT_CWD="${_FW_GIT_CWD-${_FW_PAYLOAD_CWD:-$PWD}}"
     local -a _segs=() _kept=()
     # T-3223: `-d ''`. mapfile -t here read the splitter's NUL stream as lines,
     # so a segment containing a newline arrived as several bogus segments.
@@ -122,6 +153,7 @@ is_bash_safe_command() {
     if [ "$_n" -gt 1 ]; then
         for _seg in "${_kept[@]}"; do
             _fw_single_command_is_safe "$_seg" || return 1
+            _fw_track_cwd "$_seg"
         done
         return 0
     fi
@@ -256,16 +288,53 @@ _fw_strip_env_prefixes() {
 # unknown global, a value option with no value) returns non-zero: fail closed.
 # `-c` is the one that can run code: `-c core.fsmonitor=CMD status` executes CMD,
 # so keys that name a program are refused here rather than admitted as read-only.
+# T-4343: -C / --git-dir / --work-tree choose the repository git reads, and that
+# repository's config can run commands (core.fsmonitor, core.pager, diff.external,
+# filters). So a value is accepted only when it resolves inside PROJECT_ROOT.
+# _fw_git_dir_is_project <value> <base> prints the resolved path when VALUE lies in
+# PROJECT_ROOT. A relative VALUE resolves against BASE, the absolute effective cwd.
+# Fail closed: a quoted, variable, ~ or glob word (this is no shell, nothing is
+# expanded), a leading -, an unknown base, an unset or missing PROJECT_ROOT, or a
+# path that realpath puts outside it (`..` and symlinks included).
+_fw_git_dir_is_project() {
+    local _v="$1" _base="$2" _pr _abs
+    [[ "$_v" =~ ^[A-Za-z0-9._/+:@%,=-]+$ ]] || return 1
+    [[ "$_v" == -* ]] && return 1
+    if [[ "$_v" == /* ]]; then
+        _abs="$_v"
+    elif [[ "$_base" == /* ]]; then
+        _abs="$_base/$_v"
+    else
+        return 1
+    fi
+    [ -n "${PROJECT_ROOT:-}" ] || return 1
+    _pr="$(realpath -e -- "$PROJECT_ROOT" 2>/dev/null)" || return 1
+    _abs="$(realpath -m -- "$_abs" 2>/dev/null)" || return 1
+    case "$_abs" in "$_pr"|"$_pr"/*) printf '%s' "$_abs" ;; *) return 1 ;; esac
+}
+
 _fw_git_skip_globals() {
     local -a words
     read -ra words <<< "$1"
-    local i=1 n=${#words[@]} tok key
+    local i=1 n=${#words[@]} tok key _cwd="${_FW_GIT_CWD:-}" _p
     while [ "$i" -lt "$n" ]; do
         tok="${words[$i]}"
         case "$tok" in
-            -C|--git-dir|--work-tree|--namespace)
+            # T-4343: -C moves the cwd for every later relative value, exactly as git
+            # does, so the next value is judged against the resolved one.
+            -C)
+                _p="$(_fw_git_dir_is_project "${words[$((i + 1))]:-}" "$_cwd")" || return 1
+                _cwd="$_p"
                 i=$((i + 2)) ;;
-            --git-dir=*|--work-tree=*|--namespace=*|-P|--no-pager)
+            --git-dir|--work-tree)
+                _fw_git_dir_is_project "${words[$((i + 1))]:-}" "$_cwd" >/dev/null || return 1
+                i=$((i + 2)) ;;
+            --git-dir=*|--work-tree=*)
+                _fw_git_dir_is_project "${tok#*=}" "$_cwd" >/dev/null || return 1
+                i=$((i + 1)) ;;
+            --namespace)
+                i=$((i + 2)) ;;
+            --namespace=*|-P|--no-pager)
                 i=$((i + 1)) ;;
             # -c k=v is never read-only: too many config keys run a program
             # (pager, fsmonitor, textconv, filters, ssh/askpass, aliases, ...)

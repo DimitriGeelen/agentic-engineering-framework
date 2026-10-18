@@ -1,10 +1,20 @@
 ---
 id: T-4343
-name: "Read-only allowlist treats git -C / --git-dir / --work-tree on a repository outside the project as safe (that repo's config can run commands)"
+name: "Read-only allowlist treats git -C / --git-dir / --work-tree on a repository
+  outside the project as safe (that repo's config can run commands)"
 description: >
-  ring20-dashboard finding (msg 4699f56c), reproduced on v1.8.11: is_bash_safe_command returns SAFE for 'git -C /tmp/evil status', 'git --git-dir=/tmp/evil/.git log', 'git --work-tree=/tmp/evil status' (agents/context/lib/safe-commands.sh _fw_git_skip_globals, T-4264). A git command in a repository the agent does not control reads that repo's config: core.fsmonitor, core.pager, diff.external, filters etc. run arbitrary commands, so it is not read-only. Fix: accept -C / --git-dir / --work-tree (and = forms) only when the value resolves (realpath, after cd tracking) to PROJECT_ROOT or a path inside it; anything else, unresolvable, or variable-built is NOT safe. Tests for each form inside and outside the project, relative and absolute, .. traversal, symlink out of the project. Regression of v1.8.11 (shipped T-4264).
+  ring20-dashboard finding (msg 4699f56c), reproduced on v1.8.11: is_bash_safe_command
+  returns SAFE for 'git -C /tmp/evil status', 'git --git-dir=/tmp/evil/.git log',
+  'git --work-tree=/tmp/evil status' (agents/context/lib/safe-commands.sh _fw_git_skip_globals,
+  T-4264). A git command in a repository the agent does not control reads that repo's
+  config: core.fsmonitor, core.pager, diff.external, filters etc. run arbitrary commands,
+  so it is not read-only. Fix: accept -C / --git-dir / --work-tree (and = forms) only
+  when the value resolves (realpath, after cd tracking) to PROJECT_ROOT or a path
+  inside it; anything else, unresolvable, or variable-built is NOT safe. Tests for
+  each form inside and outside the project, relative and absolute, .. traversal, symlink
+  out of the project. Regression of v1.8.11 (shipped T-4264).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +49,8 @@ origin: {kind: "peer", source: "ring20-dashboard"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:02:30Z
-last_update: 2026-10-18T22:02:30Z
-date_finished: null
+last_update: '2026-10-18T22:15:32Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-18T22:04:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-18T22:15:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=310,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4343: Read-only allowlist treats git -C / --git-dir / --work-tree on a repository outside the project as safe (that repo's config can run commands)
@@ -63,8 +101,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `git -C`, `--git-dir` and `--work-tree` (separate-word and `=` forms) with a value resolving (realpath) inside PROJECT_ROOT stay SAFE for read verbs; outside values, `..` escapes, symlinks pointing out, quoted/variable/`~`/glob values and unresolvable values are NOT SAFE (new bats tests/unit/t4343_git_repo_path_boundary.bats)
+- [ ] Relative values resolve against the command's effective cwd: a leading `cd X &&` (inside → SAFE, outside → NOT SAFE), and a cd to an unknown or variable target makes a relative value NOT SAFE
+- [ ] Cumulative `-C`: `git -C <in> -C <rel-escape>` is NOT SAFE (second value resolves against the first, as git does)
+- [ ] T-4264 `-c` fail-closed tests and the command-form tests still pass; their SAFE cases use in-project paths, their `/tmp` cases are kept as NOT-SAFE controls
+- [ ] The new bats file fails on the pre-fix safe-commands.sh (recorded red run) and is green on the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -242,8 +283,25 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/context/lib/safe-commands.sh
+out=$(bats tests/unit/t4343_git_repo_path_boundary.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+test "$(echo "$out" | grep -c '# skip')" -eq 0
+out=$(bats tests/unit/t4264_git_global_opts_safe.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/context_safe_commands.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/safe_commands_chain.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/safe_commands_env_prefix.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/t3096_safe_commands_wrappers.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** `is_bash_safe_command "git -C /tmp/evil status"` (and `--git-dir=`, `--work-tree=`) returns SAFE. A read-only verb in a repository outside the project runs that repository's config (core.fsmonitor, core.pager, diff.external, filters).
+
+**Root cause:** `agents/context/lib/safe-commands.sh:266-269` (`_fw_git_skip_globals`, T-4264) skips `-C` / `--git-dir` / `--work-tree` and their values without looking at the value. The sub-verb check then judges the verb alone, so the path a read-only verb runs in was never part of the decision.
+
+**Why structurally allowed:** T-4264 fixed the verb being read as a global flag (F-26) and its tests pinned the SAFE verdict with `/tmp` as the path (`tests/unit/t4264_git_global_opts_safe.bats`). The fixture encoded the bug: the test suite asserted the outside repo was safe.
+
+**Prevention:** the value of each repo-selecting global must resolve (realpath, cumulative through `-C`, against the tracked cwd) inside PROJECT_ROOT, or the command is not safe; `tests/unit/t4343_git_repo_path_boundary.bats` pins inside/outside/`..`/symlink/cd/unknown cases. Open (not fixed here): `cd /outside && git status` with no `-C`, and `GIT_DIR=/outside git status` (env prefix, which safe-commands.sh:186-199 deliberately leaves allowed as "retargeting, still a read").
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -339,3 +397,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4343-read-only-allowlist-treats-git--c----git.md
 - **Context:** Initial task creation
+
+### 2026-10-18T22:04:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
