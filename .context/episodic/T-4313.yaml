@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4313: orchestrator-status test fixtures are not projects (relied on T-2746's removed auto-init)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T16:36:33Z
+# ============================================================================
+
+task_id: T-4313
+task_name: "orchestrator-status test fixtures are not projects (relied on T-2746's removed auto-init)"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T16:06:43Z
+completed: 2026-10-18T16:36:04Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-18T18:08:30+02:00
+last_commit: 2026-10-18T18:36:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  orchestrator-status test fixtures create .tasks/ (they relied on the auto-init T-2746 removed); both files 67 passed in 16 s, previously 900 s timeouts. test_fw_gaps_closure_check fixture creates .tasks/ (same T-2746 auto-init dependency); 6/6 in 1.7 s, previously a 900 s timeout
+
+# Key outcomes
+outcomes:
+  - 'Both orchestrator-status test files make their temp root a project (`.tasks/`) before running fw'
+  - 'Both files pass in full, well inside the 900 s per-file cap (67 passed in 16 s)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'test_fw_gaps_closure_check fixture creates .tasks/ (same T-2746 auto-init dependency); 6/6 in 1.7 s, previously a 900 s timeout'
+    source: git-mined
+  - description: 'orchestrator-status test fixtures create .tasks/ (they relied on the auto-init T-2746 removed); both files 67 passed in 16 s, previously 900 s timeouts'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4313-orchestrator-status-test-fixtures-are-no.md'
+  - 'tests/unit/test_fw_gaps_closure_check.bats'
+  - 'tests/unit/test_orchestrator_status_outcomes.py'
+  - 'tests/unit/test_orchestrator_status_terminal_events.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T18:08:30'
+    action: 'T-4313: orchestrator-status test fixtures create .tasks/ (they relied on the auto-init T-2746 removed); both files 67 passed in 16 s, previously 900 s timeouts'
+  - time: '2026-10-18T18:36:01'
+    action: 'T-4313: test_fw_gaps_closure_check fixture creates .tasks/ (same T-2746 auto-init dependency); 6/6 in 1.7 s, previously a 900 s timeout'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 29 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [tests, T-2746]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 29
+  commits: 2
+  files_changed: 4
+  lines_added: 351
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4313-orchestrator-status-test-fixtures-are-no.md
+generated_by: context-agent-hybrid

@@ -1,15 +1,21 @@
 ---
 id: T-4313
-name: "orchestrator-status test fixtures are not projects (relied on T-2746's removed auto-init)"
+name: "orchestrator-status test fixtures are not projects (relied on T-2746's removed
+  auto-init)"
 description: >
-  After T-2746 (no implicit fw init), tests/unit/test_orchestrator_status_terminal_events.py and test_orchestrator_status_outcomes.py fail with 'not in an AEF project': their temp roots hold only .context/, so fw does not recognise them as projects. Before T-2746 each test silently auto-initialised its temp dir, which is why both files hit the 900 s per-file timeout on v1.8.10 and v1.8.11 alike. Fix: the fixtures create .tasks/ so the temp root is a project.
+  After T-2746 (no implicit fw init), tests/unit/test_orchestrator_status_terminal_events.py
+  and test_orchestrator_status_outcomes.py fail with 'not in an AEF project': their
+  temp roots hold only .context/, so fw does not recognise them as projects. Before
+  T-2746 each test silently auto-initialised its temp dir, which is why both files
+  hit the 900 s per-file timeout on v1.8.10 and v1.8.11 alike. Fix: the fixtures create
+  .tasks/ so the temp root is a project.
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: [tests, T-2746]
-components: []
+components: [tests/unit/test_fw_gaps_closure_check.bats, tests/unit/test_orchestrator_status_outcomes.py, tests/unit/test_orchestrator_status_terminal_events.py]
 related_tasks: []
 origin: {kind: "agent", source: "T-4246"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -39,8 +45,8 @@ origin: {kind: "agent", source: "T-4246"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T16:06:43Z
-last_update: 2026-10-18T16:06:43Z
-date_finished: null
+last_update: 2026-10-18T16:36:04Z
+date_finished: 2026-10-18T16:36:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T16:15:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=290,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T16:16:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4313: orchestrator-status test fixtures are not projects (relied on T-2746's removed auto-init)
@@ -342,3 +376,20 @@ grep -q '".tasks"' tests/unit/test_orchestrator_status_terminal_events.py && gre
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4313-orchestrator-status-test-fixtures-are-no.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2837852e
+- **Timestamp:** 2026-10-18T16:36:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T16:36:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

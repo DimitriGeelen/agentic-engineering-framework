@@ -12,12 +12,12 @@ description: >
   verify and nothing that can count as a verdict; with rows and no git the fault must
   stay.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, reviewer, ledger, tests]
-components: []
+components: [lib/verdict_ledger.py]
 related_tasks: []
 origin: {kind: "agent", source: "T-4246"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -47,8 +47,8 @@ origin: {kind: "agent", source: "T-4246"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T16:27:42Z
-last_update: '2026-10-18T16:31:13Z'
-date_finished:
+last_update: 2026-10-18T16:33:06Z
+date_finished: 2026-10-18T16:33:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -386,3 +386,20 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4314-verdict-ledger-audit-fails-in-a-non-git-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-766296a7
+- **Timestamp:** 2026-10-18T16:35:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T16:33:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

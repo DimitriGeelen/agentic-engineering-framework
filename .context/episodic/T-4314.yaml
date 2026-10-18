@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4314: verdict ledger audit FAILs in a non-git project that has no ledger rows (nothing to verify)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T16:35:35Z
+# ============================================================================
+
+task_id: T-4314
+task_name: "verdict ledger audit FAILs in a non-git project that has no ledger rows (nothing to verify)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T16:27:42Z
+completed: 2026-10-18T16:33:06Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-18T18:33:04+02:00
+last_commit: 2026-10-18T18:33:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  verdict ledger reports no fault in a non-git project with no rows (fail-closed kept when rows exist); fixes audit_corpus_lint_findings 4/6/7 and audit_seed_corpus_refs 15, red since v1.8.10
+
+# Key outcomes
+outcomes:
+  - 'In a non-git project with no ledger rows (file absent or blank), `verdict_ledger.py audit` reports no fault; the same holds for the completions and acknowledgements files that `history_fault` checks'
+  - 'In a non-git project WITH ledger rows (or completion/ack rows), the "git cannot answer" fault still fires (fail-closed kept)'
+  - 'audit_corpus_lint_findings.bats and audit_seed_corpus_refs.bats pass in full; the existing ledger suites (test_t3579_verdict_ledger.py, test_t3581_ledger_integrity.py) still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'verdict ledger reports no fault in a non-git project with no rows (fail-closed kept when rows exist); fixes audit_corpus_lint_findings 4/6/7 and audit_seed_corpus_refs 15, red since v1.8.10'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-4314-verdict-ledger-audit-fails-in-a-non-git-.md'
+  - 'tests/unit/test_t4314_ledger_nongit_empty.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T18:33:04'
+    action: 'T-4314: verdict ledger reports no fault in a non-git project with no rows (fail-closed kept when rows exist); fixes audit_corpus_lint_findings 4/6/7 and audit_seed_corpus_refs 15, red since v1.8.10'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, reviewer, ledger, tests]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 4
+  lines_added: 457
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4314-verdict-ledger-audit-fails-in-a-non-git-.md
+generated_by: context-agent-hybrid
