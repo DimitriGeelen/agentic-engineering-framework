@@ -219,6 +219,9 @@ def test_the_real_dispatcher_counts_a_verb_and_honours_the_opt_out(tmp_path):
     """End-to-end through the shipped bin/fw, in a throwaway PROJECT_ROOT so the
     live counter is never touched by the suite."""
     (tmp_path / ".context" / "working").mkdir(parents=True)
+    # T-4313: .tasks/ makes tmp_path a project; without it fw does not accept the
+    # inherited PROJECT_ROOT and the verb is counted somewhere else (or nowhere).
+    (tmp_path / ".tasks").mkdir()
     target = tmp_path / ".context" / "working" / ".verb-counter"
 
     _run_fw(["decisions"], {"PROJECT_ROOT": str(tmp_path)}, cwd=tmp_path)
