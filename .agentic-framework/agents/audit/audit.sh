@@ -731,6 +731,86 @@ else
     trap "rm -f '$AUDIT_LOCK_FILE'" EXIT
 fi
 
+# T-4417 — every external read in the section path is bounded. Sections read git and
+# python3 output through pipes (`done < <(git ... log)`, `$(python3 ...)`), and a read
+# waits for EOF: the LAST holder of the pipe's write end must close it. A producer
+# that leaves a descendant holding its stdout exits, the descendant keeps the pipe
+# open, and the read blocks with no child to wait on until the body watchdog fires
+# (600 s scoped / 3000 s full). `timeout` on the producer alone cannot help — the
+# producer has already exited; it is the orphan that holds the pipe.
+#
+# So when stdout is a pipe, the producer writes to a temp file instead (an orphan
+# then holds a file nobody waits on) and the file is copied to the pipe once the
+# producer is done; stderr is merged into the same file when the caller merged it,
+# so `2>&1` keeps its order. Every call is also time-bounded (FW_AUDIT_READ_TIMEOUT,
+# default 300 s; 0 = no bound): on expiry the producer is stopped, the notice goes
+# to stderr and the call returns 124. The `git` and `python3` functions below route
+# every bare call in this body — and in the lib functions it sources — through it.
+_AUDIT_TIMEOUT_CMD=()
+_audit_timeout_probe() {
+    _AUDIT_TIMEOUT_CMD=()
+    local _t
+    for _t in timeout gtimeout; do
+        command -v "$_t" >/dev/null 2>&1 || continue
+        # --foreground keeps the producer in our process group (TTY reads and
+        # Ctrl-C behave as before); busybox timeout lacks it, so fall back.
+        if command "$_t" --foreground -k 1 5 true >/dev/null 2>&1; then
+            _AUDIT_TIMEOUT_CMD=("$_t" --foreground -k 5)
+            return 0
+        fi
+        if command "$_t" -k 1 5 true >/dev/null 2>&1; then
+            _AUDIT_TIMEOUT_CMD=("$_t" -k 5)
+            return 0
+        fi
+    done
+    return 0
+}
+
+# _audit_bounded [-t SECONDS] CMD [ARGS...]
+_audit_bounded() {
+    local _budget="${FW_AUDIT_READ_TIMEOUT:-300}"
+    if [ "${1:-}" = "-t" ]; then
+        _budget="$2"
+        shift 2
+    fi
+    local -a _run=(command)
+    if [ "${#_AUDIT_TIMEOUT_CMD[@]}" -gt 0 ] && [ "$_budget" -gt 0 ] 2>/dev/null; then
+        _run=("${_AUDIT_TIMEOUT_CMD[@]}" "$_budget")
+    fi
+    local _rc=0 _out="" _err=""
+    if [ -p /dev/stdout ]; then
+        _out=$(mktemp "${TMPDIR:-/tmp}/fw-audit-read.XXXXXX" 2>/dev/null) || _out=""
+    fi
+    if [ -z "$_out" ]; then
+        "${_run[@]}" "$@" || _rc=$?
+    elif [ /dev/fd/1 -ef /dev/fd/2 ]; then
+        "${_run[@]}" "$@" >"$_out" 2>&1 || _rc=$?
+    elif [ -p /dev/stderr ] && _err=$(mktemp "${TMPDIR:-/tmp}/fw-audit-read.XXXXXX" 2>/dev/null); then
+        "${_run[@]}" "$@" >"$_out" 2>"$_err" || _rc=$?
+    else
+        "${_run[@]}" "$@" >"$_out" || _rc=$?
+    fi
+    if [ -n "$_out" ]; then
+        command cat "$_out"
+        [ -n "$_err" ] && command cat "$_err" >&2
+        command rm -f "$_out" ${_err:+"$_err"}
+    fi
+    if [ "$_rc" -eq 124 ] && [ "${_run[0]}" != command ]; then
+        echo "audit: '$1 ${2:-}' exceeded its ${_budget}s read budget and was stopped (T-4417)" >&2
+    fi
+    return "$_rc"
+}
+
+git() {
+    _audit_bounded git "$@"
+}
+
+python3() {
+    _audit_bounded python3 "$@"
+}
+
+_audit_timeout_probe
+
 # Section filter: returns 0 (true) if section should run
 should_run_section() {
     [ -z "$SECTIONS" ] && return 0
@@ -1529,7 +1609,7 @@ corpus_lint_findings=0
 corpus_lint_scanned=0
 _corpus_lint_py="$PROJECT_ROOT/tools/corpus_lint.py"
 if [ -f "$_corpus_lint_py" ] && [ -d "$PROJECT_ROOT/.context/designer/projects" ]; then
-    _cl_json=$(cd "$PROJECT_ROOT" && timeout 120 python3 "$_corpus_lint_py" --json 2>/dev/null)
+    _cl_json=$(cd "$PROJECT_ROOT" && _audit_bounded -t 0 timeout 120 python3 "$_corpus_lint_py" --json 2>/dev/null)
     _cl_rows=$(printf '%s' "$_cl_json" | python3 -c '
 import json, sys
 try:
@@ -3522,7 +3602,7 @@ check_invariant_suite() {
     fi
 
     local _out _red _total
-    _out=$(cd "$FRAMEWORK_ROOT" && timeout 300 bats tests/lint/ 2>&1) || true
+    _out=$(cd "$FRAMEWORK_ROOT" && _audit_bounded -t 0 timeout 300 bats tests/lint/ 2>&1) || true
     _red=$(printf '%s\n' "$_out" | grep -c '^not ok' || true)
     _total=$(printf '%s\n' "$_out" | grep -cE '^(not ok|ok) ' || true)
 
@@ -5200,8 +5280,8 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
     # Only runs when both 'origin' and 'github' remotes are configured.
     if git -C "$PROJECT_ROOT" remote get-url github >/dev/null 2>&1 \
        && git -C "$PROJECT_ROOT" remote get-url origin >/dev/null 2>&1; then
-        _origin_head=$(timeout 10 git -C "$PROJECT_ROOT" ls-remote origin main 2>/dev/null | awk '"'"'{print $1}'"'"')
-        _github_head=$(timeout 10 git -C "$PROJECT_ROOT" ls-remote github main 2>/dev/null | awk '"'"'{print $1}'"'"')
+        _origin_head=$(_audit_bounded -t 0 timeout 10 git -C "$PROJECT_ROOT" ls-remote origin main 2>/dev/null | awk '"'"'{print $1}'"'"')
+        _github_head=$(_audit_bounded -t 0 timeout 10 git -C "$PROJECT_ROOT" ls-remote github main 2>/dev/null | awk '"'"'{print $1}'"'"')
         if [ -n "$_origin_head" ] && [ -n "$_github_head" ]; then
             if [ "$_origin_head" = "$_github_head" ]; then
                 pass "OneDev → GitHub mirror in sync (origin=github=${_origin_head:0:8})"
@@ -5910,7 +5990,7 @@ if [ -f "$LEARNINGS_FILE" ]; then
 
     if [ "$learning_count" -ge 20 ]; then
         # Check for promotion candidates using fw promote
-        promote_output=$(PROJECT_ROOT="$PROJECT_ROOT" "$FRAMEWORK_ROOT/bin/fw" promote suggest 2>/dev/null) || true
+        promote_output=$(PROJECT_ROOT="$PROJECT_ROOT" _audit_bounded "$FRAMEWORK_ROOT/bin/fw" promote suggest 2>/dev/null) || true
         # shellcheck disable=SC2034 # ready_count/almost_count used for debug logging
         ready_count=$(echo "$promote_output" | grep -c "ready for promotion" 2>/dev/null) || ready_count=0
         # shellcheck disable=SC2034
@@ -8327,7 +8407,7 @@ fi
 # Sibling to the existing framework-mcp scan block above; that one surfaces
 # scan-vs-baseline drift, this one surfaces emitter-vs-source drift.
 if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -f "$PROJECT_ROOT/agents/mcp/manifest.py" ]; then
-    MCP_DRIFT_OUT=$("$PROJECT_ROOT/bin/fw" mcp check 2>&1)
+    MCP_DRIFT_OUT=$(_audit_bounded "$PROJECT_ROOT/bin/fw" mcp check 2>&1)
     MCP_DRIFT_EXIT=$?
     case "$MCP_DRIFT_EXIT" in
         0) pass "framework-mcp manifest: PASS — in sync with tool-set.yaml" ;;
@@ -8347,7 +8427,7 @@ fi
 #   2 → info  (source present but never emitted)
 # Both legs compare CONTENT (sha256) — touch / checkout / vendor-sync cannot trip it.
 if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -f "$PROJECT_ROOT/policy/sandbox-profile.yaml" ]; then
-    SANDBOX_DRIFT_OUT=$("$PROJECT_ROOT/bin/fw" sandbox status 2>&1)
+    SANDBOX_DRIFT_OUT=$(_audit_bounded "$PROJECT_ROOT/bin/fw" sandbox status 2>&1)
     SANDBOX_DRIFT_EXIT=$?
     case "$SANDBOX_DRIFT_EXIT" in
         0) pass "sandbox profile: PASS — $(echo "$SANDBOX_DRIFT_OUT" | head -1)" ;;

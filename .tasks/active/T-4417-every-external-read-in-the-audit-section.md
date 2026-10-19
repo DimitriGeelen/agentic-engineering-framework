@@ -1,13 +1,20 @@
 ---
 id: T-4417
-name: "Every external read in the audit section path is time-bounded (a pipe held open by an orphan blocks until the 600/3000 s watchdog)"
+name: "Every external read in the audit section path is time-bounded (a pipe held
+  open by an orphan blocks until the 600/3000 s watchdog)"
 description: >
-  Split from T-4397 (whose lock-leak fix landed in 23f7efdef: the lock now lives in a holder process, TERM and SIGKILL release it). Remaining: a read on a pipe held open by an orphaned child (e.g. 'done < <(git ... log)' ~audit.sh:5344 with a background process keeping stdout) still blocks until the body's watchdog fires (AUDIT_TIMEOUT 600 s scoped / 3000 s full). Bound each external read (timeout on the producing command, or read -t on the consumer), starting with the sections that spawn git/python producers; reproduce with the T-4397 stub that leaves a sleep holding stdout.
+  Split from T-4397 (whose lock-leak fix landed in 23f7efdef: the lock now lives in
+  a holder process, TERM and SIGKILL release it). Remaining: a read on a pipe held
+  open by an orphaned child (e.g. 'done < <(git ... log)' ~audit.sh:5344 with a background
+  process keeping stdout) still blocks until the body's watchdog fires (AUDIT_TIMEOUT
+  600 s scoped / 3000 s full). Bound each external read (timeout on the producing
+  command, or read -t on the consumer), starting with the sections that spawn git/python
+  producers; reproduce with the T-4397 stub that leaves a sleep holding stdout.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T17:46:04Z
-last_update: 2026-10-19T17:46:04Z
-date_finished: null
+last_update: '2026-10-19T18:00:41Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-19T17:54:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-19T18:00:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=310,acs=9)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4417: Every external read in the audit section path is time-bounded (a pipe held open by an orphan blocks until the 600/3000 s watchdog)
@@ -62,8 +97,13 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced before the fix: with the T-4397 stub (`git log` leaves a background sleep holding its stdout) in a temp project root, `audit.sh --section enforcement` blocks until its watchdog (exit 124), not on its own
+- [x] Every git / python3 producer the audit body runs (process substitution, command substitution, pipes; including those inside sourced lib functions) is file-backed when its stdout is a pipe, so an orphan holding its stdout cannot block the reader, and is time-bounded per call (FW_AUDIT_READ_TIMEOUT, default 300 s) with a stderr notice and exit 124 on expiry
+- [x] The explicit `bin/fw` producers in the section path (promote suggest, mcp check, sandbox status) go through the same bounded runner (also the pre-existing `timeout N` sites — corpus-lint, tests/lint bats, ls-remote — now file-backed, with their own inner timeout kept unchanged)
+- [x] Regression test (tests/unit/t4417_audit_bounded_reads.bats, temp project root, never the live lock): the stubbed section finishes in bounded time with the lock free; a hung producer is killed at its per-call budget and reported; exit codes and stderr merging (`2>&1` ordering) are preserved on the normal path. Fails without the fix
+- [x] Normal path unchanged and not slower: a `--section structure` run on a synthetic project produces identical output and exit code with and without the fix, and its time is within noise (measured, recorded in Updates)
+- [x] Closest existing audit lock/timeout bats tests still pass (t4397, t3298, audit_flock, t2930, t3127)
+- [x] `bash -n agents/audit/audit.sh` after every edit; `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean (or red only on other workers' in-flight files, named)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,6 +281,12 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/audit/audit.sh
+timeout 300 bats tests/unit/t4417_audit_bounded_reads.bats > /tmp/.t4417.out 2>&1 && ! grep -q "^not ok" /tmp/.t4417.out
+test "$(grep -c '# skip' /tmp/.t4417.out)" -eq 0
+timeout 300 bats tests/unit/t4397_audit_lock_holder_leak.bats tests/unit/t3298_audit_lock_integrity.bats tests/unit/audit_flock.bats tests/unit/t2930_audit_contention_exit_code.bats > /tmp/.t4417b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4417b.out
+python3 tools/bats-dead-negation-lint.py tests/ 2>&1 | grep -q clean
+bin/fw vendor self --check
 
 ## RCA
 
@@ -257,6 +303,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a scoped `fw audit` run sat in `pipe_read` with no child process until the body watchdog fired (600 s scoped / 3000 s full), then reported the section as timed out (T-4397 live observation).
+
+**Root cause:** every external producer in the section path is read through a pipe — `done < <(git -C "$PROJECT_ROOT" log --oneline 2>/dev/null)` (agents/audit/audit.sh:5383, enforcement; same shape at :5190, :5349, :4892 …) and ~70 `$(git …)` / `$(python3 …)` substitutions. Bash's read and `$(…)` both wait for EOF, which arrives only when the LAST holder of the pipe's write end closes it. A producer that leaves a descendant holding its stdout (a git helper, a python subprocess, the T-4397 stub's `sleep &`) exits, but the descendant keeps the pipe open, so the reader blocks with no child to wait on and nothing to time out. A `timeout` on the producer alone does not help: the producer exits promptly, it is the orphan that holds the pipe.
+
+**Why structurally allowed:** the only time bound was the whole-body watchdog (T-1162/T-3070); no per-read bound existed, and the few explicit `timeout N` wrappers (corpus-lint 120 s, bats 300 s, ls-remote 10 s) bound the producer, not the pipe. T-4397 fixed the lock leak this caused but not the block itself. No test exercised a producer that outlives its pipe.
+
+**Prevention:** audit.sh now shadows `git` and `python3` with functions that route through `_audit_bounded` (stdout to a temp file when it is a pipe, so the orphan holds a file nobody reads to EOF; per-call `timeout`, FW_AUDIT_READ_TIMEOUT default 300 s, stderr notice + 124 on expiry). Being a function shadow, it covers every current and future call site in the body and in lib functions it sources, without per-site edits. tests/unit/t4417_audit_bounded_reads.bats pins the orphan case, the hung-producer case and the normal-path contract.
 
 ## Evolution
 
@@ -338,3 +392,14 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4417-every-external-read-in-the-audit-section.md
 - **Context:** Initial task creation
+
+### 2026-10-19T17:54:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-19 — fix + measurement [w4417]
+- **Reproduced:** t4417 test 1 against the pre-fix audit.sh: `--section enforcement` with the T-4397 stub ran to its 40 s watchdog, rc=124.
+- **Fix:** agents/audit/audit.sh `_audit_bounded` + `git()` / `python3()` shims (after the lock block); explicit fw / timeout sites routed through it.
+- **Tests:** t4417_audit_bounded_reads.bats 5/5; t4397 + t3298 + audit_flock + t2930 + t3127 46/46.
+- **Normal path (synthetic project, `--section structure`, HEAD vs fix, 6 runs each, loaded host):** output identical after timestamp normalisation, rc 1 both; old 5.81/5.36/5.11/5.87/5.67/8.50 s (median 5.77), new 5.84/5.26/5.72/5.85/6.27/7.94 s (median 5.85) — within noise.
+- **Known limit:** a body killed by TERM mid-call leaves that call's `fw-audit-read.*` temp file in $TMPDIR (the existing EXIT traps are pinned by t3298, so cleanup is per-call only).
