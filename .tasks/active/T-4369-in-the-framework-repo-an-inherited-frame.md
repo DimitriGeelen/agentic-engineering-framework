@@ -11,10 +11,10 @@ description: >
   from its own location when invoked as the repo's bin/fw, or the generator should
   treat the repo's own vendored copy as the repo. Found 2026-10-19 (T-4364).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T09:09:36Z
-last_update: '2026-10-19T09:16:29Z'
+last_update: 2026-10-19T14:32:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,14 +91,18 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+In the framework repo, `bin/claude-fw:51` exports FRAMEWORK_ROOT=<repo>/.agentic-framework (the vendored self-copy) and `bin/fw:1385-1398` honours any inherited FRAMEWORK_ROOT that has lib/ + agents/. Cron generate (`_cron_fw` rule) and doctor's dry-run compare (`$FRAMEWORK_ROOT/bin/fw`) then both use the vendored path.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `bin/fw` invoked as the framework repo's own `bin/fw` with an inherited FRAMEWORK_ROOT equal to that repo's `.agentic-framework` resolves FRAMEWORK_ROOT to the repo (`fw version` prints `Framework: <repo>`)
+- [x] Under that inherited env, `fw cron generate` writes `<repo>/bin/fw` into the cron lines, not `.agentic-framework/bin/fw` (regression test, red before / green after)
+- [x] Under that inherited env, `fw doctor` reports no `edited but not generated` WARN on a synced registry (regression test)
+- [x] `bin/claude-fw` pins FRAMEWORK_ROOT to the repo (not its vendored copy) when launched in the framework repo; consumers still get `<project>/.agentic-framework`
+- [x] Consumer resolution unchanged: an inherited `<consumer>/.agentic-framework` FRAMEWORK_ROOT is still honoured (regression test) and `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
+- [x] `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -277,6 +281,12 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n bin/fw && bash -n bin/claude-fw
+timeout 900 bats tests/unit/t4369_inherited_vendored_self_root.bats > /tmp/.t4369.out 2>&1 && ! grep -q "^not ok" /tmp/.t4369.out
+test "$(grep -c '# skip' /tmp/.t4369.out)" -eq 0
+out=$(FRAMEWORK_ROOT="$PWD/.agentic-framework" bin/fw version 2>&1); echo "$out" | grep -qx "Framework: $PWD"
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -292,6 +302,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** with FRAMEWORK_ROOT=<repo>/.agentic-framework inherited (every claude-fw session in the framework repo), `fw cron generate` wrote `.agentic-framework/bin/fw` into all 25 cron lines (e57794eb6, caught before commit) and `fw doctor` WARNed `Cron registry edited but not generated` while a clean env said in sync — failing T-4342's close. Reproduced 2026-10-19: `FRAMEWORK_ROOT=$PWD/.agentic-framework bin/fw doctor` → `Framework: …/.agentic-framework` + the WARN.
+
+**Root cause:** two halves. (1) `bin/claude-fw:51` (`_cfw_pin_project`, T-4218) tests for `.agentic-framework/bin/fw` before the framework-repo case, and the framework repo carries a vendored self-copy (`fw vendor self`), so it exports the vendored copy as FRAMEWORK_ROOT. (2) `bin/fw:1385-1398` (T-2099/T-4248) honours any inherited FRAMEWORK_ROOT that has lib/ and agents/ — the vendored copy passes — so `resolve_framework`'s T-1346-B1 self-repo rule (repo when bin/fw's own tree == PROJECT_ROOT) never runs. The cron generator's T-3835 rule then sees FRAMEWORK_ROOT != PROJECT_ROOT and selects `$PROJECT_ROOT/.agentic-framework/bin/fw`; doctor's dry-run compare passes `$FRAMEWORK_ROOT/bin/fw`.
+
+**Why structurally allowed:** T-4248 validated an inherited FRAMEWORK_ROOT only as "is a framework tree", which a vendored copy always is; no test exercised the framework repo under the env claude-fw itself exports (tests run with a clean or test-scoped env). Doctor compared under the same wrong env, so it reported a false drift instead of the wrong root.
+
+**Prevention:** `tests/unit/t4369_inherited_vendored_self_root.bats` builds a synthetic framework repo with a vendored self-copy and pins version, generate and doctor under the inherited env, plus a consumer control leg; bin/fw drops an inherited FRAMEWORK_ROOT that is the vendored copy of the repo it runs from, and claude-fw no longer exports one.
 
 ## Evolution
 
@@ -357,6 +375,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-19 — where to fix
+- **Chose:** fix FRAMEWORK_ROOT resolution at the source, both ends: `bin/fw` drops an inherited FRAMEWORK_ROOT that resolves to `<its own repo>/.agentic-framework` when its own tree is a framework repo (the existing `resolve_framework` T-1346-B1 rule then picks the repo); `bin/claude-fw` checks the framework-repo case before the vendored case so it stops exporting the wrong value.
+- **Why:** the wrong value is FRAMEWORK_ROOT itself; every consumer of it (generate, doctor's compare, sourced lib/ and agents/) is wrong the same way, so patching generator and doctor would leave every other subsystem running from the vendored copy. The guard is narrow: it fires only when the vendored copy belongs to the repo bin/fw lives in. That never happens in a consumer (there bin/fw *is* the vendored copy, and its own tree has no `.agentic-framework`), nor in the T-2099 upgrade handoff (temp-clone root) or the upgrade doctor leg (consumer's own vendored binary + root).
+- **Rejected:** teaching the cron generator and doctor that the repo's vendored copy means the repo — treats two symptoms and leaves lib/ and agents/ sourced from the vendored copy for every other command. Fixing claude-fw alone — sessions already running with the leaked value, and any other exporter, would still hit it.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -369,7 +392,17 @@ bvp_scores_proposed:
 
 ## Updates
 
+### 2026-10-19 — regression evidence
+- `tests/unit/t4369_inherited_vendored_self_root.bats`, 5 tests. With HEAD's bin/fw: tests 1-3 (version, generate, doctor) **not ok**, consumer control ok. With HEAD's claude-fw: the claude-fw leg **not ok**. With the fix: 5/5 ok, 0 skips.
+- Neighbours green: t4218_inherited_project_root (4), t4298_inherited_root_warning (4), test_cron_generate_shape (6), t2391_project_root_inherited_stale (7).
+- `test_cron_registry_generated_drift.bats` test 1 fails (`doctor` exit 2 in the fixture) — **pre-existing**: identical failure with HEAD's bin/fw; not touched here.
+- `tests/unit/upgrade_fresh_machine_simulation.bats` run alone: 16/16 ok, 0 skips.
+
 ### 2026-10-19T09:09:36Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4369-in-the-framework-repo-an-inherited-frame.md
 - **Context:** Initial task creation
+
+### 2026-10-19T14:32:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

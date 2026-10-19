@@ -1393,6 +1393,15 @@ if [ -n "${FRAMEWORK_ROOT:-}" ] && { [ ! -d "$FRAMEWORK_ROOT/lib" ] || [ ! -d "$
     fi
     FRAMEWORK_ROOT=""
 fi
+# T-4369: an inherited FRAMEWORK_ROOT that is the vendored self-copy of the framework
+# repo this bin/fw lives in (<repo>/.agentic-framework, from `fw vendor self`) is
+# dropped, so resolve_framework picks the repo. Honouring it ran every command from
+# the copy: cron generate wrote .agentic-framework/bin/fw, doctor saw false drift.
+# A consumer never matches: there this bin/fw IS the vendored copy.
+if [ -n "${FRAMEWORK_ROOT:-}" ] && [ -f "$FW_BIN_DIR/../FRAMEWORK.md" ] && [ -d "$FW_BIN_DIR/../agents" ] \
+    && [ "$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd -P)" = "$(cd "$FW_BIN_DIR/.." && pwd -P)/.agentic-framework" ]; then
+    FRAMEWORK_ROOT=""
+fi
 if [ -z "${FRAMEWORK_ROOT:-}" ]; then
     FRAMEWORK_ROOT=$(resolve_framework) || true
 fi
