@@ -1052,6 +1052,66 @@ def cmd_release(a) -> int:
     return 0
 
 
+# ── task lifecycle leg (T-4341, lifecycle stages 6-7) ────────────────────────
+# update-task.sh calls `lifecycle` after a transition: started-work posts in-progress, work-completed
+# (partial-complete included: the fix is on bleeding-edge even while Human ACs await review) posts
+# fixed-on-bleeding-edge. Both go through cmd_comment, so the mirror check and idempotence apply. A
+# GitHub failure never fails the transition: it is recorded in lifecycle-pending.jsonl and this verb
+# exits 0. FW_ISSUES_LIFECYCLE=0 disables it.
+
+LIFECYCLE_STAGES = {"started": "in-progress", "closed": "fixed-on-bleeding-edge"}
+_TEST_RUNNER_RE = re.compile(r"\b(bats|pytest|python3?\s+-m\s+pytest|bash\s+tests/\S+)\b")
+LIFECYCLE_FALLBACK_TEST = "bin/fw doctor"
+
+
+def _first_test_command(text: str) -> str:
+    m = re.search(r"^## Verification\s*$(.*?)(?=^## |\Z)", text, re.M | re.S)
+    for line in (m.group(1).splitlines() if m else []):
+        line = line.strip()
+        if line and not line.startswith("#") and _TEST_RUNNER_RE.search(line) and "`" not in line:
+            return line
+    return LIFECYCLE_FALLBACK_TEST
+
+
+def _task_last_commit(root: Path, tid: str) -> str:
+    p = _run(["git", "-C", str(root), "log", "-1", "--format=%H", "-E", f"--grep=^{tid}([^0-9]|$)"])
+    return p.stdout.strip() if p.returncode == 0 else ""
+
+
+def cmd_lifecycle(a) -> int:
+    if os.environ.get("FW_ISSUES_LIFECYCLE", "1") == "0":
+        return 0
+    root = Path(a.root or os.environ.get("PROJECT_ROOT") or os.getcwd())
+    stage = LIFECYCLE_STAGES[a.event]
+    facts = _task_facts(root, a.task_id)
+    if not facts or not facts["issue"]:
+        return 0
+    n = facts["issue"]
+    try:
+        if _ledger_has(n, stage):
+            return 0
+        ns = argparse.Namespace(issue=n, stage=stage, task=[a.task_id], commit=None, test_cmd=None,
+                                version=None, text=None, approved_by_operator=None, dry_run=False)
+        if stage == "fixed-on-bleeding-edge":
+            ns.commit = _task_last_commit(root, a.task_id)
+            if not ns.commit:
+                raise IssuesError(f"no commit referencing {a.task_id} found")
+            text = sorted(root.glob(f".tasks/*/{a.task_id}-*.md"))[0].read_text(errors="replace")
+            ns.test_cmd = _first_test_command(text)
+        rc = cmd_comment(ns)
+        if rc:
+            raise IssuesError(f"cmd_comment returned {rc}")
+    except (IssuesError, OSError) as e:
+        try:
+            _append_row(_issues_dir() / "lifecycle-pending.jsonl",
+                        {"issue": n, "stage": stage, "task": a.task_id, "error": str(e)[:300], "ts": _now()})
+        except OSError:
+            pass
+        print(f"WARN: GitHub #{n} {stage} not posted ({str(e)[:160]}); recorded in lifecycle-pending.jsonl, "
+              f"re-run `fw issues lifecycle {a.task_id} --event {a.event}` to retry", file=sys.stderr)
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="fw issues")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -1069,6 +1129,11 @@ def main(argv=None) -> int:
                    help="released: ask the reporter to confirm; records a due date for the sweep (T-4340)")
     c.add_argument("--dry-run", action="store_true", help="print the comment, post nothing")
     c.set_defaults(fn=cmd_comment)
+    lc = sub.add_parser("lifecycle", help="post in-progress / fixed-on-bleeding-edge for a task's linked issue (T-4341)")
+    lc.add_argument("task_id")
+    lc.add_argument("--event", required=True, choices=sorted(LIFECYCLE_STAGES))
+    lc.add_argument("--root", help="project root (default PROJECT_ROOT or cwd)")
+    lc.set_defaults(fn=cmd_lifecycle)
     rl = sub.add_parser("release", help="post the Released stage for a release's tasks, apply the close rule (T-4340)")
     rl.add_argument("version", help="the release tag, vX.Y.Z")
     rl.add_argument("--range", dest="rng", required=True, help="commit range, e.g. v1.8.10..HEAD")

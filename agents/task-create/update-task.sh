@@ -2420,6 +2420,22 @@ PY
         echo "Status:  $OLD_STATUS → $NEW_STATUS"
         CHANGES+=("status: $OLD_STATUS → $NEW_STATUS")
 
+        # === GitHub issue lifecycle stages (T-4341, T-4039 stages 6-7) ===
+        # started-work → in-progress; work-completed (partial-complete too) → fixed-on-bleeding-edge.
+        # Never blocks or fails the transition: lib/issues.py records failures and exits 0.
+        if [ "${FW_ISSUES_LIFECYCLE:-1}" != "0" ] && [ -f "$FRAMEWORK_ROOT/lib/issues.py" ] \
+            && grep -q "^github_issue:" "$TASK_FILE" 2>/dev/null; then
+            case "$NEW_STATUS" in
+                started-work) _lc_event=started ;;
+                work-completed) _lc_event=closed ;;
+                *) _lc_event="" ;;
+            esac
+            if [ -n "$_lc_event" ]; then
+                PROJECT_ROOT="$PROJECT_ROOT" timeout 90 python3 "$FRAMEWORK_ROOT/lib/issues.py" \
+                    lifecycle "$TASK_ID" --event "$_lc_event" || true
+            fi
+        fi
+
         # === Invariant: started-work → horizon: now (T-1068) ===
         # Starting work means it's active NOW. Auto-promote horizon.
         if [ "$NEW_STATUS" = "started-work" ] && [ -z "$NEW_HORIZON" ]; then

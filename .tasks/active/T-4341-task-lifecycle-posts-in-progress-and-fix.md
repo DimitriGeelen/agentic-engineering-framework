@@ -1,10 +1,15 @@
 ---
 id: T-4341
-name: "Task lifecycle posts 'In progress' and 'Fixed on bleeding-edge' on a task's linked GitHub issue"
+name: "Task lifecycle posts 'In progress' and 'Fixed on bleeding-edge' on a task's
+  linked GitHub issue"
 description: >
-  T-4039 lifecycle stages 6 and 7 were designed (update-task.sh on started-work and work-completed) but never built: agents/task-create/update-task.sh never calls fw issues. Fixed-on-bleeding-edge must name a commit already on the GitHub mirror's bleeding-edge and a per-issue test command (already enforced by fw issues comment). Never block a task transition on a GitHub failure: record and surface it.
+  T-4039 lifecycle stages 6 and 7 were designed (update-task.sh on started-work and
+  work-completed) but never built: agents/task-create/update-task.sh never calls fw
+  issues. Fixed-on-bleeding-edge must name a commit already on the GitHub mirror's
+  bleeding-edge and a per-issue test command (already enforced by fw issues comment).
+  Never block a task transition on a GitHub failure: record and surface it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +44,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T21:55:37Z
-last_update: 2026-10-18T21:55:37Z
-date_finished: null
+last_update: 2026-10-19T08:20:22Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T22:00:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T22:01:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4341: Task lifecycle posts 'In progress' and 'Fixed on bleeding-edge' on a task's linked GitHub issue
@@ -63,8 +96,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw issues lifecycle T-XXX --event started|closed` exists in lib/issues.py and posts stage in-progress / fixed-on-bleeding-edge through cmd_comment (the one outward verb), idempotent per stage
+- [x] agents/task-create/update-task.sh calls it on started-work and on work-completed (partial-complete included: the commit-on-mirror check in cmd_comment is the gate), guarded so it can never fail or block a transition; FW_ISSUES_LIFECYCLE=0 disables it
+- [x] A gh/GitHub failure is recorded in lifecycle-pending.jsonl, one WARN line is printed, exit status is 0; a task without github_issue: does nothing
+- [x] Regression suite tests/unit/t4341_lifecycle_issue_stages.bats passes (fake gh, sandbox project); t4077/4078/4088/4108/4340/4347 issues suites stay green
+- [x] `bin/fw vendor self --check` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -114,6 +150,11 @@ date_finished: null
 
 ## Verification
 
+grep -q "def cmd_lifecycle" lib/issues.py
+grep -q "issues lifecycle" agents/task-create/update-task.sh
+bash -n agents/task-create/update-task.sh
+bats tests/unit/t4341_lifecycle_issue_stages.bats
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -245,6 +286,11 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** a task with github_issue: N moved to started-work and work-completed and the GitHub issue never got the in-progress or fixed-on-bleeding-edge comment.
+**Root cause:** agents/task-create/update-task.sh never calls fw issues; T-4039 designed lifecycle stages 6-7 there but only lib/issues.py cmd_comment (the verb) was built.
+**Why structurally allowed:** no test or audit asserts that every designed stage has a caller; the verb worked in isolation so its suites stayed green.
+**Prevention:** t4341_lifecycle_issue_stages.bats pins both transitions end to end and the failure-never-blocks contract.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -339,3 +385,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4341-task-lifecycle-posts-in-progress-and-fix.md
 - **Context:** Initial task creation
+
+### 2026-10-19T08:20:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
