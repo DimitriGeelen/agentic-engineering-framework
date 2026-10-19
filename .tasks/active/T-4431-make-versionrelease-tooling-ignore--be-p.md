@@ -94,7 +94,7 @@ bvp_scores_proposed:
 - [x] One shared helper (lib/release-tags.sh) resolves the latest release tag excluding `*-be.*`; every latest-release / tag-floor / next-version lookup in lib/, bin/fw, agents/ uses it or passes the same `--exclude`
 - [x] Regression test in a temp git repo (tags v1.8.12, v1.8.13, v1.8.14-be.1): latest release resolves to v1.8.13, `fw version bump patch` floor computes 1.8.14, release.sh's tag lookup ignores the -be tag
 - [x] `fw release be-tag` creates an annotated vX.Y.Z-be.N tag on bleeding-edge (auto-numbering N), refuses on master and with a dirty/unknown branch; never pushes unless asked (tested in temp repo only)
-- [ ] No real tag created or pushed in the framework repo; `bin/fw vendor self --check --task T-4431` clean
+- [x] No real tag created or pushed in the framework repo; `bin/fw vendor self --check --task T-4431` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
