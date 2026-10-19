@@ -10,7 +10,7 @@ description: >
   keep a separate smoke that the live audit completes. Arc test-suite-health (arc-026);
   source: external review T-4376 (docs/reports/T-4376-reviews/).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:28:22Z
-last_update: '2026-10-19T12:30:40Z'
+last_update: 2026-10-19T13:49:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -67,6 +67,27 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T12:31:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: verdict-determinacy=? (unscored (no scorer for 
+      verdict-determinacy; not counted)); fault-detection-fidelity=? (unscored 
+      (no scorer for fault-detection-fidelity; not counted)); D1=4 
+      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4383: audit.bats asserts its named contracts again: 'exits 0 for all-pass sections' and '--quiet suppresses output' test against synthetic reports in a private root
@@ -79,8 +100,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] 'audit exits 0 for all-pass sections' drives agents/audit/audit.sh against a synthetic project in a private temp root (PROJECT_ROOT under $BATS_TEST_TMPDIR) and asserts `[ "$status" -eq 0 ]` — no exit-2 tolerance
+- [x] A new seeded-FAIL contract test runs the same synthetic project with one deliberately broken input and asserts `[ "$status" -eq 2 ]` plus a `[FAIL]` line
+- [x] '--quiet suppresses terminal output' asserts the quiet run's stdout is empty on the synthetic project, against a non-quiet control run of the same project that prints the report
+- [x] One live smoke ('the live structure section completes with a full report') keeps the T-4372 rule; the T-3328/T-4372 hermetic stub controls are unchanged
+- [x] Red run recorded: with audit.sh temporarily mutated to exit 2 on the synthetic all-pass project, the 'exits 0' test fails; mutation reverted (git diff agents/audit/audit.sh empty)
+- [x] The hermetic tests in tests/unit/audit.bats (4 synthetic-project tests, 6 stub controls, --help) pass alone with zero skips. The synthetic tests hold a private lock. Live-repo tests may still skip on exit 75 lock contention, which is the existing T-3328 contract, and their runtime depends on host load
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -258,6 +283,14 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# Hermetic tests only (synthetic project + stub controls + --help). The live-repo
+# tests' runtime depends on host load (>600s observed 2026-10-19), so they are not gated here.
+timeout 300 bats -f 'synthetic project|control|--help' tests/unit/audit.bats > /tmp/.t4383.out 2>&1 && ! grep -q "^not ok" /tmp/.t4383.out
+test "$(grep -c '# skip' /tmp/.t4383.out)" -eq 0
+test "$(grep -c '^ok .*(synthetic project)$' /tmp/.t4383.out)" -eq 4
+grep -q 'synthetic' tests/unit/audit.bats && grep -q 'seeded FAIL' tests/unit/audit.bats
+awk '/@test "audit exits 0 for all-pass/,/^}/' tests/unit/audit.bats > /tmp/.t4383.blk && grep -q 'status" -eq 0 ]' /tmp/.t4383.blk && ! grep -q _assert_audit_ran /tmp/.t4383.blk
+git diff --quiet -- agents/audit/audit.sh
 
 ## RCA
 
@@ -274,6 +307,18 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/unit/audit.bats` 'audit exits 0 for all-pass sections' passes when audit.sh exits 2 (with a complete report), so it does not test its name; '--quiet suppresses terminal output' contains no assertion on output at all — it passes whether or not --quiet suppresses anything.
+
+**Root cause:** every contract test ran `agents/audit/audit.sh` against the LIVE repo (tests/unit/audit.bats:92-107 before this task), where the correct exit code is unknown — it depends on mutable corpus state (T-3326). T-4372 resolved the resulting flakiness by widening the shared helper `_assert_audit_ran` (tests/unit/audit.bats:22-42) to accept exit 2 with a full report, which was right for smoke tests but silently also applied to the one test whose subject IS the exit code. The --quiet test was written (T-924) with the suppression assertion left as a comment.
+
+**Why structurally allowed:** a test name is not checked against its assertions; a shared tolerance helper widens every caller at once, and a comment-only assertion still yields `ok`. Nothing requires a contract test to have a recorded red run.
+
+**Red runs (2026-10-19, both mutations reverted, `git diff -- agents/audit/audit.sh` empty):**
+1. Final `exit 0` in audit.sh changed to `exit 2`: 'audit exits 0 for all-pass sections (synthetic project)' → `not ok` (`[ "$status" -eq 0 ]' failed`); '--quiet suppresses' → `not ok`; both seeded-FAIL tests stayed ok.
+2. `exec 3>&1 1>/dev/null` (the --quiet redirect) changed to `exec 3>&1`: both --quiet tests → `not ok` (`[ -z "$output" ]' failed`).
+
+**Prevention:** the contract tests now run against a synthetic project in `$BATS_TEST_TMPDIR` where the verdict is known (exit 0 all-pass, exit 2 seeded FAIL, empty stdout under --quiet), and assert the exact code without the helper; a red run (audit.sh mutated to exit 2) is recorded below. The live repo keeps one explicitly named smoke.
 
 ## Evolution
 
@@ -298,6 +343,11 @@ cost_estimate_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-19 — contract tests move off the live corpus
+- **What changed:** the exit-code contract can only be asserted where the expected verdict is known; the live repo cannot provide that (T-3326 mutable-corpus anchor).
+- **Plan impact:** contract tests run audit.sh against a synthetic private root; the live run is reduced to one smoke.
+- **Triggered:** none.
 
 ## Recommendation
 
@@ -355,3 +405,6 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4383-auditbats-asserts-its-named-contracts-ag.md
 - **Context:** Initial task creation
+
+### 2026-10-19T13:49:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

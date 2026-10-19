@@ -94,22 +94,93 @@ _assert_audit_ran() {
     [[ "$output" == *"Timestamp"* ]]
 }
 
-# --- Exit codes ---
+# --- Live smoke (T-4372 rule) ---
 
-@test "audit exits 0 for all-pass sections" {
-    # Structure checks on a well-formed project should pass
+@test "the live structure section completes with a full report" {
+    # A smoke, not a contract: the live corpus decides the verdict, so exit 2
+    # with a complete report counts as "ran" (T-4372). The exit-code contract
+    # is asserted against the synthetic project below, where it is known.
     run "$AUDIT" --section structure
-    # 0=pass, 1=warnings (acceptable); 2=real FAILs still fails; 75=skip
     _assert_audit_ran
+    [[ "$output" == *"=== END AUDIT ==="* ]]
 }
 
-# --- Quiet mode ---
+# --- Exit-code and --quiet contracts: a synthetic project (T-4383) ---
+# The live repo cannot answer "does audit exit 0 when everything passes" — its
+# verdict moves with the corpus (T-3326). These tests point audit.sh at a
+# synthetic project in a private temp root (PROJECT_ROOT overrides the git
+# toplevel in lib/paths.sh) and run the "tree" section, whose inputs are just
+# a git index and a secret-scan catalogue. Every write lands under that root
+# (lock, dated YAML, timing ledger), so there is no contention with live audits
+# and nothing to clean up in the repo. The catalogue is private too, so a
+# change to the repo's real patterns cannot move these verdicts.
 
-@test "audit --quiet suppresses terminal output" {
-    run "$AUDIT" --section structure --quiet
-    _assert_audit_ran
-    # In quiet mode, output should be minimal or empty
-    # (may still have some output to stderr)
+_synthetic_project() {
+    local root="$BATS_TEST_TMPDIR/synthetic-project"
+    mkdir -p "$root/.context"
+    git -C "$root" init -q
+    printf '# synthetic catalogue (T-4383)\nT-4383 Seed Marker\tT4383SEED[0-9]{6}\n' \
+        > "$root/.secret-scan-patterns"
+    printf 'hello\n' > "$root/README.md"
+    git -C "$root" add README.md .secret-scan-patterns
+    git -C "$root" -c user.email=t@example.invalid -c user.name=t commit -qm init
+    echo "$root"
+}
+
+# Runs audit.sh on the synthetic project. Path vars inherited from a caller
+# (bin/fw exports them) are dropped so they re-derive from PROJECT_ROOT, and
+# notifications are off so a seeded FAIL pushes nothing.
+_audit_synthetic() {
+    local root="$1"; shift
+    env -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY \
+        NTFY_ENABLED=false PROJECT_ROOT="$root" "$AUDIT" --section tree "$@"
+}
+
+@test "audit exits 0 for all-pass sections (synthetic project)" {
+    local root; root=$(_synthetic_project)
+    run _audit_synthetic "$root"
+    echo "$output"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"[PASS] Secret scan: tracked tree clean"* ]]
+    [[ "$output" != *"[FAIL]"* ]]
+    [[ "$output" != *"[WARN]"* ]]
+}
+
+@test "audit exits 2 on a seeded FAIL (synthetic project)" {
+    local root; root=$(_synthetic_project)
+    # Built from two halves so this file never contains the marker itself.
+    printf 'token=%s%s\n' "T4383SEED" "123456" > "$root/leak.txt"
+    git -C "$root" add leak.txt
+    git -C "$root" -c user.email=t@example.invalid -c user.name=t commit -qm leak
+    run _audit_synthetic "$root"
+    echo "$output"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"[FAIL] Secret scan: 1 finding(s) in tracked tree"* ]]
+    [[ "$output" == *"=== END AUDIT ==="* ]]
+}
+
+@test "audit --quiet suppresses terminal output (synthetic project)" {
+    local root; root=$(_synthetic_project)
+    # Control: the same run without --quiet prints the report, so an empty
+    # quiet run is suppression and not an audit that printed nothing anyway.
+    run _audit_synthetic "$root"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"=== AUDIT REPORT ==="* ]]
+    run _audit_synthetic "$root" --quiet
+    echo "quiet output: [$output]"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
+@test "audit --quiet keeps the exit code on a seeded FAIL (synthetic project)" {
+    local root; root=$(_synthetic_project)
+    printf 'token=%s%s\n' "T4383SEED" "654321" > "$root/leak.txt"
+    git -C "$root" add leak.txt
+    git -C "$root" -c user.email=t@example.invalid -c user.name=t commit -qm leak
+    run _audit_synthetic "$root" --quiet
+    echo "quiet output: [$output]"
+    [ "$status" -eq 2 ]
+    [ -z "$output" ]
 }
 
 # --- YAML output ---
