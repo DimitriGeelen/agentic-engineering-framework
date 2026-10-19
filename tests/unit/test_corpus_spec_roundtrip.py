@@ -169,3 +169,45 @@ def test_fractional_lane_height_round_trips_and_integer_stays_bare():
     out = corpus_spec.emit_map(spec, version=1)
     assert 'height="220"' in out
     assert 'height="323.91686531856146"' in out
+
+
+# ── T-4387: extension children are keyed by namespace AND local name ─────────
+
+ZEEBE = "http://camunda.org/schema/zeebe/1.0"
+FOREIGN_HEAD = HEAD.replace("xmlns:aef=", f'xmlns:zeebe="{ZEEBE}" xmlns:aef=', 1)
+
+
+def test_foreign_extension_child_does_not_overwrite_node_aef_uid():
+    xml = FOREIGN_HEAD + (
+        '<bpmn:serviceTask id="s1" name="svc"><bpmn:extensionElements>'
+        '<aef:uid value="u1"/><zeebe:uid value="X"/>'
+        "</bpmn:extensionElements></bpmn:serviceTask>"
+    ) + TAIL
+    spec = corpus_spec.parse_map(xml)
+    node = spec["nodes"][0]
+    assert node["uid"] == "u1"
+    assert len(node["ext_raw"]) == 1 and ZEEBE in node["ext_raw"][0]
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert '<aef:uid value="u1"/>' in out and 'value="X"' in out
+    spec2 = corpus_spec.parse_map(out)
+    assert spec2["nodes"] == spec["nodes"]
+    again = corpus_spec.emit_map(spec2, version=1, compat_alias=False)
+    assert corpus_spec.canonical(again) == corpus_spec.canonical(out)
+
+
+def test_foreign_extension_child_does_not_overwrite_flow_aef_uid():
+    xml = FOREIGN_HEAD + (
+        '<bpmn:serviceTask id="a"/><bpmn:serviceTask id="b"/>'
+        '<bpmn:sequenceFlow id="f1" sourceRef="a" targetRef="b">'
+        '<bpmn:extensionElements><aef:uid value="fu1"/><zeebe:uid value="X"/>'
+        "</bpmn:extensionElements></bpmn:sequenceFlow>"
+    ) + TAIL
+    spec = corpus_spec.parse_map(xml)
+    flow = spec["flows"][0]
+    assert flow["uid"] == "fu1"
+    assert len(flow["ext_raw"]) == 1 and ZEEBE in flow["ext_raw"][0]
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    spec2 = corpus_spec.parse_map(out)
+    assert spec2["flows"] == spec["flows"]
+    again = corpus_spec.emit_map(spec2, version=1, compat_alias=False)
+    assert corpus_spec.canonical(again) == corpus_spec.canonical(out)

@@ -1,10 +1,16 @@
 ---
 id: T-4387
-name: "corpus_spec reads extensionElements children by local name only, so a foreign child named like an aef one (zeebe:uid) overwrites the node's aef:uid and is itself lost"
+name: "corpus_spec reads extensionElements children by local name only, so a foreign
+  child named like an aef one (zeebe:uid) overwrites the node's aef:uid and is itself
+  lost"
 description: >
-  Found 2026-10-19 probing for 832 (T-347): tools/corpus_spec.py _ext() keys on c.tag's local name ignoring namespace; <zeebe:uid value=X/> next to <aef:uid value=u1/> re-emits as aef:uid value=X and the zeebe element vanishes. Identity corruption. Fix: match aef children by namespace AND local name; everything not in the aef namespace goes to ext_raw verbatim.
+  Found 2026-10-19 probing for 832 (T-347): tools/corpus_spec.py _ext() keys on c.tag's
+  local name ignoring namespace; <zeebe:uid value=X/> next to <aef:uid value=u1/>
+  re-emits as aef:uid value=X and the zeebe element vanishes. Identity corruption.
+  Fix: match aef children by namespace AND local name; everything not in the aef namespace
+  goes to ext_raw verbatim.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:35:16Z
-last_update: 2026-10-19T12:35:16Z
-date_finished: null
+last_update: 2026-10-19T13:27:12Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +56,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T12:45:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T12:46:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4387: corpus_spec reads extensionElements children by local name only, so a foreign child named like an aef one (zeebe:uid) overwrites the node's aef:uid and is itself lost
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Bug report in the description (832 T-347 probe). Fix lives in `tools/corpus_spec.py` `_ext()` / `_ext_raw()`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_ext()` keys only children in the aef namespace (namespace AND local name); a foreign `<zeebe:uid value="X"/>` no longer overwrites a node's `aef:uid`
+- [x] Every extension child that is not a known aef child (foreign namespaces included) is carried in `ext_raw` verbatim and re-emitted; a parse→emit→parse round-trip of a serviceTask with both `aef:uid` and `zeebe:uid` keeps uid=u1 and keeps the zeebe child (canonical identity holds)
+- [x] Same for sequenceFlow extension children: a foreign child beside the flow's `aef:uid` neither replaces the uid nor vanishes
+- [x] Regression test in `tests/unit/test_corpus_spec_roundtrip.py` red before the fix (2 failed, 8 passed — uid read back as `X`), green after (10 passed); unknown TAGS still a hard error (`test_unknown_tag_is_a_hard_error_not_a_silent_drop` green)
+- [x] Corpus re-emit checked across the 16 latest `.context/designer/projects/*` maps: the only change is that flow routing children (`aef:anchors` etc.) are now preserved instead of dropped (see Decisions); no committed map regenerated
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,6 +149,8 @@ date_finished: null
 -->
 
 ## Verification
+python3 -m pytest -q tests/unit/test_corpus_spec_roundtrip.py
+python3 -m pytest -q tests/unit/test_corpus_spec_roundtrip.py -k foreign_extension
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -258,6 +297,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** a node carrying `<aef:uid value="u1"/>` and `<zeebe:uid value="X"/>` re-emits as `<aef:uid value="X"/>` and the zeebe element disappears — identity corruption plus silent data loss across the 832 designer seam.
+
+**Root cause:** `tools/corpus_spec.py:119` `_ext()` builds its dict keyed on `c.tag.split("}")[-1]` — the local name with the namespace thrown away — so the later same-named foreign child overwrites the aef one. `_ext_raw()` (`:140`) filters by the same namespace-blind local name against `_KNOWN_EXT`, so the foreign child is ALSO excluded from the verbatim passthrough: it is consumed as "known" and lost. Flows only read `uid` and pass nothing else through, so a foreign flow child corrupted the flow uid the same way.
+
+**Why structurally allowed:** every map the round-trip tests used carried only aef-namespace extensions (our own emitter is the only producer they model); T-2614 hardened unknown *tags* but the extension reader was never exercised with a second extension namespace, and canonical identity cannot catch it because both sides of the comparison go through the same lossy parse.
+
+**Prevention:** round-trip tests with a foreign-namespace child that collides by local name (node and flow) in `tests/unit/test_corpus_spec_roundtrip.py`; the reader now partitions by `(namespace, local)` so a collision is structurally impossible rather than avoided.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -322,6 +369,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-19 — flow extension passthrough scope
+- **Chose:** flows carry every non-modelled extension child in `ext_raw` (same rule as nodes), not only foreign-namespace ones.
+- **Why:** re-emitting the 16 latest corpus maps before/after showed the ONLY output change is that flows' designer routing children (`aef:anchors`, `aef:loopDetour`, `aef:forceStraight`, `aef:routingHint`) now survive; the old reader silently dropped them on every re-emit (same T-2614 loss class). Verified by stripping flow `ext_raw` again → byte-identical to the pre-fix baseline for all maps. No committed map was regenerated; reported to the parent.
+- **Rejected:** foreign-only passthrough for flows — keeps re-emit bytes identical but keeps a known silent drop and splits the rule between nodes and flows.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -338,3 +390,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4387-corpusspec-reads-extensionelements-child.md
 - **Context:** Initial task creation
+
+### 2026-10-19T13:27:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

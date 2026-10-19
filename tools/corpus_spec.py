@@ -116,6 +116,12 @@ def _q(tag, ns=BPMN_NS):
     return f"{{{ns}}}{tag}"
 
 
+def _is_known_ext(c) -> bool:
+    """A structured aef:* child — namespace AND local name (T-4387): keyed on the
+    local name alone, a foreign <zeebe:uid> overwrote the node's aef:uid."""
+    return isinstance(c.tag, str) and c.tag in {_q(k, AEF_NS) for k in _KNOWN_EXT}
+
+
 def _ext(el):
     """aef:* extension children of a flow element's extensionElements block."""
     out = {}
@@ -123,8 +129,8 @@ def _ext(el):
     if ee is None:
         return out
     for c in ee:
-        local = c.tag.split("}")[-1]
-        out[local] = dict(c.attrib)
+        if _is_known_ext(c):
+            out[c.tag.split("}")[-1]] = dict(c.attrib)
     return out
 
 
@@ -140,12 +146,13 @@ def _raw_xml(el) -> str:
 def _ext_raw(el) -> list:
     """Unrecognized ext children preserved verbatim (aef:constituents,
     aef:endpoint, aef:contextReads, …) — the parser dropping these silently
-    is the T-2614 data-loss class."""
+    is the T-2614 data-loss class. Foreign-namespace children land here too,
+    whatever their local name (T-4387)."""
     ee = el.find(_q("extensionElements"))
     if ee is None:
         return []
     return [_raw_xml(c) for c in ee
-            if isinstance(c.tag, str) and c.tag.split("}")[-1] not in _KNOWN_EXT]
+            if isinstance(c.tag, str) and not _is_known_ext(c)]
 
 
 #: The emitter's own trailer, present in every generated file. Never a map's doc —
@@ -303,6 +310,9 @@ def parse_map(xml_text: str) -> dict:
             ext = _ext(el)
             if "uid" in ext:
                 f["uid"] = ext["uid"].get("value")
+            ext_raw = _ext_raw(el)
+            if ext_raw:
+                f["ext_raw"] = ext_raw
             # T-2614: preserve non-extension flow children verbatim
             # (conditionExpression with xsi:type + expression text).
             raw = [_raw_xml(c) for c in el
@@ -493,8 +503,10 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         a(f'    <bpmn:sequenceFlow id={quoteattr(f["id"])}{name_attr} '
           f'sourceRef={quoteattr(f["from"])} targetRef={quoteattr(f["to"])}>')
         uid = f.get("uid")
-        if uid:
-            a(f'      <bpmn:extensionElements><aef:uid value={quoteattr(uid)}/>'
+        ext_raw = "".join(f.get("ext_raw", []))
+        uid_part = f"<aef:uid value={quoteattr(uid)}/>" if uid else ""
+        if uid_part or ext_raw:
+            a(f"      <bpmn:extensionElements>{uid_part}{ext_raw}"
               f"</bpmn:extensionElements>")
         for raw in f.get("raw_children", []):
             a(f"      {raw}")
