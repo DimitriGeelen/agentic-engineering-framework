@@ -151,13 +151,151 @@ is_bash_safe_command() {
         _kept+=("$_seg"); _n=$((_n+1))
     done
     if [ "$_n" -gt 1 ]; then
-        for _seg in "${_kept[@]}"; do
-            _fw_single_command_is_safe "$_seg" || return 1
-            _fw_track_cwd "$_seg"
-        done
-        return 0
+        _fw_segments_are_safe "$_cmd" "${_kept[@]}"
+        return
     fi
     _fw_single_command_is_safe "$_cmd"
+}
+
+# --- T-4396: for / while / until loops ---------------------------------------
+#
+# A loop arrives from _fw_chain_split as keyword segments — `for t in a b`,
+# ` do grep x "$t"`, ` done` — and `for`, `do` and `done` match no allowlist arm,
+# so every loop gated, `for t in T-1 T-2; do grep -m1 name …; done` included.
+#
+# _fw_segments_are_safe walks the segments with a small grammar instead of judging
+# each keyword as a command. Everything outside the grammar keeps the old verdict
+# (a segment starting with a keyword was unsafe before and is unsafe now unless the
+# whole loop parses), so this can only admit loops whose every command is admitted:
+#   for NAME [in WORDS]  WORDS may hold $(…) only when the inner command is itself
+#                        safe; backticks, <( and >( are refused
+#   while|until COND     COND judged as a command; `read [-r…] NAME…`, `true` and
+#                        `:` are accepted there and only there
+#   do [CMD]             CMD judged like any segment (a nested loop recurses here)
+#   done [TAIL]          TAIL may only be `< PATH`, `N>/dev/null` or `N>&M`
+# Refused: if/case/select and C-style for (no arm), a missing do/done, a stray
+# done, and any directory change inside a body — the second iteration runs from a
+# cwd the T-4343 -C resolution cannot know. When a loop is present the whole line
+# must also clear has_bash_write_pattern, so a redirect in a body is refused here
+# and not only by the caller's scan.
+#
+# Known over-block, toward the gate: _fw_chain_split is not paren-aware, so a
+# word-list `$(ls | head)` splits inside the substitution and reads unbalanced.
+_fw_segments_are_safe() {
+    local _orig="$1"; shift
+    local _seg _s _kw _rest _depth=0 _expect="" _loops=0
+    for _seg in "$@"; do
+        _s="${_seg#"${_seg%%[![:space:]]*}"}"
+        _s="${_s%"${_s##*[![:space:]]}"}"
+        while :; do
+            _kw="${_s%%[[:space:]]*}"
+            _rest="${_s#"$_kw"}"
+            _rest="${_rest#"${_rest%%[![:space:]]*}"}"
+            case "$_kw" in
+                for)
+                    [ -z "$_expect" ] || return 1
+                    _fw_loop_for_header_is_safe "$_rest" || return 1
+                    _depth=$((_depth+1)); _loops=1; _expect=do
+                    ;;
+                while|until)
+                    [ -z "$_expect" ] && [ -n "$_rest" ] || return 1
+                    _depth=$((_depth+1)); _loops=1; _expect=cond
+                    _s="$_rest"; continue
+                    ;;
+                do)
+                    [ "$_expect" = do ] || [ "$_expect" = cond ] || return 1
+                    _expect=""
+                    [ -n "$_rest" ] || break
+                    _s="$_rest"; continue
+                    ;;
+                done)
+                    [ "$_depth" -gt 0 ] && [ -z "$_expect" ] || return 1
+                    _fw_loop_done_tail_is_safe "$_rest" || return 1
+                    _depth=$((_depth-1))
+                    ;;
+                *)
+                    [ "$_expect" = do ] && return 1
+                    if [ "$_depth" -gt 0 ]; then
+                        _fw_segment_may_change_dir "$_s" && return 1
+                        if [ "$_expect" = cond ] && _fw_loop_cond_is_builtin "$_s"; then
+                            break
+                        fi
+                    fi
+                    _fw_single_command_is_safe "$_s" || return 1
+                    _fw_track_cwd "$_s"
+                    ;;
+            esac
+            break
+        done
+    done
+    [ "$_depth" -eq 0 ] && [ -z "$_expect" ] || return 1
+    if [ "$_loops" -eq 1 ]; then
+        has_bash_write_pattern "$_orig" && return 1
+    fi
+    return 0
+}
+
+# `for` header after the keyword: NAME, optionally `in WORDS`.
+_fw_loop_for_header_is_safe() {
+    local _h="$1"
+    [[ "$_h" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] && return 0
+    [[ "$_h" =~ ^[A-Za-z_][A-Za-z0-9_]*[[:space:]]+in([[:space:]]+(.*))?$ ]] || return 1
+    _fw_loop_words_are_safe "${BASH_REMATCH[2]}"
+}
+
+# A word list expands; the only expansion that can run a command is substitution.
+# Each `$(…)` must hold a command is_bash_safe_command admits. Backticks and
+# process substitution are refused rather than parsed.
+_fw_loop_words_are_safe() {
+    local _w="$1" _q="" _ch _i _j _d _n=${#1}
+    for (( _i=0; _i<_n; _i++ )); do
+        _ch="${_w:_i:1}"
+        if [ "$_q" = "'" ]; then
+            [ "$_ch" = "'" ] && _q=""
+            continue
+        fi
+        case "$_ch" in
+            '\') _i=$((_i+1)) ;;
+            "'") [ -z "$_q" ] && _q="'" ;;
+            '"') if [ "$_q" = '"' ]; then _q=""; else _q='"'; fi ;;
+            '`') return 1 ;;
+            '<'|'>') [ "${_w:_i+1:1}" = '(' ] && return 1 ;;
+            '$')
+                [ "${_w:_i+1:1}" = '(' ] || continue
+                _d=1
+                for (( _j=_i+2; _j<_n; _j++ )); do
+                    case "${_w:_j:1}" in
+                        '(') _d=$((_d+1)) ;;
+                        ')') _d=$((_d-1)); [ "$_d" -eq 0 ] && break ;;
+                    esac
+                done
+                [ "$_d" -eq 0 ] || return 1
+                is_bash_safe_command "${_w:_i+2:_j-_i-2}" || return 1
+                _i=$_j
+                ;;
+        esac
+    done
+    [ -z "$_q" ]
+}
+
+# What may follow `done`: an input redirect from a plain path, a redirect to
+# /dev/null, or an fd duplication. Nothing that names an output file, no
+# here-string, no process substitution.
+_fw_loop_done_tail_is_safe() {
+    local _t="$1"
+    local _re='^([0-9&]?>>?[[:space:]]*/dev/null|[0-9]?>&[0-9-]|<[[:space:]]*[A-Za-z0-9._/+:@%,=-]+)([[:space:]]+|$)'
+    while [ -n "$_t" ]; do
+        [[ "$_t" =~ $_re ]] || return 1
+        _t="${_t:${#BASH_REMATCH[0]}}"
+    done
+    return 0
+}
+
+# Builtins accepted only as a while/until condition: they set shell variables or
+# a status and touch no file.
+_fw_loop_cond_is_builtin() {
+    [[ "$1" =~ ^(true|:)$ ]] && return 0
+    [[ "$1" =~ ^read([[:space:]]+-[ra]+)*([[:space:]]+[A-Za-z_][A-Za-z0-9_]*)+$ ]]
 }
 
 # --- T-3374 (OBS-423): env-prefix denylist ------------------------------------
