@@ -1,10 +1,18 @@
 ---
 id: T-4435
-name: "Shared dispatched-worker contract (TermLink + AEF + ring20): should AEF own the run.sh record writer, dispatcher recording and worker instruction?"
+name: "Shared dispatched-worker contract (TermLink + AEF + ring20): should AEF own
+  the run.sh record writer, dispatcher recording and worker instruction?"
 description: >
-  Formal question from 010-termlink (msg 0673a051, conversation shared-worker-contract-3way, after their operator ruled termlink T-3483 option C): one shared contract for dispatched agent workers, based on ring20's arc-009 S-1 model, with TermLink building the hub ledger primitive, AEF owning run.sh as the supervisor-writer, the dispatcher recording and the worker instruction, ring20 moving its supervisor onto the shared primitive. Operator asked for three reviews before deciding. Prior AEF context: T-3977 (GO: take arc-009 orchestration in piece by piece), T-3960 (S-1 contract stakeholder check). Artefact: docs/reports/T-4435-shared-worker-contract.md.
+  Formal question from 010-termlink (msg 0673a051, conversation shared-worker-contract-3way,
+  after their operator ruled termlink T-3483 option C): one shared contract for dispatched
+  agent workers, based on ring20's arc-009 S-1 model, with TermLink building the hub
+  ledger primitive, AEF owning run.sh as the supervisor-writer, the dispatcher recording
+  and the worker instruction, ring20 moving its supervisor onto the shared primitive.
+  Operator asked for three reviews before deciding. Prior AEF context: T-3977 (GO:
+  take arc-009 orchestration in piece by piece), T-3960 (S-1 contract stakeholder
+  check). Artefact: docs/reports/T-4435-shared-worker-contract.md.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +20,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-19T21:56:28Z
-last_update: 2026-10-19T21:56:28Z
-date_finished: null
+last_update: 2026-10-19T21:58:30Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +30,23 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-10-19T21:58:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4435: Shared dispatched-worker contract (TermLink + AEF + ring20): should AEF own the run.sh record writer, dispatcher recording and worker instruction?
@@ -51,6 +76,19 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
      §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
+
+- **IW-1: Is the shared contract sound (single-writer done, (dispatch id, attempt, nonce) fencing, lost only on confirmed session end), with no race, split-brain or stuck state left open?**
+  confidence: 1
+  disposition:
+  rationale: to be answered from the three reviews (docs/reports/T-4435-reviews/)
+- **IW-2: Should AEF own the run.sh supervisor-writer, the dispatcher recording and the worker instruction, and are AEF's four conditions right?**
+  confidence: 1
+  disposition:
+  rationale: draft position in docs/reports/T-4435-shared-worker-contract.md §4; reviews pending
+- **IW-3: How does an answer reach a running worker given no worker receiver (T-4423), circuit addressing / the orphan-inbox class (T-3855, T-4418) and a retry ladder that outlives any worker (D-600)?**
+  confidence: 0
+  disposition:
+  rationale: operator question 2026-10-19; artefact §3; reviews pending
 
 ## Exploration Plan
 
@@ -135,3 +173,6 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-19T21:58:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
