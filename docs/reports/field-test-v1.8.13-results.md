@@ -88,3 +88,27 @@ found.**
 | T-4409, behaviour change | not a hole, over-strict | `cd /tmp/evil \|\| git status` was SAFE on v1.8.12 and is refused on the tip. git runs in the original cwd or not at all. Goes in the release notes |
 | T-4396 | **WORKS** | `for f in a b; do echo "$f"; done`, `for f in *.py; do head -1 "$f"; done` and `while read -r l; do echo "$l"; done < /dev/null` pass (refused on v1.8.12). Still refused: rm or `>` in the body, cd, if, `< <(...)`, `git -C /tmp/evil` in a body, `until false; do curl -X POST`, GIT_DIR=/tmp/evil in a body |
 | T-4405 | **WORKS** (code reading; no upgrade run, no bats on their host) | The handoff replays the caller's argv except `--from-upstream` and its value. Latent edge: a value-taking flag added later would lose its value silently → T-4424 |
+
+## Round 4 — dimitri-mint-dev T-155 (msg 4ac94bae, 2026-10-19)
+
+**Setup:** bleeding-edge 58b62c5a5 vs master v1.8.12, a fresh container per branch. Report on their side:
+`docs/reports/T-155-v1813-candidate.md`. **Method note:** their first probe sent T-4408/T-4409 to
+check-project-boundary, but those fixes live in safe-commands.sh, so they re-ran them through check-active-task with
+no focus. A write control (`touch proj/newfile`) was refused on both branches, which shows the gate was live.
+
+| Fix | Verdict | Evidence |
+|---|---|---|
+| T-4408 | **WORKS** | `GIT_DIR=/work/other/.git git log -1`, `GIT_WORK_TREE=/work/other git status`, `GIT_COMMON_DIR=/work/other/.git git status`: ALLOW on v1.8.12, REFUSE on the candidate |
+| T-4409 | **WORKS** | `cd /tmp/evil && git status` (a repo at /tmp/evil) and `cd /work/other && git status`: ALLOW → REFUSE. In-project `git status`, `git log -1` and `cd proj/docs && git status` are allowed on both (no regression). `git -C /work/other` is refused on both (T-4343) |
+| T-4395 | **WORKS** | Boundary hook: `git -C`, `cat` and `grep -r` on /work/other, and `cat /NasRing20/...`: allow → refuse. Control /srv refused on both. Inside paths, regex words, a nonexistent top dir and the `/policy` regex word allowed on both (no false positive) |
+| T-4413 | **WORKS** | L1: 0/8 verdicts changed; doctor rc 0, no failures; cron shows WARN "not installed yet" |
+| T-4304, T-4305, T-4307, T-4332 | **WORKS** | L2 (293 + 278 s, leak check clean): start rc 0 on every success |
+| T-4306 | not reproduced | stop rc 0 three times; defunct fw zombies remain without `--init` |
+| T-4416 | not exercised | no TermLink in their container |
+| T-4400 | **INCONCLUSIVE** | Installer wall time 220 s → 138/140 s, but the scan time is not printed on its own. A timing line would make it measurable |
+
+Defence-in-depth note (not a v1.8.13 blocker): the boundary hook alone still allows the GIT_* env and the
+`cd /tmp/evil` reads on both branches; the task gate catches them.
+
+**v1.8.13 status after round 4:** T-4408, T-4409 and T-4395 now have two independent positive field tests each
+(ring20-dashboard and dimitri-mint-dev). T-4367, T-4368 and T-4396 have one each.
