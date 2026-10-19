@@ -41,20 +41,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cron_schedule import effective_schedule  # noqa: E402  T-4351
 
 
-def main() -> int:
-    if len(sys.argv) != 4:
-        print(f"usage: {sys.argv[0]} <project_root> <registry_file> <fw_path>",
-              file=sys.stderr)
-        return 2
-    project_root, registry_file, fw_path = sys.argv[1], sys.argv[2], sys.argv[3]
-    try:
-        with open(registry_file) as f:
-            data = yaml.safe_load(f) or {}
-    except (OSError, yaml.YAMLError) as exc:
-        print(f"cron-dry-run: cannot load {registry_file}: {exc}",
-              file=sys.stderr)
-        return 3
-    jobs = data.get("jobs", []) or []
+def render_crontab(project_root: str, jobs: list, fw_path: str) -> str:
+    """The crontab text `fw cron generate` writes. T-4432: Watchtower's
+    pause/resume (web/blueprints/cron.py) calls this too, so there is one
+    renderer outside bin/fw's own copy and no third hand-written generator."""
     slug = re.sub(r"[^a-z0-9_-]", "-", os.path.basename(project_root).lower())
     cron_source = os.path.join(project_root, ".context", "cron",
                                "agentic-audit.crontab")
@@ -90,7 +80,24 @@ def main() -> int:
         else:
             lines.append(f"{schedule} root {resolved}")
         lines.append("")
-    sys.stdout.write("\n".join(lines))
+    return "\n".join(lines)
+
+
+def main() -> int:
+    if len(sys.argv) != 4:
+        print(f"usage: {sys.argv[0]} <project_root> <registry_file> <fw_path>",
+              file=sys.stderr)
+        return 2
+    project_root, registry_file, fw_path = sys.argv[1], sys.argv[2], sys.argv[3]
+    try:
+        with open(registry_file) as f:
+            data = yaml.safe_load(f) or {}
+    except (OSError, yaml.YAMLError) as exc:
+        print(f"cron-dry-run: cannot load {registry_file}: {exc}",
+              file=sys.stderr)
+        return 3
+    jobs = data.get("jobs", []) or []
+    sys.stdout.write(render_crontab(project_root, jobs, fw_path))
     return 0
 
 

@@ -503,70 +503,47 @@ def describe_job(job_id: str):
 # ---------------------------------------------------------------------------
 
 
-def _regenerate_cron() -> None:
-    """Regenerate the crontab file from registry YAML.
+def _cron_fw_path() -> str:
+    """fw path written into cron lines — same choice as `fw cron generate` (T-3835):
+    a consumer's own vendored fw is its durable one."""
+    vendored = PROJECT_ROOT / ".agentic-framework" / "bin" / "fw"
+    if FRAMEWORK_ROOT.resolve() != PROJECT_ROOT.resolve() and os.access(vendored, os.X_OK):
+        return str(vendored)
+    return str(FW_BIN)
 
-    Active jobs get normal cron lines. Paused jobs are commented out.
-    Writes to .context/cron/agentic-audit.crontab, then copies to /etc/cron.d/.
-    """
-    data = _load_registry()
-    jobs = data.get("jobs", [])
-    if not jobs:
-        return
 
-    project_slug = os.path.basename(str(PROJECT_ROOT)).lower()
-    project_slug = re.sub(r"[^a-z0-9_-]", "-", project_slug)
-    fw_path = str(FW_BIN)
-    cron_source = PROJECT_ROOT / ".context" / "cron" / "agentic-audit.crontab"
-    cron_install = f"/etc/cron.d/agentic-audit-{project_slug}"
-
-    lines = [
-        f"# Agentic Engineering Framework — Scheduled Jobs (managed by cron-registry.yaml)",
-        f"# Source of truth: {cron_source} (git-tracked)",
-        f"# Installed to: {cron_install} (copy — use 'fw audit schedule install' to sync)",
-        f"# Project: {PROJECT_ROOT}",
-        f"SHELL=/bin/bash",
-        f"PATH=/usr/local/bin:/usr/bin:/bin",
-        "",
-    ]
-
-    for job in jobs:
-        schedule = job.get("schedule", "")
-        command = job.get("command", "")
-        name = job.get("name", "")
-        status = job.get("status", "active")
-
-        # Resolve fw commands — replace ALL occurrences of bare 'fw ' (T-1249)
-        resolved = command
-        if "fw " in resolved:
-            resolved = re.sub(
-                r'\bfw\b',
-                f'"{fw_path}"',
-                resolved,
-            )
-            resolved = f'PROJECT_ROOT="{PROJECT_ROOT}" {resolved}'
-        elif resolved.startswith("find "):
-            resolved = f'cd "{PROJECT_ROOT}" && {resolved}'
-
-        # Add 2>/dev/null to suppress noise
-        if "2>/dev/null" not in resolved:
-            resolved += " 2>/dev/null"
-
-        lines.append(f"# {name}")
-        if status == "paused":
-            lines.append(f"# PAUSED: {schedule} root {resolved}")
-        else:
-            lines.append(f"{schedule} root {resolved}")
-        lines.append("")
-
-    cron_source.parent.mkdir(parents=True, exist_ok=True)
-    cron_source.write_text("\n".join(lines))
-
-    # Try to install to /etc/cron.d/
+def _install_cron(cron_source: Path) -> None:
+    """Copy the generated crontab to /etc/cron.d/ when running as root."""
+    slug = re.sub(r"[^a-z0-9_-]", "-", PROJECT_ROOT.name.lower())
+    cron_install = f"/etc/cron.d/agentic-audit-{slug}"
     try:
         if os.geteuid() == 0:
             import shutil
             shutil.copy2(str(cron_source), cron_install)
             os.chmod(cron_install, 0o644)
     except Exception:
-        pass  # Non-root — user must run fw audit schedule install
+        pass  # Non-root — user must run fw cron install
+
+
+def _regenerate_cron() -> None:
+    """Regenerate the crontab source from registry YAML (T-4432).
+
+    Rendering is lib/cron_dry_run.py render_crontab — the same text
+    `fw cron generate` writes (staggered reindex minute via lib/cron_schedule.py,
+    paused jobs commented out). Writes .context/cron/agentic-audit.crontab,
+    then installs to /etc/cron.d/ if root.
+    """
+    jobs = _load_registry().get("jobs", [])
+    if not jobs:
+        return
+
+    import sys
+    lib_dir = str(FRAMEWORK_ROOT / "lib")
+    if lib_dir not in sys.path:
+        sys.path.insert(0, lib_dir)
+    from cron_dry_run import render_crontab
+
+    cron_source = PROJECT_ROOT / ".context" / "cron" / "agentic-audit.crontab"
+    cron_source.parent.mkdir(parents=True, exist_ok=True)
+    cron_source.write_text(render_crontab(str(PROJECT_ROOT), jobs, _cron_fw_path()))
+    _install_cron(cron_source)
