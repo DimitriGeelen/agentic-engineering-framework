@@ -9,10 +9,10 @@ description: >
   catches and one it lets pass. Arc test-suite-health (arc-026), anchor T-4376; build
   only after the inception GO.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T11:58:37Z
-last_update: '2026-10-19T12:01:46Z'
+last_update: 2026-10-19T17:46:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,14 +93,36 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Arc test-suite-health (arc-026), anchor T-4376 (GO). Evidence: docs/reports/T-4376-test-suite-refactor.md,
+docs/reports/T-4382-bimodal-triage.md, T-4372 / T-4383 (audit.bats live-repo cases), T-2746 / T-4313 (fw without a
+temp project), the t4347 key-0 test (read this project's .framework.yaml). Static lint over `*.bats`, modelled on
+tools/bats-dead-negation-lint.py. Flagged tests are NOT fixed here (later arc work); the lint starts as a WARN in
+`fw test lint` against a committed baseline of current offenders.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `tools/bats-test-isolation-lint.py` exists with three rules: `live-audit` (audit.sh / `fw doctor|audit|handover` run with no temp PROJECT_ROOT in scope), `repo-state` (a repo-root variable joined to `/.framework.yaml` or `/.context/`), `fw-no-temp-root` (bin/fw driven, other verbs, no temp PROJECT_ROOT in scope); heredoc bodies and comments ignored; allow comment `# test-isolation: allow <rule|all> — reason` at line, block or file level
+- [x] Each rule pinned in `tests/lint/bats-test-isolation.bats` by a fixture it catches and one it lets pass (incl. the allow comment and a temp PROJECT_ROOT), plus baseline behaviour (old offenders pass, a new one over the baseline is reported, exit 1)
+- [x] Committed baseline `tests/lint/test-isolation-baseline.txt` of current offenders; the corpus scan against it is clean; current corpus count per rule recorded in this task
+- [x] `fw test lint` runs the lint and reports new offenders as WARN (does not set a failing exit)
+- [x] Dead-negation lint runs at commit time on staged `tests/**/*.bats` (pre-commit hook block, hook versions bumped, staged blob scanned, not the worktree file); pinned by a regression test that is red without the block
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` clean; vendor self --check clean (or red only on other workers' files)
+
+### Evidence (2026-10-19)
+- **Corpus count at landing** (1,003 `.bats` files): 261 offending lines in 113 (rule, file) pairs.
+  `live-audit` 60 lines in 27 files, `repo-state` 69 in 40 files, `fw-no-temp-root` 132 in 46 files.
+  All are in `tests/lint/test-isolation-baseline.txt`; the scan against it reports `new 0`.
+- Of T-4401's 32 grep candidates, most are already hermetic (temp PROJECT_ROOT in setup). The lint names the
+  ones that are not: audit.bats (8), doctor_designer_pin_drift (5), handover.bats (8), t3119/t3158 designer
+  currency, worker_kinds_parity and others.
+- `tests/lint/bats-test-isolation.bats`: 16/16 ok, 0 skips. Red before: the tool did not exist.
+- `tests/unit/t4379_precommit_dead_negation.bats`: 4/4 ok. Against HEAD's `hooks.sh` (scratch copy):
+  `not ok 1` (dead negation refused) and `not ok 3` (staged blob scanned), so it is red without the block.
+- `bin/fw test lint`: rc 0, new "Test-Isolation Lint" section, `new 0`, "OK  no new offenders".
+- hook_version_marker_parity 7/7, t4403_hook_block_preserve 7/7 after the version bump (commit-msg 1.17→1.18,
+  pre-commit 1.5→1.6). Hooks installed in this repo (`bin/fw git install-hooks`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,6 +300,15 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+test -f tools/bats-test-isolation-lint.py
+timeout 300 bats tests/lint/bats-test-isolation.bats > /tmp/.t4379-lint.out 2>&1 && ! grep -q "^not ok" /tmp/.t4379-lint.out
+test "$(grep -c '# skip' /tmp/.t4379-lint.out)" -eq 0
+python3 tools/bats-test-isolation-lint.py tests/ > /tmp/.t4379-corpus.out 2>&1 && grep -q "new 0" /tmp/.t4379-corpus.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4379-dn.out 2>&1 && grep -q "clean" /tmp/.t4379-dn.out
+timeout 300 bats tests/unit/t4379_precommit_dead_negation.bats > /tmp/.t4379-pc.out 2>&1 && ! grep -q "^not ok" /tmp/.t4379-pc.out
+timeout 120 bats tests/unit/hook_version_marker_parity.bats > /tmp/.t4379-hv.out 2>&1 && ! grep -q "^not ok" /tmp/.t4379-hv.out
+bash -n bin/fw && bash -n agents/git/lib/hooks.sh
+bin/fw vendor self --check
 
 ## RCA
 
@@ -294,6 +325,22 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the same three test defects recur: tests run the live audit/doctor against this repo (audit.bats,
+T-4372 ratchet loop; 32 candidates in T-4401), read this project's own `.framework.yaml` / `.context/` (t4347 key-0),
+or drive `bin/fw` with no temp project (T-2746, T-4313). Each was fixed one file at a time, and the next one landed.
+
+**Root cause:** isolation is opt-in. `tests/test_helper.bash` sets no PROJECT_ROOT, and `bin/fw` falls back to its
+own repo when nothing else resolves (`bin/fw:94`, `PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"`), so a test that
+forgets a temp root silently runs against the live repo and passes.
+
+**Why structurally allowed:** no static check names these shapes. The existing lints (dead negation, silent skip)
+cover assertion shape, not what a test is pointed at; review caught each instance only after it went red or slow.
+Separately, the dead-negation lint ran only at pre-push / structure audit (T-3191), so a dead `!` was found a push
+later than the commit that wrote it (T-4398).
+
+**Prevention:** `tools/bats-test-isolation-lint.py` in `fw test lint` with a committed baseline: any new offender is
+named; old ones are the work queue. The pre-commit hook now runs the dead-negation lint on staged `tests/**/*.bats`.
 
 ## Evolution
 
@@ -318,6 +365,14 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-19 — scope at build start
+- **What changed:** T-4382 showed the live-audit class is worse than slow: those tests mostly *skip* on the
+  repo-wide audit lock and report `ok`. The lint therefore treats "runs the live audit" as a membership defect
+  regardless of how the test copes with contention.
+- **Plan impact:** the lint is a WARN plus baseline (ratchet), not a FAIL, so the 32-file T-4401 backlog does not
+  block anything while new offenders are still named.
+- **Triggered:** none yet; the baseline list is the work queue for T-4401 / T-4378.
 
 ## Recommendation
 
@@ -350,6 +405,27 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-19 — scope: .bats only
+- **Chose:** lint `*.bats` only.
+- **Why:** 1,003 of the suite's files are bats. The heredoc and continuation parsing is reused from the
+  dead-negation lint, and the rules are shell shapes.
+- **Rejected:** pytest coverage in the same tool. The t4347 key-0 origin was a pytest file, so that leg stays
+  open for later arc work. It needs a Python AST rule, not a shell regex.
+
+### 2026-10-19 — what counts as "temp-rooted"
+- **Chose:** the nearest `PROJECT_ROOT=` / `cd` / `unset PROJECT_ROOT` event decides: the line itself, then
+  earlier in the block, then setup, then file level. Anything that is not recognisably this repo counts as temp.
+- **Why:** a test that does `cd "$FRAMEWORK_ROOT"` after a temp setup is live again (t3119). Being lenient on
+  unknown values keeps the lint precise, so it does not get an allowance added just to quiet it.
+- **Rejected:** a flag on any presence of a temp assignment in the file. That missed the cd-back case and the
+  inline `PROJECT_ROOT="$BATS_TEST_DIRNAME/../.."` case.
+
+### 2026-10-19 — baseline granularity
+- **Chose:** a count per (rule, file).
+- **Why:** line numbers drift with every edit. A count ratchet still catches a new offender in an already
+  baselined file.
+- **Rejected:** per-line keys, which churn on unrelated edits.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -375,3 +451,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4379-lint-the-recurring-test-defect-classes-l.md
 - **Context:** Initial task creation
+
+### 2026-10-19T17:46:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

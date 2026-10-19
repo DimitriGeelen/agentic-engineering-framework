@@ -11039,6 +11039,21 @@ PYPREDICT
                 # shellcheck source=/dev/null
                 source "$FRAMEWORK_ROOT/lib/silent-skip-lint.sh"
                 fw_silent_skip_lint "$FRAMEWORK_ROOT" || _test_exit=1
+
+                # T-4379: tests pointed at THIS repo (live audit/doctor, the repo's
+                # .framework.yaml/.context, bin/fw with no temp project). WARN only:
+                # offenders beyond tests/lint/test-isolation-baseline.txt are named,
+                # the baselined ones are the arc-026 work queue. Vendored copies ship
+                # neither the tool nor tests/, so the step is skipped there.
+                if [ -f "$FRAMEWORK_ROOT/tools/bats-test-isolation-lint.py" ] && [ -d "$FRAMEWORK_ROOT/tests" ]; then
+                    echo ""
+                    echo "=== Test-Isolation Lint ==="
+                    if python3 "$FRAMEWORK_ROOT/tools/bats-test-isolation-lint.py" "$FRAMEWORK_ROOT/tests/"; then
+                        echo "  OK  no new offenders"
+                    else
+                        echo -e "  ${YELLOW}WARN${NC} new test-isolation offenders above (not failing: T-4379 starts advisory)"
+                    fi
+                fi
                 ;;
             --unit|unit)
                 # Bats + Pytest unit tests (T-2745: wire pytest tests/unit/)

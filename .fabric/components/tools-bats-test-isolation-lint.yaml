@@ -1,0 +1,21 @@
+id: tools/bats-test-isolation-lint.py
+name: bats-test-isolation-lint
+type: script
+subsystem: framework-core
+location: tools/bats-test-isolation-lint.py
+tags: []
+
+purpose: "T-4379: find bats tests that are pointed at THIS repo instead of a private one."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-19
+created_by: unknown
