@@ -200,6 +200,10 @@ def _from_markdown(src):
 
 def _from_block_comment(src):
     """Leading `/* … */` banner, or a run of `//` lines, or `<!-- … -->`/`{# … #}`."""
+    # A Node script opens with `#!/usr/bin/env node`; the header is below it.
+    # Skip exactly one shebang line, so code-before-comment is still refused.
+    if src.startswith("#!"):
+        src = src.split("\n", 1)[1] if "\n" in src else ""
     stripped = src.lstrip()
     for opener, closer in (("/*", "*/"), ("<!--", "-->"), ("{#", "#}")):
         if stripped.startswith(opener):
@@ -234,6 +238,10 @@ _EXT_READERS = {
     ".md": lambda s: (lambda t: (t, "markdown") if t else None)(_from_markdown(s)),
     ".js": lambda s: (lambda t: (t, "header-comment") if t else None)(_from_block_comment(s)),
     ".ts": lambda s: (lambda t: (t, "header-comment") if t else None)(_from_block_comment(s)),
+    ".mjs": lambda s: (lambda t: (t, "header-comment") if t else None)(_from_block_comment(s)),
+    ".cjs": lambda s: (lambda t: (t, "header-comment") if t else None)(_from_block_comment(s)),
+    ".mts": lambda s: (lambda t: (t, "header-comment") if t else None)(_from_block_comment(s)),
+    ".cts": lambda s: (lambda t: (t, "header-comment") if t else None)(_from_block_comment(s)),
     ".jsx": lambda s: (lambda t: (t, "header-comment") if t else None)(_from_block_comment(s)),
     ".tsx": lambda s: (lambda t: (t, "header-comment") if t else None)(_from_block_comment(s)),
     ".css": lambda s: (lambda t: (t, "header-comment") if t else None)(_from_block_comment(s)),

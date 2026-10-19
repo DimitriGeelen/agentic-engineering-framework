@@ -11,10 +11,10 @@ description: >
   in it. Tests: .mjs with shebang + // header, .cjs without shebang, a .js whose first
   comment comes after code (still refused).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T18:52:17Z
-last_update: '2026-10-19T19:00:36Z'
+last_update: 2026-10-19T19:16:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -67,20 +67,43 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T19:16:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4421: fw fabric register refuses .mjs/.cjs files with a // header after a shebang ('describes itself nowhere')
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reported by 832 (msg 1b307050, v1.8.12). `fw fabric register` on an ES-module Node script (`#!/usr/bin/env node` then a `//` header) reports "describes itself nowhere".
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_EXT_READERS` maps `.mjs`, `.cjs`, `.mts`, `.cts` to the block-comment reader (same as `.js`/`.ts`)
+- [x] `_from_block_comment` skips one leading `#!` shebang line before looking for the `//` or `/* */` header
+- [x] Regression tests in `tests/unit/test_t4421_describe_mjs.py`: .mjs with shebang + `//` header is described; .cjs without shebang is described; .js whose first comment follows code is still refused; shebang-only file is still refused — red before the fix, green after
+- [x] Existing `tests/unit/test_t3430_describe.py` still green; `bin/fw vendor self --check` clean
+
+**Red/green record (2026-10-19):** before the fix `test_t4421_describe_mjs.py` → 7 failed, 2 passed (only the two refusal cases passed). After: 9 passed; together with `test_t3430_describe.py` + `test_t3430_enrich_describe.py` → 56 passed.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -129,6 +152,10 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_t4421_describe_mjs.py -q > /tmp/.t4421.out 2>&1 && grep -q passed /tmp/.t4421.out && ! grep -q failed /tmp/.t4421.out
+python3 -m pytest tests/unit/test_t3430_describe.py -q > /tmp/.t4421b.out 2>&1 && grep -q passed /tmp/.t4421b.out && ! grep -q failed /tmp/.t4421b.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -261,6 +288,14 @@ cost_estimate_proposed:
 
 ## RCA
 
+**Symptom:** `fw fabric register foo.mjs` (shebang + `//` header) refuses with "describes itself nowhere" although the file has a clear header comment.
+
+**Root cause:** two gaps in `agents/fabric/lib/describe.py`. (1) `_EXT_READERS` (line ~225) lists `.js/.ts/.jsx/.tsx` but not `.mjs/.cjs/.mts/.cts`, so `derive_purpose_from_header` (line ~248) falls back to the `#`-header reader for unknown extensions, which finds no `//` lines. (2) `_from_block_comment` (line ~214) breaks on the first non-`//` line, so a leading `#!/usr/bin/env node` ends the header scan before it starts — this bites shebanged `.js` files too.
+
+**Why structurally allowed:** the T-3430 tests covered one fixture per reader convention, with no JS fixture carrying a shebang and no test enumerating the JS-family extensions; the unknown-extension fallback turns a missing mapping into a silent refusal rather than an error.
+
+**Prevention:** `tests/unit/test_t4421_describe_mjs.py` pins every JS-family extension to the block-comment reader (parametrised) plus the shebang case and both refusal cases.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -359,3 +394,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4421-fw-fabric-register-refuses-mjscjs-files-.md
 - **Context:** Initial task creation
+
+### 2026-10-19T19:16:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
