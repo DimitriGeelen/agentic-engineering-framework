@@ -1142,6 +1142,64 @@ _ef_step10_action() {
     esac
 }
 
+# T-4424: the upgrade flag grammar, declared once. The parser in do_upgrade and the
+# bare-from-consumer handoff replay both read it, so the replay never has to guess
+# whether a word after a flag is that flag's value or the target. Adding a flag to
+# the parser's case without declaring it here fails t4424_upgrade_flag_declaration.bats,
+# and an undeclared flag reaching the replay is refused, not split from its value.
+_FW_UPGRADE_VALUE_FLAGS=(--from-upstream)
+_FW_UPGRADE_SWITCH_FLAGS=(--dry-run --allow-delete-locals --force --force-downgrade
+    --strict --no-self-vendor --with-messaging --without-messaging --dedupe-user-hooks
+    -h --help)
+# Value flags not forwarded to upstream: the clone IS the source.
+_FW_UPGRADE_HANDOFF_DROP=(--from-upstream)
+
+_upgrade_flag_in() {   # _upgrade_flag_in WORD LIST... -> 0 when WORD is one of LIST
+    local _w="$1" _f; shift
+    for _f in "$@"; do [ "$_f" = "$_w" ] && return 0; done
+    return 1
+}
+
+# T-4424: rebuild the caller's argv for the upstream bin/fw into _UPGRADE_REPLAY_ARGS:
+# "upgrade" TARGET, then every flag in order, a value flag together with its value,
+# minus _FW_UPGRADE_HANDOFF_DROP and the positional target (TARGET re-supplies it).
+# Returns 1, naming the word, on a flag in neither declared list.
+_upgrade_build_replay() {
+    _UPGRADE_REPLAY_ARGS=("upgrade" "$1"); shift
+    local _ra _rname
+    while [ $# -gt 0 ]; do
+        _ra="$1"; shift
+        case "$_ra" in
+            -*=*)
+                _rname="${_ra%%=*}"
+                if ! _upgrade_flag_in "$_rname" "${_FW_UPGRADE_VALUE_FLAGS[@]}"; then
+                    echo "ERROR: upgrade handoff: '$_rname' is not a declared value flag (_FW_UPGRADE_VALUE_FLAGS in lib/upgrade.sh)" >&2
+                    return 1
+                fi
+                _upgrade_flag_in "$_rname" "${_FW_UPGRADE_HANDOFF_DROP[@]}" \
+                    || _UPGRADE_REPLAY_ARGS+=("$_ra")
+                ;;
+            -*)
+                if _upgrade_flag_in "$_ra" "${_FW_UPGRADE_VALUE_FLAGS[@]}"; then
+                    if [ $# -eq 0 ]; then
+                        echo "ERROR: upgrade handoff: $_ra needs a value" >&2
+                        return 1
+                    fi
+                    _upgrade_flag_in "$_ra" "${_FW_UPGRADE_HANDOFF_DROP[@]}" \
+                        || _UPGRADE_REPLAY_ARGS+=("$_ra" "$1")
+                    shift
+                elif _upgrade_flag_in "$_ra" "${_FW_UPGRADE_SWITCH_FLAGS[@]}"; then
+                    _UPGRADE_REPLAY_ARGS+=("$_ra")
+                else
+                    echo "ERROR: upgrade handoff: '$_ra' is in neither _FW_UPGRADE_VALUE_FLAGS nor _FW_UPGRADE_SWITCH_FLAGS (lib/upgrade.sh); refusing to guess whether it takes a value" >&2
+                    return 1
+                fi
+                ;;
+            *) ;;   # the positional target
+        esac
+    done
+}
+
 do_upgrade() {
     local target_dir=""
     local dry_run=false
@@ -1177,6 +1235,12 @@ do_upgrade() {
     local -a _caller_args=("$@")
 
     while [[ $# -gt 0 ]]; do
+        # T-4424: a declared value flag with no value used to make `shift 2` fail
+        # without shifting, and this loop spun forever.
+        if [[ $# -lt 2 ]] && _upgrade_flag_in "$1" "${_FW_UPGRADE_VALUE_FLAGS[@]}"; then
+            echo -e "${RED}$1 needs a value${NC}" >&2
+            return 1
+        fi
         case $1 in
             --dry-run) dry_run=true; shift ;;
             --allow-delete-locals) _vendor_extra+=(--allow-delete-locals); shift ;;
@@ -1417,18 +1481,15 @@ do_upgrade() {
         # --from-upstream (the clone IS the source now). A drop-list, not an allow-list:
         # the hand-kept allow-list here forwarded --force and --dedupe-user-hooks only,
         # so --allow-delete-locals reached upstream missing and its run refused asking
-        # for it (ring20-dashboard, msg 41b1ed56).
-        local -a _replay_args=("upgrade" "$target_dir")
-        local _ra _ra_skip=false
-        for _ra in ${_caller_args[@]+"${_caller_args[@]}"}; do
-            if [ "$_ra_skip" = true ]; then _ra_skip=false; continue; fi
-            case "$_ra" in
-                --from-upstream) _ra_skip=true ;;
-                --from-upstream=*) ;;
-                -*) _replay_args+=("$_ra") ;;
-                *) ;;   # the positional target
-            esac
-        done
+        # for it (ring20-dashboard, msg 41b1ed56). T-4424: value flags come from the
+        # declared list, so a value is never mistaken for the target.
+        local -a _UPGRADE_REPLAY_ARGS=()
+        if ! _upgrade_build_replay "$target_dir" ${_caller_args[@]+"${_caller_args[@]}"}; then
+            rm -rf "$_tmpd"
+            trap - EXIT INT TERM HUP
+            return 1
+        fi
+        local -a _replay_args=("${_UPGRADE_REPLAY_ARGS[@]}")
         local _replay_shown
         _replay_shown=$(printf '%q ' "${_replay_args[@]}")
 
