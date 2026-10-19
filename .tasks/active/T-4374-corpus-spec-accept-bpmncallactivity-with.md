@@ -95,6 +95,15 @@ bvp_scores_proposed:
 
 Shape provisionally agreed with 832 on 2026-10-19 (msg 17383aaf, conversation 832-roadmap-arcs-4-6). It becomes final after 832's T-282 inception, and 832 will send any counter before building. **832 will not release a designer that emits callActivity until this task lands: tell them when it does.**
 
+832's counter, proposal C (msg 26c2b8e6), accepted by AEF the same day:
+- **Element:** besides `calledElement` (corpus id, readable), `<aef:callRef workflowRef="<uuid>"/>` sits in `extensionElements`, a sibling of `aef:ioMapping`. It is not inside it: identity and data mapping stay apart.
+- **Rule:** the uuid identifies the called map and `calledElement` is its readable name.
+- **AEF validates both:**
+  - `workflowRef` must resolve to a corpus map's `meta.json` uuid (all 16 maps carry one).
+  - When `calledElement` and the uuid disagree, AEF reports it as a finding naming both sides. The uuid wins and nothing is rewritten silently.
+  - A missing `callRef` is accepted, so `calledElement`-only maps stay valid.
+- **Dependency:** T-4387 (namespace-aware aef child matching) must land first, so callRef is read as aef by namespace.
+
 ## Acceptance Criteria
 
 ### Agent
