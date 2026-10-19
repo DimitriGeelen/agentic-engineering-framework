@@ -166,7 +166,8 @@ The AEF version reuses it as is, opt-in, and adds:
 - a fail-closed brief screen with a seeded estate deny list (hostnames, domains, project names, IPv6, e-mail, more token formats);
 - consent recorded where the operator clicks;
 - a record of which account answered;
-- a drift canary.
+- a drift canary;
+- off the operator's desktop by default: a virtual display (Xvfb) with a localhost-only VNC view for the rare re-login. This is a condition from the sender's operator (focus theft, the dictation incident).
 
 **One choice is the operator's:** whether driving the consumer web UI under the operator's own account is acceptable. The alternative is the official Perplexity API, registered as a paid backend with per-request approval. If the operator prefers the API, the recommendation becomes NO-GO for the seat and GO for that backend.
 
