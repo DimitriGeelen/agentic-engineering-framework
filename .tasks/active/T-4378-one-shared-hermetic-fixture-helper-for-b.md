@@ -9,10 +9,10 @@ description: >
   for live services. Migrate by measured offenders first. Arc test-suite-health (arc-026),
   anchor T-4376; build only after the inception GO.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T11:58:11Z
-last_update: '2026-10-19T12:01:46Z'
+last_update: 2026-10-19T20:20:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `tests/unit/helpers/hermetic.bash` exists and is loadable (`load helpers/hermetic`): `hermetic_setup [--project]` gives a private root, private exported TMPDIR, HERMETIC_PROJECT (project markers with `--project`), strips PROJECT_ROOT/FRAMEWORK_ROOT/CLAUDE*/FW_* from the test shell; `hermetic_teardown` fails the test on a tripwire (termlink non-probe call, a connection to the decoy Watchtower port, the live sidecar stop marker appearing, a new top-level entry in the real checkout or its `.context/`)
+- [x] `tests/unit/hermetic.py` provides the pytest `hermetic` fixture (registered in `tests/unit/conftest.py`) with the same contract: `.root/.project/.home/.tmp`, `.env()`/`.clean()` stripped env, `.run()`, in-process env stripped via monkeypatch, same tripwires at teardown
+- [x] Self-tests `tests/unit/hermetic_helper.bats` and `tests/unit/test_hermetic_fixture.py` prove each tripwire fires (a deliberate leak is caught) and the clean case passes
+- [x] Migrated offenders still pass: `t2746_no_auto_init_in_non_project.bats` (T-2746 temp project), `test_fw_gaps_closure_check.bats` (T-4313 auto-init marker), `test_t4315_sidecar_stop_attribution.py` (T-4315 sidecar), `t4347_issues_standing_permission_test.py` (t4347 PROJECT_ROOT), `test_orchestrator_status_outcomes.py` (T-4313)
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` reports clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,8 +281,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+test -f tests/unit/helpers/hermetic.bash && test -f tests/unit/hermetic.py
+timeout 300 bats tests/unit/hermetic_helper.bats tests/unit/t2746_no_auto_init_in_non_project.bats tests/unit/test_fw_gaps_closure_check.bats > /tmp/.t4378-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4378-bats.out
+test "$(grep -c '# skip' /tmp/.t4378-bats.out)" -eq 0
+timeout 300 python3 -m pytest -q tests/unit/test_hermetic_fixture.py tests/unit/test_t4315_sidecar_stop_attribution.py tests/unit/t4347_issues_standing_permission_test.py tests/unit/test_orchestrator_status_outcomes.py > /tmp/.t4378-py.out 2>&1 && grep -q passed /tmp/.t4378-py.out
+grep -q 'load helpers/hermetic' tests/unit/t2746_no_auto_init_in_non_project.bats && grep -q 'load helpers/hermetic' tests/unit/test_fw_gaps_closure_check.bats
+grep -q 'hermetic' tests/unit/test_t4315_sidecar_stop_attribution.py && grep -q 'hermetic' tests/unit/t4347_issues_standing_permission_test.py && grep -q 'hermetic' tests/unit/test_orchestrator_status_outcomes.py
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4378-lint.out 2>&1 && grep -qi clean /tmp/.t4378-lint.out
 
 ## RCA
+
+**Symptom:** tests passed alone and failed (or damaged live state) in the suite: fw auto-initialised temp dirs (T-4313), shared /tmp listings raced (T-4318), a test stopped the live sidecar (T-4315), an inherited PROJECT_ROOT hid the branch under test (T-2746, t4347).
+**Root cause:** no shared fixture. `tests/test_helper.bash:37-44` gives only a bare `mktemp -d`; `tests/unit/conftest.py` has autouse guards but no project/env fixture. Each file hand-rolls its own (e.g. `tests/unit/t2746_no_auto_init_in_non_project.bats:21-36`, `tests/unit/test_fw_gaps_closure_check.bats:14-24`, `tests/unit/test_t4315_sidecar_stop_attribution.py:22-30`), each fixing only the leak its author had already hit.
+**Why structurally allowed:** isolation was per-file convention; nothing stripped the worker's PROJECT_ROOT/FW_*/CLAUDE* env or failed a test that reached Watchtower or the real checkout.
+**Prevention:** one helper per runner (`tests/unit/helpers/hermetic.bash`, `tests/unit/hermetic.py`) with tripwires that fail the leaking test at teardown, pinned by self-tests that inject each leak.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -375,3 +390,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4378-one-shared-hermetic-fixture-helper-for-b.md
 - **Context:** Initial task creation
+
+### 2026-10-19T20:20:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

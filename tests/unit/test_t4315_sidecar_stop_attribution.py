@@ -19,11 +19,11 @@ from lib.sidecar import watcher  # noqa: E402
 
 
 @pytest.fixture
-def proj(tmp_path, monkeypatch):
-    root = tmp_path / "t4315"
-    (root / ".context").mkdir(parents=True)
+def proj(hermetic, tmp_path, monkeypatch):
+    # T-4378: the shared hermetic fixture points PROJECT_ROOT at a temp project and
+    # strips inherited FW_*/CLAUDE*; its tripwire fails the test if the live sidecar stops.
+    root = hermetic.project
     (root / ".framework.yaml").write_text("project_name: t4315\n", encoding="utf-8")
-    monkeypatch.setenv("PROJECT_ROOT", str(root))
     monkeypatch.setenv("FW_SIDECAR_ENABLED_DIR", str(tmp_path / "enabled"))
     monkeypatch.setenv("FW_SIDECAR_REGISTRY_DIR", str(tmp_path / "registry"))
     return root

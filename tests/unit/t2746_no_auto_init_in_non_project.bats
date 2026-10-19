@@ -11,33 +11,30 @@
 # non-zero, with nothing written. Only init (and the exempt verbs) may create
 # or touch a project. Interactive TTY prompting is out of scope and unchanged.
 #
-# The environment is cleared on purpose (env -i). A worker shell can carry an
-# inherited PROJECT_ROOT, which skips the branch under test and makes a
-# regression look like a pass.
-load ../git_fence
+# The environment is stripped on purpose (T-4378 hermetic helper). A worker
+# shell can carry an inherited PROJECT_ROOT, which skips the branch under test
+# and makes a regression look like a pass. HERMETIC_PROJECT is left empty (no
+# --project): it is the non-project directory under test.
+load helpers/hermetic
 
 FW="$BATS_TEST_DIRNAME/../../bin/fw"
 
 setup() {
-    TEST_TEMP_DIR="$(mktemp -d)"
-    TEST_HOME="$(mktemp -d)"
-    cd "$TEST_TEMP_DIR"
+    hermetic_setup
 }
 
 teardown() {
-    [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
-    [ -d "${TEST_HOME:-}" ] && rm -rf "$TEST_HOME"
-    return 0
+    hermetic_teardown
 }
 
-# run_clean <fw args...> — non-TTY, empty environment, cwd = empty temp dir.
+# run_clean <fw args...> — non-TTY, stripped environment, cwd = empty temp dir.
 run_clean() {
-    run env -i HOME="$TEST_HOME" PATH="$PATH" timeout 60 "$FW" "$@" </dev/null
+    hermetic_run env HOME="$HERMETIC_HOME" timeout 60 "$FW" "$@"
 }
 
 assert_cwd_empty() {
     local leftovers
-    leftovers="$(ls -A "$TEST_TEMP_DIR")"
+    leftovers="$(ls -A "$HERMETIC_PROJECT")"
     if [ -n "$leftovers" ]; then
         echo "cwd was mutated: $leftovers" >&2
         return 1
@@ -76,12 +73,13 @@ assert_cwd_empty() {
 @test "the refusal does not mention a project it did not create" {
     run_clean doctor
     [[ "$output" != *"Setting up agentic governance"* ]]
-    [ ! -e "$TEST_TEMP_DIR/.git" ]
-    [ ! -e "$TEST_TEMP_DIR/.agentic-framework" ]
-    [ ! -e "$TEST_TEMP_DIR/.framework.yaml" ]
+    [ ! -e "$HERMETIC_PROJECT/.git" ]
+    [ ! -e "$HERMETIC_PROJECT/.agentic-framework" ]
+    [ ! -e "$HERMETIC_PROJECT/.framework.yaml" ]
 }
 
 @test "fw init in an empty directory still creates a project" {
-    run timeout 300 env -i HOME="$TEST_HOME" PATH="$PATH" "$FW" init --no-first-run </dev/null
-    [ -e "$TEST_TEMP_DIR/.framework.yaml" ]
+    hermetic_allow_watchtower "init asks the configured port's /api/_identity whether a Watchtower is ours (lib/watchtower.sh:67); the decoy answers"
+    hermetic_run env HOME="$HERMETIC_HOME" timeout 300 "$FW" init --no-first-run
+    [ -e "$HERMETIC_PROJECT/.framework.yaml" ]
 }

@@ -15,22 +15,30 @@ DECISIONS = [("accepted", ["--task", "T-1"]), ("needs-info", ["--text", "q"]),
              ("duplicate", ["--text", "T-9"]), ("not-planned", ["--text", "r"])]
 
 
-@pytest.mark.parametrize("stage,extra", DECISIONS)
-def test_key_0_refuses_without_approval(env, stage, extra, tmp_path):
+KEEP = (KEY, "FW_ISSUES_DIR", "FW_ISSUES_REPO", "FW_ISSUES_GIT_REMOTE")
+
+
+@pytest.fixture
+def henv(env, hermetic):
+    """T-4378: the T-4077 env, stripped by the shared hermetic fixture. PROJECT_ROOT is a
+    temp project with no .framework.yaml, never this checkout (which sets the key to 1)."""
     e, stub, ledger = env
-    # An empty env value falls back to .framework.yaml: point it at a project
-    # with none, not at this checkout (which sets the key to 1).
-    proj = tmp_path / "proj"
-    proj.mkdir()
+    return hermetic.clean(e, keep=KEEP), stub, ledger
+
+
+@pytest.mark.parametrize("stage,extra", DECISIONS)
+def test_key_0_refuses_without_approval(henv, stage, extra):
+    e, stub, ledger = henv
+    # An empty env value falls back to .framework.yaml; the hermetic project has none.
     for v in ("0", ""):
-        r = run(dict(e, PROJECT_ROOT=str(proj), **{KEY: v}), "comment", "86", "--stage", stage, *extra)
+        r = run(dict(e, **{KEY: v}), "comment", "86", "--stage", stage, *extra)
         assert r.returncode != 0 and "--approved-by-operator" in r.stderr
     assert not (stub / "body.txt").exists() and rows(ledger) == []
 
 
 @pytest.mark.parametrize("stage,extra", DECISIONS)
-def test_key_1_posts_and_records_provenance(env, stage, extra):
-    e, stub, ledger = env
+def test_key_1_posts_and_records_provenance(henv, stage, extra):
+    e, stub, ledger = henv
     r = run(dict(e, **{KEY: "1"}, CLAUDECODE="1"), "comment", "86", "--stage", stage, *extra)
     assert r.returncode == 0, r.stderr
     row = rows(ledger)[-1]
@@ -42,20 +50,18 @@ def test_key_1_posts_and_records_provenance(env, stage, extra):
     assert len(calls(stub)) == before
 
 
-def test_key_from_framework_yaml(env, tmp_path):
-    e, stub, ledger = env
-    root = tmp_path / "proj"
-    root.mkdir()
-    (root / ".framework.yaml").write_text("ISSUES_DECISIONS_STANDING_PERMISSION: 1  # ruling\n")
-    e = dict(e, PROJECT_ROOT=str(root))
+def test_key_from_framework_yaml(henv, hermetic):
+    e, stub, ledger = henv
+    (hermetic.project / ".framework.yaml").write_text("ISSUES_DECISIONS_STANDING_PERMISSION: 1  # ruling\n")
+    e = dict(e)
     e.pop(KEY, None)
     assert run(e, "comment", "86", "--stage", "accepted", "--task", "T-1").returncode == 0
     assert rows(ledger)[-1]["approved_by"] == REF
     assert run(dict(e, **{KEY: "0"}), "comment", "87", "--stage", "accepted", "--task", "T-1").returncode != 0
 
 
-def test_explicit_approval_path_unchanged_and_template_stage_has_no_provenance(env):
-    e, stub, ledger = env
+def test_explicit_approval_path_unchanged_and_template_stage_has_no_provenance(henv):
+    e, stub, ledger = henv
     e = dict(e, **{KEY: "1"})
     assert run(e, "comment", "86", "--stage", "accepted", "--task", "T-1",
                "--approved-by-operator", "op-ok").returncode == 0

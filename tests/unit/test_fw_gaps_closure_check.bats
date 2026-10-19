@@ -11,25 +11,21 @@
 # Origin: T-1750 shipped tools/g064-readiness.py — a closure-readiness gauge.
 # T-1752 generalises so any future watching gap can declare its own check.
 
+load helpers/hermetic
+
 setup() {
     REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
-    TMPDIR="$(mktemp -d)"
-    # T-4313: .tasks/ makes $TMPDIR a project; fw no longer auto-inits a
-    # non-project dir (T-2746), which is what this file used to rely on.
-    mkdir -p "$TMPDIR/.context/project" "$TMPDIR/.tasks"
-    # Copy bin/fw so PROJECT_ROOT-routed lookups work from $TMPDIR.
-    # The script reads concerns.yaml relative to PROJECT_ROOT, but bin/fw
-    # itself can run from anywhere.
-    cd "$TMPDIR"
+    # T-4313/T-4378: a project with markers (fw no longer auto-inits a non-project
+    # dir, T-2746), a stripped env and a private TMPDIR, from the shared helper.
+    hermetic_setup --project
 }
 
 teardown() {
-    cd "$BATS_TEST_DIRNAME"
-    rm -rf "$TMPDIR"
+    hermetic_teardown
 }
 
 _seed_concerns() {
-    cat > "$TMPDIR/.context/project/concerns.yaml" <<EOF
+    cat > "$HERMETIC_PROJECT/.context/project/concerns.yaml" <<EOF
 concerns:
 $1
 EOF
@@ -44,7 +40,7 @@ EOF
   severity: medium
   description: 'no check'"
 
-    PROJECT_ROOT="$TMPDIR" run bash "$REPO_ROOT/bin/fw" gaps
+    PROJECT_ROOT="$HERMETIC_PROJECT" run bash "$REPO_ROOT/bin/fw" gaps
     [ "$status" -eq 0 ]
     [[ "$output" == *"G-TEST"* ]]
     [[ "$output" != *"Closure:"* ]]
@@ -60,7 +56,7 @@ EOF
   description: 'check passes'
   closure_check_command: \"echo '{\\\"verdict\\\": \\\"READY\\\"}'\""
 
-    PROJECT_ROOT="$TMPDIR" run bash "$REPO_ROOT/bin/fw" gaps
+    PROJECT_ROOT="$HERMETIC_PROJECT" run bash "$REPO_ROOT/bin/fw" gaps
     [ "$status" -eq 0 ]
     [[ "$output" == *"Closure:"* ]]
     [[ "$output" == *"READY"* ]]
@@ -76,7 +72,7 @@ EOF
   description: 'not yet'
   closure_check_command: \"echo '{\\\"verdict\\\": \\\"NOT_READY\\\", \\\"cron_firing_dates\\\": [], \\\"closure_threshold_dates\\\": 3}'\""
 
-    PROJECT_ROOT="$TMPDIR" run bash "$REPO_ROOT/bin/fw" gaps
+    PROJECT_ROOT="$HERMETIC_PROJECT" run bash "$REPO_ROOT/bin/fw" gaps
     [ "$status" -eq 0 ]
     [[ "$output" == *"NOT_READY"* ]]
     [[ "$output" == *"0/3"* ]]
@@ -92,7 +88,7 @@ EOF
   description: 'broken'
   closure_check_command: 'echo not-json'"
 
-    PROJECT_ROOT="$TMPDIR" run bash "$REPO_ROOT/bin/fw" gaps
+    PROJECT_ROOT="$HERMETIC_PROJECT" run bash "$REPO_ROOT/bin/fw" gaps
     [ "$status" -eq 0 ]
     [[ "$output" == *"ERROR"* ]]
     [[ "$output" == *"non-JSON"* ]]
@@ -108,7 +104,7 @@ EOF
   description: 'silent'
   closure_check_command: 'true'"
 
-    PROJECT_ROOT="$TMPDIR" run bash "$REPO_ROOT/bin/fw" gaps
+    PROJECT_ROOT="$HERMETIC_PROJECT" run bash "$REPO_ROOT/bin/fw" gaps
     [ "$status" -eq 0 ]
     [[ "$output" == *"ERROR"* ]]
     [[ "$output" == *"empty"* ]]
@@ -124,6 +120,6 @@ EOF
   description: 'fails'
   closure_check_command: 'false'"
 
-    PROJECT_ROOT="$TMPDIR" run bash "$REPO_ROOT/bin/fw" gaps
+    PROJECT_ROOT="$HERMETIC_PROJECT" run bash "$REPO_ROOT/bin/fw" gaps
     [ "$status" -eq 0 ]
 }

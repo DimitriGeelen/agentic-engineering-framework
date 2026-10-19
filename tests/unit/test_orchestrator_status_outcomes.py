@@ -33,10 +33,15 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 FW = REPO_ROOT / "bin" / "fw"
 
 
+@pytest.fixture
+def tmp_path(hermetic):
+    """T-4378: every test here seeds a project; the shared hermetic fixture supplies it
+    (fw's project markers, T-4313; stripped env; private TMPDIR) under the old name."""
+    return hermetic.project
+
+
 def _run_status(tmp_root: Path, *args: str) -> subprocess.CompletedProcess:
-    # T-4313: a project marker; fw no longer auto-inits a non-project dir (T-2746).
-    (tmp_root / ".tasks").mkdir(parents=True, exist_ok=True)
-    env = os.environ.copy()
+    env = os.environ.copy()  # already stripped by the hermetic fixture
     env["PROJECT_ROOT"] = str(tmp_root)
     return subprocess.run(
         [str(FW), "orchestrator", "status", *args],
