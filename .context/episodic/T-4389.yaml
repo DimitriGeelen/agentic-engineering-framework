@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4389: corpus_spec silently drops unknown attributes and local xmlns declarations on flow nodes (e.g. camunda:asyncBefore)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T14:40:34Z
+# ============================================================================
+
+task_id: T-4389
+task_name: "corpus_spec silently drops unknown attributes and local xmlns declarations on flow nodes (e.g. camunda:asyncBefore)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T12:36:05Z
+completed: 2026-10-19T14:39:44Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T15:54:14+02:00
+last_commit: 2026-10-19T15:54:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  corpus_spec carries qualified node attributes + their xmlns, and keeps source prefixes on verbatim parts (no ns0:)
+
+# Key outcomes
+outcomes:
+  - 'parse_map records a node''s namespace-qualified attributes (e.g. `camunda:asyncBefore="true"`) with their ORIGINAL prefix, and the prefix→URI declaration they need'
+  - 'emit_map writes them back on the node open tag with that prefix and an `xmlns:<prefix>` declaration in scope; parse→emit→parse keeps the node identical and canonical identity holds'
+  - 'Foreign extension children (and other verbatim raw parts) serialize with the source prefix (`zeebe:uid`), never `ns0:`'
+  - 'Text-stable: emit(parse(emit(parse(x)))) == emit(parse(x)) byte-for-byte for a serviceTask carrying both a foreign attribute and a foreign extension child'
+  - 'Regression tests red before the fix (2 failed, 13 passed), green after (15 passed); `test_importer_fidelity.py` green with its `foreign-attr-on-node` census pin moved to PRESERVED deliberately; unknown TAGS still a hard error'
+  - 'Corpus re-emit of the 16 latest designer maps checked: byte-identical before/after (no corpus node carries qualified attributes)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'corpus_spec carries qualified node attributes + their xmlns, and keeps source prefixes on verbatim parts (no ns0:)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4389-corpusspec-silently-drops-unknown-attrib.md'
+  - 'tests/unit/test_corpus_spec_roundtrip.py'
+  - 'tests/unit/test_importer_fidelity.py'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T15:54:14'
+    action: 'T-4389: corpus_spec carries qualified node attributes + their xmlns, and keeps source prefixes on verbatim parts (no ns0:)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 123 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 123
+  commits: 1
+  files_changed: 4
+  lines_added: 137
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4389-corpusspec-silently-drops-unknown-attrib.md
+generated_by: context-agent-hybrid

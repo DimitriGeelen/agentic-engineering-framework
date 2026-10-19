@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4373: log_bypass writes action and reason inside double quotes without escaping, so a quote or newline in either produces invalid YAML
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T14:33:54Z
+# ============================================================================
+
+task_id: T-4373
+task_name: "log_bypass writes action and reason inside double quotes without escaping, so a quote or newline in either produces invalid YAML"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T10:11:01Z
+completed: 2026-10-19T14:33:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T15:37:03+02:00
+last_commit: 2026-10-19T15:37:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  log_bypass emits action/reason as YAML single-quoted scalars
+
+# Key outcomes
+outcomes:
+  - '`log_bypass_entry` emits `action` and `reason` as YAML single-quoted scalars (`''` doubled, CR/LF collapsed to a space, other C0 control chars dropped), so a double quote, backslash, newline or colon in either still yields a parseable `.context/bypass-log.yaml`'
+  - 'The parsed values round-trip: quote, backslash and colon are preserved verbatim; a newline reads back as a single space'
+  - 'T-4349 behaviour kept: indent matching for indentless and 2-space logs, append-only, post-append parse failure returns non-zero (`tests/unit/t4349_bypass_log_indent.bats` green)'
+  - 'Regression bats `tests/unit/t4373_bypass_log_quoting.bats` covers quote/backslash/newline/colon in both reason and action, red before the fix and green after (pre-fix: tests 1-4 and 8 red; the newline-only cases 5-6 parsed even before, because YAML folds a line break inside a double-quoted scalar — the combined case 8 is the red newline case)'
+  - 'Existing log entries are not rewritten; vendored copy synced (`bin/fw vendor self --check` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/bypass.sh'
+  - 'agents/git/lib/bypass.sh'
+  - '.tasks/active/T-4373-logbypass-writes-action-and-reason-insid.md'
+  - 'tests/unit/t4373_bypass_log_quoting.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T15:37:03'
+    action: 'T-4373: log_bypass emits action/reason as YAML single-quoted scalars'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 262 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 262
+  commits: 1
+  files_changed: 4
+  lines_added: 202
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4373-logbypass-writes-action-and-reason-insid.md
+generated_by: context-agent-hybrid

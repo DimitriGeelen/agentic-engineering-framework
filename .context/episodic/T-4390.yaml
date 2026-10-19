@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4390: Recall health check_cron reports the reindex job OK from the registry alone; it never checks the job is installed in /etc/cron.d
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T14:35:50Z
+# ============================================================================
+
+task_id: T-4390
+task_name: "Recall health check_cron reports the reindex job OK from the registry alone; it never checks the job is installed in /etc/cron.d"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T12:36:27Z
+completed: 2026-10-19T14:33:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T15:42:38+02:00
+last_commit: 2026-10-19T15:42:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  recall health and fw cron status require the job to be deployed, not just in the registry
+
+# Key outcomes
+outcomes:
+  - 'The deployed-file name rule (`agentic-audit-<slug>` under `FW_CRON_INSTALL_DIR`, default `/etc/cron.d`) lives in ONE place (`lib/cron-registry.sh:cron_install_target`), used by `fw cron install`, `fw doctor` and `lib/vector_index_health.py`'
+  - '`check_cron` returns OK only when the registry job is active AND the deployed file has an uncommented `index-reindex-hourly` line; FAIL otherwise with remedy `fw cron install (operator: writes root cron)`'
+  - '`fw cron status` marks registry-active jobs absent from the deployed file as not deployed'
+  - 'Regression tests (temp `FW_CRON_INSTALL_DIR`, never `/etc/cron.d`) cover: deployed+active OK; file missing FAIL; line commented `# PAUSED` FAIL; registry paused FAIL; `fw cron status` not-deployed marker — red before the fix, green after'
+  - 'Neighbouring vector_index_health and cron suites pass; `bash -n bin/fw`; `bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/cron-registry.sh'
+  - '.agentic-framework/lib/vector_index_health.py'
+  - 'bin/fw'
+  - 'lib/cron-registry.sh'
+  - 'lib/vector_index_health.py'
+  - '.tasks/active/T-4390-recall-health-checkcron-reports-the-rein.md'
+  - 'tests/unit/t3783_vector_index_health.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T15:42:38'
+    action: 'T-4390: recall health and fw cron status require the job to be deployed, not just in the registry'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 117 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 117
+  commits: 2
+  files_changed: 11
+  lines_added: 1655
+  lines_removed: 80
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4390-recall-health-checkcron-reports-the-rein.md
+generated_by: context-agent-hybrid

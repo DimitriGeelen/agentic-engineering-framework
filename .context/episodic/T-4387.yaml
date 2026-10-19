@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4387: corpus_spec reads extensionElements children by local name only, so a foreign child named like an aef one (zeebe:uid) overwrites the node's aef:uid and is itself lost
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T14:38:40Z
+# ============================================================================
+
+task_id: T-4387
+task_name: "corpus_spec reads extensionElements children by local name only, so a foreign child named like an aef one (zeebe:uid) overwrites the node's aef:uid and is itself lost"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T12:35:16Z
+completed: 2026-10-19T14:37:18Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T15:38:21+02:00
+last_commit: 2026-10-19T15:38:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  corpus_spec keys extension children by namespace AND local name; foreign children pass through ext_raw (nodes and flows)
+
+# Key outcomes
+outcomes:
+  - '`_ext()` keys only children in the aef namespace (namespace AND local name); a foreign `<zeebe:uid value="X"/>` no longer overwrites a node''s `aef:uid`'
+  - 'Every extension child that is not a known aef child (foreign namespaces included) is carried in `ext_raw` verbatim and re-emitted; a parse→emit→parse round-trip of a serviceTask with both `aef:uid` and `zeebe:uid` keeps uid=u1 and keeps the zeebe child (canonical identity holds)'
+  - 'Same for sequenceFlow extension children: a foreign child beside the flow''s `aef:uid` neither replaces the uid nor vanishes'
+  - 'Regression test in `tests/unit/test_corpus_spec_roundtrip.py` red before the fix (2 failed, 8 passed — uid read back as `X`), green after (10 passed); unknown TAGS still a hard error (`test_unknown_tag_is_a_hard_error_not_a_silent_drop` green)'
+  - 'Corpus re-emit checked across the 16 latest `.context/designer/projects/*` maps: the only change is that flow routing children (`aef:anchors` etc.) are now preserved instead of dropped (see Decisions); no committed map regenerated'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — flow extension passthrough scope'
+    chose: 'flows carry every non-modelled extension child in `ext_raw` (same rule as nodes), not only foreign-namespace ones.'
+    rationale: 're-emitting the 16 latest corpus maps before/after showed the ONLY output change is that flows'' designer routing children (`aef:anchors`, `aef:loopDetour`, `aef:forceStraight`, `aef:routingHint`) now survive; the old reader silently dropped them on every re-emit (same T-2614 loss class). Verified by stripping flow `ext_raw` again → byte-identical to the pre-fix baseline for all maps. No committed map was regenerated; reported to the parent.'
+    alternatives_rejected: ['foreign-only passthrough for flows — keeps re-emit bytes identical but keeps a known silent drop and splits the rule between nodes and flows.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4387-corpusspec-reads-extensionelements-child.md'
+  - 'tests/unit/test_corpus_spec_roundtrip.py'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T15:38:21'
+    action: 'T-4387: corpus_spec keys extension children by namespace AND local name; foreign children pass through ext_raw (nodes and flows)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 122 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 122
+  commits: 1
+  files_changed: 3
+  lines_added: 123
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4387-corpusspec-reads-extensionelements-child.md
+generated_by: context-agent-hybrid

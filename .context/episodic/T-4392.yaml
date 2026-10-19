@@ -1,0 +1,121 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4392: fw vendor self neither syncs nor checks tools/, so the tracked .agentic-framework/tools/ copies go stale silently (corpus_spec.py, bpmn_to_tasks.py)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T14:33:03Z
+# ============================================================================
+
+task_id: T-4392
+task_name: "fw vendor self neither syncs nor checks tools/, so the tracked .agentic-framework/tools/ copies go stale silently (corpus_spec.py, bpmn_to_tasks.py)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T14:04:48Z
+completed: 2026-10-19T14:32:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T16:05:43+02:00
+last_commit: 2026-10-19T16:30:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — vendor self does not cover tools/ (stale vendored corpus_spec.py, bpmn_to_tasks.py). fw vendor self syncs and checks tools/ (new _self_vendor_tools class, audit scan covers it); vendored tools/ refreshed
+
+# Key outcomes
+outcomes:
+  - 'Readers of `.agentic-framework/tools/` are enumerated and the include-vs-untrack choice is justified in `## Decisions`'
+  - '`fw vendor self` syncs tracked `.agentic-framework/tools/` files from `tools/` (new `_self_vendor_tools` class in lib/upgrade.sh, wired into bin/fw vendor self)'
+  - '`fw vendor self --check` (and `--dry-run`) report `would sync` / DRIFT when a vendored tools/ file differs from source'
+  - 'The audit''s self-vendor drift section covers tools/ (its libs-class scan enumerates `.agentic-framework/tools` with the helper''s filter: whole tree minus `__pycache__`/`*.pyc`)'
+  - 'Regression bats test makes a tools/ file differ in a sandbox and asserts --check exits 1 with DRIFT; red before the fix, green after'
+  - '`bin/fw vendor self` run; `--check` reports no tools/ drift; `bash -n bin/fw` and `bash -n lib/upgrade.sh` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — include tools/ in fw vendor self, not untrack it'
+    chose: 'a new `_self_vendor_tools` class (sync + --check + audit), mirroring all of `tools/` (minus `__pycache__`/`*.pyc`), the same scope `do_vendor` ships to consumers.'
+    rationale: 'the vendored `tools/` has readers. `fw corpus explain` execs `$FRAMEWORK_ROOT/tools/corpus_explain.py` (which imports corpus_spec), and wherever `.agentic-framework/bin/fw` runs, FRAMEWORK_ROOT is `.agentic-framework/` (T-2942 / OBS-235, bin/fw:~700; lib/vendor-visibility.sh:9-23 records 010-termlink hitting exactly this path). `do_vendor` ships `tools` whole, so the tracked self-vendored tree is supposed to look like a consumer''s; the other seven classes are all kept in sync, so tools/ being the one exception was the defect.'
+    alternatives_rejected: ['untracking `.agentic-framework/tools/` — it would make the self-vendored tree diverge from what consumers get and break `fw corpus explain` when run through the vendored fw. Syncing only the 26 already-vendored files — the consumer copy is the whole directory, so a partial mirror would keep 28 files permanently missing with no detector.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/tools/bats-cron-env-lint.py'
+  - '.agentic-framework/tools/bats-dead-negation-lint.py'
+  - '.agentic-framework/tools/bats-dead-negation-mutants.py'
+  - '.agentic-framework/tools/bats-silent-skip-lint.py'
+  - '.agentic-framework/tools/bpmn_to_tasks.py'
+  - '.agentic-framework/tools/corpus_spec.py'
+  - '.agentic-framework/tools/dispatch_outcome_table.py'
+  - '.agentic-framework/tools/ewcr-arc0-coverage-check.py'
+  - '.agentic-framework/tools/ewcr-arc0-unknown-overlap.py'
+  - '.agentic-framework/tools/ewcr-arc0-writeset-scoped-coverage.py'
+  - '.agentic-framework/tools/ewcr-contracts-check.py'
+  - '.agentic-framework/tools/ewcr-trace-check.py'
+  - '.agentic-framework/tools/gaps-render-agreement.py'
+  - '.agentic-framework/tools/measure_chunk_tokens.py'
+  - '.agentic-framework/tools/measure_corpus_classes.py'
+  - '.agentic-framework/tools/port3000_hygiene.py'
+  - '.agentic-framework/tools/probe_handover_recall.py'
+  - '.agentic-framework/tools/prompt-sequence/01-value-review.prompt.md'
+  - '.agentic-framework/tools/prompt-sequence/02-procasfit.md'
+  - '.agentic-framework/tools/prompt-sequence/02-procasfit.prompt.md'
+  - '.agentic-framework/tools/prompt-sequence/run-sequence.sh'
+  - '.agentic-framework/tools/t3250-transport-probe.sh'
+  - '.agentic-framework/tools/t3254-livefire.sh'
+  - '.agentic-framework/tools/t3255-livefire-agent.sh'
+  - '.agentic-framework/tools/t3257-build-order-gate.py'
+  - '.agentic-framework/tools/t3257-livefire-backlog.sh'
+  - '.agentic-framework/tools/t3257-livefire-driver.sh'
+  - '.agentic-framework/tools/t3277-livefire-tmux.sh'
+  - '.agentic-framework/tools/t3627_route_profile.py'
+  - '.agentic-framework/tools/wait-dispatch.sh'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4392-fw-vendor-self-neither-syncs-nor-checks-.md'
+  - 'tests/unit/t4392_self_vendor_tools.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T16:05:43'
+    action: 'T-4392: file — vendor self does not cover tools/ (stale vendored corpus_spec.py, bpmn_to_tasks.py)'
+  - time: '2026-10-19T16:30:39'
+    action: 'T-4392: fw vendor self syncs and checks tools/ (new _self_vendor_tools class, audit scan covers it); vendored tools/ refreshed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 27
+  commits: 2
+  files_changed: 38
+  lines_added: 6497
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4392-fw-vendor-self-neither-syncs-nor-checks-.md
+generated_by: context-agent-hybrid

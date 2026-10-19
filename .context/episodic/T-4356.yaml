@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4356: GH #99: Vector-index health reports `index-reindex-hourly scheduled` (OK) when no cron entry is installed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T14:46:33Z
+# ============================================================================
+
+task_id: T-4356
+task_name: "GH #99: Vector-index health reports `index-reindex-hourly scheduled` (OK) when no cron entry is installed"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T23:05:33Z
+completed: 2026-10-19T14:45:26Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-19T15:55:54+02:00
+last_commit: 2026-10-19T15:55:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  GH #99 is the T-4390 defect — ACs, verification and RCA point at the fix
+
+# Key outcomes
+outcomes:
+  - 'The reported defect is fixed: `check_cron` (lib/vector_index_health.py) FAILs when the deployed cron file under FW_CRON_INSTALL_DIR has no live index-reindex-hourly line, with remedy `fw cron install (operator: writes root cron)`; fixed by T-4390 (commit 64285bd94), which 1023 reported independently the same day (msg 90a2a15b)'
+  - '`fw cron status` marks registry-active jobs with no deployed line as not deployed (T-4390); regression tests in tests/unit/t3783_vector_index_health.bats were red before the fix (3 of 5) and are green after'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'GH #99 is the T-4390 defect — ACs, verification and RCA point at the fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4356-gh-99-vector-index-health-reports-index-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T15:55:54'
+    action: 'T-4356: GH #99 is the T-4390 defect — ACs, verification and RCA point at the fix'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 939 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 939
+  commits: 1
+  files_changed: 1
+  lines_added: 17
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4356-gh-99-vector-index-health-reports-index-.md
+generated_by: context-agent-hybrid

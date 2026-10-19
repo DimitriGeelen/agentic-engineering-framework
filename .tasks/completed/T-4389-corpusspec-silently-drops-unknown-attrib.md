@@ -9,12 +9,12 @@ description: >
   original prefix instead of ns0: so round-trip with 832's designer is text-stable.
   Asked by 832 (T-347, msg 5b7175f2); 832 holds that release until this lands.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_importer_fidelity.py, tools/corpus_spec.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:36:05Z
-last_update: 2026-10-19T13:46:52Z
-date_finished:
+last_update: 2026-10-19T14:39:44Z
+date_finished: 2026-10-19T14:39:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -389,3 +389,20 @@ python3 -m pytest -q tests/unit/test_importer_fidelity.py
 
 ### 2026-10-19T13:46:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6299c9c0
+- **Timestamp:** 2026-10-19T14:39:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T14:39:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4384: t2332_bvp_propose_queue.bats hard-codes the repo path, queries the live Watchtower and curls without a timeout
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T14:43:54Z
+# ============================================================================
+
+task_id: T-4384
+task_name: "t2332_bvp_propose_queue.bats hard-codes the repo path, queries the live Watchtower and curls without a timeout"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T12:28:44Z
+completed: 2026-10-19T14:43:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T15:56:37+02:00
+last_commit: 2026-10-19T15:56:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t2332_bvp_propose_queue.bats hermetic — temp PROJECT_ROOT, Flask test client instead of live Watchtower curl, no skips
+
+# Key outcomes
+outcomes:
+  - '`tests/unit/t2332_bvp_propose_queue.bats` contains no hard-coded `/opt/999-…` path (cd via `$BATS_TEST_DIRNAME`), no `bin/fw watchtower url` lookup, no `curl` against any server, and no `skip`'
+  - 'The `/bvp` render test runs through a Flask test client in a fresh process with `PROJECT_ROOT` set to a temp project root holding a fixture `.context/bvp-driver-proposals.jsonl`; a negative leg asserts the queue section is absent when no proposal is pending'
+  - 'File passes alone (all `ok`, zero `# skip`), and a red run is recorded: breaking `_load_proposals` state handling and dropping the template section each make the corresponding tests fail (recorded in ## Updates/RCA), then reverted'
+  - 'Runtime of the file alone measured before and after (recorded in RCA)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4384-t2332bvpproposequeuebats-hard-codes-the-.md'
+  - 'tests/unit/t2332_bvp_propose_queue.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T15:56:37'
+    action: 'T-4384: t2332_bvp_propose_queue.bats hermetic — temp PROJECT_ROOT, Flask test client instead of live Watchtower curl, no skips'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 134 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 134
+  commits: 1
+  files_changed: 2
+  lines_added: 121
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4384-t2332bvpproposequeuebats-hard-codes-the-.md
+generated_by: context-agent-hybrid

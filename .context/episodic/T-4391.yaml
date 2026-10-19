@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4391: fw ux shots cannot capture interaction states (after a click, dialog, hover): render criteria on such states are unsatisfiable through the review route
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T14:37:05Z
+# ============================================================================
+
+task_id: T-4391
+task_name: "fw ux shots cannot capture interaction states (after a click, dialog, hover): render criteria on such states are unsatisfiable through the review route"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T12:54:37Z
+completed: 2026-10-19T14:35:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T14:55:29+02:00
+last_commit: 2026-10-19T15:44:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — fw ux shots cannot capture interaction states (832 T-1212). fw ux shots state=@steps.yaml — declarative interaction states, steps sha256 in capture manifest and signed review run
+
+# Key outcomes
+outcomes:
+  - '`fw ux shots T-X state=@steps.yaml` parses a declarative step list whose ops are exactly `goto`, `click`, `fill`, `press`, `hover`, `wait-for` (each with an optional per-step `timeout` ms); any other op, extra key, missing argument, a non-http/https/file `goto`, or a list not starting with `goto` is a usage refusal (exit 2) — no code is evaluated'
+  - 'Steps are executed by ux_shots itself (Playwright) in a fresh context per width; a fixture page whose button reveals an element is captured with the revealed element visible (pixel difference vs the pre-click state), or the test skips with an explicit "Playwright/Chromium unavailable" reason'
+  - 'Every capture (URL or steps) writes `.context/visual/<task>/<state>.capture.json` recording source, url, `steps_sha256` (sha256 of the steps file bytes, steps states only) and each shot''s width/path/sha256; URL states keep the same PNG names and output as before'
+  - 'The judge''s `_gather_visual` carries `steps_sha256` per shot into the run, `register_run` keeps it inside the signed visual block, and a steps file edited after capture (hash ≠ manifest) is a checklist problem; the ledger''s `_run_fault` accepts a steps-state shot exactly as a URL-state shot, and refuses a recorded `steps_sha256` that is not 64-hex — no existing provenance check is removed or relaxed'
+  - 'Regression tests in `tests/unit/test_t4391_ux_steps.py` fail before the fix (red run recorded below) and pass after; neighbouring suites (`test_t4212_ux_shots*`, T-4214 ledger/judge tests) stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/ux-review/ux_shots.py'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'agents/ux-review/ux_shots.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-4391-fw-ux-shots-cannot-capture-interaction-s.md'
+  - 'tests/unit/test_t4391_ux_steps.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T14:55:29'
+    action: 'T-4391: file — fw ux shots cannot capture interaction states (832 T-1212)'
+  - time: '2026-10-19T15:44:15'
+    action: 'T-4391: fw ux shots state=@steps.yaml — declarative interaction states, steps sha256 in capture manifest and signed review run'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 101 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 101
+  commits: 2
+  files_changed: 8
+  lines_added: 1178
+  lines_removed: 68
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4391-fw-ux-shots-cannot-capture-interaction-s.md
+generated_by: context-agent-hybrid
