@@ -801,7 +801,7 @@ def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int
     lifecycle.write_config(inject=not no_inject)
 
     root = str(receiver._root().resolve())
-    env = dict(os.environ, PROJECT_ROOT=root)
+    env = identity.respawn_env(root=root)   # T-4416: never the caller's pane/agent id
     log = open(receiver._receiver_dir() / "server.log", "ab")
     server_py = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sidecar", "http_server.py")
     proc = subprocess.Popen(
@@ -938,6 +938,14 @@ def cmd_ensure(args) -> int:
         else:
             for r in rows:
                 print(f"{r.get('project_root')}: {r.get('action') or r.get('error')}")
+        return 0
+    # T-4416: a dispatched worker (or a session addressed as another agent) never
+    # (re)starts the project's sidecar — its pane and agent id would outlive it.
+    skip = watcher.foreign_session_reason()
+    if skip:
+        watcher.record_event("ENSURE_SKIPPED_WORKER", reason=skip)
+        row = {"enabled": watcher.read_enabled() is not None, "action": f"skipped: {skip}"}
+        print(json.dumps(row) if args.json else row["action"])
         return 0
     cfg = watcher.read_enabled()
     row = {"enabled": cfg is not None}

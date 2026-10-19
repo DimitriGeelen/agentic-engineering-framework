@@ -1,10 +1,26 @@
 ---
 id: T-4416
-name: "A dispatched worker's SessionStart 'sidecar ensure' restarts the PROJECT sidecar under the worker's identity (pane, agent id), stranding delivery when the worker exits"
+name: "A dispatched worker's SessionStart 'sidecar ensure' restarts the PROJECT sidecar
+  under the worker's identity (pane, agent id), stranding delivery when the worker
+  exits"
 description: >
-  Reported by ring20 (msg 82c0e984, v1.8.12, their T-2430): a worker dispatched by fw termlink dispatch (FW_DISPATCHED_WORKER=1, FW_SIDECAR_AGENT_ID=triage-backlog, its own TMUX_PANE and TERMLINK_SESSION_ID) ran agents/context/sidecar-autostart.sh at SessionStart; lib/sidecar_cli.py cmd_ensure saw STALE_CODE_RESTART after an upgrade and respawned supervisor, watcher and receiver with the worker's env; liveness then showed identity triage-backlog and injection pointed at the worker's dead pane for ~2.5 h. Confirmed in source: sidecar-autostart.sh:22 exits only for FW_REVIEW_WORKER, not FW_DISPATCHED_WORKER, and cmd_ensure (~:930) restarts with the caller's env. AEF's own workers run the same path (20+ dispatches on 2026-10-19; here the supervisor env is clean, the 14:45 restart likely came from cron). Fix, all three as ring20 suggests: (1) autostart and ensure skip/refuse for FW_DISPATCHED_WORKER=1 or when FW_SIDECAR_AGENT_ID differs from the project agent; (2) any restart scrubs worker identity env (TMUX_PANE, FW_SIDECAR_AGENT_ID, TERMLINK_SESSION_ID, CLAUDE_*, FW_DISPATCHED_WORKER) and resolves the identity from project config (T-4311); (3) liveness flags identity != project agent as not live. Tests in temp dirs, never the live sidecar (T-4315).
+  Reported by ring20 (msg 82c0e984, v1.8.12, their T-2430): a worker dispatched by
+  fw termlink dispatch (FW_DISPATCHED_WORKER=1, FW_SIDECAR_AGENT_ID=triage-backlog,
+  its own TMUX_PANE and TERMLINK_SESSION_ID) ran agents/context/sidecar-autostart.sh
+  at SessionStart; lib/sidecar_cli.py cmd_ensure saw STALE_CODE_RESTART after an upgrade
+  and respawned supervisor, watcher and receiver with the worker's env; liveness then
+  showed identity triage-backlog and injection pointed at the worker's dead pane for
+  ~2.5 h. Confirmed in source: sidecar-autostart.sh:22 exits only for FW_REVIEW_WORKER,
+  not FW_DISPATCHED_WORKER, and cmd_ensure (~:930) restarts with the caller's env.
+  AEF's own workers run the same path (20+ dispatches on 2026-10-19; here the supervisor
+  env is clean, the 14:45 restart likely came from cron). Fix, all three as ring20
+  suggests: (1) autostart and ensure skip/refuse for FW_DISPATCHED_WORKER=1 or when
+  FW_SIDECAR_AGENT_ID differs from the project agent; (2) any restart scrubs worker
+  identity env (TMUX_PANE, FW_SIDECAR_AGENT_ID, TERMLINK_SESSION_ID, CLAUDE_*, FW_DISPATCHED_WORKER)
+  and resolves the identity from project config (T-4311); (3) liveness flags identity
+  != project agent as not live. Tests in temp dirs, never the live sidecar (T-4315).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +54,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T17:33:33Z
-last_update: 2026-10-19T17:33:33Z
-date_finished: null
+last_update: 2026-10-19T17:46:04Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +66,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T17:45:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T17:46:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4416: A dispatched worker's SessionStart 'sidecar ensure' restarts the PROJECT sidecar under the worker's identity (pane, agent id), stranding delivery when the worker exits
@@ -62,8 +106,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `agents/context/sidecar-autostart.sh` exits 0 without launching `sidecar_cli.py ensure` when `FW_DISPATCHED_WORKER=1`, and logs the reason to `.context/sidecar/watcher/autostart.log`
+- [x] `fw sidecar ensure` (single-project path, with or without `--autostart`) skips with exit 0, a printed reason and a `ENSURE_SKIPPED_WORKER` event when `FW_DISPATCHED_WORKER=1` or `FW_SIDECAR_AGENT_ID` differs from the project agent (`circuit.project_id()`); starts nothing; `ensure --all` still runs
+- [x] Every respawn path — `watcher._spawn` (supervisor + watcher), `watcher._restart_receiver`, `sidecar_cli._start_receiver`, `watcher.ensure_all` children — runs with `identity.respawn_env()`: TMUX_PANE, TMUX, FW_SIDECAR_AGENT_ID, TERMLINK_SESSION_ID, CLAUDE*, FW_DISPATCHED_WORKER (and the worker focus/review keys) dropped, T-4311 `termlink_env()` applied
+- [x] `watcher.liveness_verdict()` (so `fw sidecar liveness`, doctor, audit) reports `not-live` when the enabled agent differs from the project agent, with a reason naming both ids and the remedy
+- [x] Regression test `tests/unit/test_sidecar_worker_hijack_t4416.py` fails before the fix and passes after (temp projects, fake supervisors; never the live sidecar)
+- [ ] Neighbouring sidecar watcher / rail-identity tests stay green; `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,8 +289,46 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_sidecar_worker_hijack_t4416.py -q -p no:cacheprovider > /tmp/.t4416.out 2>&1 && grep -q passed /tmp/.t4416.out
+python3 -m pytest tests/unit/test_sidecar_rail_identity_t4311.py -q -p no:cacheprovider > /tmp/.t4416b.out 2>&1 && grep -q passed /tmp/.t4416b.out
+bash -n agents/context/sidecar-autostart.sh
+grep -q "FW_DISPATCHED_WORKER" agents/context/sidecar-autostart.sh
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4416c.out 2>&1 && grep -q clean /tmp/.t4416c.out
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom (ring20 T-2430, msg 82c0e984):** after an upgrade, a dispatched worker
+(`FW_DISPATCHED_WORKER=1`, `FW_SIDECAR_AGENT_ID=triage-backlog`, its own TMUX_PANE and
+TERMLINK_SESSION_ID) ran the SessionStart autostart; the project's supervisor, watcher and
+receiver were restarted under the worker's identity and env, liveness showed identity
+`triage-backlog`, and injection pointed at the worker's dead pane for ~2.5 h. The same
+state is on disk here: `.context/sidecar/watcher/enabled.json` carries `"agent": "w4315"`
+(a worker id, enabled 2026-10-18T20:37Z).
+
+**Root cause:** three gaps that compose.
+1. `agents/context/sidecar-autostart.sh:22` exits only for `FW_REVIEW_WORKER`, so every
+   dispatched worker runs `sidecar_cli.py ensure --autostart`.
+2. `lib/sidecar_cli.py cmd_ensure` (~:930) has no notion of "whose sidecar is this": it
+   resolves the agent from `FW_SIDECAR_AGENT_ID` (`circuit.agent_name()`, circuit.py:200)
+   and on STALE_CODE_RESTART calls `watcher.start_supervisor()`; every spawn passes
+   `dict(os.environ, …)` (`watcher._spawn` :794, `_restart_receiver` :811,
+   `sidecar_cli._start_receiver` :804), so the project's long-lived processes inherit the
+   worker's pane, session and agent id.
+3. `watcher.liveness_verdict()` only measures tick freshness; a sidecar ticking under a
+   worker's id reads `live`.
+
+**Why structurally allowed:** the R14 autostart (T-3685) was written for "every session
+gets a sidecar" without distinguishing a session that OWNS the project sidecar from one
+that merely runs in the project; the review-worker carve-out was added for isolation, not
+ownership, so dispatched workers were never considered. No test ran ensure under a worker
+env, and liveness had no identity predicate, so the hijack was invisible.
+
+**Prevention:** the autostart and ensure guards refuse the worker case outright; respawns
+are built from `identity.respawn_env()` so even a legitimate restart triggered from a
+worker-ish env cannot carry pane/session identity into a project process; liveness now
+calls an identity mismatch `not-live` with a remedy (doctor/audit read the same verdict).
+`tests/unit/test_sidecar_worker_hijack_t4416.py` pins all three.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -338,3 +424,13 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4416-a-dispatched-workers-sessionstart-sideca.md
 - **Context:** Initial task creation
+
+### 2026-10-19T17:46:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-19 — regression test red → green [w4416]
+- **Red (before fix):** `tests/unit/test_sidecar_worker_hijack_t4416.py` — 9 failed, 4 passed (the 4 are controls: project-agent ensure, `--all`, live-for-project-identity, plain-session hook).
+- **Green (after fix):** 13 passed. Neighbours: t4311 rail identity 19 passed, t4315 2, project_identity 6, status 11, receiver_t3693 52, t4216 5, watcher_t3684 24 (2 of its SessionStart-hook tests needed `FW_DISPATCHED_WORKER` popped from the helper env — the suite was running inside a dispatched worker, the exact case the hook now skips).
+- **Lint:** bats-dead-negation-lint clean. **Vendor:** synced; `vendor self --check` red only on `tools/bats-test-isolation-lint.py`, an untracked in-flight file from another worker — not synced (AC 6 left for the parent to re-run once that lands).
+- **Live state note:** this repo's `.context/sidecar/watcher/enabled.json` holds `"agent": "w4315"` (a worker id), so `fw sidecar liveness` here now reports not-live with the remedy — that is the fix seeing a real hijack, not a regression. Not touched (T-4315).
+- **Open:** `fw sidecar start` (cmd_start) run from a worker is not refused — out of this task's scope; its spawns are now scrubbed, but `enable()` would still record the worker's agent id.

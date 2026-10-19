@@ -11,9 +11,12 @@
 #                never started here → start it;
 #                explicitly stopped (`fw sidecar stop`) → leave it stopped.
 #
-# Skipped inside a review worker (its environment is the review brief only)
-# and when FW_SIDECAR_AUTOSTART=0. Fails open, silently: a sidecar fault never
-# blocks a session; `fw doctor` / `fw audit` report a missing or dead one.
+# Skipped inside a review worker (its environment is the review brief only),
+# inside a dispatched worker (T-4416: it never owns the project sidecar; a
+# restart from here carried its pane and agent id into the project's processes)
+# and when FW_SIDECAR_AUTOSTART=0. `ensure` itself also refuses a session
+# addressed as another agent (FW_SIDECAR_AGENT_ID != project agent).
+# Fails open, silently: a sidecar fault never blocks a session; `fw doctor` / `fw audit` report a missing or dead one.
 #
 # Invoked as: fw hook sidecar-autostart
 
@@ -29,6 +32,11 @@ export FRAMEWORK_ROOT PROJECT_ROOT
 [ -d "$PROJECT_ROOT/.context" ] || exit 0
 
 mkdir -p "$PROJECT_ROOT/.context/sidecar/watcher" 2>/dev/null || exit 0
+if [ "${FW_DISPATCHED_WORKER:-}" = "1" ]; then
+    echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) autostart skipped: FW_DISPATCHED_WORKER=1 (agent ${FW_SIDECAR_AGENT_ID:-?}) — a dispatched worker never (re)starts the project sidecar (T-4416)" \
+        >>"$PROJECT_ROOT/.context/sidecar/watcher/autostart.log" 2>/dev/null || true
+    exit 0
+fi
 ( cd "$PROJECT_ROOT" && setsid nohup python3 "$FRAMEWORK_ROOT/lib/sidecar_cli.py" ensure --autostart \
     >>"$PROJECT_ROOT/.context/sidecar/watcher/autostart.log" 2>&1 </dev/null & ) >/dev/null 2>&1
 exit 0

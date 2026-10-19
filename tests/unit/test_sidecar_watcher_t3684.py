@@ -40,6 +40,7 @@ def proj(tmp_path, monkeypatch):
     monkeypatch.setenv("FW_SIDECAR_AGENT_ID", "t3684")
     monkeypatch.delenv("FW_SIDECAR_TICK", raising=False)
     monkeypatch.delenv("FW_REVIEW_WORKER", raising=False)
+    monkeypatch.delenv("FW_DISPATCHED_WORKER", raising=False)   # T-4416: ensure skips workers
     monkeypatch.delenv("TERMLINK_SESSION_ID", raising=False)
     # Not headless whoever runs the suite (a `claude -p` worker would be, and a
     # headless session is never an inject target — T-3684 round 3).
@@ -417,6 +418,7 @@ def test_claude_fw_really_starts_the_sidecar(proj, tmp_path, args, expect):
 def _autostart(proj, **extra):
     env = dict(os.environ, PROJECT_ROOT=str(proj), PATH=NO_TERMLINK_PATH)
     env.pop("FW_REVIEW_WORKER", None)
+    env.pop("FW_DISPATCHED_WORKER", None)   # T-4416: the hook skips workers; the suite may run in one
     env.update(extra)
     p = subprocess.run(["bash", str(FW_ROOT / "agents/context/sidecar-autostart.sh")],
                        input="{}", env=env, capture_output=True, text=True, timeout=30)

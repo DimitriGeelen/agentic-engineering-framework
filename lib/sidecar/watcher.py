@@ -189,6 +189,30 @@ def _agent() -> str:
         return receiver._root().name
 
 
+def project_agent() -> str:
+    """The agent id that OWNS this project's sidecar (T-4416): the project id from
+    project config (RAIL_PROJECT_LABEL, else the root's basename) — never a
+    session's FW_SIDECAR_AGENT_ID."""
+    try:
+        return circuit.project_id()
+    except circuit.CircuitError:
+        return receiver._root().name
+
+
+def foreign_session_reason(environ=None) -> str | None:
+    """Why the calling session must not (re)start this project's sidecar, or None
+    (T-4416). A dispatched worker, or any session addressed as another agent,
+    would otherwise respawn the project's processes under its own pane/id."""
+    environ = os.environ if environ is None else environ
+    if environ.get("FW_DISPATCHED_WORKER") == "1":
+        return "FW_DISPATCHED_WORKER=1 (a dispatched worker never owns the project sidecar)"
+    own = environ.get("FW_SIDECAR_AGENT_ID")
+    if own and own != project_agent():
+        return (f"FW_SIDECAR_AGENT_ID={own!r} is not this project's agent "
+                f"{project_agent()!r}")
+    return None
+
+
 # ── enable / disable ────────────────────────────────────────────────────────
 
 def enable(agent: str, tick: float | None, inject_on: bool) -> dict:
@@ -533,6 +557,16 @@ def liveness_verdict(now: datetime | None = None) -> dict:
                             f"(> {STALL_TICKS} ticks of {tick:g}s)")
     if live.get("last_probe_ok") is False:
         v["reasons"].append(f"self-probe failed: {live.get('last_probe_reason') or 'unknown'}")
+    # T-4416: ticking under another agent's identity is not this project's
+    # sidecar — injection targets that agent's (likely gone) session.
+    own = project_agent()
+    foreign = sorted({str(x) for x in ((enabled or {}).get("agent"), live.get("identity"))
+                      if x and str(x) != own})
+    if foreign:
+        v["reasons"].append(
+            f"identity {', '.join(foreign)} is not this project's agent {own!r} (a dispatched "
+            f"worker restarted it, T-4416) — remedy: from the project's own session run "
+            f"`fw sidecar stop && fw sidecar start`")
     if enabled is None:
         # Not started, or stopped on purpose: what liveness.yaml holds is history.
         v["state"] = "absent"
@@ -791,7 +825,7 @@ def _spawn(args: list[str], log_name: str) -> subprocess.Popen:
     log = open(_dir() / log_name, "ab")
     return subprocess.Popen([sys.executable, os.path.abspath(__file__), *args],
                             stdin=subprocess.DEVNULL, stdout=log, stderr=log, cwd=root,
-                            env=dict(os.environ, PROJECT_ROOT=root), start_new_session=True)
+                            env=identity.respawn_env(root=root), start_new_session=True)
 
 
 def _receiver_down() -> bool:
@@ -808,7 +842,7 @@ def _restart_receiver(cfg: dict) -> None:
     if not cfg.get("inject", True):
         argv.append("--no-inject")
     root = str(receiver._root().resolve())
-    proc = subprocess.run(argv, cwd=root, env=dict(os.environ, PROJECT_ROOT=root),
+    proc = subprocess.run(argv, cwd=root, env=identity.respawn_env(root=root),
                           capture_output=True, text=True, timeout=60)
     record_event("RECEIVER_RESTARTED", rc=proc.returncode,
                  detail=(proc.stdout + proc.stderr).strip()[-300:] or None)
@@ -1028,8 +1062,9 @@ def ensure_all() -> list[dict]:
             continue
         # The child must not inherit this copy's framework location: the project's
         # own launcher resolves its own tree from its own location.
-        env = {k: v for k, v in os.environ.items() if k != "FRAMEWORK_ROOT"}
-        env["PROJECT_ROOT"] = str(root)
+        # T-4416: nor the caller's session identity (pane, agent id, worker flags).
+        env = {k: v for k, v in identity.respawn_env(root=str(root), signing=False).items()
+               if k != "FRAMEWORK_ROOT"}
         proc = subprocess.run([*launcher, "sidecar", "ensure", "--json"], cwd=str(root),
                               env=env, capture_output=True, text=True, timeout=120)
         try:

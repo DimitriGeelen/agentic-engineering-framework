@@ -101,6 +101,35 @@ def termlink_env(base=None) -> dict:
     return env
 
 
+#: T-4416: the env that names WHICH SESSION a process belongs to. A project
+#: sidecar process (supervisor, watcher, receiver) belongs to the project, so
+#: none of these may reach it from whoever happened to (re)start it — a
+#: dispatched worker's pane and agent id outlive the worker otherwise.
+SESSION_ENV = ("TMUX_PANE", "TMUX", "FW_SIDECAR_AGENT_ID", "TERMLINK_SESSION_ID",
+               "FW_DISPATCHED_WORKER", "FW_REVIEW_WORKER", "FW_REVIEW_REVISION",
+               "FW_SESSION_SCOPED_FOCUS", "FW_FOCUS_SESSION_KEY", "CLAUDECODE")
+SESSION_ENV_PREFIXES = ("CLAUDE_",)
+
+
+def respawn_env(base=None, root: str | None = None, signing: bool = True) -> dict:
+    """The env a project sidecar process is (re)spawned with (T-4416): `base`
+    (default os.environ) minus SESSION_ENV / CLAUDE_*, PROJECT_ROOT pinned, and
+    the project's signing identity from config (termlink_env, T-4311). The
+    agent id is then the project's own (circuit.agent_name falls back to it).
+    signing=False for a child in ANOTHER project (ensure --all): this process's
+    config would name the wrong key, and the child applies its own at entry."""
+    env = {k: v for k, v in (os.environ if base is None else base).items()
+           if k not in SESSION_ENV and not k.startswith(SESSION_ENV_PREFIXES)}
+    if root is not None:
+        env["PROJECT_ROOT"] = str(root)
+    if not signing:
+        return env
+    try:
+        return termlink_env(env)
+    except Exception:
+        return env
+
+
 def apply(environ=None) -> str | None:
     """Install termlink_env() into `environ` (default os.environ) once, at a
     sidecar entry point. Returns the identity file selected, or None when
