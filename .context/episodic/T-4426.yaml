@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4426: claude-fw tmux wrap: auto-redraw (Ctrl+L) after copy mode ends, on attach and on resize — scoped to the wrapped session (ring20-dashboard proposal)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T21:10:32Z
+# ============================================================================
+
+task_id: T-4426
+task_name: "claude-fw tmux wrap: auto-redraw (Ctrl+L) after copy mode ends, on attach and on resize — scoped to the wrapped session (ring20-dashboard proposal)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T20:59:23Z
+completed: 2026-10-19T21:09:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T23:06:40+02:00
+last_commit: 2026-10-19T23:06:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw tmux wrap redraws Claude Code (C-l) after copy mode ends, on attach and on resize — hooks scoped to the wrapped session, not -g
+
+# Key outcomes
+outcomes:
+  - 'bin/claude-fw new-session chain sets three session-scoped tmux hooks (pane-mode-changed with #{pane_in_mode} = 0 guard, client-attached, client-resized), each running `run-shell -b` that sends C-l to the pane; no -g on the hooks'
+  - 'Hooks reference the socket/server name claude-fw already uses (no hard-coded server name in the new lines beyond what the chain already uses)'
+  - 'Throwaway tmux server test (-L unique name, -f /dev/null): a `cat -v` pane receives ^L when copy mode ends; a pane in a second session does not'
+  - 'Regression bats test under tests/unit/ is skipped cleanly when `command -v tmux` fails and kills its own tmux server in teardown'
+  - 'Only bin/claude-fw, its vendored copy, and the test file are edited; bin/fw is untouched'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` reports clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-4426-claude-fw-tmux-wrap-auto-redraw-ctrll-af.md'
+  - 'tests/unit/t4426_claude_fw_tmux_redraw.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T23:06:40'
+    action: 'T-4426: claude-fw tmux wrap redraws Claude Code (C-l) after copy mode ends, on attach and on resize — hooks scoped to the wrapped session, not -g'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 3
+  files_changed: 5
+  lines_added: 556
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4426-claude-fw-tmux-wrap-auto-redraw-ctrll-af.md
+generated_by: context-agent-hybrid

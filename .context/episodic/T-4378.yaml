@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4378: One shared hermetic fixture helper for bats and pytest (temp project, clean env, no live sidecar/Watchtower/termlink)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T21:16:55Z
+# ============================================================================
+
+task_id: T-4378
+task_name: "One shared hermetic fixture helper for bats and pytest (temp project, clean env, no live sidecar/Watchtower/termlink)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T11:58:11Z
+completed: 2026-10-19T21:15:43Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T22:39:46+02:00
+last_commit: 2026-10-19T22:58:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  shared hermetic fixture per runner (tests/unit/helpers/hermetic.bash, tests/unit/hermetic.py): temp project, stripped PROJECT_ROOT/FRAMEWORK_ROOT/CLAUDE*/FW_*, private TMPDIR, decoy-Watchtower + live-sidecar + real-checkout tripwires; migrate t2746, fw_gaps (T-4313), t4315, t4347, orchestrator_status_outcomes. git-discovery fence lint accepts load helpers/hermetic (it fences); fence the two T-4379 files that install hooks / run fw init — pre-push invariant red cleared
+
+# Key outcomes
+outcomes:
+  - '`tests/unit/helpers/hermetic.bash` exists and is loadable (`load helpers/hermetic`): `hermetic_setup [--project]` gives a private root, private exported TMPDIR, HERMETIC_PROJECT (project markers with `--project`), strips PROJECT_ROOT/FRAMEWORK_ROOT/CLAUDE*/FW_* from the test shell; `hermetic_teardown` fails the test on a tripwire (termlink non-probe call, a connection to the decoy Watchtower port, the live sidecar stop marker appearing, a new top-level entry in the real checkout or its `.context/`)'
+  - '`tests/unit/hermetic.py` provides the pytest `hermetic` fixture (registered in `tests/unit/conftest.py`) with the same contract: `.root/.project/.home/.tmp`, `.env()`/`.clean()` stripped env, `.run()`, in-process env stripped via monkeypatch, same tripwires at teardown'
+  - 'Self-tests `tests/unit/hermetic_helper.bats` and `tests/unit/test_hermetic_fixture.py` prove each tripwire fires (a deliberate leak is caught) and the clean case passes'
+  - 'Migrated offenders still pass: `t2746_no_auto_init_in_non_project.bats` (T-2746 temp project), `test_fw_gaps_closure_check.bats` (T-4313 auto-init marker), `test_t4315_sidecar_stop_attribution.py` (T-4315 sidecar), `t4347_issues_standing_permission_test.py` (t4347 PROJECT_ROOT), `test_orchestrator_status_outcomes.py` (T-4313)'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` reports clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'shared hermetic fixture per runner (tests/unit/helpers/hermetic.bash, tests/unit/hermetic.py): temp project, stripped PROJECT_ROOT/FRAMEWORK_ROOT/CLAUDE*/FW_*, private TMPDIR, decoy-Watchtower + live-sidecar + real-checkout tripwires; migrate t2746, fw_gaps (T-4313), t4315, t4347, orchestrator_status_outcomes'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4378-one-shared-hermetic-fixture-helper-for-b.md'
+  - 'tests/lint/bats-git-discovery-fence.bats'
+  - 'tests/lint/bats-test-isolation.bats'
+  - 'tests/unit/conftest.py'
+  - 'tests/unit/helpers/hermetic.bash'
+  - 'tests/unit/hermetic_helper.bats'
+  - 'tests/unit/hermetic.py'
+  - 'tests/unit/t2746_no_auto_init_in_non_project.bats'
+  - 'tests/unit/t4347_issues_standing_permission_test.py'
+  - 'tests/unit/t4379_precommit_dead_negation.bats'
+  - 'tests/unit/test_fw_gaps_closure_check.bats'
+  - 'tests/unit/test_hermetic_fixture.py'
+  - 'tests/unit/test_orchestrator_status_outcomes.py'
+  - 'tests/unit/test_t4315_sidecar_stop_attribution.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T22:39:46'
+    action: 'T-4378: shared hermetic fixture per runner (tests/unit/helpers/hermetic.bash, tests/unit/hermetic.py): temp project, stripped PROJECT_ROOT/FRAMEWORK_ROOT/CLAUDE*/FW_*, private TMPDIR, decoy-Watchtower + live-sidecar + real-checkout tripwires; migrate t2746, fw_gaps (T-4313), t4315, t4347, orchestrator_status_outcomes'
+  - time: '2026-10-19T22:58:33'
+    action: 'T-4378: git-discovery fence lint accepts load helpers/hermetic (it fences); fence the two T-4379 files that install hooks / run fw init — pre-push invariant red cleared'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 557 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 557
+  commits: 2
+  files_changed: 14
+  lines_added: 657
+  lines_removed: 65
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4378-one-shared-hermetic-fixture-helper-for-b.md
+generated_by: context-agent-hybrid

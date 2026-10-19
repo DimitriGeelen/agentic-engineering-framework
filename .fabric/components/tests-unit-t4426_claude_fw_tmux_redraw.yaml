@@ -1,0 +1,21 @@
+id: tests/unit/t4426_claude_fw_tmux_redraw.bats
+name: t4426_claude_fw_tmux_redraw
+type: script
+subsystem: tests
+location: tests/unit/t4426_claude_fw_tmux_redraw.bats
+tags: []
+
+purpose: "T-4426 (ring20-dashboard proposal): after a mouse-wheel scroll into tmux copy mode, on attach and on resize, Claude Code's screen stays cluttered until Ctrl+L."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-19
+created_by: unknown

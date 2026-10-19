@@ -1,0 +1,21 @@
+id: tests/unit/t4424_upgrade_flag_declaration.bats
+name: t4424_upgrade_flag_declaration
+type: script
+subsystem: tests
+location: tests/unit/t4424_upgrade_flag_declaration.bats
+tags: []
+
+purpose: "T-4424: the bare-from-consumer handoff replay (T-4405) kept '-*' words and dropped every other word as the positional target, so a value-taking flag added later would reach upstream without its value, and the value would be swallowed as…"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-19
+created_by: unknown

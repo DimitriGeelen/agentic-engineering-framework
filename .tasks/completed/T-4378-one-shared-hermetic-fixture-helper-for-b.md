@@ -1,23 +1,22 @@
 ---
-id: T-4424
-name: "Upgrade handoff argv replay keeps -* flags and drops other words as 'the target':
-  a future value-taking flag would silently lose its value"
+id: T-4378
+name: "One shared hermetic fixture helper for bats and pytest (temp project, clean
+  env, no live sidecar/Watchtower/termlink)"
 description: >
-  Found by ring20-dashboard reading T-4405's fix (msg 1f8e8c90): lib/upgrade.sh replays
-  the caller's argv to upstream's bin/fw, keeping '-*' words and dropping every other
-  word as the positional target; only --from-upstream takes a separate value today
-  and is handled. A value-taking flag added later would be split from its value silently.
-  Fix: one declared list of value-taking upgrade flags shared by the parser and the
-  replay, and a test that fails when a value-taking flag exists in the parser but
-  not in that list.
+  Replace the hand-rolled fixtures (T-4313 auto-init, T-4318 private TMPDIR, T-4315
+  sidecar, T-2746 temp project, t4347 PROJECT_ROOT) with one helper per runner: temp
+  project root, env stripped of PROJECT_ROOT/FRAMEWORK_ROOT/CLAUDE*/FW_*, tripwires
+  for live services. Migrate by measured offenders first. Arc test-suite-health (arc-026),
+  anchor T-4376; build only after the inception GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/lint/bats-git-discovery-fence.bats, tests/unit/helpers/hermetic.bash, tests/unit/hermetic_helper.bats, tests/unit/test_fw_gaps_closure_check.bats, tests/unit/test_hermetic_fixture.py, tests/unit/test_orchestrator_status_outcomes.py]
 related_tasks: []
+arc_id: test-suite-health
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -44,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T19:41:00Z
-last_update: 2026-10-19T20:19:56Z
-date_finished:
+created: 2026-10-19T11:58:11Z
+last_update: 2026-10-19T21:15:43Z
+date_finished: 2026-10-19T21:15:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,17 +57,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-19T19:45:41Z'
+  - ts: '2026-10-19T12:00:44Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
+      (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T19:46:43Z'
+  - ts: '2026-10-19T12:01:46Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -80,14 +79,17 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+    rationale: verdict-determinacy=? (unscored (no scorer for 
+      verdict-determinacy; not counted)); fault-detection-fidelity=? (unscored 
+      (no scorer for fault-detection-fidelity; not counted)); D1=4 
+      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4424: Upgrade handoff argv replay keeps -* flags and drops other words as 'the target': a future value-taking flag would silently lose its value
+# T-4378: One shared hermetic fixture helper for bats and pytest (temp project, clean env, no live sidecar/Watchtower/termlink)
 
 ## Context
 
@@ -97,10 +99,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] lib/upgrade.sh declares the upgrade flags once (`_FW_UPGRADE_VALUE_FLAGS`, `_FW_UPGRADE_SWITCH_FLAGS`); the parser refuses a value flag with no value (it used to loop forever on `shift 2`) and the handoff replay keeps a value flag together with its value
-- [x] The replay refuses (non-zero, names the flag and the arrays) a `-*` word in neither list instead of guessing whether it takes a value
-- [x] Regression bats `tests/unit/t4424_upgrade_flag_declaration.bats`: every parser case label is declared in exactly one list; a value flag's value is never taken as the target; unknown flag fails loudly; missing value fails fast
-- [x] `tests/unit/t4405_upgrade_handoff_forwards_args.bats` and `tests/unit/upgrade_fresh_machine_simulation.bats` stay green
+- [x] `tests/unit/helpers/hermetic.bash` exists and is loadable (`load helpers/hermetic`): `hermetic_setup [--project]` gives a private root, private exported TMPDIR, HERMETIC_PROJECT (project markers with `--project`), strips PROJECT_ROOT/FRAMEWORK_ROOT/CLAUDE*/FW_* from the test shell; `hermetic_teardown` fails the test on a tripwire (termlink non-probe call, a connection to the decoy Watchtower port, the live sidecar stop marker appearing, a new top-level entry in the real checkout or its `.context/`)
+- [x] `tests/unit/hermetic.py` provides the pytest `hermetic` fixture (registered in `tests/unit/conftest.py`) with the same contract: `.root/.project/.home/.tmp`, `.env()`/`.clean()` stripped env, `.run()`, in-process env stripped via monkeypatch, same tripwires at teardown
+- [x] Self-tests `tests/unit/hermetic_helper.bats` and `tests/unit/test_hermetic_fixture.py` prove each tripwire fires (a deliberate leak is caught) and the clean case passes
+- [x] Migrated offenders still pass: `t2746_no_auto_init_in_non_project.bats` (T-2746 temp project), `test_fw_gaps_closure_check.bats` (T-4313 auto-init marker), `test_t4315_sidecar_stop_attribution.py` (T-4315 sidecar), `t4347_issues_standing_permission_test.py` (t4347 PROJECT_ROOT), `test_orchestrator_status_outcomes.py` (T-4313)
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` reports clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,20 +281,34 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-#
-# Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
-# web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
-#     bin/fw vendor self --check --task T-XXXX
-# (your own task id). It checks only the files your commits changed, so another
-# worker's uncommitted edit does not block your close; that drift is listed as
-# "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4424_upgrade_flag_declaration.bats > /tmp/.t4424.out 2>&1 && ! grep -q "^not ok" /tmp/.t4424.out
-test "$(grep -c '# skip' /tmp/.t4424.out)" -eq 0
-timeout 300 bats tests/unit/t4405_upgrade_handoff_forwards_args.bats > /tmp/.t4405.out 2>&1 && ! grep -q "^not ok" /tmp/.t4405.out
-timeout 2400 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4424sim.out 2>&1 && ! grep -q "^not ok" /tmp/.t4424sim.out
-bash -n lib/upgrade.sh
-out=$(python3 tools/bats-dead-negation-lint.py tests/unit/t4424_upgrade_flag_declaration.bats 2>&1); echo "$out" | grep -q clean
-bin/fw vendor self --check --task T-4424
+test -f tests/unit/helpers/hermetic.bash && test -f tests/unit/hermetic.py
+timeout 300 bats tests/unit/hermetic_helper.bats tests/unit/t2746_no_auto_init_in_non_project.bats tests/unit/test_fw_gaps_closure_check.bats > /tmp/.t4378-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4378-bats.out
+test "$(grep -c '# skip' /tmp/.t4378-bats.out)" -eq 0
+timeout 300 python3 -m pytest -q tests/unit/test_hermetic_fixture.py tests/unit/test_t4315_sidecar_stop_attribution.py tests/unit/t4347_issues_standing_permission_test.py tests/unit/test_orchestrator_status_outcomes.py > /tmp/.t4378-py.out 2>&1 && grep -q passed /tmp/.t4378-py.out
+grep -q 'load helpers/hermetic' tests/unit/t2746_no_auto_init_in_non_project.bats && grep -q 'load helpers/hermetic' tests/unit/test_fw_gaps_closure_check.bats
+grep -q 'hermetic' tests/unit/test_t4315_sidecar_stop_attribution.py && grep -q 'hermetic' tests/unit/t4347_issues_standing_permission_test.py && grep -q 'hermetic' tests/unit/test_orchestrator_status_outcomes.py
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4378-lint.out 2>&1 && grep -qi clean /tmp/.t4378-lint.out
+
+## RCA
+
+**Symptom:** tests passed alone and failed (or damaged live state) in the suite: fw auto-initialised temp dirs (T-4313), shared /tmp listings raced (T-4318), a test stopped the live sidecar (T-4315), an inherited PROJECT_ROOT hid the branch under test (T-2746, t4347).
+**Root cause:** no shared fixture. `tests/test_helper.bash:37-44` gives only a bare `mktemp -d`; `tests/unit/conftest.py` has autouse guards but no project/env fixture. Each file hand-rolls its own (e.g. `tests/unit/t2746_no_auto_init_in_non_project.bats:21-36`, `tests/unit/test_fw_gaps_closure_check.bats:14-24`, `tests/unit/test_t4315_sidecar_stop_attribution.py:22-30`), each fixing only the leak its author had already hit.
+**Why structurally allowed:** isolation was per-file convention; nothing stripped the worker's PROJECT_ROOT/FW_*/CLAUDE* env or failed a test that reached Watchtower or the real checkout.
+**Prevention:** one helper per runner (`tests/unit/helpers/hermetic.bash`, `tests/unit/hermetic.py`) with tripwires that fail the leaking test at teardown, pinned by self-tests that inject each leak.
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
+
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -317,12 +334,10 @@ bin/fw vendor self --check --task T-4424
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-## RCA
-
-**Symptom:** none observed in the field yet — ring20-dashboard (msg 1f8e8c90) read T-4405's replay and saw that a future value-taking upgrade flag would reach upstream without its value, and the value would be silently swallowed as "the target".
-**Root cause:** `lib/upgrade.sh` replay loop (do_upgrade, the T-4405 block after the `mktemp` tempdir) classifies by shape: `-*` is kept, every other word is dropped as the positional target. Only `--from-upstream` was special-cased. The knowledge of which flags take a value lived only in the parser's `case` (`shift 2`), duplicated by hand in the replay. Same parser also had `--from-upstream` with no value -> `shift 2` fails without shifting -> infinite loop.
-**Why structurally allowed:** two independent hand-kept copies of the flag grammar (parser case + replay case) with nothing tying them together; T-4405's tests covered only today's switches.
-**Prevention:** one declared pair of arrays (`_FW_UPGRADE_VALUE_FLAGS`, `_FW_UPGRADE_SWITCH_FLAGS`) read by the parser guard and the replay; the replay refuses any `-*` word not declared; `t4424_upgrade_flag_declaration.bats` fails when a parser case label is missing from (or ambiguous across) the arrays, so a new flag cannot be added to the parser without declaring its arity.
+### 2026-10-19 — the helper finds live-service leaks the plan did not name
+- **What changed:** the Watchtower tripwire caught `fw init` probing `/api/_identity` on the configured port in t2746. That is a deliberate read-only ownership check (lib/watchtower.sh), so the test opts out with a stated reason instead of the product changing. The fence lint did not recognise `load helpers/hermetic` as a git-discovery fence; it now does (30b454d0b).
+- **Plan impact:** "migrate by measured offenders first" stopped at five; install_target_project.bats (T-4318, one of today's 8 per-file timeouts) was too large for this slice.
+- **Triggered:** T-4428 (migrate install_target_project.bats).
 
 ## Recommendation
 
@@ -376,11 +391,28 @@ bin/fw vendor self --check --task T-4424
 
 ## Updates
 
-### 2026-10-19T19:41:00Z — task-created [task-create-agent]
+### 2026-10-19T11:58:11Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4424-upgrade-handoff-argv-replay-keeps---flag.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4378-one-shared-hermetic-fixture-helper-for-b.md
 - **Context:** Initial task creation
 
-### 2026-10-19T20:19:56Z — status-update [task-update-agent]
+### 2026-10-19T20:20:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-06daac72
+- **Timestamp:** 2026-10-19T21:16:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T21:15:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

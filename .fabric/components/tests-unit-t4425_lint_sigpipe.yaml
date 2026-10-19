@@ -1,0 +1,21 @@
+id: tests/unit/t4425_lint_sigpipe.bats
+name: t4425_lint_sigpipe
+type: script
+subsystem: tests
+location: tests/unit/t4425_lint_sigpipe.bats
+tags: []
+
+purpose: "T-4425: `fw test lint` printed each failing file's findings with `echo \"$_sc_output\" | head -5 | sed ...` under `set -euo pipefail`."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-19
+created_by: unknown

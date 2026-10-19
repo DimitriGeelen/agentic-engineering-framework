@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4424: Upgrade handoff argv replay keeps -* flags and drops other words as 'the target': a future value-taking flag would silently lose its value
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T21:06:47Z
+# ============================================================================
+
+task_id: T-4424
+task_name: "Upgrade handoff argv replay keeps -* flags and drops other words as 'the target': a future value-taking flag would silently lose its value"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T19:41:00Z
+completed: 2026-10-19T20:58:55Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T22:35:57+02:00
+last_commit: 2026-10-19T22:53:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  upgrade flag grammar declared once (_FW_UPGRADE_VALUE_FLAGS/_SWITCH_FLAGS); handoff replay keeps a value flag with its value and refuses an undeclared flag; parser refuses a value flag with no value (was an infinite shift-2 loop); t4424 bats pins parser labels against the declaration. ACs ticked; fresh-machine simulation 16/16 green (timeout raised to 2400 s for loaded hosts)
+
+# Key outcomes
+outcomes:
+  - 'lib/upgrade.sh declares the upgrade flags once (`_FW_UPGRADE_VALUE_FLAGS`, `_FW_UPGRADE_SWITCH_FLAGS`); the parser refuses a value flag with no value (it used to loop forever on `shift 2`) and the handoff replay keeps a value flag together with its value'
+  - 'The replay refuses (non-zero, names the flag and the arrays) a `-*` word in neither list instead of guessing whether it takes a value'
+  - 'Regression bats `tests/unit/t4424_upgrade_flag_declaration.bats`: every parser case label is declared in exactly one list; a value flag''s value is never taken as the target; unknown flag fails loudly; missing value fails fast'
+  - '`tests/unit/t4405_upgrade_handoff_forwards_args.bats` and `tests/unit/upgrade_fresh_machine_simulation.bats` stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4424-upgrade-handoff-argv-replay-keeps---flag.md'
+  - 'tests/unit/t4424_upgrade_flag_declaration.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T22:35:57'
+    action: 'T-4424: upgrade flag grammar declared once (_FW_UPGRADE_VALUE_FLAGS/_SWITCH_FLAGS); handoff replay keeps a value flag with its value and refuses an undeclared flag; parser refuses a value flag with no value (was an infinite shift-2 loop); t4424 bats pins parser labels against the declaration'
+  - time: '2026-10-19T22:53:34'
+    action: 'T-4424: ACs ticked; fresh-machine simulation 16/16 green (timeout raised to 2400 s for loaded hosts)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 77 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 77
+  commits: 2
+  files_changed: 4
+  lines_added: 303
+  lines_removed: 50
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4424-upgrade-handoff-argv-replay-keeps---flag.md
+generated_by: context-agent-hybrid

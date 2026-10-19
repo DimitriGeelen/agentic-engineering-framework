@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4425: fw test lint dies rc=141 (SIGPIPE) in its ShellCheck loop before the Silent-Skip and Test-Isolation steps run
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T21:12:41Z
+# ============================================================================
+
+task_id: T-4425
+task_name: "fw test lint dies rc=141 (SIGPIPE) in its ShellCheck loop before the Silent-Skip and Test-Isolation steps run"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T19:58:33Z
+completed: 2026-10-19T21:06:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T22:35:20+02:00
+last_commit: 2026-10-19T22:35:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw test lint no longer dies rc=141 — ShellCheck findings printed/classified via here-strings instead of echo|head and echo|grep -q (SIGPIPE under pipefail); regression bats with 5000-line fake shellcheck (red on pre-fix, green now)
+
+# Key outcomes
+outcomes:
+  - 'No `echo "$var" | head ...` pipe in bin/fw''s `test lint` section can kill fw with SIGPIPE under set -euo pipefail'
+  - 'Regression bats test with a fake shellcheck on PATH emitting >5 findings lines shows `fw test lint` reaches the Silent-Skip step and prints its summary (fails without the fix)'
+  - '`bin/fw test lint` runs to its summary on the real tree (no rc=141)'
+  - '`bash -n bin/fw` clean and `bin/fw vendor self --check --task T-4425` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw test lint no longer dies rc=141 — ShellCheck findings printed/classified via here-strings instead of echo|head and echo|grep -q (SIGPIPE under pipefail); regression bats with 5000-line fake shellcheck (red on pre-fix, green now)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4425-fw-test-lint-dies-rc141-sigpipe-in-its-s.md'
+  - 'tests/unit/t4425_lint_sigpipe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T22:35:20'
+    action: 'T-4425: fw test lint no longer dies rc=141 — ShellCheck findings printed/classified via here-strings instead of echo|head and echo|grep -q (SIGPIPE under pipefail); regression bats with 5000-line fake shellcheck (red on pre-fix, green now)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 68 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 68
+  commits: 1
+  files_changed: 4
+  lines_added: 94
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4425-fw-test-lint-dies-rc141-sigpipe-in-its-s.md
+generated_by: context-agent-hybrid

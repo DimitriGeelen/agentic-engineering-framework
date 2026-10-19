@@ -1,22 +1,26 @@
 ---
-id: T-4378
-name: "One shared hermetic fixture helper for bats and pytest (temp project, clean
-  env, no live sidecar/Watchtower/termlink)"
+id: T-4426
+name: "claude-fw tmux wrap: auto-redraw (Ctrl+L) after copy mode ends, on attach and
+  on resize — scoped to the wrapped session (ring20-dashboard proposal)"
 description: >
-  Replace the hand-rolled fixtures (T-4313 auto-init, T-4318 private TMPDIR, T-4315
-  sidecar, T-2746 temp project, t4347 PROJECT_ROOT) with one helper per runner: temp
-  project root, env stripped of PROJECT_ROOT/FRAMEWORK_ROOT/CLAUDE*/FW_*, tripwires
-  for live services. Migrate by measured offenders first. Arc test-suite-health (arc-026),
-  anchor T-4376; build only after the inception GO.
+  Proposal from ring20-dashboard (sidecar msg 7eafab6e, conversation aef-claude-fw-redraw;
+  their local patch T-2544). Operator reaches the claude-fw session via a browser
+  terminal (ttyd/xterm.js); after a mouse-wheel scroll into tmux copy mode, on attach
+  and on resize, the Claude Code screen stays cluttered until Ctrl+L. Proposed: three
+  set-hook options on bin/claude-fw's new-session chain (pane-mode-changed when pane_in_mode=0,
+  client-attached, client-resized) that run-shell 'tmux -L fw-agents send-keys -t
+  #{pane_id} C-l'. They found if-shell -F silently did nothing; run-shell expands
+  formats. Adopt with one change: their hooks are -g on the shared fw-agents server,
+  so every pane (incl. dispatch workers) would get Ctrl+L; scope them to the wrapped
+  session (-t the session name) instead of global.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/claude-fw, tests/unit/t4426_claude_fw_tmux_redraw.bats]
 related_tasks: []
-arc_id: test-suite-health
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -43,9 +47,9 @@ arc_id: test-suite-health
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T11:58:11Z
-last_update: 2026-10-19T20:20:00Z
-date_finished:
+created: 2026-10-19T20:59:23Z
+last_update: 2026-10-19T21:09:58Z
+date_finished: 2026-10-19T21:09:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,18 +60,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-19T12:00:44Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=287,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T12:01:46Z'
+  - ts: '2026-10-19T21:00:05Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -79,17 +73,24 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: verdict-determinacy=? (unscored (no scorer for 
-      verdict-determinacy; not counted)); fault-detection-fidelity=? (unscored 
-      (no scorer for fault-detection-fidelity; not counted)); D1=4 
-      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-19T21:00:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=306,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4378: One shared hermetic fixture helper for bats and pytest (temp project, clean env, no live sidecar/Watchtower/termlink)
+# T-4426: claude-fw tmux wrap: auto-redraw (Ctrl+L) after copy mode ends, on attach and on resize — scoped to the wrapped session (ring20-dashboard proposal)
 
 ## Context
 
@@ -99,10 +100,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `tests/unit/helpers/hermetic.bash` exists and is loadable (`load helpers/hermetic`): `hermetic_setup [--project]` gives a private root, private exported TMPDIR, HERMETIC_PROJECT (project markers with `--project`), strips PROJECT_ROOT/FRAMEWORK_ROOT/CLAUDE*/FW_* from the test shell; `hermetic_teardown` fails the test on a tripwire (termlink non-probe call, a connection to the decoy Watchtower port, the live sidecar stop marker appearing, a new top-level entry in the real checkout or its `.context/`)
-- [x] `tests/unit/hermetic.py` provides the pytest `hermetic` fixture (registered in `tests/unit/conftest.py`) with the same contract: `.root/.project/.home/.tmp`, `.env()`/`.clean()` stripped env, `.run()`, in-process env stripped via monkeypatch, same tripwires at teardown
-- [x] Self-tests `tests/unit/hermetic_helper.bats` and `tests/unit/test_hermetic_fixture.py` prove each tripwire fires (a deliberate leak is caught) and the clean case passes
-- [x] Migrated offenders still pass: `t2746_no_auto_init_in_non_project.bats` (T-2746 temp project), `test_fw_gaps_closure_check.bats` (T-4313 auto-init marker), `test_t4315_sidecar_stop_attribution.py` (T-4315 sidecar), `t4347_issues_standing_permission_test.py` (t4347 PROJECT_ROOT), `test_orchestrator_status_outcomes.py` (T-4313)
+- [x] bin/claude-fw new-session chain sets three session-scoped tmux hooks (pane-mode-changed with #{pane_in_mode} = 0 guard, client-attached, client-resized), each running `run-shell -b` that sends C-l to the pane; no -g on the hooks
+- [x] Hooks reference the socket/server name claude-fw already uses (no hard-coded server name in the new lines beyond what the chain already uses)
+- [x] Throwaway tmux server test (-L unique name, -f /dev/null): a `cat -v` pane receives ^L when copy mode ends; a pane in a second session does not
+- [x] Regression bats test under tests/unit/ is skipped cleanly when `command -v tmux` fails and kills its own tmux server in teardown
+- [x] Only bin/claude-fw, its vendored copy, and the test file are edited; bin/fw is untouched
 - [x] `python3 tools/bats-dead-negation-lint.py tests/` reports clean
 
 ### Human
@@ -152,6 +154,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n bin/claude-fw
+bats tests/unit/t4426_claude_fw_tmux_redraw.bats > /tmp/.t4426.out 2>&1 && ! grep -q "^not ok" /tmp/.t4426.out
+bin/fw vendor self --check --task T-4426
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4426.lint 2>&1 && grep -q clean /tmp/.t4426.lint
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -281,20 +288,15 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-test -f tests/unit/helpers/hermetic.bash && test -f tests/unit/hermetic.py
-timeout 300 bats tests/unit/hermetic_helper.bats tests/unit/t2746_no_auto_init_in_non_project.bats tests/unit/test_fw_gaps_closure_check.bats > /tmp/.t4378-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4378-bats.out
-test "$(grep -c '# skip' /tmp/.t4378-bats.out)" -eq 0
-timeout 300 python3 -m pytest -q tests/unit/test_hermetic_fixture.py tests/unit/test_t4315_sidecar_stop_attribution.py tests/unit/t4347_issues_standing_permission_test.py tests/unit/test_orchestrator_status_outcomes.py > /tmp/.t4378-py.out 2>&1 && grep -q passed /tmp/.t4378-py.out
-grep -q 'load helpers/hermetic' tests/unit/t2746_no_auto_init_in_non_project.bats && grep -q 'load helpers/hermetic' tests/unit/test_fw_gaps_closure_check.bats
-grep -q 'hermetic' tests/unit/test_t4315_sidecar_stop_attribution.py && grep -q 'hermetic' tests/unit/t4347_issues_standing_permission_test.py && grep -q 'hermetic' tests/unit/test_orchestrator_status_outcomes.py
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4378-lint.out 2>&1 && grep -qi clean /tmp/.t4378-lint.out
+#
+# Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
+# web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
+#     bin/fw vendor self --check --task T-XXXX
+# (your own task id). It checks only the files your commits changed, so another
+# worker's uncommitted edit does not block your close; that drift is listed as
+# "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
 ## RCA
-
-**Symptom:** tests passed alone and failed (or damaged live state) in the suite: fw auto-initialised temp dirs (T-4313), shared /tmp listings raced (T-4318), a test stopped the live sidecar (T-4315), an inherited PROJECT_ROOT hid the branch under test (T-2746, t4347).
-**Root cause:** no shared fixture. `tests/test_helper.bash:37-44` gives only a bare `mktemp -d`; `tests/unit/conftest.py` has autouse guards but no project/env fixture. Each file hand-rolls its own (e.g. `tests/unit/t2746_no_auto_init_in_non_project.bats:21-36`, `tests/unit/test_fw_gaps_closure_check.bats:14-24`, `tests/unit/test_t4315_sidecar_stop_attribution.py:22-30`), each fixing only the leak its author had already hit.
-**Why structurally allowed:** isolation was per-file convention; nothing stripped the worker's PROJECT_ROOT/FW_*/CLAUDE* env or failed a test that reached Watchtower or the real checkout.
-**Prevention:** one helper per runner (`tests/unit/helpers/hermetic.bash`, `tests/unit/hermetic.py`) with tripwires that fail the leaking test at teardown, pinned by self-tests that inject each leak.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -386,11 +388,27 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4378-lint.out 2>&1 && g
 
 ## Updates
 
-### 2026-10-19T11:58:11Z — task-created [task-create-agent]
+### 2026-10-19T20:59:23Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4378-one-shared-hermetic-fixture-helper-for-b.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4426-claude-fw-tmux-wrap-auto-redraw-ctrll-af.md
 - **Context:** Initial task creation
 
-### 2026-10-19T20:20:00Z — status-update [task-update-agent]
+### 2026-10-19T21:00:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4ec261e0
+- **Timestamp:** 2026-10-19T21:10:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T21:09:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
