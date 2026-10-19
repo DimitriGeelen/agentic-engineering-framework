@@ -108,7 +108,8 @@ parsing ~5.6 s) are secondary scope, only if time allows.
 - [x] Substring semantics of the validator's `git log --grep=T-N` are honoured: a commit mentioning `T-91021` invalidates `T-9102` (test)
 - [x] `tests/web/test_t4133_readiness_perf.py`, `test_t4053_review_readiness.py`, `test_t4096_review_parity.py`, `test_t4045_board_awaiting_review.py` pass (T-4133's `test_ledger_dependent_entry_recomputes_after_commit` updated: its "elsewhere" commit now keeps the entry; the recompute leg uses a commit that mentions the task)
 - [x] `bin/fw vendor self --check` clean for web/shared.py
-- [ ] Watchtower restarted once at the end; `bin/fw watchtower current` exits 0
+- [x] Watchtower restarted once at the end; `bin/fw watchtower current` exits 0
+  (note 2026-10-19 17:2x: `fw vendor self --check` was red only on `.agentic-framework/.tasks/templates/default.md`, a one-line vendored edit another worker made at 17:20 and still has in flight; web/shared.py is byte-identical to its vendored copy. Not synced here.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -391,6 +392,14 @@ directions: an irrelevant commit keeps the entry; every relevant class of commit
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The readiness cache behind /approvals no longer drops every entry on every commit. Each entry is now keyed on the commits that concern its task, plus the task-independent inputs the verdict validator reads. Both directions are pinned by tests. A commit that names the task, touches its task file, touches a global input, rewinds a ref, or adds a side branch carrying a mention still drops the entry, so the page cannot serve a stale verdict. Rendering is unchanged (no template or blueprint edit), so the one open question is your look at /approvals.
+**Evidence:**
+- Red before the fix: `test_ledger_entry_survives_unrelated_commit` and `test_new_branch_with_mention_invalidates` failed (2 failed, 12 passed). The second one is an existing stale-data hole: the validator greps `--all`, but a side branch moving never touched `.git/logs/HEAD`.
+- Green after: tests/web/test_t4394_readiness_git_key.py has 17 passed. The neighbouring readiness suites (T-4133, T-4053, T-4096, T-4045), including T-4133's memo on/off equivalence sweep over this repo's active tasks, are green.
+- In-process on this repo (355 tasks with an open Human criterion): cold 14.0 s / 355 recomputes; warm 1.0 s / 0. After simulating HEAD 3 commits back, the ref diff costs 0.09-0.16 s and there are **0 recomputes** (the old stamp recomputed all 355).
+- Separate instance on :3994: warm /approvals 7.5-8.4 s before and 8.4 s after two real commits (47f59178e/0c76fd224 and another worker's 6a1137ac9). The cold-readiness jump is gone. What remains is the page's own warm cost (below).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -401,6 +410,16 @@ directions: an irrelevant commit keeps the entry; every relevant class of commit
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-19 — key on the commits themselves, not on a narrower file stamp
+- **Chose:** keep a ref snapshot per repo. When `verdict_ledger._git_state_token` moves, walk only the newly reachable commits of the refs that moved, plus HEAD's own old..new range. Then bump a per-task generation for every task id named in a message (all digit prefixes, matching the validator's substring `--grep`) or whose task file was touched. Bump a global generation for a dropped or rewound ref, HEAD leaving its line, a touched task-independent input, or any git failure.
+- **Why:** the verdict reads history (`--grep` over `--all`, task-file versions at HEAD, ledger history), not files, so no file mtime can stand in for it. Listing too many commits only over-invalidates, which is safe.
+- **Rejected:** keeping `.git/logs/HEAD` (the bug); `git log -1 -- <paths>` per task (one subprocess per task, and it misses `--all` mentions); excluding all ~3,000 refs from the walk (1.3-1.7 s per ref move, measured, vs 0.09-0.16 s for moved refs only).
+
+### 2026-10-19 — warm-cost cuts left open (secondary scope)
+- **Chose:** not to cut the warm /approvals costs in this task.
+- **Why:** profiled warm in-process (12.5 s under the profiler): `_load_close_ready_arcs` 3.7 s (9 `fw arc demo-check` subprocesses ~0.3 s each), `_load_pending_human_acs` 2.6 s (`_parse_acceptance_criteria` on 355 bodies), `_load_stale_keystones` 1.8 s. Caching demo-check needs its whole input set (demo file, arc YAML, member tasks, traceability) to avoid a stale "valid", and caching AC parsing needs the body key. Both are their own change on a render surface, and stale data on /approvals is worse than slow.
+- **Open:** a follow-up task should cache `_arc_demo_state` keyed on those inputs, and cache parsed Human ACs per task-file mtime.
 
 ## Decision
 
