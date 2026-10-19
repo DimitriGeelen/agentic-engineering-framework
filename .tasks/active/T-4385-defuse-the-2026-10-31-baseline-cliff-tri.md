@@ -43,7 +43,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:29:07Z
-last_update: 2026-10-19T14:55:35Z
+last_update: 2026-10-19T16:08:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,7 +101,7 @@ ledger with per-file cause, outcome, and red-before/green-after evidence:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Every one of the 28 baselined files has a row in `docs/reports/T-4385-baseline-triage.md` naming: result when run alone today, cause (file:line), and one outcome — `fixed` / `defect T-XXXX` / `deleted (reason)` / `green-alone (load-only)` / `stays (proposed expiry+owner)`
-- [ ] Every `fixed` test is red before the change and green after when run alone, both results recorded in the triage report; no fix weakens an assertion so that it no longer fails on its origin bug (fault-detection-fidelity)
+- [x] Every `fixed` test is red before the change and green after when run alone, both results recorded in the triage report; no fix weakens an assertion so that it no longer fails on its origin bug (fault-detection-fidelity)
 - [x] Each real product defect found has its own captured task (one bug = one task), referenced from the triage row
 - [x] Entries that must stay are listed in `## Proposed baseline changes` below with a proposed new expiry (staggered, not one cliff day) and owner, plus a single `fw runme` line the operator can run; the agent did NOT run `unit_suite_baseline.py add` and did not edit `baseline.yaml`
 - [x] `bash -n` clean on every edited shell file; `bin/fw vendor self --check` clean (or red only on other workers' in-flight files, named) — no shell/lib/vendored path edited (tests/ + docs/ only); 2026-10-19 `--check` red only on `tools/corpus_spec.py`, another worker's uncommitted edit, not synced

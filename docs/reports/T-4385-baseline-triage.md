@@ -60,7 +60,35 @@ Columns: suite = reports red / 20 (max over the file's entries); alone = result 
 ## audit.bats evidence
 
 Before (alone, 2026-10-19): killed by the 600 s cap inside test 2 ("audit runs structure section").
-After: see the run appended below by the T-4385 worker.
+After: the duplicate was removed and its STRUCTURE assertion moved into the surviving live test
+("the live structure section completes with a full report"). That surviving test is live (~690 s),
+so it was **not re-run** in the close-out pass below (audit repo lock, per the operator's instruction).
+
+## Red-before / green-after, alone (close-out pass, 2026-10-19)
+
+Method: for each fixed test, the pre-fix test file (`git show <fix>^:<path>`) and the post-fix file
+(`git show <fix>:<path>`) were each copied into an out-of-repo harness (`/tmp/t4385-verify/`, symlinks
+to the repo's `agents/`, `lib/`, `bin/`, ...) and run alone against the current source. Source is
+unchanged by these fix commits (each touched tests/ and docs/ only). No full suite; no live audit.
+
+| Test (file: #) | Fix commit | Pre-fix alone | Post-fix alone | Assertion check |
+|---|---|---|---|---|
+| handover_push_timeout: t3 "distinguishes timeout (exit 124)" | bf6928ebb | **red** (`timed out after` no longer in handover.sh) | **green** | `timed out after` → `was KILLED at`; same 124-branch invariant |
+| handover_push_timeout: t4 "checkpoint wraps auto-handover in timeout" | bf6928ebb | **red** (checkpoint runs `timeout N bash handover.sh`) | **green** | regex accepts optional `bash `; still pins the `timeout "$_ah_total_timeout"` wrap (regex only, no mutation run here) |
+| handover_push_timeout: t7 "default push timeout is 60s" | bf6928ebb | **red** | **deleted** (not green) | removed behaviour (T-3450); replacement pinned by t3450 |
+| check_render_surface_human_ac_sigpipe: t3 "pre-fix pattern DID die with SIGPIPE" | bf6928ebb | **red 1 of 10** runs alone (race: 5-line producer fits the pipe buffer) | **green 10 of 10** | producer now 6000 lines (> 64 KiB), so SIGPIPE is deterministic; same assertion, plus an awk control added. Red-before is a race, not always-red |
+| test_cron_registry_generated_drift: t1 "registry ahead → WARN" | 2280b913a | **red** (`[ status -ne 2 ]` read the T-3783 vector-index FAIL) | **green** | severity asserted on the drift line (`WARN.*Cron registry edited…`) and `! FAIL.*Cron registry`; stricter than before |
+| t2298_audit_structure: t3 "single python3 pre-scan" | fbce1f033 | **red** (`go_scope_unprop_list=` renamed) | **green** | follows the T-3099 rename to `go_scope_summary=$(python3 -c`; same shape |
+| t2298_audit_structure: t4 "exactly one python3 -c" | fbce1f033 | **red** (comment counted as 2nd call) | **green** | comment lines excluded from the count; a real 2nd invocation still fails it |
+| t2244_audit_self_vendor_drift: t2 "libs-only drift names libs class" | fbce1f033 | **not re-run live** (pre-fix runs `bin/fw audit --section structure`, ~690 s, holds the audit lock). Hermetic mutation: the pre-fix negative assertion `!= "Run: fw vendor self"` **red** against the current post-fix output | **green** (hermetic) | the pre-fix `not fw vendor self` wording was reversed by T-2436 (`audit.sh:3413`); the post-fix asserts the current mitigation. This is a wording update, not a weakening: the pre-fix check was the one that was wrong |
+| t2244_audit_self_vendor_drift: t3 "templates-only drift" | fbce1f033 | **not re-run live** (same reason); its pre-fix assertions pass against current output, so the pre-fix red was the live timeout | **green** (hermetic) | unchanged assertions; only the drive changed (synthetic root, not the live tree) |
+| audit.bats: "audit runs structure section" (duplicate) | 06658de93 | **red** (600 s cap, killed in test 2) | **removed**, merged into the live test | duplicate of the surviving live test; its STRUCTURE assertion moved, nothing dropped. Surviving live test **not re-run** here (audit lock) |
+
+Not in this table: `context_safe_commands.bats` (fixed upstream by T-4368, not by this task).
+
+Open items from this pass: the live-run reds (t2244 pre-fix, audit.bats live test) are cited from the
+2026-10-19 timing ledger rather than re-run, because re-running them would hold the audit lock for
+~11 minutes each. The post-fix hermetic versions are green.
 
 ## What is left
 
