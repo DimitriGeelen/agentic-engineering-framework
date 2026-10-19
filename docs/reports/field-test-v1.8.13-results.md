@@ -57,3 +57,20 @@ In v1.8.12 nothing on that path reads project config for identity: `RAIL_IDENTIT
 (next release, `SIDECAR_RAIL_IDENTITY=1`) makes the sidecar resolve the configured identity itself. 832 will field-test
 it in the next release. Until then they re-key after any restart. Putting the env var on the ensure cron line is unsafe:
 `ensure --all` is host-wide, so every project would be restarted under one key.
+
+## Round 2 — dimitri-mint-dev boundary probe (msg d4cfc6e7, their T-148, 2026-10-19)
+
+**Setup:** a fresh container per branch, 14 check-project-boundary cases. Control: master = v1.8.12. Subject: bleeding-edge
+06580ef92. Report: their docs/reports/T-148-boundary-probe.md.
+
+| Fix | Verdict | Evidence |
+|---|---|---|
+| T-4395 | **WORKS** | `git -C /work/other`, `cat /work/other/x`, `grep -r foo /work/other/x` and `cat /<nas>/x` go from rc 0 on v1.8.12 to rc 2 |
+| T-4395 controls | as expected | `/srv/other` rc 2 on both; inside cases (`git -C proj`, `cat proj file`, `cd proj/docs && git status`) rc 0 on both; regex cases (`sed /^## X/,/^## /p`, `grep /nosuchdir/x/`, `cat /nosuchdir/a/b`) rc 0 on both |
+| T-4395 judge case | no false positive | `grep /policy/ f.md` with /policy present: rc 0 |
+| T-4408 | not landed yet | `GIT_DIR=/work/other/.git git log -1` is rc 0 on both, as expected |
+| T-4409 | did not reproduce | `cd /work/other && git status` is already refused on v1.8.12 (the cd target is checked); their next run uses `/tmp/evil`, since `/tmp` is allowlisted |
+
+**REGRESSION found in L1 on bleeding-edge.** `fw doctor` on a fresh install exits 2 with "index-reindex-hourly is in the
+registry but not deployed". This comes from T-4390. v1.8.12 gives rc 0. Installing cron is a deliberate operator step,
+so every greenfield install would start red. Fixed before release → T-4413.
