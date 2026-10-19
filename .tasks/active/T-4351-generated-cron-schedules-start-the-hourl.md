@@ -9,12 +9,12 @@ description: >
   id (keep the registry's explicit minute when set deliberately), and add a per-project
   frequency knob for large, slowly changing indexes.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [cron, index, io]
-components: []
+components: [bin/fw, lib/config.sh, lib/cron_dry_run.py, lib/cron_schedule.py, web/blueprints/config.py]
 related_tasks: []
 origin: {kind: "peer", source: "dimitri-mint-dev"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:57:46Z
-last_update: 2026-10-19T21:10:49Z
-date_finished:
+last_update: 2026-10-19T22:51:40Z
+date_finished: 2026-10-19T22:51:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -132,6 +132,12 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] The new INDEX_REINDEX_INTERVAL_HOURS row on /config reads like its neighbours
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row INDEX_REINDEX_INTERVAL_HOURS (default 1, range 1-24)
+  **Expected:** the row has a description saying what it does (hourly reindex every N hours), shows 1 as the default, and its layout matches the rows around it
+  **If not:** note what looks wrong (wording, alignment, missing description) in the task's Updates and hand it back
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -365,6 +371,15 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4351-lint.out 2>&1 && g
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The stagger works and is installed. This project's reindex moved from :20 to :35, and only that crontab line changed (diffed before install). The only open item is a glance at the new INDEX_REINDEX_INTERVAL_HOURS row on /config, which follows the existing row pattern; the config-registry parity lint requires both lib/config.sh and web/blueprints/config.py to carry it.
+
+**Evidence:**
+- tests/unit/t4351_cron_reindex_stagger.bats: 10/10 pass (different roots get different minutes; same root is stable; a pinned minute is kept; the knob writes */N; an invalid knob falls back to 1).
+- `fw cron install` done; doctor reports "Cron registry in sync" (after the T-4436 doctor fix).
+- Watchtower restarted; `bin/fw watchtower current` passes.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -401,3 +416,15 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4351-lint.out 2>&1 && g
 ### 2026-10-19T21:10:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4128cbc3
+- **Timestamp:** 2026-10-19T22:54:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-19T22:51:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

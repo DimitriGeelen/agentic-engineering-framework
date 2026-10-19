@@ -10,12 +10,12 @@ description: >
   Make Watchtower call the one generator (or the same library), and add a parity test:
   pause+resume through the web path produces byte-identical output to fw cron generate.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/cron_dry_run.py, tests/unit/test_t4432_cron_web_parity.py, web/blueprints/cron.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T21:48:56Z
-last_update: '2026-10-19T22:00:41Z'
-date_finished:
+last_update: 2026-10-19T22:54:24Z
+date_finished: 2026-10-19T22:54:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -96,10 +96,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] web/blueprints/cron.py `_regenerate_cron` no longer renders crontab text itself; it calls the shared renderer in lib/cron_dry_run.py (which uses lib/cron_schedule.py effective_schedule)
-- [ ] Parity test: pause + resume through the Flask web path in a temp project yields crontab text byte-identical to `fw cron generate` for the same registry (reindex minute derived, not :20)
-- [ ] The web path never writes /etc/cron.d in the test (install step is isolated/skipped under test)
-- [ ] `bin/fw vendor self --check --task T-4432` clean; Watchtower restarted and current
+- [x] web/blueprints/cron.py `_regenerate_cron` no longer renders crontab text itself; it calls the shared renderer in lib/cron_dry_run.py (which uses lib/cron_schedule.py effective_schedule)
+- [x] Parity test: pause + resume through the Flask web path in a temp project yields crontab text byte-identical to `fw cron generate` for the same registry (reindex minute derived, not :20)
+- [x] The web path never writes /etc/cron.d in the test (install step is isolated/skipped under test)
+- [x] `bin/fw vendor self --check --task T-4432` clean; Watchtower restarted and current
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,6 +131,12 @@ cost_estimate_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] Pausing and resuming a cron job from Watchtower behaves as before
+  **Steps:**
+  1. Open http://192.168.10.107:3000/cron
+  2. Pause one low-impact job (e.g. a weekly report), then resume it
+  **Expected:** the page shows the job paused, then active again, with no error banner. The change is in the backend only (the crontab is now built by the same generator as `fw cron generate`); nothing on the page should look different
+  **If not:** note the error text or the odd state in the task's Updates; `cd /opt/999-Agentic-Engineering-Framework && bin/fw doctor` shows whether the cron registry is still in sync
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -365,6 +371,14 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Watchtower's pause/resume now builds the crontab with the same generator as `fw cron generate` (`lib/cron_dry_run.py:render_crontab`), so a pause no longer reverts the T-4351 stagger or any other generated difference. The change is backend-only: no template or page output changed. The [REVIEW] check is a quick pause/resume of one low-impact job.
+
+**Evidence:**
+- tests/unit/test_t4432_cron_web_parity.py: pause + resume through the Flask test client produces byte-identical crontab text to `fw cron generate`. It fails against the old cron.py and passes now (re-run 4x, every environment).
+- 11 cron-related pytest tests pass. Watchtower restarted, `watchtower current` passes, and doctor reports the cron registry in sync.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -395,3 +409,20 @@ bin/fw watchtower current
 
 ### 2026-10-19T21:50:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a4916a76
+- **Timestamp:** 2026-10-19T22:56:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — The web path never writes /etc/cron.d in the test (install step is isolated/skipped under test)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: The web path never writes /etc/cron.d in the test (install step is isolated/skipped under test)`
+
+### 2026-10-19T22:54:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
