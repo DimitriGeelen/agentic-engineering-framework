@@ -68,3 +68,16 @@ cron_target_has_registry_marker() {
     [ -f "$path" ] || return 1
     grep -q "managed by cron-registry.yaml" "$path" 2>/dev/null
 }
+
+# cron_install_target <project_root>
+#
+# T-4390: the deployed crontab path for a project — "$FW_CRON_INSTALL_DIR"
+# (default /etc/cron.d) + "agentic-audit-<slug>", slug = basename lowercased,
+# anything outside [a-z0-9_-] → '-'. ONE definition for `fw cron install`,
+# `fw cron status`, `fw doctor` and lib/vector_index_health.py, so a check
+# that asks "is it deployed?" looks at the same file install writes.
+cron_install_target() {
+    local slug
+    slug=$(basename "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
+    echo "${FW_CRON_INSTALL_DIR:-/etc/cron.d}/agentic-audit-${slug}"
+}

@@ -4429,9 +4429,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
         # rather than the generic "run fw cron install" (that command is what
         # erases the very jobs this WARN exists to protect). A malformed registry
         # returns -1, not 0, and falls through to the checks below either way.
-        _t3161_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
-        _t3161_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
-        _t3161_target="$_t3161_target_dir/agentic-audit-${_t3161_slug}"
+        _t3161_target=$(cron_install_target "$PROJECT_ROOT")
         if [ -f "$_t3161_target" ]; then
             echo -e "  ${YELLOW}WARN${NC}  Cron registry declares no jobs but a deployed crontab exists at $_t3161_target"
             echo -e "        This looks like an unmigrated legacy install, not a fresh project."
@@ -4443,10 +4441,8 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
         fi
     elif [ -f "$cron_registry" ]; then
         local cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
-        local cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
-        local cron_slug
-        cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
-        local cron_target="$cron_target_dir/agentic-audit-${cron_slug}"
+        local cron_target
+        cron_target=$(cron_install_target "$PROJECT_ROOT")
 
         # T-1942: registry → generated drift detection (third leg of the
         # three-step sync registry → generated → deployed). The existing
@@ -6945,45 +6941,39 @@ print(f'  {active} active, {paused} paused ({len(jobs)} total)')
 print(f'  Install with: fw cron install')
 "
                 ;;
-            status)
-                # Show registry status
+            status|list)
+                # Show registry status. T-4390: a registry-active job with no live
+                # line in the deployed crontab is NOT scheduled — say so instead of
+                # ticking it (registry is intent; the deployed file is what cron runs).
                 _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
                 if [ ! -f "$_cron_registry" ]; then
                     echo "No cron registry at $_cron_registry"
                     exit 0
                 fi
+                source "$FRAMEWORK_ROOT/lib/cron-registry.sh"
+                _cron_target=$(cron_install_target "$PROJECT_ROOT")
                 python3 -c "
-import yaml
-data = yaml.safe_load(open('$_cron_registry'))
+import sys, yaml
+sys.path.insert(0, sys.argv[3])
+from vector_index_health import deployed_job_live
+data = yaml.safe_load(open(sys.argv[1]))
 jobs = data.get('jobs', [])
+try:
+    deployed = open(sys.argv[2], errors='replace').read()
+except OSError:
+    deployed = None
 active = sum(1 for j in jobs if j.get('status') == 'active')
 paused = sum(1 for j in jobs if j.get('status') == 'paused')
 print(f'Cron registry: {len(jobs)} jobs ({active} active, {paused} paused)')
+print(f'Deployed: {sys.argv[2]}' + ('' if deployed is not None else '  (missing — fw cron install)'))
 for j in jobs:
     s = j.get('status', 'active')
     icon = '  ✓' if s == 'active' else '  ‖'
-    print(f'{icon} {j[\"id\"]:25s} {j[\"schedule\"]:20s} [{s}]  {j.get(\"name\",\"\")}')
-"
-                ;;
-            list)
-                # Alias for status
-                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
-                if [ ! -f "$_cron_registry" ]; then
-                    echo "No cron registry at $_cron_registry"
-                    exit 0
-                fi
-                python3 -c "
-import yaml
-data = yaml.safe_load(open('$_cron_registry'))
-jobs = data.get('jobs', [])
-active = sum(1 for j in jobs if j.get('status') == 'active')
-paused = sum(1 for j in jobs if j.get('status') == 'paused')
-print(f'Cron registry: {len(jobs)} jobs ({active} active, {paused} paused)')
-for j in jobs:
-    s = j.get('status', 'active')
-    icon = '  ✓' if s == 'active' else '  ‖'
-    print(f'{icon} {j[\"id\"]:25s} {j[\"schedule\"]:20s} [{s}]  {j.get(\"name\",\"\")}')
-"
+    tail = ''
+    if s == 'active' and not deployed_job_live(deployed, j.get('id', ''), j.get('name', '')):
+        icon, tail = '  ✗', '  — not deployed'
+    print(f'{icon} {j[\"id\"]:25s} {j[\"schedule\"]:20s} [{s}]  {j.get(\"name\",\"\")}{tail}')
+" "$_cron_registry" "$_cron_target" "$FRAMEWORK_ROOT/lib"
                 ;;
             run)
                 # Run a job immediately (T-654)
@@ -7133,8 +7123,8 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
 
                 _cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
                 _cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
-                _cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
-                _cron_target="$_cron_target_dir/agentic-audit-${_cron_slug}"
+                source "$FRAMEWORK_ROOT/lib/cron-registry.sh"
+                _cron_target=$(cron_install_target "$PROJECT_ROOT")
 
                 # T-3161: refuse before touching anything (source OR target) when the
                 # deployed target exists but was not produced by the registry-driven

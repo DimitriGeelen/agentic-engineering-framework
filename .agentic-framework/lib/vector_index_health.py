@@ -22,7 +22,8 @@ Checks (any FAIL makes the verdict FAIL):
   canary    a semantic search for the manifest's canary probe returns the
             canary document as top hit — through the real search code, against
             this index (skipped only with --no-canary, and then reported SKIP)
-  cron      .context/cron-registry.yaml has an active index-reindex-hourly job
+  cron      .context/cron-registry.yaml has an active index-reindex-hourly job AND
+            the deployed crontab (FW_CRON_INSTALL_DIR) has a live line for it (T-4390)
 WARN-only:
   usage     recall queries that could not run, as a share of the window
   disk      orphan build/reindex scratch beside the index (dead owner pid), and
@@ -382,6 +383,40 @@ def check_canary(child, token: str):
     return _check("canary", "OK", f"canary {token} retrieved as top hit")
 
 
+def cron_install_target(project_root: Path):
+    """Deployed crontab path for this project, from the ONE name rule
+    (lib/cron-registry.sh:cron_install_target — the file `fw cron install`
+    writes). None when it cannot be resolved."""
+    helper = Path(__file__).resolve().parent / "cron-registry.sh"
+    try:
+        out = subprocess.run(
+            ["bash", "-c", 'source "$1" && cron_install_target "$2"', "_", str(helper), str(project_root)],
+            capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    path = out.stdout.strip()
+    return Path(path) if out.returncode == 0 and path else None
+
+
+def deployed_job_live(text, job_id, name=""):
+    """True when the deployed crontab text has an uncommented line for the job:
+    one that names the job id, or that directly follows the `# <name>` header
+    `fw cron generate` writes. A `# PAUSED:` line is a comment — not live."""
+    if not text:
+        return False
+    prev = ""
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if not line.startswith("#") and "=" not in line.split(None, 1)[0]:
+            if (job_id and re.search(r"(?<![A-Za-z0-9_])" + re.escape(job_id) + r"(?![\w-])", line)) \
+                    or (name and prev == f"# {name}"):
+                return True
+        prev = line
+    return False
+
+
 def check_cron(project_root: Path):
     reg = project_root / ".context" / "cron-registry.yaml"
     try:
@@ -412,6 +447,18 @@ def check_cron(project_root: Path):
     if status != "active":
         return _check("cron", "FAIL", f"{REQUIRED_JOB} is {status}, not active",
                       f"Resume it: fw cron resume {REQUIRED_JOB}")
+    # T-4390: registry status is intent; the deployed crontab is what cron runs.
+    target = cron_install_target(project_root)
+    try:
+        deployed = target.read_text(errors="replace") if target else None
+    except OSError:
+        deployed = None
+    if not deployed_job_live(deployed, REQUIRED_JOB, str(job.get("name") or "")):
+        where = target if target else "the cron install dir"
+        state = "has no live line for it" if deployed is not None else "is missing"
+        return _check("cron", "FAIL",
+                      f"{REQUIRED_JOB} is in the registry but not deployed — {where} {state}",
+                      "Install it: fw cron install (operator: writes root cron)")
     return _check("cron", "OK", f"{REQUIRED_JOB} scheduled")
 
 

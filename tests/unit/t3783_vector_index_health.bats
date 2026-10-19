@@ -25,6 +25,11 @@ jobs:
   command: fw index reindex
   status: active
 YAML
+    # T-4390: the reindex job must also be DEPLOYED. Temp install dir — never /etc/cron.d.
+    export FW_CRON_INSTALL_DIR="$TMPD/cron.d"
+    mkdir -p "$FW_CRON_INSTALL_DIR"
+    printf '# reindex\n20 * * * * root flock -n /var/lock/agentic-cron-index-reindex-hourly.lock -c "fw index reindex"\n' \
+        > "$FW_CRON_INSTALL_DIR/agentic-audit-proj"
     # Fake framework: the real canary module, and an embeddings module whose
     # _semantic_search really queries the fixture DB (word-overlap ranking).
     cp "$ROOT/web/canary.py" "$F/web/canary.py"
@@ -445,4 +450,51 @@ PY
         echo notified=\$n"
     [[ "$output" == *"notified=1"* ]]
     grep -q '"status": "FAIL"' "$root/.context/working/vector-index-health.json"
+}
+
+# ── T-4390: registry intent is not deployment ──────────────────────────────
+@test "T-4390: registry-active and deployed active line is OK" {
+    build_index 0
+    run check --no-canary
+    echo "$output"
+    [[ "$output" == *"OK|cron: index-reindex-hourly scheduled"* ]]
+}
+
+@test "T-4390: registry-active but no deployed file is FAIL with the install remedy" {
+    build_index 0
+    rm "$FW_CRON_INSTALL_DIR/agentic-audit-proj"
+    run check --no-canary
+    echo "$output"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FAIL|cron: index-reindex-hourly is in the registry but not deployed"* ]]
+    [[ "$output" == *"fw cron install (operator: writes root cron)"* ]]
+}
+
+@test "T-4390: deployed line commented out (# PAUSED) is FAIL" {
+    build_index 0
+    sed -i 's/^20 /# PAUSED: 20 /' "$FW_CRON_INSTALL_DIR/agentic-audit-proj"
+    run check --no-canary
+    echo "$output"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FAIL|cron: index-reindex-hourly is in the registry but not deployed"* ]]
+}
+
+@test "T-4390: registry paused is FAIL even when the deployed line is live" {
+    build_index 0
+    sed -i 's/status: active/status: paused/' "$P/.context/cron-registry.yaml"
+    run check --no-canary
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FAIL|cron: index-reindex-hourly is paused"* ]]
+}
+
+@test "T-4390: fw cron status marks registry-only jobs not deployed" {
+    printf -- '- id: never-installed\n  schedule: 5 * * * *\n  command: "true"\n  status: active\n' >> "$P/.context/cron-registry.yaml"
+    echo "framework_root: $ROOT" > "$P/.framework.yaml"
+    PROJECT_ROOT="$P" run "$ROOT/bin/fw" cron status
+    echo "$output"
+    [ "$status" -eq 0 ]
+    line=$(echo "$output" | grep 'index-reindex-hourly')
+    [[ "$line" == *"✓"*"[active]"* && "$line" != *"not deployed"* ]]
+    line=$(echo "$output" | grep 'never-installed')
+    [[ "$line" == *"✗"*"not deployed"* ]]
 }

@@ -1,10 +1,19 @@
 ---
 id: T-4390
-name: "Recall health check_cron reports the reindex job OK from the registry alone; it never checks the job is installed in /etc/cron.d"
+name: "Recall health check_cron reports the reindex job OK from the registry alone;
+  it never checks the job is installed in /etc/cron.d"
 description: >
-  Reported by 1023 (msg 90a2a15b, v1.8.11): lib/vector_index_health.py check_cron reads .context/cron-registry.yaml only; with no /etc/cron.d/agentic-audit-<project> file the reindex never ran, index aged 1.5 days, recall went RED, while doctor printed both 'OK cron: index-reindex-hourly scheduled' and 'WARN Cron generated but not installed'. fw cron status also ticks registry-only jobs. Fix: require an uncommented index-reindex-hourly line in the deployed file under FW_CRON_INSTALL_DIR (default /etc/cron.d); FAIL otherwise with remedy 'fw cron install (operator: writes root cron)'; fw cron status marks registry-only jobs not deployed. Same false-green class the module docstring names (T-3783).
+  Reported by 1023 (msg 90a2a15b, v1.8.11): lib/vector_index_health.py check_cron
+  reads .context/cron-registry.yaml only; with no /etc/cron.d/agentic-audit-<project>
+  file the reindex never ran, index aged 1.5 days, recall went RED, while doctor printed
+  both 'OK cron: index-reindex-hourly scheduled' and 'WARN Cron generated but not
+  installed'. fw cron status also ticks registry-only jobs. Fix: require an uncommented
+  index-reindex-hourly line in the deployed file under FW_CRON_INSTALL_DIR (default
+  /etc/cron.d); FAIL otherwise with remedy 'fw cron install (operator: writes root
+  cron)'; fw cron status marks registry-only jobs not deployed. Same false-green class
+  the module docstring names (T-3783).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:36:27Z
-last_update: 2026-10-19T12:36:27Z
-date_finished: null
+last_update: 2026-10-19T13:27:13Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T12:45:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T12:46:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4390: Recall health check_cron reports the reindex job OK from the registry alone; it never checks the job is installed in /etc/cron.d
@@ -62,8 +99,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The deployed-file name rule (`agentic-audit-<slug>` under `FW_CRON_INSTALL_DIR`, default `/etc/cron.d`) lives in ONE place (`lib/cron-registry.sh:cron_install_target`), used by `fw cron install`, `fw doctor` and `lib/vector_index_health.py`
+- [x] `check_cron` returns OK only when the registry job is active AND the deployed file has an uncommented `index-reindex-hourly` line; FAIL otherwise with remedy `fw cron install (operator: writes root cron)`
+- [x] `fw cron status` marks registry-active jobs absent from the deployed file as not deployed
+- [x] Regression tests (temp `FW_CRON_INSTALL_DIR`, never `/etc/cron.d`) cover: deployed+active OK; file missing FAIL; line commented `# PAUSED` FAIL; registry paused FAIL; `fw cron status` not-deployed marker — red before the fix, green after
+- [x] Neighbouring vector_index_health and cron suites pass; `bash -n bin/fw`; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -242,7 +282,27 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n bin/fw && bash -n lib/cron-registry.sh
+timeout 600 bats tests/unit/t3783_vector_index_health.bats > /tmp/.t4390-vih.out 2>&1 && ! grep -q "^not ok" /tmp/.t4390-vih.out
+test "$(grep -c '# skip' /tmp/.t4390-vih.out)" -eq 0
+grep -q "^ok .* T-4390: registry-active but no deployed file is FAIL" /tmp/.t4390-vih.out && grep -q "^ok .* T-4390: fw cron status marks registry-only jobs not deployed" /tmp/.t4390-vih.out
+test "$(grep -c 'agentic-audit-\${' bin/fw)" -eq 0
+timeout 600 bats tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats > /tmp/.t4390-3161.out 2>&1 && ! grep -q "^not ok" /tmp/.t4390-3161.out
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** on 1023 (v1.8.11) `fw doctor` printed `OK cron: index-reindex-hourly scheduled` next to `WARN Cron generated but not installed`; no `/etc/cron.d/agentic-audit-<project>` existed, so the reindex never ran, the index aged 1.5 days and recall went RED. `fw cron status` also ticked the job.
+
+**Root cause:** `lib/vector_index_health.py:check_cron` (line ~385) reads only `.context/cron-registry.yaml` and returns OK when the job's registry status is `active`. Registry state is intent; the deployed file under `FW_CRON_INSTALL_DIR` is what cron runs. Same for `fw cron status` in `bin/fw`, which lists registry jobs without consulting the deployed file.
+
+**Why structurally allowed:** the check answered the question next to the one it appears to answer (registry → scheduled), the exact false-green class the module docstring names (T-3783). The deploy-path name rule was inlined three times in `bin/fw` and nowhere in Python, so there was no cheap way for the health module to look at the deployed file, and its tests only built a registry fixture.
+
+**Red run (pre-fix, 2026-10-19):** `bats -f T-4390 tests/unit/t3783_vector_index_health.bats` → ok 1 (deployed OK, control), not ok 2 (file missing), not ok 3 (`# PAUSED` line), ok 4 (registry paused, control), not ok 5 (`fw cron status`). Post-fix: 38/38 ok, 0 skips.
+
+**Neighbouring suites:** 11 cron bats files green; `test_cron_registry_generated_drift.bats` test 1 (doctor exit ≠ 2) is red **with and without** this change (verified by running it against the pre-fix files), so it is pre-existing and not caused here. Live host: `fw cron status` shows 0 "not deployed"; `vector_index_health.py` reports `OK|cron: index-reindex-hourly scheduled`.
+
+**Prevention:** `check_cron` now requires an uncommented job line in the deployed file resolved through the one shared name rule (`cron_install_target`); regression tests pin missing-file, commented-line and paused cases against a temp `FW_CRON_INSTALL_DIR`, and `fw cron status` shows `not deployed` for registry-only jobs.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -338,3 +398,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4390-recall-health-checkcron-reports-the-rein.md
 - **Context:** Initial task creation
+
+### 2026-10-19T13:27:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
