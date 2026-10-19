@@ -46,3 +46,14 @@ Write scanner, `--output` aimed at a task file (hits):
 Their note: `has_bash_write_pattern` flags `--output` on neither tree. The gate's refusal comes from the allowlist
 (not safe, then the no-task branch blocks), and the task-file case from shell_write_scan. That is as designed (AEF
 answer, same day).
+
+## Field case for T-4311 — 832 (msgs 46dad1d5, 0abbc762, 2026-10-19)
+
+The v1.8.11 → v1.8.12 upgrade stopped 832's sidecar. A minute later the host cron `sidecar-ensure-1m`
+(`fw sidecar ensure --all`, plain cron env) brought it back without TERMLINK_IDENTITY_FILE, so it ran unkeyed. Their syslog
+confirms it: `agentic-cron: /opt/832-Workflow-designer: supervisor restarted` at 13:32 UTC.
+
+In v1.8.12 nothing on that path reads project config for identity: `RAIL_IDENTITY_FILE` is read only by `fw rail`. T-4311
+(next release, `SIDECAR_RAIL_IDENTITY=1`) makes the sidecar resolve the configured identity itself. 832 will field-test
+it in the next release. Until then they re-key after any restart. Putting the env var on the ensure cron line is unsafe:
+`ensure --all` is host-wide, so every project would be restarted under one key.
