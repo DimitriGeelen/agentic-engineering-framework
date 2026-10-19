@@ -91,14 +91,31 @@ teardown() {
     # current code; asserting the *historical* form's bad behaviour persists
     # so a future cleanup can't accidentally remove this defense without
     # understanding why awk is in there.
+    #
+    # T-4385: the producer used to be render_surface_files_in on the 5-path
+    # repro, whose whole output fits in the pipe buffer before head exits — so
+    # SIGPIPE was a race that lost every time when run alone (always red). The
+    # producer is now longer than the 64 KiB pipe buffer, which makes the
+    # head-form death deterministic, and the same producer is fed to the awk
+    # form so the control still separates the two shapes.
+    local producer='for i in $(seq 1 6000); do echo "web/templates/sigpipe-repro-$i.html"; done'
     run bash -c '
         set -eo pipefail
-        source "'"$FRAMEWORK_ROOT"'/lib/render_surface.sh"
-        matched=$(render_surface_files_in "'"$REPRO_TASK"'" 2>/dev/null | head -3 | sed "s/^/    - /")
+        produce() { '"$producer"'; }
+        matched=$(produce | head -3 | sed "s/^/    - /")
         echo "PRE_FIX_OK"
     '
     # Either 141 (SIGPIPE — typical) or some other non-zero (set -e under
     # pipefail propagation). NEVER 0 with PRE_FIX_OK printed.
     [ "$status" -ne 0 ]
     [[ "$output" != *"PRE_FIX_OK"* ]]
+
+    run bash -c '
+        set -eo pipefail
+        produce() { '"$producer"'; }
+        matched=$(produce | awk "NR<=3 { print \"    - \" \$0 }")
+        echo "FIX_OK"
+    '
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"FIX_OK"* ]]
 }

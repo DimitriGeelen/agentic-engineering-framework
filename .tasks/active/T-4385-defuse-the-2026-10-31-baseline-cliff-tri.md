@@ -8,7 +8,7 @@ description: >
   adding to the baseline stays operator-only. Arc test-suite-health (arc-026); source:
   external review T-4376 (docs/reports/T-4376-reviews/).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:29:07Z
-last_update: '2026-10-19T12:30:40Z'
+last_update: 2026-10-19T14:55:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -65,20 +65,46 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T12:31:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: verdict-determinacy=? (unscored (no scorer for 
+      verdict-determinacy; not counted)); fault-detection-fidelity=? (unscored 
+      (no scorer for fault-detection-fidelity; not counted)); D1=4 
+      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4385: Defuse the 2026-10-31 baseline cliff: triage the 22 always-red tests (fix, quarantine with an owner, or delete with evidence) and stagger expiries
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+44 baseline entries (28 files) in `.context/audits/unit-suite/baseline.yaml`; triage
+ledger with per-file cause, outcome, and red-before/green-after evidence:
+`docs/reports/T-4385-baseline-triage.md`. Source: docs/reports/T-4376-test-suite-measurement.md §3.3.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Every one of the 28 baselined files has a row in `docs/reports/T-4385-baseline-triage.md` naming: result when run alone today, cause (file:line), and one outcome — `fixed` / `defect T-XXXX` / `deleted (reason)` / `green-alone (load-only)` / `stays (proposed expiry+owner)`
+- [ ] Every `fixed` test is red before the change and green after when run alone, both results recorded in the triage report; no fix weakens an assertion so that it no longer fails on its origin bug (fault-detection-fidelity)
+- [ ] Each real product defect found has its own captured task (one bug = one task), referenced from the triage row
+- [ ] Entries that must stay are listed in `## Proposed baseline changes` below with a proposed new expiry (staggered, not one cliff day) and owner, plus a single `fw runme` line the operator can run; the agent did NOT run `unit_suite_baseline.py add` and did not edit `baseline.yaml`
+- [ ] `bash -n` clean on every edited shell file; `bin/fw vendor self --check` clean (or red only on other workers' in-flight files, named)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -127,6 +153,11 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+test -f docs/reports/T-4385-baseline-triage.md
+for f in $(grep -oE "file: [^ ]+" .context/audits/unit-suite/baseline.yaml | awk '{print $2}' | sort -u); do grep -q "$f" docs/reports/T-4385-baseline-triage.md || { echo "missing $f"; exit 1; }; done
+git diff --quiet HEAD -- .context/audits/unit-suite/baseline.yaml
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -353,3 +384,6 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4385-defuse-the-2026-10-31-baseline-cliff-tri.md
 - **Context:** Initial task creation
+
+### 2026-10-19T14:55:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

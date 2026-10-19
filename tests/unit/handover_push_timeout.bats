@@ -27,12 +27,15 @@ teardown() {
 }
 
 @test "handover.sh distinguishes timeout (exit 124) from other failures" {
-    grep -q 'timed out after' "$FRAMEWORK_ROOT/agents/handover/handover.sh"
+    # T-3063 reworded the 124 branch ('timed out after' -> 'was KILLED at'); T-4385
+    # follows the wording, the invariant is the dedicated 124 branch and its message.
+    grep -q 'was KILLED at' "$FRAMEWORK_ROOT/agents/handover/handover.sh"
     grep -q '_exit.*-eq 124' "$FRAMEWORK_ROOT/agents/handover/handover.sh"
 }
 
 @test "checkpoint.sh wraps auto-handover invocation in timeout (T-1277 belt-and-braces)" {
-    grep -q 'timeout "\$_ah_total_timeout" "\$FRAMEWORK_ROOT/agents/handover/handover.sh"' "$FRAMEWORK_ROOT/agents/context/checkpoint.sh"
+    # T-4385: checkpoint.sh now names the interpreter (`timeout N bash handover.sh`).
+    grep -qE 'timeout "\$_ah_total_timeout" (bash )?"\$FRAMEWORK_ROOT/agents/handover/handover.sh"' "$FRAMEWORK_ROOT/agents/context/checkpoint.sh"
 }
 
 @test "checkpoint.sh reads FW_HANDOVER_TOTAL_TIMEOUT" {
@@ -65,10 +68,11 @@ teardown() {
 
 # ---- Default value sanity ----
 
-@test "default push timeout is 60s when env var unset" {
-    # T-1341 bumped 15→60 to accommodate pre-push audit; T-1409 fixed this test to match.
-    grep -q '${FW_HANDOVER_PUSH_TIMEOUT:-60}' "$FRAMEWORK_ROOT/agents/handover/handover.sh"
-}
+# "default push timeout is 60s when env var unset" was deleted by T-4385: T-3450
+# replaced the static default with a per-push derivation on purpose, and
+# t3450_push_timeout_derivation.bats ("derives the default via
+# fw_handover_push_timeout_default when unset", "the old static 300 default is
+# gone") pins the replacement behaviour.
 
 @test "default total timeout is 60s when env var unset" {
     grep -q '${FW_HANDOVER_TOTAL_TIMEOUT:-60}' "$FRAMEWORK_ROOT/agents/context/checkpoint.sh"
