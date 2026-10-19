@@ -1,0 +1,111 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4376: Test-suite refactor: hermetic fast tier that gates the push, slow nightly tier, shared fixtures, lints for recurring test-defect classes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T13:48:46Z
+# ============================================================================
+
+task_id: T-4376
+task_name: "Test-suite refactor: hermetic fast tier that gates the push, slow nightly tier, shared fixtures, lints for recurring test-defect classes"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T11:55:19Z
+completed: 2026-10-19T13:48:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T14:13:18+02:00
+last_commit: 2026-10-19T15:48:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-026 test-suite-health — anchor inception, headline mechanic, 2 reviewer-approved drivers (verdict-determinacy, fault-detection-fidelity), build tasks T-4377..T-4380; T-4375, T-4325 join the arc. research artefact — problem, arc, plan, dialogue log. test-suite measurement (IW-1). ACs and verification for the measurement leg. external review (codex, opencode) saved verbatim + synthesis; plan reordered (trustworthy runner first); T-4381..T-4386 filed in arc-026. recommendation updated with measurement + external review (GO, reordered). IW-1..IW-4 disposed (answered) from measurement + external review. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'IW-1 measurement report exists at docs/reports/T-4376-test-suite-measurement.md with the five sections (duration distribution, timeouts, reds/baseline, live-state scan, fast-tier candidate), each stating its method'
+  - 'Report contains no hostnames or IP addresses'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/test-suite-health.yaml'
+  - '.context/costs/reviews.jsonl'
+  - 'docs/reports/T-4376-reviews/codex.md'
+  - 'docs/reports/T-4376-reviews/opencode.md'
+  - 'docs/reports/T-4376-test-suite-measurement.md'
+  - 'docs/reports/T-4376-test-suite-refactor.md'
+  - '.tasks/active/T-4325-unit-suite-tests-that-fail-only-under-th.md'
+  - '.tasks/active/T-4375-structure-section-audit-takes-510-s-alon.md'
+  - '.tasks/active/T-4376-test-suite-refactor-hermetic-fast-tier-t.md'
+  - '.tasks/active/T-4377-test-tiers-a-hermetic-fast-tier-gates-th.md'
+  - '.tasks/active/T-4378-one-shared-hermetic-fixture-helper-for-b.md'
+  - '.tasks/active/T-4379-lint-the-recurring-test-defect-classes-l.md'
+  - '.tasks/active/T-4380-evidence-driven-prune-and-merge-of-dupli.md'
+  - '.tasks/active/T-4381-unit-suite-runner-accounting-refuse-empt.md'
+  - '.tasks/active/T-4382-triage-the-bimodal-and-instant-finish-te.md'
+  - '.tasks/active/T-4383-auditbats-asserts-its-named-contracts-ag.md'
+  - '.tasks/active/T-4384-t2332bvpproposequeuebats-hard-codes-the-.md'
+  - '.tasks/active/T-4385-defuse-the-2026-10-31-baseline-cliff-tri.md'
+  - '.tasks/active/T-4386-fw-doctor-takes-over-15-minutes-in-docto.md'
+  - '.tasks/completed/T-4376-test-suite-refactor-hermetic-fast-tier-t.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T14:13:18'
+    action: 'T-4376: arc-026 test-suite-health — anchor inception, headline mechanic, 2 reviewer-approved drivers (verdict-determinacy, fault-detection-fidelity), build tasks T-4377..T-4380; T-4375, T-4325 join the arc'
+  - time: '2026-10-19T14:14:12'
+    action: 'T-4376: research artefact — problem, arc, plan, dialogue log'
+  - time: '2026-10-19T14:22:19'
+    action: 'T-4376: test-suite measurement (IW-1)'
+  - time: '2026-10-19T14:23:10'
+    action: 'T-4376: ACs and verification for the measurement leg'
+  - time: '2026-10-19T14:30:25'
+    action: 'T-4376: external review (codex, opencode) saved verbatim + synthesis; plan reordered (trustworthy runner first); T-4381..T-4386 filed in arc-026'
+  - time: '2026-10-19T14:30:51'
+    action: 'T-4376: recommendation updated with measurement + external review (GO, reordered)'
+  - time: '2026-10-19T14:33:33'
+    action: 'T-4376: IW-1..IW-4 disposed (answered) from measurement + external review'
+  - time: '2026-10-19T15:48:28'
+    action: 'T-4376: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 113 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 113
+  commits: 8
+  files_changed: 20
+  lines_added: 4621
+  lines_removed: 51
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4376-test-suite-refactor-hermetic-fast-tier-t.md
+generated_by: context-agent-hybrid
