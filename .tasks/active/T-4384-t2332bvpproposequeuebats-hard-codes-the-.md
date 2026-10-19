@@ -8,7 +8,7 @@ description: >
   on live proposal state. Arc test-suite-health (arc-026); source: external review
   T-4376 (docs/reports/T-4376-reviews/).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:28:44Z
-last_update: '2026-10-19T12:30:40Z'
+last_update: 2026-10-19T13:49:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -65,20 +65,45 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T12:31:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: verdict-determinacy=? (unscored (no scorer for 
+      verdict-determinacy; not counted)); fault-detection-fidelity=? (unscored 
+      (no scorer for fault-detection-fidelity; not counted)); D1=4 
+      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4384: t2332_bvp_propose_queue.bats hard-codes the repo path, queries the live Watchtower and curls without a timeout
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+External review for T-4376 (docs/reports/T-4376-reviews/) flagged this file: it ran
+against the operator's live Watchtower and live proposal store. Fix is test-only:
+hermetic temp PROJECT_ROOT + Flask test client; no web/ source changed.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `tests/unit/t2332_bvp_propose_queue.bats` contains no hard-coded `/opt/999-…` path (cd via `$BATS_TEST_DIRNAME`), no `bin/fw watchtower url` lookup, no `curl` against any server, and no `skip`
+- [x] The `/bvp` render test runs through a Flask test client in a fresh process with `PROJECT_ROOT` set to a temp project root holding a fixture `.context/bvp-driver-proposals.jsonl`; a negative leg asserts the queue section is absent when no proposal is pending
+- [x] File passes alone (all `ok`, zero `# skip`), and a red run is recorded: breaking `_load_proposals` state handling and dropping the template section each make the corresponding tests fail (recorded in ## Updates/RCA), then reverted
+- [x] Runtime of the file alone measured before and after (recorded in RCA)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -256,6 +281,9 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+! grep -nE '999-Agentic|watchtower url|curl|skip ' tests/unit/t2332_bvp_propose_queue.bats
+timeout 300 bats tests/unit/t2332_bvp_propose_queue.bats > /tmp/.t4384.out 2>&1 && ! grep -q "^not ok" /tmp/.t4384.out && grep -q "renders the queue section" /tmp/.t4384.out
+test "$(grep -c '# skip' /tmp/.t4384.out)" -eq 0
 
 ## RCA
 
@@ -272,6 +300,36 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/unit/t2332_bvp_propose_queue.bats` was a candidate for the suite's 900 s
+hangs, and its render test's verdict depended on host state rather than code.
+
+**Root cause:** `setup()` did `cd /opt/999-Agentic-Engineering-Framework` (old line 13), so
+it only worked from that checkout and every python process saw the live PROJECT_ROOT. The
+last test (old lines 135-156) resolved `bin/fw watchtower url`, skipped when no Watchtower
+was found, skipped again when the live `.context/bvp-driver-proposals.jsonl` had no pending
+rows, then ran `curl -sf "$url/bvp"` with no `--max-time`. That last call blocks for as long
+as the server does, and on a shared host the URL can belong to another project's server.
+
+**Why structurally allowed:** a skipped bats test reports `ok`, so a test that skipped or
+asserted against a foreign server looked the same as one that passed. No lint flagged
+hard-coded repo paths or curl calls with no timeout in unit tests.
+
+**Fix / prevention:** setup now cds via `$BATS_TEST_DIRNAME` and exports `PROJECT_ROOT` set
+to a temp dir with a minimal policy fixture. The render test calls `web.app` through the
+Flask test client in a fresh process, asserts PROPOSALS_PATH resolves inside the temp
+root, and checks both legs (pending → section present with count 1 and the approved row
+hidden; nothing pending → section absent). No network, no skip. The Verification lines
+pin "no curl / no live URL / no skip / no hard-coded path".
+
+**Red runs (mutants applied to web/, each reverted, tree confirmed clean afterwards):**
+- M1 `_load_proposals` ignores later state rows → tests 3, 4, 6, 7 fail
+- M2 `_load_proposals` drops the state filter → tests 3, 6, 7 fail
+- M3 template `{%- if pending_proposals %}` → `{%- if false %}` → test 6 fails
+- Restored: 7/7 ok.
+
+**Runtime alone:** before 9.9 s (6 tests; the last one hit the live server, unbounded);
+after 7.6 s (7 tests, no network).
 
 ## Evolution
 
@@ -353,3 +411,6 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4384-t2332bvpproposequeuebats-hard-codes-the-.md
 - **Context:** Initial task creation
+
+### 2026-10-19T13:49:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

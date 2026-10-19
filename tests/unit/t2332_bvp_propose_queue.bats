@@ -1,19 +1,29 @@
 #!/usr/bin/env bats
 # T-2332 (T-2330 S2): Flask helpers + template render for the driver
 # propose-queue. Endpoints that shell out to `bin/fw` (propose / approve)
-# are integration-tested via live curl against the running Watchtower in
-# the live smoke section at the bottom of S2 — see task closure notes.
+# are not covered here.
 #
 # This bats covers pure Python paths that can be exercised in isolation:
-# _load_proposals state-machine, _append_proposal_state_change, the
-# template render (GET /bvp via Flask test client with PROJECT_ROOT
-# pointing at framework root so bin/fw resolves correctly).
+# _load_proposals state-machine, _append_proposal_state_change, and the
+# template render (GET /bvp via the Flask test client).
+#
+# T-4384: hermetic. Every python process runs with PROJECT_ROOT pointing at
+# a temp project root, so nothing reads or writes the live .context/ and no
+# running Watchtower (ours or another project's) is contacted.
 
 setup() {
-    cd /opt/999-Agentic-Engineering-Framework
-    # T-2332 cleanup: ensure a known proposals fixture
+    cd "$BATS_TEST_DIRNAME/../.."
     SCRATCH_DIR="$(mktemp -d)"
     export SCRATCH_DIR
+    mkdir -p "$SCRATCH_DIR/.context/working" "$SCRATCH_DIR/.tasks/active" "$SCRATCH_DIR/.tasks/completed" "$SCRATCH_DIR/policy"
+    # /bvp renders the proposal queue only inside its weights block, so the
+    # temp project needs a minimal driver policy.
+    cat > "$SCRATCH_DIR/policy/value-drivers.yaml" <<'EOF'
+protected_drivers:
+  - {id: D1, name: Antifragility, weight: 4}
+free_drivers: []
+EOF
+    export PROJECT_ROOT="$SCRATCH_DIR"
 }
 
 teardown() {
@@ -132,25 +142,47 @@ print('PASS')
     echo "$output" | grep -q "PASS"
 }
 
-# --------------------------------------- GET /bvp renders queue section (live)
+# ------------------------------- GET /bvp renders queue section (test client)
 
-@test "T-2332: GET /bvp renders the queue section when proposals pending (live)" {
-    # Test against live Watchtower — uses real PROJECT_ROOT, real proposal data.
-    # Requires Watchtower to be running. Skip if not.
-    url=$(bin/fw watchtower url 2>/dev/null)
-    [ -n "$url" ] || skip "Watchtower not running"
-
-    # Pre-condition: at least one pending proposal in the live store
-    pending_count=$(python3 -c "
-import sys, json
+# Render /bvp in a fresh process against the temp project root. Prints the
+# HTTP status as a STATUS= line, then the page body.
+_render_bvp() {
+    python3 -c "
+import sys
 sys.path.insert(0, '.')
+from web.app import app
 import web.blueprints.bvp as bvp_mod
-print(len(bvp_mod._load_proposals()))
-")
-    [ "$pending_count" -gt 0 ] || skip "No pending proposals to render"
+assert str(bvp_mod.PROPOSALS_PATH).startswith('$SCRATCH_DIR'), bvp_mod.PROPOSALS_PATH
+app.config['TESTING'] = True
+r = app.test_client().get('/bvp')
+print('STATUS=%d' % r.status_code)
+print(r.get_data(as_text=True))
+"
+}
 
-    run curl -sf "$url/bvp"
+@test "T-2332: GET /bvp renders the queue section when proposals pending" {
+    cat > "$SCRATCH_DIR/.context/bvp-driver-proposals.jsonl" <<'EOF'
+{"id":"P-001","ts":"2026-06-11T00:00:00Z","state":"pending","name":"V_QUEUED","weight":5,"rationale":"Pending row","author":"agent:test"}
+{"id":"P-002","ts":"2026-06-11T00:01:00Z","state":"pending","name":"V_GONE","weight":3,"rationale":"Approved later","author":"agent:test"}
+{"id":"P-002","ts":"2026-06-11T00:02:00Z","state":"approved","actor":"operator-watchtower"}
+EOF
+    run _render_bvp
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "Pending driver proposals"
-    echo "$output" | grep -q "bvp-driver-proposals"
+    echo "$output" | grep -qx 'STATUS=200'
+    echo "$output" | grep -q 'id="bvp-driver-proposals"'
+    echo "$output" | grep -q "Pending driver proposals (1)"
+    echo "$output" | grep -q "V_QUEUED"
+    ! echo "$output" | grep -q "V_GONE"
+}
+
+@test "T-2332: GET /bvp omits the queue section when nothing is pending" {
+    cat > "$SCRATCH_DIR/.context/bvp-driver-proposals.jsonl" <<'EOF'
+{"id":"P-009","ts":"2026-06-11T00:00:00Z","state":"pending","name":"V_DONE","weight":5,"rationale":"Rejected later","author":"agent:test"}
+{"id":"P-009","ts":"2026-06-11T00:01:00Z","state":"rejected","actor":"operator-watchtower","rationale_decision":"No distinguishing value beyond D1-D4 here."}
+EOF
+    run _render_bvp
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -qx 'STATUS=200'
+    ! echo "$output" | grep -q 'id="bvp-driver-proposals"'
+    ! echo "$output" | grep -q "Pending driver proposals"
 }
