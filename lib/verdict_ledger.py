@@ -1737,7 +1737,10 @@ def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats:
         row["visual"] = {"widths": [int(w) for w in visual.get("widths") or []],
                          "problems": [str(p) for p in visual.get("problems") or []],
                          "shots": [{"state": str(x.get("state", "")), "width": int(x.get("width", 0)),
-                                    "path": str(x.get("path", "")), "sha256": str(x.get("sha256") or "")}
+                                    "path": str(x.get("path", "")), "sha256": str(x.get("sha256") or ""),
+                                    # T-4391: an interaction state names the steps that produced it
+                                    **({"steps_sha256": str(x["steps_sha256"])}
+                                       if "steps_sha256" in x else {})}
                                    for x in visual.get("shots") or []]}
     row["revision"] = (revision or "").strip() or _head_sha(root)
     row["registry"] = registry_pin(root, row["revision"])
@@ -2437,22 +2440,32 @@ def _run_fault(ctx: "_Ctx", row: dict, crit, recording: bool) -> tuple[str, str]
                 return "unseen-page", f"the screenshot of {p!r} is not cited as evidence"
         # T-4214: the T-4202 evidence. Every checklist state at every configured width must have a
         # verified shot, the Visual Verification checklist must pass, and each shot must be cited.
-        vis = run.get("visual")
-        if vis is None:
-            return "visual-needs-run", ("a render criterion needs the multi-width screenshots and the "
-                                        "Visual Verification checklist recorded in its review run; "
-                                        "this run recorded neither (fw ux shots, then fw reviewer judge)")
-        if vis.get("problems"):
-            return "visual-missing", ("the Visual Verification checklist does not pass: "
-                                      + "; ".join(vis["problems"][:3]))
-        shots = vis.get("shots") or []
-        if not shots:
-            return "visual-missing", "no screenshot is recorded for the checklist states"
-        for sh in shots:
-            if not sh.get("sha256"):
-                return "visual-missing", f"no screenshot at {sh.get('path')!r} ({sh.get('state')} @ {sh.get('width')}px)"
-            if sh["sha256"] not in cited:
-                return "visual-uncited", f"the screenshot {sh.get('path')!r} is not cited as evidence"
+        return _visual_fault(run.get("visual"), cited)
+    return None
+
+
+def _visual_fault(vis: dict | None, cited: set) -> tuple[str, str] | None:
+    """T-4214: the run's T-4202 visual record backs a render green only when present, its checklist
+    passes, and every shot exists and is cited. T-4391: a shot captured from a steps file must name
+    a well-formed steps sha256; otherwise it is judged exactly as a URL-state shot."""
+    if vis is None:
+        return "visual-needs-run", ("a render criterion needs the multi-width screenshots and the "
+                                    "Visual Verification checklist recorded in its review run; "
+                                    "this run recorded neither (fw ux shots, then fw reviewer judge)")
+    if vis.get("problems"):
+        return "visual-missing", ("the Visual Verification checklist does not pass: "
+                                  + "; ".join(vis["problems"][:3]))
+    shots = vis.get("shots") or []
+    if not shots:
+        return "visual-missing", "no screenshot is recorded for the checklist states"
+    for sh in shots:
+        if not sh.get("sha256"):
+            return "visual-missing", f"no screenshot at {sh.get('path')!r} ({sh.get('state')} @ {sh.get('width')}px)"
+        if "steps_sha256" in sh and not re.fullmatch(r"[0-9a-f]{64}", str(sh["steps_sha256"])):
+            return "visual-missing", (f"the screenshot {sh.get('path')!r} names no valid steps sha256 "
+                                      f"({sh['steps_sha256']!r}) — re-run fw ux shots")
+        if sh["sha256"] not in cited:
+            return "visual-uncited", f"the screenshot {sh.get('path')!r} is not cited as evidence"
     return None
 
 

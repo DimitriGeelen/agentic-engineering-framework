@@ -402,13 +402,48 @@ def _gather_visual(root: Path, task_id: str, task_data: dict) -> dict:
         visual_checklist.section_body(task_data["text"]) or "")
     states = list(dict.fromkeys(cells[0] for cells in rows if cells and cells[0]))
     shots = []
+    problems = visual_checklist.check(task_data["path"], root, task_id, widths)
     for st in states:
+        steps, recorded = _steps_record(root, task_id, st, problems)
         for w in widths:
             f = root / VISUAL_DIR / task_id / f"{st}@{w}.png"
-            shots.append({"state": st, "width": w, "path": f"{VISUAL_DIR}/{task_id}/{st}@{w}.png",
-                          "sha256": vl._hash_path(f) if f.is_file() else ""})
-    problems = visual_checklist.check(task_data["path"], root, task_id, widths)
+            sh = {"state": st, "width": w, "path": f"{VISUAL_DIR}/{task_id}/{st}@{w}.png",
+                  "sha256": vl._hash_path(f) if f.is_file() else ""}
+            if steps:
+                # T-4391: an interaction state carries the hash of the steps that produced it, and
+                # its shot must be the one `fw ux shots` recorded for those steps.
+                sh["steps_sha256"] = steps
+                if sh["sha256"] and recorded.get(w) != sh["sha256"]:
+                    problems.append(f"state '{st}': {sh['path']} is not the one `fw ux shots` captured "
+                                    f"from its steps file at {w}px — re-run fw ux shots")
+            shots.append(sh)
     return {"widths": widths, "shots": shots, "problems": problems}
+
+
+def _steps_record(root: Path, task_id: str, state: str, problems: list[str]) -> tuple[str, dict]:
+    """T-4391: (steps_sha256, {width: shot sha256}) from the state's `fw ux shots` capture manifest
+    when it was captured from a steps file; ('', {}) for a URL state or no manifest. A manifest
+    that cannot be read, or whose steps file no longer hashes to the recorded value, is a problem."""
+    m = root / VISUAL_DIR / task_id / f"{state}.capture.json"
+    if not m.is_file():
+        return "", {}
+    try:
+        rec = json.loads(m.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        problems.append(f"state '{state}': capture manifest {m.name} is unreadable ({e})")
+        return "", {}
+    if rec.get("source") != "steps":
+        return "", {}
+    want = str(rec.get("steps_sha256") or "")
+    sf = Path(str(rec.get("steps_file") or ""))
+    sf = sf if sf.is_absolute() else root / sf
+    have = vl._hash_path(sf) if sf.is_file() else ""
+    if not want or have != want:
+        problems.append(f"state '{state}': steps file {rec.get('steps_file')!r} "
+                        + ("is missing" if not have else "changed since capture")
+                        + " — re-run fw ux shots")
+    shots = {int(x.get("width", 0)): str(x.get("sha256") or "") for x in rec.get("shots") or []}
+    return want or "missing", shots
 
 
 def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[dict],
@@ -547,6 +582,11 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
             lines += ["", "### Visual evidence (every checklist state at every configured width)", ""]
             shots = vis.get("shots") or []
             lines += [f"- `{s['path']}`" if s["sha256"] else f"- MISSING: `{s['path']}`" for s in shots]
+            # T-4391: an interaction state names the steps that produced its shots.
+            stepped = {s["state"]: s["steps_sha256"] for s in shots if s.get("steps_sha256")}
+            lines += [f"State `{st}` was captured by `fw ux shots` from a steps file, sha256 `{h}` "
+                      f"(the steps are in `{VISUAL_DIR}/{task_id}/{st}.capture.json`)."
+                      for st, h in stepped.items()]
             if vis.get("problems") or any(not s["sha256"] for s in shots):
                 why = "; ".join(vis.get("problems") or ["a screenshot is missing"])
                 lines.append(f"**The Visual Verification evidence does NOT pass: {why}.** You MUST NOT "

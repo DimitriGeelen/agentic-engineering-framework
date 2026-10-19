@@ -1,10 +1,19 @@
 ---
 id: T-4391
-name: "fw ux shots cannot capture interaction states (after a click, dialog, hover): render criteria on such states are unsatisfiable through the review route"
+name: "fw ux shots cannot capture interaction states (after a click, dialog, hover):
+  render criteria on such states are unsatisfiable through the review route"
 description: >
-  Reported by 832 (T-1212, msg 628f5406): agents/ux-review/ux_shots.py only does page.goto(url) per state=URL, so a state like 'map loaded and Check pressed' has no capture path; verdict_ledger then refuses the greens (visual-needs-run, pages={}). Proposed: a declarative per-state step list (goto, click <selector>, fill <selector> <text>, press <key>, wait-for <selector|text>, hover <selector>) given as state=@steps.yaml, executed by ux_shots itself, with the steps file hashed and recorded with the captures so the reviewer sees exactly what produced each image. Not accepted: producer-supplied pre-captured images (the producer would be supplying its own evidence). URL-addressable states (?check=1) stay a valid project-side option, not a requirement.
+  Reported by 832 (T-1212, msg 628f5406): agents/ux-review/ux_shots.py only does page.goto(url)
+  per state=URL, so a state like 'map loaded and Check pressed' has no capture path;
+  verdict_ledger then refuses the greens (visual-needs-run, pages={}). Proposed: a
+  declarative per-state step list (goto, click <selector>, fill <selector> <text>,
+  press <key>, wait-for <selector|text>, hover <selector>) given as state=@steps.yaml,
+  executed by ux_shots itself, with the steps file hashed and recorded with the captures
+  so the reviewer sees exactly what produced each image. Not accepted: producer-supplied
+  pre-captured images (the producer would be supplying its own evidence). URL-addressable
+  states (?check=1) stay a valid project-side option, not a requirement.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:54:37Z
-last_update: 2026-10-19T12:54:37Z
-date_finished: null
+last_update: 2026-10-19T13:27:16Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +59,52 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T13:00:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T13:01:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4391: fw ux shots cannot capture interaction states (after a click, dialog, hover): render criteria on such states are unsatisfiable through the review route
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reported by 832 (T-1212). Capture contract: T-4202 (GO) / T-4212 (`fw ux shots`,
+`.context/visual/<task>/<state>@<width>.png`) / T-4214 (judge `_gather_visual` →
+`verdict_ledger.register_run(visual=…)` → `_run_fault` visual checks).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw ux shots T-X state=@steps.yaml` parses a declarative step list whose ops are exactly `goto`, `click`, `fill`, `press`, `hover`, `wait-for` (each with an optional per-step `timeout` ms); any other op, extra key, missing argument, a non-http/https/file `goto`, or a list not starting with `goto` is a usage refusal (exit 2) — no code is evaluated
+- [x] Steps are executed by ux_shots itself (Playwright) in a fresh context per width; a fixture page whose button reveals an element is captured with the revealed element visible (pixel difference vs the pre-click state), or the test skips with an explicit "Playwright/Chromium unavailable" reason
+- [x] Every capture (URL or steps) writes `.context/visual/<task>/<state>.capture.json` recording source, url, `steps_sha256` (sha256 of the steps file bytes, steps states only) and each shot's width/path/sha256; URL states keep the same PNG names and output as before
+- [x] The judge's `_gather_visual` carries `steps_sha256` per shot into the run, `register_run` keeps it inside the signed visual block, and a steps file edited after capture (hash ≠ manifest) is a checklist problem; the ledger's `_run_fault` accepts a steps-state shot exactly as a URL-state shot, and refuses a recorded `steps_sha256` that is not 64-hex — no existing provenance check is removed or relaxed
+- [x] Regression tests in `tests/unit/test_t4391_ux_steps.py` fail before the fix (red run recorded below) and pass after; neighbouring suites (`test_t4212_ux_shots*`, T-4214 ledger/judge tests) stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,8 +282,54 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t4391_ux_steps.py -q -rs > /tmp/.t4391.out 2>&1 && grep -q passed /tmp/.t4391.out && ! grep -q failed /tmp/.t4391.out
+python3 agents/ux-review/ux_shots.py T-1 'x=@/nonexistent.yaml' --plan-only > /tmp/.t4391b.out 2>&1; test $? -eq 2
+grep -q "steps_sha256" lib/verdict_ledger.py && grep -q "steps_sha256" lib/reviewer/judge_cli.py
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** 832 (T-1212) could not satisfy a render criterion about an interaction state
+("map loaded and Check pressed"): `fw ux shots` has no way to reach that state, so no
+`<state>@<width>.png` existed, and the verdict ledger refused the greens (`visual-needs-run`,
+run recorded `visual=None, pages={}`).
+
+**Root cause:** `agents/ux-review/ux_shots.py:166` — `capture()` does exactly one
+`page.goto(shot.url)` per state; `parse_target` (ux_shots.py:107) accepts only `state=URL`.
+A state that exists only after user interaction (click, fill, press, hover) has no capture
+path, and the tool records nothing about how an image was produced (PNG only), so even a
+hand-driven capture would be unverifiable to the reviewer. On the ledger side the run's
+`visual`/`pages` are written only when the judge classifies a criterion render at judge time
+(`lib/reviewer/judge_cli.py:421` `needed`, `:945`), and the ledger re-classifies at record
+(`lib/verdict_ledger.py:2397`); a run carrying `visual=None, pages={}` therefore means the
+judge saw no render-classified criterion when it registered the run (the render-surface
+predicate is git-derived, `lib/delegation_cli.py:86`, so it can flip once the task's render
+commits land) — the ledger's refusal was correct; the missing piece was a capture path.
+
+**Why structurally allowed:** T-4212 scoped states as "URL-addressable" and its tests only
+planned URL targets; nothing asked whether every checklist state is reachable by `goto`.
+The ledger demands shots per state (T-4214) but the producer tool could not make them for a
+whole class of states — a requirement with no satisfying path, invisible until a consumer hit it.
+
+**Prevention:** `state=@steps.yaml` (closed allowlist of six ops, no code) executed by
+ux_shots itself; a per-state `.capture.json` manifest with the steps file's sha256, carried
+into the signed run record (`visual.shots[].steps_sha256`) and re-hashed at judge time so a
+steps file edited after capture is a checklist problem. Pinned by
+`tests/unit/test_t4391_ux_steps.py` (parser allowlist, manifest, judge carry-through, ledger
+signing, and a file:// fixture where a click reveals an element).
+
+**Red run (before the fix, 2026-10-19):** `python3 -m pytest tests/unit/test_t4391_ux_steps.py -q`
+→ `23 failed` (no `load_steps`, `Shot.steps`, manifest, `steps_sha256` carry, `_visual_fault`;
+`state=@file` refused as "must be http, https or file"). **After:** `23 passed`, 0 skipped —
+Playwright + Chromium are installed on this host, so the two browser legs (click reveals the
+element; a failing step is NOT CHECKED naming the step, no PNG left) ran for real.
+
+**Open (not changed here):** the judge still records `pages`/`visual` only for criteria it
+classifies render at judge time; if that classification flips between judge and record (git-
+derived render-surface predicate) the run cannot back the green and the judge must be re-run.
+Also, render greens still need a Watchtower `pages` capture (`_run_fault` unseen-page) — a
+consumer whose UI is not served by Watchtower routes still has no `pages`; that requirement
+was deliberately left as-is (no provenance check relaxed).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -338,3 +425,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4391-fw-ux-shots-cannot-capture-interaction-s.md
 - **Context:** Initial task creation
+
+### 2026-10-19T13:27:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
