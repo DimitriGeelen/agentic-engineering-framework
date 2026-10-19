@@ -105,8 +105,8 @@ bvp_scores_proposed:
 - [x] A secret planted in a project-owned file staged in the same bootstrap commit is still caught (regression test)
 - [x] No path is exempted: a secret (content and name axis) in a staged `.agentic-framework/` file is still caught (regression test)
 - [x] Regression test red before the fix, green after (recorded here)
-- [ ] tests/unit/upgrade_fresh_machine_simulation.bats and tests/unit/install_target_project.bats green, each run alone
-- [ ] `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats and tests/unit/install_target_project.bats green, each run alone
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -461,3 +461,8 @@ still caught in that same commit.
   `not ok 1 … scans within 30 s` (took 66 s), legs 2-4 ok; AFTER fix 4/4 ok, 0 skips.
 - Neighbouring secret-scan suites (test_secret_scan, name_axis, span_rule, t3665, t3971,
   t4211, t4316): 72/72 ok after the fix.
+- Consumer-facing, each alone: install_target_project.bats 5/5 ok (9m22s wall, sys 7m —
+  load avg 12-19, other workers running); upgrade_fresh_machine_simulation.bats 16/16 ok,
+  0 skips (12m8s). The scan is no longer what these suites spend their time on; the time
+  left is elsewhere in install (sys-heavy: copying/cloning). Not measured here; out of scope.
+- dead-negation lint clean; `bin/fw vendor self --check` clean.
