@@ -820,13 +820,18 @@ def _read_outside(cand):
         else:
             return False
     # Tokens that don't look like paths (single slash, e.g. regex `/foo`):
-    # only block when they look filesystem-y. Heuristic: must contain at least
-    # 2 slashes OR start with a known top-level dir.
+    # only block when they look filesystem-y. Heuristic: start with a known
+    # top-level dir, OR contain at least 2 slashes under a top-level dir that
+    # EXISTS on this host (T-4395: NAS mounts, /work, /data). An absent top has
+    # nothing to read, and requiring it keeps sed/awk regex words such as
+    # `/^## X/,/^## /p` or `/foo/p` from false-positiving.
     top = cand.split('/', 2)[1] if '/' in cand[1:] else cand[1:]
     KNOWN_TOPS = ('opt', 'root', 'home', 'srv', 'mnt', 'media',
                   'usr', 'etc', 'var', 'tmp', 'proc', 'sys', 'dev',
                   'bin', 'sbin', 'lib', 'lib64', 'boot', 'run')
-    return top in KNOWN_TOPS   # not a recognisable filesystem path: skip rather than FP
+    if top in KNOWN_TOPS:
+        return True
+    return cand.count('/') >= 2 and bool(top) and os.path.isdir('/' + top)
 
 
 for tok in _tok_iter(command):

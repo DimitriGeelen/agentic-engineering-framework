@@ -88,7 +88,9 @@ MD
 
 run_hook() {
     local input
-    input=$(python3 -c "import json,sys; print(json.dumps({'tool_name':'Bash','tool_input':{'command':sys.argv[1]}}))" "$1")
+    # T-4409: the payload carries the shell's cwd, as Claude Code's does; git's
+    # repository is judged from it.
+    input=$(python3 -c "import json,sys; print(json.dumps({'tool_name':'Bash','cwd':sys.argv[2],'tool_input':{'command':sys.argv[1]}}))" "$1" "$TEST_ROOT")
     run bash "$HOOK" <<< "$input"
 }
 
@@ -172,7 +174,7 @@ run_hook() {
 
 @test "T-2054: is_bash_safe_command — git add is safe" {
     source "$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"
-    run is_bash_safe_command "git add -A"
+    _FW_PAYLOAD_CWD="$TEST_ROOT" run is_bash_safe_command "git add -A"
     [ "$status" -eq 0 ]
 }
 

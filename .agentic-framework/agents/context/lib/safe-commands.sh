@@ -55,8 +55,13 @@
 # start blocking whenever no task is active, which is exactly the recovery state
 # where friction hurts most. Chain operators are the measured, high-frequency
 # hole; substitution is narrower and is filed rather than papered over (OBS-185).
+#
+# T-4409: `_fw_chain_split CMD ops` emits each segment followed by a second
+# NUL-terminated record, the operator that ENDED it: `&&`, `||`, `|`, `&`, `;`
+# (a newline reads as `;`), or empty after the last segment. Callers that only
+# want segments call it with one argument and get the unchanged stream.
 _fw_chain_split() {
-    local cmd="$1" seg="" q="" ch nxt i n=${#1}
+    local cmd="$1" seg="" q="" ch nxt i n=${#1} _ops="${2:-}" _op
     for (( i=0; i<n; i++ )); do
         ch="${cmd:i:1}"
         if [ -n "$q" ]; then
@@ -86,13 +91,15 @@ _fw_chain_split() {
                     seg+="$ch"
                     continue
                 fi
-                [ "$nxt" = "$ch" ] && i=$((i+1))
-                printf '%s\0' "$seg"; seg="" ;;
-            ';'|$'\n') printf '%s\0' "$seg"; seg="" ;;
+                _op="$ch"
+                [ "$nxt" = "$ch" ] && { i=$((i+1)); _op="$ch$ch"; }
+                printf '%s\0' "$seg"; [ -n "$_ops" ] && printf '%s\0' "$_op"; seg="" ;;
+            ';'|$'\n') printf '%s\0' "$seg"; [ -n "$_ops" ] && printf ';\0'; seg="" ;;
             *)       seg+="$ch" ;;
         esac
     done
-    printf '%s\0' "$seg"
+    printf '%s\0' "$seg"; [ -n "$_ops" ] && printf '\0'
+    return 0
 }
 
 # A compound command is safe only if EVERY segment is safe.
@@ -134,30 +141,210 @@ _fw_track_cwd() {
     return 0
 }
 
+# T-4409: _fw_advance_cwd <segment> <operator that ended it>. Only `&&` and `;`
+# carry a cd into what follows. After `|` or `&` the cd ran in a subshell; after
+# `||` the next command runs only if it failed, and later ones run from either
+# place. Rather than model each, the cwd becomes unknown.
+_fw_advance_cwd() {
+    _fw_track_cwd "$1"
+    case "$2" in
+        '&&'|';'|'') ;;
+        *) _fw_segment_may_change_dir "$1" && _FW_GIT_CWD="" ;;
+    esac
+    return 0
+}
+
+# T-4409: the shell's cwd at the start of a command line: the payload cwd when it is
+# absolute; else the hook's $PWD only when it IS PROJECT_ROOT; else empty (unknown).
+_fw_initial_git_cwd() {
+    if [[ "${_FW_PAYLOAD_CWD:-}" == /* ]]; then
+        printf '%s' "$_FW_PAYLOAD_CWD"
+    elif [ -n "${PROJECT_ROOT:-}" ]; then
+        local _rp _rr
+        _rp="$(realpath -e -- "$PWD" 2>/dev/null)"; _rr="$(realpath -e -- "$PROJECT_ROOT" 2>/dev/null)"
+        [ -n "$_rp" ] && [ "$_rp" = "$_rr" ] && printf '%s' "$_rp"
+    fi
+    return 0
+}
+
 is_bash_safe_command() {
     local _cmd="$1" _seg _n=0
     # T-4343: the cwd the git arm resolves -C / --git-dir against. Top level starts at
     # the shell's cwd from the hook payload. A nested call (F-15 `X=$(...)`) inherits
     # the caller's value, and `local` keeps a cd inside it from leaking back out.
-    local _FW_GIT_CWD="${_FW_GIT_CWD-${_FW_PAYLOAD_CWD:-$PWD}}"
-    local -a _segs=() _kept=()
+    # T-4409: with no absolute payload cwd, the hook's $PWD counts only when it IS
+    # PROJECT_ROOT (then the shell started there too); otherwise the cwd is unknown
+    # and the git arm fails closed.
+    # Decided before `local`, which would hide the caller's value.
+    local _c0=""
+    if [ -n "${_FW_GIT_CWD+x}" ]; then
+        _c0="$_FW_GIT_CWD"
+    else
+        _c0="$(_fw_initial_git_cwd)"
+    fi
+    local _FW_GIT_CWD="$_c0"
+    # T-4409: _FW_SEG_OPS[i] is the operator that ended kept segment i, read by
+    # _fw_segments_are_safe to decide whether a cd carries into the next segment.
+    local -a _segs=() _kept=() _FW_SEG_OPS=()
+    local _op
     # T-3223: `-d ''`. mapfile -t here read the splitter's NUL stream as lines,
     # so a segment containing a newline arrived as several bogus segments.
-    while IFS= read -r -d '' _seg; do
-        _segs+=("$_seg")
-    done < <(_fw_chain_split "$_cmd")
-    for _seg in "${_segs[@]}"; do
-        [[ "$_seg" =~ ^[[:space:]]*$ ]] && continue
-        _kept+=("$_seg"); _n=$((_n+1))
-    done
+    while IFS= read -r -d '' _seg && IFS= read -r -d '' _op; do
+        if [[ "$_seg" =~ ^[[:space:]]*$ ]]; then
+            # an empty segment cannot change directory, but a non-advancing
+            # operator after it still breaks the && / ; chain it sits in
+            case "$_op" in '&&'|';'|'') ;; *) [ "$_n" -gt 0 ] && _FW_SEG_OPS[$((_n-1))]="$_op" ;; esac
+            continue
+        fi
+        _kept+=("$_seg"); _FW_SEG_OPS+=("$_op"); _n=$((_n+1))
+    done < <(_fw_chain_split "$_cmd" ops)
     if [ "$_n" -gt 1 ]; then
-        for _seg in "${_kept[@]}"; do
-            _fw_single_command_is_safe "$_seg" || return 1
-            _fw_track_cwd "$_seg"
-        done
-        return 0
+        _fw_segments_are_safe "$_cmd" "${_kept[@]}"
+        return
     fi
     _fw_single_command_is_safe "$_cmd"
+}
+
+# --- T-4396: for / while / until loops ---------------------------------------
+#
+# A loop arrives from _fw_chain_split as keyword segments — `for t in a b`,
+# ` do grep x "$t"`, ` done` — and `for`, `do` and `done` match no allowlist arm,
+# so every loop gated, `for t in T-1 T-2; do grep -m1 name …; done` included.
+#
+# _fw_segments_are_safe walks the segments with a small grammar instead of judging
+# each keyword as a command. Everything outside the grammar keeps the old verdict
+# (a segment starting with a keyword was unsafe before and is unsafe now unless the
+# whole loop parses), so this can only admit loops whose every command is admitted:
+#   for NAME [in WORDS]  WORDS may hold $(…) only when the inner command is itself
+#                        safe; backticks, <( and >( are refused
+#   while|until COND     COND judged as a command; `read [-r…] NAME…`, `true` and
+#                        `:` are accepted there and only there
+#   do [CMD]             CMD judged like any segment (a nested loop recurses here)
+#   done [TAIL]          TAIL may only be `< PATH`, `N>/dev/null` or `N>&M`
+# Refused: if/case/select and C-style for (no arm), a missing do/done, a stray
+# done, and any directory change inside a body — the second iteration runs from a
+# cwd the T-4343 -C resolution cannot know. When a loop is present the whole line
+# must also clear has_bash_write_pattern, so a redirect in a body is refused here
+# and not only by the caller's scan.
+#
+# Known over-block, toward the gate: _fw_chain_split is not paren-aware, so a
+# word-list `$(ls | head)` splits inside the substitution and reads unbalanced.
+_fw_segments_are_safe() {
+    local _orig="$1"; shift
+    local _seg _s _kw _rest _depth=0 _expect="" _loops=0 _si=-1
+    for _seg in "$@"; do
+        _si=$((_si+1))
+        _s="${_seg#"${_seg%%[![:space:]]*}"}"
+        _s="${_s%"${_s##*[![:space:]]}"}"
+        while :; do
+            _kw="${_s%%[[:space:]]*}"
+            _rest="${_s#"$_kw"}"
+            _rest="${_rest#"${_rest%%[![:space:]]*}"}"
+            case "$_kw" in
+                for)
+                    [ -z "$_expect" ] || return 1
+                    _fw_loop_for_header_is_safe "$_rest" || return 1
+                    _depth=$((_depth+1)); _loops=1; _expect=do
+                    ;;
+                while|until)
+                    [ -z "$_expect" ] && [ -n "$_rest" ] || return 1
+                    _depth=$((_depth+1)); _loops=1; _expect=cond
+                    _s="$_rest"; continue
+                    ;;
+                do)
+                    [ "$_expect" = do ] || [ "$_expect" = cond ] || return 1
+                    _expect=""
+                    [ -n "$_rest" ] || break
+                    _s="$_rest"; continue
+                    ;;
+                done)
+                    [ "$_depth" -gt 0 ] && [ -z "$_expect" ] || return 1
+                    _fw_loop_done_tail_is_safe "$_rest" || return 1
+                    _depth=$((_depth-1))
+                    ;;
+                *)
+                    [ "$_expect" = do ] && return 1
+                    if [ "$_depth" -gt 0 ]; then
+                        _fw_segment_may_change_dir "$_s" && return 1
+                        if [ "$_expect" = cond ] && _fw_loop_cond_is_builtin "$_s"; then
+                            break
+                        fi
+                    fi
+                    _fw_single_command_is_safe "$_s" || return 1
+                    _fw_advance_cwd "$_s" "${_FW_SEG_OPS[$_si]:-}"
+                    ;;
+            esac
+            break
+        done
+    done
+    [ "$_depth" -eq 0 ] && [ -z "$_expect" ] || return 1
+    if [ "$_loops" -eq 1 ]; then
+        has_bash_write_pattern "$_orig" && return 1
+    fi
+    return 0
+}
+
+# `for` header after the keyword: NAME, optionally `in WORDS`.
+_fw_loop_for_header_is_safe() {
+    local _h="$1"
+    [[ "$_h" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] && return 0
+    [[ "$_h" =~ ^[A-Za-z_][A-Za-z0-9_]*[[:space:]]+in([[:space:]]+(.*))?$ ]] || return 1
+    _fw_loop_words_are_safe "${BASH_REMATCH[2]}"
+}
+
+# A word list expands; the only expansion that can run a command is substitution.
+# Each `$(…)` must hold a command is_bash_safe_command admits. Backticks and
+# process substitution are refused rather than parsed.
+_fw_loop_words_are_safe() {
+    local _w="$1" _q="" _ch _i _j _d _n=${#1}
+    for (( _i=0; _i<_n; _i++ )); do
+        _ch="${_w:_i:1}"
+        if [ "$_q" = "'" ]; then
+            [ "$_ch" = "'" ] && _q=""
+            continue
+        fi
+        case "$_ch" in
+            '\') _i=$((_i+1)) ;;
+            "'") [ -z "$_q" ] && _q="'" ;;
+            '"') if [ "$_q" = '"' ]; then _q=""; else _q='"'; fi ;;
+            '`') return 1 ;;
+            '<'|'>') [ "${_w:_i+1:1}" = '(' ] && return 1 ;;
+            '$')
+                [ "${_w:_i+1:1}" = '(' ] || continue
+                _d=1
+                for (( _j=_i+2; _j<_n; _j++ )); do
+                    case "${_w:_j:1}" in
+                        '(') _d=$((_d+1)) ;;
+                        ')') _d=$((_d-1)); [ "$_d" -eq 0 ] && break ;;
+                    esac
+                done
+                [ "$_d" -eq 0 ] || return 1
+                is_bash_safe_command "${_w:_i+2:_j-_i-2}" || return 1
+                _i=$_j
+                ;;
+        esac
+    done
+    [ -z "$_q" ]
+}
+
+# What may follow `done`: an input redirect from a plain path, a redirect to
+# /dev/null, or an fd duplication. Nothing that names an output file, no
+# here-string, no process substitution.
+_fw_loop_done_tail_is_safe() {
+    local _t="$1"
+    local _re='^([0-9&]?>>?[[:space:]]*/dev/null|[0-9]?>&[0-9-]|<[[:space:]]*[A-Za-z0-9._/+:@%,=-]+)([[:space:]]+|$)'
+    while [ -n "$_t" ]; do
+        [[ "$_t" =~ $_re ]] || return 1
+        _t="${_t:${#BASH_REMATCH[0]}}"
+    done
+    return 0
+}
+
+# Builtins accepted only as a while/until condition: they set shell variables or
+# a status and touch no file.
+_fw_loop_cond_is_builtin() {
+    [[ "$1" =~ ^(true|:)$ ]] && return 0
+    [[ "$1" =~ ^read([[:space:]]+-[ra]+)*([[:space:]]+[A-Za-z_][A-Za-z0-9_]*)+$ ]]
 }
 
 # --- T-3374 (OBS-423): env-prefix denylist ------------------------------------
@@ -212,27 +399,48 @@ _fw_env_prefix_is_denied() {
         GIT_EXTERNAL_DIFF|GIT_PAGER|GIT_EDITOR|GIT_SEQUENCE_EDITOR) return 0 ;;
         # GIT_CONFIG_* can inject core.pager / diff.external at invocation time,
         # which is the same arbitrary-execution vector one indirection further out.
-        GIT_CONFIG|GIT_CONFIG_GLOBAL|GIT_CONFIG_SYSTEM) return 0 ;;
-        GIT_CONFIG_COUNT|GIT_CONFIG_KEY_*|GIT_CONFIG_VALUE_*) return 0 ;;
+        # T-4408: every GIT_CONFIG* name, GIT_CONFIG_PARAMETERS included (the
+        # `git -c` channel: 'core.fsmonitor=CMD'), except GIT_CONFIG_NOSYSTEM, which
+        # only switches the system file off and so can only remove config.
+        GIT_CONFIG_NOSYSTEM) return 1 ;;
+        GIT_CONFIG*) return 0 ;;
+        # T-4408: GIT_EXEC_PATH is where git looks up its helper programs
+        # (git-remote-https for fetch/push, ...): a directory of programs it runs.
+        GIT_EXEC_PATH) return 0 ;;
+        # T-4408: a colon-separated list of object stores. Not resolvable as one
+        # path, rarely used, so denied rather than parsed.
+        GIT_ALTERNATE_OBJECT_DIRECTORIES) return 0 ;;
         #
-        # DELIBERATELY NOT DENIED — repository retargeting: GIT_DIR, GIT_WORK_TREE,
-        # GIT_INDEX_FILE, GIT_OBJECT_DIRECTORY, GIT_ALTERNATE_OBJECT_DIRECTORIES.
-        # These change WHICH repository is read, not WHAT executes, and the git
-        # sub-verb allowlist already constrains this path to read-only verbs. A
-        # read of a different repo is still a read.
-        #
-        # This boundary was drawn by a failing test, and the test was right:
-        # tests/unit/safe_commands_env_prefix.bats:44 pins `GIT_DIR=foo git status`
-        # as safe. The first draft of this denylist included GIT_DIR and broke it.
-        # The fix was to narrow the denylist to the execution-causing names —
-        # NOT to edit the test, which would have been weakening a pinned contract
-        # to make a new change pass. Recorded because the distinction (redirecting
-        # what is READ vs. redirecting what RUNS) is the useful line here, and it
-        # was not obvious until something bit.
+        # NOT DENIED BY NAME — repository selection: GIT_DIR, GIT_WORK_TREE,
+        # GIT_COMMON_DIR, GIT_INDEX_FILE, GIT_OBJECT_DIRECTORY. These are judged on
+        # their VALUE by _fw_env_assign_is_denied below (T-4408). The old comment
+        # here said "a read of a different repo is still a read"; T-4343 showed it
+        # is not, because the selected repository's config runs commands
+        # (core.fsmonitor, core.pager, diff.external, filters), and the index and
+        # object store are written by allowlisted verbs (status refreshes the index,
+        # add writes objects). So they are admitted only inside PROJECT_ROOT, the
+        # same rule as -C / --git-dir / --work-tree. `GIT_DIR=foo git status`
+        # (safe_commands_env_prefix.bats) stays SAFE when foo is in the project.
+        # GIT_CEILING_DIRECTORIES is allowed: it can only stop repository discovery
+        # early, never point it at another repository.
         # generic spawn-a-program hooks
         PAGER|EDITOR|VISUAL) return 0 ;;
         *) return 1 ;;
     esac
+}
+
+# T-4408: _fw_env_assign_is_denied <NAME> <VALUE> — the name denylist above, plus
+# the repository-selecting git names judged on VALUE: denied unless VALUE resolves
+# inside PROJECT_ROOT (_fw_git_dir_is_project, relative values against the tracked
+# cwd). A quoted, variable or otherwise unresolvable value is denied. Every place
+# that strips or admits an assignment calls this, not the name-only predicate.
+_fw_env_assign_is_denied() {
+    _fw_env_prefix_is_denied "$1" && return 0
+    case "$1" in
+        GIT_DIR|GIT_WORK_TREE|GIT_COMMON_DIR|GIT_INDEX_FILE|GIT_OBJECT_DIRECTORY)
+            _fw_git_dir_is_project "$2" "${_FW_GIT_CWD-${_FW_PAYLOAD_CWD:-$PWD}}" >/dev/null || return 0 ;;
+    esac
+    return 1
 }
 
 # _fw_strip_env_prefixes <cmd> — strip leading NAME=VALUE prefixes, stopping at
@@ -261,13 +469,14 @@ _fw_env_prefix_is_denied() {
 # still blocked. Interleaving is handled because both forms are consumed by the
 # same loop, so `time FOO=1 git status` and `FOO=1 time git status` behave alike.
 _fw_strip_env_prefixes() {
-    local c="$1" _name _prev=""
+    local c="$1" _name _val _next _prev=""
     while [ "$c" != "$_prev" ]; do
         _prev="$c"
-        if [[ "$c" =~ ^([A-Za-z_][A-Za-z0-9_]*)=[^[:space:]]+[[:space:]]+(.*)$ ]]; then
-            _name="${BASH_REMATCH[1]}"
-            _fw_env_prefix_is_denied "$_name" && break
-            c="${BASH_REMATCH[2]}"
+        if [[ "$c" =~ ^([A-Za-z_][A-Za-z0-9_]*)=([^[:space:]]+)[[:space:]]+(.*)$ ]]; then
+            # the predicate runs regexes of its own, so BASH_REMATCH is read first
+            _name="${BASH_REMATCH[1]}"; _val="${BASH_REMATCH[2]}"; _next="${BASH_REMATCH[3]}"
+            _fw_env_assign_is_denied "$_name" "$_val" && break
+            c="$_next"
             continue
         fi
         # Bare `time` and POSIX `time -p`. Deliberately NOT `/usr/bin/time`,
@@ -344,7 +553,29 @@ _fw_git_skip_globals() {
         esac
     done
     [ "$i" -lt "$n" ] || return 1
+    # T-4409: with no -C/--git-dir (or with them), git discovers the repository from
+    # its cwd, so the effective cwd must itself be inside PROJECT_ROOT. Unknown
+    # (empty) fails the check: `cd /tmp/evil && git status` reads /tmp/evil's config.
+    _fw_git_dir_is_project "$_cwd" / >/dev/null || return 1
     echo "git ${words[*]:$i}"
+}
+
+# T-4367: git diff|log|show|diff-tree|diff-index|whatchanged take --output=FILE (or
+# `--output FILE`), which writes FILE although the verb is a read. git accepts any
+# unambiguous prefix of a long option, so --ou/--out/--outp/--outpu match too.
+# --output-indicator-* are display options and `-o` is not an output flag: neither
+# matches. Words after `--` are pathspecs but are refused as well (fail closed).
+# _fw_git_has_output_opt <sub-verb> <normalised "git verb args...">; 0 = has one.
+_fw_git_has_output_opt() {
+    case "$1" in
+        diff|log|show|diff-tree|diff-index|whatchanged) ;;
+        *) return 1 ;;
+    esac
+    local w
+    for w in $2; do
+        [[ "$w" =~ ^--ou(t(p(u(t)?)?)?)?(=.*)?$ ]] && return 0
+    done
+    return 1
 }
 
 # Single (non-compound) command classification. This is the original
@@ -412,8 +643,11 @@ _fw_single_command_is_safe() {
     # Writes are still judged separately by has_bash_write_pattern on the
     # original line, so `X=1 > f` stays blocked.
     if [[ "$cmd" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(([^[:space:]\"\'\`\;\&\|\<\>\(\)]|\"[^\"\`]*\"|\'[^\']*\')*)$ ]]; then
-        _fw_env_prefix_is_denied "${BASH_REMATCH[1]}" && return 1
-        [[ "${BASH_REMATCH[2]}" == *'$('* ]] && return 1
+        # T-4408: name AND value (a GIT_DIR=/outside the next git inherits once
+        # exported). BASH_REMATCH is read before the predicate overwrites it.
+        local _an="${BASH_REMATCH[1]}" _av="${BASH_REMATCH[2]}"
+        _fw_env_assign_is_denied "$_an" "$_av" && return 1
+        [[ "$_av" == *'$('* ]] && return 1
         return 0
     fi
 
@@ -607,6 +841,8 @@ _fw_single_command_is_safe() {
             local git_norm git_sub
             git_norm=$(_fw_git_skip_globals "$cmd") || return 1
             git_sub=$(echo "$git_norm" | awk '{print $2}')
+            # T-4367: --output[=FILE] on the diff-family verbs WRITES FILE.
+            _fw_git_has_output_opt "$git_sub" "$git_norm" && return 1
             case "$git_sub" in
                 # T-2888 added the second line. The first had grown one verb per
                 # incident — T-2052, T-2054, T-2462 and T-2878 each patched this
@@ -632,7 +868,9 @@ _fw_single_command_is_safe() {
                     _fw_git_refverb_is_read "$git_sub" "$git_norm" && return 0
                     return 1
                     ;;
-                rev-list|ls-remote|merge-base|grep|for-each-ref|count-objects|check-ignore|verify-commit|var|whatchanged|cherry|diff-tree|show-ref|help)
+                # T-4368: check-attr and check-ref-format only print; diff-index is a
+                # read except --output, refused above (T-4367).
+                rev-list|ls-remote|merge-base|grep|for-each-ref|count-objects|check-ignore|verify-commit|var|whatchanged|cherry|diff-tree|diff-index|check-attr|check-ref-format|show-ref|help|version)
                     return 0
                     ;;
                 # T-2054: `git add` is task-agnostic — it stages already-produced
@@ -1589,7 +1827,10 @@ _fw_is_git_commit_clause() {
         _fw_is_own_launcher "${BASH_REMATCH[1]}"
         return
     fi
-    [[ "$seg" =~ ^git[[:space:]]+commit([[:space:]]|$) ]]
+    [[ "$seg" =~ ^git[[:space:]]+commit([[:space:]]|$) ]] || return 1
+    # T-4409: a bare git commit uses the repository of its cwd (hooks and config
+    # included), so that cwd must be inside PROJECT_ROOT; unknown refuses.
+    _fw_git_dir_is_project "${_FW_GIT_CWD-$(_fw_initial_git_cwd)}" / >/dev/null
 }
 
 # Remove quoted spans, tracking WHICH quote opened each one. A regex that
@@ -1705,16 +1946,22 @@ is_task_metadata_update_command() {
     cmd_view="$(_fw_strip_quoted "$cmd")" || return 1
     has_bash_write_pattern "$cmd_view" && return 1
 
-    while IFS= read -r -d '' seg; do
-        segs+=("$seg")
-    done < <(_fw_chain_split "$cmd")
+    # T-4409: same cwd tracking as is_commit_checkpoint_command, for git clauses.
+    local _FW_GIT_CWD _op _si=-1
+    _FW_GIT_CWD="$(_fw_initial_git_cwd)"
+    local -a ops=()
+    while IFS= read -r -d '' seg && IFS= read -r -d '' _op; do
+        segs+=("$seg"); ops+=("$_op")
+    done < <(_fw_chain_split "$cmd" ops)
     for seg in "${segs[@]}"; do
+        _si=$((_si+1))
         [[ "$seg" =~ ^[[:space:]]*$ ]] && continue
         if _fw_is_task_metadata_update_clause "$seg"; then
             found=1
             continue
         fi
         _fw_single_command_is_safe "$seg" || return 1
+        _fw_advance_cwd "$seg" "${ops[$_si]}"
     done
     [ "$found" -eq 1 ]
 }
@@ -1766,10 +2013,16 @@ is_commit_checkpoint_command() {
     has_bash_write_pattern "$cmd_view" && return 1
 
     # T-3223: `-d ''` — see the splitter's contract note.
-    while IFS= read -r -d '' seg; do
-        segs+=("$seg")
-    done < <(_fw_chain_split "$cmd")
+    # T-4409: git in a clause runs in the tracked cwd (read by the git arm and by
+    # the bare `git commit` clause), so it is established and advanced here too.
+    local _FW_GIT_CWD _op _si=-1
+    _FW_GIT_CWD="$(_fw_initial_git_cwd)"
+    local -a ops=()
+    while IFS= read -r -d '' seg && IFS= read -r -d '' _op; do
+        segs+=("$seg"); ops+=("$_op")
+    done < <(_fw_chain_split "$cmd" ops)
     for seg in "${segs[@]}"; do
+        _si=$((_si+1))
         [[ "$seg" =~ ^[[:space:]]*$ ]] && continue
         if _fw_is_git_commit_clause "$seg"; then
             found=1
@@ -1777,6 +2030,7 @@ is_commit_checkpoint_command() {
         fi
         _fw_single_command_is_safe "$seg" || return 1
         _fw_segment_may_change_dir "$seg" && _FW_CWD_CHANGED=1
+        _fw_advance_cwd "$seg" "${ops[$_si]}"
     done
     [ "$found" -eq 1 ]
 }

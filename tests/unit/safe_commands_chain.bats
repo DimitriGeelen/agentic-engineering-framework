@@ -24,6 +24,9 @@ setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export FRAMEWORK_ROOT
     source "$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"
+    # T-4409: git is judged against its effective cwd, which must lie in
+    # PROJECT_ROOT; name both rather than inherit the caller's environment.
+    export PROJECT_ROOT="$FRAMEWORK_ROOT" _FW_PAYLOAD_CWD="$FRAMEWORK_ROOT"
 }
 
 # --- the defect: unsafe segment after a safe first word ---
@@ -76,7 +79,9 @@ setup() {
 }
 
 @test "chain: three safe segments stay safe" {
-    run is_bash_safe_command "cd /tmp && ls -la && git status"
+    # T-4409: was `cd /tmp`, which makes git read /tmp's repository; the
+    # three-segment shape is kept with a directory inside the project.
+    run is_bash_safe_command "cd $FRAMEWORK_ROOT/docs && ls -la && git status"
     [ "$status" -eq 0 ]
 }
 

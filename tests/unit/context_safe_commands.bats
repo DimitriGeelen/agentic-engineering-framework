@@ -14,6 +14,9 @@ setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export FRAMEWORK_ROOT
     source "$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"
+    # T-4409: git is judged against its effective cwd, which must lie in
+    # PROJECT_ROOT; name both rather than inherit the caller's environment.
+    export PROJECT_ROOT="$FRAMEWORK_ROOT" _FW_PAYLOAD_CWD="$FRAMEWORK_ROOT"
 }
 
 # --- is_bash_safe_command: git read-only ---

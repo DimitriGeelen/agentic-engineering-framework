@@ -40,7 +40,11 @@ setup() {
 }
 
 @test "env-prefix + git status: 'GIT_DIR=foo git status' is classified safe (read-only)" {
-    run is_bash_safe_command "GIT_DIR=foo git status"
+    # T-4408: GIT_DIR is judged on its value — admitted only inside PROJECT_ROOT,
+    # so the fixture names the project and the cwd foo resolves against. The
+    # outside-project shapes are pinned in t4408_git_env_repo_boundary.bats.
+    PROJECT_ROOT="$FRAMEWORK_ROOT" _FW_PAYLOAD_CWD="$FRAMEWORK_ROOT" \
+        run is_bash_safe_command "GIT_DIR=foo git status"
     [ "$status" -eq 0 ]
 }
 

@@ -48,7 +48,8 @@ teardown() {
 # and hung the strip loop forever. A hang must fail the suite, not stall it.
 _gate() {
     local payload
-    payload=$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Bash","tool_input":{"command":sys.argv[1]}}))' "$1")
+    # T-4409: `cwd` as Claude Code sends it; git is judged from the shell's cwd.
+    payload=$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Bash","cwd":sys.argv[2],"tool_input":{"command":sys.argv[1]}}))' "$1" "$SB")
     set +e
     printf '%s' "$payload" | timeout 20 env PROJECT_ROOT="$SB" CLAUDECODE=1 bash "$HOOK" >/dev/null 2>&1
     status=$?

@@ -897,6 +897,17 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
             if opt in ("-C", "-c", "--git-dir", "--work-tree", "--namespace") and rest:
                 rest.pop(0)
         sub = rest[0] if rest else ""
+        # T-4367: --output[=FILE] (any unambiguous long-option prefix) writes FILE
+        if sub in ("diff", "log", "show", "diff-tree", "diff-index", "whatchanged"):
+            for k, a in enumerate(rest[1:], 1):
+                m = re.match(r"^--ou(?:t(?:p(?:u(?:t)?)?)?)?(?:=(.*))?$", a)
+                if m:
+                    if m.group(1) is not None:
+                        _check_target(m.group(1), ctx, f"git {sub} {a.split('=')[0]}")
+                    elif k + 1 < len(rest):
+                        _check_target(rest[k + 1], ctx, f"git {sub} {a}")
+                    else:
+                        _check_target(UNRESOLVED, ctx, f"git {sub} {a}")
         if sub in ("checkout", "restore", "apply", "am", "stash", "switch", "reset") and \
                 not ctx.boundary and MENTION_RE.search(normalised(seg_text)):
             ctx.hits.append(Hit(f"git {sub} names a guarded path (writes it from another revision/patch)"))
