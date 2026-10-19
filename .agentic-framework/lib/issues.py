@@ -26,10 +26,13 @@ import hashlib
 import json
 import os
 import re
+import socket
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+import yaml
 
 # T-4093: arc ids are normalised by the canonical helper (T-3516), never re-derived here.
 try:
@@ -784,7 +787,17 @@ def _task_facts(root: Path, tid: str) -> dict | None:
     m = re.search(r"^github_issue:\s*\"?(\d+)\"?\s*$", fm, re.M)
     return {"issue": int(m.group(1)) if m else None,
             "state": "completed" if path.parent.name == "completed" else "active",
-            "tests": _verification_tests(text)}
+            "tests": _verification_tests(text),
+            "name": _frontmatter_name(fm)}
+
+
+def _frontmatter_name(fm: str) -> str:
+    """The task's `name:` (a quoted scalar that may wrap onto continuation lines)."""
+    try:
+        name = (yaml.safe_load(fm) or {}).get("name")
+    except (yaml.YAMLError, AttributeError):
+        return ""
+    return str(name or "")
 
 
 def _verification_tests(text: str) -> list:
@@ -835,25 +848,91 @@ def _field_verdicts(path: Path) -> dict:
     return out
 
 
+_LOCAL_HOST_RE = re.compile(
+    r"\b[\w-]+(?:\.[\w-]+)*\.(?:local|lan|internal|localdomain|corp)\b"  # local-only names
+    r"|\b(?:\d{1,3}\.){3}\d{1,3}\b"                                     # IPv4
+    r"|\b(?:[0-9a-fA-F]{1,4}:){3,7}:?[0-9a-fA-F]{0,4}\b")               # IPv6 (3+ colons: not a clock time)
+
+
+def _scrub(text: str) -> str:
+    """No hostname or IP address in posted text (T-4346). The field report and task names are free
+    text and the release comment goes to a public issue, so local names, addresses and this machine's
+    own hostname are replaced before posting. Names the scrub cannot recognise are not caught."""
+    text = _LOCAL_HOST_RE.sub("[host]", text)
+    for h in {socket.gethostname(), socket.getfqdn()} - {"", "localhost"}:
+        text = re.sub(r"(?<![\w.-])" + re.escape(h) + r"(?![\w-])", "[host]", text, flags=re.I)
+    return text
+
+
+def _summary(name: str) -> str:
+    """One plain-words line from the task name: the parenthetical (GitHub #86, the submitter) is dropped."""
+    s = re.sub(r"\s+", " ", re.sub(r"\([^()]*\)", "", name or "")).strip(" .;,:")
+    if len(s) > 220:
+        return s[:220].rsplit(" ", 1)[0] + "…"
+    return (s[:1].upper() + s[1:] + ".") if s else ""
+
+
+def _comparison_report(root: Path, version: str) -> str:
+    """File name of the release's full-suite comparison: a docs/reports file whose first lines name
+    both this version and a full-suite comparison (T-4246 for v1.8.11). Empty when none does."""
+    for p in sorted((root / "docs" / "reports").glob("*.md")):
+        head = "\n".join(p.read_text(errors="replace").splitlines()[:6]).lower()
+        if "full-suite" in head and re.search(re.escape(version.lower()) + r"(?![\w]|\.\d)", head):
+            return p.name
+    return ""
+
+
+def _release_decision(root: Path, version: str) -> dict | None:
+    """The last row for this version in .context/releases/decisions.jsonl (bin/fw release decide)."""
+    found = None
+    for r in _read_rows(root / ".context" / "releases" / "decisions.jsonl"):
+        if r.get("version") == version:
+            found = r
+    return found
+
+
+def _why_line(version: str, decision: dict | None, all_positive: bool) -> str:
+    """Why it was released: the T-4146 field-test rule when every fix has a positive field test and
+    the recorded decision says so, else the operator's recorded decision, else an honest no-record."""
+    by = (decision or {}).get("decided_by")
+    if by == "field-evidence" and all_positive:
+        return (f"**Why it was released:** the T-4146 rule: every fix in {version} has a positive field "
+                f"test from another agent, and the release gates are green.")
+    if by == "operator":
+        when = str((decision or {}).get("ts") or "")[:10]
+        return (f"**Why it was released:** the operator's release decision for {version}"
+                + (f" ({when})" if when else "") + ", with the release gates green.")
+    return (f"**Why it was released:** {version} passed the release gates; no release decision is "
+            f"recorded for it in .context/releases/decisions.jsonl.")
+
+
 def _evidence_block(version: str, g: dict, root: Path) -> str:
     repo = _repo()
+    tag = f"https://github.com/{repo}/blob/{version}"
     report = root / "docs" / "reports" / f"field-test-{version}-results.md"
+    comparison = _comparison_report(root, version)
     tests = g["tests"]
-    lines = ["**How it was tested:** " + (", ".join(tests) if tests else
-                                          "see the task's Verification block (no test file is named there).")]
+    tested = ", ".join(f"`{t}`" for t in tests) if tests else \
+        "see the task's Verification block (no test file is named there)."
+    if comparison:
+        tested += "; the release's full-suite comparison is linked below"
+    summary = " ".join(s for s in g.get("summaries", []) if s)
+    lines = [f"**What was fixed:** {summary}"] if summary else []
+    lines.append("**How it was tested:** " + tested)
     if g["evidence"]:
         lines.append("**Field evidence:**")
         lines += [f"- {e}" for e in g["evidence"][:6]]
     else:
-        lines.append(f"**Field evidence:** none recorded for this fix in docs/reports/field-test-{version}-results.md yet.")
-    lines.append(f"**Why it was released:** the release gates passed (remote fast-forward check, atomic publish "
-                 f"to every push remote, tag {version}); the fix is on master in {version}.")
+        lines.append("**Field evidence:** none recorded for this fix.")
+    all_positive = all(v == "works" for v in g["verdicts"])
+    lines.append(_why_line(version, _release_decision(root, version), all_positive))
     links = [f"release notes https://github.com/{repo}/releases/tag/{version}"]
     if report.exists():
-        links.append(f"field-evidence report https://github.com/{repo}/blob/master/docs/reports/"
-                     f"field-test-{version}-results.md")
+        links.append(f"field-evidence report {tag}/docs/reports/field-test-{version}-results.md")
+    if comparison:
+        links.append(f"full-suite comparison {tag}/docs/reports/{comparison}")
     lines.append("**Links:** " + " · ".join(links))
-    return "\n".join(lines)
+    return _scrub("\n".join(lines))
 
 
 def _record_pending(issue: int, stage: str, version: str, err) -> None:
@@ -988,9 +1067,10 @@ def cmd_release(a) -> int:
         if t is None or t["issue"] is None:
             continue  # no task file, or no github_issue: nothing to post
         g = groups.setdefault(t["issue"], {"tasks": [], "tests": [], "verdicts": [], "evidence": [],
-                                           "held": None})
+                                           "summaries": [], "held": None})
         f = field.get(tid, {"verdict": None, "evidence": []})
         g["tasks"].append(tid)
+        g["summaries"].append(_summary(t["name"]))
         g["tests"] += [x for x in t["tests"] if x not in g["tests"]]
         g["verdicts"].append(f["verdict"] or "none")
         g["evidence"] += f["evidence"]
