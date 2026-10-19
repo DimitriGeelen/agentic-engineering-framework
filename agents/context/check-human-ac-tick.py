@@ -201,7 +201,8 @@ def check_bash(data: dict) -> int:
             return 2
         return 0
     cwd = data.get("cwd") or os.environ.get("PROJECT_ROOT") or os.getcwd()
-    hits = scan(command, cwd)
+    # T-4336: a `.tasks` target provably outside PROJECT_ROOT cannot tick this project.
+    hits = scan(command, cwd, project_root=os.environ.get("PROJECT_ROOT") or None)
     if not hits:
         return 0
     project_root = Path(os.environ.get("PROJECT_ROOT", "."))

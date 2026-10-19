@@ -560,6 +560,28 @@ def is_guarded_path(path: str) -> bool:
     return ".tasks" in parts or os.path.basename(path) == LEDGER_NAME
 
 
+def _provably_outside(path: str, root: str) -> bool:
+    """T-4336: True only when `path` is absolute and lies outside `root` (a realpath).
+
+    A relative path, or one under `root`, is NOT provably outside, so it stays guarded.
+    """
+    if not os.path.isabs(path):
+        return False
+    return not (path == root or path.startswith(root.rstrip("/") + "/"))
+
+
+def _guarded_within(root: str) -> Callable[[str], bool]:
+    """T-4336: the guard for a project at `root`. A `.tasks` path only counts when it is
+    not provably outside the project. The ledger name stays guarded everywhere, as the
+    Write/Edit leg already does, so the Bash leg is never more permissive than that one."""
+    def guarded(path: str) -> bool:
+        if os.path.basename(path) == LEDGER_NAME:
+            return True
+        parts = path.replace("\\", "/").split("/")
+        return ".tasks" in parts and not _provably_outside(path, root)
+    return guarded
+
+
 def _resolve(target: str, ctx: _Ctx) -> tuple[bool, list[str]]:
     """(resolved?, absolute paths). Unresolvable → (False, [])."""
     if target == UNRESOLVED or not target:
@@ -1050,9 +1072,14 @@ def _script_form(verb: str, seg_text: str, ctx: _Ctx) -> None:
         ctx.hits.append(Hit(f"{verb} script is handed a guarded path (the script itself is not inspected)"))
 
 
-def scan(command: str, cwd: str | None = None) -> list[Hit]:
-    """Every reason `command` writes (or may write) a guarded path. Empty list = no write seen."""
-    ctx = _Ctx(cwd=cwd, mentions=mentions_guarded(command))
+def scan(command: str, cwd: str | None = None, project_root: str | None = None) -> list[Hit]:
+    """Every reason `command` writes (or may write) a guarded path. Empty list = no write seen.
+
+    `project_root` (T-4336): when given, a `.tasks` target provably outside it is not a
+    guarded write. Without it every `.tasks` target is guarded, as before.
+    """
+    guarded = _guarded_within(os.path.realpath(project_root)) if project_root else None
+    ctx = _Ctx(cwd=cwd, mentions=mentions_guarded(command), guarded=guarded)
     try:
         # the command itself, then every $(...) / `...` body found ANYWHERE in it — a
         # substitution inside double quotes still executes (review round 3); one inside

@@ -11,10 +11,10 @@ description: >
   (relative paths and absolute paths under it), keep refusing anything ambiguous (variables,
   globs that could resolve inside).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [hooks, false-positive, human-ac]
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ origin: {kind: "peer", source: "832"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T21:20:14Z
-last_update: '2026-10-18T21:31:23Z'
+last_update: 2026-10-19T09:44:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,8 +98,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced: a Bash write whose literal target resolves OUTSIDE PROJECT_ROOT to a `.tasks/` path is refused by `shell_write_scan.scan` before the fix (regression test red run recorded in Updates)
+- [x] Fix: `scan()` takes an optional `project_root`; a resolved target whose every candidate path lies outside it is no longer treated as guarded; `check_bash` passes PROJECT_ROOT
+- [x] Unresolvable targets (variables, substitutions, unmatched globs) that name a guarded path are still refused (fail-closed unchanged)
+- [x] Targets resolving INSIDE PROJECT_ROOT to `.tasks/` (absolute, relative, via symlink into project, `..` escape back in) are still refused
+- [x] Regression bats test under tests/unit/ fails without the fix and passes with it; existing t3695 / t2954 / t3768 / t4344 / t4367 bats stay green
+- [ ] `lib/shell_write_scan.py` and `agents/context/check-human-ac-tick.py` vendored clean (`bin/fw vendor self --check`) — OPEN: my two files are in sync, but `web/embeddings.py` (another worker's uncommitted change) keeps `--check` in DRIFT; not synced by me
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -148,6 +152,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n agents/context/check-human-ac-tick.sh
+bats tests/unit/t4336_outside_project_task_write.bats > /tmp/t4336-bats.out 2>&1 && ! grep -q "^not ok" /tmp/t4336-bats.out
+bats tests/unit/t3695_human_ac_tick_bash.bats tests/unit/human_ac_tick_guard.bats tests/unit/t2954_human_ac_tick_comment_aware.bats > /tmp/t4336-regress.out 2>&1 && ! grep -q "^not ok" /tmp/t4336-regress.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -280,6 +289,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** a Bash command writing to a `.tasks/` path that resolves outside PROJECT_ROOT (e.g. `cp X /tmp/fixture/.tasks/active/T-1.md`) is refused by the Human-AC tick guard, although it cannot touch this project's task files.
+
+**Root cause:** `lib/shell_write_scan.py:558` `is_guarded_path()` tests only whether any path component equals `.tasks` (or the ledger basename), with no notion of the project root. `_check_target` (`:592-595`) resolves the target and calls it guarded on that test alone, so `/tmp/fixture/.tasks/...` matches exactly like `$PROJECT_ROOT/.tasks/...`. `scan()` (`:1053`) never receives the project root, and `check_bash` (`agents/context/check-human-ac-tick.py:203-204`) does not pass it.
+
+**Why structurally allowed:** the guard predicate is a name match on the path, not a containment check against the protected project. No test pinned the outside-project case, so the over-broad match was never exercised.
+
+**Prevention:** the regression test `tests/unit/t4336_outside_project_task_write.bats` pins both sides: resolved outside targets pass, and inside / unresolvable / symlink-into-project targets stay refused. A future change to `is_guarded_path` that drops the containment rule fails the test.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -374,3 +391,17 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4336-check-human-ac-tick-refuses-a-shell-writ.md
 - **Context:** Initial task creation
+
+### 2026-10-19T09:44:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-19 — red run before fix (tests/unit/t4336_outside_project_task_write.bats)
+- `not ok 1` cp to absolute outside .tasks path: allowed expected, hook returned 2
+- `not ok 2` redirect into outside .tasks path: allowed expected, hook returned 2
+- `not ok 3` sed -i on outside .tasks file: allowed expected, hook returned 2
+- controls 4-11 `ok` before the fix (inside, symlink-into-project, `..` escape, variable, unmatched glob, ledger, mixed, PROJECT_ROOT unset)
+
+### 2026-10-19 — green after fix
+- Regression file: 11/11 ok. Neighbours (t3695, human_ac_tick_guard, t2954, t3768, t4344, t4367): 94 ok, 0 not ok.
+- Vendored: `FW_VENDOR_ONLY="lib/shell_write_scan.py agents/context/check-human-ac-tick.py" bin/fw vendor self` — both copies identical to source. `--check` still DRIFT on `web/embeddings.py` (another worker's uncommitted change; withheld, not synced).
