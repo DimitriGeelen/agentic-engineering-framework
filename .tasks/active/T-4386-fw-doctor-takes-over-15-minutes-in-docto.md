@@ -8,10 +8,10 @@ description: >
   the doctor run in those fixtures and fix the slow checks. Arc test-suite-health
   (arc-026); source: external review T-4376 (docs/reports/T-4376-reviews/).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:29:28Z
-last_update: '2026-10-19T12:30:40Z'
+last_update: 2026-10-19T20:19:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -65,6 +65,27 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T12:31:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: verdict-determinacy=? (unscored (no scorer for 
+      verdict-determinacy; not counted)); fault-detection-fidelity=? (unscored 
+      (no scorer for fault-detection-fidelity; not counted)); D1=4 
+      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4386: fw doctor takes over 15 minutes in doctor_designer_pin_drift.bats and t2243 (median 900 s / 866 s): product performance defect
@@ -77,8 +98,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Doctor run profiled per check (in the bats fixture environment); timings and the slow checks recorded in docs/reports/T-4386-doctor-profile.md
+- [ ] The slow check(s) fixed without removing any check: one `bin/fw doctor` in the framework repo under the test fixture env (FW_DOCTOR_SMOKE=0, test PATH) finishes in under 60 s
+- [ ] Regression test under tests/unit/ that fails if the fixed check regresses to its slow path
+- [ ] tests/unit/doctor_designer_pin_drift.bats and tests/unit/t2243_doctor_self_vendor_templates.bats pass, each well under the old 15-minute run
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -353,3 +376,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4386-fw-doctor-takes-over-15-minutes-in-docto.md
 - **Context:** Initial task creation
+
+### 2026-10-19T20:19:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

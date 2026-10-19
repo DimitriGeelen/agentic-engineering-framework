@@ -84,10 +84,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 153
-  commits: 2
-  files_changed: 10
-  lines_added: 495
-  lines_removed: 21
+  commits: 3
+  files_changed: 12
+  lines_added: 606
+  lines_removed: 26
+  footprint_refreshed_at: '2026-10-15T19:55:05Z'
+  footprint_refreshed_by_commit: 495901b5d
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4214-t-4202-leg-c-the-render-surface-close-ga.md

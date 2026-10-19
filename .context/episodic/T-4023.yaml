@@ -83,12 +83,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 3553
-  commits: 7
-  files_changed: 5
-  lines_added: 488
+  commits: 8
+  files_changed: 6
+  lines_added: 583
   lines_removed: 22
-  footprint_refreshed_at: '2026-10-12T11:12:04Z'
-  footprint_refreshed_by_commit: b12948acc
+  footprint_refreshed_at: '2026-10-12T11:12:11Z'
+  footprint_refreshed_by_commit: ef61ef616
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4023-field-evidence-before-release-how-the-ri.md

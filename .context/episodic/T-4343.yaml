@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 698
-  commits: 2
-  files_changed: 8
-  lines_added: 454
-  lines_removed: 29
+  commits: 3
+  files_changed: 16
+  lines_added: 823
+  lines_removed: 48
+  footprint_refreshed_at: '2026-10-19T09:42:43Z'
+  footprint_refreshed_by_commit: 05ccdf6fc
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4343-read-only-allowlist-treats-git--c----git.md

@@ -70,10 +70,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 291
-  commits: 1
-  files_changed: 5
-  lines_added: 237
-  lines_removed: 11
+  commits: 2
+  files_changed: 7
+  lines_added: 334
+  lines_removed: 16
+  footprint_refreshed_at: '2026-10-01T13:44:22Z'
+  footprint_refreshed_by_commit: bbd6076e7
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3629-claude-fw-fresh-restart-with-empty-claud.md

@@ -86,10 +86,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 64
-  commits: 3
-  files_changed: 15
-  lines_added: 662
-  lines_removed: 45
+  commits: 4
+  files_changed: 17
+  lines_added: 787
+  lines_removed: 55
+  footprint_refreshed_at: '2026-10-07T07:27:27Z'
+  footprint_refreshed_by_commit: 58a5609ea
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3974-wm-001003-focus-unreachable-on-consumers.md

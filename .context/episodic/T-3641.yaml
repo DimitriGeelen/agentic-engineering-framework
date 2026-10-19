@@ -75,10 +75,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 25
-  commits: 1
-  files_changed: 9
-  lines_added: 418
-  lines_removed: 80
+  commits: 2
+  files_changed: 11
+  lines_added: 520
+  lines_removed: 85
+  footprint_refreshed_at: '2026-10-01T13:45:31Z'
+  footprint_refreshed_by_commit: 9141b4118
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3641-readiness-gate-fails-open-when-libincept.md

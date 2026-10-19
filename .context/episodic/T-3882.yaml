@@ -73,10 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 152
-  commits: 3
-  files_changed: 5
-  lines_added: 465
-  lines_removed: 12
+  commits: 5
+  files_changed: 7
+  lines_added: 569
+  lines_removed: 17
+  footprint_refreshed_at: '2026-10-05T17:40:25Z'
+  footprint_refreshed_by_commit: c6fca8666
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3882-fw-upgrade-adds-cron-jobs-to-the-registr.md

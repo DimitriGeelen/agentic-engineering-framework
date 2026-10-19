@@ -92,10 +92,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 160
-  commits: 9
-  files_changed: 8
-  lines_added: 517
-  lines_removed: 16
+  commits: 10
+  files_changed: 12
+  lines_added: 743
+  lines_removed: 26
+  footprint_refreshed_at: '2026-10-10T12:27:55Z'
+  footprint_refreshed_by_commit: c3077ce73
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4024-verification-gate-passes-silently-when--.md

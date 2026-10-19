@@ -70,10 +70,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2
-  commits: 1
-  files_changed: 5
-  lines_added: 344
-  lines_removed: 2111
+  commits: 2
+  files_changed: 7
+  lines_added: 445
+  lines_removed: 2115
+  footprint_refreshed_at: '2026-10-07T11:10:33Z'
+  footprint_refreshed_by_commit: 423e30cd5
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3981-testbvparcmembershipunion-writes-its-ext.md

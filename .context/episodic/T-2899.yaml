@@ -102,10 +102,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 101056
-  commits: 6
-  files_changed: 25
-  lines_added: 893
+  commits: 7
+  files_changed: 26
+  lines_added: 1005
   lines_removed: 620
+  footprint_refreshed_at: '2026-10-18T19:22:05Z'
+  footprint_refreshed_by_commit: 9e000b6c5
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2899-should-designer-stored-maps-carry-produc.md

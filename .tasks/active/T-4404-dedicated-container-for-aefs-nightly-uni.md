@@ -1,8 +1,21 @@
 ---
 id: T-4404
-name: "Dedicated container for AEF's nightly unit suite (and later the slow tier), off the shared dev host"
+name: "Dedicated container for AEF's nightly unit suite (and later the slow tier),
+  off the shared dev host"
 description: >
-  Load-only reds come from host contention (load 45-65 on 24 cores, up to 13 concurrent audit.sh across projects, 2026-10-19). ring20 (msg 0723b84e) says a CT is feasible and will answer with placement + cost once sized. Sizing (from docs/reports/T-4376-test-suite-measurement.md and today's runs): a full run is ~36,200 file-seconds; today it took 3,370 s wall at jobs=12 on a contended host; target 8 vCPU / 16 GB RAM / 40 GB disk (repo ~20 GB incl. .git and .context; a clone without .context history is smaller), jobs=8 → ~75 min uncontended, acceptable for a nightly; 16 vCPU halves it. Needs: git, bash, bats, python3 with PyYAML/flask/pytest, Playwright + Chromium (ux tests), no TermLink hub (the suite uses the tripwire, T-4205), no operator credentials. Repo: clone from origin bleeding-edge at run start (no need for the dev host's checkout), write the report back as an artefact the dev host's pre-push ratchet can read (decide: commit to a reports branch, or copy back over SSH/TermLink). Operator decides; ring20 places it.
+  Load-only reds come from host contention (load 45-65 on 24 cores, up to 13 concurrent
+  audit.sh across projects, 2026-10-19). ring20 (msg 0723b84e) says a CT is feasible
+  and will answer with placement + cost once sized. Sizing (from docs/reports/T-4376-test-suite-measurement.md
+  and today's runs): a full run is ~36,200 file-seconds; today it took 3,370 s wall
+  at jobs=12 on a contended host; target 8 vCPU / 16 GB RAM / 40 GB disk (repo ~20
+  GB incl. .git and .context; a clone without .context history is smaller), jobs=8
+  → ~75 min uncontended, acceptable for a nightly; 16 vCPU halves it. Needs: git,
+  bash, bats, python3 with PyYAML/flask/pytest, Playwright + Chromium (ux tests),
+  no TermLink hub (the suite uses the tripwire, T-4205), no operator credentials.
+  Repo: clone from origin bleeding-edge at run start (no need for the dev host's checkout),
+  write the report back as an artefact the dev host's pre-push ratchet can read (decide:
+  commit to a reports branch, or copy back over SSH/TermLink). Operator decides; ring20
+  places it.
 
 status: captured
 workflow_type: build
@@ -39,8 +52,8 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:35:22Z
-last_update: 2026-10-19T15:35:22Z
-date_finished: null
+last_update: '2026-10-19T15:46:40Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +64,37 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T15:45:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=297,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T15:46:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: verdict-determinacy=? (unscored (no scorer for 
+      verdict-determinacy; not counted)); fault-detection-fidelity=? (unscored 
+      (no scorer for fault-detection-fidelity; not counted)); D1=4 
+      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4404: Dedicated container for AEF's nightly unit suite (and later the slow tier), off the shared dev host

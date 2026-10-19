@@ -92,10 +92,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 23
-  commits: 3
-  files_changed: 23
-  lines_added: 7910
-  lines_removed: 9
+  commits: 4
+  files_changed: 73
+  lines_added: 9719
+  lines_removed: 220
+  footprint_refreshed_at: '2026-10-17T15:31:22Z'
+  footprint_refreshed_by_commit: cd460a239
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4253-triage-greenfield-run-aef-install-202610.md

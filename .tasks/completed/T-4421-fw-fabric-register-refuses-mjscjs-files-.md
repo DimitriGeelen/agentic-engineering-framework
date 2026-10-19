@@ -1,27 +1,22 @@
 ---
-id: T-4418
-name: "fw sidecar send to an explicit circuit nobody reads succeeds silently: 14 consults
-  sat 2 weeks in inbox:<hub>/ring20-manager"
+id: T-4421
+name: "fw fabric register refuses .mjs/.cjs files with a // header after a shebang
+  ('describes itself nowhere')"
 description: >
-  Reported by ring20 (msg 1fa56c18, their T-2431): 2026-10-05..19, 14 consults from
-  ring20-dashboard, dimitri-mint-dev and 1409-sprind went to inbox:22c19fedafd73da2/ring20-manager,
-  a topic no receiver reads; senders used a nickname seen in ring20's signatures (since
-  fixed on their side); e.g. 'send --to 22c19fedafd73da2/ring20-manager --hub ring20-manager'
-  although the sender's peers.json held the right circuit; send reported success.
-  Same spirit as T-3855 'never a guessed topic'. Fix: (1) send to an explicit circuit
-  whose name is neither in the peer directory nor a known live receiver on that hub
-  WARNs and, without --force, refuses with the known candidates; (2) a receiver alarms
-  (sidecar alerts / doctor WARN) on unread topics under its own hub namespace inbox:<own-hub>/*
-  that it does not read, naming them; (3) a send that contradicts a peers.json entry
-  for the same hub prints the known circuit. Tests with a fake hub; never the live
-  sidecar (T-4315).
+  Reported by 832 (msg 1b307050, v1.8.12): agents/fabric/lib/describe.py _EXT_READERS
+  maps .js/.ts/.jsx to the block-comment reader but not .mjs/.cjs, so the '#' reader
+  is used and finds nothing; and _from_block_comment stops at the first non-// line,
+  so a leading '#!/usr/bin/env node' ends the header before it starts. Fix: map .mjs,
+  .cjs (and .mts/.cts) to the block-comment reader; skip one leading shebang line
+  in it. Tests: .mjs with shebang + // header, .cjs without shebang, a .js whose first
+  comment comes after code (still refused).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/fabric/lib/describe.py, tests/unit/test_t4421_describe_mjs.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -49,9 +44,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T17:51:22Z
-last_update: 2026-10-19T19:27:11Z
-date_finished:
+created: 2026-10-19T18:52:17Z
+last_update: 2026-10-19T20:20:12Z
+date_finished: 2026-10-19T20:20:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -63,7 +58,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-19T18:00:41Z'
+  - ts: '2026-10-19T19:00:36Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -73,7 +68,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T18:01:43Z'
+  - ts: '2026-10-19T19:16:06Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -84,32 +79,31 @@ bvp_scores_proposed:
       F-AUTONOMY: 0
       F3: 0
       F1: 0
-      F2: 0
+      F2: 1
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4418: fw sidecar send to an explicit circuit nobody reads succeeds silently: 14 consults sat 2 weeks in inbox:<hub>/ring20-manager
+# T-4421: fw fabric register refuses .mjs/.cjs files with a // header after a shebang ('describes itself nowhere')
 
 ## Context
 
-Ring20 msg 1fa56c18 (their T-2431). Scope: lib/sidecar/addressing.py (evidence that an
-explicit circuit is read; orphan-inbox scan), lib/sidecar_cli.py (send --force, alerts),
-bin/fw doctor + agents/audit/audit.sh (WARN). "Read" evidence is the hub's own per-topic
-`activity` (last fetch) from `termlink channel list --json` — a topic that `--ensure-topic`
-created exists but is never fetched.
+Reported by 832 (msg 1b307050, v1.8.12). `fw fabric register` on an ES-module Node script (`#!/usr/bin/env node` then a `//` header) reports "describes itself nowhere".
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `fw sidecar send --to <explicit circuit>` whose target is neither in the peer directory (exact circuit) nor evidenced as read (local receiver / own inbox / own sub-agent / own-hub project id / hub `activity` shows a fetch within the window) prints a WARN and, without `--force`, is REFUSED (exit 2, nothing written to the outbox, nothing posted), naming the known candidates on that hub (peer-directory entries + read project inboxes)
-- [x] With `--force` the same send proceeds (WARN still printed); a send to a peer-directory circuit or a read topic proceeds with no WARN (control)
-- [x] A send whose name has a peer-directory entry with a different circuit, or whose hub has peer-directory entries other than the target, prints the known circuit(s) (`known circuit: …`)
-- [x] `fw sidecar alerts` and `fw doctor` / `fw audit` name unread topics `inbox:<own-hub>/<name>` (project level) that this agent does not read and whose name is not a known project (not us, not a sibling project, not NNN-name, not a peer-directory circuit); quiet when there are none; a hub that cannot be asked is reported, never read as "none"
-- [x] Regression test `tests/unit/test_sidecar_orphan_circuit_t4418.py` (fake hub runner, temp project): red before, green after (recorded under Updates); T-3855 cross-hub + T-3905 + T-3693 send tests still green
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [x] `_EXT_READERS` maps `.mjs`, `.cjs`, `.mts`, `.cts` to the block-comment reader (same as `.js`/`.ts`)
+- [x] `_from_block_comment` skips one leading `#!` shebang line before looking for the `//` or `/* */` header
+- [x] Regression tests in `tests/unit/test_t4421_describe_mjs.py`: .mjs with shebang + `//` header is described; .cjs without shebang is described; .js whose first comment follows code is still refused; shebang-only file is still refused — red before the fix, green after
+- [x] Existing `tests/unit/test_t3430_describe.py` still green; `bin/fw vendor self --check` clean
+
+**Red/green record (2026-10-19):** before the fix `test_t4421_describe_mjs.py` → 7 failed, 2 passed (only the two refusal cases passed). After: 9 passed; together with `test_t3430_describe.py` + `test_t3430_enrich_describe.py` → 56 passed.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -158,6 +152,10 @@ created exists but is never fetched.
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_t4421_describe_mjs.py -q > /tmp/.t4421.out 2>&1 && grep -q passed /tmp/.t4421.out && ! grep -q failed /tmp/.t4421.out
+python3 -m pytest tests/unit/test_t3430_describe.py -q > /tmp/.t4421b.out 2>&1 && grep -q passed /tmp/.t4421b.out && ! grep -q failed /tmp/.t4421b.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -288,36 +286,15 @@ created exists but is never fetched.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-timeout 600 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_orphan_circuit_t4418.py > /tmp/.t4418a 2>&1 && grep -q passed /tmp/.t4418a
-timeout 900 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_cross_hub_t3855.py tests/unit/test_sidecar_credential_refused_t3905.py > /tmp/.t4418b 2>&1 && grep -q passed /tmp/.t4418b
-bash -n bin/fw && bash -n agents/audit/audit.sh && bash -n lib/sidecar-audit.sh
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4418c 2>&1 && grep -q clean /tmp/.t4418c
-bin/fw vendor self --check
-
 ## RCA
 
-**Symptom:** 2026-10-05..19, 14 consults from ring20-dashboard, dimitri-mint-dev and
-1409-sprind went to `inbox:22c19fedafd73da2/ring20-manager` — a topic no receiver reads
-(ring20-manager is a hub profile nickname; the project is proxmox-ring20-management).
-Each send reported success.
+**Symptom:** `fw fabric register foo.mjs` (shebang + `//` header) refuses with "describes itself nowhere" although the file has a clear header comment.
 
-**Root cause:** `lib/sidecar/addressing.py:resolve` step 1 ("an explicit circuit — used
-verbatim") returns any `<hubid>/<name>` whose hub segment matches `--hub`, with no
-evidence that anything reads the topic; the post then runs with `--ensure-topic`, which
-creates the topic, and the hub's acceptance is reported as delivered. T-3899 added the
-"inbox must exist" check only for BARE names on a remote hub, and the peer directory is
-consulted only for bare names — so a circuit that contradicted the sender's own peers.json
-went unremarked.
+**Root cause:** two gaps in `agents/fabric/lib/describe.py`. (1) `_EXT_READERS` (line ~225) lists `.js/.ts/.jsx/.tsx` but not `.mjs/.cjs/.mts/.cts`, so `derive_purpose_from_header` (line ~248) falls back to the `#`-header reader for unknown extensions, which finds no `//` lines. (2) `_from_block_comment` (line ~214) breaks on the first non-`//` line, so a leading `#!/usr/bin/env node` ends the header scan before it starts — this bites shebanged `.js` files too.
 
-**Why structurally allowed:** "delivered" means "the hub accepted a post"; no rail on the
-send side asks whether the topic has a reader, and no rail on the receiving hub's side
-looks for project-level inboxes that collect mail nobody fetches. Both ends were blind for
-14 days.
+**Why structurally allowed:** the T-3430 tests covered one fixture per reader convention, with no JS fixture carrying a shebang and no test enumerating the JS-family extensions; the unknown-extension fallback turns a missing mapping into a silent refusal rather than an error.
 
-**Prevention:** send-side evidence check with refusal + candidates (T-3855's "never a
-guessed topic" extended to explicit circuits), peer-directory contradiction notice, and a
-receiver-side orphan-inbox alarm in `fw sidecar alerts` / doctor / audit. Pinned by
-`tests/unit/test_sidecar_orphan_circuit_t4418.py`.
+**Prevention:** `tests/unit/test_t4421_describe_mjs.py` pins every JS-family extension to the block-comment reader (parametrised) plus the shebang case and both refusal cases.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -409,17 +386,32 @@ receiver-side orphan-inbox alarm in `fw sidecar alerts` / doctor / audit. Pinned
 
 ## Updates
 
-### 2026-10-19T17:51:22Z — task-created [task-create-agent]
+### 2026-10-19T18:52:17Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4418-fw-sidecar-send-to-an-explicit-circuit-n.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4421-fw-fabric-register-refuses-mjscjs-files-.md
+- **Context:** Initial task creation
+-10-19T18:52:17Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4421-fw-fabric-register-refuses-mjscjs-files-.md
 - **Context:** Initial task creation
 
-### 2026-10-19T19:27:11Z — status-update [task-update-agent]
+### 2026-10-19T19:16:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
 
-### 2026-10-19 — fix + regression test [worker w4423]
-- **Red before:** `tests/unit/test_sidecar_orphan_circuit_t4418.py` — 14 failed, 4 errors, 0 passed.
-- **Green after:** 18 passed. Neighbours: T-3855 cross-hub, T-3905, T-3693 receiver, T-3684 receipts, T-4131, T-4348, T-4423 — 141 passed.
-- **Live read (fact source only, `channel list` on this hub):** one orphan today — `inbox:cacc73ea32b121dd/claude-shared-toolkit`, 11 unread posts. The doctor/audit WARN will show it; who the senders meant is the operator's call.
-- **Limit (documented in addressing.py):** hub `activity` is the weakest evidence — a host-wide scanner that fetches every topic (one ran here ~13 h before) makes an orphan look read, so it can only turn a refusal into a send. Hubs without `activity` give no evidence: explicit circuits not in the peer directory then need `--force`.
-- **Vendor:** `vendor self --check` red only on another worker's untracked `tools/shellcheck-sc2006-cached.py`; all T-4418 paths synced.
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1a50a193
+- **Timestamp:** 2026-10-19T20:20:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T20:20:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

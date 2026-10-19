@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 21740
-  commits: 1
-  files_changed: 5
-  lines_added: 134
-  lines_removed: 4
+  commits: 2
+  files_changed: 17
+  lines_added: 755
+  lines_removed: 34
+  footprint_refreshed_at: '2026-10-17T22:23:55Z'
+  footprint_refreshed_by_commit: 42b00a88c
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3746-hasbashwritepattern-misses-2-redirects-t.md

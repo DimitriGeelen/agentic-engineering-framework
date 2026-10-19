@@ -67,10 +67,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2
-  commits: 1
-  files_changed: 2
-  lines_added: 736
-  lines_removed: 2
+  commits: 2
+  files_changed: 6
+  lines_added: 903
+  lines_removed: 13
+  footprint_refreshed_at: '2026-10-17T16:20:33Z'
+  footprint_refreshed_by_commit: b405b0a3c
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4275-publish-greenfield-instrumented-run-prom.md

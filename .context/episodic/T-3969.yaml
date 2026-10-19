@@ -73,10 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 3
-  commits: 2
-  files_changed: 4
-  lines_added: 486
-  lines_removed: 24
+  commits: 3
+  files_changed: 6
+  lines_added: 598
+  lines_removed: 34
+  footprint_refreshed_at: '2026-10-06T22:21:34Z'
+  footprint_refreshed_by_commit: 761c89cb0
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3969-fw-note-appends-at-column-0-into-an-inde.md

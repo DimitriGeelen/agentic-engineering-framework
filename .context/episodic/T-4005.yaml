@@ -78,10 +78,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 1556
-  commits: 3
-  files_changed: 5
-  lines_added: 979
-  lines_removed: 13
+  commits: 4
+  files_changed: 7
+  lines_added: 1099
+  lines_removed: 18
+  footprint_refreshed_at: '2026-10-09T23:27:39Z'
+  footprint_refreshed_by_commit: e92458a0f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4005-budget-gate-fails-open-when-its-python3-.md

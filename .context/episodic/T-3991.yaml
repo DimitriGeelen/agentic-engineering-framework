@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2
-  commits: 2
-  files_changed: 4
-  lines_added: 360
-  lines_removed: 16
+  commits: 4
+  files_changed: 7
+  lines_added: 484
+  lines_removed: 25
+  footprint_refreshed_at: '2026-10-08T09:38:35Z'
+  footprint_refreshed_by_commit: 8bb42ba03
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3991-review-marker-gate-t-973-refuses-the-hum.md

@@ -84,10 +84,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 1234
-  commits: 3
-  files_changed: 5
-  lines_added: 672
-  lines_removed: 21
+  commits: 4
+  files_changed: 7
+  lines_added: 789
+  lines_removed: 32
+  footprint_refreshed_at: '2026-10-15T19:45:00Z'
+  footprint_refreshed_by_commit: bd429329d
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4209-fw-audit---check-id-run-one-audit-check-.md

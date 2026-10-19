@@ -81,10 +81,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 3007
-  commits: 2
-  files_changed: 7
-  lines_added: 332
-  lines_removed: 16
+  commits: 3
+  files_changed: 9
+  lines_added: 463
+  lines_removed: 21
+  footprint_refreshed_at: '2026-10-15T17:01:03Z'
+  footprint_refreshed_by_commit: 765e4f0d3
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4153-t-4142-leg-1-capability-card-schema-on-f.md

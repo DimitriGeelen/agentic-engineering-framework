@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 31
-  commits: 1
-  files_changed: 7
-  lines_added: 213
-  lines_removed: 43
+  commits: 2
+  files_changed: 9
+  lines_added: 312
+  lines_removed: 48
+  footprint_refreshed_at: '2026-10-01T13:59:20Z'
+  footprint_refreshed_by_commit: 0f6c155ac
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3650-unit-suite-audit-line-hard-codes-testsun.md

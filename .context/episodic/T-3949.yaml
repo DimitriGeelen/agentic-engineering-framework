@@ -74,10 +74,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 26
-  commits: 2
-  files_changed: 6
-  lines_added: 502
-  lines_removed: 1
+  commits: 3
+  files_changed: 38
+  lines_added: 1569
+  lines_removed: 110
+  footprint_refreshed_at: '2026-10-06T13:21:17Z'
+  footprint_refreshed_by_commit: 80d20903b
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3949-fw-reviewer-judge---criterion-n-self-rec.md

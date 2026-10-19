@@ -73,10 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 112
-  commits: 2
-  files_changed: 4
-  lines_added: 133
-  lines_removed: 16
+  commits: 3
+  files_changed: 6
+  lines_added: 233
+  lines_removed: 21
+  footprint_refreshed_at: '2026-10-05T14:37:08Z'
+  footprint_refreshed_by_commit: bb832fb65
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3873-sidecar-read-the-recipient-hub-id-from-t.md

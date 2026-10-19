@@ -71,10 +71,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 349
-  commits: 1
-  files_changed: 3
-  lines_added: 97
-  lines_removed: 6
+  commits: 2
+  files_changed: 10
+  lines_added: 425
+  lines_removed: 21
+  footprint_refreshed_at: '2026-10-17T21:22:12Z'
+  footprint_refreshed_by_commit: 72f4e927d
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4274-pickup-envelopes-named-by-per-project-p-.md

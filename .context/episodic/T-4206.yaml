@@ -67,10 +67,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 3763
-  commits: 1
-  files_changed: 1
-  lines_added: 90
+  commits: 2
+  files_changed: 2
+  lines_added: 167
   lines_removed: 12
+  footprint_refreshed_at: '2026-10-17T12:33:18Z'
+  footprint_refreshed_by_commit: cfbb69e18
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4206-adopt-832s-three-watchtower-designer-fix.md

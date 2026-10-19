@@ -87,10 +87,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2954
-  commits: 2
-  files_changed: 7
-  lines_added: 653
-  lines_removed: 9
+  commits: 3
+  files_changed: 9
+  lines_added: 767
+  lines_removed: 14
+  footprint_refreshed_at: '2026-10-15T17:05:45Z'
+  footprint_refreshed_by_commit: 298868aed
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4167-pre-commit-guard-against-reverting-commi.md

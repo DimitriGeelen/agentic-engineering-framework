@@ -121,10 +121,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 36
-  commits: 9
-  files_changed: 26
-  lines_added: 1928
-  lines_removed: 124
+  commits: 10
+  files_changed: 28
+  lines_added: 2083
+  lines_removed: 130
+  footprint_refreshed_at: '2026-09-30T10:56:22Z'
+  footprint_refreshed_by_commit: 72ea3b19f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3587-evidence-references-on-review-pages-sile.md

@@ -83,10 +83,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 255
-  commits: 2
-  files_changed: 13
-  lines_added: 845
-  lines_removed: 104
+  commits: 3
+  files_changed: 15
+  lines_added: 955
+  lines_removed: 109
+  footprint_refreshed_at: '2026-10-04T14:56:27Z'
+  footprint_refreshed_by_commit: 13996a354
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3804-sidecar-nudges-never-stop-after-the-cons.md

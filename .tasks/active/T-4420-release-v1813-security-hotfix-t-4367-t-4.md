@@ -17,7 +17,7 @@ description: >
   merge back, announce. The broad bleeding-edge release (sidecar, reindex, upgrade
   hooks, issues labels, test tiers…) is v1.8.14 after its own field round.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -51,7 +51,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T18:40:08Z
-last_update: '2026-10-19T18:46:16Z'
+last_update: 2026-10-19T19:15:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,14 +97,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Build the v1.8.13 hotfix branch in scratch clones (T-4345 lane, docs/reports/T-4345-hotfix-v1812.md) and prove it against v1.8.12 with a full-suite comparison. Report: docs/reports/T-4420-hotfix-v1813.md. No push, no tag, no master change in this task — the parent releases after the field tests.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Scratch clones .context/scratch/v1813/{hf,base} exist; base is at ee1d6fcfe (v1.8.12); hf branch hotfix/v1.8.13 = ee1d6fcfe + only the security fix commits of T-4367, T-4368, T-4395, T-4408, T-4409, T-4422 (code, tests, vendored copies; no task files), T-4396 only if needed and named in the report
+- [x] On hf the safe-commands/boundary suites (t4343, t4344, t4264, t4367, t4395, t4408, t4409, context_safe_commands, safe_commands_chain, check_project_boundary, + t4396 if included) pass, each run alone
+- [ ] Full-suite comparison hf vs base (run-side.sh method: clean env, own report dirs, jobs=6) recorded in docs/reports/T-4420-hotfix-v1813.md with contents, diffstat, suites, table, and each hotfix-only red re-run alone; 0 failures attributed to the diff
+- [ ] Nothing pushed, no tag created, master untouched (origin master still ee1d6fcfe)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,6 +285,13 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+test -f docs/reports/T-4420-hotfix-v1813.md
+grep -q 'Failures attributed to the hotfix diff' docs/reports/T-4420-hotfix-v1813.md
+test "$(git -C .context/scratch/v1813/hf merge-base hotfix/v1.8.13 ee1d6fcfe)" = "$(git rev-parse ee1d6fcfe)"
+test -z "$(git -C .context/scratch/v1813/hf diff --name-only ee1d6fcfe hotfix/v1.8.13 -- .tasks)"
+test "$(git ls-remote origin refs/heads/master | cut -c1-40)" = "$(git rev-parse ee1d6fcfe)"
+test -z "$(git ls-remote --tags origin refs/tags/v1.8.13)"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -298,6 +307,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** released v1.8.12 still classifies several git invocations as read-only that write or reach outside the project: `git diff/log --output=FILE` (T-4367), git env-var prefixes `GIT_DIR=/elsewhere` (T-4408), plain `git` run from a cwd outside the project (T-4409); and the boundary read scanner ignores paths under unlisted top-level dirs (T-4395). Reported from the field (ring20-dashboard, dimitri-mint-dev).
+
+**Root cause:** each is its own gap in the allowlist (`agents/context/lib/safe-commands.sh` git branch: option and env-prefix handling, no cwd model) or in `agents/context/check-project-boundary.sh` (KNOWN_TOPS filter) — RCAs are in the individual tasks T-4367/T-4368/T-4395/T-4408/T-4409/T-4422. This task is the release lane, not the fix.
+
+**Why structurally allowed:** the fixes exist on bleeding-edge, but master (the consumer install surface) only moves at a release, and the broad bleeding-edge release is not field-tested yet — so consumers keep the gaps until a hotfix carries only these commits.
+
+**Prevention:** the T-4035 hotfix lane (scratch-clone cherry-pick + full-suite comparison vs the released base, recorded here and in docs/reports/T-4420-hotfix-v1813.md) plus the regression bats each fix shipped with (t4367, t4395, t4408, t4409 and the extended context_safe_commands).
 
 ## Evolution
 
@@ -379,3 +396,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4420-release-v1813-security-hotfix-t-4367-t-4.md
 - **Context:** Initial task creation
+
+### 2026-10-19T19:15:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

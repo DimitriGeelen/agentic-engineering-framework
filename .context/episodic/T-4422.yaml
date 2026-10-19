@@ -81,9 +81,11 @@ metrics:
   git_mining: ok
   wall_clock_minutes: 2
   commits: 1
-  files_changed: 4
+  files_changed: 16
   lines_added: 358
   lines_removed: 2
+  footprint_refreshed_at: '2026-10-19T19:14:11Z'
+  footprint_refreshed_by_commit: 49b2de5b2
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4422-classify-git-version-as-read-only-in-saf.md

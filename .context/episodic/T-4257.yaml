@@ -71,10 +71,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 353
-  commits: 1
-  files_changed: 4
-  lines_added: 160
+  commits: 2
+  files_changed: 5
+  lines_added: 201
   lines_removed: 4
+  footprint_refreshed_at: '2026-10-17T22:47:26Z'
+  footprint_refreshed_by_commit: e89410ce4
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4257-fw-doctor-reports-host-wide-dm-rail-back.md

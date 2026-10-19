@@ -77,10 +77,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 4041
-  commits: 3
-  files_changed: 6
-  lines_added: 551
-  lines_removed: 18
+  commits: 4
+  files_changed: 8
+  lines_added: 655
+  lines_removed: 23
+  footprint_refreshed_at: '2026-10-15T16:41:47Z'
+  footprint_refreshed_by_commit: cf4226fc5
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4131-sidecar-prompt-hook-truncates-peer-messa.md

@@ -93,10 +93,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 1066
-  commits: 3
-  files_changed: 15
-  lines_added: 1037
-  lines_removed: 16
+  commits: 4
+  files_changed: 17
+  lines_added: 1162
+  lines_removed: 21
+  footprint_refreshed_at: '2026-09-30T14:47:30Z'
+  footprint_refreshed_by_commit: 47586808e
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3569-c-001-audit-counts-research-preserved-in.md

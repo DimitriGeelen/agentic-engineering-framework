@@ -92,10 +92,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 276
-  commits: 2
-  files_changed: 23
-  lines_added: 1551
-  lines_removed: 97
+  commits: 3
+  files_changed: 25
+  lines_added: 1684
+  lines_removed: 107
+  footprint_refreshed_at: '2026-10-01T17:37:08Z'
+  footprint_refreshed_by_commit: 33e616bef
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3636-t-3535-build-b-seeds-author-the-objectiv.md

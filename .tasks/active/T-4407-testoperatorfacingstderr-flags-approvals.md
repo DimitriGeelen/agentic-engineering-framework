@@ -1,8 +1,17 @@
 ---
 id: T-4407
-name: "test_operator_facing_stderr flags approvals.py:643 (sidecar waiting RuntimeError carries raw stderr; sanitized only in the except at :652)"
+name: "test_operator_facing_stderr flags approvals.py:643 (sidecar waiting RuntimeError
+  carries raw stderr; sanitized only in the except at :652)"
 description: >
-  T-4385 triage: tests/unit/test_operator_facing_stderr.py::test_every_stderr_render_site_is_sanitized names two offenders. :927 is T-3605's. :643 (_load_waiting_messages, commit 566627c01) raises RuntimeError(f'exit {rc}: {proc.stderr...}') and the except at :652 renders operator_facing_stderr(str(e)) — so the render IS sanitized, but 9 lines from the stderr mention, outside the scan's +-2 window. Fix at the raise site (wrap proc.stderr in operator_facing_stderr there; the handler's second pass is harmless) rather than widening the window or exempting raise lines, which would blind the scan to a raise whose text reaches a render raw. web/ change: restart Watchtower and prove currency. Test is red in 20/20 suite reports until both this and T-3605 land.
+  T-4385 triage: tests/unit/test_operator_facing_stderr.py::test_every_stderr_render_site_is_sanitized
+  names two offenders. :927 is T-3605's. :643 (_load_waiting_messages, commit 566627c01)
+  raises RuntimeError(f'exit {rc}: {proc.stderr...}') and the except at :652 renders
+  operator_facing_stderr(str(e)) — so the render IS sanitized, but 9 lines from the
+  stderr mention, outside the scan's +-2 window. Fix at the raise site (wrap proc.stderr
+  in operator_facing_stderr there; the handler's second pass is harmless) rather than
+  widening the window or exempting raise lines, which would blind the scan to a raise
+  whose text reaches a render raw. web/ change: restart Watchtower and prove currency.
+  Test is red in 20/20 suite reports until both this and T-3605 land.
 
 status: captured
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: [T-3605, T-4385]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:48:33Z
-last_update: 2026-10-19T15:48:33Z
-date_finished: null
+last_update: '2026-10-19T16:02:03Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T16:00:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T16:02:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4407: test_operator_facing_stderr flags approvals.py:643 (sidecar waiting RuntimeError carries raw stderr; sanitized only in the except at :652)

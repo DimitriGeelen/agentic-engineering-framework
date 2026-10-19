@@ -98,10 +98,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 19
-  commits: 1
-  files_changed: 20
-  lines_added: 511
-  lines_removed: 2
+  commits: 2
+  files_changed: 22
+  lines_added: 635
+  lines_removed: 6
+  footprint_refreshed_at: '2026-10-01T13:11:23Z'
+  footprint_refreshed_by_commit: ee83c9dbb
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3635-t-3535-build-a-write-contextprojectobjec.md

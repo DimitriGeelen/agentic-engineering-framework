@@ -114,10 +114,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 33
-  commits: 3
-  files_changed: 44
-  lines_added: 2361
-  lines_removed: 79
+  commits: 5
+  files_changed: 56
+  lines_added: 2992
+  lines_removed: 107
+  footprint_refreshed_at: '2026-09-29T21:24:14Z'
+  footprint_refreshed_by_commit: 49299c263
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3544-sidecar-inbound-consult-backlog-is-invis.md

@@ -105,10 +105,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 292
-  commits: 10
-  files_changed: 16
-  lines_added: 948
-  lines_removed: 152
+  commits: 11
+  files_changed: 18
+  lines_added: 1098
+  lines_removed: 157
+  footprint_refreshed_at: '2026-10-17T14:18:37Z'
+  footprint_refreshed_by_commit: c1a87c16f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4226-budget-ladder-from-one-reserve-r--20k-20.md

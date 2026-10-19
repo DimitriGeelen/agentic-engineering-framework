@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4419: vendor self --check in a task's Verification blocks every close while any other worker has an uncommitted framework edit: scope the check to the task's own files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T20:39:11Z
+# ============================================================================
+
+task_id: T-4419
+task_name: "vendor self --check in a task's Verification blocks every close while any other worker has an uncommitted framework edit: scope the check to the task's own files"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T17:53:10Z
+completed: 2026-10-19T20:32:46Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T19:53:40+02:00
+last_commit: 2026-10-19T21:25:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — scope vendor --check to the task's own files (parallel-worker close friction). vendor self --check --task T-XXXX / --paths scope the check to a task's own files
+
+# Key outcomes
+outcomes:
+  - '`fw vendor self --check --task T-XXXX` checks only the vendored copies of files the task''s commits changed (`git log --grep ''^T-XXXX''`), and `--paths p1 p2…` checks the named paths; exit 0 when those are in sync, 1 when any is drifted'
+  - 'Drift in files outside the scope is reported as `in flight, not this task` and does not change the scoped exit code; whole-tree `--check` (no scope flag) is unchanged'
+  - 'Regression test `tests/unit/t4419_vendor_check_scoped.bats` (temp clone): task file in sync + unrelated drifted file → scoped 0, whole-tree 1; task''s own file drifted → scoped 1; red before the fix, green after (before: 4/4 not ok — scoped exit 1 on unrelated agents/ drift; after: 4/4 ok; t2436, t4392, self_vendor_version suites still green)'
+  - 'Task template Verification hint and `.context/working/worker-common.md` name the scoped form; `bash -n bin/fw` clean; dead-negation lint clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/.tasks/templates/default.md'
+  - 'bin/fw'
+  - '.context/working/worker-common.md'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4419-vendor-self---check-in-a-tasks-verificat.md'
+  - '.tasks/templates/default.md'
+  - 'tests/unit/t4419_vendor_check_scoped.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T19:53:40'
+    action: 'T-4419: file — scope vendor --check to the task''s own files (parallel-worker close friction)'
+  - time: '2026-10-19T21:25:30'
+    action: 'T-4419: vendor self --check --task T-XXXX / --paths scope the check to a task''s own files'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 159 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 159
+  commits: 2
+  files_changed: 9
+  lines_added: 624
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4419-vendor-self---check-in-a-tasks-verificat.md
+generated_by: context-agent-hybrid

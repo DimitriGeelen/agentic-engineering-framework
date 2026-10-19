@@ -73,10 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 29
-  commits: 2
-  files_changed: 4
-  lines_added: 351
+  commits: 3
+  files_changed: 5
+  lines_added: 354
   lines_removed: 1
+  footprint_refreshed_at: '2026-10-18T16:39:41Z'
+  footprint_refreshed_by_commit: 54fef5bc6
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4313-orchestrator-status-test-fixtures-are-no.md

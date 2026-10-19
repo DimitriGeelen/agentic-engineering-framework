@@ -74,10 +74,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 16
-  commits: 4
-  files_changed: 2
-  lines_added: 235
+  commits: 5
+  files_changed: 3
+  lines_added: 319
   lines_removed: 16
+  footprint_refreshed_at: '2026-10-13T15:31:01Z'
+  footprint_refreshed_by_commit: 2081fa23f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4158-standing-operator-delegation-as-a-human-.md

@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 141
-  commits: 2
-  files_changed: 4
-  lines_added: 130
-  lines_removed: 13
+  commits: 3
+  files_changed: 15
+  lines_added: 698
+  lines_removed: 42
+  footprint_refreshed_at: '2026-10-17T17:53:27Z'
+  footprint_refreshed_by_commit: 5c3fde84f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4261-installsh-reports-fw-doctor-passes--whil.md

@@ -71,10 +71,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 10
-  commits: 2
-  files_changed: 4
-  lines_added: 56
-  lines_removed: 14
+  commits: 4
+  files_changed: 7
+  lines_added: 179
+  lines_removed: 22
+  footprint_refreshed_at: '2026-10-07T09:41:36Z'
+  footprint_refreshed_by_commit: 59ad06174
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3978-fw-runme-watch-exits-1-after-a-run-that-.md

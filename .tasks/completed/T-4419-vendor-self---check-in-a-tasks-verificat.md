@@ -1,23 +1,26 @@
 ---
-id: T-4375
-name: "Structure-section audit takes ~510 s alone against its 600 s scoped budget,
-  so it times out (exit 124) under suite load and on busy hosts"
+id: T-4419
+name: "vendor self --check in a task's Verification blocks every close while any other
+  worker has an uncommitted framework edit: scope the check to the task's own files"
 description: >
-  2026-10-19: audit.bats 'audit runs structure section' alone ran 516 s; in the 10:29
-  suite run the audit hit FW_AUDIT_TIMEOUT 600 (exit 124) and the test went red. The
-  pre-push audit is the same section (~12 min with the push). Measure per-check cost
-  (T-3127 timing capture), find the slow checks, and either make them cheaper or move
-  them out of the pre-push section; the test should not run a full live structure
-  audit under suite load.
+  2026-10-19: with 5 parallel workers in one checkout, nearly every close failed on
+  'bin/fw vendor self --check' because ANOTHER worker had an uncommitted edit under
+  agents/ lib/ bin/ web/ tools/; 14 finished tasks waited hours for a quiet moment.
+  The check answers 'is the whole vendored tree in sync', but the close needs 'are
+  THIS task's changed files in sync'. Fix: 'fw vendor self --check --task T-XXXX'
+  (or --paths) that checks only the files the task's commits changed (git log --grep
+  '^T-XXXX' --name-only), plus the task template's Verification hint using it; keep
+  the whole-tree --check for audit/pre-push, where drift in committed content is what
+  matters. Also consider: whole-tree --check ignoring source files with uncommitted
+  working-tree changes (in-flight), reporting them as 'in flight' instead of DRIFT.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/upgrade.sh, tests/unit/t4419_vendor_check_scoped.bats]
 related_tasks: []
-arc_id: test-suite-health
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -44,9 +47,9 @@ arc_id: test-suite-health
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T11:26:05Z
-last_update: 2026-10-19T19:16:06Z
-date_finished:
+created: 2026-10-19T17:53:10Z
+last_update: 2026-10-19T20:32:46Z
+date_finished: 2026-10-19T20:32:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,7 +61,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-19T11:30:32Z'
+  - ts: '2026-10-19T18:00:41Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -68,7 +71,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T11:31:17Z'
+  - ts: '2026-10-19T18:01:43Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -87,7 +90,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4375: Structure-section audit takes ~510 s alone against its 600 s scoped budget, so it times out (exit 124) under suite load and on busy hosts
+# T-4419: vendor self --check in a task's Verification blocks every close while any other worker has an uncommitted framework edit: scope the check to the task's own files
 
 ## Context
 
@@ -97,11 +100,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Per-check cost of `--section structure` measured (a live run's lock was held all session, so it ran on a `git clone --shared` of HEAD, plus `--check <id>` timings live) and the slowest checks named with seconds in `docs/reports/T-4375-structure-audit-cost.md`
-- [x] The top slow checks are made cheaper without changing any verdict (same PASS/WARN/FAIL lines for the same inputs); before/after seconds per check recorded in the report (section 651 s → 325 s on the same clone)
-- [x] Checks that do not belong in the pre-push gate are proposed (not moved) in ## Decisions
-- [x] Regression test pins the cheaper path (red before the fix, green after) and the run is recorded here — tests/unit/t4375_sc2006_cache.bats 9/9 green; with the fixes reverted: SC2006 legs 5/6 red, Human-AC fork count 80 git calls (limit 10) red, frontmatter-once red
-- [x] `bash -n agents/audit/audit.sh` clean; `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean
+- [x] `fw vendor self --check --task T-XXXX` checks only the vendored copies of files the task's commits changed (`git log --grep '^T-XXXX'`), and `--paths p1 p2…` checks the named paths; exit 0 when those are in sync, 1 when any is drifted
+- [x] Drift in files outside the scope is reported as `in flight, not this task` and does not change the scoped exit code; whole-tree `--check` (no scope flag) is unchanged
+- [x] Regression test `tests/unit/t4419_vendor_check_scoped.bats` (temp clone): task file in sync + unrelated drifted file → scoped 0, whole-tree 1; task's own file drifted → scoped 1; red before the fix, green after (before: 4/4 not ok — scoped exit 1 on unrelated agents/ drift; after: 4/4 ok; t2436, t4392, self_vendor_version suites still green)
+- [x] Task template Verification hint and `.context/working/worker-common.md` name the scoped form; `bash -n bin/fw` clean; dead-negation lint clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,28 +281,15 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-bash -n agents/audit/audit.sh
-timeout 600 bats tests/unit/t4375_sc2006_cache.bats > /tmp/.t4375.out 2>&1 && ! grep -q "^not ok" /tmp/.t4375.out && grep -q "^ok 9 " /tmp/.t4375.out
-test "$(grep -c '# skip' /tmp/.t4375.out)" -eq 0
-timeout 600 bats tests/unit/t3695_human_ac_tick_bash.bats tests/unit/t4075_inception_decide_tick_provenance.bats > /tmp/.t4375b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4375b.out
-timeout 600 bats tests/lint/no-backticks-in-quoted-strings.bats > /tmp/.t4375c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4375c.out
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4375d.out 2>&1 && grep -q "clean" /tmp/.t4375d.out
-test -s docs/reports/T-4375-structure-audit-cost.md
-bin/fw vendor self --check
+bash -n bin/fw
+timeout 600 bats tests/unit/t4419_vendor_check_scoped.bats > /tmp/.t4419.out 2>&1 && ! grep -q "^not ok" /tmp/.t4419.out
+test "$(grep -c '# skip' /tmp/.t4419.out)" -eq 0
+grep -q -- "--check --task" .tasks/templates/default.md
+grep -q -- "--check --task" .context/working/worker-common.md
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4419.lint 2>&1 && grep -q clean /tmp/.t4419.lint
+bin/fw vendor self --check --task T-4419
 
 ## RCA
-
-**Symptom:** `fw audit --section structure` (the pre-push gate) ran ~510-650 s against its 600 s scoped budget and timed out (exit 124) under load; audit.bats's structure test went red on the timeout.
-
-**Root cause:** the cost was a handful of checks whose work grows with the corpus, each doing the same work again on every run:
-- `check_invariant_suite` (agents/audit/audit.sh:3587) runs `bats tests/lint/`: ~283-300 s. Inside it, `tests/lint/bats-silent-skip.bats` "fw test lint actually reports a silent-skip section" ran the whole `bin/fw test lint`, i.e. real ShellCheck over every .sh in the repo, only to check that one header is printed (~180 s). `tests/lint/no-backticks-in-quoted-strings.bats` re-ran ShellCheck SC2006 over every bash source each time (~69 s; bin/fw alone 52 s, audit.sh 35 s) for files that had not changed.
-- Human-AC ticks (agents/audit/audit.sh:3073, `lib/human_ac_ticks.py` `scan_commits`): one `git diff-tree` per commit and one `git show` per changed task blob since the detector commit, ~6,500 forks, ~92-119 s, growing with every commit.
-- BVP coherence (agents/audit/audit.sh:~2005): pure-python YAML parse of every task's frontmatter for the arc index, then again per driver per constituent, ~40-47 s.
-- Stale-arc check (agents/audit/audit.sh:1756): one pathspec `git log --since=30.days` per in-progress arc, ~61 s (not changed here — see Decisions).
-
-**Why structurally allowed:** the timing ledger (T-3127/T-3451) records per-SECTION seconds only, so the structure section's growth was visible as one number with no attribution; and nothing asserts a per-check cost, so each check was cheap when written (T-2837 measured the invariant suite at "51 tests in ~6s") and grew with the corpus and with lint tests that were added to tests/lint/ without anyone pricing them into the pre-push gate.
-
-**Prevention:** tests/unit/t4375_sc2006_cache.bats pins the cheap paths: the SC2006 cache contract (hit = no rerun, change = rerun, failed run never stored), the Human-AC audit's git fork count staying constant as commits grow (≤10 for 26 commits; 80 before), BVP coherence parsing each frontmatter once with identical findings, and the two lint legs using the cheap path. Per-check timing method recorded in docs/reports/T-4375-structure-audit-cost.md so the next growth can be attributed the same way. The per-check timing ledger itself is a proposal (Decisions), not built here.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -315,6 +304,14 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 2026-10-19, 5 parallel workers in one checkout: nearly every task close failed on its `bin/fw vendor self --check` Verification line because ANOTHER worker had an uncommitted edit under lib/ agents/ bin/ web/ tools/; 14 finished tasks waited hours.
+
+**Root cause:** `bin/fw` `vendor self --check` (the `_vs_check` branch, ~bin/fw:10571-10627) has one scope only — the whole vendored tree. It runs every `_self_vendor_*` helper in dry-run and exits 1 on any `would sync` line, so a close answers "is the whole tree in sync" when it needs "are THIS task's files in sync". The source side is the working tree, so another worker's in-flight edit is drift for everyone.
+
+**Why structurally allowed:** the check was designed (T-2436) for single-writer contexts — audit and pre-push — and then prescribed by CLAUDE.md (OBS-250, T-3236) and the task template as a per-task close line without a per-task scope. No test ran it with two writers.
+
+**Prevention:** `--task T-XXXX` / `--paths` scoped mode, template + worker-common guidance switched to it, and `tests/unit/t4419_vendor_check_scoped.bats` pinning scoped-vs-whole-tree behaviour with an unrelated drifted file.
 
 ## Evolution
 
@@ -339,11 +336,6 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
-
-### 2026-10-19 — the cost is mostly the lint suite the audit shells, not the audit's own checks
-- **What changed:** filed as "the structure section is slow"; measured, ~45% of it is `check_invariant_suite` running `bats tests/lint/`, and ~250 s of that is two lint tests running real ShellCheck over the repo. The audit's own inline checks are the other half, dominated by three that scale with git history or task count.
-- **Plan impact:** the fix is mostly in tests/lint/ and lib/, not audit.sh. A live `--section structure` run was held by other workers for the whole session (and by scratch-clone audits), so measurement used a `git clone --shared` of HEAD under `.context/scratch/t4375/` with xtrace timing (method in the report); single-check timings used `audit.sh --check <id>`, which takes no lock.
-- **Triggered:** T-4425 (`fw test lint` exits 141 via SIGPIPE before its Silent-Skip step — why the silent-skip lint leg was red); proposals below for stale-arc and a per-check timing ledger.
 
 ## Recommendation
 
@@ -385,17 +377,6 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-19 — make it cheaper, not move it (what changed)
-- **Chose:** keep every check in the structure section and remove repeated work: SC2006 cached per (shellcheck version, path, bytes) (tools/shellcheck-sc2006-cached.py); the silent-skip wiring leg stubs shellcheck (it asserts the header, not ShellCheck's findings); human_ac_ticks reads git through one `diff-tree --stdin` and one `cat-file --batch`; BVP coherence parses each frontmatter once and skips files whose only `arc_id` is a comment.
-- **Why:** each preserves the verdict for the same inputs — checked: human_ac_ticks old vs new identical on the live repo, 0 mismatches over all 1,554 diff pairs + 181 sampled blobs, existing 44 tests green; BVP coherence identical on the live repo and on a fixture that produces findings; SC2006 same lines, same files.
-- **Rejected:** raising the 600 s budget (it hides the growth); CSafeLoader for the YAML (libyaml edge cases differ from the pure loader, so it could change a verdict); batching stale-arc into one `git log` (pathspec history simplification differs per pathspec, so a union is not equivalent).
-
-### 2026-10-19 — PROPOSED, not done: move to the daily audit
-- **Stale-arc check** (audit.sh:1756, ~61 s): "no task commit in 30 days" is a property of the calendar, not of the commit being pushed — a push cannot make an arc stale or fresh beyond its own commit. It belongs with the daily (oe-daily) audit. Exactness forbids the cheap batched version (see above).
-- **Draft-arc-complete, fabric coverage (~25 s), Watchtower-decision revert (~13 s; memoizing ls-tree only saved ~2 s, so left alone)**: same argument — corpus-health properties, not push properties.
-- **Per-check timing ledger:** extend T-3127's `section_runs:` with per-check seconds so the next growth is attributed without an xtrace run.
-- Operator/parent's call; nothing moved here.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -408,10 +389,27 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-19T11:26:05Z — task-created [task-create-agent]
+### 2026-10-19T17:53:10Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4375-structure-section-audit-takes-510-s-alon.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4419-vendor-self---check-in-a-tasks-verificat.md
 - **Context:** Initial task creation
 
-### 2026-10-19T19:16:06Z — status-update [task-update-agent]
+### 2026-10-19T19:15:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b0251e0f
+- **Timestamp:** 2026-10-19T20:38:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T20:32:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -111,10 +111,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 22735
-  commits: 15
-  files_changed: 16
-  lines_added: 2472
+  commits: 16
+  files_changed: 17
+  lines_added: 2593
   lines_removed: 467
+  footprint_refreshed_at: '2026-10-17T12:32:21Z'
+  footprint_refreshed_by_commit: 30670ff4f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3670-core-module-language-move-established-se.md

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4421: fw fabric register refuses .mjs/.cjs files with a // header after a shebang ('describes itself nowhere')
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T20:21:21Z
+# ============================================================================
+
+task_id: T-4421
+task_name: "fw fabric register refuses .mjs/.cjs files with a // header after a shebang ('describes itself nowhere')"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T18:52:17Z
+completed: 2026-10-19T20:20:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T21:18:43+02:00
+last_commit: 2026-10-19T21:18:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric describe reads .mjs/.cjs/.mts/.cts headers and skips a leading shebang (832)
+
+# Key outcomes
+outcomes:
+  - '`_EXT_READERS` maps `.mjs`, `.cjs`, `.mts`, `.cts` to the block-comment reader (same as `.js`/`.ts`)'
+  - '`_from_block_comment` skips one leading `#!` shebang line before looking for the `//` or `/* */` header'
+  - 'Regression tests in `tests/unit/test_t4421_describe_mjs.py`: .mjs with shebang + `//` header is described; .cjs without shebang is described; .js whose first comment follows code is still refused; shebang-only file is still refused — red before the fix, green after'
+  - 'Existing `tests/unit/test_t3430_describe.py` still green; `bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/fabric/lib/describe.py'
+  - 'agents/fabric/lib/describe.py'
+  - '.tasks/active/T-4421-fw-fabric-register-refuses-mjscjs-files-.md'
+  - 'tests/unit/test_t4421_describe_mjs.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T21:18:43'
+    action: 'T-4421: fabric describe reads .mjs/.cjs/.mts/.cts headers and skips a leading shebang (832)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 87 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 87
+  commits: 2
+  files_changed: 5
+  lines_added: 904
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4421-fw-fabric-register-refuses-mjscjs-files-.md
+generated_by: context-agent-hybrid

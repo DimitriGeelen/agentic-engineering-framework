@@ -70,10 +70,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 33
-  commits: 1
-  files_changed: 4
-  lines_added: 104
-  lines_removed: 16
+  commits: 2
+  files_changed: 6
+  lines_added: 201
+  lines_removed: 21
+  footprint_refreshed_at: '2026-10-01T13:56:17Z'
+  footprint_refreshed_by_commit: a43918dc3
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3644-read-only-gate-refuses-a-bare-literal-as.md

@@ -84,10 +84,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2541
-  commits: 3
-  files_changed: 14
-  lines_added: 1764
-  lines_removed: 11
+  commits: 4
+  files_changed: 16
+  lines_added: 1875
+  lines_removed: 16
+  footprint_refreshed_at: '2026-10-05T13:55:57Z'
+  footprint_refreshed_by_commit: 06b701e06
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3779-termlinkruntimedir-split-brain-agents-st.md

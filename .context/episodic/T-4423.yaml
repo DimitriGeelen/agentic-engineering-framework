@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4423: sidecar enabled.json can persist a worker's agent id, and ensure restarts the receiver as that id (T-4416 gap)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T20:31:22Z
+# ============================================================================
+
+task_id: T-4423
+task_name: "sidecar enabled.json can persist a worker's agent id, and ensure restarts the receiver as that id (T-4416 gap)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T19:14:49Z
+completed: 2026-10-19T20:28:45Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-19T21:15:09+02:00
+last_commit: 2026-10-19T21:26:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — enabled.json can persist a worker agent id; ensure would restart as it (repaired here). enabled.json can no longer persist a worker's agent id — start/receiver start refuse a non-project agent (--force/--i-am-human) and refuse outright under FW_DISPATCHED_WORKER; ensure + supervisor restart the receiver as the project agent and record ENSURE_AGENT_MISMATCH; liveness/doctor/audit WARN on the persisted mismatch; regression test 11 red -> 14 green. restore T-4419's bin/fw hunks that 21c890561 reverted (T-4419 landed between building the T-4423-only blob and committing it); bin/fw = 7cff23319 + the T-4423 doctor WARN
+
+# Key outcomes
+outcomes:
+  - '`fw sidecar start` and `fw sidecar receiver start` (when it would start the watcher, i.e. persist enabled.json) refuse (exit 2, enabled.json untouched) under `FW_DISPATCHED_WORKER=1`, even with `--force`/`--i-am-human`'
+  - 'Same commands refuse (exit 2, nothing persisted) an agent id that is not `circuit.project_id()`, unless `--force` or `--i-am-human` is given; the project''s own agent id still starts (control test)'
+  - '`fw sidecar ensure` with an enabled.json agent != project agent starts the receiver as the PROJECT agent, records an `ENSURE_AGENT_MISMATCH` event naming both ids, and does not rewrite enabled.json'
+  - 'The supervisor''s receiver restart (`watcher._restart_receiver`) uses the project agent on the same mismatch (never the persisted foreign id) and records `ENSURE_AGENT_MISMATCH`'
+  - '`liveness_verdict` reports an enabled.json-only agent mismatch as a `warnings` entry (state unaffected), while a ticking foreign identity stays not-live (T-4416 test still green); `fw doctor` and `fw audit` emit a WARN with the remedy for it'
+  - 'Regression test `tests/unit/test_sidecar_agent_persist_t4423.py`: red before the fix, green after (recorded under Updates); T-4416 / T-3684 / T-3693 / T-4208 sidecar tests still green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'restore T-4419''s bin/fw hunks that 21c890561 reverted (T-4419 landed between building the T-4423-only blob and committing it); bin/fw = 7cff23319 + the T-4423 doctor WARN'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/sidecar-audit.sh'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/watcher.py'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'lib/sidecar-audit.sh'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/watcher.py'
+  - '.tasks/active/T-4423-sidecar-enabledjson-can-persist-a-worker.md'
+  - 'tests/unit/test_sidecar_agent_persist_t4423.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T21:15:09'
+    action: 'T-4423: file — enabled.json can persist a worker agent id; ensure would restart as it (repaired here)'
+  - time: '2026-10-19T21:26:16'
+    action: 'T-4423: enabled.json can no longer persist a worker''s agent id — start/receiver start refuse a non-project agent (--force/--i-am-human) and refuse outright under FW_DISPATCHED_WORKER; ensure + supervisor restart the receiver as the project agent and record ENSURE_AGENT_MISMATCH; liveness/doctor/audit WARN on the persisted mismatch; regression test 11 red -> 14 green'
+  - time: '2026-10-19T21:26:45'
+    action: 'T-4423: restore T-4419''s bin/fw hunks that 21c890561 reverted (T-4419 landed between building the T-4423-only blob and committing it); bin/fw = 7cff23319 + the T-4423 doctor WARN'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 73 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 73
+  commits: 3
+  files_changed: 12
+  lines_added: 879
+  lines_removed: 104
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4423-sidecar-enabledjson-can-persist-a-worker.md
+generated_by: context-agent-hybrid

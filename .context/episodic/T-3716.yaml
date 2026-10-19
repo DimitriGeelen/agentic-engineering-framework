@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 10
-  commits: 1
-  files_changed: 4
-  lines_added: 372
-  lines_removed: 4
+  commits: 2
+  files_changed: 6
+  lines_added: 471
+  lines_removed: 9
+  footprint_refreshed_at: '2026-10-02T12:28:38Z'
+  footprint_refreshed_by_commit: 69880abf3
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3716-termlink-cleanup-tests-red-after-t-3651-.md

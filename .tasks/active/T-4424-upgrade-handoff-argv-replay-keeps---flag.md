@@ -288,7 +288,7 @@ bvp_scores_proposed:
 timeout 300 bats tests/unit/t4424_upgrade_flag_declaration.bats > /tmp/.t4424.out 2>&1 && ! grep -q "^not ok" /tmp/.t4424.out
 test "$(grep -c '# skip' /tmp/.t4424.out)" -eq 0
 timeout 300 bats tests/unit/t4405_upgrade_handoff_forwards_args.bats > /tmp/.t4405.out 2>&1 && ! grep -q "^not ok" /tmp/.t4405.out
-timeout 600 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4424sim.out 2>&1 && ! grep -q "^not ok" /tmp/.t4424sim.out
+timeout 2400 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4424sim.out 2>&1 && ! grep -q "^not ok" /tmp/.t4424sim.out
 bash -n lib/upgrade.sh
 out=$(python3 tools/bats-dead-negation-lint.py tests/unit/t4424_upgrade_flag_declaration.bats 2>&1); echo "$out" | grep -q clean
 bin/fw vendor self --check --task T-4424

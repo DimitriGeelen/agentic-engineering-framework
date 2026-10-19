@@ -73,10 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 20
-  commits: 2
-  files_changed: 6
-  lines_added: 198
-  lines_removed: 18
+  commits: 3
+  files_changed: 8
+  lines_added: 298
+  lines_removed: 23
+  footprint_refreshed_at: '2026-10-06T15:57:03Z'
+  footprint_refreshed_by_commit: fecce05a6
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3954-installed-claude-fw-copies-silently-disa.md

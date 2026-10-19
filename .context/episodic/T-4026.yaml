@@ -77,10 +77,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 64
-  commits: 3
-  files_changed: 5
-  lines_added: 450
-  lines_removed: 15
+  commits: 4
+  files_changed: 7
+  lines_added: 554
+  lines_removed: 20
+  footprint_refreshed_at: '2026-10-10T10:54:08Z'
+  footprint_refreshed_by_commit: 32c19c439
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4026-something-re-runs-open-tasks--verificati.md

@@ -81,10 +81,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 603
-  commits: 3
-  files_changed: 6
-  lines_added: 759
-  lines_removed: 19
+  commits: 4
+  files_changed: 17
+  lines_added: 2269
+  lines_removed: 43
+  footprint_refreshed_at: '2026-10-18T08:53:41Z'
+  footprint_refreshed_by_commit: 413701ff9
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4283-aefs-own-sidecar-receiver-died-silently-.md

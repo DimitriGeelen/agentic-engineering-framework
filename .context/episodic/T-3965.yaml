@@ -92,10 +92,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 111
-  commits: 4
-  files_changed: 14
-  lines_added: 607
-  lines_removed: 146
+  commits: 5
+  files_changed: 27
+  lines_added: 1012
+  lines_removed: 191
+  footprint_refreshed_at: '2026-10-06T23:03:20Z'
+  footprint_refreshed_by_commit: f39135240
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3965-upgrade-step-2-overwrites-customised-tas.md

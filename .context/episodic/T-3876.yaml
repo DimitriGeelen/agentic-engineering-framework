@@ -83,10 +83,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 110
-  commits: 2
-  files_changed: 6
-  lines_added: 311
-  lines_removed: 67
+  commits: 3
+  files_changed: 8
+  lines_added: 421
+  lines_removed: 72
+  footprint_refreshed_at: '2026-10-05T15:16:53Z'
+  footprint_refreshed_by_commit: bd074c9c7
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3876-watchtower-port-drift-dostart-prefers-co.md

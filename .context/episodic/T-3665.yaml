@@ -70,10 +70,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 117
-  commits: 1
-  files_changed: 5
-  lines_added: 216
-  lines_removed: 14
+  commits: 2
+  files_changed: 7
+  lines_added: 313
+  lines_removed: 19
+  footprint_refreshed_at: '2026-10-01T17:06:49Z'
+  footprint_refreshed_by_commit: d87b0ef1a
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3665-native-windows-a-crlf-checkout-silently-.md

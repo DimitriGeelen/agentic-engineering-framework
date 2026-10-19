@@ -104,10 +104,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 3562
-  commits: 13
-  files_changed: 14
-  lines_added: 2217
+  commits: 14
+  files_changed: 15
+  lines_added: 2331
   lines_removed: 41
+  footprint_refreshed_at: '2026-10-12T09:04:33Z'
+  footprint_refreshed_by_commit: 9d8355323
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4017-arc-001-pickup-from-dimitri-mint-dev-loc.md

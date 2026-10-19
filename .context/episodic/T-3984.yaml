@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 5
-  commits: 2
-  files_changed: 4
-  lines_added: 355
-  lines_removed: 5
+  commits: 3
+  files_changed: 8
+  lines_added: 927
+  lines_removed: 14
+  footprint_refreshed_at: '2026-10-07T13:15:15Z'
+  footprint_refreshed_by_commit: 6a3f04091
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3984-security-binclaude-fw-sources-libsh-from.md

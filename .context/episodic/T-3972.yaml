@@ -68,10 +68,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 293
-  commits: 1
-  files_changed: 2
-  lines_added: 81
-  lines_removed: 32
+  commits: 2
+  files_changed: 4
+  lines_added: 188
+  lines_removed: 40
+  footprint_refreshed_at: '2026-10-07T10:48:05Z'
+  footprint_refreshed_by_commit: bc48b252f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3972-t2436-t3-compares-the-live-agentic-frame.md

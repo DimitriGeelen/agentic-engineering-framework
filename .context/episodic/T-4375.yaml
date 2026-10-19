@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4375: Structure-section audit takes ~510 s alone against its 600 s scoped budget, so it times out (exit 124) under suite load and on busy hosts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T20:41:35Z
+# ============================================================================
+
+task_id: T-4375
+task_name: "Structure-section audit takes ~510 s alone against its 600 s scoped budget, so it times out (exit 124) under suite load and on busy hosts"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T11:26:05Z
+completed: 2026-10-19T20:39:48Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T13:26:26+02:00
+last_commit: 2026-10-19T22:05:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — structure audit runs near its 600 s budget and times out under load. structure audit 651 s -> 325 s — SC2006 cache, stub shellcheck in silent-skip wiring leg, batched git reads in human_ac_ticks, BVP frontmatter parsed once; file T-4425
+
+# Key outcomes
+outcomes:
+  - 'Per-check cost of `--section structure` measured (a live run''s lock was held all session, so it ran on a `git clone --shared` of HEAD, plus `--check <id>` timings live) and the slowest checks named with seconds in `docs/reports/T-4375-structure-audit-cost.md`'
+  - 'The top slow checks are made cheaper without changing any verdict (same PASS/WARN/FAIL lines for the same inputs); before/after seconds per check recorded in the report (section 651 s → 325 s on the same clone)'
+  - 'Checks that do not belong in the pre-push gate are proposed (not moved) in ## Decisions'
+  - 'Regression test pins the cheaper path (red before the fix, green after) and the run is recorded here — tests/unit/t4375_sc2006_cache.bats 9/9 green; with the fixes reverted: SC2006 legs 5/6 red, Human-AC fork count 80 git calls (limit 10) red, frontmatter-once red'
+  - '`bash -n agents/audit/audit.sh` clean; `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — make it cheaper, not move it (what changed)'
+    chose: 'keep every check in the structure section and remove repeated work: SC2006 cached per (shellcheck version, path, bytes) (tools/shellcheck-sc2006-cached.py); the silent-skip wiring leg stubs shellcheck (it asserts the header, not ShellCheck''s findings); human_ac_ticks reads git through one `diff-tree --stdin` and one `cat-file --batch`; BVP coherence parses each frontmatter once and skips files whose only `arc_id` is a comment.'
+    rationale: 'each preserves the verdict for the same inputs — checked: human_ac_ticks old vs new identical on the live repo, 0 mismatches over all 1,554 diff pairs + 181 sampled blobs, existing 44 tests green; BVP coherence identical on the live repo and on a fixture that produces findings; SC2006 same lines, same files.'
+    alternatives_rejected: ['raising the 600 s budget (it hides the growth); CSafeLoader for the YAML (libyaml edge cases differ from the pure loader, so it could change a verdict); batching stale-arc into one `git log` (pathspec history simplification differs per pathspec, so a union is not equivalent).']
+  - decision: '2026-10-19 — PROPOSED, not done: move to the daily audit'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/human_ac_ticks.py'
+  - '.agentic-framework/tools/shellcheck-sc2006-cached.py'
+  - 'agents/audit/audit.sh'
+  - 'docs/reports/T-4375-structure-audit-cost.md'
+  - 'lib/human_ac_ticks.py'
+  - '.tasks/active/T-4375-structure-section-audit-takes-510-s-alon.md'
+  - '.tasks/active/T-4425-fw-test-lint-dies-rc141-sigpipe-in-its-s.md'
+  - 'tests/lint/bats-silent-skip.bats'
+  - 'tests/lint/no-backticks-in-quoted-strings.bats'
+  - 'tests/unit/t4375_sc2006_cache.bats'
+  - 'tools/shellcheck-sc2006-cached.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T13:26:26'
+    action: 'T-4375: file — structure audit runs near its 600 s budget and times out under load'
+  - time: '2026-10-19T22:05:33'
+    action: 'T-4375: structure audit 651 s -> 325 s — SC2006 cache, stub shellcheck in silent-skip wiring leg, batched git reads in human_ac_ticks, BVP frontmatter parsed once; file T-4425'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 553 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 553
+  commits: 2
+  files_changed: 12
+  lines_added: 1443
+  lines_removed: 44
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4375-structure-section-audit-takes-510-s-alon.md
+generated_by: context-agent-hybrid

@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 98
-  commits: 3
-  files_changed: 4
-  lines_added: 419
-  lines_removed: 12
+  commits: 4
+  files_changed: 6
+  lines_added: 518
+  lines_removed: 17
+  footprint_refreshed_at: '2026-10-05T16:32:40Z'
+  footprint_refreshed_by_commit: 33725c2ff
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3889-fw-sidecar-send-accepts-an-empty-or-whit.md

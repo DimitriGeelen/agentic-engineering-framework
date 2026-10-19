@@ -76,10 +76,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 3039
-  commits: 3
-  files_changed: 4
-  lines_added: 701
-  lines_removed: 20
+  commits: 4
+  files_changed: 6
+  lines_added: 822
+  lines_removed: 26
+  footprint_refreshed_at: '2026-10-15T16:59:41Z'
+  footprint_refreshed_by_commit: 1a223536f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4152-fw-termlink-dispatch-leaks-its-termlink-.md

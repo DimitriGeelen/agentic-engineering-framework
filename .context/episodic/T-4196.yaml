@@ -76,10 +76,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2896
-  commits: 3
-  files_changed: 6
-  lines_added: 224
-  lines_removed: 10
+  commits: 4
+  files_changed: 8
+  lines_added: 328
+  lines_removed: 16
+  footprint_refreshed_at: '2026-10-15T19:38:45Z'
+  footprint_refreshed_by_commit: 23557f4a9
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4196-fw-handover-keeps-pushing-by-default-ope.md

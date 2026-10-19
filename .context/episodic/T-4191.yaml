@@ -78,10 +78,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2898
-  commits: 3
-  files_changed: 5
-  lines_added: 177
-  lines_removed: 38
+  commits: 4
+  files_changed: 7
+  lines_added: 282
+  lines_removed: 43
+  footprint_refreshed_at: '2026-10-15T19:37:48Z'
+  footprint_refreshed_by_commit: a984324d6
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4191-handover-emit-todo-not-none-for-narrativ.md

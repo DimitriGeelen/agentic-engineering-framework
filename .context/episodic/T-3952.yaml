@@ -82,10 +82,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 371
-  commits: 3
-  files_changed: 11
-  lines_added: 202
-  lines_removed: 49
+  commits: 4
+  files_changed: 16
+  lines_added: 394
+  lines_removed: 55
+  footprint_refreshed_at: '2026-10-07T06:25:45Z'
+  footprint_refreshed_by_commit: b73591535
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3952-relative-binfw-subprocess-calls-break-on.md

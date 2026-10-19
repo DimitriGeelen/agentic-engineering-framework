@@ -1,8 +1,19 @@
 ---
 id: T-4402
-name: "One lens definition (business/logical/technical) for corpus maps, read by fw corpus explain --lens and by 832's designer lens switch"
+name: "One lens definition (business/logical/technical) for corpus maps, read by fw
+  corpus explain --lens and by 832's designer lens switch"
 description: >
-  832 T-281 (msg 514f95d3, research docs/reports/T-281-audience-lenses.md in their repo) proposes ONE lens data file (which fields and decorations each lens shows) driving both the designer's lens switch and fw corpus explain --lens, so the two readers can never disagree (T-2669's one-reader condition). AEF owns it: it describes how AEF process maps are read, and corpus explain plus the T-2622 seam are AEF's. Scope: the lens file (schema + three lenses) next to tools/corpus_spec.py (vendored via T-4392), fw corpus explain --lens <name>, validation that every field a lens names exists in the corpus spec, and the ask/recall index left lens-free unless 832's inception says otherwise. Acceptance fixture: business lens on aef-task-lifecycle and aef-session-lifecycle (the most-used onboarding routes). Waits for 832's T-281 inception decision; build after they confirm the shape.
+  832 T-281 (msg 514f95d3, research docs/reports/T-281-audience-lenses.md in their
+  repo) proposes ONE lens data file (which fields and decorations each lens shows)
+  driving both the designer's lens switch and fw corpus explain --lens, so the two
+  readers can never disagree (T-2669's one-reader condition). AEF owns it: it describes
+  how AEF process maps are read, and corpus explain plus the T-2622 seam are AEF's.
+  Scope: the lens file (schema + three lenses) next to tools/corpus_spec.py (vendored
+  via T-4392), fw corpus explain --lens <name>, validation that every field a lens
+  names exists in the corpus spec, and the ask/recall index left lens-free unless
+  832's inception says otherwise. Acceptance fixture: business lens on aef-task-lifecycle
+  and aef-session-lifecycle (the most-used onboarding routes). Waits for 832's T-281
+  inception decision; build after they confirm the shape.
 
 status: captured
 workflow_type: build
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:27:58Z
-last_update: 2026-10-19T15:27:58Z
-date_finished: null
+last_update: '2026-10-19T15:32:01Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T15:30:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T15:32:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4402: One lens definition (business/logical/technical) for corpus maps, read by fw corpus explain --lens and by 832's designer lens switch

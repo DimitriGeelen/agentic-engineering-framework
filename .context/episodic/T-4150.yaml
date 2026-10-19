@@ -76,10 +76,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 3067
-  commits: 3
-  files_changed: 5
-  lines_added: 1445
-  lines_removed: 206
+  commits: 4
+  files_changed: 7
+  lines_added: 1548
+  lines_removed: 211
+  footprint_refreshed_at: '2026-10-15T16:56:03Z'
+  footprint_refreshed_by_commit: 05f866c61
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4150-security-budget-gate-classifier-libcmdcl.md

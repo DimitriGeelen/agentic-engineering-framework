@@ -1,0 +1,21 @@
+id: tests/unit/t4419_vendor_check_scoped.bats
+name: t4419_vendor_check_scoped
+type: script
+subsystem: tests
+location: tests/unit/t4419_vendor_check_scoped.bats
+tags: []
+
+purpose: "T-4419: `vendor self --check` in a task's Verification blocked every close while ANY other worker had an uncommitted framework edit — the check only had a whole-tree scope."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-19
+created_by: unknown

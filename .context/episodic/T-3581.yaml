@@ -131,10 +131,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 359
-  commits: 12
-  files_changed: 28
-  lines_added: 4324
-  lines_removed: 620
+  commits: 13
+  files_changed: 30
+  lines_added: 4488
+  lines_removed: 626
+  footprint_refreshed_at: '2026-09-30T14:21:43Z'
+  footprint_refreshed_by_commit: 647005c5b
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3581-verdict-close-path-trusts-a-self-asserte.md
