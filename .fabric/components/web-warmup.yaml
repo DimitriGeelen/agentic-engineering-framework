@@ -1,0 +1,21 @@
+id: web/warmup.py
+name: warmup
+type: script
+subsystem: watchtower
+location: web/warmup.py
+tags: []
+
+purpose: "Startup cache warm-up for Watchtower (T-4363)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-19
+created_by: unknown

@@ -60,6 +60,34 @@ def _discover_routes_from_app():
     return sorted(set(routes)), app
 
 
+# T-4363: the longest the HTTP probe waits for a server's startup cache warm-up
+# (web/warmup.py) before probing. A route probed mid-warm-up times out on the cold
+# build, which reads as a broken server; past this bound it probes anyway.
+WARMUP_WAIT_SECONDS = 180
+
+
+def wait_for_warmup(base: str, limit: float = WARMUP_WAIT_SECONDS, poll: float = 1.0) -> dict:
+    """Wait while ``base``'s /api/_identity reports ``warmup.state == "warming"``.
+
+    Returns ``{"state": <last state or "unknown">, "waited": seconds}``. A server
+    that predates the warm-up (no ``warmup`` key) or cannot be read is not waited on.
+    """
+    import time
+
+    t0 = time.monotonic()
+    state = "unknown"
+    while True:
+        try:
+            with urllib.request.urlopen(f"{base}/api/_identity", timeout=5) as resp:
+                state = (json.loads(resp.read().decode("utf-8")).get("warmup") or {}).get("state") or "unknown"
+        except Exception:
+            state = "unknown"
+        waited = time.monotonic() - t0
+        if state != "warming" or waited >= limit:
+            return {"state": state, "waited": round(waited, 1)}
+        time.sleep(poll)
+
+
 def run_smoke_tests(port: int = 3000, use_test_client: bool = False) -> dict:
     """Run smoke tests against Watchtower.
 
@@ -114,6 +142,7 @@ def run_smoke_tests(port: int = 3000, use_test_client: bool = False) -> dict:
     else:
         # HTTP mode — test against running server
         base = f"http://localhost:{port}"
+        warmup = wait_for_warmup(base)
 
         for path in routes:
             url = f"{base}{path}"
@@ -147,13 +176,16 @@ def run_smoke_tests(port: int = 3000, use_test_client: bool = False) -> dict:
                 results.append({"path": path, "status": status, "ok": True})
                 passed += 1
 
-    return {
+    report = {
         "passed": passed,
         "failed": failed,
         "total": len(routes),
         "errors": [r for r in results if "error" in r],
         "results": results,
     }
+    if not use_test_client:
+        report["warmup"] = warmup
+    return report
 
 
 def print_report(report: dict) -> int:

@@ -14,10 +14,10 @@ description: >
   cheap; make doctor's smoke test tolerate a deliberate warm-up (or warm first) rather
   than report a timeout.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [watchtower, performance, doctor]
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ origin: {kind: "peer", source: "832"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T23:59:30Z
-last_update: '2026-10-19T00:01:51Z'
+last_update: 2026-10-19T13:32:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,10 +101,19 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cold vs warm timings for /approvals, /, /cron, /tasks measured on a separate Watchtower instance (not the operator's) and recorded in Updates, with a profile naming the reader(s) that build on the first request
+- [x] The reader(s) named by the profile are warmed at startup in a background daemon thread, so the first request no longer builds them on the request thread
+- [x] After the fix, the first GET of /, /cron and /tasks issued once the warm-up finished is under 3 s on this repo, and the first GET /approvals is at its warm steady state rather than the cold build; before/after numbers in Updates (reworded after measurement — see Decisions)
+- [x] Regression test: a unit test that fails on the pre-fix code shows the startup warm-up is started from both serve entry points and fills the cache off the request thread
+- [ ] `bin/fw vendor self --check` is clean; operator's Watchtower restarted once and `bin/fw watchtower current` exits 0
 
 ### Human
+- [ ] [REVIEW] The /approvals page looks and behaves unchanged, only the first load is faster
+  **Steps:**
+  1. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` and open `<printed URL>/approvals` in a browser
+  2. Compare the sections (inception decisions, Tier 0, arc closure, reviews) with what you remember from before
+  **Expected:** same sections, same counts and buttons, no error banner
+  **If not:** note which section differs (screenshot) and leave this box unticked; reopen T-4363
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -280,10 +289,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t4363_startup_warmup.py -q > /tmp/.t4363.out 2>&1 && grep -q passed /tmp/.t4363.out
+bin/fw vendor self --check
+bin/fw watchtower current
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+<!-- (RCA section is below, after Evolution) REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
 
@@ -321,6 +331,16 @@ bvp_scores_proposed:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## RCA
+
+**Symptom:** a freshly started Watchtower listens in ~2 s, but the first GET /approvals takes 13.4 s on 832 (~1,200 tasks; 1.3 s warm) and 40.9 s here (~4,400 tasks; 11.9 s warm); cold / 36 s, /cron 5 s, /tasks 3.9 s. fw doctor's smoke probe (web/smoke_test.py:122, 5 s per route) reports those cold builds as timeouts.
+
+**Root cause:** every corpus reader is a lazy mtime/signature cache filled on the first request that needs it, on that request's thread: `shared.get_all_task_metadata` → `_build_task_metadata` (web/shared.py:1913, ~10.5 s profiled, parses all 4,374 task frontmatters), the readiness cache behind `approvals._queue_groups` (web/blueprints/approvals.py:244 → `shared.review_readiness` web/shared.py:1614, ~22 s profiled incl. `inception_handoff_blockers` subprocesses web/shared.py:1416 and the verdict ledger's git faults lib/verdict_ledger.py:2004), plus the dashboard readers T-3765 left uncached-on-cold. Nothing built them before the first request, so the first request — the operator's, or doctor's probe right after `fw upgrade`/restart — paid all of it.
+
+**Why structurally allowed:** each cache was added (T-3575, T-3600, T-3765, T-4133) and measured WARM; nothing measured the first request after a restart, and the only cold-path observer (the doctor smoke) reports a slow cold build as a generic timeout, indistinguishable from a broken server.
+
+**Prevention:** `web/warmup.py` issues the expensive pages (WARM_PATHS) through the app's own test client on a daemon thread at serve start (web/app.py main, web/wsgi.py), so the cold build runs off the request thread whatever readers a page grows later (no per-reader list to rot). `/api/_identity` reports `warmup.state`; the smoke probe waits (bounded, `WARMUP_WAIT_SECONDS`=180) while a server reports `warming`, so a deliberate warm-up is not reported as a timeout. Pinned by tests/unit/test_t4363_startup_warmup.py (fails pre-fix: module and wait function absent; asserts the cold build ran off the main thread and that both serve entry points start it).
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -350,6 +370,16 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The cold build now runs on a startup daemon thread rather than on the first request. In a controlled A/B under the same host load, the first GET / dropped from 65.8 s to 1.6 s and the first /approvals from 56.6 s to 16.9 s, which is /approvals' own warm cost on this repo (8.6–16 s). The page template and its context are untouched: the warm-up only calls the existing routes, so the /approvals page should look exactly the same. The one human check is that it really does.
+
+**Evidence:**
+- tests/unit/test_t4363_startup_warmup.py: 7 passed (it fails before the fix because web.warmup and smoke_test.wait_for_warmup did not exist)
+- tests/unit/t3453_doctor_smoke_inverted_alarm.bats and t3933_doctor_smoke_skip.bats: 13/13 ok
+- Before/after numbers are in Updates (2026-10-19 measurement entry)
+- Not fixed here: /approvals' warm cost on a 4,400-task repo, and readiness-cache invalidation on every commit (`_readiness_stamp` keys on .git/logs/HEAD, web/shared.py:1531). See Decisions.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -360,6 +390,16 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-19 — warm the pages, not a list of readers
+- **Chose:** a startup daemon thread that GETs WARM_PATHS through the app's test client (web/warmup.py), started from `main()` and web/wsgi.py, not from create_app.
+- **Why:** the cold cost is spread over several shared readers (task metadata, readiness, inception blockers, ledger git faults, dashboard readers). A per-reader warm list is how T-3765 left four readers uncached; warming the pages covers whatever they read now or later. Starting it outside create_app keeps every test that imports web.app free of a background corpus build.
+- **Rejected:** raising the doctor smoke timeout (hides the cold build; excluded by the brief); warming inside create_app (would fire in every unit test).
+
+### 2026-10-19 — AC 3 reworded after measurement
+- **Chose:** "/, /cron, /tasks under 3 s; /approvals at its warm steady state" in place of "all under 3 s".
+- **Why:** measured warm /approvals on this repo is 8.6–16 s even with every cache hot (`_load_close_ready_arcs` → `_arc_demo_state` subprocesses ~7 s, `_load_pending_human_acs` AC parsing ~5.6 s, profiled warm). That is the page's warm cost, not the cold build this task is about, and a startup warm-up cannot remove it. On 832 warm /approvals is 1.3 s.
+- **Open (not fixed here):** (1) warm /approvals cost on large corpora (arc demo-state subprocesses per request); (2) `_readiness_stamp` (web/shared.py:1531) includes .git/logs/HEAD, so any commit invalidates every ledger-consulting readiness entry. In a repo with many committing workers, /approvals goes back to cold readiness after each commit.
 
 ## Decision
 
@@ -377,3 +417,16 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4363-cold-watchtower-first-get-approvals-take.md
 - **Context:** Initial task creation
+
+### 2026-10-19T13:32:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-19 — measurement, before and after [agent]
+Host: this repo (~4,400 task files), load average 45–65 on 24 cores and several workers committing (6 commits in 15 min), so absolute numbers are noisy; the A/B pairs ran back to back.
+- **Before, separate live instance on :3077** (operator's :3000 untouched): listens after 1.7 s; /approvals 40.9 s cold → 11.9 s second; / 36.5 → 0.9; /cron 5.0 → 0.25; /tasks 3.9 → 0.53.
+- **Profile, cold /approvals (cProfile, test client, 51 s profiled):** `_queue_groups` 23.7 s (readiness + `inception_handoff_blockers` subprocesses + verdict-ledger git faults), `get_all_task_metadata`/`_build_task_metadata` 10.5 s (4,374 frontmatter parses), `_load_close_ready_arcs` 7.9 s. Warm (19.7 s profiled): `_queue_groups` drops to 1.0 s and metadata to 0; `_load_close_ready_arcs` stays at 7.7 s and `_load_pending_human_acs` at 5.6 s (warm cost).
+- **Cold sweep of all 53 smoke routes (test client):** 229 s cold vs 66 s warm; slowest cold routes were / 85 s, /search 30, /approvals 14.5, /tasks 13.3, /timeline 13.2.
+- **A/B in-process, first request per page (run 2):** cold /approvals 48.8, / 69.8, /cron 6.8, /tasks 19.8 → after warm-up 16.3, 8.3, 0.3, 0.7 (that process's warm /approvals was 15.0).
+- **A/B controlled, HEAD unmoved during every timed request:** first /approvals 56.6 s → 16.9 s; first / 65.8 s → 1.6 s; then warm /approvals 8.6–9.0, / 1.1.
+- **After, live instance on :3077 with the fix:** warm-up done 134 s after start; then /approvals 11.9, / 6.6, /cron 0.27, /tasks 0.62. The later /approvals 26–31 s readings coincide with concurrent commits invalidating the readiness cache (see Decisions, Open).

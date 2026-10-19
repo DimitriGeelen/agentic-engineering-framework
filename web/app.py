@@ -28,6 +28,7 @@ import sys
 from flask import Flask, abort, jsonify, render_template, request, session
 
 from web.config import Config
+from web.warmup import WARMUP_STATE, start_cache_warmup
 from web.shared import APP_DIR, NAV_ITEMS, NAV_GROUPS, PROJECT_ROOT, build_ambient
 
 log = logging.getLogger(__name__)
@@ -464,6 +465,9 @@ def create_app() -> Flask:
             # to be able to recycle one, and to recycle a process it did not spawn it
             # needs the pid. `started_at` alone answers "how old" but not "which one".
             "pid": os.getpid(),
+            # T-4363: a probe that lands during the startup warm-up can tell a
+            # deliberate cold build from a slow server.
+            "warmup": {k: WARMUP_STATE[k] for k in ("state", "started_at", "finished_at")},
         })
 
     # -------------------------------------------------------------------
@@ -576,6 +580,10 @@ def main():
         sys.exit(0)
 
     signal.signal(signal.SIGINT, handle_sigint)
+
+    # T-4363: build the corpus caches off the request thread, so the first
+    # request (an operator's, or fw doctor's 5 s smoke probe) is not the cold build.
+    start_cache_warmup(app)
 
     print("Watchtower running at http://{}:{}".format(host, port))
     print("  Project root: {}".format(PROJECT_ROOT))
