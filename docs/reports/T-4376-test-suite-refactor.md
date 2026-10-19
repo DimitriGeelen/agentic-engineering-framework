@@ -124,3 +124,25 @@ The order changes. **Make the runner's verdicts trustworthy first, then split, t
   Agent: yes, as its own refactor that starts with measurement, citing the day's evidence (above).
 - 2026-10-19, operator (Dutch, paraphrased): get an external review and a data basis; lay it out, ask how we can
   optimise it, and put it in its own arc with an arc headline, arc drivers and build tasks.
+
+### Disagreement resolved (T-4382, 2026-10-19)
+
+The two reviewers split on the "bimodal" files. Measured triage: `docs/reports/T-4382-bimodal-triage.md`.
+
+**codex was right. None of the six files hangs.** Every fast run was a skip that measured nothing, and every slow run
+was real work longer than the 900 s cap.
+
+| File | Fast runs | Slow runs |
+|---|---|---|
+| audit.bats, fabric_coverage_single_source.bats | Lost the repo-wide audit-lock race and skipped (bats reports a skip as `ok`) | Won the lock and paid the structure section (~550 s) twice or more |
+| fw_doctor_vendored_drift.bats | 1–5 s since 4ee603957, after a fix | Ran a full `fw doctor` before that fix |
+| t2332_bvp_propose_queue.bats | 10 s since T-4384 | Called the live Watchtower before T-4384 |
+| t4248, install_target_project | 0–2 s only where the tree had no branch checked out, so every test skipped | Each test is a full install; the `fw init` first commit secret-scans 2,678 framework files, ~92 s per install (T-4400) |
+
+**Consequence for the plan.**
+- A skip that reads as `ok` is the bigger hazard, bigger than slowness. It is the "cannot fail" class that the
+  fault-detection-fidelity driver exists for.
+- The tier split (T-4377) must count skips as "not determined", like timeouts.
+- The live-section tests move to function-level checks without the lock, as fabric_coverage already does after
+  T-4382: 15/15 ok, 0 skips.
+- T-4397 (an audit hung in pipe_read) remains a separate, real defect.
