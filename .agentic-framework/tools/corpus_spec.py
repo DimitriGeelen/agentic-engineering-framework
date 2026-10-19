@@ -26,6 +26,7 @@ the spec is the source of truth for the whole rendered map.
 """
 
 import argparse
+import io
 import json
 import os
 import re
@@ -61,17 +62,48 @@ TYPE_TO_TAG = {
     "subprocess": "subProcess",
     "script": "scriptTask",
     "parallel-gateway": "parallelGateway",
+    # T-4374: sync sub-workflow call (832 T-282), round-trip only — AEF's corpus
+    # is descriptive, nothing here executes it. calledElement = called map's
+    # corpus id; aef:ioMapping + sibling aef:callRef carry data mapping/identity.
+    "call": "callActivity",
 }
 TAG_TO_TYPE = {v: k for k, v in TYPE_TO_TAG.items()}
 
 # Known structured aef:* ext children; everything else is preserved verbatim.
-_KNOWN_EXT = {"uid", "position", "eventDef", "link", "meta", "workflowMeta", "laneMeta"}
+_KNOWN_EXT = {"uid", "position", "eventDef", "link", "meta", "workflowMeta", "laneMeta",
+              "callRef", "ioMapping"}
 
 # Register stable prefixes so verbatim ET.tostring round-trips keep the same
 # serialization on every pass (capture-from-source == capture-from-emit).
 ET.register_namespace("bpmn", BPMN_NS)
 ET.register_namespace("aef", AEF_NS)
 ET.register_namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance")
+
+#: Prefixes the emitter declares on <bpmn:definitions> itself (plus xsi). A source
+#: document may never rebind these — registering one would re-prefix every map.
+_ROOT_NS = {"bpmn": BPMN_NS, "aef": AEF_NS,
+            "bpmndi": "http://www.omg.org/spec/BPMN/20100524/DI",
+            "dc": "http://www.omg.org/spec/DD/20100524/DC",
+            "di": "http://www.omg.org/spec/DD/20100524/DI",
+            "xsi": "http://www.w3.org/2001/XMLSchema-instance"}
+
+
+def _source_prefixes(xml_text: str) -> dict:
+    """uri → prefix as the SOURCE declared it (first declaration wins).
+
+    ElementTree drops prefixes at parse time, so verbatim parts would come back
+    as ns0: (T-4389). Foreign prefixes are registered so _raw_xml keeps them;
+    the reserved root prefixes are never rebound."""
+    out = {}
+    for _, (pfx, uri) in ET.iterparse(io.BytesIO(xml_text.encode("utf-8")),
+                                      events=("start-ns",)):
+        if pfx and uri not in out:
+            out[uri] = pfx
+            if (pfx not in _ROOT_NS and uri not in _ROOT_NS.values()
+                    and not re.fullmatch(r"ns\d+", pfx)):
+                ET.register_namespace(pfx, uri)
+    return out
+
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 STORE = REPO_ROOT / ".context" / "designer" / "projects"
@@ -116,6 +148,12 @@ def _q(tag, ns=BPMN_NS):
     return f"{{{ns}}}{tag}"
 
 
+def _is_known_ext(c) -> bool:
+    """A structured aef:* child — namespace AND local name (T-4387): keyed on the
+    local name alone, a foreign <zeebe:uid> overwrote the node's aef:uid."""
+    return isinstance(c.tag, str) and c.tag in {_q(k, AEF_NS) for k in _KNOWN_EXT}
+
+
 def _ext(el):
     """aef:* extension children of a flow element's extensionElements block."""
     out = {}
@@ -123,8 +161,33 @@ def _ext(el):
     if ee is None:
         return out
     for c in ee:
+        if _is_known_ext(c):
+            out[c.tag.split("}")[-1]] = dict(c.attrib)
+    return out
+
+
+def _io_mapping(el) -> dict:
+    """aef:ioMapping v1 (T-4374): aef:in / aef:out entries naming variables by
+    source and target, nothing else. Expressions are not part of v1 — anything
+    outside the shape is a hard error, not a silent drop (T-2614 class)."""
+    ee = el.find(_q("extensionElements"))
+    io = ee.find(_q("ioMapping", AEF_NS)) if ee is not None else None
+    if io is None:
+        return None
+    out = {"in": [], "out": []}
+    for c in io:
+        if not isinstance(c.tag, str):
+            continue
         local = c.tag.split("}")[-1]
-        out[local] = dict(c.attrib)
+        if (c.tag not in (_q("in", AEF_NS), _q("out", AEF_NS))
+                or set(c.attrib) != {"source", "target"} or len(c)
+                or (c.text or "").strip()):
+            raise SystemExit(
+                f"parse: <bpmn:callActivity id=\"{el.get('id')}\"> aef:ioMapping "
+                f"entry <{local} {' '.join(sorted(c.attrib))}> is outside mapping v1 "
+                f"(aef:in / aef:out with exactly source and target, no expressions) "
+                f"— refusing rather than dropping it (T-4374)")
+        out[local].append({"source": c.get("source"), "target": c.get("target")})
     return out
 
 
@@ -140,12 +203,13 @@ def _raw_xml(el) -> str:
 def _ext_raw(el) -> list:
     """Unrecognized ext children preserved verbatim (aef:constituents,
     aef:endpoint, aef:contextReads, …) — the parser dropping these silently
-    is the T-2614 data-loss class."""
+    is the T-2614 data-loss class. Foreign-namespace children land here too,
+    whatever their local name (T-4387)."""
     ee = el.find(_q("extensionElements"))
     if ee is None:
         return []
     return [_raw_xml(c) for c in ee
-            if isinstance(c.tag, str) and c.tag.split("}")[-1] not in _KNOWN_EXT]
+            if isinstance(c.tag, str) and not _is_known_ext(c)]
 
 
 #: The emitter's own trailer, present in every generated file. Never a map's doc —
@@ -197,6 +261,7 @@ def _is_boilerplate_comment(text: str) -> bool:
 
 
 def parse_map(xml_text: str) -> dict:
+    prefixes = _source_prefixes(xml_text)
     parser = ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))
     root = ET.fromstring(xml_text, parser=parser)
 
@@ -263,6 +328,15 @@ def parse_map(xml_text: str) -> dict:
                 "type": TAG_TO_TYPE[local],
                 "name": el.get("name"),
             }
+            # T-4389: namespace-qualified attributes (camunda:asyncBefore, …)
+            # with the source prefix and the declaration they need.
+            for key, val in el.attrib.items():
+                if key.startswith("{"):
+                    uri, local = key[1:].split("}", 1)
+                    pfx = prefixes.get(uri, "")
+                    n.setdefault("attrs", {})[f"{pfx}:{local}"] = val
+                    if _ROOT_NS.get(pfx) != uri:
+                        n.setdefault("xmlns", {})[pfx] = uri
             if "uid" in ext:
                 n["uid"] = ext["uid"].get("value")
             if "position" in ext:
@@ -288,9 +362,24 @@ def parse_map(xml_text: str) -> dict:
                 n["handoff"] = h
             if "meta" in ext:
                 n["meta"] = dict(ext["meta"])
+            if n["type"] == "call":  # not `local`: rebound by the attrs loop
+                n["called_element"] = el.get("calledElement")
+                if "callRef" in ext:
+                    n["call_ref"] = ext["callRef"].get("workflowRef")
+                io = _io_mapping(el)
+                if io is not None:
+                    n["io_mapping"] = io
             raw = _ext_raw(el)
             if raw:
                 n["ext_raw"] = raw
+            # T-4388: unmodelled node children (loop characteristics,
+            # ioSpecification, documentation, …) verbatim, as flows do.
+            # incoming/outgoing are derived from flows on emit.
+            raw = [_raw_xml(c) for c in el
+                   if isinstance(c.tag, str) and c.tag.split("}")[-1]
+                   not in ("extensionElements", "incoming", "outgoing")]
+            if raw:
+                n["raw_children"] = raw
             nodes.append(n)
         elif local == "sequenceFlow":
             f = {
@@ -303,6 +392,9 @@ def parse_map(xml_text: str) -> dict:
             ext = _ext(el)
             if "uid" in ext:
                 f["uid"] = ext["uid"].get("value")
+            ext_raw = _ext_raw(el)
+            if ext_raw:
+                f["ext_raw"] = ext_raw
             # T-2614: preserve non-extension flow children verbatim
             # (conditionExpression with xsi:type + expression text).
             raw = [_raw_xml(c) for c in el
@@ -344,6 +436,26 @@ def _pos(v: float) -> str:
     return f"{v:.1f}" if v == int(v) else repr(v)
 
 
+#: tActivity's own children in schema sequence (BPMN 2.0 Semantic.xsd); loop
+#: characteristics close it. Anything else (subProcess flow elements, event
+#: definitions) ranks after and keeps source order (sort is stable).
+_ACTIVITY_ORDER = ("ioSpecification", "property", "dataInputAssociation",
+                   "dataOutputAssociation", "resourceRole")
+_LOOP_TAGS = ("standardLoopCharacteristics", "multiInstanceLoopCharacteristics")
+
+
+def _raw_local(raw: str) -> str:
+    """Local name of a verbatim-captured element's root tag."""
+    return re.match(r"<([^\s/>]+)", raw).group(1).split(":")[-1]
+
+
+def _node_child_rank(raw: str) -> int:
+    local = _raw_local(raw)
+    if local in _ACTIVITY_ORDER:
+        return _ACTIVITY_ORDER.index(local)
+    return len(_ACTIVITY_ORDER) + (0 if local in _LOOP_TAGS else 1)
+
+
 def _resolve_target(target: str, ghost_intent: bool, idx: dict) -> str:
     """spec handoff target (map id or uuid) → workflowRef uuid, contract v0."""
     if UUID_RE.match(target or ""):
@@ -363,6 +475,38 @@ def _resolve_target(target: str, ghost_intent: bool, idx: dict) -> str:
     )
 
 
+def call_findings(spec: dict, idx: dict | None = None) -> list:
+    """Cross-map reference check for callActivity nodes (T-4374, 832 proposal C).
+
+    calledElement must name a corpus map; callRef workflowRef, when present,
+    must be some map's meta.json uuid. The uuid identifies the called map and
+    calledElement is its readable name, so a disagreement is reported naming
+    both sides and the uuid wins — nothing is rewritten. No callRef is valid."""
+    idx = idx if idx is not None else store_index()
+    out = []
+    for n in spec.get("nodes", []):
+        if n.get("type") != "call":
+            continue
+        nid, ce, ref = n["id"], n.get("called_element"), n.get("call_ref")
+        if not ce:
+            out.append({"level": "error", "node": nid,
+                        "message": "callActivity has no calledElement"})
+        elif ce not in idx["by_id"]:
+            out.append({"level": "error", "node": nid,
+                        "message": f"calledElement '{ce}' is not a corpus map id"})
+        if ref is None:
+            continue
+        if ref not in idx["by_uuid"]:
+            out.append({"level": "error", "node": nid,
+                        "message": f"callRef workflowRef {ref} is no corpus map's uuid"})
+        elif ce and idx["by_uuid"][ref] != ce:
+            out.append({"level": "finding", "node": nid,
+                        "message": f"calledElement '{ce}' disagrees with callRef "
+                                   f"workflowRef {ref} (map '{idx['by_uuid'][ref]}'); "
+                                   f"the uuid wins, nothing rewritten"})
+    return out
+
+
 def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> str:
     # T-2615: compat_alias None → derived from the pin capability flag (emit the
     # targetWorkflow alias only while the pinned editor cannot auto-resolve
@@ -370,6 +514,10 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
     if compat_alias is None:
         compat_alias = not _pin_resolves_workflow_ref()
     idx = store_index()
+    errors = [f for f in call_findings(spec, idx) if f["level"] == "error"]
+    if errors:
+        raise SystemExit("generate: " + "; ".join(
+            f"{f['node']}: {f['message']}" for f in errors))
     mid = spec["id"]
     L = []
     a = L.append
@@ -450,7 +598,21 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         a("")
         tag = TYPE_TO_TAG[n["type"]]
         name_attr = f" name={quoteattr(n['name'])}" if n.get("name") else ""
+        if n.get("called_element"):
+            name_attr += f" calledElement={quoteattr(n['called_element'])}"
+        name_attr += "".join(f" xmlns:{p}={quoteattr(u)}"
+                             for p, u in n.get("xmlns", {}).items())
+        name_attr += "".join(f" {k}={quoteattr(v)}"
+                             for k, v in n.get("attrs", {}).items())
         a(f'    <bpmn:{tag} id={quoteattr(n["id"])}{name_attr}>')
+        # T-4388: BPMN schema order — documentation precedes extensionElements;
+        # the rest follow incoming/outgoing, loop characteristics last in tActivity.
+        raws = n.get("raw_children", [])
+        for raw in raws:
+            if _raw_local(raw) == "documentation":
+                a(f"      {raw}")
+        after = sorted((r for r in raws if _raw_local(r) != "documentation"),
+                       key=_node_child_rank)
         a("      <bpmn:extensionElements>")
         if n.get("uid"):
             a(f'        <aef:uid value={quoteattr(n["uid"])}/>')
@@ -478,6 +640,19 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         if n.get("meta"):
             attrs = " ".join(f"{k}={quoteattr(str(v))}" for k, v in n["meta"].items())
             a(f"        <aef:meta {attrs}/>")
+        if n.get("call_ref"):
+            a(f'        <aef:callRef workflowRef={quoteattr(n["call_ref"])}/>')
+        if n.get("io_mapping") is not None:
+            io = n["io_mapping"]
+            if not io["in"] and not io["out"]:
+                a("        <aef:ioMapping/>")
+            else:
+                a("        <aef:ioMapping>")
+                for kind in ("in", "out"):
+                    for e in io[kind]:
+                        a(f'          <aef:{kind} source={quoteattr(e["source"])} '
+                          f'target={quoteattr(e["target"])}/>')
+                a("        </aef:ioMapping>")
         for raw in n.get("ext_raw", []):
             a(f"        {raw}")
         a("      </bpmn:extensionElements>")
@@ -485,6 +660,8 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
             a(f"      <bpmn:incoming>{escape(fid)}</bpmn:incoming>")
         for fid in outgoing.get(n["id"], []):
             a(f"      <bpmn:outgoing>{escape(fid)}</bpmn:outgoing>")
+        for raw in after:
+            a(f"      {raw}")
         a(f"    </bpmn:{tag}>")
 
     a("")
@@ -493,8 +670,10 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         a(f'    <bpmn:sequenceFlow id={quoteattr(f["id"])}{name_attr} '
           f'sourceRef={quoteattr(f["from"])} targetRef={quoteattr(f["to"])}>')
         uid = f.get("uid")
-        if uid:
-            a(f'      <bpmn:extensionElements><aef:uid value={quoteattr(uid)}/>'
+        ext_raw = "".join(f.get("ext_raw", []))
+        uid_part = f"<aef:uid value={quoteattr(uid)}/>" if uid else ""
+        if uid_part or ext_raw:
+            a(f"      <bpmn:extensionElements>{uid_part}{ext_raw}"
               f"</bpmn:extensionElements>")
         for raw in f.get("raw_children", []):
             a(f"      {raw}")
@@ -722,6 +901,9 @@ def main(argv=None):
     c = sub.add_parser("canon", help="BPMN → canonical semantic JSON")
     c.add_argument("source")
     c.add_argument("--v", type=int, default=None)
+    va = sub.add_parser("validate", help="callActivity cross-map refs; exit 1 on errors")
+    va.add_argument("source")
+    va.add_argument("--v", type=int, default=None)
     f = sub.add_parser("diff", help="semantic compare; exit 0 iff canonically identical")
     f.add_argument("a")
     f.add_argument("b")
@@ -778,6 +960,13 @@ def main(argv=None):
     elif args.cmd == "canon":
         print(json.dumps(canonical(_load_xml(args.source, args.v)),
                          indent=2, ensure_ascii=False, sort_keys=True))
+    elif args.cmd == "validate":
+        found = call_findings(parse_map(_load_xml(args.source, args.v)))
+        for f in found:
+            print(f"{f['level'].upper()} {f['node']}: {f['message']}")
+        if not found:
+            print("no call findings")
+        return 1 if any(f["level"] == "error" for f in found) else 0
     elif args.cmd == "diff":
         ca = canonical(_load_xml(args.a, None))
         cb = canonical(_load_xml(args.b, None))

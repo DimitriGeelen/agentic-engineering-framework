@@ -1,10 +1,18 @@
 ---
 id: T-4392
-name: "fw vendor self neither syncs nor checks tools/, so the tracked .agentic-framework/tools/ copies go stale silently (corpus_spec.py, bpmn_to_tasks.py)"
+name: "fw vendor self neither syncs nor checks tools/, so the tracked .agentic-framework/tools/
+  copies go stale silently (corpus_spec.py, bpmn_to_tasks.py)"
 description: >
-  Found 2026-10-19 after T-4387..T-4389 changed tools/corpus_spec.py: 26 files under .agentic-framework/tools are tracked, but fw vendor self does not copy tools/ and vendor self --check reports in sync while tools/corpus_spec.py and tools/bpmn_to_tasks.py differ from source. The self-vendor drift audit is therefore a false green for tools/. Fix: include tools/ in vendor self and its --check (and the audit's self-vendor drift section), or stop tracking the vendored copy if nothing reads it; decide which by finding the readers (lib/vendor-visibility.sh notes 010-termlink reported tools/ visibility).
+  Found 2026-10-19 after T-4387..T-4389 changed tools/corpus_spec.py: 26 files under
+  .agentic-framework/tools are tracked, but fw vendor self does not copy tools/ and
+  vendor self --check reports in sync while tools/corpus_spec.py and tools/bpmn_to_tasks.py
+  differ from source. The self-vendor drift audit is therefore a false green for tools/.
+  Fix: include tools/ in vendor self and its --check (and the audit's self-vendor
+  drift section), or stop tracking the vendored copy if nothing reads it; decide which
+  by finding the readers (lib/vendor-visibility.sh notes 010-termlink reported tools/
+  visibility).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T14:04:48Z
-last_update: 2026-10-19T14:04:48Z
-date_finished: null
+last_update: '2026-10-19T14:15:45Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-19T14:06:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-19T14:15:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=337,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4392: fw vendor self neither syncs nor checks tools/, so the tracked .agentic-framework/tools/ copies go stale silently (corpus_spec.py, bpmn_to_tasks.py)
@@ -62,8 +98,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Readers of `.agentic-framework/tools/` are enumerated and the include-vs-untrack choice is justified in `## Decisions`
+- [x] `fw vendor self` syncs tracked `.agentic-framework/tools/` files from `tools/` (new `_self_vendor_tools` class in lib/upgrade.sh, wired into bin/fw vendor self)
+- [x] `fw vendor self --check` (and `--dry-run`) report `would sync` / DRIFT when a vendored tools/ file differs from source
+- [x] The audit's self-vendor drift section covers tools/ (its libs-class scan enumerates `.agentic-framework/tools` with the helper's filter: whole tree minus `__pycache__`/`*.pyc`)
+- [x] Regression bats test makes a tools/ file differ in a sandbox and asserts --check exits 1 with DRIFT; red before the fix, green after
+- [x] `bin/fw vendor self` run; `--check` reports no tools/ drift; `bash -n bin/fw` and `bash -n lib/upgrade.sh` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,8 +281,36 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/fw && bash -n lib/upgrade.sh && bash -n agents/audit/audit.sh
+timeout 600 bats tests/unit/t4392_self_vendor_tools.bats > /tmp/.t4392.out 2>&1 && ! grep -q "^not ok" /tmp/.t4392.out
+test "$(grep -c '# skip' /tmp/.t4392.out)" -eq 0
+out=$(bin/fw vendor self --dry-run 2>&1); ! echo "$out" | grep -q "would sync .* tools/"
+bash -c 'for f in .agentic-framework/tools/corpus_spec.py .agentic-framework/tools/bpmn_to_tasks.py; do cmp -s "$f" "${f#.agentic-framework/}" || exit 1; done'
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** after T-4387..T-4389 changed `tools/corpus_spec.py`, the tracked
+`.agentic-framework/tools/corpus_spec.py` and `bpmn_to_tasks.py` differed from source, yet
+`fw vendor self --check` said "in sync" and the audit's self-vendor drift section passed.
+
+**Root cause:** `fw vendor self` (bin/fw `vendor)` branch, ~line 10555) runs one helper per
+vendored class — libs, templates, policy, shim, agents, web, designer, VERSION — and there is
+no tools/ helper in lib/upgrade.sh. `--check` only greps those helpers' "would sync" output,
+so a class with no helper cannot drift as far as it is concerned. The audit's
+`check_self_vendor_drift` (agents/audit/audit.sh:3321) enumerates only
+`.agentic-framework/{bin,lib,agents,web}` and `.tasks/templates`, so tools/ was outside it too.
+Meanwhile the consumer-direction `do_vendor` (bin/fw:~704, T-2942) DOES ship `tools` whole,
+so the tracked self-vendored tree had a class nothing refreshed.
+
+**Why structurally allowed:** the class list is enumerated by hand in three places (sync
+helpers, --check set, audit find) and nothing asserts it covers every top-level dir present
+under `.agentic-framework/`. A class added to `do_vendor` (T-2942 added tools/) never had to
+touch any of the three.
+
+**Prevention:** `_self_vendor_tools` joins the checked set and the audit scan, and
+`tests/unit/t4392_self_vendor_tools.bats` plants tools/ drift in a clone and asserts
+`--check` exits 1 naming tools/ (red before this fix, green after).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -322,6 +390,21 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-19 — include tools/ in fw vendor self, not untrack it
+- **Chose:** a new `_self_vendor_tools` class (sync + --check + audit), mirroring all of
+  `tools/` (minus `__pycache__`/`*.pyc`), the same scope `do_vendor` ships to consumers.
+- **Why:** the vendored `tools/` has readers. `fw corpus explain` execs
+  `$FRAMEWORK_ROOT/tools/corpus_explain.py` (which imports corpus_spec), and wherever
+  `.agentic-framework/bin/fw` runs, FRAMEWORK_ROOT is `.agentic-framework/`
+  (T-2942 / OBS-235, bin/fw:~700; lib/vendor-visibility.sh:9-23 records 010-termlink
+  hitting exactly this path). `do_vendor` ships `tools` whole, so the tracked
+  self-vendored tree is supposed to look like a consumer's; the other seven classes are all
+  kept in sync, so tools/ being the one exception was the defect.
+- **Rejected:** untracking `.agentic-framework/tools/` — it would make the self-vendored
+  tree diverge from what consumers get and break `fw corpus explain` when run through the
+  vendored fw. Syncing only the 26 already-vendored files — the consumer copy is the whole
+  directory, so a partial mirror would keep 28 files permanently missing with no detector.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -338,3 +421,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4392-fw-vendor-self-neither-syncs-nor-checks-.md
 - **Context:** Initial task creation
+
+### 2026-10-19T14:06:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -10520,6 +10520,7 @@ PYSEARCH
                 echo "  - .agentic-framework/bin/                 ← bin/fw             (T-2264)"
                 echo "  - .agentic-framework/agents/              ← agents/**/*.{sh,py} (T-2266)"
                 echo "  - .agentic-framework/web/                 ← web/**/*.{sh,py}    (T-2267)"
+                echo "  - .agentic-framework/tools/               ← tools/** (no __pycache__) (T-4392)"
                 echo "  - .agentic-framework/vendor/designer/     ← the ONE pinned build   (T-3064)"
                 echo ""
                 echo "T-1217 / T-2078 §F2 / T-2095 V1-D / T-2241. Extracted from do_upgrade so it can be"
@@ -10564,6 +10565,9 @@ PYSEARCH
                 _self_vendor_agents "$_vs_dry"
                 # T-2267: web/ drift class (6th class).
                 _self_vendor_web "$_vs_dry"
+                # T-4392: tools/ — do_vendor ships it whole; it had no class here,
+                # so --check stayed green while the vendored copy went stale.
+                _self_vendor_tools "$_vs_dry"
                 # T-3064: pinned Workflow Designer build (8th class). Inside the
                 # CHECKED set, unlike VERSION below: the artifact only changes at
                 # a pin bump, so a gate on it is satisfiable — clear it once with

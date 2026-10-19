@@ -3372,6 +3372,8 @@ check_self_vendor_drift() {
     done < <(
         find "$FRAMEWORK_ROOT/.agentic-framework/bin" -type f ! -name "*.pyc" 2>/dev/null
         find "$FRAMEWORK_ROOT/.agentic-framework/lib" "$FRAMEWORK_ROOT/.agentic-framework/agents" "$FRAMEWORK_ROOT/.agentic-framework/web" -type f \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "claude-fw" -o -name "*.md" \) 2>/dev/null
+        # T-4392: tools/ scanned whole (minus *.pyc), parity with _self_vendor_tools.
+        find "$FRAMEWORK_ROOT/.agentic-framework/tools" -path '*/__pycache__' -prune -o -type f ! -name "*.pyc" -print 2>/dev/null
     )
 
     # templates class: .agentic-framework/.tasks/templates/*.md vs source

@@ -664,6 +664,58 @@ _self_vendor_web() {
     return 0
 }
 
+# T-4392: self-vendor the framework's own tools/ tree. Sibling of _self_vendor_agents
+# / _self_vendor_web, same shape and the same "would sync" wording, so --check and the
+# T-2240 pre-push gate pick it up with no new regex.
+#
+# Why: do_vendor ships `tools` whole to consumers (T-2942) because `fw corpus explain`
+# execs $FRAMEWORK_ROOT/tools/corpus_explain.py — and wherever the vendored fw runs,
+# FRAMEWORK_ROOT is .agentic-framework/. The tracked .agentic-framework/tools/ had no
+# helper here, so it went stale (corpus_spec.py, bpmn_to_tasks.py) behind a green
+# --check and a green audit.
+#
+# Filter: every file under tools/ except __pycache__/ and *.pyc — the same scope
+# do_vendor copies, so the self-vendored tree matches what a consumer receives.
+#
+# Inputs:  $1 — dry_run ("true"/"false")
+# Return:  0 always (nothing to sync, or consumer-skip)
+_self_vendor_tools() {
+    local dry_run="${1:-false}"
+    local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
+    # Consumer-safety mirror of the siblings: a consumer's vendored copy has no
+    # nested .agentic-framework/tools/, so this is the early exit there.
+    if [ ! -d "$_self_vendor/tools" ] || [ ! -d "$FRAMEWORK_ROOT/tools" ]; then
+        return 0
+    fi
+    local _svx_updated=0
+    local _svx_src _svx_rel _svx_dst _svx_dst_dir
+    while IFS= read -r _svx_src; do
+        [ -f "$_svx_src" ] || continue
+        # T-3165: real runs withhold a concurrent task's uncommitted files.
+        # Detectors (dry-run / --check) are deliberately exempt.
+        [ "$dry_run" = true ] || ! _sv_is_withheld "$_svx_src" || continue
+        _svx_rel="${_svx_src#$FRAMEWORK_ROOT/tools/}"
+        _svx_dst="$_self_vendor/tools/$_svx_rel"
+        if [ ! -f "$_svx_dst" ] || ! diff -q "$_svx_src" "$_svx_dst" > /dev/null 2>&1; then
+            if [ "$dry_run" != true ]; then
+                _svx_dst_dir=$(dirname "$_svx_dst")
+                [ -d "$_svx_dst_dir" ] || mkdir -p "$_svx_dst_dir"
+                cp "$_svx_src" "$_svx_dst"
+                [ -x "$_svx_src" ] && chmod +x "$_svx_dst"
+            fi
+            _svx_updated=$((_svx_updated + 1))
+        fi
+    done < <(find "$FRAMEWORK_ROOT/tools" \( -path '*/__pycache__' -o -path '*/node_modules' -o -path '*/.git' \) -prune -o -type f ! -name "*.pyc" -print 2>/dev/null)
+    if [ "$_svx_updated" -gt 0 ]; then
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svx_updated tools/ file(s) to .agentic-framework/tools/"
+        else
+            echo -e "  ${GREEN}Self-vendor:${NC} synced $_svx_updated tools/ file(s) to .agentic-framework/tools/"
+        fi
+    fi
+    return 0
+}
+
 # T-2793 (OBS-151): self-vendor the VERSION file. Seventh sibling of
 # _self_vendor_libs / _templates / _policy / _shim / _agents / _web.
 #
@@ -1421,6 +1473,8 @@ do_upgrade() {
         # under the audit drift-scan shape). Same *.sh + *.py filter; templates
         # and static assets stay untouched (out-of-scope per audit's filter).
         _self_vendor_web "$dry_run"
+        # T-4392: sibling sync — tools/ (the tree do_vendor ships whole).
+        _self_vendor_tools "$dry_run"
         # T-3064: sibling sync — pinned Workflow Designer build. Outside the
         # audit drift-scan shape (that scans {bin,lib,agents,web} only), so this
         # class is carried by `fw vendor self --check` and its own bats file.

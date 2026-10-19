@@ -81,8 +81,36 @@ AUTHORITY_OWNER = {"sovereignty": "human", "initiative": "agent"}
 # line fired on EVERY compile of any map with a Framework lane and could no longer
 # distinguish anything (L-527: a signal that always fires stops meaning anything).
 AUTHORITY_NO_OWNER = {"authority"}
+# T-3172 / G-091: the fourth ratified value, and the only one that is not an owner
+# question at all. mapping-v1-partI §3 fixes the collapse map as
+#   sovereignty->human, initiative->agent, authority->agent, external->NO TASK
+# `external` says "not us": the step is performed by a system or party outside the
+# governed boundary, so there is no task to author — not a task with a fallback owner.
+# It therefore needs its own set: AUTHORITY_OWNER and AUTHORITY_NO_OWNER both still
+# EMIT a skeleton (they differ only in where `owner` comes from), so neither is the
+# right home. Before this, `external` was absent from every set, fell to the
+# out-of-dialect branch, and emitted `owner: agent` — the exact inverse of the rule.
+# Reported from the field by 001-CashWeb (their G-055) and independently confirmed by
+# 832, the contract owner, on agent-chat-arc @535: "external must produce no task,
+# never owner: agent". Deliberately NOT extended to `none` — that is the pinned
+# editor's unset sentinel, a different root cause, handled by T-3176.
+AUTHORITY_NO_TASK = {"external"}
+# T-3176 / G-095: `none` is the pinned reference editor's UNSET SENTINEL, not a fifth
+# dialect value. aef-workflow-designer-0.11.0 initialises every new lane to
+# authority:'none' (:8245), reads a lane with no @authority attribute back as 'none'
+# (:10142), and exports authority unconditionally (:9894) — so an untouched lane
+# serialises as authority="none". That is the editor's DEFAULT authoring path, which
+# means this fired more often than `external` ever did, and it accused the author of a
+# spelling mistake for having drawn a lane and not yet filled it in.
+#
+# Deliberately NOT a member of AUTHORITY_DIALECT / _OWNER / _NO_OWNER / _NO_TASK. It is
+# not in the frozen standard's four; adding it to any of those sets would ratify an
+# editor deviation by implementation, which is the quiet way a frozen standard drifts.
+# This is a REPORTING class only — behaviour is unchanged, an unset lane still falls
+# back to name/type derivation exactly as before.
+AUTHORITY_UNSET = {"none"}
 # The full dialect, so an out-of-dialect value can be told what the valid set is.
-AUTHORITY_DIALECT = set(AUTHORITY_OWNER) | AUTHORITY_NO_OWNER
+AUTHORITY_DIALECT = set(AUTHORITY_OWNER) | AUTHORITY_NO_OWNER | AUTHORITY_NO_TASK
 
 
 class MalformedInceptionError(ValueError):
@@ -235,6 +263,35 @@ def _constituents(node: ET.Element) -> list[str]:
         label = desc.get("name") or desc.get("ref") or desc.get("id")
         if label:
             out.append(label.strip())
+    return out
+
+
+def _lane_declarations(root: ET.Element) -> list[tuple[str, str]]:
+    """Every lane that DECLARES an authority, as (lane_label, authority).
+
+    T-3173 / G-093. Deliberately node-independent, which is the entire point. The
+    dialect check used to live inside the task-node loop, and that loop `continue`s on
+    anything not in TASK_TAGS — so a lane whose flowNodeRefs are all events or gateways
+    was never visited and its authority was never validated. A genuine typo on such a
+    lane compiled silently with rc 0.
+
+    That is a false green of the worst kind: the population that could exercise the
+    check was empty, so the check reported the same thing as one that looked and was
+    satisfied. 832 named the same shape independently on agent-chat-arc @535 — "nothing
+    compiles, so nothing warns... a blind spot, not a tolerated deviation, and latent
+    only by accident of the current drawing".
+    """
+    out: list[tuple[str, str]] = []
+    for lane in root.iter():
+        if _local(lane.tag) != "lane":
+            continue
+        authority: str | None = None
+        for desc in lane.iter():
+            if _local(desc.tag) == "laneMeta" and desc.get("authority"):
+                authority = desc.get("authority")
+        if authority is None:
+            continue
+        out.append((lane.get("name") or lane.get("id") or "", authority))
     return out
 
 
@@ -418,6 +475,11 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
     # Design ratified by 832 (rail offset 95): agent-fallback + WARN, no synthetic
     # "framework" owner — the executor is still the agent; what's lost is provenance.
     unknown_auth: dict[tuple[str, str], list[str]] = {}
+    # T-3172: nodes dropped because their lane is `external` (ratified collapse map:
+    # external -> no task). Collected per lane so the drop is REPORTED rather than
+    # silent — a compiler that quietly emits fewer tasks than the diagram has nodes is
+    # indistinguishable from one that failed to parse them.
+    no_task_auth: dict[tuple[str, str], list[str]] = {}
     for node in root.iter():
         ntype = _local(node.tag)
         is_inception = _is_inception_subprocess(node)
@@ -432,6 +494,21 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
 
         lane_name = lanes.get(node_id)
         authority = lane_auth.get(node_id)
+        # T-3172: `external` -> no task (mapping-v1-partI §3). Drop the node before any
+        # owner derivation runs, because owner derivation is precisely the step that was
+        # wrong: it fell through to the name/type heuristic and authored `owner: agent`
+        # for work the diagram assigns OUTSIDE the governed boundary.
+        #
+        # Deliberately NOT applied to an inception subProcess. O-3/§7 requires an
+        # inception's go/no-go boundary to be sovereignty-laned; an inception in an
+        # external lane is a structural defect that must keep raising
+        # MalformedInceptionError below, not be silently dropped. Skipping it here would
+        # convert a hard failure into a missing task — the quieter and worse outcome.
+        if authority in AUTHORITY_NO_TASK and not is_inception:
+            no_task_auth.setdefault((authority, lane_name or node_id), []).append(
+                uid or node_id
+            )
+            continue
         # Authority-of-record (aef:laneMeta) is explicit and wins over the name heuristic.
         auth_owner = AUTHORITY_OWNER.get(authority) if authority else None
         lane_owner = auth_owner or (
@@ -494,12 +571,46 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
         )
         uid_by_node[node_id] = uid
 
+    # T-3172: report the external-lane drops. This is EXPECTED behaviour, so the
+    # wording carries no accusation and no "unrecognized" — it states the ratified rule
+    # and names what was dropped, so an author who laned a node externally by mistake
+    # can still see that it produced nothing.
+    for (auth_val, lname), dropped in no_task_auth.items():
+        warnings.append(
+            f"lane {lname!r} carries aef:laneMeta authority={auth_val!r} — the ratified "
+            f"collapse map (mapping-v1-partI \u00a73) maps external\u2192no task, so "
+            f"{len(dropped)} node(s) in this lane emitted NO task skeleton: "
+            f"{', '.join(dropped)} (expected, not a defect \u2014 the work sits outside "
+            f"the governed boundary). If one of these IS ours, re-lane it "
+            f"sovereignty/initiative (T-3172)"
+        )
+
     # OBS-118 / T-2717: split the ONE channel T-2567 created into two messages. A
     # dialect value with no owner is EXPECTED; a value outside the dialect is a defect.
     # Both stay in `warnings` (signature unchanged, "surfaced not silent" preserved) —
     # what changes is that they no longer read identically.
     for (auth_val, lname), entries in unknown_auth.items():
-        if auth_val in AUTHORITY_NO_OWNER:
+        if auth_val in AUTHORITY_UNSET:
+            # T-3176: an unfinished diagram, not a mistyped one. The wording must read as
+            # a prompt to finish the lane — it is the first thing a new author sees.
+            options = ", ".join(
+                f"{v} ({d})"
+                for v, d in (
+                    ("sovereignty", "human owns"),
+                    ("initiative", "agent owns"),
+                    ("authority", "the framework executes"),
+                    ("external", "outside the boundary \u2014 no task authored"),
+                )
+            )
+            warnings.append(
+                f"lane {lname!r} has no authority set \u2014 aef:laneMeta "
+                f"authority={auth_val!r} is the reference editor's unset sentinel, "
+                f"written on every lane you have not yet assigned. Owner could not be "
+                f"derived from the lane, so {len(entries)} node(s) fell back to "
+                f"name/type derivation: {', '.join(entries)}. Set the lane's Authority "
+                f"to one of: {options} (T-3176)"
+            )
+        elif auth_val in AUTHORITY_NO_OWNER:
             warnings.append(
                 f"lane {lname!r} carries aef:laneMeta authority={auth_val!r} — the "
                 f"framework is the executor, so there is no human/agent owner to derive "
@@ -519,6 +630,39 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
                 f"provenance is not representable in task skeletons; surfaced here, not "
                 f"folded silently"
             )
+
+    # T-3173 / G-093: the dialect check, lifted out of the task-node loop.
+    #
+    # Everything above only ever saw lanes that CONTAINED a task node, because the loop
+    # `continue`s on anything not in TASK_TAGS. A lane holding only events or gateways
+    # was never visited, so its authority was never validated — a real typo on such a
+    # lane compiled clean, rc 0, no output. The check was not lenient; it was
+    # unreachable, which looks identical from the outside.
+    #
+    # Scope is deliberately narrow: ONLY values that are in no vocabulary at all.
+    #   - dialect values stay silent here (a valid lane with no tasks has nothing to
+    #     report; `authority` keeps its T-2567/OBS-118 message where it actually fired,
+    #     i.e. where nodes really did fall back)
+    #   - `none` stays silent here too. Its advisory (T-3176) exists to explain an owner
+    #     fallback that took place; on a lane that emitted no tasks there was no
+    #     fallback to explain, and firing on every untouched events-only lane would
+    #     rebuild the always-fires noise the split was meant to remove (L-527).
+    reported_lanes = {lname for (_a, lname) in unknown_auth}
+    for lane_label, auth_val in _lane_declarations(root):
+        if auth_val in AUTHORITY_DIALECT or auth_val in AUTHORITY_UNSET:
+            continue
+        if lane_label in reported_lanes:
+            continue  # already reported above, with its fallback detail
+        reported_lanes.add(lane_label)  # warn-once even if the doc declares it twice
+        valid = ", ".join(sorted(AUTHORITY_DIALECT))
+        warnings.append(
+            f"lane {lane_label!r} carries unrecognized aef:laneMeta "
+            f"authority={auth_val!r} \u2014 not a value in the AEF lane dialect "
+            f"({valid}); this is very likely a typo or an out-of-band value. No task "
+            f"nodes in this lane, so nothing fell back \u2014 the value is reported on "
+            f"the LANE, not on its nodes, because a lane with no task nodes used to "
+            f"escape this check entirely (T-3173)"
+        )
 
     task_ids = set(uid_by_node)
 
