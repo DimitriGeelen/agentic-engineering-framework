@@ -62,11 +62,16 @@ TYPE_TO_TAG = {
     "subprocess": "subProcess",
     "script": "scriptTask",
     "parallel-gateway": "parallelGateway",
+    # T-4374: sync sub-workflow call (832 T-282), round-trip only — AEF's corpus
+    # is descriptive, nothing here executes it. calledElement = called map's
+    # corpus id; aef:ioMapping + sibling aef:callRef carry data mapping/identity.
+    "call": "callActivity",
 }
 TAG_TO_TYPE = {v: k for k, v in TYPE_TO_TAG.items()}
 
 # Known structured aef:* ext children; everything else is preserved verbatim.
-_KNOWN_EXT = {"uid", "position", "eventDef", "link", "meta", "workflowMeta", "laneMeta"}
+_KNOWN_EXT = {"uid", "position", "eventDef", "link", "meta", "workflowMeta", "laneMeta",
+              "callRef", "ioMapping"}
 
 # Register stable prefixes so verbatim ET.tostring round-trips keep the same
 # serialization on every pass (capture-from-source == capture-from-emit).
@@ -158,6 +163,31 @@ def _ext(el):
     for c in ee:
         if _is_known_ext(c):
             out[c.tag.split("}")[-1]] = dict(c.attrib)
+    return out
+
+
+def _io_mapping(el) -> dict:
+    """aef:ioMapping v1 (T-4374): aef:in / aef:out entries naming variables by
+    source and target, nothing else. Expressions are not part of v1 — anything
+    outside the shape is a hard error, not a silent drop (T-2614 class)."""
+    ee = el.find(_q("extensionElements"))
+    io = ee.find(_q("ioMapping", AEF_NS)) if ee is not None else None
+    if io is None:
+        return None
+    out = {"in": [], "out": []}
+    for c in io:
+        if not isinstance(c.tag, str):
+            continue
+        local = c.tag.split("}")[-1]
+        if (c.tag not in (_q("in", AEF_NS), _q("out", AEF_NS))
+                or set(c.attrib) != {"source", "target"} or len(c)
+                or (c.text or "").strip()):
+            raise SystemExit(
+                f"parse: <bpmn:callActivity id=\"{el.get('id')}\"> aef:ioMapping "
+                f"entry <{local} {' '.join(sorted(c.attrib))}> is outside mapping v1 "
+                f"(aef:in / aef:out with exactly source and target, no expressions) "
+                f"— refusing rather than dropping it (T-4374)")
+        out[local].append({"source": c.get("source"), "target": c.get("target")})
     return out
 
 
@@ -332,6 +362,13 @@ def parse_map(xml_text: str) -> dict:
                 n["handoff"] = h
             if "meta" in ext:
                 n["meta"] = dict(ext["meta"])
+            if n["type"] == "call":  # not `local`: rebound by the attrs loop
+                n["called_element"] = el.get("calledElement")
+                if "callRef" in ext:
+                    n["call_ref"] = ext["callRef"].get("workflowRef")
+                io = _io_mapping(el)
+                if io is not None:
+                    n["io_mapping"] = io
             raw = _ext_raw(el)
             if raw:
                 n["ext_raw"] = raw
@@ -438,6 +475,38 @@ def _resolve_target(target: str, ghost_intent: bool, idx: dict) -> str:
     )
 
 
+def call_findings(spec: dict, idx: dict | None = None) -> list:
+    """Cross-map reference check for callActivity nodes (T-4374, 832 proposal C).
+
+    calledElement must name a corpus map; callRef workflowRef, when present,
+    must be some map's meta.json uuid. The uuid identifies the called map and
+    calledElement is its readable name, so a disagreement is reported naming
+    both sides and the uuid wins — nothing is rewritten. No callRef is valid."""
+    idx = idx if idx is not None else store_index()
+    out = []
+    for n in spec.get("nodes", []):
+        if n.get("type") != "call":
+            continue
+        nid, ce, ref = n["id"], n.get("called_element"), n.get("call_ref")
+        if not ce:
+            out.append({"level": "error", "node": nid,
+                        "message": "callActivity has no calledElement"})
+        elif ce not in idx["by_id"]:
+            out.append({"level": "error", "node": nid,
+                        "message": f"calledElement '{ce}' is not a corpus map id"})
+        if ref is None:
+            continue
+        if ref not in idx["by_uuid"]:
+            out.append({"level": "error", "node": nid,
+                        "message": f"callRef workflowRef {ref} is no corpus map's uuid"})
+        elif ce and idx["by_uuid"][ref] != ce:
+            out.append({"level": "finding", "node": nid,
+                        "message": f"calledElement '{ce}' disagrees with callRef "
+                                   f"workflowRef {ref} (map '{idx['by_uuid'][ref]}'); "
+                                   f"the uuid wins, nothing rewritten"})
+    return out
+
+
 def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> str:
     # T-2615: compat_alias None → derived from the pin capability flag (emit the
     # targetWorkflow alias only while the pinned editor cannot auto-resolve
@@ -445,6 +514,10 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
     if compat_alias is None:
         compat_alias = not _pin_resolves_workflow_ref()
     idx = store_index()
+    errors = [f for f in call_findings(spec, idx) if f["level"] == "error"]
+    if errors:
+        raise SystemExit("generate: " + "; ".join(
+            f"{f['node']}: {f['message']}" for f in errors))
     mid = spec["id"]
     L = []
     a = L.append
@@ -525,6 +598,8 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         a("")
         tag = TYPE_TO_TAG[n["type"]]
         name_attr = f" name={quoteattr(n['name'])}" if n.get("name") else ""
+        if n.get("called_element"):
+            name_attr += f" calledElement={quoteattr(n['called_element'])}"
         name_attr += "".join(f" xmlns:{p}={quoteattr(u)}"
                              for p, u in n.get("xmlns", {}).items())
         name_attr += "".join(f" {k}={quoteattr(v)}"
@@ -565,6 +640,19 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         if n.get("meta"):
             attrs = " ".join(f"{k}={quoteattr(str(v))}" for k, v in n["meta"].items())
             a(f"        <aef:meta {attrs}/>")
+        if n.get("call_ref"):
+            a(f'        <aef:callRef workflowRef={quoteattr(n["call_ref"])}/>')
+        if n.get("io_mapping") is not None:
+            io = n["io_mapping"]
+            if not io["in"] and not io["out"]:
+                a("        <aef:ioMapping/>")
+            else:
+                a("        <aef:ioMapping>")
+                for kind in ("in", "out"):
+                    for e in io[kind]:
+                        a(f'          <aef:{kind} source={quoteattr(e["source"])} '
+                          f'target={quoteattr(e["target"])}/>')
+                a("        </aef:ioMapping>")
         for raw in n.get("ext_raw", []):
             a(f"        {raw}")
         a("      </bpmn:extensionElements>")
@@ -813,6 +901,9 @@ def main(argv=None):
     c = sub.add_parser("canon", help="BPMN → canonical semantic JSON")
     c.add_argument("source")
     c.add_argument("--v", type=int, default=None)
+    va = sub.add_parser("validate", help="callActivity cross-map refs; exit 1 on errors")
+    va.add_argument("source")
+    va.add_argument("--v", type=int, default=None)
     f = sub.add_parser("diff", help="semantic compare; exit 0 iff canonically identical")
     f.add_argument("a")
     f.add_argument("b")
@@ -869,6 +960,13 @@ def main(argv=None):
     elif args.cmd == "canon":
         print(json.dumps(canonical(_load_xml(args.source, args.v)),
                          indent=2, ensure_ascii=False, sort_keys=True))
+    elif args.cmd == "validate":
+        found = call_findings(parse_map(_load_xml(args.source, args.v)))
+        for f in found:
+            print(f"{f['level'].upper()} {f['node']}: {f['message']}")
+        if not found:
+            print("no call findings")
+        return 1 if any(f["level"] == "error" for f in found) else 0
     elif args.cmd == "diff":
         ca = canonical(_load_xml(args.a, None))
         cb = canonical(_load_xml(args.b, None))

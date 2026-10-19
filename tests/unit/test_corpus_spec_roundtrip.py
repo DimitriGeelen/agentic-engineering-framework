@@ -31,11 +31,13 @@ TAIL = "</bpmn:process></bpmn:definitions>"
 
 
 def test_unknown_tag_is_a_hard_error_not_a_silent_drop():
-    xml = HEAD + '<bpmn:callActivity id="mystery_node"/>' + TAIL
+    # T-4374 made callActivity supported; the guarantee is pinned on a tag
+    # that is still outside TYPE_TO_TAG.
+    xml = HEAD + '<bpmn:complexGateway id="mystery_node"/>' + TAIL
     with pytest.raises(SystemExit) as e:
         corpus_spec.parse_map(xml)
     msg = str(e.value)
-    assert "callActivity" in msg and "mystery_node" in msg
+    assert "complexGateway" in msg and "mystery_node" in msg
 
 
 def test_subprocess_round_trips_with_rich_extension_content():
@@ -300,3 +302,122 @@ def test_foreign_attribute_and_ext_child_keep_original_prefix_text_stable():
     again = corpus_spec.emit_map(corpus_spec.parse_map(out), version=1,
                                  compat_alias=False)
     assert again == out
+
+
+# ── T-4374: bpmn:callActivity, round-trip only (832 mapping v1, proposal C) ──
+
+OTHER_UUID = "22222222-2222-4222-8222-222222222222"
+_CALL_IDX = {"by_id": {"live-map": LIVE_UUID, "other-map": OTHER_UUID},
+             "by_uuid": {LIVE_UUID: "live-map", OTHER_UUID: "other-map"}}
+
+
+def _call_xml(called="live-map", ref=LIVE_UUID, io=None):
+    io = io if io is not None else (
+        "<aef:ioMapping>"
+        '<aef:in source="task_id" target="parent_task"/>'
+        '<aef:out source="verdict" target="review_verdict"/>'
+        '<aef:in source="arc" target="arc_id"/>'
+        "</aef:ioMapping>")
+    ref_part = f'<aef:callRef workflowRef="{ref}"/>' if ref else ""
+    called_part = f' calledElement="{called}"' if called else ""
+    return HEAD + (
+        f'<bpmn:callActivity id="c1" name="run review"{called_part}>'
+        '<bpmn:extensionElements><aef:uid value="u1"/>'
+        f"{io}{ref_part}</bpmn:extensionElements>"
+        "</bpmn:callActivity>"
+    ) + TAIL
+
+
+def test_call_activity_parses_called_element_io_mapping_and_call_ref(monkeypatch):
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _CALL_IDX)
+    n = corpus_spec.parse_map(_call_xml())["nodes"][0]
+    assert n["type"] == "call" and n["called_element"] == "live-map"
+    assert n["call_ref"] == LIVE_UUID
+    assert n["io_mapping"] == {
+        "in": [{"source": "task_id", "target": "parent_task"},
+               {"source": "arc", "target": "arc_id"}],
+        "out": [{"source": "verdict", "target": "review_verdict"}]}
+    assert "ext_raw" not in n  # structured, not passed through verbatim
+
+
+def test_call_activity_round_trips_losslessly(monkeypatch):
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _CALL_IDX)
+    spec = corpus_spec.parse_map(_call_xml())
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert 'calledElement="live-map"' in out
+    assert f'<aef:callRef workflowRef="{LIVE_UUID}"/>' in out
+    # callRef is a SIBLING of ioMapping, never inside it
+    io_block = out[out.index("<aef:ioMapping>"):out.index("</aef:ioMapping>")]
+    assert "callRef" not in io_block
+    spec2 = corpus_spec.parse_map(out)
+    assert spec2["nodes"] == spec["nodes"]
+    assert corpus_spec.canonical(out) == corpus_spec.canonical(
+        corpus_spec.emit_map(spec2, version=1, compat_alias=False))
+
+
+def test_call_activity_without_call_ref_is_valid_and_round_trips(monkeypatch):
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _CALL_IDX)
+    spec = corpus_spec.parse_map(_call_xml(ref=None))
+    assert "call_ref" not in spec["nodes"][0]
+    assert corpus_spec.call_findings(spec) == []
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert "callRef" not in out
+    assert corpus_spec.parse_map(out)["nodes"] == spec["nodes"]
+
+
+@pytest.mark.parametrize("io", [
+    '<aef:ioMapping><aef:in source="a" target="b" expression="${a}"/></aef:ioMapping>',
+    '<aef:ioMapping><aef:in source="a"/></aef:ioMapping>',
+    '<aef:ioMapping><aef:script>a = b</aef:script></aef:ioMapping>',
+])
+def test_call_activity_io_mapping_outside_v1_is_a_hard_error(monkeypatch, io):
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _CALL_IDX)
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.parse_map(_call_xml(io=io))
+    assert "ioMapping" in str(e.value) and "c1" in str(e.value)
+
+
+def test_call_findings_unresolved_called_element_is_an_error(monkeypatch):
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _CALL_IDX)
+    spec = corpus_spec.parse_map(_call_xml(called="no-such-map", ref=None))
+    (f,) = corpus_spec.call_findings(spec)
+    assert f["level"] == "error" and "no-such-map" in f["message"]
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert "no-such-map" in str(e.value)
+
+
+def test_call_findings_unknown_workflow_ref_is_an_error(monkeypatch):
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _CALL_IDX)
+    ghost = "33333333-3333-4333-8333-333333333333"
+    spec = corpus_spec.parse_map(_call_xml(ref=ghost))
+    (f,) = corpus_spec.call_findings(spec)
+    assert f["level"] == "error" and ghost in f["message"]
+
+
+def test_call_findings_disagreement_names_both_sides_and_rewrites_nothing(monkeypatch):
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _CALL_IDX)
+    spec = corpus_spec.parse_map(_call_xml(called="live-map", ref=OTHER_UUID))
+    (f,) = corpus_spec.call_findings(spec)
+    assert f["level"] == "finding"
+    assert "live-map" in f["message"] and OTHER_UUID in f["message"]
+    assert "other-map" in f["message"]
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)  # not refused
+    assert 'calledElement="live-map"' in out
+    assert f'workflowRef="{OTHER_UUID}"' in out
+
+
+def test_validate_verb_exit_codes(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _CALL_IDX)
+    good = tmp_path / "good.bpmn"
+    good.write_text(_call_xml())
+    assert corpus_spec.main(["validate", str(good)]) == 0
+    assert "no call findings" in capsys.readouterr().out
+    disagree = tmp_path / "disagree.bpmn"
+    disagree.write_text(_call_xml(ref=OTHER_UUID))
+    assert corpus_spec.main(["validate", str(disagree)]) == 0
+    assert "FINDING c1" in capsys.readouterr().out
+    bad = tmp_path / "bad.bpmn"
+    bad.write_text(_call_xml(called="no-such-map"))
+    assert corpus_spec.main(["validate", str(bad)]) == 1
+    assert "ERROR c1" in capsys.readouterr().out

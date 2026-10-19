@@ -11,10 +11,10 @@ description: >
   resolves to an existing map, and keep unknown tags a hard error. No execution semantics:
   AEF's corpus is descriptive; embedded subProcess stays supported.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T10:14:30Z
-last_update: '2026-10-19T10:16:19Z'
+last_update: 2026-10-19T14:06:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -108,8 +108,12 @@ Shape provisionally agreed with 832 on 2026-10-19 (msg 17383aaf, conversation 83
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `parse_map` accepts `<bpmn:callActivity>` (type `call`): `calledElement`, `aef:ioMapping` (aef:in / aef:out, each `source` + `target`) and the sibling `<aef:callRef workflowRef=…/>` are captured as structured spec fields, and `emit_map` re-emits them so a second parse is identical (round-trip lossless)
+- [x] ioMapping content outside the v1 shape (other child, missing source/target, extra attribute such as an expression) is a hard parse error, never a silent drop
+- [x] `call_findings(spec)` reports: calledElement not resolving to a corpus map id (error); callRef workflowRef not equal to any map's meta.json uuid (error); calledElement/uuid disagreement naming both sides (finding, uuid wins, spec not rewritten); a call without callRef is valid
+- [x] `emit_map` (generate/prove) refuses on call_findings errors; a `corpus_spec validate` verb prints findings and exits 1 only on errors
+- [x] Unknown process children are still a hard error (the existing strict-parse test moved to a tag that is still unsupported)
+- [x] Tests added to tests/unit/test_corpus_spec_roundtrip.py; that file passes alone
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +292,11 @@ Shape provisionally agreed with 832 on 2026-10-19 (msg 17383aaf, conversation 83
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q > /tmp/.t4374.out 2>&1 && grep -q passed /tmp/.t4374.out && ! grep -q failed /tmp/.t4374.out
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k "call" > /tmp/.t4374k.out 2>&1 && grep -qE "[0-9]+ passed" /tmp/.t4374k.out && ! grep -q failed /tmp/.t4374k.out
+grep -q '"call": "callActivity"' tools/corpus_spec.py
+python3 tools/corpus_spec.py validate aef-task-lifecycle > /tmp/.t4374v.out 2>&1 && grep -q "no call findings" /tmp/.t4374v.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -303,6 +312,14 @@ Shape provisionally agreed with 832 on 2026-10-19 (msg 17383aaf, conversation 83
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a designer map containing `<bpmn:callActivity>` (832's planned sync sub-workflow call, T-282) makes `tools/corpus_spec.py` derive/canon/prove exit with "unsupported BPMN element <bpmn:callActivity …>", so the map cannot enter or round-trip through the AEF corpus.
+
+**Root cause:** `TYPE_TO_TAG` (tools/corpus_spec.py:49-65) has no entry for `callActivity`, so `parse_map` falls through to the T-2614 strict branch (tools/corpus_spec.py:369-381) and raises. The parser also had no field for `calledElement` (a plain, non-namespaced attribute that the T-4389 qualified-attribute capture does not cover) and no structured handling for `aef:ioMapping` / `aef:callRef`, so simply adding the tag would have dropped `calledElement` silently.
+
+**Why structurally allowed:** this is not a defect in existing behaviour: the strict error is the T-2614 design working as intended (refuse rather than drop). The gap is a vocabulary one: the tag set is closed by construction and grows only by deliberate extension, and nothing on the AEF side produced callActivity until 832 announced it. The one test that named callActivity used it as the example of an unsupported tag.
+
+**Prevention:** callActivity is now an explicit, tested type with a validation surface (`call_findings`, `corpus_spec validate`) for the cross-map reference, and emit refuses an unresolved call the same way it refuses an unresolved handoff (contract v0). The strict-parse test now pins a tag that is still unsupported, so the hard-error guarantee keeps a live test.
 
 ## Evolution
 
@@ -384,3 +401,7 @@ Shape provisionally agreed with 832 on 2026-10-19 (msg 17383aaf, conversation 83
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4374-corpus-spec-accept-bpmncallactivity-with.md
 - **Context:** Initial task creation
+
+### 2026-10-19T14:06:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
