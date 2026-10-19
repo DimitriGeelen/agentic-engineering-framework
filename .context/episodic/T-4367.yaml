@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4367: Read-only allowlist treats git diff/log/show/diff-tree --output=FILE as a read; it writes a file
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T09:40:13Z
+# ============================================================================
+
+task_id: T-4367
+task_name: "Read-only allowlist treats git diff/log/show/diff-tree --output=FILE as a read; it writes a file"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T09:04:08Z
+completed: 2026-10-19T09:39:18Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T11:09:52+02:00
+last_commit: 2026-10-19T11:09:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  git diff/log/show/diff-tree/diff-index/whatchanged --output is a write, not a read (allowlist + write scanner)
+
+# Key outcomes
+outcomes:
+  - 'is_bash_safe_command is NOT safe for git diff|log|show|diff-tree|diff-index|whatchanged with --output / --output=FILE (and abbreviations --out, --outp, --outpu)'
+  - 'SAFE controls unchanged: `git diff HEAD`, `git log --oneline`, `git diff --output-indicator-new=+` stay SAFE'
+  - 'lib/shell_write_scan.py reports git <verb> --output=FILE as a write to FILE (or the decision not to is recorded in the task)'
+  - 'tests/unit/t4367_git_output_option.bats exists, was recorded red on the pre-fix file (6 of 10 not ok: tests 5-10), and is green after the fix (10/10)'
+  - 'context_safe_commands, t4343, t4264, t4344 bats green except the T-2888 unclassified-verb test (check-attr check-ref-format diff-index), which is T-4368''s'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4367-read-only-allowlist-treats-git-difflogsh.md'
+  - 'tests/unit/t4367_git_output_option.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T11:09:52'
+    action: 'T-4367: git diff/log/show/diff-tree/diff-index/whatchanged --output is a write, not a read (allowlist + write scanner)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 35 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 35
+  commits: 1
+  files_changed: 6
+  lines_added: 149
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4367-read-only-allowlist-treats-git-difflogsh.md
+generated_by: context-agent-hybrid

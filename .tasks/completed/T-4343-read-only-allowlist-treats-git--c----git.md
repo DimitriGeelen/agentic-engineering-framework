@@ -1,20 +1,27 @@
 ---
-id: T-4367
-name: "Read-only allowlist treats git diff/log/show/diff-tree --output=FILE as a read;
-  it writes a file"
+id: T-4343
+name: "Read-only allowlist treats git -C / --git-dir / --work-tree on a repository
+  outside the project as safe (that repo's config can run commands)"
 description: >
-  is_bash_safe_command returns SAFE for git diff|log|show|diff-tree --output=/tmp/x,
-  and lib/shell_write_scan.py has no git --output case, so with no active task the
-  gate admits a file write. Same class as T-4343 (read-only allowlist admits a write).
-  Found 2026-10-19 while closing T-4343.
+  ring20-dashboard finding (msg 4699f56c), reproduced on v1.8.11: is_bash_safe_command
+  returns SAFE for 'git -C /tmp/evil status', 'git --git-dir=/tmp/evil/.git log',
+  'git --work-tree=/tmp/evil status' (agents/context/lib/safe-commands.sh _fw_git_skip_globals,
+  T-4264). A git command in a repository the agent does not control reads that repo's
+  config: core.fsmonitor, core.pager, diff.external, filters etc. run arbitrary commands,
+  so it is not read-only. Fix: accept -C / --git-dir / --work-tree (and = forms) only
+  when the value resolves (realpath, after cd tracking) to PROJECT_ROOT or a path
+  inside it; anything else, unresolvable, or variable-built is NOT safe. Tests for
+  each form inside and outside the project, relative and absolute, .. traversal, symlink
+  out of the project. Regression of v1.8.11 (shipped T-4264).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
+horizon: null
+tags: [security, bug, safe-commands]
+components: [agents/context/lib/safe-commands.sh]
 related_tasks: []
+origin: {kind: "peer", source: "ring20-dashboard"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -41,9 +48,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T09:04:08Z
-last_update: 2026-10-19T09:05:22Z
-date_finished:
+created: 2026-10-18T22:02:30Z
+last_update: 2026-10-19T09:41:15Z
+date_finished: 2026-10-19T09:41:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,7 +62,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-19T09:05:23Z'
+  - ts: '2026-10-18T22:04:04Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -72,9 +79,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-18T22:15:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=310,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4367: Read-only allowlist treats git diff/log/show/diff-tree --output=FILE as a read; it writes a file
+# T-4343: Read-only allowlist treats git -C / --git-dir / --work-tree on a repository outside the project as safe (that repo's config can run commands)
 
 ## Context
 
@@ -84,11 +101,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] is_bash_safe_command is NOT safe for git diff|log|show|diff-tree|diff-index|whatchanged with --output / --output=FILE (and abbreviations --out, --outp, --outpu)
-- [x] SAFE controls unchanged: `git diff HEAD`, `git log --oneline`, `git diff --output-indicator-new=+` stay SAFE
-- [x] lib/shell_write_scan.py reports git <verb> --output=FILE as a write to FILE (or the decision not to is recorded in the task)
-- [x] tests/unit/t4367_git_output_option.bats exists, was recorded red on the pre-fix file (6 of 10 not ok: tests 5-10), and is green after the fix (10/10)
-- [x] context_safe_commands, t4343, t4264, t4344 bats green except the T-2888 unclassified-verb test (check-attr check-ref-format diff-index), which is T-4368's
+- [x] `git -C`, `--git-dir` and `--work-tree` (separate-word and `=` forms) with a value resolving (realpath) inside PROJECT_ROOT stay SAFE for read verbs; outside values, `..` escapes, symlinks pointing out, quoted/variable/`~`/glob values and unresolvable values are NOT SAFE (new bats tests/unit/t4343_git_repo_path_boundary.bats)
+- [x] Relative values resolve against the command's effective cwd: a leading `cd X &&` (inside → SAFE, outside → NOT SAFE), and a cd to an unknown or variable target makes a relative value NOT SAFE
+- [x] Cumulative `-C`: `git -C <in> -C <rel-escape>` is NOT SAFE (second value resolves against the first, as git does)
+- [x] T-4264 `-c` fail-closed tests and the command-form tests still pass; their SAFE cases use in-project paths, their `/tmp` cases are kept as NOT-SAFE controls
+- [x] The new bats file fails on the pre-fix safe-commands.sh (recorded red run) and is green on the fix
+  - Red run 2026-10-19: the file copied into the v1.8.11 scratch clone (e42aa41bf) gives 14 ok / 26 not ok (first: "control: git -C <absolute outside project> status is NOT SAFE"). Green: t4343 + t4264 on bleeding-edge, 59 ok / 0 not ok / 0 skip. Field: ring20-dashboard WORKS on every case (docs/reports/T-4345-hotfix-v1812.md).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -137,10 +155,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-bats tests/unit/t4367_git_output_option.bats
-bats tests/unit/context_safe_commands.bats tests/unit/t4343_git_repo_path_boundary.bats tests/unit/t4264_git_global_opts_safe.bats tests/unit/t4344_boundary_read_free_text_opts.bats
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -270,13 +284,25 @@ bin/fw vendor self --check
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/context/lib/safe-commands.sh
+out=$(bats tests/unit/t4343_git_repo_path_boundary.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+test "$(echo "$out" | grep -c '# skip')" -eq 0
+out=$(bats tests/unit/t4264_git_global_opts_safe.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/context_safe_commands.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/safe_commands_chain.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/safe_commands_env_prefix.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/t3096_safe_commands_wrappers.bats 2>&1); echo "$out" | grep -q "^ok " && ! echo "$out" | grep -q "^not ok"
+bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** `is_bash_safe_command "git diff --output=/tmp/x HEAD"` returns SAFE, so with no active task the gate admits a file write.
-**Root cause:** agents/context/lib/safe-commands.sh git arm (case arms ~line 629 and 635) judges the verb only, never its arguments; lib/shell_write_scan.py `verb == "git"` branch (~line 893) has no --output case either.
-**Why structurally allowed:** the allowlist is verb-keyed; read verbs with a write option were never enumerated; T-4343/T-4344 closed other argument-level holes, not this one.
-**Prevention:** t4367_git_output_option.bats pins NOT-SAFE per verb/form plus SAFE controls.
+**Symptom:** `is_bash_safe_command "git -C /tmp/evil status"` (and `--git-dir=`, `--work-tree=`) returns SAFE. A read-only verb in a repository outside the project runs that repository's config (core.fsmonitor, core.pager, diff.external, filters).
+
+**Root cause:** `agents/context/lib/safe-commands.sh:266-269` (`_fw_git_skip_globals`, T-4264) skips `-C` / `--git-dir` / `--work-tree` and their values without looking at the value. The sub-verb check then judges the verb alone, so the path a read-only verb runs in was never part of the decision.
+
+**Why structurally allowed:** T-4264 fixed the verb being read as a global flag (F-26) and its tests pinned the SAFE verdict with `/tmp` as the path (`tests/unit/t4264_git_global_opts_safe.bats`). The fixture encoded the bug: the test suite asserted the outside repo was safe.
+
+**Prevention:** the value of each repo-selecting global must resolve (realpath, cumulative through `-C`, against the tracked cwd) inside PROJECT_ROOT, or the command is not safe; `tests/unit/t4343_git_repo_path_boundary.bats` pins inside/outside/`..`/symlink/cd/unknown cases. Open (not fixed here): `cd /outside && git status` with no `-C`, and `GIT_DIR=/outside git status` (env prefix, which safe-commands.sh:186-199 deliberately leaves allowed as "retargeting, still a read").
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -368,10 +394,27 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-19T09:04:08Z — task-created [task-create-agent]
+### 2026-10-18T22:02:30Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4367-read-only-allowlist-treats-git-difflogsh.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4343-read-only-allowlist-treats-git--c----git.md
 - **Context:** Initial task creation
 
-### 2026-10-19T09:05:22Z — status-update [task-update-agent]
+### 2026-10-18T22:04:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-89caa7e3
+- **Timestamp:** 2026-10-19T09:41:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T09:41:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

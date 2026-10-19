@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4343: Read-only allowlist treats git -C / --git-dir / --work-tree on a repository outside the project as safe (that repo's config can run commands)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T09:42:15Z
+# ============================================================================
+
+task_id: T-4343
+task_name: "Read-only allowlist treats git -C / --git-dir / --work-tree on a repository outside the project as safe (that repo's config can run commands)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T22:02:30Z
+completed: 2026-10-19T09:41:15Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-19T00:20:48+02:00
+last_commit: 2026-10-19T00:20:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  git -C / --git-dir / --work-tree SAFE only inside PROJECT_ROOT (realpath, cumulative, cd-tracked)
+
+# Key outcomes
+outcomes:
+  - '`git -C`, `--git-dir` and `--work-tree` (separate-word and `=` forms) with a value resolving (realpath) inside PROJECT_ROOT stay SAFE for read verbs; outside values, `..` escapes, symlinks pointing out, quoted/variable/`~`/glob values and unresolvable values are NOT SAFE (new bats tests/unit/t4343_git_repo_path_boundary.bats)'
+  - 'Relative values resolve against the command''s effective cwd: a leading `cd X &&` (inside → SAFE, outside → NOT SAFE), and a cd to an unknown or variable target makes a relative value NOT SAFE'
+  - 'Cumulative `-C`: `git -C <in> -C <rel-escape>` is NOT SAFE (second value resolves against the first, as git does)'
+  - 'T-4264 `-c` fail-closed tests and the command-form tests still pass; their SAFE cases use in-project paths, their `/tmp` cases are kept as NOT-SAFE controls'
+  - 'The new bats file fails on the pre-fix safe-commands.sh (recorded red run) and is green on the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4343-read-only-allowlist-treats-git--c----git.md'
+  - 'tests/unit/t4264_git_global_opts_safe.bats'
+  - 'tests/unit/t4343_git_repo_path_boundary.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T00:20:48'
+    action: 'T-4343: git -C / --git-dir / --work-tree SAFE only inside PROJECT_ROOT (realpath, cumulative, cd-tracked)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 698 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, bug, safe-commands]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 698
+  commits: 2
+  files_changed: 8
+  lines_added: 454
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4343-read-only-allowlist-treats-git--c----git.md
+generated_by: context-agent-hybrid

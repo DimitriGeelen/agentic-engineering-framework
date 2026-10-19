@@ -1,19 +1,19 @@
 ---
-id: T-4368
-name: "Classify git check-attr, check-ref-format, diff-index in safe-commands (baselined
-  red, context_safe_commands T-2888 test)"
+id: T-4367
+name: "Read-only allowlist treats git diff/log/show/diff-tree --output=FILE as a read;
+  it writes a file"
 description: >
-  context_safe_commands.bats test 42 (T-2888) is red on v1.8.11 and bleeding-edge
-  and baselined: our tooling uses git check-attr, check-ref-format and diff-index,
-  which safe-commands.sh does not classify. Decide each (read case or denylist); diff-index
-  needs the same --output handling as diff. Blocks T-4343's verification line.
+  is_bash_safe_command returns SAFE for git diff|log|show|diff-tree --output=/tmp/x,
+  and lib/shell_write_scan.py has no git --output case, so with no active task the
+  gate admits a file write. Same class as T-4343 (read-only allowlist admits a write).
+  Found 2026-10-19 while closing T-4343.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/lib/safe-commands.sh, lib/shell_write_scan.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,9 +41,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T09:04:30Z
-last_update: 2026-10-19T09:10:00Z
-date_finished:
+created: 2026-10-19T09:04:08Z
+last_update: 2026-10-19T09:39:18Z
+date_finished: 2026-10-19T09:39:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,7 +55,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-19T09:10:01Z'
+  - ts: '2026-10-19T09:05:23Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -72,9 +72,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-19T09:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4368: Classify git check-attr, check-ref-format, diff-index in safe-commands (baselined red, context_safe_commands T-2888 test)
+# T-4367: Read-only allowlist treats git diff/log/show/diff-tree --output=FILE as a read; it writes a file
 
 ## Context
 
@@ -84,10 +94,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] safe-commands.sh classifies git check-attr and check-ref-format as read-only (SAFE) and git diff-index as read-only except --output (T-4367 handling)
-- [x] tests/unit/context_safe_commands.bats is fully green, including the T-2888 unclassified-verb test, with no skips
-- [x] t4367, t4343, t4264, t4344 bats still green
-- [x] Note: the baselined entry for this test (context_safe_commands T-2888) can drop at the next suite run; `unit_suite_baseline.py regenerate` was deliberately not run against the stale report
+- [x] is_bash_safe_command is NOT safe for git diff|log|show|diff-tree|diff-index|whatchanged with --output / --output=FILE (and abbreviations --out, --outp, --outpu)
+- [x] SAFE controls unchanged: `git diff HEAD`, `git log --oneline`, `git diff --output-indicator-new=+` stay SAFE
+- [x] lib/shell_write_scan.py reports git <verb> --output=FILE as a write to FILE (or the decision not to is recorded in the task)
+- [x] tests/unit/t4367_git_output_option.bats exists, was recorded red on the pre-fix file (6 of 10 not ok: tests 5-10), and is green after the fix (10/10)
+- [x] context_safe_commands, t4343, t4264, t4344 bats green except the T-2888 unclassified-verb test (check-attr check-ref-format diff-index), which is T-4368's
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -137,9 +148,8 @@ bvp_scores_proposed:
 
 ## Verification
 
-bats tests/unit/context_safe_commands.bats
-bats tests/unit/t4367_git_output_option.bats tests/unit/t4343_git_repo_path_boundary.bats tests/unit/t4264_git_global_opts_safe.bats tests/unit/t4344_boundary_read_free_text_opts.bats
-bash -c 'PROJECT_ROOT=$PWD; source agents/context/lib/safe-commands.sh; is_bash_safe_command "git check-attr -a README.md" && is_bash_safe_command "git check-ref-format --branch x" && is_bash_safe_command "git diff-index HEAD"'
+bats tests/unit/t4367_git_output_option.bats
+bats tests/unit/context_safe_commands.bats tests/unit/t4343_git_repo_path_boundary.bats tests/unit/t4264_git_global_opts_safe.bats tests/unit/t4344_boundary_read_free_text_opts.bats
 bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -273,6 +283,11 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** `is_bash_safe_command "git diff --output=/tmp/x HEAD"` returns SAFE, so with no active task the gate admits a file write.
+**Root cause:** agents/context/lib/safe-commands.sh git arm (case arms ~line 629 and 635) judges the verb only, never its arguments; lib/shell_write_scan.py `verb == "git"` branch (~line 893) has no --output case either.
+**Why structurally allowed:** the allowlist is verb-keyed; read verbs with a write option were never enumerated; T-4343/T-4344 closed other argument-level holes, not this one.
+**Prevention:** t4367_git_output_option.bats pins NOT-SAFE per verb/form plus SAFE controls.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -363,10 +378,27 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-19T09:04:30Z — task-created [task-create-agent]
+### 2026-10-19T09:04:08Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4368-classify-git-check-attr-check-ref-format.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4367-read-only-allowlist-treats-git-difflogsh.md
 - **Context:** Initial task creation
 
-### 2026-10-19T09:10:00Z — status-update [task-update-agent]
+### 2026-10-19T09:05:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cf1632a6
+- **Timestamp:** 2026-10-19T09:39:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T09:39:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
