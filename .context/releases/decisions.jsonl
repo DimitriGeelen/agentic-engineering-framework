@@ -1,0 +1,1 @@
+{"version": "v1.8.12", "decided_by": "field-evidence", "ref": "T-4345: ring20-dashboard field test WORKS on every case; full-suite comparison vs v1.8.11 shows 0 failures attributed to the hotfix diff (docs/reports/T-4345-hotfix-v1812.md); T-4146 rule", "ts": "2026-10-19T09:08:54Z"}
