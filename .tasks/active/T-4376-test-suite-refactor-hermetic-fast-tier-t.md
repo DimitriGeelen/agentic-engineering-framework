@@ -15,7 +15,7 @@ components: []
 related_tasks: []
 arc_id: test-suite-health
 created: 2026-10-19T11:55:19Z
-last_update: '2026-10-19T12:00:44Z'
+last_update: 2026-10-19T12:13:43Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -118,8 +118,8 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] IW-1 measurement report exists at docs/reports/T-4376-test-suite-measurement.md with the five sections (duration distribution, timeouts, reds/baseline, live-state scan, fast-tier candidate), each stating its method
+- [x] Report contains no hostnames or IP addresses
 <!-- @auto-tick-on-decide -->
 - [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
@@ -156,6 +156,9 @@ cost_estimate_proposed:
 # *.go, Cargo.toml, tsconfig.json, or pom.xml in the build task, plan to add the
 # matching build command (dotnet build / go build / cargo check / tsc --noEmit /
 # mvn compile) to that build task's ## Verification — P-011 only runs what you write.
+test -s docs/reports/T-4376-test-suite-measurement.md
+for s in "Duration distribution" "Timeout frequency" "Reds" "Live-state" "Fast-tier"; do grep -qi "$s" docs/reports/T-4376-test-suite-measurement.md || exit 1; done
+! grep -qE '([0-9]{1,3}\.){3}[0-9]{1,3}' docs/reports/T-4376-test-suite-measurement.md
 
 ## Recommendation
 
