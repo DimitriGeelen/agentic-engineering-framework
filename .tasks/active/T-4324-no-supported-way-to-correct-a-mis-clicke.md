@@ -2,7 +2,15 @@
 id: T-4324
 name: "No supported way to correct a mis-clicked Watchtower inception decision"
 description: >
-  2026-10-18: the operator pressed GO on T-2899 instead of NO-GO. Correction needed a manual git revert of the two decide commits (15704c4ef), because fw inception decide only accepts active tasks and the decide chain had moved the task to completed. Even after the revert, fw task review / fw operator pending report 'already decided: GO' (lib/operator_pending.py _commit_decision reads the latest decision commit by design, T-4095/G-114) until a newer decision commit exists. Options: a confirm step on the Watchtower decide form showing the chosen verdict; a 'correct decision' path (operator-only, logged) that re-records the verdict on a completed inception with a reason, which the pending view then honours.
+  2026-10-18: the operator pressed GO on T-2899 instead of NO-GO. Correction needed
+  a manual git revert of the two decide commits (15704c4ef), because fw inception
+  decide only accepts active tasks and the decide chain had moved the task to completed.
+  Even after the revert, fw task review / fw operator pending report 'already decided:
+  GO' (lib/operator_pending.py _commit_decision reads the latest decision commit by
+  design, T-4095/G-114) until a newer decision commit exists. Options: a confirm step
+  on the Watchtower decide form showing the chosen verdict; a 'correct decision' path
+  (operator-only, logged) that re-records the verdict on a completed inception with
+  a reason, which the pending view then honours.
 
 status: captured
 workflow_type: build
@@ -39,8 +47,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T18:44:08Z
-last_update: 2026-10-18T18:44:08Z
-date_finished: null
+last_update: '2026-10-18T18:46:45Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T18:45:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T18:46:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4324: No supported way to correct a mis-clicked Watchtower inception decision

@@ -1,8 +1,21 @@
 ---
 id: T-4364
-name: "Weekly cron ran fw release tag-and-release unattended and nearly published untested bleeding-edge as v1.8.12"
+name: "Weekly cron ran fw release tag-and-release unattended and nearly published
+  untested bleeding-edge as v1.8.12"
 description: >
-  2026-10-19 10:00 CEST: cron entry (registry id with command 'fw release tag-and-release', schedule '0 10 * * 1', origin T-1256, status active) cut v1.8.12 from bleeding-edge HEAD (49 commits since v1.8.11, almost none field-tested): VERSION commit 45a54b494 on bleeding-edge, annotated local tag v1.8.12, local master fast-forwarded to it, then 'Pushing master + v1.8.12 to github (atomic)' — stopped by the parent (SIGTERM to pid 3170687) during the pre-push audit at ~10:14, before any push: origin and github master still e42aa41bf (v1.8.11), no v1.8.12 tag on either remote. It contradicts the release rule (CLAUDE.md §Release-Train: only verified-working fixes reach master; T-4020, T-4146: operator yes or positive field tests) and collided with the planned v1.8.12 security hotfix (T-4345). Fix: pause the cron now; restore local master to e42aa41bf, delete the local v1.8.12 tag, revert the VERSION commit; then decide (operator) whether a scheduled release may exist at all, and make fw release refuse unattended runs without a recorded release decision.
+  2026-10-19 10:00 CEST: cron entry (registry id with command 'fw release tag-and-release',
+  schedule '0 10 * * 1', origin T-1256, status active) cut v1.8.12 from bleeding-edge
+  HEAD (49 commits since v1.8.11, almost none field-tested): VERSION commit 45a54b494
+  on bleeding-edge, annotated local tag v1.8.12, local master fast-forwarded to it,
+  then 'Pushing master + v1.8.12 to github (atomic)' — stopped by the parent (SIGTERM
+  to pid 3170687) during the pre-push audit at ~10:14, before any push: origin and
+  github master still e42aa41bf (v1.8.11), no v1.8.12 tag on either remote. It contradicts
+  the release rule (CLAUDE.md §Release-Train: only verified-working fixes reach master;
+  T-4020, T-4146: operator yes or positive field tests) and collided with the planned
+  v1.8.12 security hotfix (T-4345). Fix: pause the cron now; restore local master
+  to e42aa41bf, delete the local v1.8.12 tag, revert the VERSION commit; then decide
+  (operator) whether a scheduled release may exist at all, and make fw release refuse
+  unattended runs without a recorded release decision.
 
 status: started-work
 workflow_type: build
@@ -39,8 +52,8 @@ origin: {kind: "agent", source: "T-4345"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T08:15:03Z
-last_update: 2026-10-19T08:20:20Z
-date_finished: null
+last_update: '2026-10-19T08:31:18Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +64,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T08:30:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T08:31:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4364: Weekly cron ran fw release tag-and-release unattended and nearly published untested bleeding-edge as v1.8.12

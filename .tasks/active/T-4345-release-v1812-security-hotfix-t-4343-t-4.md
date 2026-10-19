@@ -2,7 +2,15 @@
 id: T-4345
 name: "Release v1.8.12 security hotfix (T-4343, T-4344) via the T-4035 hotfix lane"
 description: >
-  Operator yes 2026-10-19 for a v1.8.12 hotfix carrying only the two security regression fixes reported by ring20-dashboard against v1.8.11: T-4343 (read-only allowlist accepted git -C/--git-dir/--work-tree on outside repos) and T-4344 (boundary read scanner skipped words after no-value flags). Method as v1.8.10 (docs/reports/T-4092-hotfix-v1810.md): branch hotfix/v1.8.12 from master v1.8.11 (e42aa41bf), cherry-pick only the fix commits (plus vendored copies), VERSION 1.8.12; full-suite comparison hotfix vs v1.8.11 in scratch clones; field re-check by ring20-dashboard with their probe; then push master + tag, GitHub release, merge master back into bleeding-edge. Release question to the operator if any gate is not met.
+  Operator yes 2026-10-19 for a v1.8.12 hotfix carrying only the two security regression
+  fixes reported by ring20-dashboard against v1.8.11: T-4343 (read-only allowlist
+  accepted git -C/--git-dir/--work-tree on outside repos) and T-4344 (boundary read
+  scanner skipped words after no-value flags). Method as v1.8.10 (docs/reports/T-4092-hotfix-v1810.md):
+  branch hotfix/v1.8.12 from master v1.8.11 (e42aa41bf), cherry-pick only the fix
+  commits (plus vendored copies), VERSION 1.8.12; full-suite comparison hotfix vs
+  v1.8.11 in scratch clones; field re-check by ring20-dashboard with their probe;
+  then push master + tag, GitHub release, merge master back into bleeding-edge. Release
+  question to the operator if any gate is not met.
 
 status: started-work
 workflow_type: build
@@ -39,8 +47,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:05:48Z
-last_update: 2026-10-18T22:05:48Z
-date_finished: null
+last_update: '2026-10-18T22:16:18Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T22:15:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=293,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T22:16:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4345: Release v1.8.12 security hotfix (T-4343, T-4344) via the T-4035 hotfix lane

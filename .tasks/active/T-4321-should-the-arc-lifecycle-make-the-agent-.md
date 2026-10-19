@@ -1,8 +1,16 @@
 ---
 id: T-4321
-name: "Should the arc lifecycle make the agent file the close recommendation and demo evidence before the operator opens the close form?"
+name: "Should the arc lifecycle make the agent file the close recommendation and demo
+  evidence before the operator opens the close form?"
 description: >
-  Peer report (1023, vault-mvp): nothing in the lifecycle prompts the agent to write a CLOSE recommendation with demo evidence when an arc's work is done; the T-3843 close_task + suggested_demo mechanism exists but goes unused. Candidate legs (from the peer): (b) fw arc create scaffolds a captured close task and sets close_task; (c) audit and handover flag 'arc in-progress, all arc tasks complete, no close recommendation' as an AGENT action; (d) fw arc propose-close ARC --demo PATH --rationale ... writes the close task's Recommendation and validates the demo with _arc_validate_demo_path before the operator sees the form.
+  Peer report (1023, vault-mvp): nothing in the lifecycle prompts the agent to write
+  a CLOSE recommendation with demo evidence when an arc's work is done; the T-3843
+  close_task + suggested_demo mechanism exists but goes unused. Candidate legs (from
+  the peer): (b) fw arc create scaffolds a captured close task and sets close_task;
+  (c) audit and handover flag 'arc in-progress, all arc tasks complete, no close recommendation'
+  as an AGENT action; (d) fw arc propose-close ARC --demo PATH --rationale ... writes
+  the close task's Recommendation and validates the demo with _arc_validate_demo_path
+  before the operator sees the form.
 
 status: captured
 workflow_type: inception
@@ -13,8 +21,8 @@ components: []
 related_tasks: []
 origin: {kind: "peer", source: "1023-portable-encrypted-chromium-vault"}
 created: 2026-10-18T18:28:38Z
-last_update: 2026-10-18T18:28:38Z
-date_finished: null
+last_update: '2026-10-18T18:31:48Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -23,6 +31,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-10-18T18:30:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=115,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T18:31:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4321: Should the arc lifecycle make the agent file the close recommendation and demo evidence before the operator opens the close form?

@@ -1,8 +1,15 @@
 ---
 id: T-4322
-name: "Watchtower's opted-in firewall rule allows the port from Anywhere; it should allow only the local subnet"
+name: "Watchtower's opted-in firewall rule allows the port from Anywhere; it should
+  allow only the local subnet"
 description: >
-  Follow-up to T-4297 (dimitri-mint-dev T-128, msg 3c30f0ec). With WATCHTOWER_OPEN_FIREWALL=1, lib/firewall.sh:66 runs 'ufw allow PORT/tcp' (Anywhere), and the printed suggestion at :60 is the same. On .107, 78 such rules from Anywhere had accumulated; the operator narrowed the 13 live ones to 192.168.10.0/24, and every Watchtower restart would reopen them to Anywhere. Fix: allow from the bind interface's subnet (derive it from the bind address / routing table; config override for the CIDR), in both the applied rule and the printed command; never Anywhere by default.
+  Follow-up to T-4297 (dimitri-mint-dev T-128, msg 3c30f0ec). With WATCHTOWER_OPEN_FIREWALL=1,
+  lib/firewall.sh:66 runs 'ufw allow PORT/tcp' (Anywhere), and the printed suggestion
+  at :60 is the same. On .107, 78 such rules from Anywhere had accumulated; the operator
+  narrowed the 13 live ones to 192.168.10.0/24, and every Watchtower restart would
+  reopen them to Anywhere. Fix: allow from the bind interface's subnet (derive it
+  from the bind address / routing table; config override for the CIDR), in both the
+  applied rule and the printed command; never Anywhere by default.
 
 status: captured
 workflow_type: build
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T18:39:23Z
-last_update: 2026-10-18T18:39:23Z
-date_finished: null
+last_update: '2026-10-18T18:46:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T18:45:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T18:46:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4322: Watchtower's opted-in firewall rule allows the port from Anywhere; it should allow only the local subnet

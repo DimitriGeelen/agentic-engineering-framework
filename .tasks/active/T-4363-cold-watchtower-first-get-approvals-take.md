@@ -1,8 +1,18 @@
 ---
 id: T-4363
-name: "Cold Watchtower: first GET /approvals takes 13 s, and fw doctor's smoke test times out on / and /cron since v1.8.11"
+name: "Cold Watchtower: first GET /approvals takes 13 s, and fw doctor's smoke test
+  times out on / and /cron since v1.8.11"
 description: >
-  832 measurement (msg 84051d77, after their v1.8.11 upgrade, ~1200 task files): a cold Watchtower listens after ~2 s, but the FIRST GET /approvals takes 13.4 s (next ones 1.3 s); cold /cron 1.4 s, /designer 0.04 s; warm / and /tasks ~1.2 s each. fw doctor's Watchtower smoke reported '/ timed out, /cron timed out' after the upgrade, where it passed before (their probe: 3 s per request). Looks like a cold-cache build of the task corpus on the first request that needs it. Related: T-3765 (dashboard / >30 s; 4 cold-start readers left uncached), T-4223 (/gaps). Measure here, find which reader builds on first request, warm it at startup or make the first request cheap; make doctor's smoke test tolerate a deliberate warm-up (or warm first) rather than report a timeout.
+  832 measurement (msg 84051d77, after their v1.8.11 upgrade, ~1200 task files): a
+  cold Watchtower listens after ~2 s, but the FIRST GET /approvals takes 13.4 s (next
+  ones 1.3 s); cold /cron 1.4 s, /designer 0.04 s; warm / and /tasks ~1.2 s each.
+  fw doctor's Watchtower smoke reported '/ timed out, /cron timed out' after the upgrade,
+  where it passed before (their probe: 3 s per request). Looks like a cold-cache build
+  of the task corpus on the first request that needs it. Related: T-3765 (dashboard
+  / >30 s; 4 cold-start readers left uncached), T-4223 (/gaps). Measure here, find
+  which reader builds on first request, warm it at startup or make the first request
+  cheap; make doctor's smoke test tolerate a deliberate warm-up (or warm first) rather
+  than report a timeout.
 
 status: captured
 workflow_type: build
@@ -39,8 +49,8 @@ origin: {kind: "peer", source: "832"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T23:59:30Z
-last_update: 2026-10-18T23:59:30Z
-date_finished: null
+last_update: '2026-10-19T00:01:51Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T00:00:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T00:01:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4363: Cold Watchtower: first GET /approvals takes 13 s, and fw doctor's smoke test times out on / and /cron since v1.8.11

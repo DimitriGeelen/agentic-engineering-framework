@@ -13,12 +13,12 @@ description: >
   'Agentic Framework'). Related: T-4239 (0.0.0.0 default, no auth). Test with a ufw
   stub on PATH.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/watchtower.sh, lib/config.sh, lib/firewall.sh, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T10:00:09Z
-last_update: 2026-10-18T10:19:41Z
-date_finished:
+last_update: 2026-10-18T10:23:50Z
+date_finished: 2026-10-18T10:23:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -416,3 +416,27 @@ out=$(bats tests/lint/config-registry-parity.bats 2>&1); ! echo "$out" | grep -q
 
 ### 2026-10-18T10:19:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ca6e165f
+- **Timestamp:** 2026-10-18T10:24:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Config key registered in lib/config.sh (and the web/blueprints/config.py mirror, parity lint green); vendored copy in sync
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/config.py in: Config key registered in lib/config.sh (and the web/blueprints/config.py mirror, parity lint green); vendored copy in sync`
+- **AC#3 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `out=$(bats tests/lint/config-registry-parity.bats 2>&1); ! echo "$out" | grep -q '^not ok'`
+
+### 2026-10-18T10:23:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

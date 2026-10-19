@@ -1,19 +1,16 @@
 ---
-id: T-4306
-name: "fw watchtower stop reports failure when the server process is a zombie"
+id: T-4366
+name: "Fix test: lib_firewall.bats still asserts silence when ufw is absent, contradicting T-4330's advisory line"
 description: >
-  Greenfield container run (dimitri-mint-dev T-126): watchtower stop reports failure
-  when the pid is a zombie (already exited, not reaped); a zombie is stopped and should
-  report so.
+  Fix test: lib_firewall.bats still asserts silence when ufw is absent, contradicting T-4330's advisory line
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, greenfield, watchtower]
-components: []
+horizon: null
+tags: []
+components: [tests/unit/lib_firewall.bats]
 related_tasks: []
-origin: {kind: "peer", source: "dimitri-mint-dev"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -40,9 +37,9 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T13:48:45Z
-last_update: 2026-10-18T21:06:25Z
-date_finished:
+created: 2026-10-19T08:42:05Z
+last_update: 2026-10-19T08:43:23Z
+date_finished: 2026-10-19T08:43:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -53,52 +50,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-18T14:01:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=287,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-18T14:02:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4306: fw watchtower stop reports failure when the server process is a zombie
+# T-4366: Fix test: lib_firewall.bats still asserts silence when ufw is absent, contradicting T-4330's advisory line
 
 ## Context
 
-Confirmed on v1.8.11 (dimitri-mint-dev T-133 F-06, degraded): after the false stop failure, the stale pid file now
-blocks both `watchtower start` and `restart` until it is removed by hand. Fix both: stop treats a zombie as stopped
-and removes the pid file; start/restart treat a pid file whose process is gone or a zombie as stale.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `bin/watchtower.sh` has one liveness predicate that treats a zombie (`/proc/PID/stat` state Z, or `ps` stat Z) and a gone pid as not running; `is_running`, `do_stop`, `do_current` and the start health loop use it instead of bare `kill -0`
-- [x] `stop` on a pid file pointing at a dead pid or a zombie exits 0, reports stopped/stale, and removes the pid/port/url triple
-- [x] `start` and `restart` with a pid file pointing at a dead pid or a zombie clear it as stale and proceed (no "already running" refusal)
-- [x] Regression bats `tests/unit/t4306_watchtower_zombie_pid.bats` covers stop/start/restart × dead/zombie, fails on the pre-fix script and passes after; neighbouring watchtower bats stay green
+- [x] tests/unit/lib_firewall.bats asserts the T-4330 "ufw not installed: no firewall change made" advisory (and exit 0) instead of empty output when ufw is absent
+- [x] lib_firewall.bats passes in full, no skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,13 +241,18 @@ and removes the pid file; start/restart treat a pid file whose process is gone o
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-bash -n bin/watchtower.sh
-timeout 300 bats tests/unit/t4306_watchtower_zombie_pid.bats > /tmp/.t4306.out 2>&1 && ! grep -q "^not ok" /tmp/.t4306.out
-test "$(grep -c '# skip' /tmp/.t4306.out)" -eq 0
-timeout 300 bats tests/unit/t3661_watchtower_status_exit.bats tests/unit/t3660_watchtower_detach.bats > /tmp/.t4306n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4306n.out
-bin/fw vendor self --check
+env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u CLAUDECODE timeout 120 bats tests/unit/lib_firewall.bats > /tmp/.t4366 2>&1 && ! grep -q "^not ok" /tmp/.t4366
+test "$(grep -c '# skip' /tmp/.t4366)" -eq 0
 
 ## RCA
+
+**Symptom:** nightly unit suite 2026-10-19 NEW red: lib_firewall.bats "ensure_firewall_open succeeds silently when ufw not installed" — `[ -z "$output" ]` failed.
+
+**Root cause:** T-4330 deliberately changed lib/firewall.sh to print a "ufw not installed: no firewall change made" advisory (silence had hidden that no firewall change happened). This older test pinned the opposite behaviour — silence — and was not updated.
+
+**Why structurally allowed:** T-4330's verification ran its own new tests, not every existing test file that sources lib/firewall.sh; the contradiction surfaced only at the nightly full suite.
+
+**Prevention:** the test now pins the advisory text, so a revert to silence goes red. General rule already exists (run `fw fabric blast-radius` / the tests of a changed lib); the nightly ratchet is the backstop that caught it here.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -297,23 +267,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** with the Watchtower process a zombie (exited, parent never reaped it — common as PID 1 children in
-containers), `fw watchtower stop` printed "Failed to stop Watchtower" and exited 1, leaving the pid file; `start` then
-refused with "already running ... not reused" and `restart` failed the same way, until the pid file was removed by hand.
-
-**Root cause:** every liveness check in `bin/watchtower.sh` was a bare `kill -0 PID` (`is_running` :58, `do_stop`
-:151/:166/:173/:180, start health loop :413, `do_current` :558). `kill -0` succeeds on a zombie — the pid still
-exists in the process table — so stop sent TERM/KILL to a process that cannot die, saw `kill -0` still succeed and
-returned 1 at :180 without removing the triple; start's `is_running` (:268) reported the zombie as a running server.
-
-**Why structurally allowed:** the tests (t3661) only model "dead and reaped" stale pids; nothing ever modelled a
-zombie, and on a developer host with a real init/shell parent the server is always reaped, so the gap never showed
-outside containers.
-
-**Prevention:** one predicate `_pid_alive` (kill -0 AND state != Z via /proc, ps fallback) is the only liveness test
-in the script; `tests/unit/t4306_watchtower_zombie_pid.bats` creates a real zombie and pins stop/start/restart
-behaviour on it and on a dead pid.
 
 ## Evolution
 
@@ -391,10 +344,24 @@ behaviour on it and on a dead pid.
 
 ## Updates
 
-### 2026-10-18T13:48:45Z — task-created [task-create-agent]
+### 2026-10-19T08:42:05Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4306-fw-watchtower-stop-reports-failure-when-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4366-fix-test-libfirewallbats-still-asserts-s.md
 - **Context:** Initial task creation
 
-### 2026-10-18T21:06:25Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9ad5761d
+- **Timestamp:** 2026-10-19T08:43:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T08:43:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

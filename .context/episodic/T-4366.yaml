@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4366: Fix test: lib_firewall.bats still asserts silence when ufw is absent, contradicting T-4330's advisory line
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T08:43:40Z
+# ============================================================================
+
+task_id: T-4366
+task_name: "Fix test: lib_firewall.bats still asserts silence when ufw is absent, contradicting T-4330's advisory line"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T08:42:05Z
+completed: 2026-10-19T08:43:23Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-19T10:43:22+02:00
+last_commit: 2026-10-19T10:43:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lib_firewall.bats pins T-4330's ufw-absent advisory instead of silence (nightly new red)
+
+# Key outcomes
+outcomes:
+  - 'tests/unit/lib_firewall.bats asserts the T-4330 "ufw not installed: no firewall change made" advisory (and exit 0) instead of empty output when ufw is absent'
+  - 'lib_firewall.bats passes in full, no skips'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4366-fix-test-libfirewallbats-still-asserts-s.md'
+  - '.tasks/completed/T-4365-fix-test-conftest-sidecar-stop-guard-use.md'
+  - 'tests/unit/lib_firewall.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T10:43:22'
+    action: 'T-4366: lib_firewall.bats pins T-4330''s ufw-absent advisory instead of silence (nightly new red)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 3
+  lines_added: 354
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4366-fix-test-libfirewallbats-still-asserts-s.md
+generated_by: context-agent-hybrid

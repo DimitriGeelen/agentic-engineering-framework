@@ -1,8 +1,16 @@
 ---
 id: T-4325
-name: "Unit-suite tests that fail only under the parallel suite's load (a different set each run)"
+name: "Unit-suite tests that fail only under the parallel suite's load (a different
+  set each run)"
 description: >
-  Three full runs on 2026-10-18 each produced a different handful of NEW reds that pass when run alone: fw_focus_alias.bats 2-5 and t1719_ask_routing.bats 7-8 (run 18:13Z), install_target_project T-2809 (fixed by T-4318: shared /tmp), test_audit_watchdog_fd 4 (run 15:14Z), t3602 test 7 and t4119 (T-4301/T-4300 analyses). Pattern: timing or shared host state under jobs=12 on a loaded host. The pre-push ratchet cannot converge while each run draws new flakes. Baselined 2026-10-18 by the operator for 14 days with this task as owner. Work: reproduce each under load (busy loops), find the shared resource or deadline, fix, and drop from the baseline.
+  Three full runs on 2026-10-18 each produced a different handful of NEW reds that
+  pass when run alone: fw_focus_alias.bats 2-5 and t1719_ask_routing.bats 7-8 (run
+  18:13Z), install_target_project T-2809 (fixed by T-4318: shared /tmp), test_audit_watchdog_fd
+  4 (run 15:14Z), t3602 test 7 and t4119 (T-4301/T-4300 analyses). Pattern: timing
+  or shared host state under jobs=12 on a loaded host. The pre-push ratchet cannot
+  converge while each run draws new flakes. Baselined 2026-10-18 by the operator for
+  14 days with this task as owner. Work: reproduce each under load (busy loops), find
+  the shared resource or deadline, fix, and drop from the baseline.
 
 status: captured
 workflow_type: test
@@ -39,8 +47,8 @@ origin: {kind: "agent", source: "T-4246"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T19:19:58Z
-last_update: 2026-10-18T19:19:58Z
-date_finished: null
+last_update: '2026-10-18T19:31:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T19:30:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T19:31:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4325: Unit-suite tests that fail only under the parallel suite's load (a different set each run)
