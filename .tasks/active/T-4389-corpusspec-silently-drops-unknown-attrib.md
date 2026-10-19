@@ -1,10 +1,15 @@
 ---
 id: T-4389
-name: "corpus_spec silently drops unknown attributes and local xmlns declarations on flow nodes (e.g. camunda:asyncBefore)"
+name: "corpus_spec silently drops unknown attributes and local xmlns declarations
+  on flow nodes (e.g. camunda:asyncBefore)"
 description: >
-  A serviceTask with xmlns:camunda=... camunda:asyncBefore="true" parses and re-emits with neither, no error. Fix: carry unknown attributes (qualified) and their namespace declarations through parse/emit; also emit foreign extension children with their original prefix instead of ns0: so round-trip with 832's designer is text-stable. Asked by 832 (T-347, msg 5b7175f2); 832 holds that release until this lands.
+  A serviceTask with xmlns:camunda=... camunda:asyncBefore="true" parses and re-emits
+  with neither, no error. Fix: carry unknown attributes (qualified) and their namespace
+  declarations through parse/emit; also emit foreign extension children with their
+  original prefix instead of ns0: so round-trip with 832's designer is text-stable.
+  Asked by 832 (T-347, msg 5b7175f2); 832 holds that release until this lands.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:36:05Z
-last_update: 2026-10-19T12:36:05Z
-date_finished: null
+last_update: 2026-10-19T13:46:52Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +55,52 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T12:45:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T12:46:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4389: corpus_spec silently drops unknown attributes and local xmlns declarations on flow nodes (e.g. camunda:asyncBefore)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Bug report in the description (832 T-347, msg 5b7175f2; 832 holds a release on it). Fix in `tools/corpus_spec.py` (parse_map node branch, emit_map node open tag, raw serialization). Follows T-4387 (ext children by namespace) and T-4388 (node raw_children).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] parse_map records a node's namespace-qualified attributes (e.g. `camunda:asyncBefore="true"`) with their ORIGINAL prefix, and the prefix→URI declaration they need
+- [x] emit_map writes them back on the node open tag with that prefix and an `xmlns:<prefix>` declaration in scope; parse→emit→parse keeps the node identical and canonical identity holds
+- [x] Foreign extension children (and other verbatim raw parts) serialize with the source prefix (`zeebe:uid`), never `ns0:`
+- [x] Text-stable: emit(parse(emit(parse(x)))) == emit(parse(x)) byte-for-byte for a serviceTask carrying both a foreign attribute and a foreign extension child
+- [x] Regression tests red before the fix (2 failed, 13 passed), green after (15 passed); `test_importer_fidelity.py` green with its `foreign-attr-on-node` census pin moved to PRESERVED deliberately; unknown TAGS still a hard error
+- [x] Corpus re-emit of the 16 latest designer maps checked: byte-identical before/after (no corpus node carries qualified attributes)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,6 +149,9 @@ date_finished: null
 -->
 
 ## Verification
+python3 -m pytest -q tests/unit/test_corpus_spec_roundtrip.py
+python3 -m pytest -q tests/unit/test_corpus_spec_roundtrip.py -k foreign_attribute
+python3 -m pytest -q tests/unit/test_importer_fidelity.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -258,6 +298,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** a `<bpmn:serviceTask xmlns:camunda="…" camunda:asyncBefore="true">` re-emits with neither the attribute nor the declaration, with no error; foreign extension children that do survive (T-4387) come back as `<ns0:uid xmlns:ns0="…">`, so a round-trip with 832's designer is never text-stable.
+
+**Root cause:** `tools/corpus_spec.py` parse_map node branch reads only `id`/`name` from `el.attrib` and ignores everything else; emit_map's node open tag writes only those two. Separately, ElementTree discards source prefixes at parse time, and `_raw_xml()` serializes with the module's global prefix registry, which only knows bpmn/aef/xsi, so any other namespace falls back to the generated `ns0`.
+
+**Why structurally allowed:** the only producer the round-trip tests modelled was our own emitter, which never writes foreign attributes or namespaces. `test_importer_fidelity.py` did measure `foreign-attr-on-node` as `dropped-silently` (2026-08-09 census) but pinned it as CURRENT, not as a defect with an owner, and canonical identity cannot see it because both sides pass through the same lossy parse.
+
+**Prevention:** round-trip and byte-stability tests with a foreign attribute plus a foreign extension child in `tests/unit/test_corpus_spec_roundtrip.py`; the census pin now asserts PRESERVED, so a regression turns it red.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -338,3 +386,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4389-corpusspec-silently-drops-unknown-attrib.md
 - **Context:** Initial task creation
+
+### 2026-10-19T13:46:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -573,10 +573,11 @@ CORPUS_MEASURED_2026_08_09 = {
     "non-ext-child-of-flow": PRESERVED,
     # T-4388: node non-extension children now pass through like a flow's
     "documentation-child-of-node": PRESERVED,
+    # T-4389: qualified node attributes carried with their source prefix
+    "foreign-attr-on-node": PRESERVED,
     # (c) refuse — T-2614 again: losing a node while keeping its flows is worse
     "unsupported-identified-process-child": REFUSED,
     # (b) drop, silently
-    "foreign-attr-on-node": DROPPED_SILENT,
     "text-in-node": DROPPED_SILENT,
     "unidentified-process-child": DROPPED_SILENT,
     "foreign-top-level-subtree": DROPPED_SILENT,

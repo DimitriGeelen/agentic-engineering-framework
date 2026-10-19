@@ -265,3 +265,38 @@ def test_node_children_loop_characteristics_emit_in_schema_order():
         "<bpmn:documentation", "<bpmn:extensionElements", "<bpmn:incoming",
         "<bpmn:property", "<bpmn:multiInstanceLoopCharacteristics")]
     assert order == sorted(order), block
+
+
+# ── T-4389: foreign attributes + original prefixes survive, text-stable ──────
+
+CAMUNDA = "http://camunda.org/schema/1.0/bpmn"
+
+
+def _foreign_attr_xml():
+    return FOREIGN_HEAD + (
+        f'<bpmn:serviceTask id="s1" name="svc" xmlns:camunda="{CAMUNDA}" '
+        'camunda:asyncBefore="true"><bpmn:extensionElements>'
+        '<aef:uid value="u1"/><zeebe:taskDefinition type="work"/>'
+        "</bpmn:extensionElements></bpmn:serviceTask>"
+    ) + TAIL
+
+
+def test_foreign_attribute_and_declaration_survive_round_trip():
+    spec = corpus_spec.parse_map(_foreign_attr_xml())
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert 'camunda:asyncBefore="true"' in out
+    assert f'xmlns:camunda="{CAMUNDA}"' in out
+    spec2 = corpus_spec.parse_map(out)
+    assert spec2["nodes"] == spec["nodes"]
+    again = corpus_spec.emit_map(spec2, version=1, compat_alias=False)
+    assert corpus_spec.canonical(again) == corpus_spec.canonical(out)
+
+
+def test_foreign_attribute_and_ext_child_keep_original_prefix_text_stable():
+    out = corpus_spec.emit_map(corpus_spec.parse_map(_foreign_attr_xml()),
+                               version=1, compat_alias=False)
+    assert "ns0:" not in out and "xmlns:ns0" not in out
+    assert "<zeebe:taskDefinition" in out
+    again = corpus_spec.emit_map(corpus_spec.parse_map(out), version=1,
+                                 compat_alias=False)
+    assert again == out

@@ -26,6 +26,7 @@ the spec is the source of truth for the whole rendered map.
 """
 
 import argparse
+import io
 import json
 import os
 import re
@@ -72,6 +73,32 @@ _KNOWN_EXT = {"uid", "position", "eventDef", "link", "meta", "workflowMeta", "la
 ET.register_namespace("bpmn", BPMN_NS)
 ET.register_namespace("aef", AEF_NS)
 ET.register_namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance")
+
+#: Prefixes the emitter declares on <bpmn:definitions> itself (plus xsi). A source
+#: document may never rebind these — registering one would re-prefix every map.
+_ROOT_NS = {"bpmn": BPMN_NS, "aef": AEF_NS,
+            "bpmndi": "http://www.omg.org/spec/BPMN/20100524/DI",
+            "dc": "http://www.omg.org/spec/DD/20100524/DC",
+            "di": "http://www.omg.org/spec/DD/20100524/DI",
+            "xsi": "http://www.w3.org/2001/XMLSchema-instance"}
+
+
+def _source_prefixes(xml_text: str) -> dict:
+    """uri → prefix as the SOURCE declared it (first declaration wins).
+
+    ElementTree drops prefixes at parse time, so verbatim parts would come back
+    as ns0: (T-4389). Foreign prefixes are registered so _raw_xml keeps them;
+    the reserved root prefixes are never rebound."""
+    out = {}
+    for _, (pfx, uri) in ET.iterparse(io.BytesIO(xml_text.encode("utf-8")),
+                                      events=("start-ns",)):
+        if pfx and uri not in out:
+            out[uri] = pfx
+            if (pfx not in _ROOT_NS and uri not in _ROOT_NS.values()
+                    and not re.fullmatch(r"ns\d+", pfx)):
+                ET.register_namespace(pfx, uri)
+    return out
+
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 STORE = REPO_ROOT / ".context" / "designer" / "projects"
@@ -204,6 +231,7 @@ def _is_boilerplate_comment(text: str) -> bool:
 
 
 def parse_map(xml_text: str) -> dict:
+    prefixes = _source_prefixes(xml_text)
     parser = ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))
     root = ET.fromstring(xml_text, parser=parser)
 
@@ -270,6 +298,15 @@ def parse_map(xml_text: str) -> dict:
                 "type": TAG_TO_TYPE[local],
                 "name": el.get("name"),
             }
+            # T-4389: namespace-qualified attributes (camunda:asyncBefore, …)
+            # with the source prefix and the declaration they need.
+            for key, val in el.attrib.items():
+                if key.startswith("{"):
+                    uri, local = key[1:].split("}", 1)
+                    pfx = prefixes.get(uri, "")
+                    n.setdefault("attrs", {})[f"{pfx}:{local}"] = val
+                    if _ROOT_NS.get(pfx) != uri:
+                        n.setdefault("xmlns", {})[pfx] = uri
             if "uid" in ext:
                 n["uid"] = ext["uid"].get("value")
             if "position" in ext:
@@ -488,6 +525,10 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         a("")
         tag = TYPE_TO_TAG[n["type"]]
         name_attr = f" name={quoteattr(n['name'])}" if n.get("name") else ""
+        name_attr += "".join(f" xmlns:{p}={quoteattr(u)}"
+                             for p, u in n.get("xmlns", {}).items())
+        name_attr += "".join(f" {k}={quoteattr(v)}"
+                             for k, v in n.get("attrs", {}).items())
         a(f'    <bpmn:{tag} id={quoteattr(n["id"])}{name_attr}>')
         # T-4388: BPMN schema order — documentation precedes extensionElements;
         # the rest follow incoming/outgoing, loop characteristics last in tActivity.
