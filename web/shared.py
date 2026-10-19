@@ -1526,11 +1526,14 @@ _LEDGER_CACHE: dict[str, tuple] = {}
 
 # T-4394: committed inputs the verdict validator reads independently of the task (ledgers it
 # replays from git, the cost ledger, policy/backends/worker settings, fabric cards for the rung,
-# the vendored tree and .framework.yaml for the T-4013 fallback, and the files `start` hashes).
-# A commit touching one of these drops every ledger-consulting entry; any other commit drops
-# only the entries of the tasks it names (message) or whose task file it touches.
+# the vendored copies of the committed blobs it reads (policy/, agents/termlink/ - not the whole
+# vendored tree, which a vendor sync rewrites on most commits here) and .framework.yaml for the
+# T-4013 fallback, and the files `start` hashes). A commit touching one of these drops every
+# ledger-consulting entry; any other commit drops only the entries of the tasks it names
+# (message) or whose task file it touches.
 _GLOBAL_GIT_INPUTS = (".context/reviews/", ".context/costs/", ".context/secrets/", "policy/",
-                      ".fabric/", ".framework.yaml", ".agentic-framework/", "agents/termlink/",
+                      ".fabric/", ".framework.yaml", ".agentic-framework/policy/",
+                      ".agentic-framework/agents/termlink/", "agents/termlink/",
                       "CLAUDE.md", "CLAUDE.local.md", ".claude/", ".mcp.json")
 _TASK_REF_RE = re_mod.compile(r"T-(\d+)", re_mod.I)
 _TASK_PATH_RE = re_mod.compile(r"^\.tasks/[^/]+/T-(\d+)-")

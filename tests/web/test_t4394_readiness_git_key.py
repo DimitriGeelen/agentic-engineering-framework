@@ -119,7 +119,8 @@ def test_mention_invalidates(proj, computes, msg):
 
 @pytest.mark.parametrize("rel", [".context/reviews/verdicts.jsonl", ".context/costs/reviews.jsonl",
                                  "policy/review-backends.yaml", ".fabric/components/x.yaml",
-                                 ".framework.yaml", f".tasks/completed/{TID}-old.md"])
+                                 ".framework.yaml", f".tasks/completed/{TID}-old.md",
+                                 ".agentic-framework/policy/review-backends.yaml"])
 def test_relevant_path_invalidates(proj, computes, rel):
     _primed(proj, computes)
     _commit_file(proj, rel, "x\n", "chore: no id here")
@@ -155,6 +156,15 @@ def test_head_fast_forward_onto_known_commit_invalidates(proj, computes):
     _git(proj, "update-ref", f"refs/heads/{branch}", sha)
     _ready(proj)
     assert computes == [TID]
+
+
+def test_vendor_sync_commit_keeps_entry(proj, computes):
+    """A vendor sync rewrites .agentic-framework/ on most commits; only the vendored copies of
+    blobs the validator reads (policy/, agents/termlink/) are task-independent inputs."""
+    first = _primed(proj, computes)
+    _commit_file(proj, ".agentic-framework/web/shared.py", "x\n", "T-1: vendor sync")
+    assert _ready(proj) == first
+    assert computes == []
 
 
 def test_new_branch_without_new_commits_keeps_entry(proj, computes):
