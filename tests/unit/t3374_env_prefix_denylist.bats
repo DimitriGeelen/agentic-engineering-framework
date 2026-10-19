@@ -18,9 +18,22 @@
 # The override exists ONLY for that control run. It lives in the test, never in
 # the library, so it cannot be used to weaken the gate at runtime.
 
+load helpers/known_cwd
+
+# T-4429: classify from a known cwd, as a real hook does (payload cwd). Since T-4409
+# an unknown cwd makes the git arm fail closed, which turned the GIT_DIR= boundary
+# test below red for a reason unrelated to the denylist it pins.
 setup() {
     FRAMEWORK_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
+    known_cwd_setup
     source "${FW_SAFE_COMMANDS_SRC:-$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh}"
+}
+
+teardown() { known_cwd_teardown; }
+
+@test "T-4409 fail-closed: no payload cwd and PWD != PROJECT_ROOT gates git status" {
+    run known_cwd_assert_fail_closed "${FW_SAFE_COMMANDS_SRC:-$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh}"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
 }
 
 # ---- The four measured OBS-423 forms ----
@@ -79,6 +92,8 @@ setup() {
     # tests/unit/safe_commands_env_prefix.bats:44 since T-1908; an earlier draft
     # of the denylist here broke it, and narrowing the denylist was the correct
     # response rather than editing that test.
+    # T-4408/T-4409 narrowed this to GIT_DIR inside PROJECT_ROOT: `foo` is relative,
+    # so it resolves against the known cwd (the temp project) and stays a read here.
     run is_bash_safe_command "GIT_DIR=foo git status"
     [ "$status" -eq 0 ]
 }

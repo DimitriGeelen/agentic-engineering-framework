@@ -33,7 +33,14 @@ LIB="$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"
 # must keep discriminating after later commits land on top of it.
 PREFIX_REF="4578092c4"
 
+load helpers/known_cwd
+
+# T-4429: classify from a known cwd, as a real hook does (payload cwd); the
+# `bash -c` legs inherit it. Since T-4409 an unknown cwd fails git closed, so the
+# commit-clause and `time git status` legs went red. The pre-fix CONTROL library
+# predates cwd tracking and ignores it.
 setup() {
+    known_cwd_setup
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     OLD_LIB="$TEST_TEMP_DIR/safe-commands.prefix.sh"
@@ -41,7 +48,14 @@ setup() {
 }
 
 teardown() {
+    known_cwd_teardown
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
+    return 0
+}
+
+@test "T-4409 fail-closed: no payload cwd and PWD != PROJECT_ROOT gates git status" {
+    run known_cwd_assert_fail_closed "$LIB"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
 }
 
 # Evaluate a predicate snippet against a given library copy.
