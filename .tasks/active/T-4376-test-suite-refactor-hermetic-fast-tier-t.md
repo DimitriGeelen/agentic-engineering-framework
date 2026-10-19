@@ -83,21 +83,21 @@ cost_estimate_proposed:
 -->
 
 - **IW-1: Where does the suite's time and nondeterminism actually come from (per-file duration, timeout frequency, load-only reds, tests touching live repo/host state)?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: docs/reports/T-4376-test-suite-measurement.md — top 30 bats files = 52.6% of ~36,200 file-seconds; a 900 s timeout in 16/20 reports; 83% of 246 reds in ≤2/20 reports; ≥16 bats + ~10 pytest files live-anchored (regex estimate). Caveat (codex): no per-run revision, so flake vs fixed bug cannot yet be separated — T-4381.
 - **IW-2: Can a hermetic fast tier be defined that runs in under 10 minutes and still catches what the pre-push gate exists to catch?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: Yes on time: ~950–1,014 files (~80% of tests) fit 3,600 file-seconds at jobs=6, but with zero headroom; both reviewers say select by measured duration, target ~2,400 file-seconds, gate per-file cap ~120 s (T-4377). "Still catches what it should" is not yet measurable — it depends on IW-4's instrument.
 - **IW-3: What does an independent external review (two other vendors) say about how to optimise this, and where does it disagree with the measurement?**
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: docs/reports/T-4376-reviews/{codex,opencode}.md; synthesis in docs/reports/T-4376-test-suite-refactor.md §External review. Agree: duration-based tiers, timeouts are not verdicts, fidelity before pruning, baseline cliff. Disagree: the four bimodal files (hang vs skip/older code) — T-4382 settles it. New: runner accounting (T-4381), audit.bats contracts (T-4383), t2332 isolation (T-4384), fw doctor >15 min (T-4386).
 - **IW-4: How do we prove a refactored or pruned test still fails on the bug it was written for (no silent coverage loss)?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: Rule: every merged/pruned/rewritten test reproduces its origin defect (historical revision, seeded mutation or control leg) and the record is kept; before T-4380 prunes anything, measure a seeded-defect detection baseline for the suite (both reviewers: no such instrument exists today). Scored by the fault-detection-fidelity driver.
 
 ## Exploration Plan
 
