@@ -40,4 +40,7 @@ teardown() {
         > .tasks/active/T-9002-ok.md
     PROJECT_ROOT="$TMPREPO" TASKS_DIR= CONTEXT_DIR= run bash "$FW" doctor
     [[ "$output" != *"unparsed:"* ]]
+    # T-4436: doctor must run to its summary. Without this, a doctor that died at
+    # the task-debt check also printed no 'unparsed:' line and passed.
+    [[ "$output" == *"Project $TMPREPO"* ]]
 }

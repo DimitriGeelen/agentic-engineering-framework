@@ -4121,7 +4121,9 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
             stale_count=$(python3 "$FW_LIB_DIR/task_debt.py" "$active_dir" "$cutoff_epoch" 2>"$debt_err_file" || echo 0)
             [[ "$stale_count" =~ ^[0-9]+$ ]] || stale_count=0
             if [ "$debt_err_file" != /dev/null ]; then
-                debt_unparsed=$(grep '^unparsed:' "$debt_err_file" 2>/dev/null | head -1)
+                # T-4436: no match is the normal case; grep exits 1 and pipefail + set -e
+                # would end doctor here, so the empty result must not be an error.
+                debt_unparsed=$(grep '^unparsed:' "$debt_err_file" 2>/dev/null | head -1 || true)
                 rm -f "$debt_err_file"
             fi
             if [ -n "$debt_unparsed" ]; then
