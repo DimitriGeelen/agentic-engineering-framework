@@ -5569,3 +5569,22 @@ concerns:
     closes per the operator's close rule), T-4341 (task lifecycle posts 6-7), T-4342 (resume intake). Close when a
     release run posts Released on every linked issue without manual steps, and an audit check flags a shipped linked
     task whose issue is behind.
+- id: G-120
+  type: gap
+  title: A weekly cron runs fw release unattended, so master can be published without an operator yes or field evidence
+  description: 'The cron entry from T-1256 (schedule 0 10 * * 1, command fw release tag-and-release, status active)
+    predates the release-train rule (T-3185) and the release-approval rules (T-4020, T-4146) and was never reconciled
+    with them. On 2026-10-19 10:00 it cut v1.8.12 from bleeding-edge (49 commits, almost none field-tested), moved
+    local master, tagged it and started the atomic push to github; it was stopped by the parent agent during the
+    pre-push audit, before any push. fw release itself has no check for a recorded release decision, so the only
+    thing between bleeding-edge and the public install surface was a slow audit.'
+  severity: high
+  status: open
+  detected_in: T-4364
+  observed: '2026-10-19'
+  reported_by: agent (found while preparing the v1.8.12 hotfix)
+  blast_radius: every consumer that upgrades from master
+  detection_gap: no audit compares the cron registry's release jobs with the release policy; fw release accepts an
+    unattended run with no release decision recorded
+  what_remains: T-4364. Close when fw release refuses an unattended run without a recorded release decision (test),
+    and the operator has ruled on whether any scheduled release may exist.

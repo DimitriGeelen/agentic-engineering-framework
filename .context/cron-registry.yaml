@@ -218,7 +218,11 @@ jobs:
   command: fw release tag-and-release
   source_file: agentic-audit.crontab
   origin_task: T-1256
-  status: active
+  status: paused
+  paused_by: T-4364
+  paused_reason: "2026-10-19: ran unattended and nearly published untested bleeding-edge as v1.8.12 (stopped
+    before any push). Contradicts the release rule (operator yes or positive field tests). Do not re-enable without
+    an operator decision."
   description: "Cuts a new patch-level tag (vX.Y.Z+1), pushes to all remotes with\
     \ --follow-tags, and creates a GitHub Release with auto-generated notes. Idempotent\
     \ \u2014 skips if no commits since last tag. Offset from OE weekly (Monday 09:00)\
