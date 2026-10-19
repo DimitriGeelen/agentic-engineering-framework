@@ -43,7 +43,8 @@ GRANDFATHERED=(
 )
 
 WRITER_RE='install-hooks|install_hooks|(fw|FW|FW_BIN|FW_CMD)"?\}? init\b|bin/fw"? init\b'
-FENCE_RE='load +("|'"'"')?(\.\./)*(test_helper|git_fence)|GIT_CEILING_DIRECTORIES'
+# helpers/hermetic (T-4378) sources git_fence and calls fence_git_discovery.
+FENCE_RE='load +("|'"'"')?(\.\./)*(test_helper|git_fence|helpers/hermetic)|GIT_CEILING_DIRECTORIES'
 
 # Print every .bats under the given root (relative path) that writes via fw
 # init / hook install and carries no fence.

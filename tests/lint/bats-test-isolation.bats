@@ -12,6 +12,8 @@
 # test file, because those are exactly what later arc work edits (the baseline
 # is the work queue, not something to assert on).
 
+load ../git_fence
+
 setup() {
     ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
     LINT="$ROOT/tools/bats-test-isolation-lint.py"

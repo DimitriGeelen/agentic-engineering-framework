@@ -9,6 +9,8 @@
 # runs before the new block is present. The hook is then run directly; no commit
 # is made, so the commit-msg hook is out of scope here.
 
+load ../git_fence
+
 setup() {
     FW_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
     FX="$BATS_TEST_TMPDIR/repo"
