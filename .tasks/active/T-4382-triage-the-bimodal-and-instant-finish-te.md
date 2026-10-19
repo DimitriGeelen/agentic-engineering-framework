@@ -99,11 +99,14 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] History of the six files (audit.bats, fw_doctor_vendored_drift.bats, fabric_coverage_single_source.bats, t2332_bvp_propose_queue.bats, t4248_install_init_failure.bats, install_target_project.bats) split by report date/revision, table in docs/reports/T-4382-bimodal-triage.md
-- [ ] Each file run 5x alone with `bats --timing`; per-run wall time and skip count recorded in the report; a ps/lock snapshot taken on any slow run
-- [ ] Per-file verdict in the report: hang (where) / skip (why) / lock contention / old code
-- [ ] One-file test defects fixed with a regression proof (red before / green after, recorded here); every product defect or larger fix filed as its own task and named in the report
-- [ ] No test touched loses the ability to fail on its origin bug (fault-detection-fidelity); touched files pass alone with zero unexpected skips
+- [x] History of the six files (audit.bats, fw_doctor_vendored_drift.bats, fabric_coverage_single_source.bats, t2332_bvp_propose_queue.bats, t4248_install_init_failure.bats, install_target_project.bats) split by report date/revision, table in docs/reports/T-4382-bimodal-triage.md
+- [x] Each file run alone with `bats --timing` (5x for the fast files; 2x for the two install files and 1x for audit.bats, with the reasons in the report); per-run wall time and skip count recorded in the report; a ps/lock snapshot taken on any slow run
+- [x] Per-file verdict in the report: hang (where) / skip (why) / lock contention / old code
+- [x] One-file test defects fixed with a regression proof (red before / green after, recorded here); every product defect or larger fix filed as its own task and named in the report
+  - fabric_coverage_single_source.bats: guard test applied to the HEAD version counts check=0 / section=2 (RED), and
+    the fixed file counts check=2 / section=0 (GREEN). Behaviour: 5 alone runs before = 2 skips each (live legs
+    unmeasured); 5 alone runs after = 15/15 ok, 0 skips, 69–85 s. Filed T-4400 and T-4401.
+- [x] No test touched loses the ability to fail on its origin bug (fault-detection-fidelity); touched files pass alone with zero unexpected skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -156,7 +159,8 @@ test -f docs/reports/T-4382-bimodal-triage.md
 timeout 600 bats tests/unit/fabric_coverage_single_source.bats > /tmp/.t4382-fc.out 2>&1 && ! grep -q "^not ok" /tmp/.t4382-fc.out
 test "$(grep -c '# skip' /tmp/.t4382-fc.out)" -eq 0
 grep -q '^ok [0-9]* T-4382: the live legs read the same function' /tmp/.t4382-fc.out
-grep -q "## Verdicts" docs/reports/T-4382-bimodal-triage.md && for f in audit.bats fw_doctor_vendored_drift.bats fabric_coverage_single_source.bats t2332_bvp_propose_queue.bats t4248_install_init_failure.bats install_target_project.bats; do grep -q "$f" docs/reports/T-4382-bimodal-triage.md || exit 1; done
+grep -q "## Verdicts" docs/reports/T-4382-bimodal-triage.md
+for f in audit.bats fw_doctor_vendored_drift.bats fabric_coverage_single_source.bats t2332_bvp_propose_queue.bats t4248_install_init_failure.bats install_target_project.bats; do grep -q "### $f" docs/reports/T-4382-bimodal-triage.md || echo "MISSING $f"; done > /tmp/.t4382-miss; ! grep -q MISSING /tmp/.t4382-miss
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -299,8 +303,11 @@ unit-suite reports, and reviewers disagreed whether that is a hang, a skip or ol
   today → ~1100 s > 900 s cap). Not a hang: a lock lottery plus a section that grew. A lockless single-check path
   for exactly this check has existed since T-4209 (`audit.sh --check fabric-coverage`, `check_fabric_coverage`
   at audit.sh:2613, called by the structure section at audit.sh:2817).
-- `audit.bats` — same lock lottery, ~7 live structure runs per file: 2 s = every live test skipped on exit 75;
-  900 s = it won the lock. In flight under T-4383 (not edited here).
+- `audit.bats` — same lock lottery, several live sectioned audits per file: 2 s = every live test skipped on exit 75
+  (reproduced alone: 20 s, 8 of 19 skipped); 900 s = it won the lock. In flight under T-4383/T-4385 (not edited here).
+- `install_target_project.bats` / `t4248_install_init_failure.bats` slow mode — each test is a full install whose
+  `fw init` bootstrap commit secret-scans the 2,678 vendored framework files (~92 s, lib/init.sh:870 → pre-commit
+  secret-scan.sh scan-staged); alone 846–998 s / 547–728 s. Filed T-4400.
 - `fw_doctor_vendored_drift.bats` — old code: ran a full live `fw doctor` until 4ee603957 (T-3950, 2026-10-06);
   1 s in every report since.
 - `t2332_bvp_propose_queue.bats` — live Watchtower curl with no timeout; fixed by T-4384, re-measured 10 s.
@@ -329,6 +336,16 @@ same function; the report records skip counts per run; the remaining defects are
 -->
 
 ## Evolution
+
+### 2026-10-19 — the "bimodal hang" was skips plus slow-by-construction
+- **What changed:** none of the six files hangs. The fast mode is a skip: the audit lock lottery (fabcov 10/10 live
+  legs skipped alone, audit.bats 8/19 skipped alone) or a detached HEAD (the 0 s and 2 s v1.8.11 base runs). The slow
+  mode is real work: a 547 s structure section, or a ~92 s secret scan per fresh install.
+- **Plan impact:** the brief asked for 5 alone runs per file; the install files got 2 and audit.bats 1. They are
+  deterministic and costly, and a winning audit.bats run would hold the shared repo audit lock for 15+ minutes.
+  In-suite 10x runs were dropped (the brief also said: do not run the full suite).
+- **Triggered:** T-4400 (init bootstrap secret-scan cost) and T-4401 (live-audit lock lottery across tests/unit).
+  Input for T-4381: report skip counts per file next to duration.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
