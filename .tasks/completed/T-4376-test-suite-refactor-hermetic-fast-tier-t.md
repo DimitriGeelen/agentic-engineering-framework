@@ -6,17 +6,17 @@ description: >
   Inception: Test-suite refactor: hermetic fast tier that gates the push, slow nightly
   tier, shared fixtures, lints for recurring test-defect classes
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 arc_id: test-suite-health
 created: 2026-10-19T11:55:19Z
-last_update: 2026-10-19T12:13:43Z
-date_finished:
+last_update: 2026-10-19T13:48:25Z
+date_finished: 2026-10-19T13:48:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -121,13 +121,13 @@ cost_estimate_proposed:
 - [x] IW-1 measurement report exists at docs/reports/T-4376-test-suite-measurement.md with the five sections (duration distribution, timeouts, reds/baseline, live-state scan, fast-tier candidate), each stating its method
 - [x] Report contains no hostnames or IP addresses
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -198,7 +198,13 @@ Updated after measurement and external review: GO, in a changed order. Both exte
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Evidence from 2026-10-19 alone: a full unit run takes ~55 min over 1,172 files, 5-8 files hit the per-file timeout every run (results not determined), several reds appear only under parallel load (t3636, t2290, hook_telemetry_race, audit.bats exit 124), audit.bats was anchored to the live repo and created a self-sustaining ratchet loop, a test read this project's .framework.yaml (t4347), an old test contradicted a deliberate behaviour change (lib_firewall vs T-4330), and the baseline grew to 44 entries; getting one push through cost two extra full suite runs and an operator baseline step. Measurement and an independent external review come before any build; the go/no-go is the operator's.
+
+Updated after measurement and external review: GO, in a changed order. Both external reviewers (codex, opencode) support the tier split and the fidelity-first rule. Both say the runner's own verdicts are not yet trustworthy enough to tune against. So step 0 is runner accounting (T-4381), triage of the hanging or instant-finish files (T-4382), the audit.bats contract (T-4383), t2332 isolation (T-4384) and the 2026-10-31 baseline cliff (T-4385). Step 1 is the tier split, the helper and the lint (T-4377..T-4379). Pruning (T-4380) waits for a seeded-defect detection baseline.
+
+**Date**: 2026-10-19T13:48:24Z
 
 ## Updates
 
@@ -207,3 +213,42 @@ Updated after measurement and external review: GO, in a changed order. Both exte
 
 ### 2026-10-19T11:56:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-19T13:48:24Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Evidence from 2026-10-19 alone: a full unit run takes ~55 min over 1,172 files, 5-8 files hit the per-file timeout every run (results not determined), several reds appear only under parallel load (t3636, t2290, hook_telemetry_race, audit.bats exit 124), audit.bats was anchored to the live repo and created a self-sustaining ratchet loop, a test read this project's .framework.yaml (t4347), an old test contradicted a deliberate behaviour change (lib_firewall vs T-4330), and the baseline grew to 44 entries; getting one push through cost two extra full suite runs and an operator baseline step. Measurement and an independent external review come before any build; the go/no-go is the operator's.
+
+Updated after measurement and external review: GO, in a changed order. Both external reviewers (codex, opencode) support the tier split and the fidelity-first rule. Both say the runner's own verdicts are not yet trustworthy enough to tune against. So step 0 is runner accounting (T-4381), triage of the hanging or instant-finish files (T-4382), the audit.bats contract (T-4383), t2332 isolation (T-4384) and the 2026-10-31 baseline cliff (T-4385). Step 1 is the tier split, the helper and the lint (T-4377..T-4379). Pruning (T-4380) waits for a seeded-defect detection baseline.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f6a1e7a6
+- **Timestamp:** 2026-10-19T13:48:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-d66e245f
+- **Timestamp:** 2026-10-19T13:48:27Z
+- **Overall:** CONFIRMED
+- **Claims:** 9
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-4330` | task | ✓ pass |
+| `T-4381` | task | ✓ pass |
+| `T-4382` | task | ✓ pass |
+| `T-4383` | task | ✓ pass |
+| `T-4384` | task | ✓ pass |
+| `T-4385` | task | ✓ pass |
+| `T-4377` | task | ✓ pass |
+| `T-4379` | task | ✓ pass |
+| `T-4380` | task | ✓ pass |
+
+### 2026-10-19T13:48:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
