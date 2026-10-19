@@ -652,7 +652,9 @@ _fw_single_command_is_safe() {
                     _fw_git_refverb_is_read "$git_sub" "$git_norm" && return 0
                     return 1
                     ;;
-                rev-list|ls-remote|merge-base|grep|for-each-ref|count-objects|check-ignore|verify-commit|var|whatchanged|cherry|diff-tree|show-ref|help)
+                # T-4368: check-attr and check-ref-format only print; diff-index is a
+                # read except --output, refused above (T-4367).
+                rev-list|ls-remote|merge-base|grep|for-each-ref|count-objects|check-ignore|verify-commit|var|whatchanged|cherry|diff-tree|diff-index|check-attr|check-ref-format|show-ref|help)
                     return 0
                     ;;
                 # T-2054: `git add` is task-agnostic — it stages already-produced

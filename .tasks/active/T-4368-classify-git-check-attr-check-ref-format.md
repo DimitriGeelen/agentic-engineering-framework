@@ -1,10 +1,14 @@
 ---
 id: T-4368
-name: "Classify git check-attr, check-ref-format, diff-index in safe-commands (baselined red, context_safe_commands T-2888 test)"
+name: "Classify git check-attr, check-ref-format, diff-index in safe-commands (baselined
+  red, context_safe_commands T-2888 test)"
 description: >
-  context_safe_commands.bats test 42 (T-2888) is red on v1.8.11 and bleeding-edge and baselined: our tooling uses git check-attr, check-ref-format and diff-index, which safe-commands.sh does not classify. Decide each (read case or denylist); diff-index needs the same --output handling as diff. Blocks T-4343's verification line.
+  context_safe_commands.bats test 42 (T-2888) is red on v1.8.11 and bleeding-edge
+  and baselined: our tooling uses git check-attr, check-ref-format and diff-index,
+  which safe-commands.sh does not classify. Decide each (read case or denylist); diff-index
+  needs the same --output handling as diff. Blocks T-4343's verification line.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T09:04:30Z
-last_update: 2026-10-19T09:04:30Z
-date_finished: null
+last_update: 2026-10-19T09:10:00Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-19T09:10:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4368: Classify git check-attr, check-ref-format, diff-index in safe-commands (baselined red, context_safe_commands T-2888 test)
@@ -62,8 +84,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] safe-commands.sh classifies git check-attr and check-ref-format as read-only (SAFE) and git diff-index as read-only except --output (T-4367 handling)
+- [x] tests/unit/context_safe_commands.bats is fully green, including the T-2888 unclassified-verb test, with no skips
+- [x] t4367, t4343, t4264, t4344 bats still green
+- [x] Note: the baselined entry for this test (context_safe_commands T-2888) can drop at the next suite run; `unit_suite_baseline.py regenerate` was deliberately not run against the stale report
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,6 +136,11 @@ date_finished: null
 -->
 
 ## Verification
+
+bats tests/unit/context_safe_commands.bats
+bats tests/unit/t4367_git_output_option.bats tests/unit/t4343_git_repo_path_boundary.bats tests/unit/t4264_git_global_opts_safe.bats tests/unit/t4344_boundary_read_free_text_opts.bats
+bash -c 'PROJECT_ROOT=$PWD; source agents/context/lib/safe-commands.sh; is_bash_safe_command "git check-attr -a README.md" && is_bash_safe_command "git check-ref-format --branch x" && is_bash_safe_command "git diff-index HEAD"'
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -338,3 +367,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4368-classify-git-check-attr-check-ref-format.md
 - **Context:** Initial task creation
+
+### 2026-10-19T09:10:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
