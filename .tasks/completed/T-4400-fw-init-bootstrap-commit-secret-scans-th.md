@@ -13,12 +13,12 @@ description: >
   (they are the framework's own, scanned upstream), or scan the bootstrap commit with
   a scoped path list; keep the scan on project files. Evidence: docs/reports/T-4382-bimodal-triage.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/git/lib/secret-scan.sh]
 related_tasks: [T-4382, T-4377]
 origin: {kind: "agent", source: "T-4382"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -48,8 +48,8 @@ origin: {kind: "agent", source: "T-4382"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:25:48Z
-last_update: 2026-10-19T16:56:23Z
-date_finished:
+last_update: 2026-10-19T18:50:39Z
+date_finished: 2026-10-19T18:50:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -466,3 +466,20 @@ still caught in that same commit.
   0 skips (12m8s). The scan is no longer what these suites spend their time on; the time
   left is elsewhere in install (sys-heavy: copying/cloning). Not measured here; out of scope.
 - dead-negation lint clean; `bin/fw vendor self --check` clean.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d8d8172b
+- **Timestamp:** 2026-10-19T18:52:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T18:50:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

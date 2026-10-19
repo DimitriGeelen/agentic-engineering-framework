@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4385: Defuse the 2026-10-31 baseline cliff: triage the 22 always-red tests (fix, quarantine with an owner, or delete with evidence) and stagger expiries
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:43:40Z
+# ============================================================================
+
+task_id: T-4385
+task_name: "Defuse the 2026-10-31 baseline cliff: triage the 22 always-red tests (fix, quarantine with an owner, or delete with evidence) and stagger expiries"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T12:29:07Z
+completed: 2026-10-19T18:42:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T17:16:23+02:00
+last_commit: 2026-10-19T18:15:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  handover_push_timeout follows T-3063/T-3450 wording (stale 60s default test deleted, covered by t3450); sigpipe sentinel made deterministic (producer > pipe buffer). t2298 follows T-3099's go_scope_summary rename (comments excluded from invocation count); t2244 runs the real check_self_vendor_drift on a synthetic root (was 2x ~690s live audit mutating .agentic-framework/), mitigation per T-2436. cron drift test asserts WARN severity on the drift line (doctor exit 2 came from T-3783 vector-index FAILs in the fixture); file T-4407 (approvals.py:643 stderr scan site). triage ledger for all 28 baselined files; audit.bats duplicate live structure run merged; RCA, staggered re-arm proposal + operator runme. red-before/green-after evidence for every fixed test (alone, pre-fix vs post-fix); t2244/audit.bats live reds cited not re-run; AC ticked
+
+# Key outcomes
+outcomes:
+  - 'Every one of the 28 baselined files has a row in `docs/reports/T-4385-baseline-triage.md` naming: result when run alone today, cause (file:line), and one outcome — `fixed` / `defect T-XXXX` / `deleted (reason)` / `green-alone (load-only)` / `stays (proposed expiry+owner)`'
+  - 'Every `fixed` test is red before the change and green after when run alone, both results recorded in the triage report; no fix weakens an assertion so that it no longer fails on its origin bug (fault-detection-fidelity)'
+  - 'Each real product defect found has its own captured task (one bug = one task), referenced from the triage row'
+  - 'Entries that must stay are listed in `## Proposed baseline changes` below with a proposed new expiry (staggered, not one cliff day) and owner, plus a single `fw runme` line the operator can run; the agent did NOT run `unit_suite_baseline.py add` and did not edit `baseline.yaml`'
+  - '`bash -n` clean on every edited shell file; `bin/fw vendor self --check` clean (or red only on other workers'' in-flight files, named) — no shell/lib/vendored path edited (tests/ + docs/ only); 2026-10-19 `--check` red only on `tools/corpus_spec.py`, another worker''s uncommitted edit, not synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'red-before/green-after evidence for every fixed test (alone, pre-fix vs post-fix); t2244/audit.bats live reds cited not re-run; AC ticked'
+    source: git-mined
+  - description: 'cron drift test asserts WARN severity on the drift line (doctor exit 2 came from T-3783 vector-index FAILs in the fixture); file T-4407 (approvals.py:643 stderr scan site)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4385-baseline-triage.md'
+  - '.tasks/active/T-4385-defuse-the-2026-10-31-baseline-cliff-tri.md'
+  - '.tasks/active/T-4407-testoperatorfacingstderr-flags-approvals.md'
+  - 'tests/unit/audit.bats'
+  - 'tests/unit/check_render_surface_human_ac_sigpipe.bats'
+  - 'tests/unit/handover_push_timeout.bats'
+  - 'tests/unit/t2244_audit_self_vendor_drift.bats'
+  - 'tests/unit/t2298_audit_structure_no_perfile_fork.bats'
+  - 'tests/unit/test_cron_registry_generated_drift.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T17:16:23'
+    action: 'T-4385: handover_push_timeout follows T-3063/T-3450 wording (stale 60s default test deleted, covered by t3450); sigpipe sentinel made deterministic (producer > pipe buffer)'
+  - time: '2026-10-19T17:40:17'
+    action: 'T-4385: t2298 follows T-3099''s go_scope_summary rename (comments excluded from invocation count); t2244 runs the real check_self_vendor_drift on a synthetic root (was 2x ~690s live audit mutating .agentic-framework/), mitigation per T-2436'
+  - time: '2026-10-19T17:49:14'
+    action: 'T-4385: cron drift test asserts WARN severity on the drift line (doctor exit 2 came from T-3783 vector-index FAILs in the fixture); file T-4407 (approvals.py:643 stderr scan site)'
+  - time: '2026-10-19T17:53:44'
+    action: 'T-4385: triage ledger for all 28 baselined files; audit.bats duplicate live structure run merged; RCA, staggered re-arm proposal + operator runme'
+  - time: '2026-10-19T18:15:35'
+    action: 'T-4385: red-before/green-after evidence for every fixed test (alone, pre-fix vs post-fix); t2244/audit.bats live reds cited not re-run; AC ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 373 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 373
+  commits: 5
+  files_changed: 9
+  lines_added: 669
+  lines_removed: 68
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4385-defuse-the-2026-10-31-baseline-cliff-tri.md
+generated_by: context-agent-hybrid

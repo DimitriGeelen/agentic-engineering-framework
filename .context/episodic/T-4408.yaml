@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4408: SECURITY: GIT_DIR / GIT_WORK_TREE / GIT_COMMON_DIR env-var prefixes bypass T-4343: git reads an outside repository's config while judged read-only
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T19:11:09Z
+# ============================================================================
+
+task_id: T-4408
+task_name: "SECURITY: GIT_DIR / GIT_WORK_TREE / GIT_COMMON_DIR env-var prefixes bypass T-4343: git reads an outside repository's config while judged read-only"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T15:59:12Z
+completed: 2026-10-19T19:09:47Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T18:17:09+02:00
+last_commit: 2026-10-19T18:17:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  GIT_DIR/GIT_WORK_TREE/GIT_COMMON_DIR/GIT_INDEX_FILE/GIT_OBJECT_DIRECTORY prefixes admitted only inside PROJECT_ROOT; deny GIT_CONFIG_PARAMETERS, GIT_EXEC_PATH, GIT_ALTERNATE_OBJECT_DIRECTORIES; red/green bats
+
+# Key outcomes
+outcomes:
+  - 'Red run on the pre-fix code recorded in this task: the reporter''s cases `GIT_DIR=/tmp/evil/.git git log`, `GIT_WORK_TREE=/tmp/evil git status`, `GIT_COMMON_DIR=/tmp/evil/.git git status` (and the `env VAR=x git` / bare-assignment shapes) classify SAFE'
+  - 'GIT_DIR, GIT_WORK_TREE, GIT_COMMON_DIR, GIT_INDEX_FILE, GIT_OBJECT_DIRECTORY are admitted only when the value resolves inside PROJECT_ROOT (`_fw_git_dir_is_project`, against the tracked cwd); outside / quoted / unresolvable → NOT SAFE, in the `VAR=x cmd`, `env VAR=x cmd` and bare-assignment `VAR=x; cmd` shapes'
+  - 'Each other git env var is decided and recorded in the source comment: GIT_ALTERNATE_OBJECT_DIRECTORIES and GIT_EXEC_PATH denied, GIT_CONFIG* (incl. GIT_CONFIG_PARAMETERS) denied, GIT_CONFIG_NOSYSTEM and GIT_CEILING_DIRECTORIES allowed'
+  - '`export VAR=x; git …` / `export VAR=x && git …` are NOT SAFE (export is not allowlisted; pinned by test)'
+  - '`GIT_DIR=<inside project> git status` stays SAFE; tests/unit/t4408_git_env_repo_boundary.bats passes, and every safe-commands / boundary bats file passes alone'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean (parent, 2026-10-19: both clean once the other workers'' in-flight edits landed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'GIT_DIR/GIT_WORK_TREE/GIT_COMMON_DIR/GIT_INDEX_FILE/GIT_OBJECT_DIRECTORY prefixes admitted only inside PROJECT_ROOT; deny GIT_CONFIG_PARAMETERS, GIT_EXEC_PATH, GIT_ALTERNATE_OBJECT_DIRECTORIES; red/green bats'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — per-variable decisions'
+    chose: 'value-checked inside PROJECT_ROOT: GIT_DIR, GIT_WORK_TREE, GIT_COMMON_DIR (select the repository whose config executes), GIT_INDEX_FILE, GIT_OBJECT_DIRECTORY (written by allowlisted verbs: status refreshes the index, add writes objects). Denied by name: every GIT_CONFIG* incl. GIT_CONFIG_PARAMETERS (the `-c` channel, was missing), GIT_EXEC_PATH (git runs helper programs from it, was missing), GIT_ALTERNATE_OBJECT_DIRECTORIES (colon list, not resolvable as one path). Allowed: GIT_CONFIG_NOSYSTEM (only removes config), GIT_CEILING_DIRECTORIES (can only stop discovery). `export VAR=x` is not allowlisted, so those shapes already gate; pinned by test rather than changed.'
+    rationale: 'same rule as T-4343''s -C / --git-dir, one predicate (`_fw_env_assign_is_denied`) for all three entry points (prefix strip, `env` re-entry, bare assignment) so they cannot drift.'
+    alternatives_rejected: ['denying GIT_DIR etc. by name — would break the pinned `GIT_DIR=foo git status` contract for an inside-project value with no security gain. The pinned test now sets PROJECT_ROOT and the cwd (it has to: with no PROJECT_ROOT the value is unjudgeable and fails closed); its intent (in-project retargeting is a read) is kept. - **Not decided here (out of scope, noted):** GIT_TRACE*=/path makes git write a trace file to that path — a write, not execution.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4408-security-gitdir--gitworktree--gitcommond.md'
+  - 'tests/unit/safe_commands_env_prefix.bats'
+  - 'tests/unit/t4408_git_env_repo_boundary.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T18:17:09'
+    action: 'T-4408: GIT_DIR/GIT_WORK_TREE/GIT_COMMON_DIR/GIT_INDEX_FILE/GIT_OBJECT_DIRECTORY prefixes admitted only inside PROJECT_ROOT; deny GIT_CONFIG_PARAMETERS, GIT_EXEC_PATH, GIT_ALTERNATE_OBJECT_DIRECTORIES; red/green bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 190 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 190
+  commits: 1
+  files_changed: 5
+  lines_added: 324
+  lines_removed: 55
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4408-security-gitdir--gitworktree--gitcommond.md
+generated_by: context-agent-hybrid

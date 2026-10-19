@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3924: fw config set writes a lowercase key (inception_commit_limit) while the commit-msg hook greps the uppercase key — the limit silently stays 2; normalise key case at write and read
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:53:11Z
+# ============================================================================
+
+task_id: T-3924
+task_name: "fw config set writes a lowercase key (inception_commit_limit) while the commit-msg hook greps the uppercase key — the limit silently stays 2; normalise key case at write and read"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-06T08:46:02Z
+completed: 2026-10-19T18:52:50Z
+duration_days: 13
+updates_count: 3
+first_commit: 2026-10-19T17:51:51+02:00
+last_commit: 2026-10-19T19:54:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  horizon now — the lowercase config key silently disabled termlink's limit for six months and hit dimitri-mint-dev today. fw config set/get resolve keys against the registry case-insensitively (inception_commit_limit -> INCEPTION_COMMIT_LIMIT), refuse unknown keys without --force with closest-key hint; fw doctor WARNs on case-mismatched .framework.yaml keys; gate hint names the canonical key
+
+# Key outcomes
+outcomes:
+  - '`fw config set inception_commit_limit 7` writes `INCEPTION_COMMIT_LIMIT: 7` (canonical registry case) and says it normalised the key; `fw_config INCEPTION_COMMIT_LIMIT` then returns 7'
+  - '`fw config set` refuses a key that matches no registry key (case-insensitively) and is not a known non-registry framework key or dotted path, naming the closest registry key; `--force` writes it anyway'
+  - '`fw config get inception_commit_limit` resolves to the canonical key''s value'
+  - '`fw doctor` WARNs on a `.framework.yaml` top-level key that matches a registry key only case-insensitively, naming the key and the fix; existing files are not rewritten'
+  - 'The inception commit-limit hint in `agents/git/lib/hooks.sh` names `INCEPTION_COMMIT_LIMIT`'
+  - 'Regression bats test (temp project) red before the fix, green after; bats dead-negation lint clean; this task''s files vendored (`fw vendor self --check` residual drift at commit time was other workers'' in-flight files only: lib/sidecar/*, tools/bats-test-isolation-lint.py)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — what "unknown key" means for the refusal'
+    chose: 'refuse a flat key that is not in FW_CONFIG_REGISTRY, except dotted paths, `continuous-mode.*`, keys already present verbatim in the file, and a short named list of framework keys written or read without registration (fw init''s lowercase fields, PROTECT_MASTER, WATCHTOWER_URL, CONTINUOUS_SESSION, UPSTREAM_URL, PEER_LEARNING_CRON). `--force` overrides.'
+    rationale: 'those keys are documented `fw config set` targets (master-guard, continuous-driver, termlink project_name); refusing them would break working instructions.'
+    alternatives_rejected: ['strict registry-only (breaks the above); registering those keys (wider scope: /config, doctor range checks, parity lint) — left as a follow-up.']
+  - decision: 'Regression evidence'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/config-file.sh'
+  - '.agentic-framework/lib/config.sh'
+  - 'agents/git/lib/hooks.sh'
+  - 'bin/fw'
+  - 'lib/config-file.sh'
+  - 'lib/config.sh'
+  - '.tasks/active/T-3924-fw-config-set-writes-a-lowercase-key-inc.md'
+  - 'tests/unit/lib_config_file.bats'
+  - 'tests/unit/t3924_config_key_case.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T17:51:51'
+    action: 'T-3924: horizon now — the lowercase config key silently disabled termlink''s limit for six months and hit dimitri-mint-dev today'
+  - time: '2026-10-19T19:54:12'
+    action: 'T-3924: fw config set/get resolve keys against the registry case-insensitively (inception_commit_limit -> INCEPTION_COMMIT_LIMIT), refuse unknown keys without --force with closest-key hint; fw doctor WARNs on case-mismatched .framework.yaml keys; gate hint names the canonical key'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 19326 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 19326
+  commits: 2
+  files_changed: 11
+  lines_added: 349
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3924-fw-config-set-writes-a-lowercase-key-inc.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4405: fw upgrade's bare-from-consumer handoff to upstream bin/fw drops the caller's flags (e.g. --allow-delete-locals), then refuses asking for the flag that was passed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T19:09:42Z
+# ============================================================================
+
+task_id: T-4405
+task_name: "fw upgrade's bare-from-consumer handoff to upstream bin/fw drops the caller's flags (e.g. --allow-delete-locals), then refuses asking for the flag that was passed"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T15:37:39Z
+completed: 2026-10-19T19:09:20Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T17:38:18+02:00
+last_commit: 2026-10-19T18:45:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — upgrade handoff drops caller flags (ring20-dashboard). bare-from-consumer upgrade handoff replays the caller's argv exactly (minus target and --from-upstream) instead of re-deriving --force/--dedupe-user-hooks; --allow-delete-locals etc. now reach upstream; dry-run plan shows the same quoted list
+
+# Key outcomes
+outcomes:
+  - 'The handoff forwards every caller argument exactly (each quoted, order kept), with the target replaced by the resolved absolute target and `--from-upstream URL` / `--from-upstream=URL` removed (the clone is the source); this covers `--allow-delete-locals`, `--strict`, `--no-self-vendor`, `--force-downgrade`, `--with-messaging` / `--without-messaging`, `--dry-run`, which were dropped before'
+  - 'The "Handing off" line and the dry-run "would re-invoke" line print the same forwarded argument list, shell-quoted'
+  - 'Regression test `tests/unit/t4405_upgrade_handoff_forwards_args.bats` fails before and passes after: a stub upstream records its argv; `--allow-delete-locals` (the reported behaviour-changing flag) and an argument containing a space arrive intact; `--from-upstream` does not'
+  - 'upgrade_auto_clone.bats, upgrade_fresh_machine_simulation.bats and upgrade_fresh_machine_simulation_vendored.bats stay green (each run alone)'
+  - '`bin/fw vendor self --check` clean for the touched files'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4405-fw-upgrades-bare-from-consumer-handoff-t.md'
+  - 'tests/unit/t4405_upgrade_handoff_forwards_args.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T17:38:18'
+    action: 'T-4405: file — upgrade handoff drops caller flags (ring20-dashboard)'
+  - time: '2026-10-19T18:45:22'
+    action: 'T-4405: bare-from-consumer upgrade handoff replays the caller''s argv exactly (minus target and --from-upstream) instead of re-deriving --force/--dedupe-user-hooks; --allow-delete-locals etc. now reach upstream; dry-run plan shows the same quoted list'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 211 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 211
+  commits: 2
+  files_changed: 4
+  lines_added: 575
+  lines_removed: 41
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4405-fw-upgrades-bare-from-consumer-handoff-t.md
+generated_by: context-agent-hybrid

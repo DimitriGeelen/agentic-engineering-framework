@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4403: fw upgrade reinstalls .git/hooks/pre-commit and erases project lines a consumer added there
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T19:09:17Z
+# ============================================================================
+
+task_id: T-4403
+task_name: "fw upgrade reinstalls .git/hooks/pre-commit and erases project lines a consumer added there"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T15:29:57Z
+completed: 2026-10-19T19:08:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T17:30:48+02:00
+last_commit: 2026-10-19T18:25:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — fw upgrade erases consumer lines in .git/hooks/pre-commit (832). install-hooks owns only a marked block per hook — consumer lines outside it survive install-hooks/fw upgrade; unmarked hooks migrate (old-framework extras kept commented, consumer sh hooks kept whole, backup .pre-fw-block); t3998 stale line moved inside the block
+
+# Key outcomes
+outcomes:
+  - 'Each of the five framework hooks (commit-msg, pre-commit, pre-merge-commit, post-commit, pre-push) is installed as a block between `# >>> agentic-framework hook` / `# <<< agentic-framework hook <<<` markers; lines a consumer adds above or below the block survive `install-hooks` (plain and `--force`) and `fw upgrade`'
+  - 'Re-install compares only the framework block: a consumer line outside it does not trigger a rewrite; a changed line inside it does (T-3998 behaviour kept)'
+  - 'Migration of an existing unmarked hook: an old framework hook with consumer-added lines keeps those lines below the block, commented out (they cannot be told apart from an older template''s lines, so none runs unseen), with a WARN and a backup at `<hook>.pre-fw-block`; a wholly consumer-owned sh/bash hook keeps its whole body, executable, after the block; the template lines are never duplicated; a merged file that does not pass `bash -n` falls back to block-only with the backup and a WARN; a second install is a no-op'
+  - 'The framework block still blocks: a commit without a task reference is refused by the marked commit-msg hook, and a consumer line after the block runs when the block passes'
+  - 'Regression test `tests/unit/t4403_hook_block_preserve.bats` fails before the fix and passes after; t3998, hook_version_marker_parity and upgrade_fresh_machine_simulation stay green'
+  - '`bin/fw vendor self --check` clean for the touched files'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - 'agents/git/lib/hooks.sh'
+  - '.tasks/active/T-4403-fw-upgrade-reinstalls-githookspre-commit.md'
+  - 'tests/unit/t3998_install_hooks_content_compare.bats'
+  - 'tests/unit/t4403_hook_block_preserve.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T17:30:48'
+    action: 'T-4403: file — fw upgrade erases consumer lines in .git/hooks/pre-commit (832)'
+  - time: '2026-10-19T18:25:17'
+    action: 'T-4403: install-hooks owns only a marked block per hook — consumer lines outside it survive install-hooks/fw upgrade; unmarked hooks migrate (old-framework extras kept commented, consumer sh hooks kept whole, backup .pre-fw-block); t3998 stale line moved inside the block'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 218 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 218
+  commits: 2
+  files_changed: 5
+  lines_added: 775
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4403-fw-upgrade-reinstalls-githookspre-commit.md
+generated_by: context-agent-hybrid

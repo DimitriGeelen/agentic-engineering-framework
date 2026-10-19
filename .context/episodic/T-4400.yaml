@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4400: fw init bootstrap commit secret-scans the whole vendored framework (~92 s per fresh install)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:52:45Z
+# ============================================================================
+
+task_id: T-4400
+task_name: "fw init bootstrap commit secret-scans the whole vendored framework (~92 s per fresh install)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T15:25:48Z
+completed: 2026-10-19T18:50:39Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-10-19T19:38:47+02:00
+last_commit: 2026-10-19T19:51:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  secret scan-staged 198 s -> 3.3 s on fw init's bootstrap commit, same coverage — diff streamed via temp file (no 57 MB bash vars re-echoed per pattern), fork-free name axis, catalogue greps under LC_ALL=C (Azure PAT regex 8.4 s -> 0.3 s); regression test pins time bound + planted secret in project and vendored file still caught. record consumer-suite results (install_target_project 5/5, upgrade_fresh_machine_simulation 16/16), tick ACs
+
+# Key outcomes
+outcomes:
+  - 'Baseline measured: scan-staged time over a fresh `fw init` bootstrap index recorded in ## Updates (before)'
+  - 'The bootstrap commit''s scan no longer spends its time on the vendored framework files; after-time recorded (target: scan < 10 s)'
+  - 'A secret planted in a project-owned file staged in the same bootstrap commit is still caught (regression test)'
+  - 'No path is exempted: a secret (content and name axis) in a staged `.agentic-framework/` file is still caught (regression test)'
+  - 'Regression test red before the fix, green after (recorded here)'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats and tests/unit/install_target_project.bats green, each run alone'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — make the scan fast instead of narrowing it'
+    chose: 'keep scanning every staged byte and every new path; remove the bash overhead (stream the diff through a temp file, grep the file per pattern; classify all new paths in one pass with no per-path forks).'
+    rationale: 'measurement showed the regex work itself is < 1 s; the 100 s was pure variable/fork overhead. Fixing that keeps the scan''s coverage identical (no new trust assumption) and speeds up every large commit, not only the bootstrap.'
+    alternatives_rejected: ['(a) skip `.agentic-framework/` files byte-identical to the vendored source — needs a trusted reference copy and hashing, adds a trust assumption ("framework bytes were scanned upstream"), and a tampered or locally edited vendored file would need special handling; (b) scope the bootstrap scan to project-owned paths — a blanket path exemption is exactly the weakening the task forbids, and would also exempt a secret dropped into `.agentic-framework/` by hand.']
+  - decision: '2026-10-19 — run the catalogue greps under LC_ALL=C'
+    chose: '`LC_ALL=C grep -E` for the content patterns only.'
+    rationale: 'every catalogue regex is ASCII; GNU grep''s multibyte matching made one pattern cost 8.4 s of 9.6 s. Under C a non-ASCII byte is just a byte, so negated classes like `[^[:space:]@]+` match at least as much as before, and invalid UTF-8 no longer flips grep into "binary file matches" (which hid the hit line). Accepted edge: `[[:space:]]` no longer matches Unicode spaces (e.g. U+2003) inside the AWS secret pattern''s `key = value` gap — not a shape real credentials files use.'
+    alternatives_rejected: ['dropping or rewriting the Azure PAT regex — that changes coverage.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - 'agents/git/lib/secret-scan.sh'
+  - '.tasks/active/T-4400-fw-init-bootstrap-commit-secret-scans-th.md'
+  - 'tests/unit/t4400_secret_scan_bootstrap_scale.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T19:38:47'
+    action: 'T-4400: secret scan-staged 198 s -> 3.3 s on fw init''s bootstrap commit, same coverage — diff streamed via temp file (no 57 MB bash vars re-echoed per pattern), fork-free name axis, catalogue greps under LC_ALL=C (Azure PAT regex 8.4 s -> 0.3 s); regression test pins time bound + planted secret in project and vendored file still caught'
+  - time: '2026-10-19T19:51:23'
+    action: 'T-4400: record consumer-suite results (install_target_project 5/5, upgrade_fresh_machine_simulation 16/16), tick ACs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 204 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 204
+  commits: 2
+  files_changed: 4
+  lines_added: 314
+  lines_removed: 47
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4400-fw-init-bootstrap-commit-secret-scans-th.md
+generated_by: context-agent-hybrid

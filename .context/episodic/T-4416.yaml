@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4416: A dispatched worker's SessionStart 'sidecar ensure' restarts the PROJECT sidecar under the worker's identity (pane, agent id), stranding delivery when the worker exits
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T19:13:21Z
+# ============================================================================
+
+task_id: T-4416
+task_name: "A dispatched worker's SessionStart 'sidecar ensure' restarts the PROJECT sidecar under the worker's identity (pane, agent id), stranding delivery when the worker exits"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T17:33:33Z
+completed: 2026-10-19T19:12:54Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-19T19:33:52+02:00
+last_commit: 2026-10-19T19:56:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — dispatched worker hijacks the project sidecar via SessionStart ensure (ring20). a dispatched worker no longer restarts the project sidecar under its identity — autostart + ensure skip workers / foreign agent ids, every respawn uses identity.respawn_env() (session env scrubbed, T-4311 signing applied), liveness calls a foreign identity not-live with a remedy; regression test 9 red -> 13 green
+
+# Key outcomes
+outcomes:
+  - '`agents/context/sidecar-autostart.sh` exits 0 without launching `sidecar_cli.py ensure` when `FW_DISPATCHED_WORKER=1`, and logs the reason to `.context/sidecar/watcher/autostart.log`'
+  - '`fw sidecar ensure` (single-project path, with or without `--autostart`) skips with exit 0, a printed reason and a `ENSURE_SKIPPED_WORKER` event when `FW_DISPATCHED_WORKER=1` or `FW_SIDECAR_AGENT_ID` differs from the project agent (`circuit.project_id()`); starts nothing; `ensure --all` still runs'
+  - 'Every respawn path — `watcher._spawn` (supervisor + watcher), `watcher._restart_receiver`, `sidecar_cli._start_receiver`, `watcher.ensure_all` children — runs with `identity.respawn_env()`: TMUX_PANE, TMUX, FW_SIDECAR_AGENT_ID, TERMLINK_SESSION_ID, CLAUDE*, FW_DISPATCHED_WORKER (and the worker focus/review keys) dropped, T-4311 `termlink_env()` applied'
+  - '`watcher.liveness_verdict()` (so `fw sidecar liveness`, doctor, audit) reports `not-live` when the enabled agent differs from the project agent, with a reason naming both ids and the remedy'
+  - 'Regression test `tests/unit/test_sidecar_worker_hijack_t4416.py` fails before the fix and passes after (temp projects, fake supervisors; never the live sidecar)'
+  - 'Neighbouring sidecar watcher / rail-identity tests stay green; `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean (parent, 2026-10-19: t4416 + sidecar watcher/identity/t4311 pytest 62 passed, rail_identity_guard.bats 0 not ok, lint clean, vendor in sync)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/sidecar-autostart.sh'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/identity.py'
+  - '.agentic-framework/lib/sidecar/watcher.py'
+  - 'agents/context/sidecar-autostart.sh'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/identity.py'
+  - 'lib/sidecar/watcher.py'
+  - '.tasks/active/T-4416-a-dispatched-workers-sessionstart-sideca.md'
+  - 'tests/unit/test_sidecar_watcher_t3684.py'
+  - 'tests/unit/test_sidecar_worker_hijack_t4416.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T19:33:52'
+    action: 'T-4416: file — dispatched worker hijacks the project sidecar via SessionStart ensure (ring20)'
+  - time: '2026-10-19T19:56:59'
+    action: 'T-4416: a dispatched worker no longer restarts the project sidecar under its identity — autostart + ensure skip workers / foreign agent ids, every respawn uses identity.respawn_env() (session env scrubbed, T-4311 signing applied), liveness calls a foreign identity not-live with a remedy; regression test 9 red -> 13 green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 99 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 99
+  commits: 2
+  files_changed: 11
+  lines_added: 866
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4416-a-dispatched-workers-sessionstart-sideca.md
+generated_by: context-agent-hybrid

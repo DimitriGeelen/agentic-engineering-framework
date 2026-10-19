@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4396: A read-only shell loop (for/while over task IDs with grep/ls) is blocked by the task gate when focus is null or on a different task: the loop is not on the read-only allowlist
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T19:08:49Z
+# ============================================================================
+
+task_id: T-4396
+task_name: "A read-only shell loop (for/while over task IDs with grep/ls) is blocked by the task gate when focus is null or on a different task: the loop is not on the read-only allowlist"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T14:41:02Z
+completed: 2026-10-19T19:08:04Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-19T18:01:39+02:00
+last_commit: 2026-10-19T18:01:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  safe-commands accepts read-only for/while/until loops (body + word list judged per command, fail-closed otherwise)
+
+# Key outcomes
+outcomes:
+  - '`is_bash_safe_command` returns 0 for a for/while/until loop whose header and every body command are allowlisted reads (e.g. `for t in T-1 T-2; do grep -m1 name .tasks/*/$t-*.md; done`)'
+  - 'Loops hiding a write stay unsafe: redirect to a file, `tee`, `sed -i`, `cp`, a write inside the word list''s `$(...)`, a non-allowlisted body command'
+  - 'Nested loops recurse (safe when all inner bodies safe, unsafe otherwise); unknown/malformed loop shapes (missing `do`/`done`, `case`, `if`) stay unsafe'
+  - 'Every existing safe-commands bats test stays green; new regression bats file red before the fix, green after (recorded in Updates)'
+  - '`bash -n` clean on the edited lib; `bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — loop grammar in the segment walk, not a new allowlist arm'
+    chose: '`_fw_segments_are_safe` walks the chain segments with a small loop grammar (for/while/until … do … done, nesting by depth). Non-loop chains take the exact old path (per-segment `_fw_single_command_is_safe` + `_fw_track_cwd`). When a loop is present, the whole line must also clear `has_bash_write_pattern`, so the verdict does not depend on the caller''s scan.'
+    rationale: 'a keyword is not a command; teaching the case arms `for`/`do`/`done` would admit them independent of what they wrap.'
+    alternatives_rejected: ['stripping loop keywords and judging the remainder as a flat chain — loses the do/done pairing, so `for x in a; ls; done` (no `do`) and a stray `done` would pass.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4396-a-read-only-shell-loop-forwhile-over-tas.md'
+  - 'tests/unit/t4396_safe_commands_loops.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T18:01:39'
+    action: 'T-4396: safe-commands accepts read-only for/while/until loops (body + word list judged per command, fail-closed otherwise)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 267 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 267
+  commits: 1
+  files_changed: 4
+  lines_added: 541
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4396-a-read-only-shell-loop-forwhile-over-tas.md
+generated_by: context-agent-hybrid

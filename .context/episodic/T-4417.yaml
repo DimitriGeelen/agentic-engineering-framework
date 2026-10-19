@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4417: Every external read in the audit section path is time-bounded (a pipe held open by an orphan blocks until the 600/3000 s watchdog)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:55:45Z
+# ============================================================================
+
+task_id: T-4417
+task_name: "Every external read in the audit section path is time-bounded (a pipe held open by an orphan blocks until the 600/3000 s watchdog)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T17:46:04Z
+completed: 2026-10-19T18:54:12Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-19T20:08:28+02:00
+last_commit: 2026-10-19T20:08:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  bound every git/python3/fw read in the audit body — file-backed when stdout is a pipe (an orphan holding it no longer blocks the reader), per-call timeout FW_AUDIT_READ_TIMEOUT (300 s, notice + 124); regression test
+
+# Key outcomes
+outcomes:
+  - 'Reproduced before the fix: with the T-4397 stub (`git log` leaves a background sleep holding its stdout) in a temp project root, `audit.sh --section enforcement` blocks until its watchdog (exit 124), not on its own'
+  - 'Every git / python3 producer the audit body runs (process substitution, command substitution, pipes; including those inside sourced lib functions) is file-backed when its stdout is a pipe, so an orphan holding its stdout cannot block the reader, and is time-bounded per call (FW_AUDIT_READ_TIMEOUT, default 300 s) with a stderr notice and exit 124 on expiry'
+  - 'The explicit `bin/fw` producers in the section path (promote suggest, mcp check, sandbox status) go through the same bounded runner (also the pre-existing `timeout N` sites — corpus-lint, tests/lint bats, ls-remote — now file-backed, with their own inner timeout kept unchanged)'
+  - 'Regression test (tests/unit/t4417_audit_bounded_reads.bats, temp project root, never the live lock): the stubbed section finishes in bounded time with the lock free; a hung producer is killed at its per-call budget and reported; exit codes and stderr merging (`2>&1` ordering) are preserved on the normal path. Fails without the fix'
+  - 'Normal path unchanged and not slower: a `--section structure` run on a synthetic project produces identical output and exit code with and without the fix, and its time is within noise (measured, recorded in Updates)'
+  - 'Closest existing audit lock/timeout bats tests still pass (t4397, t3298, audit_flock, t2930, t3127)'
+  - '`bash -n agents/audit/audit.sh` after every edit; `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean (or red only on other workers'' in-flight files, named)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-4417-every-external-read-in-the-audit-section.md'
+  - 'tests/unit/t4417_audit_bounded_reads.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T20:08:28'
+    action: 'T-4417: bound every git/python3/fw read in the audit body — file-backed when stdout is a pipe (an orphan holding it no longer blocks the reader), per-call timeout FW_AUDIT_READ_TIMEOUT (300 s, notice + 124); regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 68 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 68
+  commits: 1
+  files_changed: 4
+  lines_added: 380
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4417-every-external-read-in-the-audit-section.md
+generated_by: context-agent-hybrid

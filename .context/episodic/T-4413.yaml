@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4413: REGRESSION (T-4390): fw doctor FAILs on every fresh install because cron is not deployed yet; WARN until a cron file exists, FAIL only when the deployed file lacks the job
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:46:59Z
+# ============================================================================
+
+task_id: T-4413
+task_name: "REGRESSION (T-4390): fw doctor FAILs on every fresh install because cron is not deployed yet; WARN until a cron file exists, FAIL only when the deployed file lacks the job"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T16:54:17Z
+completed: 2026-10-19T18:45:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T19:02:54+02:00
+last_commit: 2026-10-19T19:02:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  recall-health cron check WARNs (not installed yet) when no crontab is deployed; FAIL kept for a deployed file lacking the job and for a paused job; fw cron status shows the same split; greenfield regression test
+
+# Key outcomes
+outcomes:
+  - '`check_cron` returns WARN "cron not installed yet (operator step)" with remedy `fw cron install` when the deployed crontab file (`cron_install_target`) does not exist'
+  - '`check_cron` still FAILs when the deployed file exists but the index-reindex-hourly line is missing or commented, and when the registry job is paused'
+  - '`fw cron status` shows the same split: deployed file missing → jobs marked "not installed yet" (not ✗ "not deployed"); file present but job line missing → ✗ "not deployed"'
+  - 'Greenfield regression test: temp project with registry, no deployed file → health check has 0 FAIL lines (red before the fix, green after)'
+  - 'T-4390''s "no deployed file is FAIL" test updated to WARN deliberately, with the reason in a comment; all other t3783 tests still pass'
+  - '`bin/fw vendor self --check` clean; bats dead-negation lint clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/vector_index_health.py'
+  - 'bin/fw'
+  - 'lib/vector_index_health.py'
+  - '.tasks/active/T-4413-regression-t-4390-fw-doctor-fails-on-eve.md'
+  - 'tests/unit/t3783_vector_index_health.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T19:02:54'
+    action: 'T-4413: recall-health cron check WARNs (not installed yet) when no crontab is deployed; FAIL kept for a deployed file lacking the job and for a paused job; fw cron status shows the same split; greenfield regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 111 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 111
+  commits: 1
+  files_changed: 6
+  lines_added: 161
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4413-regression-t-4390-fw-doctor-fails-on-eve.md
+generated_by: context-agent-hybrid

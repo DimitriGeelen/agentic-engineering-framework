@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4397: A live fw audit run can block in pipe_read with no child process while holding the audit lock; the watchdog TERM does not end it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:44:24Z
+# ============================================================================
+
+task_id: T-4397
+task_name: "A live fw audit run can block in pipe_read with no child process while holding the audit lock; the watchdog TERM does not end it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T14:55:51Z
+completed: 2026-10-19T18:43:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T16:56:31+02:00
+last_commit: 2026-10-19T19:47:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — live audit can hang in pipe_read holding the audit lock (seen in T-4383). audit lock held by a holder that launches the body with the lock fd closed (orphan children no longer keep the lock); body watchdog stops when holder dies; regression tests. re-scope the unmet read-bounding criterion into T-4417 (split, not ticked as done)
+
+# Key outcomes
+outcomes:
+  - 'Root cause localised to file:line in agents/audit/audit.sh (the read that can block forever) and recorded in ## RCA'
+  - 'Regression test in tests/unit/ (temp project root, never the live lock) reproduces the blocked-holder case: a holder that is killed or blocked must not keep the audit lock held, and the test fails before the fix'
+  - 'Lock is released when its holder dies or is killed: a second audit started after the holder is SIGKILLed acquires the lock (exit is not 75)'
+  - 'TERM delivered to an audit blocked in an external read ends the audit promptly (bounded time, not waiting for the read)'
+  - 'Re-scoped 2026-10-19 (parent session): the original criterion was "Every external read in the audit section path is time-bounded or cannot block on a writer that never closes". It is NOT met here and is split into T-4417, which carries it with the T-4397 reproduction stub. This task''s fix (lock in a holder process; TERM and SIGKILL release it; an orphaned body stops itself) is complete and tested on its own.'
+  - 'The regression test passes after the fix, and the closest existing audit bats tests still pass when run alone'
+  - 'python3 tools/bats-dead-negation-lint.py tests/ reports clean'
+  - 'bash -n agents/audit/audit.sh succeeds after every edit'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-4397-a-live-fw-audit-run-can-block-in-piperea.md'
+  - '.tasks/active/T-4417-every-external-read-in-the-audit-section.md'
+  - 'tests/unit/t3298_audit_lock_integrity.bats'
+  - 'tests/unit/t4397_audit_lock_holder_leak.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T16:56:31'
+    action: 'T-4397: file — live audit can hang in pipe_read holding the audit lock (seen in T-4383)'
+  - time: '2026-10-19T18:20:54'
+    action: 'T-4397: audit lock held by a holder that launches the body with the lock fd closed (orphan children no longer keep the lock); body watchdog stops when holder dies; regression tests'
+  - time: '2026-10-19T19:47:20'
+    action: 'T-4397: re-scope the unmet read-bounding criterion into T-4417 (split, not ticked as done)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 228 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 228
+  commits: 3
+  files_changed: 6
+  lines_added: 952
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4397-a-live-fw-audit-run-can-block-in-piperea.md
+generated_by: context-agent-hybrid

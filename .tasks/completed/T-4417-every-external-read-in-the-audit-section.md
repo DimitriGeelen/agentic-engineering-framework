@@ -11,12 +11,12 @@ description: >
   command, or read -t on the consumer), starting with the sections that spawn git/python
   producers; reproduce with the T-4397 stub that leaves a sleep holding stdout.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T17:46:04Z
-last_update: '2026-10-19T18:00:41Z'
-date_finished:
+last_update: 2026-10-19T18:54:12Z
+date_finished: 2026-10-19T18:54:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -403,3 +403,25 @@ bin/fw vendor self --check
 - **Tests:** t4417_audit_bounded_reads.bats 5/5; t4397 + t3298 + audit_flock + t2930 + t3127 46/46.
 - **Normal path (synthetic project, `--section structure`, HEAD vs fix, 6 runs each, loaded host):** output identical after timestamp normalisation, rc 1 both; old 5.81/5.36/5.11/5.87/5.67/8.50 s (median 5.77), new 5.84/5.26/5.72/5.85/6.27/7.94 s (median 5.85) — within noise.
 - **Known limit:** a body killed by TERM mid-call leaves that call's `fw-audit-read.*` temp file in $TMPDIR (the existing EXIT traps are pinned by t3298, so cleanup is per-call only).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e59edf33
+- **Timestamp:** 2026-10-19T18:55:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 133
+     - evidence: `python3 tools/bats-dead-negation-lint.py tests/ 2>&1 | grep -q clean`
+
+### 2026-10-19T18:54:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

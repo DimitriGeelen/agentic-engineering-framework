@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4409: SECURITY: git with no -C/--git-dir runs in the tracked cwd's repository, but the allowlist never checks that cwd: 'cd /tmp/evil && git status' is judged read-only
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T19:12:51Z
+# ============================================================================
+
+task_id: T-4409
+task_name: "SECURITY: git with no -C/--git-dir runs in the tracked cwd's repository, but the allowlist never checks that cwd: 'cd /tmp/evil && git status' is judged read-only"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T15:59:42Z
+completed: 2026-10-19T19:11:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T19:11:52+02:00
+last_commit: 2026-10-19T19:11:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  git judged from its effective cwd (tracked cd, payload cwd, PWD only when it is PROJECT_ROOT), fail closed when unknown; cd carries only across && and ;; commit-checkpoint path tracks cwd and checks bare git commit; red/green bats, hook fixtures send cwd
+
+# Key outcomes
+outcomes:
+  - 'Red run on the pre-fix code recorded in this task: `cd /tmp/evil && git status`, `cd /tmp/evil; git log`, `cd /tmp/evil || git status`, `cd /tmp/evil | git status` classify SAFE'
+  - 'The git arm requires the effective cwd (after any -C) to resolve inside PROJECT_ROOT; cwd = tracked `cd`, else the payload cwd, else PWD only when it is PROJECT_ROOT; unknown → NOT SAFE'
+  - 'cwd tracking advances only across `&&` and `;` (and newline): a directory-changing segment followed by `|`, `||` or `&` leaves the cwd unknown, so `cd /tmp/evil || git status` is NOT SAFE regardless of whether git would run'
+  - '`git status` (cwd = project) and `cd <project>/docs && git status` stay SAFE; tests/unit/t4409_git_cwd_repo_boundary.bats passes, and every safe-commands / boundary bats file passes alone (existing cases kept; a setup may gain PROJECT_ROOT/cwd where it had none)'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` clean; vendored safe-commands.sh matches source (`bin/fw vendor self --check` clean for this file)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'git judged from its effective cwd (tracked cd, payload cwd, PWD only when it is PROJECT_ROOT), fail closed when unknown; cd carries only across && and ;; commit-checkpoint path tracks cwd and checks bare git commit; red/green bats, hook fixtures send cwd'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — where the cwd is checked, and the commit-checkpoint path'
+    chose: 'the effective-cwd check sits at the end of `_fw_git_skip_globals`, so it covers every git verb, with or without -C (a -C value replaces the cwd as git does). The starting cwd lives in one helper (`_fw_initial_git_cwd`), and the cwd advance in another (`_fw_advance_cwd`), used by `is_bash_safe_command`/`_fw_segments_are_safe`, `is_commit_checkpoint_command` and `is_task_metadata_update_command`.'
+    rationale: 'the hook-suite sweep showed `is_commit_checkpoint_command` (T-2054 null-focus / T-3179 partial-complete allowance) judged `git add` with no cwd at all, and admitted a bare `git commit` after `cd /tmp/evil` — same class: git commit runs the hooks and config of the cwd''s repository. Its bare `git commit` clause now also needs the cwd inside PROJECT_ROOT.'
+    alternatives_rejected: ['checking only when no -C / --git-dir / GIT_DIR is given (the spec''s literal wording) — with --git-dir inside and the cwd outside, the cwd is still the work tree; the stricter rule is simpler and only over-blocks toward the gate. Modelling `||`/`|`/`&` exactly — "unknown" is simpler and fails closed. - **Accepted over-block:** `cd <inside> || git status` and `(cd sub && git status)` now gate.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4409-security-git-with-no--c--git-dir-runs-in.md'
+  - 'tests/unit/context_safe_commands.bats'
+  - 'tests/unit/safe_commands_chain.bats'
+  - 'tests/unit/t2988_grouped_command_classification.bats'
+  - 'tests/unit/t3174_partial_complete_edit_matrix.bats'
+  - 'tests/unit/t3179_partial_complete_commit.bats'
+  - 'tests/unit/t3221_commit_exemption_clause.bats'
+  - 'tests/unit/t3222_fetch_writes_file.bats'
+  - 'tests/unit/t3238_find_action_predicates.bats'
+  - 'tests/unit/t3245_trailer_quote_strip.bats'
+  - 'tests/unit/t3432_scoped_close_clears_scoped_focus.bats'
+  - 'tests/unit/t3814_fw_git_commit_checkpoint.bats'
+  - 'tests/unit/t4396_safe_commands_loops.bats'
+  - 'tests/unit/t4409_git_cwd_repo_boundary.bats'
+  - 'tests/unit/test_safe_commands_git_commit.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T19:11:52'
+    action: 'T-4409: git judged from its effective cwd (tracked cd, payload cwd, PWD only when it is PROJECT_ROOT), fail closed when unknown; cd carries only across && and ;; commit-checkpoint path tracks cwd and checks bare git commit; red/green bats, hook fixtures send cwd'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 191 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 191
+  commits: 2
+  files_changed: 18
+  lines_added: 1145
+  lines_removed: 66
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4409-security-git-with-no--c--git-dir-runs-in.md
+generated_by: context-agent-hybrid

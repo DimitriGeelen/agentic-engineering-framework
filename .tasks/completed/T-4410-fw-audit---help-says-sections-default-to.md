@@ -9,12 +9,12 @@ description: >
   except deployment)' in the help and the header comment; pin with a test that the
   help names the exception. Serial after T-4397 (same file).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T16:19:04Z
-last_update: 2026-10-19T16:56:24Z
-date_finished:
+last_update: 2026-10-19T18:50:03Z
+date_finished: 2026-10-19T18:50:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -396,3 +396,20 @@ bin/fw vendor self --check
 - **Before fix:** `bats tests/unit/t4410_audit_deployment_optin.bats` → `not ok 1 help names deployment as the exception to the --section default` (line 32, `(default: all except deployment)` absent); tests 2-3 ok (the guard itself was correct; only the text was wrong).
 - **After fix:** 3/3 ok, 0 skips. Default synthetic-project run ~38 s, completes with END AUDIT and no DEPLOYMENT CHECKS marker; `--section deployment` control prints it.
 - `bash -n agents/audit/audit.sh` ok; dead-negation lint clean; `bin/fw vendor self --check` in sync (vendor self withheld `agents/context/lib/safe-commands.sh` — another worker's in-flight file, not synced).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a4dc1c34
+- **Timestamp:** 2026-10-19T18:50:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T18:50:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

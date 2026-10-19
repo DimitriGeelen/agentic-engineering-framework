@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4379: Lint the recurring test-defect classes: live-repo anchors, reading this project's config, missing temp project root
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:53:45Z
+# ============================================================================
+
+task_id: T-4379
+task_name: "Lint the recurring test-defect classes: live-repo anchors, reading this project's config, missing temp project root"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T11:58:37Z
+completed: 2026-10-19T18:53:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T20:05:55+02:00
+last_commit: 2026-10-19T20:05:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  test-isolation lint (live-audit / repo-state / fw-no-temp-root) as a WARN in fw test lint with a per-file count baseline of the 261 current offenders; pre-commit runs the dead-negation lint on staged tests/**/*.bats (hook 1.18 / pre-commit 1.6)
+
+# Key outcomes
+outcomes:
+  - '`tools/bats-test-isolation-lint.py` exists with three rules: `live-audit` (audit.sh / `fw doctor|audit|handover` run with no temp PROJECT_ROOT in scope), `repo-state` (a repo-root variable joined to `/.framework.yaml` or `/.context/`), `fw-no-temp-root` (bin/fw driven, other verbs, no temp PROJECT_ROOT in scope); heredoc bodies and comments ignored; allow comment `# test-isolation: allow <rule|all> — reason` at line, block or file level'
+  - 'Each rule pinned in `tests/lint/bats-test-isolation.bats` by a fixture it catches and one it lets pass (incl. the allow comment and a temp PROJECT_ROOT), plus baseline behaviour (old offenders pass, a new one over the baseline is reported, exit 1)'
+  - 'Committed baseline `tests/lint/test-isolation-baseline.txt` of current offenders; the corpus scan against it is clean; current corpus count per rule recorded in this task'
+  - '`fw test lint` runs the lint and reports new offenders as WARN (does not set a failing exit)'
+  - 'Dead-negation lint runs at commit time on staged `tests/**/*.bats` (pre-commit hook block, hook versions bumped, staged blob scanned, not the worktree file); pinned by a regression test that is red without the block'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` clean; vendor self --check clean (or red only on other workers'' files)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — scope: .bats only'
+    chose: 'lint `*.bats` only.'
+    rationale: '1,003 of the suite''s files are bats. The heredoc and continuation parsing is reused from the dead-negation lint, and the rules are shell shapes.'
+    alternatives_rejected: ['pytest coverage in the same tool. The t4347 key-0 origin was a pytest file, so that leg stays open for later arc work. It needs a Python AST rule, not a shell regex.']
+  - decision: '2026-10-19 — what counts as "temp-rooted"'
+    chose: 'the nearest `PROJECT_ROOT=` / `cd` / `unset PROJECT_ROOT` event decides: the line itself, then earlier in the block, then setup, then file level. Anything that is not recognisably this repo counts as temp.'
+    rationale: 'a test that does `cd "$FRAMEWORK_ROOT"` after a temp setup is live again (t3119). Being lenient on unknown values keeps the lint precise, so it does not get an allowance added just to quiet it.'
+    alternatives_rejected: ['a flag on any presence of a temp assignment in the file. That missed the cd-back case and the inline `PROJECT_ROOT="$BATS_TEST_DIRNAME/../.."` case.']
+  - decision: '2026-10-19 — baseline granularity'
+    chose: 'a count per (rule, file).'
+    rationale: 'line numbers drift with every edit. A count ratchet still catches a new offender in an already baselined file.'
+    alternatives_rejected: ['per-line keys, which churn on unrelated edits.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/tools/bats-test-isolation-lint.py'
+  - 'agents/git/lib/hooks.sh'
+  - 'bin/fw'
+  - '.fabric/components/tools-bats-test-isolation-lint.yaml'
+  - '.tasks/active/T-4379-lint-the-recurring-test-defect-classes-l.md'
+  - 'tests/lint/bats-test-isolation.bats'
+  - 'tests/lint/test-isolation-baseline.txt'
+  - 'tests/unit/t4379_precommit_dead_negation.bats'
+  - 'tools/bats-test-isolation-lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T20:05:55'
+    action: 'T-4379: test-isolation lint (live-audit / repo-state / fw-no-temp-root) as a WARN in fw test lint with a per-file count baseline of the 261 current offenders; pre-commit runs the dead-negation lint on staged tests/**/*.bats (hook 1.18 / pre-commit 1.6)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 414 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 414
+  commits: 1
+  files_changed: 11
+  lines_added: 1859
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4379-lint-the-recurring-test-defect-classes-l.md
+generated_by: context-agent-hybrid

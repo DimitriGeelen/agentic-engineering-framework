@@ -1,23 +1,23 @@
 ---
-id: T-4377
-name: "Test tiers: a hermetic fast tier gates the pre-push audit; slow integration/E2E
-  files run nightly"
+id: T-4396
+name: "A read-only shell loop (for/while over task IDs with grep/ls) is blocked by
+  the task gate when focus is null or on a different task: the loop is not on the
+  read-only allowlist"
 description: >
-  Split tests/unit into a fast hermetic tier (target: full verdict under 10 min, no
-  file timeouts) that the pre-push ratchet grades, and a slow tier (fw upgrade/init
-  simulations, live audit/doctor, multi-minute files) run by the nightly suite. Tier
-  membership is declared in the test file and measured, not guessed (from T-4376's
-  measurement). Arc test-suite-health (arc-026), anchor T-4376; build only after the
-  inception GO.
+  Reported by dimitri-mint-dev (T-141) and hit repeatedly by the AEF session itself
+  on 2026-10-19 ('for t in T-... ; do grep ...; done' blocked: not on the read-only
+  allowlist). safe-commands.sh judges a compound for/while as unprovable. Decide:
+  classify a for/while whose body is entirely allowlisted reads (no redirect, no write
+  pattern) as safe, splitting the body like _fw_chain_split does; keep fail-closed
+  for anything else. Tests for safe loops, loops hiding a write, nested loops, here-strings.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/lib/safe-commands.sh]
 related_tasks: []
-arc_id: test-suite-health
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -44,9 +44,9 @@ arc_id: test-suite-health
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T11:57:49Z
-last_update: 2026-10-19T16:09:21Z
-date_finished:
+created: 2026-10-19T14:41:02Z
+last_update: 2026-10-19T19:08:04Z
+date_finished: 2026-10-19T19:08:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,7 +58,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-19T12:00:44Z'
+  - ts: '2026-10-19T14:45:41Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -68,7 +68,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T12:01:46Z'
+  - ts: '2026-10-19T14:46:42Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -80,17 +80,14 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: verdict-determinacy=? (unscored (no scorer for 
-      verdict-determinacy; not counted)); fault-detection-fidelity=? (unscored 
-      (no scorer for fault-detection-fidelity; not counted)); D1=4 
-      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4377: Test tiers: a hermetic fast tier gates the pre-push audit; slow integration/E2E files run nightly
+# T-4396: A read-only shell loop (for/while over task IDs with grep/ls) is blocked by the task gate when focus is null or on a different task: the loop is not on the read-only allowlist
 
 ## Context
 
@@ -100,17 +97,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Committed manifest `tests/unit/tiers.yaml` assigns every discovered test file (the runner's bats `*.bats` and pytest discovery) to exactly one of `fast`, `slow`, `perf`; `python3 agents/audit/unit_tier.py check` exits 0 and prints the per-tier counts
-- [x] Membership is selected from MEASURED durations, not hand-picked: `unit_tier.py select` puts a file in `fast` only when its trailing median (last 7 schema-v2 dated reports) is ≤ 8 s and no report in that window timed it out; unmeasured files go to `slow`; the four wall-clock budget files (hook_telemetry, hook_telemetry_race, both t1719 latency files) go to `perf` by declaration
-- [x] Fast tier selection's summed median is ≤ 2,400 file-seconds (2,194 s at 8 s; 30 s measured 4,614 s, so the threshold is 8 s) and the fast per-file cap defaults to 120 s (`FW_UNIT_SUITE_FAST_FILE_TIMEOUT`)
-- [x] `FW_UNIT_SUITE_TIER=fast|slow|perf` runs only that tier's files; with a manifest present and the tier unset, the runner runs fast, slow and perf in turn; `perf` runs with jobs=1 (serial)
-- [x] Fast tier writes the root `LATEST.yaml`/`LAST-COMPLETE.yaml` (the pre-push ratchet's files); slow and perf write under `<report-dir>/slow/` and `<report-dir>/perf/`
-- [x] In the fast tier a skipped test marks its file NOT DETERMINED (listed in `files_not_determined`, and in `files_timed_out` so the ratchet's completeness rule counts it like a timeout; leg exit 124); a skip in the slow or perf tier does not change the verdict
-- [x] With a manifest present the runner exits 2 and runs nothing when any discovered file is unassigned or assigned twice
-- [x] Report format is backward compatible: every existing top-level and per-leg key is unchanged; new keys are `tier` and per-leg `files_not_determined` only
-- [x] Regression test `tests/unit/t4377_unit_tiers.bats` (fixture corpus, never the real suite) fails before the runner change and passes after; both results recorded in the task Updates
-- [x] This task adds no existing test file: its commit touches only `tests/unit/tiers.yaml` and `tests/unit/t4377_unit_tiers.bats` under tests/unit (other workers' edits there are theirs)
-- [x] `python3 tools/bats-dead-negation-lint.py tests/` reports clean, and `bash -n agents/audit/unit-suite.sh` passes after each edit
+- [x] `is_bash_safe_command` returns 0 for a for/while/until loop whose header and every body command are allowlisted reads (e.g. `for t in T-1 T-2; do grep -m1 name .tasks/*/$t-*.md; done`)
+- [x] Loops hiding a write stay unsafe: redirect to a file, `tee`, `sed -i`, `cp`, a write inside the word list's `$(...)`, a non-allowlisted body command
+- [x] Nested loops recurse (safe when all inner bodies safe, unsafe otherwise); unknown/malformed loop shapes (missing `do`/`done`, `case`, `if`) stay unsafe
+- [x] Every existing safe-commands bats test stays green; new regression bats file red before the fix, green after (recorded in Updates)
+- [x] `bash -n` clean on the edited lib; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -159,12 +150,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-bash -n agents/audit/unit-suite.sh
-python3 -I agents/audit/unit_tier.py check
-python3 tools/bats-dead-negation-lint.py tests/ | grep -q clean
-bats tests/unit/t4377_unit_tiers.bats
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -294,6 +279,12 @@ bin/fw vendor self --check
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/context/lib/safe-commands.sh
+timeout 300 bats tests/unit/t4396_safe_commands_loops.bats > /tmp/.t4396.out 2>&1 && ! grep -q "^not ok" /tmp/.t4396.out
+test "$(grep -c '# skip' /tmp/.t4396.out)" -eq 0
+timeout 300 bats tests/unit/safe_commands_chain.bats tests/unit/context_safe_commands.bats > /tmp/.t4396b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4396b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4396_safe_commands_loops.bats 2>&1 | grep -q clean
+bin/fw vendor self --check
 
 ## RCA
 
@@ -310,6 +301,14 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `for t in T-1 T-2; do grep -m1 name .tasks/*/$t-*.md; done` is blocked by the task gate ("not on the read-only allowlist") whenever focus is null or names another task, though every command in it is a read. Reported by dimitri-mint-dev (T-141); hit repeatedly by the AEF session on 2026-10-19.
+
+**Root cause:** `is_bash_safe_command` (agents/context/lib/safe-commands.sh:137) splits the line with `_fw_chain_split` on `;`/newline and judged each segment with `_fw_single_command_is_safe`. A loop becomes the segments `for t in …`, `do grep …`, `done`; the keywords `for`, `do`, `done` (and `while`, `until`) match no case arm, so every loop read unsafe whatever its body. The splitter had no notion of compound-command grammar; it only knew chain operators.
+
+**Why structurally allowed:** the T-2834 chain rule was designed around simple lists (`a && b; c`), and its tests (safe_commands_chain.bats) pinned only simple lists. No test exercised a compound command, so the fail-closed verdict on every loop looked like correct behaviour, not a gap. Fail-closed errs toward blocking, which is why it surfaced only as friction (in the no-task recovery state where friction hurts most).
+
+**Prevention:** tests/unit/t4396_safe_commands_loops.bats pins 9 safe loop shapes and 18 unsafe ones (hidden writes, non-allowlisted commands, nested unsafe bodies, cd in a body, malformed and unknown shapes, here-string, process substitution). Red before the fix (9 safe shapes failing), green after (27/27).
 
 ## Evolution
 
@@ -334,12 +333,6 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
-
-### 2026-10-19 — the threshold moved from 30 s to 8 s
-- **What changed:** the plan said fast = median ≤ 30 s. Measured over the last 7 schema-v2 reports, that selects 1,030 files summing 4,614 file-seconds, about twice the 2,400 budget. 8 s selects 886 files summing 2,194 s.
-- **Plan impact:** fast is 886 files, not ~1,030. Slow is 331 files (the long tail plus everything unmeasured).
-- **Triggered:** none. The threshold is a flag (`select --max-median`); the measurement is in the Updates.
-- **Also:** a fast-tier skip is listed as a timeout too. The ratchet's completeness rule only counts `files_timed_out`, so a skip listed only under `files_not_determined` would have read as an incomplete run.
 
 ## Recommendation
 
@@ -372,20 +365,6 @@ bin/fw vendor self --check
 
 ## Decisions
 
-### 2026-10-19 — an unassigned test file runs in slow with a WARN, not a refused run (parent session)
-
-- **Chose:** a discovered file missing from tiers.yaml runs in the slow tier, with a WARN from `unit_tier.py check`. A
-  file assigned to two tiers, an unknown key or a wrong schema still refuses the run (exit 2).
-- **Why:**
-  - At close, 8 test files added by later tasks that day were unassigned. The runner would then have refused EVERY
-    run, including the nightly. The ratchet would have graded a stale report, or none, after every new test file.
-  - The manifest's own rule already says "slow: everything else (unmeasured included)".
-  - Refusing guards nothing a WARN does not show, and it turns adding a test into a suite outage.
-- **Rejected:** keeping the refusal and requiring every test-adding task to regenerate the manifest. That is a
-  cross-task obligation no gate enforces at the right moment, and the outage is silent until the nightly.
-- **Evidence:** t4377 test 5 rewritten (it would exit 2 on the old code) and test 6 added (a double assignment still
-  refuses); 6/6 pass. Live: `unit_tier.py check` gives ok fast=886 slow=341 perf=4, plus WARNs for the new files.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -394,6 +373,23 @@ bin/fw vendor self --check
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-19 — loop grammar in the segment walk, not a new allowlist arm
+- **Chose:** `_fw_segments_are_safe` walks the chain segments with a small loop grammar (for/while/until … do … done, nesting by depth). Non-loop chains take the exact old path (per-segment `_fw_single_command_is_safe` + `_fw_track_cwd`). When a loop is present, the whole line must also clear `has_bash_write_pattern`, so the verdict does not depend on the caller's scan.
+- **Why:** a keyword is not a command; teaching the case arms `for`/`do`/`done` would admit them independent of what they wrap.
+- **Rejected:** stripping loop keywords and judging the remainder as a flat chain — loses the do/done pairing, so `for x in a; ls; done` (no `do`) and a stray `done` would pass.
+
+Shapes made safe (and why each is a read):
+1. `for NAME [in WORDS]; do BODY; done` — every BODY command is judged by the existing allowlist; WORDS may contain globs, `$var` expansions, and `$(CMD)` only when `is_bash_safe_command CMD` holds (the only expansion that runs a command).
+2. `while|until COND; do BODY; done` — COND is judged as a command; additionally `read [-r|-a…] NAME…`, `true`, `:` are accepted as a condition only (they set a variable/status, no file).
+3. Multi-line forms (`do`/`done` on their own lines) — same grammar; the splitter treats newline like `;`.
+4. Nested loops — recursion by depth; each inner body judged the same way.
+5. `done` followed only by `< PATH` (plain charset), `N>/dev/null` / `&>/dev/null`, or `N>&M` — input or discarded output only.
+6. A loop as one element of a larger chain/pipe (`… done | sort; git status`) — other segments judged as before.
+
+Kept fail-closed (unsafe): backticks and `<(`/`>(` in the word list; a write or non-allowlisted command anywhere; any directory change in a loop body or condition (`cd`, `pushd`, `source`, `eval`, … per `_fw_segment_may_change_dir` — the second iteration's cwd defeats T-4343's `-C` resolution); `if`/`case`/`select`/C-style `for ((…))`; missing `do`/`done`, stray `done`; here-string `<<<` and process substitution after `done`; a word-list `$(a | b)` or `$(a; b)` (the splitter is not paren-aware, so it reads unbalanced — over-block, toward the gate).
+
+T-4343/T-4344/T-4367/T-4368 cases are untouched: body commands go through the same `_fw_single_command_is_safe`, and their suites stay green (t4343 40/40, t4344 11/11, t4367 10/10).
 
 ## Decision
 
@@ -407,18 +403,38 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-19T11:57:49Z — task-created [task-create-agent]
+### 2026-10-19T14:41:02Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4377-test-tiers-a-hermetic-fast-tier-gates-th.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4396-a-read-only-shell-loop-forwhile-over-tas.md
 - **Context:** Initial task creation
 
-### 2026-10-19T16:09:21Z — status-update [task-update-agent]
+### 2026-10-19T15:50:08Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-### 2026-10-19 — regression evidence and estimate (worker w4377)
-- **Red before the runner change:** `bats tests/unit/t4377_unit_tiers.bats` → 4/4 `not ok` (no tier support yet). Test 5 (unset tier runs all three) was added after the implementation and has no separate red record.
-- **Green after:** 5/5 `ok`. The 56 existing runner tests (t3302, t3602, t3794, t4058, t4381) also pass: 56 ok, 0 not ok.
-- **Fast-tier budget:** dry selection at 8 s: 886 files, median sum 2,194 s against 2,400 s. Not measured by a run: host load was 24–32 on 24 cores, so no fast-tier run was started. Estimate: at the latest run's effective parallelism (about 10.7) the fast tier is about 205 s wall, well under the 10-minute target. Confirm on an idle host.
-- **Manifest drift:** another worker added `t4409_git_cwd_repo_boundary.bats` mid-task. `check` refused (unassigned), as designed. Regenerated with `select --write`, which put it in `slow`.
-- **Vendor:** `FW_VENDOR_ONLY` synced my two files, but the sync also brought `.agentic-framework/agents/context/lib/safe-commands.sh` up to HEAD (T-4396's committed change). An earlier sync also pulled in another worker's uncommitted `audit.sh`; I restored that with `git checkout`. `vendor self --check` is now clean.
+### 2026-10-19 — regression test red → green [w4396]
+- **Before fix:** tests/unit/t4396_safe_commands_loops.bats — 9 not ok (all 9 safe-loop shapes), 18 ok (unsafe shapes already unsafe).
+- **After fix:** 27/27 ok, 0 skips. Neighbours green: safe_commands_chain 21, context_safe_commands 48, safe_commands_env_prefix 10, t3096 wrappers 31, t4264 19, git_commit 12, drift_gate 11, t4343 40, t4344 11, t4367 10.
+- `bash -n` clean; `bin/fw vendor self` synced 1 file, `--check` clean; dead-negation lint clean.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-db10e905
+- **Timestamp:** 2026-10-19T19:08:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 133
+     - evidence: `python3 tools/bats-dead-negation-lint.py tests/unit/t4396_safe_commands_loops.bats 2>&1 | grep -q clean`
+
+### 2026-10-19T19:08:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

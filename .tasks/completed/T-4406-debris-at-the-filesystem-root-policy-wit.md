@@ -12,12 +12,12 @@ description: >
   "/episodic", "/working" joins), make them refuse an empty or / root, add a test.
   Removing the debris is the operator's call (outside the project).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-001, lib/bvp.sh, lib/fs-root-guard.sh, lib/init.sh, lib/paths.sh, lib/upgrade.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:42:13Z
-last_update: 2026-10-19T17:46:04Z
-date_finished:
+last_update: 2026-10-19T18:53:47Z
+date_finished: 2026-10-19T18:53:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -447,3 +447,22 @@ Not in scope here but visible at `/` too: `/project`, `/proj`, `/handovers`, `/a
   still seeds policy/. (`fw context status` exits 141 from an existing `| head -3`
   SIGPIPE in status.sh, after the guard and mkdir pass — not this change.)
 - No leg runs a writer against the real `/`: an unguarded regression would write there.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b78f13c5
+- **Timestamp:** 2026-10-19T18:53:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean (except another worker's in-flight `tools/bats-test-isolation-lint.py`, deliberately not synced)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/bats-test-isolation-lint.py in: `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean (except another worker's in-flight `tools/bats-test-isolat`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T18:53:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

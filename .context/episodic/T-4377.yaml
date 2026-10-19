@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4377: Test tiers: a hermetic fast tier gates the pre-push audit; slow integration/E2E files run nightly
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T19:08:00Z
+# ============================================================================
+
+task_id: T-4377
+task_name: "Test tiers: a hermetic fast tier gates the pre-push audit; slow integration/E2E files run nightly"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T11:57:49Z
+completed: 2026-10-19T19:07:29Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-19T18:23:05+02:00
+last_commit: 2026-10-19T21:05:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  split the unit suite into fast/slow/perf tiers from measured durations. an unassigned test file runs in slow with a WARN instead of refusing the whole suite run (8 new test files would have stopped the nightly); double assignment still refuses
+
+# Key outcomes
+outcomes:
+  - 'Committed manifest `tests/unit/tiers.yaml` assigns every discovered test file (the runner''s bats `*.bats` and pytest discovery) to exactly one of `fast`, `slow`, `perf`; `python3 agents/audit/unit_tier.py check` exits 0 and prints the per-tier counts'
+  - 'Membership is selected from MEASURED durations, not hand-picked: `unit_tier.py select` puts a file in `fast` only when its trailing median (last 7 schema-v2 dated reports) is ≤ 8 s and no report in that window timed it out; unmeasured files go to `slow`; the four wall-clock budget files (hook_telemetry, hook_telemetry_race, both t1719 latency files) go to `perf` by declaration'
+  - 'Fast tier selection''s summed median is ≤ 2,400 file-seconds (2,194 s at 8 s; 30 s measured 4,614 s, so the threshold is 8 s) and the fast per-file cap defaults to 120 s (`FW_UNIT_SUITE_FAST_FILE_TIMEOUT`)'
+  - '`FW_UNIT_SUITE_TIER=fast|slow|perf` runs only that tier''s files; with a manifest present and the tier unset, the runner runs fast, slow and perf in turn; `perf` runs with jobs=1 (serial)'
+  - 'Fast tier writes the root `LATEST.yaml`/`LAST-COMPLETE.yaml` (the pre-push ratchet''s files); slow and perf write under `<report-dir>/slow/` and `<report-dir>/perf/`'
+  - 'In the fast tier a skipped test marks its file NOT DETERMINED (listed in `files_not_determined`, and in `files_timed_out` so the ratchet''s completeness rule counts it like a timeout; leg exit 124); a skip in the slow or perf tier does not change the verdict'
+  - 'With a manifest present the runner exits 2 and runs nothing when any discovered file is unassigned or assigned twice'
+  - 'Report format is backward compatible: every existing top-level and per-leg key is unchanged; new keys are `tier` and per-leg `files_not_determined` only'
+  - 'Regression test `tests/unit/t4377_unit_tiers.bats` (fixture corpus, never the real suite) fails before the runner change and passes after; both results recorded in the task Updates'
+  - 'This task adds no existing test file: its commit touches only `tests/unit/tiers.yaml` and `tests/unit/t4377_unit_tiers.bats` under tests/unit (other workers'' edits there are theirs)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — an unassigned test file runs in slow with a WARN, not a refused run (parent session)'
+    chose: 'a discovered file missing from tiers.yaml runs in the slow tier, with a WARN from `unit_tier.py check`. A file assigned to two tiers, an unknown key or a wrong schema still refuses the run (exit 2).'
+    rationale: '- At close, 8 test files added by later tasks that day were unassigned. The runner would then have refused EVERY run, including the nightly. The ratchet would have graded a stale report, or none, after every new test file. - The manifest''s own rule already says "slow: everything else (unmeasured included)". - Refusing guards nothing a WARN does not show, and it turns adding a test into a suite outage.'
+    alternatives_rejected: ['keeping the refusal and requiring every test-adding task to regenerate the manifest. That is a cross-task obligation no gate enforces at the right moment, and the outage is silent until the nightly.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - '.agentic-framework/agents/audit/unit_tier.py'
+  - 'agents/audit/unit-suite.sh'
+  - 'agents/audit/unit_tier.py'
+  - '.tasks/active/T-4377-test-tiers-a-hermetic-fast-tier-gates-th.md'
+  - '.tasks/completed/T-4422-classify-git-version-as-read-only-in-saf.md'
+  - 'tests/unit/t4377_unit_tiers.bats'
+  - 'tests/unit/tiers.yaml'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T18:23:05'
+    action: 'T-4377: split the unit suite into fast/slow/perf tiers from measured durations'
+  - time: '2026-10-19T21:05:27'
+    action: 'T-4377: an unassigned test file runs in slow with a WARN instead of refusing the whole suite run (8 new test files would have stopped the nightly); double assignment still refuses'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 429 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 429
+  commits: 2
+  files_changed: 8
+  lines_added: 2191
+  lines_removed: 43
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4377-test-tiers-a-hermetic-fast-tier-gates-th.md
+generated_by: context-agent-hybrid

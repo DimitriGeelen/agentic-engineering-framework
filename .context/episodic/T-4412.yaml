@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4412: GitHub issue status labels accumulate instead of replacing each other (#99 carries received, accepted, in-progress and fixed-on-bleeding-edge at once), plus a stray unprefixed fixed-on-bleeding-edge label
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:50:00Z
+# ============================================================================
+
+task_id: T-4412
+task_name: "GitHub issue status labels accumulate instead of replacing each other (#99 carries received, accepted, in-progress and fixed-on-bleeding-edge at once), plus a stray unprefixed fixed-on-bleeding-edge label"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T16:41:41Z
+completed: 2026-10-19T18:48:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T19:17:24+02:00
+last_commit: 2026-10-19T19:17:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  status:* labels are mutually exclusive — a stage's edit removes the other status labels (and the legacy unprefixed fixed-on-bleeding-edge, no longer added); fw issues status-labels; #85-#106 normalised to their latest ledger stage (labels only)
+
+# Key outcomes
+outcomes:
+  - 'Posting a stage whose labels include a `status:*` label removes every other `status:*` label on the issue (and the legacy unprefixed `fixed-on-bleeding-edge`) in the SAME `gh issue edit` (`--remove-label` + `--add-label`); `bug`, `triaged`, `area:*`, `severity:*` are kept; Classified (no status label) removes nothing'
+  - '`STAGE_LABELS["fixed-on-bleeding-edge"]` is only `status:fixed-on-bleeding-edge`; nothing in lib/ web/ agents/ reads the unprefixed label (grep recorded below)'
+  - '`fw issues status-labels <n> [--dry-run]` sets the status label to the issue''s latest ledger stage (labels only, no comment)'
+  - 'Regression test `tests/unit/t4412_issues_status_labels_test.py` red before, green after; t4077 t4078 t4088 t4108 t4340 t4346 t4347 t4370 t4411 green'
+  - 'Backfill #85-#106: dry-run listing recorded in this task, then applied (labels only, no comments)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'status:* labels are mutually exclusive — a stage''s edit removes the other status labels (and the legacy unprefixed fixed-on-bleeding-edge, no longer added); fw issues status-labels; #85-#106 normalised to their latest ledger stage (labels only)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - 'lib/issues.py'
+  - '.tasks/active/T-4412-github-issue-status-labels-accumulate-in.md'
+  - 'tests/unit/t4412_issues_status_labels_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T19:17:24'
+    action: 'T-4412: status:* labels are mutually exclusive — a stage''s edit removes the other status labels (and the legacy unprefixed fixed-on-bleeding-edge, no longer added); fw issues status-labels; #85-#106 normalised to their latest ledger stage (labels only)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 126 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 126
+  commits: 2
+  files_changed: 5
+  lines_added: 1044
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4412-github-issue-status-labels-accumulate-in.md
+generated_by: context-agent-hybrid

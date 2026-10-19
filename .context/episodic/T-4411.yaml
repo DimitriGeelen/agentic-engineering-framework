@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4411: GitHub issues get an area label derived from the component fabric (area:watchtower, area:upgrade, ...), plus severity, applied automatically and backfilled on #95-#106
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:48:28Z
+# ============================================================================
+
+task_id: T-4411
+task_name: "GitHub issues get an area label derived from the component fabric (area:watchtower, area:upgrade, ...), plus severity, applied automatically and backfilled on #95-#106"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T16:41:19Z
+completed: 2026-10-19T18:47:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T19:11:40+02:00
+last_commit: 2026-10-19T19:11:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  issue area from the component fabric via policy/issue-areas.yaml; area:/severity: labels at Classified and refined on task close; fw issues labels verb; #95-#106 backfilled (labels only)
+
+# Key outcomes
+outcomes:
+  - '`policy/issue-areas.yaml` exists, parses, and holds the area vocabulary, a fabric-subsystem -> area map, and ordered path rules that refine framework-core (e.g. `lib/upgrade.sh` -> upgrade, `bin/fw` -> cli)'
+  - '`_classify` resolves the paths, `fw <cmd>` commands and component names an issue mentions to `.fabric/components` cards and takes the area through the mapping; `unspecified` only when nothing resolves (pytest: `lib/upgrade.sh` -> upgrade, a watchtower card''s location -> watchtower, plain text -> unspecified)'
+  - 'The Classified stage applies `area:<x>` and `severity:<y>` labels with the status label in the same `gh issue edit` (labels created on demand); `area:unspecified` is not applied'
+  - 'Refinement: when a linked task closes (`fw issues lifecycle T-X --event closed`), the area is recomputed from the task''s `components:` and, if it differs, the old `area:*` label is removed and the new one added in one edit; a `fw issues labels <n> [--task T-X] [--dry-run]` verb does the same for backfill and posts no comment'
+  - 'Regression test `tests/unit/t4411_issues_area_labels_test.py` red before the fix, green after; t4077 t4078 t4088 t4108 t4340 t4346 t4347 t4370 green'
+  - 'Backfill #95-#106: dry-run listing recorded in this task, then applied (labels only, no comments)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'issue area from the component fabric via policy/issue-areas.yaml; area:/severity: labels at Classified and refined on task close; fw issues labels verb; #95-#106 backfilled (labels only)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/policy/issue-areas.yaml'
+  - 'lib/issues.py'
+  - 'lib/upgrade.sh'
+  - 'policy/issue-areas.yaml'
+  - '.tasks/active/T-4411-github-issues-get-an-area-label-derived-.md'
+  - 'tests/unit/t4078_issues_sync_test.py'
+  - 'tests/unit/t4411_issues_area_labels_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T19:11:40'
+    action: 'T-4411: issue area from the component fabric via policy/issue-areas.yaml; area:/severity: labels at Classified and refined on task close; fw issues labels verb; #95-#106 backfilled (labels only)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 125 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 125
+  commits: 1
+  files_changed: 9
+  lines_added: 911
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4411-github-issues-get-an-area-label-derived-.md
+generated_by: context-agent-hybrid

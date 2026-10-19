@@ -6,12 +6,12 @@ name: "fw config set writes a lowercase key (inception_commit_limit) while the c
 description: >
   Found by ring20-manager (T-3922 triage). The YAML re-wrap half is T-3735.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh, bin/fw, lib/config-file.sh, lib/config.sh, tests/unit/lib_config_file.bats]
 related_tasks: []
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "msg 0edfc78d"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -41,8 +41,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "msg 0edfc78d"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T08:46:02Z
-last_update: 2026-10-19T17:46:04Z
-date_finished:
+last_update: 2026-10-19T18:52:50Z
+date_finished: 2026-10-19T18:52:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -80,6 +80,23 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-19T18:01:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -384,3 +401,20 @@ bin/fw vendor self --check
 
 ### 2026-10-19T17:46:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-34fa11c3
+- **Timestamp:** 2026-10-19T18:52:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — Regression bats test (temp project) red before the fix, green after; bats dead-negation lint clean; this task's files vendored (`fw vendor self --check` residual drift at commit time was other workers
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/bats-test-isolation-lint.py in: Regression bats test (temp project) red before the fix, green after; bats dead-negation lint clean; this task's files vendored (`fw vendor self --chec`
+
+### 2026-10-19T18:52:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

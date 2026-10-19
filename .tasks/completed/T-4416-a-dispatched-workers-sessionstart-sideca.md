@@ -1,25 +1,31 @@
 ---
-id: T-4405
-name: "fw upgrade's bare-from-consumer handoff to upstream bin/fw drops the caller's
-  flags (e.g. --allow-delete-locals), then refuses asking for the flag that was passed"
+id: T-4416
+name: "A dispatched worker's SessionStart 'sidecar ensure' restarts the PROJECT sidecar
+  under the worker's identity (pane, agent id), stranding delivery when the worker
+  exits"
 description: >
-  Reported by ring20-dashboard (msg 41b1ed56) upgrading to v1.8.12: 'Handing off to
-  upstream's bin/fw: upgrade <target>' forwards only the target, so --allow-delete-locals
-  was lost and the T-4278 precheck refused with 'REAL RUN WOULD REFUSE without --allow-delete-locals'.
-  Safe (nothing written) but confusing. Fix: forward the original arguments in the
-  handoff (quoted, exactly), or refuse up front with 'flags not forwarded'. Test with
-  a flag that changes behaviour. Related, same report: an explicitly invoked bin/fw
-  honours an inherited FRAMEWORK_ROOT over its own tree (claude-fw exports it), which
-  is what sent the run down the bare-from-consumer path — that part is T-4369's class;
-  check T-4369's fix covers 'invoked by explicit path from another framework tree',
-  or extend it.
+  Reported by ring20 (msg 82c0e984, v1.8.12, their T-2430): a worker dispatched by
+  fw termlink dispatch (FW_DISPATCHED_WORKER=1, FW_SIDECAR_AGENT_ID=triage-backlog,
+  its own TMUX_PANE and TERMLINK_SESSION_ID) ran agents/context/sidecar-autostart.sh
+  at SessionStart; lib/sidecar_cli.py cmd_ensure saw STALE_CODE_RESTART after an upgrade
+  and respawned supervisor, watcher and receiver with the worker's env; liveness then
+  showed identity triage-backlog and injection pointed at the worker's dead pane for
+  ~2.5 h. Confirmed in source: sidecar-autostart.sh:22 exits only for FW_REVIEW_WORKER,
+  not FW_DISPATCHED_WORKER, and cmd_ensure (~:930) restarts with the caller's env.
+  AEF's own workers run the same path (20+ dispatches on 2026-10-19; here the supervisor
+  env is clean, the 14:45 restart likely came from cron). Fix, all three as ring20
+  suggests: (1) autostart and ensure skip/refuse for FW_DISPATCHED_WORKER=1 or when
+  FW_SIDECAR_AGENT_ID differs from the project agent; (2) any restart scrubs worker
+  identity env (TMUX_PANE, FW_SIDECAR_AGENT_ID, TERMLINK_SESSION_ID, CLAUDE_*, FW_DISPATCHED_WORKER)
+  and resolves the identity from project config (T-4311); (3) liveness flags identity
+  != project agent as not live. Tests in temp dirs, never the live sidecar (T-4315).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/sidecar-autostart.sh, lib/sidecar/identity.py, lib/sidecar/watcher.py, lib/sidecar_cli.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,9 +53,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T15:37:39Z
-last_update: 2026-10-19T16:25:24Z
-date_finished:
+created: 2026-10-19T17:33:33Z
+last_update: 2026-10-19T19:12:54Z
+date_finished: 2026-10-19T19:12:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,7 +67,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-19T15:45:38Z'
+  - ts: '2026-10-19T17:45:41Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -71,7 +77,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T15:46:40Z'
+  - ts: '2026-10-19T17:46:07Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -90,42 +96,22 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4405: fw upgrade's bare-from-consumer handoff to upstream bin/fw drops the caller's flags (e.g. --allow-delete-locals), then refuses asking for the flag that was passed
+# T-4416: A dispatched worker's SessionStart 'sidecar ensure' restarts the PROJECT sidecar under the worker's identity (pane, agent id), stranding delivery when the worker exits
 
 ## Context
 
-lib/upgrade.sh do_upgrade, bare-from-consumer auto-clone branch (T-1634): the replay to
-the cloned upstream's bin/fw is rebuilt from two booleans instead of the caller's
-arguments.
-
-**T-4369 coverage (checked, not extended):** T-4369 drops an inherited FRAMEWORK_ROOT
-only when it is the vendored copy of the repo the running bin/fw lives in
-(bin/fw:1401). ring20's run (`<framework>/bin/fw upgrade <consumer>` with
-FRAMEWORK_ROOT=<consumer>/.agentic-framework exported by claude-fw) does not match it.
-Extending the rule would not change the route either: with PROJECT_ROOT = the consumer,
-`resolve_framework` prefers the consumer's vendored copy by design (T-498,
-bin/fw:166-167), so the run reaches the bare-from-consumer handoff with or without the
-inherited value. The handoff is the designed path, so the fix is to make it lossless.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] The handoff forwards every caller argument exactly (each quoted, order kept), with the target replaced by the resolved absolute target and `--from-upstream URL` / `--from-upstream=URL` removed (the clone is the source); this covers `--allow-delete-locals`, `--strict`, `--no-self-vendor`, `--force-downgrade`, `--with-messaging` / `--without-messaging`, `--dry-run`, which were dropped before
-- [x] The "Handing off" line and the dry-run "would re-invoke" line print the same forwarded argument list, shell-quoted
-- [x] Regression test `tests/unit/t4405_upgrade_handoff_forwards_args.bats` fails before and passes after: a stub upstream records its argv; `--allow-delete-locals` (the reported behaviour-changing flag) and an argument containing a space arrive intact; `--from-upstream` does not
-- [x] upgrade_auto_clone.bats, upgrade_fresh_machine_simulation.bats and upgrade_fresh_machine_simulation_vendored.bats stay green (each run alone)
-- [x] `bin/fw vendor self --check` clean for the touched files
-
-## Test record (2026-10-19)
-
-- Red before the fix: t4405 4/4 `not ok` — argv held only `upgrade <target> [--force]`;
-  `--allow-delete-locals`, `--strict`, `--no-self-vendor`, `--with-messaging` missing; the
-  dry-run plan lacked the flag.
-- Green after: t4405 4/4; upgrade_auto_clone 7, test_upgrade_self_target_guard 4,
-  upgrade_fresh_machine_simulation 16, upgrade_fresh_machine_simulation_vendored 4 — each
-  run alone, 0 `not ok`, 0 skips. Dead-negation lint clean. `vendor self --check` in sync.
-- Not covered here: the stub verifies argv delivery; the flag's effect in the upstream run
-  (T-4278 precheck honouring --allow-delete-locals) is T-3850/T-4278's own tests.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [x] `agents/context/sidecar-autostart.sh` exits 0 without launching `sidecar_cli.py ensure` when `FW_DISPATCHED_WORKER=1`, and logs the reason to `.context/sidecar/watcher/autostart.log`
+- [x] `fw sidecar ensure` (single-project path, with or without `--autostart`) skips with exit 0, a printed reason and a `ENSURE_SKIPPED_WORKER` event when `FW_DISPATCHED_WORKER=1` or `FW_SIDECAR_AGENT_ID` differs from the project agent (`circuit.project_id()`); starts nothing; `ensure --all` still runs
+- [x] Every respawn path — `watcher._spawn` (supervisor + watcher), `watcher._restart_receiver`, `sidecar_cli._start_receiver`, `watcher.ensure_all` children — runs with `identity.respawn_env()`: TMUX_PANE, TMUX, FW_SIDECAR_AGENT_ID, TERMLINK_SESSION_ID, CLAUDE*, FW_DISPATCHED_WORKER (and the worker focus/review keys) dropped, T-4311 `termlink_env()` applied
+- [x] `watcher.liveness_verdict()` (so `fw sidecar liveness`, doctor, audit) reports `not-live` when the enabled agent differs from the project agent, with a reason naming both ids and the remedy
+- [x] Regression test `tests/unit/test_sidecar_worker_hijack_t4416.py` fails before the fix and passes after (temp projects, fake supervisors; never the live sidecar)
+- [x] Neighbouring sidecar watcher / rail-identity tests stay green; `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean (parent, 2026-10-19: t4416 + sidecar watcher/identity/t4311 pytest 62 passed, rail_identity_guard.bats 0 not ok, lint clean, vendor in sync)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -303,37 +289,60 @@ inherited value. The handoff is the designed path, so the fix is to make it loss
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-bash -n lib/upgrade.sh
-timeout 600 bats tests/unit/t4405_upgrade_handoff_forwards_args.bats > /tmp/.t4405.out 2>&1 && ! grep -q "^not ok" /tmp/.t4405.out
-test "$(grep -c '# skip' /tmp/.t4405.out)" -eq 0
-timeout 900 bats tests/unit/upgrade_auto_clone.bats > /tmp/.t4405b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4405b.out
-python3 tools/bats-dead-negation-lint.py tests/unit/t4405_upgrade_handoff_forwards_args.bats > /tmp/.t4405l.out 2>&1 && grep -q clean /tmp/.t4405l.out
+python3 -m pytest tests/unit/test_sidecar_worker_hijack_t4416.py -q -p no:cacheprovider > /tmp/.t4416.out 2>&1 && grep -q passed /tmp/.t4416.out
+python3 -m pytest tests/unit/test_sidecar_rail_identity_t4311.py -q -p no:cacheprovider > /tmp/.t4416b.out 2>&1 && grep -q passed /tmp/.t4416b.out
+bash -n agents/context/sidecar-autostart.sh
+grep -q "FW_DISPATCHED_WORKER" agents/context/sidecar-autostart.sh
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4416c.out 2>&1 && grep -q clean /tmp/.t4416c.out
 bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** ring20-dashboard (msg 41b1ed56), upgrading to v1.8.12 with
-`--allow-delete-locals`: "Handing off to upstream's bin/fw: upgrade <target>", then the
-T-4278 precheck refused with "REAL RUN WOULD REFUSE without --allow-delete-locals" — the
-flag the operator had passed. Nothing was written, but the refusal named a flag that was
-visibly on the command line.
+**Symptom (ring20 T-2430, msg 82c0e984):** after an upgrade, a dispatched worker
+(`FW_DISPATCHED_WORKER=1`, `FW_SIDECAR_AGENT_ID=triage-backlog`, its own TMUX_PANE and
+TERMLINK_SESSION_ID) ran the SessionStart autostart; the project's supervisor, watcher and
+receiver were restarted under the worker's identity and env, liveness showed identity
+`triage-backlog`, and injection pointed at the worker's dead pane for ~2.5 h. The same
+state is on disk here: `.context/sidecar/watcher/enabled.json` carries `"agent": "w4315"`
+(a worker id, enabled 2026-10-18T20:37Z).
 
-**Root cause:** lib/upgrade.sh:1412-1414 (pre-fix) built the replay as
-`("upgrade" "$target_dir")` plus `--force` and `--dedupe-user-hooks` re-derived from
-their booleans. Every other option — `--allow-delete-locals` (T-3850), `--strict`,
-`--no-self-vendor`, `--force-downgrade`, `--with/--without-messaging` — was parsed into a
-local and silently not replayed. The dry-run "would re-invoke" line had the same
-hard-coded list.
+**Root cause:** three gaps that compose.
+1. `agents/context/sidecar-autostart.sh:22` exits only for `FW_REVIEW_WORKER`, so every
+   dispatched worker runs `sidecar_cli.py ensure --autostart`.
+2. `lib/sidecar_cli.py cmd_ensure` (~:930) has no notion of "whose sidecar is this": it
+   resolves the agent from `FW_SIDECAR_AGENT_ID` (`circuit.agent_name()`, circuit.py:200)
+   and on STALE_CODE_RESTART calls `watcher.start_supervisor()`; every spawn passes
+   `dict(os.environ, …)` (`watcher._spawn` :794, `_restart_receiver` :811,
+   `sidecar_cli._start_receiver` :804), so the project's long-lived processes inherit the
+   worker's pane, session and agent id.
+3. `watcher.liveness_verdict()` only measures tick freshness; a sidecar ticking under a
+   worker's id reads `live`.
 
-**Why structurally allowed:** the replay was an allow-list maintained by hand, separate
-from the option parser; each option added after T-1634 had to be added in two places and
-none was. The only live handoff test (upgrade_auto_clone.bats) invoked with no flags and
-asserted "upgrade" appeared, so a dropped flag could not show.
+**Why structurally allowed:** the R14 autostart (T-3685) was written for "every session
+gets a sidecar" without distinguishing a session that OWNS the project sidecar from one
+that merely runs in the project; the review-worker carve-out was added for isolation, not
+ownership, so dispatched workers were never considered. No test ran ensure under a worker
+env, and liveness had no identity predicate, so the hijack was invisible.
 
-**Prevention:** the replay is now derived from the caller's own argv (drop-list of the two
-things that must not be forwarded, instead of an allow-list), so a new option is
-forwarded without anyone remembering to. `tests/unit/t4405_upgrade_handoff_forwards_args.bats`
-pins argv exactness through a recording stub upstream.
+**Prevention:** the autostart and ensure guards refuse the worker case outright; respawns
+are built from `identity.respawn_env()` so even a legitimate restart triggered from a
+worker-ish env cannot carry pane/session identity into a project process; liveness now
+calls an identity mismatch `not-live` with a remedy (doctor/audit read the same verdict).
+`tests/unit/test_sidecar_worker_hijack_t4416.py` pins all three.
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
+
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -411,10 +420,36 @@ pins argv exactness through a recording stub upstream.
 
 ## Updates
 
-### 2026-10-19T15:37:39Z — task-created [task-create-agent]
+### 2026-10-19T17:33:33Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4405-fw-upgrades-bare-from-consumer-handoff-t.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4416-a-dispatched-workers-sessionstart-sideca.md
 - **Context:** Initial task creation
 
-### 2026-10-19T16:25:24Z — status-update [task-update-agent]
+### 2026-10-19T17:46:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-19 — regression test red → green [w4416]
+- **Red (before fix):** `tests/unit/test_sidecar_worker_hijack_t4416.py` — 9 failed, 4 passed (the 4 are controls: project-agent ensure, `--all`, live-for-project-identity, plain-session hook).
+- **Green (after fix):** 13 passed. Neighbours: t4311 rail identity 19 passed, t4315 2, project_identity 6, status 11, receiver_t3693 52, t4216 5, watcher_t3684 24 (2 of its SessionStart-hook tests needed `FW_DISPATCHED_WORKER` popped from the helper env — the suite was running inside a dispatched worker, the exact case the hook now skips).
+- **Lint:** bats-dead-negation-lint clean. **Vendor:** synced; `vendor self --check` red only on `tools/bats-test-isolation-lint.py`, an untracked in-flight file from another worker — not synced (AC 6 left for the parent to re-run once that lands).
+- **Live state note:** this repo's `.context/sidecar/watcher/enabled.json` holds `"agent": "w4315"` (a worker id), so `fw sidecar liveness` here now reports not-live with the remedy — that is the fix seeing a real hijack, not a regression. Not touched (T-4315).
+- **Open:** `fw sidecar start` (cmd_start) run from a worker is not refused — out of this task's scope; its spawns are now scrubbed, but `enable()` would still record the worker's agent id.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f79102b9
+- **Timestamp:** 2026-10-19T19:13:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `agents/context/sidecar-autostart.sh` exits 0 without launching `sidecar_cli.py ensure` when `FW_DISPATCHED_WORKER=1`, and logs the reason to `.context/sidecar/watcher/autostart.log`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/sidecar/watcher/autostart.log in: `agents/context/sidecar-autostart.sh` exits 0 without launching `sidecar_cli.py ensure` when `FW_DISPATCHED_WORKER=1`, and logs the reason to `.contex`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T19:12:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

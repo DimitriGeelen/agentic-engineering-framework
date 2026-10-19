@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4406: Debris at the filesystem root (/policy with value-drivers.yaml and bvp-scoring-rubric.md, empty /episodic and /working): some writer ran with an empty PROJECT_ROOT
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:54:10Z
+# ============================================================================
+
+task_id: T-4406
+task_name: "Debris at the filesystem root (/policy with value-drivers.yaml and bvp-scoring-rubric.md, empty /episodic and /working): some writer ran with an empty PROJECT_ROOT"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T15:42:13Z
+completed: 2026-10-19T18:53:47Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-19T17:42:40+02:00
+last_commit: 2026-10-19T19:57:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — debris at / from a writer with an empty PROJECT_ROOT. root-joining writers refuse an empty or / root — fw bvp driver --init, fw init, fw upgrade, context.sh ensure_context_dirs (debris /policy, /episodic, /working); shared fw_refuse_fs_root in side-effect-free lib/fs-root-guard.sh; regression test red 1/5 -> green 5/5
+
+# Key outcomes
+outcomes:
+  - 'Writer(s) of /policy, /episodic, /working identified with file:line and recorded in ## RCA'
+  - 'Each identified writer refuses an empty or `/` project root with a clear stderr error and non-zero exit, before creating any directory'
+  - 'Regression test added that fails before the fix and passes after; red/green recorded in ## Updates'
+  - 'Operator cleanup listed in ## Recommendation: exact paths + contents under /, and a one-line `bin/fw runme new ...` proposal (NOT run)'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean (except another worker''s in-flight `tools/bats-test-isolation-lint.py`, deliberately not synced)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/context.sh'
+  - '.agentic-framework/lib/bvp.sh'
+  - '.agentic-framework/lib/fs-root-guard.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/paths.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'agents/context/context.sh'
+  - '.fabric/components/lib-fs-root-guard.yaml'
+  - 'lib/bvp.sh'
+  - 'lib/fs-root-guard.sh'
+  - 'lib/init.sh'
+  - 'lib/paths.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4406-debris-at-the-filesystem-root-policy-wit.md'
+  - 'tests/unit/t4406_fs_root_writer_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T17:42:40'
+    action: 'T-4406: file — debris at / from a writer with an empty PROJECT_ROOT'
+  - time: '2026-10-19T19:57:30'
+    action: 'T-4406: root-joining writers refuse an empty or / root — fw bvp driver --init, fw init, fw upgrade, context.sh ensure_context_dirs (debris /policy, /episodic, /working); shared fw_refuse_fs_root in side-effect-free lib/fs-root-guard.sh; regression test red 1/5 -> green 5/5'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 191 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 191
+  commits: 2
+  files_changed: 15
+  lines_added: 676
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4406-debris-at-the-filesystem-root-policy-wit.md
+generated_by: context-agent-hybrid

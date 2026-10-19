@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4382: Triage the bimodal and instant-finish test files: hang, skip, or old code?
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:40:51Z
+# ============================================================================
+
+task_id: T-4382
+task_name: "Triage the bimodal and instant-finish test files: hang, skip, or old code?"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T12:27:59Z
+completed: 2026-10-19T18:39:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T17:27:08+02:00
+last_commit: 2026-10-19T18:07:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric_coverage live legs use the lockless audit --check fabric-coverage (were skipped 10/10 on lock contention, or ~550 s per leg when they won it); guard pins the structure section still calls the same function; file T-4400 (init bootstrap secret-scan ~92 s), T-4401 (live-audit lock lottery in tests/unit). bimodal triage report — no file hangs: fast runs are skips (audit-lock lottery; detached-HEAD base tree), slow runs are a 547 s structure section or a ~92 s per-install secret scan; vendored_drift/t2332 were old code; ACs, RCA, Evolution. record the resolved reviewer disagreement in the arc-026 report (skips, not hangs)
+
+# Key outcomes
+outcomes:
+  - 'History of the six files (audit.bats, fw_doctor_vendored_drift.bats, fabric_coverage_single_source.bats, t2332_bvp_propose_queue.bats, t4248_install_init_failure.bats, install_target_project.bats) split by report date/revision, table in docs/reports/T-4382-bimodal-triage.md'
+  - 'Each file run alone with `bats --timing` (5x for the fast files; 2x for the two install files and 1x for audit.bats, with the reasons in the report); per-run wall time and skip count recorded in the report; a ps/lock snapshot taken on any slow run'
+  - 'Per-file verdict in the report: hang (where) / skip (why) / lock contention / old code'
+  - 'One-file test defects fixed with a regression proof (red before / green after, recorded here); every product defect or larger fix filed as its own task and named in the report'
+  - 'No test touched loses the ability to fail on its origin bug (fault-detection-fidelity); touched files pass alone with zero unexpected skips'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4376-test-suite-refactor.md'
+  - 'docs/reports/T-4382-bimodal-triage.md'
+  - '.tasks/active/T-4382-triage-the-bimodal-and-instant-finish-te.md'
+  - '.tasks/active/T-4400-fw-init-bootstrap-commit-secret-scans-th.md'
+  - '.tasks/active/T-4401-testsunit-files-that-run-a-live-sectione.md'
+  - 'tests/unit/fabric_coverage_single_source.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T17:27:08'
+    action: 'T-4382: fabric_coverage live legs use the lockless audit --check fabric-coverage (were skipped 10/10 on lock contention, or ~550 s per leg when they won it); guard pins the structure section still calls the same function; file T-4400 (init bootstrap secret-scan ~92 s), T-4401 (live-audit lock lottery in tests/unit)'
+  - time: '2026-10-19T18:00:37'
+    action: 'T-4382: bimodal triage report — no file hangs: fast runs are skips (audit-lock lottery; detached-HEAD base tree), slow runs are a 547 s structure section or a ~92 s per-install secret scan; vendored_drift/t2332 were old code; ACs, RCA, Evolution'
+  - time: '2026-10-19T18:07:53'
+    action: 'T-4382: record the resolved reviewer disagreement in the arc-026 report (skips, not hangs)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 371 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 371
+  commits: 3
+  files_changed: 6
+  lines_added: 1036
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4382-triage-the-bimodal-and-instant-finish-te.md
+generated_by: context-agent-hybrid

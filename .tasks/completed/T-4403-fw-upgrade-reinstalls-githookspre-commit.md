@@ -1,25 +1,22 @@
 ---
-id: T-4408
-name: "SECURITY: GIT_DIR / GIT_WORK_TREE / GIT_COMMON_DIR env-var prefixes bypass
-  T-4343: git reads an outside repository's config while judged read-only"
+id: T-4403
+name: "fw upgrade reinstalls .git/hooks/pre-commit and erases project lines a consumer
+  added there"
 description: >
-  Reported by ring20-dashboard (msg 16c721c9) on installed v1.8.12, reproduced on
-  bleeding-edge 2026-10-19: is_bash_safe_command('GIT_DIR=/tmp/evil/.git git log'),
-  ('GIT_WORK_TREE=/tmp/evil git status'), ('GIT_COMMON_DIR=/tmp/evil/.git git status')
-  all SAFE. Same exposure as T-4343 (core.fsmonitor / core.pager / diff.external in
-  that repo's config run arbitrary commands). Fix: treat GIT_DIR, GIT_WORK_TREE, GIT_COMMON_DIR,
-  GIT_INDEX_FILE?, GIT_OBJECT_DIRECTORY?, GIT_CEILING_DIRECTORIES (decide each) like
-  --git-dir: check the value resolves inside PROJECT_ROOT via _fw_git_dir_is_project,
-  or deny the prefix in _fw_env_prefix_is_denied; also the 'env VAR=… git' and 'export
-  VAR=…; git' shapes. Red run on current code; field test by ring20-dashboard (their
-  tmp/t2541_probe.sh). Serial after T-4396 (same file).
+  Reported by 832 (msg 62736fc8, peer exchange 2026-10-19): every fw upgrade rewrites
+  .git/hooks/pre-commit wholesale, so project-specific lines are lost and must be
+  re-added by hand after each upgrade. Fix: install the framework hook as a marked
+  block (or chain to a project-owned hook such as .git/hooks/pre-commit.local / a
+  hooks.d directory) and preserve everything outside the block; the same for commit-msg
+  / pre-push / post-commit. Test: a consumer hook with a custom line survives fw upgrade
+  (tests/unit/upgrade_fresh_machine_simulation.bats must stay green, T-1633).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,9 +44,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T15:59:12Z
-last_update: 2026-10-19T16:07:37Z
-date_finished:
+created: 2026-10-19T15:29:57Z
+last_update: 2026-10-19T19:08:52Z
+date_finished: 2026-10-19T19:08:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,7 +58,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-19T16:00:53Z'
+  - ts: '2026-10-19T15:45:38Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -71,7 +68,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T16:02:03Z'
+  - ts: '2026-10-19T15:46:39Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -90,38 +87,39 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4408: SECURITY: GIT_DIR / GIT_WORK_TREE / GIT_COMMON_DIR env-var prefixes bypass T-4343: git reads an outside repository's config while judged read-only
+# T-4403: fw upgrade reinstalls .git/hooks/pre-commit and erases project lines a consumer added there
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
-
-**Red run, pre-fix code (HEAD 06580ef92), 2026-10-19, PROJECT_ROOT=_FW_PAYLOAD_CWD=repo root:**
-
-| command | verdict |
-|---|---|
-| `GIT_DIR=/tmp/evil/.git git log` | SAFE |
-| `GIT_WORK_TREE=/tmp/evil git status` | SAFE |
-| `GIT_COMMON_DIR=/tmp/evil/.git git status` | SAFE |
-| `env GIT_DIR=/tmp/evil/.git git log` | SAFE |
-| `GIT_DIR=/tmp/evil/.git; git log` | SAFE |
-| `GIT_CONFIG_PARAMETERS=x git status` | SAFE |
-| `GIT_EXEC_PATH=/tmp/evil git fetch` | SAFE |
-| `GIT_INDEX_FILE=/tmp/evil/idx git status` / `GIT_OBJECT_DIRECTORY=/tmp/evil git log` / `GIT_ALTERNATE_OBJECT_DIRECTORIES=/tmp/evil git log` | SAFE |
-| `export GIT_DIR=/tmp/evil/.git; git log` / `... && git log` | unsafe (export not allowlisted) |
-
-New bats file against the HEAD copy of safe-commands.sh: 17 of 25 not ok (every NOT-SAFE case except the two `export` shapes, which were already refused). After the fix: 25/25 ok; after-fix probe: all of the above unsafe, `GIT_DIR=.git git log`, `env GIT_DIR=.git git log`, `GIT_CEILING_DIRECTORIES=/opt git status`, `GIT_CONFIG_NOSYSTEM=1 git status` SAFE.
+`fw upgrade` step 4 (lib/upgrade.sh:2099) runs `agents/git/git.sh install-hooks`,
+which compares and copies whole hook files. Same defect as T-3926 (filed from
+832's 1.8.3 report, `fw git install-hooks` directly); this task fixes it at the
+shared install path, so T-3926 is covered by the same change.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Red run on the pre-fix code recorded in this task: the reporter's cases `GIT_DIR=/tmp/evil/.git git log`, `GIT_WORK_TREE=/tmp/evil git status`, `GIT_COMMON_DIR=/tmp/evil/.git git status` (and the `env VAR=x git` / bare-assignment shapes) classify SAFE
-- [x] GIT_DIR, GIT_WORK_TREE, GIT_COMMON_DIR, GIT_INDEX_FILE, GIT_OBJECT_DIRECTORY are admitted only when the value resolves inside PROJECT_ROOT (`_fw_git_dir_is_project`, against the tracked cwd); outside / quoted / unresolvable → NOT SAFE, in the `VAR=x cmd`, `env VAR=x cmd` and bare-assignment `VAR=x; cmd` shapes
-- [x] Each other git env var is decided and recorded in the source comment: GIT_ALTERNATE_OBJECT_DIRECTORIES and GIT_EXEC_PATH denied, GIT_CONFIG* (incl. GIT_CONFIG_PARAMETERS) denied, GIT_CONFIG_NOSYSTEM and GIT_CEILING_DIRECTORIES allowed
-- [x] `export VAR=x; git …` / `export VAR=x && git …` are NOT SAFE (export is not allowlisted; pinned by test)
-- [x] `GIT_DIR=<inside project> git status` stays SAFE; tests/unit/t4408_git_env_repo_boundary.bats passes, and every safe-commands / boundary bats file passes alone
-- [ ] `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean
+- [x] Each of the five framework hooks (commit-msg, pre-commit, pre-merge-commit, post-commit, pre-push) is installed as a block between `# >>> agentic-framework hook` / `# <<< agentic-framework hook <<<` markers; lines a consumer adds above or below the block survive `install-hooks` (plain and `--force`) and `fw upgrade`
+- [x] Re-install compares only the framework block: a consumer line outside it does not trigger a rewrite; a changed line inside it does (T-3998 behaviour kept)
+- [x] Migration of an existing unmarked hook: an old framework hook with consumer-added lines keeps those lines below the block, commented out (they cannot be told apart from an older template's lines, so none runs unseen), with a WARN and a backup at `<hook>.pre-fw-block`; a wholly consumer-owned sh/bash hook keeps its whole body, executable, after the block; the template lines are never duplicated; a merged file that does not pass `bash -n` falls back to block-only with the backup and a WARN; a second install is a no-op
+- [x] The framework block still blocks: a commit without a task reference is refused by the marked commit-msg hook, and a consumer line after the block runs when the block passes
+- [x] Regression test `tests/unit/t4403_hook_block_preserve.bats` fails before the fix and passes after; t3998, hook_version_marker_parity and upgrade_fresh_machine_simulation stay green
+- [x] `bin/fw vendor self --check` clean for the touched files
+
+#### Test record (2026-10-19)
+
+- Red before the fix: t4403_hook_block_preserve.bats 6/6 `not ok` (pre-fix hooks.sh).
+- Green after: t4403 7/7; t3998 4/4 (case 1 updated: its stale line now goes INSIDE the
+  block — it previously asserted the very erasure this task removes); hook_version_marker_parity 7/7.
+- Hook-exercising neighbours, each run alone: t3511 13, t3110 22, t3740 2, t4167 12,
+  t3594_prepush_forced_update_guard 23, init_head_bootstrap 8, t3126 20,
+  pre_push_version_monotonicity 6, t2240 5, t3297 11, upgrade_fresh_machine_simulation 16,
+  upgrade_fresh_machine_simulation_vendored 4 — 0 `not ok`, 0 skips.
+- `vendor self --check`: agents/git/lib/hooks.sh synced; at commit time the check is red only on
+  other workers' in-flight files (agents/context/lib/safe-commands.sh, untracked
+  agents/audit/unit_tier.py), not synced here.
+- Pre-existing, out of scope: a commit-msg hook in a project without the framework's libs prints
+  `find_task_file: command not found` (same with the HEAD template, unwrapped).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -299,37 +297,36 @@ New bats file against the HEAD copy of safe-commands.sh: 17 of 25 not ok (every 
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-bash -n agents/context/lib/safe-commands.sh
-bash -c 'source agents/context/lib/safe-commands.sh; export PROJECT_ROOT=$PWD _FW_PAYLOAD_CWD=$PWD; for c in "GIT_DIR=/tmp/evil/.git git log" "GIT_WORK_TREE=/tmp/evil git status" "GIT_COMMON_DIR=/tmp/evil/.git git status" "env GIT_DIR=/tmp/evil/.git git log" "GIT_DIR=/tmp/evil/.git; git log"; do is_bash_safe_command "$c" && exit 1; done; is_bash_safe_command "GIT_DIR=.git git status"'
-timeout 300 bats tests/unit/t4408_git_env_repo_boundary.bats > /tmp/.t4408.out 2>&1 && ! grep -q "^not ok" /tmp/.t4408.out
-test "$(grep -c '# skip' /tmp/.t4408.out)" -eq 0
-timeout 600 bats tests/unit/safe_commands_env_prefix.bats tests/unit/t4343_git_repo_path_boundary.bats tests/unit/t4264_git_global_opts_safe.bats tests/unit/t4344_boundary_read_free_text_opts.bats tests/unit/t4367_git_output_option.bats tests/unit/t4396_safe_commands_loops.bats tests/unit/context_safe_commands.bats tests/unit/check_project_boundary.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/safe_commands_chain.bats > /tmp/.t4408b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4408b.out
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4408l.out 2>&1 && grep -q clean /tmp/.t4408l.out
+bash -n agents/git/lib/hooks.sh
+timeout 600 bats tests/unit/t4403_hook_block_preserve.bats > /tmp/.t4403.out 2>&1 && ! grep -q "^not ok" /tmp/.t4403.out
+test "$(grep -c '# skip' /tmp/.t4403.out)" -eq 0
+timeout 600 bats tests/unit/t3998_install_hooks_content_compare.bats tests/unit/hook_version_marker_parity.bats > /tmp/.t4403b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4403b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4403_hook_block_preserve.bats tests/unit/t3998_install_hooks_content_compare.bats > /tmp/.t4403l.out 2>&1 && grep -q clean /tmp/.t4403l.out
 bin/fw vendor self --check
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** 832 (msg 62736fc8; earlier msg 3fdccbb3 → T-3926): every `fw upgrade`
+rewrote `.git/hooks/pre-commit` wholesale; project-specific lines had to be re-added
+by hand after each upgrade.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `agents/git/lib/hooks.sh:1546` compared the staged template with the
+WHOLE installed hook file (`cmp -s`), and `:1561` replaced the whole file (`cp`). A
+hook file was treated as framework-owned in its entirety, so a consumer line was
+indistinguishable from drift: it made the file "differ" and the redeploy erased it.
+`fw upgrade` reaches this unconditionally via lib/upgrade.sh:2099.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** no ownership boundary existed inside a hook file, and no
+test installed hooks over a file carrying non-framework lines. T-3998 (content compare
+replacing the VERSION short-circuit) made it strictly worse: before it, consumer lines
+survived until the next marker bump; after it, any consumer line counted as drift and
+was erased on every upgrade — and T-3998's own regression test asserted exactly that
+(appended line → rewritten).
 
-**Symptom:** `GIT_DIR=/tmp/evil/.git git log`, `GIT_WORK_TREE=/tmp/evil git status`, `GIT_COMMON_DIR=/tmp/evil/.git git status` were classified SAFE by `is_bash_safe_command`, so the task gate let git read an outside repository whose config (core.fsmonitor, core.pager, diff.external) runs arbitrary commands — the T-4343 hole through the environment instead of `-C` / `--git-dir` (ring20-dashboard, msg 16c721c9).
-
-**Root cause:** `_fw_strip_env_prefixes` (agents/context/lib/safe-commands.sh:401) strips every `NAME=VALUE` prefix whose name `_fw_env_prefix_is_denied` (:334) does not deny, and that denylist excluded repository retargeting on purpose (:356-368, "a read of a different repo is still a read"). T-4343 later established that reading a different repo is NOT only a read (its config executes), but fixed only the `_fw_git_skip_globals` command-line options (:454); the git arm never sees env prefixes because they are stripped before it runs. `GIT_CONFIG_PARAMETERS` and `GIT_EXEC_PATH` were also missing from the denylist.
-
-**Why structurally allowed:** the premise "retargeting is read-only" was written down and pinned by a test (`GIT_DIR=foo git status` SAFE, safe_commands_env_prefix.bats); T-4343 changed the premise for one channel without sweeping the other channels that select a repository (env vars, cwd — T-4409). The denylist is name-only, so it could not express "allowed with this value".
-
-**Prevention:** the repo-selecting names are judged on name AND value by one predicate (`_fw_env_assign_is_denied`) used by the prefix stripper, the `env` re-entry and the bare-assignment arm; tests/unit/t4408_git_env_repo_boundary.bats pins every reporter case plus the inside-project controls.
+**Prevention:** the framework content now lives between markers and only the block is
+compared/replaced; `tests/unit/t4403_hook_block_preserve.bats` pins survival of
+consumer lines (plain, `--force`, migration from unmarked, no duplicate block) and
+that the block still enforces.
 
 ## Evolution
 
@@ -395,12 +392,6 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-19 — per-variable decisions
-- **Chose:** value-checked inside PROJECT_ROOT: GIT_DIR, GIT_WORK_TREE, GIT_COMMON_DIR (select the repository whose config executes), GIT_INDEX_FILE, GIT_OBJECT_DIRECTORY (written by allowlisted verbs: status refreshes the index, add writes objects). Denied by name: every GIT_CONFIG* incl. GIT_CONFIG_PARAMETERS (the `-c` channel, was missing), GIT_EXEC_PATH (git runs helper programs from it, was missing), GIT_ALTERNATE_OBJECT_DIRECTORIES (colon list, not resolvable as one path). Allowed: GIT_CONFIG_NOSYSTEM (only removes config), GIT_CEILING_DIRECTORIES (can only stop discovery). `export VAR=x` is not allowlisted, so those shapes already gate; pinned by test rather than changed.
-- **Why:** same rule as T-4343's -C / --git-dir, one predicate (`_fw_env_assign_is_denied`) for all three entry points (prefix strip, `env` re-entry, bare assignment) so they cannot drift.
-- **Rejected:** denying GIT_DIR etc. by name — would break the pinned `GIT_DIR=foo git status` contract for an inside-project value with no security gain. The pinned test now sets PROJECT_ROOT and the cwd (it has to: with no PROJECT_ROOT the value is unjudgeable and fails closed); its intent (in-project retargeting is a read) is kept.
-- **Not decided here (out of scope, noted):** GIT_TRACE*=/path makes git write a trace file to that path — a write, not execution.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -413,10 +404,27 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-19T15:59:12Z — task-created [task-create-agent]
+### 2026-10-19T15:29:57Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4408-security-gitdir--gitworktree--gitcommond.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4403-fw-upgrade-reinstalls-githookspre-commit.md
 - **Context:** Initial task creation
 
-### 2026-10-19T16:07:37Z — status-update [task-update-agent]
+### 2026-10-19T15:50:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a3344ed8
+- **Timestamp:** 2026-10-19T19:09:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T19:08:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

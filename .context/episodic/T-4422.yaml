@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4422: Classify 'git version' as read-only in safe-commands (T-2888 guard: our tooling now uses it)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T19:02:43Z
+# ============================================================================
+
+task_id: T-4422
+task_name: "Classify 'git version' as read-only in safe-commands (T-2888 guard: our tooling now uses it)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T18:57:00Z
+completed: 2026-10-19T18:59:31Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-19T20:59:28+02:00
+last_commit: 2026-10-19T20:59:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  classify 'git version' as read-only (T-2888 guard; used by T-4417's test stub)
+
+# Key outcomes
+outcomes:
+  - '`git version` is in the read-only git verb case in agents/context/lib/safe-commands.sh; it prints the git build version and reads no repository or repository config'
+  - 'context_safe_commands.bats T-2888 guard is green again, and the safe-commands suites (chain, context, t4396, t4408, t4409) pass together'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4422-classify-git-version-as-read-only-in-saf.md'
+  - '.tasks/completed/T-3924-fw-config-set-writes-a-lowercase-key-inc.md'
+  - '.tasks/completed/T-4379-lint-the-recurring-test-defect-classes-l.md'
+  - '.tasks/completed/T-4382-triage-the-bimodal-and-instant-finish-te.md'
+  - '.tasks/completed/T-4385-defuse-the-2026-10-31-baseline-cliff-tri.md'
+  - '.tasks/completed/T-4397-a-live-fw-audit-run-can-block-in-piperea.md'
+  - '.tasks/completed/T-4399-corpusspec-drops-the-standard-bpmn-defau.md'
+  - '.tasks/completed/T-4400-fw-init-bootstrap-commit-secret-scans-th.md'
+  - '.tasks/completed/T-4406-debris-at-the-filesystem-root-policy-wit.md'
+  - '.tasks/completed/T-4410-fw-audit---help-says-sections-default-to.md'
+  - '.tasks/completed/T-4411-github-issues-get-an-area-label-derived-.md'
+  - '.tasks/completed/T-4412-github-issue-status-labels-accumulate-in.md'
+  - '.tasks/completed/T-4413-regression-t-4390-fw-doctor-fails-on-eve.md'
+  - '.tasks/completed/T-4417-every-external-read-in-the-audit-section.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T20:59:28'
+    action: 'T-4422: classify ''git version'' as read-only (T-2888 guard; used by T-4417''s test stub)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 358
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4422-classify-git-version-as-read-only-in-saf.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4410: fw audit --help says sections default to 'all', but the deployment section is opt-in (runs only with --section deployment)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T18:50:36Z
+# ============================================================================
+
+task_id: T-4410
+task_name: "fw audit --help says sections default to 'all', but the deployment section is opt-in (runs only with --section deployment)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T16:19:04Z
+completed: 2026-10-19T18:50:03Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-19T18:19:29+02:00
+last_commit: 2026-10-19T19:02:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — audit help claims default all, deployment is opt-in (832). audit --help names deployment as the opt-in exception to the --section default; pin with synthetic-project bats test
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh --help` describes the `--section` default as `(default: all except deployment)`, and the header comment''s Sections list says deployment is opt-in'
+  - 'New bats test `tests/unit/t4410_audit_deployment_optin.bats` pins: help names the exception; a run without `--section` on a synthetic project (temp root, PROJECT_ROOT override, never the live repo or its lock) completes and prints no `=== DEPLOYMENT CHECKS ===`; control: `--section deployment` on the same project does print it'
+  - 'Regression test red before the fix (help assertion) and green after, recorded in ## Updates'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` clean; `bash -n agents/audit/audit.sh` clean; `bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-4410-fw-audit---help-says-sections-default-to.md'
+  - 'tests/unit/t4410_audit_deployment_optin.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T18:19:29'
+    action: 'T-4410: file — audit help claims default all, deployment is opt-in (832)'
+  - time: '2026-10-19T19:02:16'
+    action: 'T-4410: audit --help names deployment as the opt-in exception to the --section default; pin with synthetic-project bats test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 150 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 150
+  commits: 2
+  files_changed: 4
+  lines_added: 464
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4410-fw-audit---help-says-sections-default-to.md
+generated_by: context-agent-hybrid
