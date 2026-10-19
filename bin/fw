@@ -4397,6 +4397,19 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
         echo -e "  ${GREEN}OK${NC}  Configuration: all defaults (no FW_* overrides)"
     fi
 
+    # T-3924: a .framework.yaml key that names a registry key in the wrong case
+    # is dead — fw_config reads the exact key, so the setting is silently ignored.
+    # Reported, never rewritten: the operator owns the file.
+    local _ck_line _ck_file _ck_canon
+    while IFS= read -r _ck_line; do
+        [ -n "$_ck_line" ] || continue
+        _ck_file="${_ck_line%%|*}"
+        _ck_canon="${_ck_line#*|}"
+        echo -e "  ${YELLOW}WARN${NC}  .framework.yaml key '$_ck_file' is ignored — the setting is '$_ck_canon' (keys are read case-sensitively)"
+        echo -e "         Fix: rename it to '$_ck_canon' in .framework.yaml, or: fw config set $_ck_canon <value>  (then delete '$_ck_file')"
+        warnings=$((warnings + 1))
+    done < <(fw_config_case_mismatches "$PROJECT_ROOT/.framework.yaml")
+
     # Check: Cron registry drift (T-1112/T-1114)
     # Catches the class of divergence where cron-registry.yaml and the
     # installed /etc/cron.d/ file are out of sync — the root cause of

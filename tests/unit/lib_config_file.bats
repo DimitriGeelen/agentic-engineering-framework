@@ -54,7 +54,8 @@ print(type(d['PORT']).__name__)
 }
 
 @test "config set converts boolean true" {
-    _config_set "debug" "true"
+    # T-3924: debug is not a registry key, so set refuses it without --force.
+    _config_set "debug" "true" --force
     result=$(python3 -c "
 import yaml
 with open('$_config_yaml') as f:

@@ -66,6 +66,8 @@ _config_help() {
     echo ""
     echo "Usage:"
     echo "  fw config set KEY VALUE    Set a config value (dot-notation for nesting)"
+    echo "                             Registry keys are matched case-insensitively and"
+    echo "                             written in canonical case; unknown keys need --force"
     echo "  fw config get KEY          Get a config value"
     echo "  fw config list             Show all custom settings"
     echo "  fw config overrides        Show all non-default settings (env + file)"
@@ -78,13 +80,62 @@ _config_help() {
     echo "Config file: $_config_yaml"
 }
 
+# Top-level keys that are not in FW_CONFIG_REGISTRY but are legitimately written
+# to .framework.yaml: fw init/upgrade's lowercase fields (read by key, verbatim),
+# and uppercase settings read without being registered. T-3924.
+_config_known_extra_keys=" project_name project_id version provider initialized_at upgraded_from last_upgrade upstream_repo PROTECT_MASTER WATCHTOWER_URL CONTINUOUS_SESSION UPSTREAM_URL PEER_LEARNING_CRON "
+
+_config_load_registry() {
+    declare -F fw_config_canonical_key >/dev/null && return 0
+    local fw_root="${FRAMEWORK_ROOT:-$(cd "${BASH_SOURCE[0]%/*}/.." && pwd)}"
+    source "$fw_root/lib/config.sh"
+}
+
+# _config_closest_key KEY — the registry key closest to KEY (for a refusal hint).
+_config_closest_key() {
+    local names
+    names="$(printf '%s\n' "${FW_CONFIG_REGISTRY[@]}" | cut -d'|' -f1)"
+    python3 -c '
+import difflib, sys
+m = difflib.get_close_matches(sys.argv[1].upper(), sys.argv[2].split(), n=1, cutoff=0.6)
+print(m[0] if m else "")' "$1" "$names"
+}
+
 _config_set() {
-    local key="${1:-}"
-    local value="${2:-}"
+    local force=0 args=() a
+    for a in "$@"; do
+        if [ "$a" = "--force" ]; then force=1; else args+=("$a"); fi
+    done
+    local key="${args[0]:-}"
+    local value="${args[1]:-}"
 
     if [ -z "$key" ] || [ -z "$value" ]; then
-        echo -e "${RED:-}Usage: fw config set KEY VALUE${NC:-}" >&2
+        echo -e "${RED:-}Usage: fw config set KEY VALUE [--force]${NC:-}" >&2
         exit 1
+    fi
+
+    # T-3924: a flat key is resolved against FW_CONFIG_REGISTRY before it is
+    # written. fw_config reads .framework.yaml by the exact registry key, so a
+    # key in any other case was written, echoed back as "Set", and never read.
+    if [[ "$key" != *.* ]]; then
+        _config_load_registry
+        local canon
+        canon="$(fw_config_canonical_key "$key")"
+        if [ -n "$canon" ]; then
+            if [ "$canon" != "$key" ]; then
+                echo "Note: '$key' is the registry key '$canon' — writing '$canon' (fw_config reads that exact key)." >&2
+                key="$canon"
+            fi
+        elif [ "$force" != "1" ] && [[ "$_config_known_extra_keys" != *" $key "* ]] \
+             && ! grep -q "^${key}:" "$_config_yaml" 2>/dev/null; then
+            local near
+            near="$(_config_closest_key "$key")"
+            echo -e "${RED:-}Unknown config key: $key${NC:-}" >&2
+            echo "  It is not in the config registry, so nothing reads it (see: fw config overrides)." >&2
+            [ -n "$near" ] && echo "  Did you mean: fw config set $near $value" >&2
+            echo "  To write it anyway: fw config set $key $value --force" >&2
+            exit 1
+        fi
     fi
 
     # T-2365 (T-2158 S3): keys under `continuous-mode.` write to the
@@ -188,6 +239,15 @@ _config_get() {
     if [ -z "$key" ]; then
         echo -e "${RED:-}Usage: fw config get KEY${NC:-}" >&2
         exit 1
+    fi
+
+    # T-3924: same resolution as set — a registry key in any case reads the
+    # canonical key, the one fw_config reads.
+    if [[ "$key" != *.* ]]; then
+        _config_load_registry
+        local canon
+        canon="$(fw_config_canonical_key "$key")"
+        [ -n "$canon" ] && key="$canon"
     fi
 
     # T-2365 (T-2158 S3): keys under `continuous-mode.` read from the

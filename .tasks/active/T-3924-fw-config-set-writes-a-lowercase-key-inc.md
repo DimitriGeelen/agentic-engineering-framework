@@ -6,7 +6,7 @@ name: "fw config set writes a lowercase key (inception_commit_limit) while the c
 description: >
   Found by ring20-manager (T-3922 triage). The YAML re-wrap half is T-3735.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,7 +41,7 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "msg 0edfc78d"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T08:46:02Z
-last_update: 2026-10-19T15:51:51Z
+last_update: 2026-10-19T17:46:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw config set inception_commit_limit 7` writes `INCEPTION_COMMIT_LIMIT: 7` (canonical registry case) and says it normalised the key; `fw_config INCEPTION_COMMIT_LIMIT` then returns 7
+- [x] `fw config set` refuses a key that matches no registry key (case-insensitively) and is not a known non-registry framework key or dotted path, naming the closest registry key; `--force` writes it anyway
+- [x] `fw config get inception_commit_limit` resolves to the canonical key's value
+- [x] `fw doctor` WARNs on a `.framework.yaml` top-level key that matches a registry key only case-insensitively, naming the key and the fix; existing files are not rewritten
+- [x] The inception commit-limit hint in `agents/git/lib/hooks.sh` names `INCEPTION_COMMIT_LIMIT`
+- [x] Regression bats test (temp project) red before the fix, green after; bats dead-negation lint clean; this task's files vendored (`fw vendor self --check` residual drift at commit time was other workers' in-flight files only: lib/sidecar/*, tools/bats-test-isolation-lint.py)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -254,6 +258,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/config-file.sh && bash -n bin/fw && bash -n agents/git/lib/hooks.sh
+timeout 300 bats tests/unit/t3924_config_key_case.bats > /tmp/.t3924.out 2>&1 && ! grep -q "^not ok" /tmp/.t3924.out
+test "$(grep -c '# skip' /tmp/.t3924.out)" -eq 0
+grep -q 'config set INCEPTION_COMMIT_LIMIT N' agents/git/lib/hooks.sh
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t3924.lint 2>&1 && grep -q clean /tmp/.t3924.lint
+bin/fw vendor self --check
 
 ## RCA
 
@@ -270,6 +280,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw config set inception_commit_limit 15` printed "Set inception_commit_limit = 15" and the inception commit gate still blocked after 2 commits. 010-termlink carried the dead key for six months; dimitri-mint-dev hit it 2026-10-19.
+
+**Root cause:** `lib/config-file.sh` `_config_set` writes the key verbatim, with no reference to `FW_CONFIG_REGISTRY` (`lib/config.sh:226`). `fw_config` (`lib/config.sh:105`, via `_fw_config_file_val`) reads `.framework.yaml` by exact, uppercase key, as do all callers (`agents/git/lib/hooks.sh:268`). The gate's own hint (`agents/git/lib/hooks.sh:333`) told users to run `config set inception_commit_limit N` — the lowercase form — so following the instruction produced the dead key.
+
+**Why structurally allowed:** the writer and the reader of `.framework.yaml` were never joined: set accepts any string, get reads the literal string back (so `fw config get inception_commit_limit` round-tripped and looked like confirmation), and no check compared file keys against the registry. The `.framework.yaml` header in this repo documents the uppercase convention in a comment, which is advice, not a gate.
+
+**Prevention:** `fw config set`/`get` now resolve the key against the registry case-insensitively and refuse unknown keys (closest match suggested, `--force` to override); `fw doctor` WARNs on case-only mismatches already on disk; `tests/unit/t3924_config_key_case.bats` pins set→fw_config round-trip, the refusal, get, the doctor WARN and the hint text.
 
 ## Evolution
 
@@ -326,6 +344,15 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-19 — what "unknown key" means for the refusal
+- **Chose:** refuse a flat key that is not in FW_CONFIG_REGISTRY, except dotted paths, `continuous-mode.*`, keys already present verbatim in the file, and a short named list of framework keys written or read without registration (fw init's lowercase fields, PROTECT_MASTER, WATCHTOWER_URL, CONTINUOUS_SESSION, UPSTREAM_URL, PEER_LEARNING_CRON). `--force` overrides.
+- **Why:** those keys are documented `fw config set` targets (master-guard, continuous-driver, termlink project_name); refusing them would break working instructions.
+- **Rejected:** strict registry-only (breaks the above); registering those keys (wider scope: /config, doctor range checks, parity lint) — left as a follow-up.
+
+### Regression evidence
+- Red before: `t3924_config_key_case.bats` against HEAD copies of the four changed files — 6/8 not ok (tests 4–5 are no-regression controls and pass both ways).
+- Green after: 8/8 ok. `lib_config_file.bats` 22/22 (test 4 now passes `--force` for the unregistered `debug` key), `lib_config.bats` 30/30, `test_fw_config_one_arg.bats` 7/7, `t2439_ntfy_url_config.bats` 7/7.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -354,3 +381,6 @@ bvp_scores_proposed:
 
 ### 2026-10-19T15:51:51Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-10-19T17:46:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -206,6 +206,40 @@ fw_config_list() {
     env | grep "^FW_" | sort
 }
 
+# fw_config_canonical_key KEY — the FW_CONFIG_REGISTRY key KEY names, matched
+# case-insensitively (an FW_ prefix is ignored too). Empty when KEY is not
+# registered. T-3924: fw_config reads .framework.yaml by the exact uppercase
+# key, so `fw config set inception_commit_limit 15` wrote a key nothing read.
+fw_config_canonical_key() {
+    local want="${1:-}" entry name
+    want="${want^^}"
+    want="${want#FW_}"
+    [ -n "$want" ] || return 0
+    for entry in "${FW_CONFIG_REGISTRY[@]}"; do
+        name="${entry%%|*}"
+        if [ "$name" = "$want" ]; then
+            printf '%s' "$name"
+            return 0
+        fi
+    done
+    return 0
+}
+
+# fw_config_case_mismatches [FILE] — print FILE_KEY|REGISTRY_KEY for every
+# top-level .framework.yaml key that names a registry key in the wrong case.
+# Such a key is dead: fw_config never reads it (T-3924). Used by fw doctor.
+fw_config_case_mismatches() {
+    local file="${1:-${PROJECT_ROOT:-.}/.framework.yaml}" key canon
+    [ -f "$file" ] || return 0
+    while IFS= read -r key; do
+        key="${key%%:*}"
+        canon="$(fw_config_canonical_key "$key")"
+        if [ -n "$canon" ] && [ "$canon" != "$key" ]; then
+            printf '%s|%s\n' "$key" "$canon"
+        fi
+    done < <(grep -oE '^[A-Za-z_][A-Za-z0-9_]*:' "$file" || true)
+}
+
 # fw_consumer_yamls — Emit .framework.yaml paths for all consumer projects
 # Uses FW_CONSUMER_SCAN_DIRS (colon-separated, default: /opt)
 # Origin: T-1195/G-044 — replaces hardcoded /opt/* globs
