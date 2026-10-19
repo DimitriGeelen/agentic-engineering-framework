@@ -93,6 +93,21 @@ with the user (the dictation incident). They are moving it to a virtual display 
 VNC view on localhost only for the rare re-login. A framework version should make that the default. Added to the
 conditions in the Recommendation.
 
+## Update 2 (msg 548c62f9, their T-153/T-154, master 4bb5c24)
+
+- **Their operator's decision, for THEIR project:** keep the Perplexity website under their own account, not the API,
+  for now. For AEF, IW-1 remains the AEF operator's decision.
+- **A third defect: a silent false success.** On the first long structured answer (a 931-word brief),
+  `read_answer` took the last `[class*=prose]` element. List items carry the same class nested inside the answer, so
+  it returned the last bullet (16 words) with rc 0. Fixed in their T-154: outermost prose block only, with innerText
+  read from an off-screen rendered clone (a detached clone loses line breaks).
+- **Condition added for the AEF version:** an answer much shorter than the largest prose block on the page is a
+  failure (exit 4), not a success. More generally, the adapter must assert the property it reports, not merely return
+  something.
+- **Off-desktop default is live (T-153):** seat-chrome.sh defaults to a private Xvfb :99 (-nolisten tcp). The desktop is
+  used only via SEAT_DISPLAY=desktop for a by-hand login. There is a `--stop`, and the login carried over from the
+  profile.
+
 ## Dialogue log
 
 - 2026-10-19, termlink (msg de995014) asked how agents call Perplexity. AEF answered that it has no access of its own
