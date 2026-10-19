@@ -4722,6 +4722,32 @@ check_register_requirements() {
 }
 check_register_requirements
 
+# T-4370 (G-119): a task with github_issue: whose issue ledger lacks the stage its state implies
+# (started-work -> in-progress, work-completed -> fixed-on-bleeding-edge, a commit in a v* tag ->
+# released). WARN, never FAIL: the fix is re-running the lifecycle/release verbs. Internal-author
+# issues (T-4342) are exempt. Read-only: no network, no gh.
+check_issue_ledger_lag() {
+    local _mod="$FRAMEWORK_ROOT/lib/issues_lag.py"
+    if [ ! -f "$_mod" ]; then
+        warn "Issue-ledger lag: lib/issues_lag.py missing — GitHub issue stages are UNCHECKED" "" \
+             "Restore it: bin/fw vendor self (or fw upgrade)"
+        return 0
+    fi
+    local lag_out lag_rc=0
+    lag_out=$(python3 "$_mod" audit --root "$PROJECT_ROOT" 2>&1) || lag_rc=$?
+    if [ $lag_rc -eq 0 ]; then
+        pass "Issue-ledger lag: every linked task's GitHub issue has the stage its state implies"
+    elif [ $lag_rc -eq 1 ]; then
+        warn "Issue-ledger lag: $(printf '%s\n' "$lag_out" | grep -c '^LAG ') linked issue(s) behind their task (G-119)" \
+             "$(printf '%s\n' "$lag_out" | sed 's/^LAG //' | head -5 | tr '\n' ';')" \
+             "Post the missing stage: bin/fw issues lifecycle T-XXXX --event started|closed; released: bin/fw issues release vX --range ..."
+    else
+        warn "Issue-ledger lag check could not run (rc=$lag_rc)" "$lag_out" \
+             "Run: python3 lib/issues_lag.py audit --root \"\$PROJECT_ROOT\""
+    fi
+}
+check_issue_ledger_lag
+
 echo ""
 fi # end structure
 

@@ -1,0 +1,13 @@
+{"intake": "INTAKE-0901", "issue": 901, "stage": "received+classified", "comment": "https://example.invalid/901", "ts": "2026-10-10T00:00:00Z"}
+{"intake": "INTAKE-0902", "issue": 902, "stage": "received+classified", "ts": "2026-10-10T00:00:00Z"}
+{"intake": "INTAKE-0902B", "issue": 902, "stage": "in-progress", "task": "T-9002", "ts": "2026-10-11T00:00:00Z"}
+{"issue": 903, "stage": "in-progress", "task": "T-9003", "ts": "2026-10-11T00:00:00Z"}
+{"issue": 904, "stage": "received+classified", "class": "internal", "type": "internal", "author": "owner", "ts": "2026-10-10T00:00:00Z"}
+{"issue": 905, "stage": "fixed-on-bleeding-edge", "task": "T-9005", "ts": "2026-10-12T00:00:00Z"}
+{"issue": 906, "stage": "fixed-on-bleeding-edge", "task": "T-9006", "ts": "2026-10-12T00:00:00Z"}
+{"issue": 906, "stage": "released", "ts": "2026-10-13T00:00:00Z"}
+{"issue": 907, "stage": "fixed-on-bleeding-edge", "task": "T-9007", "ts": "2026-10-12T00:00:00Z"}
+{"issue": 907, "stage": "closed-released", "ts": "2026-10-14T00:00:00Z"}
+{"issue": 908, "stage": "reply", "reply_id": "77", "author": "someone", "ts": "2026-10-12T00:00:00Z"}
+{"issue": 905, "stage": "received+clas
+{"issue": 909, "stage": "in-progress", "ts": "2026-10-12T00:00:00Z"}
