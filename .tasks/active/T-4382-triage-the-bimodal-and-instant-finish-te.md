@@ -2,7 +2,12 @@
 id: T-4382
 name: "Triage the bimodal and instant-finish test files: hang, skip, or old code?"
 description: >
-  audit.bats, fw_doctor_vendored_drift.bats, t2332_bvp_propose_queue.bats and fabric_coverage_single_source.bats swing between seconds and 900 s; t4248_install_init_failure.bats took 0 s on one tree; install_target_project.bats 900 s vs 2 s. Reviewers disagree (hang vs skip/older code). Run each 10x alone and 10x in-suite with per-command timing and lock snapshots, split history by revision, report the cause per file; fix or file one task per real defect. Arc test-suite-health (arc-026); source: external review T-4376 (docs/reports/T-4376-reviews/).
+  audit.bats, fw_doctor_vendored_drift.bats, t2332_bvp_propose_queue.bats and fabric_coverage_single_source.bats
+  swing between seconds and 900 s; t4248_install_init_failure.bats took 0 s on one
+  tree; install_target_project.bats 900 s vs 2 s. Reviewers disagree (hang vs skip/older
+  code). Run each 10x alone and 10x in-suite with per-command timing and lock snapshots,
+  split history by revision, report the cause per file; fix or file one task per real
+  defect. Arc test-suite-health (arc-026); source: external review T-4376 (docs/reports/T-4376-reviews/).
 
 status: captured
 workflow_type: build
@@ -39,8 +44,8 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:27:59Z
-last_update: 2026-10-19T12:27:59Z
-date_finished: null
+last_update: '2026-10-19T12:30:40Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T12:30:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4382: Triage the bimodal and instant-finish test files: hang, skip, or old code?

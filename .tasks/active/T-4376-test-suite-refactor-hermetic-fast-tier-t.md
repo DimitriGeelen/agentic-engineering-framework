@@ -168,7 +168,18 @@ for s in "Duration distribution" "Timeout frequency" "Reds" "Live-state" "Fast-t
 
 Evidence from 2026-10-19 alone: a full unit run takes ~55 min over 1,172 files, 5-8 files hit the per-file timeout every run (results not determined), several reds appear only under parallel load (t3636, t2290, hook_telemetry_race, audit.bats exit 124), audit.bats was anchored to the live repo and created a self-sustaining ratchet loop, a test read this project's .framework.yaml (t4347), an old test contradicted a deliberate behaviour change (lib_firewall vs T-4330), and the baseline grew to 44 entries; getting one push through cost two extra full suite runs and an operator baseline step. Measurement and an independent external review come before any build; the go/no-go is the operator's.
 
+Updated after measurement and external review: GO, in a changed order. Both external reviewers (codex, opencode) support the tier split and the fidelity-first rule. Both say the runner's own verdicts are not yet trustworthy enough to tune against. So step 0 is runner accounting (T-4381), triage of the hanging or instant-finish files (T-4382), the audit.bats contract (T-4383), t2332 isolation (T-4384) and the 2026-10-31 baseline cliff (T-4385). Step 1 is the tier split, the helper and the lint (T-4377..T-4379). Pruning (T-4380) waits for a seeded-defect detection baseline.
+
 **Evidence:**
+
+- Measurement: docs/reports/T-4376-test-suite-measurement.md
+  - 1,175 files, ~36,200 file-seconds; the top 30 files take 52.6%.
+  - A file at the 900 s cap in 16/20 reports; the bats leg exited 0 in none of 81 logged runs.
+  - 83% of 246 reds appear in ≤2 of 20 reports.
+  - A fast tier of ~950–1,014 files (~80% of tests) fits the budget.
+- External review, verbatim: docs/reports/T-4376-reviews/codex.md, docs/reports/T-4376-reviews/opencode.md. Synthesis
+  and disagreements: docs/reports/T-4376-test-suite-refactor.md §External review.
+- Arc: .context/arcs/test-suite-health.yaml (arc-026), two reviewer-approved drivers.
 
 <!-- Add evidence bullets as exploration progresses (file paths,
      commit hashes, test results). The filing-time recommendation
