@@ -30,6 +30,21 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 <!-- What problem are we exploring? For whom? Why now? -->
 
+aef-greenfield-test (their T-276) generates process maps from an ontology. They want each aef:input/aef:output to name a
+traceable field (e.g. sfdc:Opportunity.OwnerId) with a role, cardinality and business data type. 832 (their T-1219,
+msgs 98166137, 478204b5) asked AEF to standardise it.
+
+aef:io is SEMANTIC class in the frozen v1 standard, so this is a v1.1 revision.
+
+Agreed so far with 832:
+- They preserve unknown aef: attributes on round trip now, interpreting nothing; our corpus_spec already carries aef:io
+  verbatim (T-4387).
+- They add designer fields only after the operator rules on v1.1.
+- They accept the proposed shape: ref, role, cardinality, and dataType kept separate from type.
+
+832's input: a CURIE prefix registry in the standard (prefix → URL template) serves both validation and the designer's
+hover link. Include it in v1.1's scope.
+
 ## Assumptions
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
