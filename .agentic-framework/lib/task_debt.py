@@ -5,54 +5,84 @@ T-4386: the check used to be a bash loop over .tasks/active/*.md that forked
 grep|head|sed|tr and `date` for every file — ~4,600 processes and ~18 s of each
 doctor run at 930 active tasks. This is the same predicate in one process.
 
-Semantics are the loop's, kept exactly:
-  * the value is the first line starting with `last_update:` (anywhere in the
-    file, as `grep '^last_update:' | head -1` found it), with the key, the
-    following spaces and every double quote removed;
-  * it counts when it parses to an epoch > 0 that is older than the cutoff;
-  * a value that does not parse is skipped. That includes a SINGLE-quoted value
-    ('2026-10-19T12:29:28Z'), which `date -d` rejected — see
-    docs/reports/T-4386-doctor-profile.md for why that is reported, not changed,
-    here.
+T-4430: the loop (and its T-4386 port) stripped only double quotes, so a
+SINGLE-quoted value ('2026-10-19T12:29:28Z') — the form 843 of 929 active tasks
+carry — failed to parse and was skipped as if fresh. Now:
+  * the value is `last_update:` in the frontmatter (first `---` block), read as
+    a YAML scalar: quoted or unquoted, date-only or datetime, `Z` or offset;
+  * it counts when its epoch is older than the cutoff;
+  * a value that is missing or does not parse is never skipped silently: it
+    counts as debt (an active task whose age cannot be shown is not fresh) and
+    is listed on stderr as `unparsed: N`, so stdout stays the one integer the
+    caller (bin/fw doctor) reads.
 
 Usage: task_debt.py ACTIVE_DIR CUTOFF_EPOCH   → prints the stale count.
 """
 import os
-import re
 import sys
-from datetime import datetime
+from datetime import date, datetime, time
 
-_KEY_RE = re.compile(r"^last_update: *")
+try:
+    import yaml
+except ImportError:  # pragma: no cover - yaml is a framework dependency
+    yaml = None
+
+_KEY = "last_update:"
 
 
 def last_update_value(path):
+    """Raw scalar text after `last_update:` in the frontmatter, or None."""
     try:
         with open(path, errors="replace") as f:
+            if f.readline().rstrip("\r\n") != "---":
+                return None
             for line in f:
-                if line.startswith("last_update:"):
-                    return _KEY_RE.sub("", line.rstrip("\n"), count=1).replace('"', "")
+                line = line.rstrip("\r\n")
+                if line == "---":
+                    return None
+                if line.startswith(_KEY):
+                    return line[len(_KEY):].strip()
     except OSError:
         return None
     return None
 
 
+def _scalar(value):
+    if yaml is not None:
+        try:
+            return yaml.safe_load(value)
+        except yaml.YAMLError:
+            return None
+    v = value.split(" #", 1)[0].strip()
+    if len(v) >= 2 and v[0] == v[-1] and v[0] in "'\"":
+        v = v[1:-1]
+    return v
+
+
 def to_epoch(value):
-    """Epoch seconds, or 0 when unparseable (the loop's `|| echo 0`)."""
+    """Epoch seconds, or None when missing/unparseable."""
     if not value:
-        return 0
-    try:
-        dt = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
-    except ValueError:
-        return 0
-    return int(dt.timestamp())  # naive → local time, as `date -d` reads it
+        return None
+    v = _scalar(value)
+    if isinstance(v, str):
+        try:
+            v = datetime.fromisoformat(v.strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    if isinstance(v, datetime):
+        return int(v.timestamp())  # naive → local time, as `date -d` reads it
+    if isinstance(v, date):
+        return int(datetime.combine(v, time()).timestamp())
+    return None
 
 
-def stale_count(active_dir, cutoff_epoch):
-    n = 0
+def scan(active_dir, cutoff_epoch):
+    """(stale_count, unparsed_paths). Unparsed paths are included in the count."""
+    n, unparsed = 0, []
     try:
         names = sorted(os.listdir(active_dir))
     except OSError:
-        return 0
+        return 0, []
     for name in names:
         if not name.endswith(".md") or name.startswith("."):
             continue
@@ -60,16 +90,26 @@ def stale_count(active_dir, cutoff_epoch):
         if not os.path.isfile(path):
             continue
         epoch = to_epoch(last_update_value(path))
-        if 0 < epoch < cutoff_epoch:
+        if epoch is None:
+            unparsed.append(name)
             n += 1
-    return n
+        elif epoch < cutoff_epoch:
+            n += 1
+    return n, unparsed
+
+
+def stale_count(active_dir, cutoff_epoch):
+    return scan(active_dir, cutoff_epoch)[0]
 
 
 def main(argv):
     if len(argv) != 3:
         print("usage: task_debt.py ACTIVE_DIR CUTOFF_EPOCH", file=sys.stderr)
         return 2
-    print(stale_count(argv[1], int(argv[2])))
+    n, unparsed = scan(argv[1], int(argv[2]))
+    print(n)
+    if unparsed:
+        print(f"unparsed: {len(unparsed)} ({', '.join(unparsed)})", file=sys.stderr)
     return 0
 
 

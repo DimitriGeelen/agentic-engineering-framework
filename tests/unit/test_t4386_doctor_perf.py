@@ -221,7 +221,11 @@ def test_task_debt_matches_the_replaced_bash_loop(tmp_path):
                          capture_output=True, text=True, timeout=60).stdout.strip()
     new = subprocess.run([sys.executable, str(LIB / "task_debt.py"), str(d), cutoff],
                          capture_output=True, text=True, timeout=60).stdout.strip()
-    assert old == new == "3"
+    # T-4430 broke parity on purpose: the loop skipped T-3 (single quotes), T-5
+    # (frontmatter has no last_update) and T-6 (unparseable) as if fresh. Now
+    # T-3 parses as stale and T-5/T-6 count as unparsed debt.
+    assert old == "3"
+    assert new == "5"
 
 
 # --- underpopulated cards: libyaml loader -----------------------------------

@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T21:20:53Z
-last_update: 2026-10-19T21:24:02Z
+last_update: '2026-10-19T21:30:32Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,6 +75,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-19T21:30:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=317,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4430: Task-debt check never counts 843 of 929 active tasks: single-quoted last_update is rejected by date -d, so the stale figure is too low
@@ -87,10 +97,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/task_debt.py` reads `last_update` from the frontmatter YAML-aware: single-quoted, double-quoted, unquoted, date-only, datetime with `Z` and with a numeric offset all parse to the right epoch
-- [ ] A missing or unparseable `last_update` is never silently skipped: it is counted in the stale figure (the frozen caller's only channel) and reported on stderr as `unparsed: N` with the files
-- [ ] Regression test `tests/unit/test_t4430_task_debt_dates.py` covers every form above and fails against the pre-fix code; `tests/unit/test_t4386_doctor_perf.py` updated to pin the corrected count
-- [ ] Before/after stale count on the live repo recorded in this task
+- [x] `lib/task_debt.py` reads `last_update` from the frontmatter YAML-aware: single-quoted, double-quoted, unquoted, date-only, datetime with `Z` and with a numeric offset all parse to the right epoch
+- [x] A missing or unparseable `last_update` is never silently skipped: it is counted in the stale figure (the frozen caller's only channel) and reported on stderr as `unparsed: N` with the files
+- [x] Regression test `tests/unit/test_t4430_task_debt_dates.py` covers every form above and fails against the pre-fix code; `tests/unit/test_t4386_doctor_perf.py` updated to pin the corrected count
+- [x] Before/after stale count on the live repo recorded in this task
+
+**Live repo, 2026-10-19 (929 active tasks, cutoff = 7 days ago):** `fw doctor` Task debt **before 63, after 778**; 0 unparsed. Cross-checked independently: `grep -h -m1 '^last_update:' .tasks/active/*.md | tr -d "'\""` compared against the cutoff string with awk → 929 values, 778 older. Pre-fix test run: 10 of 14 new tests fail; post-fix 23/23 pass (new + T-4386 suite).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -356,6 +368,11 @@ bin/fw vendor self --check --task T-4430
 -->
 
 ## Decisions
+
+### 2026-10-19 — how an unparseable value surfaces
+- **Chose:** count it as stale debt AND print `unparsed: N (files)` on stderr; stdout stays one integer.
+- **Why:** the caller (`bin/fw:4117`) reads only stdout, requires `^[0-9]+$`, and discards stderr; bin/fw was out of scope (another worker editing it). Counting is the only channel that reaches the doctor line today; an active task whose age cannot be shown is not provably fresh.
+- **Rejected:** stderr-only (still vanishes in doctor via `2>/dev/null`); a nonzero exit (caller's `|| echo 0` would zero the whole figure). Follow-up for whoever owns bin/fw: surface the stderr `unparsed:` line in the doctor output.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
