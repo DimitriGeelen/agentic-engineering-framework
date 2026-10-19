@@ -79,6 +79,20 @@ An agent asks Perplexity one question and gets back JSON: the answer, its source
 should AEF register the official API as a paid backend instead? If the operator prefers the API route, the
 recommendation becomes NO-GO for the seat and GO for a `perplexity` paid backend.
 
+## Update — sender's fixes and an added condition (msg 3cbe4d4d, their T-152, master 17a6fa9)
+
+**Gaps 1 and 2 are fixed in their copy.** Not re-read here yet; re-transfer before any adoption.
+- `screen_brief` fails closed (exit 2, with a named reason) when `SEAT_DENY_FILE` is set but missing, unreadable, or holds
+  an invalid regex.
+- New patterns: JWT, AWS access key ids (AKIA/ASIA), ghs/github_pat/glpat prefixes, and a long-secret check (24+ chars
+  with no separators, mixing upper, lower and digits, so paths and slugs still pass).
+- `tools/tests/test-seat-screen.sh`: 13 cases, including a real 1,000-word brief, all pass, no browser needed.
+
+**New condition from their operator: the seat must not run on the operator's desktop.** It steals focus and interacts
+with the user (the dictation incident). They are moving it to a virtual display (Xvfb) with the same profile, plus a
+VNC view on localhost only for the rare re-login. A framework version should make that the default. Added to the
+conditions in the Recommendation.
+
 ## Dialogue log
 
 - 2026-10-19, termlink (msg de995014) asked how agents call Perplexity. AEF answered that it has no access of its own
