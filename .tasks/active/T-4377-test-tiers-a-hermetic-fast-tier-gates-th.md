@@ -372,6 +372,20 @@ bin/fw vendor self --check
 
 ## Decisions
 
+### 2026-10-19 — an unassigned test file runs in slow with a WARN, not a refused run (parent session)
+
+- **Chose:** a discovered file missing from tiers.yaml runs in the slow tier, with a WARN from `unit_tier.py check`. A
+  file assigned to two tiers, an unknown key or a wrong schema still refuses the run (exit 2).
+- **Why:**
+  - At close, 8 test files added by later tasks that day were unassigned. The runner would then have refused EVERY
+    run, including the nightly. The ratchet would have graded a stale report, or none, after every new test file.
+  - The manifest's own rule already says "slow: everything else (unmeasured included)".
+  - Refusing guards nothing a WARN does not show, and it turns adding a test into a suite outage.
+- **Rejected:** keeping the refusal and requiring every test-adding task to regenerate the manifest. That is a
+  cross-task obligation no gate enforces at the right moment, and the outage is silent until the nightly.
+- **Evidence:** t4377 test 5 rewritten (it would exit 2 on the old code) and test 6 added (a double assignment still
+  refuses); 6/6 pass. Live: `unit_tier.py check` gives ok fast=886 slow=341 perf=4, plus WARNs for the new files.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:

@@ -100,11 +100,22 @@ def assignments(data):
 
 
 def check(suite_dir):
-    """Return (problems, counts). problems is empty when the manifest is valid."""
+    """Return (problems, counts). problems is empty when the manifest is valid.
+
+    An unassigned or stale entry is NOT a problem (see check_full): a new test
+    file runs in the slow tier, per the manifest rule 'slow: everything else
+    (unmeasured included)', until `select --write` measures it. Refusing the run
+    instead stopped the whole nightly suite on every new test file (2026-10-19)."""
+    problems, _warnings, counts = check_full(suite_dir)
+    return problems, counts
+
+
+def check_full(suite_dir):
+    """Return (problems, warnings, counts)."""
     data = load_manifest(suite_dir)
     if data is None:
-        return ["no %s in %s" % (MANIFEST, suite_dir)], {}
-    problems = []
+        return ["no %s in %s" % (MANIFEST, suite_dir)], [], {}
+    problems, warnings = [], []
     if data.get("schema") != SCHEMA:
         problems.append("schema must be %s (got %r)" % (SCHEMA, data.get("schema")))
     unknown = sorted(k for k in data if k not in TIERS + ("schema", "fast_max_median_seconds",
@@ -116,23 +127,25 @@ def check(suite_dir):
     for name in found:
         tiers = seen.get(name, [])
         if not tiers:
-            problems.append("unassigned: %s" % name)
+            warnings.append("unassigned (runs in slow until measured): %s" % name)
         elif len(tiers) > 1:
             problems.append("assigned to more than one tier: %s (%s)" % (name, ", ".join(tiers)))
     for name in sorted(seen):
         if name not in found:
-            problems.append("stale: %s is listed but not discovered" % name)
+            warnings.append("stale: %s is listed but not discovered" % name)
     counts = {t: sum(1 for n in found if t in seen.get(n, [])) for t in TIERS}
-    return problems, counts
+    counts["slow"] += sum(1 for n in found if not seen.get(n))
+    return problems, warnings, counts
 
 
 def files_for(suite_dir, tier):
-    """Discovered files (basenames) that the manifest assigns to tier."""
+    """Discovered files (basenames) that run in tier. Unassigned files run in slow."""
     problems, _ = check(suite_dir)
     if problems:
         raise SystemExit("unit_tier: manifest invalid: " + "; ".join(problems))
     seen = assignments(load_manifest(suite_dir))
-    return [n for n in discover(suite_dir) if tier in seen.get(n, [])]
+    return [n for n in discover(suite_dir)
+            if tier in seen.get(n, []) or (tier == "slow" and not seen.get(n))]
 
 
 def _v2_reports(reports_dir):
@@ -224,7 +237,9 @@ def main(argv):
     args = ap.parse_args(argv)
 
     if args.cmd == "check":
-        problems, counts = check(args.dir)
+        problems, warnings, counts = check_full(args.dir)
+        for w in warnings:
+            print("WARN %s" % w)
         if problems:
             for p in problems:
                 print("FAIL %s" % p)

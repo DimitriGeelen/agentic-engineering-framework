@@ -7,7 +7,8 @@
 #      slow writes <report-dir>/slow/, perf writes <report-dir>/perf/
 #   3. in the fast tier a skipped test is NOT DETERMINED (exit non-zero, named
 #      in files_not_determined); in the slow tier the same skip is not a verdict
-#   4. a discovered file missing from the manifest refuses the run (exit 2)
+#   4. a discovered file missing from the manifest runs in slow with a WARN; a file
+#      assigned to two tiers refuses the run (exit 2)
 #
 # HERMETIC BY CONSTRUCTION: every runner invocation points FW_UNIT_SUITE_DIR at
 # a fixture corpus in $BATS_TEST_TMPDIR. The real tests/unit corpus is never run.
@@ -107,13 +108,38 @@ EOF
     [ "$status" -ne 0 ]
 }
 
-@test "a manifest that leaves a discovered file unassigned refuses the run (exit 2, no report)" {
+@test "a discovered file missing from the manifest runs in slow (not fast), with a WARN, and does not stop the run" {
+    # Refusing the run here stopped the whole nightly suite on every new test file (2026-10-19).
     cat > "$WORK/suite/tiers.yaml" <<'EOF'
 schema: unit-tier-manifest-v1
 fast:
   - fast.bats
 slow:
   - slow.bats
+perf: []
+EOF
+    run python3 -I "$REPO_ROOT/agents/audit/unit_tier.py" check --dir "$WORK/suite"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"WARN unassigned (runs in slow until measured): skipper.bats"* ]]
+    run python3 -I "$REPO_ROOT/agents/audit/unit_tier.py" files --tier slow --dir "$WORK/suite"
+    [[ "$output" == *"/skipper.bats"* ]]
+    run python3 -I "$REPO_ROOT/agents/audit/unit_tier.py" files --tier fast --dir "$WORK/suite"
+    [[ "$output" != *"skipper.bats"* ]]
+    run _run_tier fast
+    [ "$status" -ne 2 ]
+    [ -f "$WORK/reports/LATEST.yaml" ]
+}
+
+@test "a file assigned to two tiers still refuses the run (exit 2, no report)" {
+    cat > "$WORK/suite/tiers.yaml" <<'EOF'
+schema: unit-tier-manifest-v1
+fast:
+  - fast.bats
+  - skipper.bats
+  - test_skipper.py
+slow:
+  - slow.bats
+  - fast.bats
 perf: []
 EOF
     run _run_tier fast
