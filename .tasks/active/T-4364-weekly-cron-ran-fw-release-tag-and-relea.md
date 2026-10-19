@@ -39,7 +39,7 @@ origin: {kind: "agent", source: "T-4345"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T08:15:03Z
-last_update: 2026-10-19T08:15:03Z
+last_update: 2026-10-19T08:20:20Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,7 +66,8 @@ date_finished: null
 - [x] The weekly release cron entry is paused in .context/cron-registry.yaml, regenerated and installed (doctor: registry in sync)
 - [x] Local master is back at e42aa41bf (v1.8.11), the local v1.8.12 tag no longer exists, and both remotes still show master e42aa41bf with no v1.8.12 tag
 - [x] bleeding-edge VERSION reads 1.8.11 again (the unattended reconcile commit reverted, f1389c904)
-- [ ] fw release tag-and-release refuses an unattended run (no TTY / cron) unless a recorded release decision for that version exists; regression test
+- [x] fw release tag-and-release refuses an unattended run (no TTY / cron) unless a recorded release decision for that version exists; regression test tests/unit/t4364_release_decision_gate.bats
+- [x] `fw release decide` records decisions append-only in .context/releases/decisions.jsonl; CLAUDE.md §Release-Train states runs need a recorded decision and no scheduled release exists
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -115,6 +116,10 @@ date_finished: null
 -->
 
 ## Verification
+
+out=$(bats tests/unit/t4364_release_decision_gate.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+grep -q 'Release runs need a recorded decision' CLAUDE.md
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -247,6 +252,11 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** the Monday cron ran `fw release tag-and-release` unattended and cut v1.8.12 from untested bleeding-edge (tag, VERSION commit, local master ff, push started).
+**Root cause:** lib/release.sh `release_tag_and_release` had no notion of authorisation: any caller, TTY or not, could release; the cron entry (T-1256) predated the verified-fixes-only rule (T-4020, T-4146).
+**Why structurally allowed:** the release policy lived only in CLAUDE.md prose; no gate read it.
+**Prevention:** release_main enforces a recorded per-version decision for unattended runs (lib/release.sh, release-decision leg); tests/unit/t4364_release_decision_gate.bats pins it.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -315,6 +325,10 @@ date_finished: null
 -->
 
 ## Decisions
+
+### 2026-10-19 — decision record
+- **Chose:** new minimal append-only .context/releases/decisions.jsonl plus `fw release decide`; no existing mechanism records per-version release approval (Tier 0 approvals are per-action and ephemeral). Gate sits in release_main so direct library calls in other unit tests are unaffected. Under CLAUDECODE=1, `--by operator` needs the operator's verbatim words (>=12 chars); `--by field-evidence` needs a T-/docs/reports ref.
+- **Rejected:** an env-var bypass (defeats the gate); reusing tier0 approvals (wrong granularity).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

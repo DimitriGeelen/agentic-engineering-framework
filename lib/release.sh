@@ -344,6 +344,83 @@ release_issue_leg() {
 }
 
 # ---------------------------------------------------------------------------
+# Release decision record (T-4364) — .context/releases/decisions.jsonl, append-only.
+#   Row: {version, decided_by: operator|field-evidence, ref, ts}
+#   An unattended run (no TTY on stdin, FW_UNATTENDED=1, or cron) refuses without
+#   a row for THAT version. Policy: CLAUDE.md §Release-Train (only verified-working
+#   fixes reach master; T-4020, T-4146). Written by `fw release decide`.
+# ---------------------------------------------------------------------------
+release_decisions_file() { echo "${1:-${PROJECT_ROOT:-$(pwd)}}/.context/releases/decisions.jsonl"; }
+
+# release_decision_for <root> <vX.Y.Z>  — prints the newest matching row, rc 1 when none
+release_decision_for() {
+    local f; f="$(release_decisions_file "$1")"
+    [ -s "$f" ] || return 1
+    python3 -I - "$f" "$2" <<'PY'
+import json, sys
+last = None
+for line in open(sys.argv[1]):
+    try:
+        row = json.loads(line)
+    except ValueError:
+        continue
+    if row.get("version") == sys.argv[2] and row.get("decided_by") in ("operator", "field-evidence") and row.get("ref"):
+        last = row
+if not last:
+    sys.exit(1)
+print("%s by %s (%s) at %s" % (last["version"], last["decided_by"], last["ref"], last.get("ts", "?")))
+PY
+}
+
+release_is_unattended() {
+    [ "${FW_UNATTENDED:-0}" = "1" ] && return 0
+    [ ! -t 0 ] && return 0
+    [ -n "${CRON:-}" ] || [ -n "${FW_CRON:-}" ] && return 0
+    return 1
+}
+
+# release_decide <vX.Y.Z> --by operator|field-evidence --ref "<task id or operator's words>"
+release_decide() {
+    local version="${1:-}" by="" ref="" root="${PROJECT_ROOT:-$(pwd)}" human=false
+    shift || true
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --by)         by="$2"; shift ;;
+            --ref)        ref="$2"; shift ;;
+            --i-am-human) human=true ;;
+            *) echo "Unknown flag: $1" >&2; return 2 ;;
+        esac
+        shift
+    done
+    if ! [[ "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || [ -z "$by" ] || [ -z "$ref" ]; then
+        echo "Usage: fw release decide vX.Y.Z --by operator|field-evidence --ref \"<operator's verbatim words | field-evidence report/task id>\"" >&2
+        return 2
+    fi
+    case "$by" in operator|field-evidence) ;; *) echo "--by must be operator or field-evidence" >&2; return 2 ;; esac
+    if [ "${CLAUDECODE:-}" = "1" ] && ! $human; then
+        # An agent records what the operator said; it never self-approves.
+        if [ "$by" = "operator" ] && [ "${#ref}" -lt 12 ]; then
+            echo -e "${RED}REFUSING:${NC} --by operator under agent control needs the operator's verbatim words in --ref (>= 12 chars), not a bare id." >&2
+            return 1
+        fi
+        if [ "$by" = "field-evidence" ] && ! [[ "$ref" =~ (T-[0-9]+|docs/reports/) ]]; then
+            echo -e "${RED}REFUSING:${NC} --by field-evidence needs --ref naming the field-evidence report or task (T-XXXX or docs/reports/...)." >&2
+            return 1
+        fi
+    fi
+    local f; f="$(release_decisions_file "$root")"
+    mkdir -p "$(dirname "$f")"
+    python3 -I - "$f" "$version" "$by" "$ref" <<'PY'
+import json, sys, datetime
+row = {"version": sys.argv[2], "decided_by": sys.argv[3], "ref": sys.argv[4],
+       "ts": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
+with open(sys.argv[1], "a") as fh:
+    fh.write(json.dumps(row) + "\n")
+PY
+    echo -e "${GREEN}Recorded release decision:${NC} $version by $by ($ref)"
+}
+
+# ---------------------------------------------------------------------------
 # release_tag_and_release  — main entrypoint
 #   Flags: --dry-run, --bump {patch|minor|major}, --repo <owner/name>,
 #          --offline (skip the remote fast-forward check, T-3819)
@@ -383,6 +460,27 @@ release_tag_and_release() {
 
     local next
     next="$(release_bump_version "$latest" "$bump")"
+
+    # ── Release-decision leg (T-4364) ─────────────────────────────────────
+    # Enforced on the `fw release` entrypoint (release_main sets the flag).
+    # --dry-run is never refused; interactive runs only report coverage.
+    if [ "${_RELEASE_ENFORCE_DECISION:-0}" = "1" ]; then
+        local decision
+        if decision="$(release_decision_for "$root" "$next")"; then
+            echo "Release decision covering $next: $decision"
+        elif $dry_run; then
+            echo -e "${YELLOW}No recorded release decision for $next${NC} (an unattended run would refuse)"
+        elif release_is_unattended; then
+            echo -e "${RED}REFUSING to release $next:${NC} unattended run (no TTY / cron / FW_UNATTENDED) with no recorded release decision." >&2
+            echo "  Policy: CLAUDE.md §Release-Train — only verified-working fixes reach master (T-4020, T-4146);" >&2
+            echo "  a release needs the operator's yes or positive field-test evidence, and no scheduled release exists." >&2
+            echo "  Record one: bin/fw release decide $next --by operator|field-evidence --ref \"<operator's words | T-XXXX>\"" >&2
+            echo "  No tag, VERSION or master change was made." >&2
+            return 1
+        else
+            echo -e "${YELLOW}WARN: no recorded release decision for $next${NC} — record one: bin/fw release decide $next --by operator --ref \"...\"" >&2
+        fi
+    fi
 
     # ── VERSION reconciliation leg (T-3242, tag-as-canonical) ────────────
     # VERSION was derived from a resetting commit counter and DECREASED across
@@ -679,7 +777,10 @@ release_main() {
             if [[ "$subcmd" == --* ]]; then
                 set -- "$subcmd" "$@"
             fi
-            release_tag_and_release "$@"
+            _RELEASE_ENFORCE_DECISION=1 release_tag_and_release "$@"
+            ;;
+        decide)
+            release_decide "$@"
             ;;
         status)
             release_status
@@ -690,6 +791,8 @@ Usage: fw release [subcommand] [flags]
 
 Subcommands:
   tag-and-release   Cut new tag, push, create GitHub Release (default)
+  decide vX.Y.Z     Record a release decision (--by operator|field-evidence --ref ...);
+                    unattended runs refuse without one for that version (T-4364)
   status            Show current tag and remote state
 
 Flags (for tag-and-release):

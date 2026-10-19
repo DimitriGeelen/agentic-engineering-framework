@@ -1469,6 +1469,8 @@ production and receives a release only when every fix in it is verified working 
 live, where a live check exists, not merely unit-green. Before cutting, list any fix
 whose live check is still open.
 
+**Release runs need a recorded decision; no scheduled release exists (T-4364).** `fw release tag-and-release` refuses an unattended run (no TTY on stdin, cron, or `FW_UNATTENDED=1`) unless `.context/releases/decisions.jsonl` holds a row for that exact version, written by `bin/fw release decide vX.Y.Z --by operator|field-evidence --ref "<operator's verbatim words | field-evidence task>"` (an agent records what the operator said; it is not a self-approval). `--dry-run` is never refused; interactive runs print the covering decision or warn. The weekly cron that cut an untested v1.8.12 on 2026-10-19 is paused and must not return.
+
 **Positive field tests are the release approval (operator ruling 2026-10-13, standing,
 T-4146 — amends T-4020).** When every fix in the release has a positive field test from
 another agent (a project that ran it and reported it working, recorded in the release's
