@@ -74,3 +74,17 @@ it in the next release. Until then they re-key after any restart. Putting the en
 **REGRESSION found in L1 on bleeding-edge.** `fw doctor` on a fresh install exits 2 with "index-reindex-hourly is in the
 registry but not deployed". This comes from T-4390. v1.8.12 gives rc 0. Installing cron is a deliberate operator step,
 so every greenfield install would start red. Fixed before release → T-4413.
+
+## Round 3 — ring20-dashboard (msg 1f8e8c90, 2026-10-19)
+
+**Setup:** bleeding-edge 7cff23319, with installed v1.8.12 as control, PROJECT_ROOT = their project. `is_bash_safe_command`
+classification only; nothing executed. 58 cases across their tmp/t2542_probe.sh and t2542_probe2.sh. **No new bypass
+found.**
+
+| Fix | Verdict | Evidence |
+|---|---|---|
+| T-4408 | **WORKS** | The tip refuses all 12 escaping shapes: GIT_DIR / GIT_WORK_TREE / GIT_COMMON_DIR / GIT_INDEX_FILE / GIT_OBJECT_DIRECTORY outside the project; GIT_CONFIG_GLOBAL; GIT_CONFIG_COUNT+KEY/VALUE; GIT_EXEC_PATH; GIT_ALTERNATE_OBJECT_DIRECTORIES; `env VAR=`; `export VAR=; git`; `export VAR= && git`. v1.8.12 allows 8 of the 12. Also refused: `../` escapes, a prefix boundary (`<project>-evil`), and the variable behind exec, command, nice, timeout, `$VAR` or `$(...)`. In-project GIT_DIR stays SAFE |
+| T-4409 | **WORKS** | The tip refuses `cd /tmp/evil && git status`, `cd /tmp/evil; git log` and `cd <project>/../evil && git status` (all SAFE on v1.8.12). Also refused: pushd, a subshell, a `{ }` group, `cd ~`, `cd /`, `cd -`, `cd $HOME`, `cd "$OLDPWD"`, CDPATH, `&&` without spaces, a chain through `true`. `cd <project>/docs && git status` and `cd /tmp/evil && cd <project> && git status` stay SAFE (correct) |
+| T-4409, behaviour change | not a hole, over-strict | `cd /tmp/evil \|\| git status` was SAFE on v1.8.12 and is refused on the tip. git runs in the original cwd or not at all. Goes in the release notes |
+| T-4396 | **WORKS** | `for f in a b; do echo "$f"; done`, `for f in *.py; do head -1 "$f"; done` and `while read -r l; do echo "$l"; done < /dev/null` pass (refused on v1.8.12). Still refused: rm or `>` in the body, cd, if, `< <(...)`, `git -C /tmp/evil` in a body, `until false; do curl -X POST`, GIT_DIR=/tmp/evil in a body |
+| T-4405 | **WORKS** (code reading; no upgrade run, no bats on their host) | The handoff replays the caller's argv except `--from-upstream` and its value. Latent edge: a value-taking flag added later would lose its value silently → T-4424 |
