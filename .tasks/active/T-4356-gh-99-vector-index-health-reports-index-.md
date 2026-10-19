@@ -97,8 +97,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The reported defect is fixed: `check_cron` (lib/vector_index_health.py) FAILs when the deployed cron file under FW_CRON_INSTALL_DIR has no live index-reindex-hourly line, with remedy `fw cron install (operator: writes root cron)`; fixed by T-4390 (commit 64285bd94), which 1023 reported independently the same day (msg 90a2a15b)
+- [x] `fw cron status` marks registry-active jobs with no deployed line as not deployed (T-4390); regression tests in tests/unit/t3783_vector_index_health.bats were red before the fix (3 of 5) and are green after
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,6 +147,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u CLAUDECODE timeout 600 bats tests/unit/t3783_vector_index_health.bats > /tmp/.t4356 2>&1 && ! grep -q "^not ok" /tmp/.t4356 && grep -q "T-4390: registry-active but no deployed file is FAIL" /tmp/.t4356
+grep -q 'not deployed' bin/fw
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -292,6 +295,18 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw doctor` printed "OK cron: index-reindex-hourly scheduled" while no cron file was installed. The reindex never ran and recall went RED. The same report came in from GitHub #99 and from 1023 (msg 90a2a15b).
+
+**Root cause:** `check_cron` read only the cron registry. A job marked active there is not proof it is deployed (registry → generated → deployed, CLAUDE.md §Cron-touching tasks).
+
+**Why structurally allowed:** the health module checked the transition next to the one that mattered, the class its own docstring names (T-3783). Its tests covered registry states only.
+
+**Prevention:** fixed in T-4390.
+- The check now requires a live line in the deployed file.
+- The install-path rule lives in one helper (`cron_install_target`).
+- `fw cron status` marks registry-only jobs as not deployed.
+- Regression tests cover a missing file, a commented line and a paused job.
 
 ## Evolution
 
