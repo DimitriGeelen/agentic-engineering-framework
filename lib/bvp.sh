@@ -38,7 +38,20 @@ import glob
 import statistics
 from pathlib import Path
 
-PROJECT_ROOT = Path(os.environ['PROJECT_ROOT'])
+PROJECT_ROOT_RAW = os.environ['PROJECT_ROOT']
+PROJECT_ROOT = Path(PROJECT_ROOT_RAW)
+
+
+def _refuse_fs_root(raw):
+    """T-4406: python twin of lib/fs-root-guard.sh — False (and a message) when the
+    root is empty or resolves to the filesystem root, True when it is usable."""
+    if raw.rstrip('/') and Path(raw).resolve() != Path('/'):
+        return True
+    print(f"ERROR: PROJECT_ROOT='{raw}' is empty or the filesystem root — refusing to write under it (T-4406).", file=sys.stderr)
+    print("       Set PROJECT_ROOT to the project directory (the one holding .framework.yaml).", file=sys.stderr)
+    return False
+
+
 # T-2230 (T-2229 Slice 1): FRAMEWORK_ROOT exposed so `fw bvp driver --init` can
 # locate the canonical template `<FRAMEWORK_ROOT>/policy/value-drivers.yaml`
 # when bootstrapping the consumer's own copy at PROJECT_ROOT.
@@ -891,6 +904,10 @@ def _driver_init(args):
     function). Slice 2 (separate task) wires this into fw init/upgrade/vendor.
     """
     force = '--force' in args
+    # T-4406: PROJECT_ROOT=/ made this write /policy/{value-drivers.yaml,
+    # bvp-scoring-rubric.md}. Refuse before the template check, before any write.
+    if not _refuse_fs_root(PROJECT_ROOT_RAW):
+        return 2
     files = [
         ('policy/value-drivers.yaml',
          FRAMEWORK_ROOT / 'policy' / 'value-drivers.yaml',

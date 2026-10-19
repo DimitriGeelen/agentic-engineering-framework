@@ -1,0 +1,21 @@
+id: lib/fs-root-guard.sh
+name: fs-root-guard
+type: script
+subsystem: framework-core
+location: lib/fs-root-guard.sh
+tags: []
+
+purpose: "T-4406: refuse to use an empty root, or one that is the filesystem root, as the base a writer joins paths onto. \"$X/policy\" with X empty or \"/\" is /policy — debris at / (policy/, episodic/, working/) came from exactly that join."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-19
+created_by: unknown

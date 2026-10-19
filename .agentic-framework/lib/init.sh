@@ -104,6 +104,9 @@ do_init() {
         echo -e "${RED}ERROR: Directory does not exist: $target_dir${NC}" >&2
         return 1
     }
+    # T-4406: `fw init /` would scaffold policy/, .context/, .tasks/ … at the filesystem root.
+    source "$(dirname "${BASH_SOURCE[0]}")/fs-root-guard.sh"
+    fw_refuse_fs_root "fw init target" "$target_dir" || return 1
 
     # Check if already initialized
     if [ -f "$target_dir/.framework.yaml" ] && [ "${force:-false}" != true ]; then

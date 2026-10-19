@@ -1256,6 +1256,10 @@ do_upgrade() {
         echo -e "${RED}ERROR: Directory does not exist: $target_dir${NC}" >&2
         return 1
     }
+    # T-4406: a stray /.framework.yaml makes `/` look like a project; §3c would then
+    # seed /policy/{value-drivers.yaml,bvp-scoring-rubric.md}.
+    source "$(dirname "${BASH_SOURCE[0]}")/fs-root-guard.sh"
+    fw_refuse_fs_root "fw upgrade target" "$target_dir" || return 1
 
     # Must have .framework.yaml
     if [ ! -f "$target_dir/.framework.yaml" ]; then

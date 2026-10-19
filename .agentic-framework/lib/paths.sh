@@ -418,6 +418,9 @@ _emit_user_command() {
     echo "cd $PROJECT_ROOT && $(_fw_cmd) $1"
 }
 
+# T-4406: fw_refuse_fs_root — writers refuse an empty or "/" root.
+source "$(dirname "${BASH_SOURCE[0]}")/fs-root-guard.sh"
+
 # Export for subprocesses
 export FRAMEWORK_ROOT PROJECT_ROOT TASKS_DIR CONTEXT_DIR
 

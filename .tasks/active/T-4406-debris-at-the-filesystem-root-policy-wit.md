@@ -1,13 +1,21 @@
 ---
 id: T-4406
-name: "Debris at the filesystem root (/policy with value-drivers.yaml and bvp-scoring-rubric.md, empty /episodic and /working): some writer ran with an empty PROJECT_ROOT"
+name: "Debris at the filesystem root (/policy with value-drivers.yaml and bvp-scoring-rubric.md,
+  empty /episodic and /working): some writer ran with an empty PROJECT_ROOT"
 description: >
-  Found 2026-10-19 (T-4395's worker noticed the dirs exist, which also makes the new boundary rule refuse regex words like '/policy/'). /episodic and /working empty, created 2026-08-06 18:19; /policy holds policy/value-drivers.yaml + bvp-scoring-rubric.md copies, created 2026-09-05 13:08 — consistent with fw bvp driver --init or a context-dir initialiser running with PROJECT_ROOT empty, so $PROJECT_ROOT/policy became /policy. Find the writer(s) (git log around those dates; grep for unguarded "$PROJECT_ROOT/policy", "/episodic", "/working" joins), make them refuse an empty or / root, add a test. Removing the debris is the operator's call (outside the project).
+  Found 2026-10-19 (T-4395's worker noticed the dirs exist, which also makes the new
+  boundary rule refuse regex words like '/policy/'). /episodic and /working empty,
+  created 2026-08-06 18:19; /policy holds policy/value-drivers.yaml + bvp-scoring-rubric.md
+  copies, created 2026-09-05 13:08 — consistent with fw bvp driver --init or a context-dir
+  initialiser running with PROJECT_ROOT empty, so $PROJECT_ROOT/policy became /policy.
+  Find the writer(s) (git log around those dates; grep for unguarded "$PROJECT_ROOT/policy",
+  "/episodic", "/working" joins), make them refuse an empty or / root, add a test.
+  Removing the debris is the operator's call (outside the project).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:42:13Z
-last_update: 2026-10-19T15:42:13Z
-date_finished: null
+last_update: 2026-10-19T17:46:04Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T15:45:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T15:46:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4406: Debris at the filesystem root (/policy with value-drivers.yaml and bvp-scoring-rubric.md, empty /episodic and /working): some writer ran with an empty PROJECT_ROOT
@@ -62,8 +98,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Writer(s) of /policy, /episodic, /working identified with file:line and recorded in ## RCA
+- [x] Each identified writer refuses an empty or `/` project root with a clear stderr error and non-zero exit, before creating any directory
+- [x] Regression test added that fails before the fix and passes after; red/green recorded in ## Updates
+- [x] Operator cleanup listed in ## Recommendation: exact paths + contents under /, and a one-line `bin/fw runme new ...` proposal (NOT run)
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean (except another worker's in-flight `tools/bats-test-isolation-lint.py`, deliberately not synced)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,6 +280,12 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4406_fs_root_writer_guard.bats > /tmp/.t4406-bats 2>&1 && ! grep -q "^not ok" /tmp/.t4406-bats
+test "$(grep -c '# skip' /tmp/.t4406-bats)" -eq 0
+timeout 300 bats tests/unit/lib_paths.bats > /tmp/.t4406-paths 2>&1 && ! grep -q "^not ok" /tmp/.t4406-paths
+bash -n bin/fw && bash -n lib/paths.sh && bash -n lib/fs-root-guard.sh && bash -n lib/init.sh && bash -n lib/upgrade.sh && bash -n lib/bvp.sh && bash -n agents/context/context.sh
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4406-lint 2>&1 && grep -q clean /tmp/.t4406-lint
+bin/fw vendor self --check
 
 ## RCA
 
@@ -257,6 +302,40 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** `/policy/{value-drivers.yaml,bvp-scoring-rubric.md}` (both 2026-09-05 13:08:28)
+and empty `/episodic`, `/working` (both 2026-08-06 18:19:21) at the filesystem root.
+
+**Evidence:** the `/policy` files' git blob ids (86979ec…, 1b775e4…) match
+`policy/value-drivers.yaml` / `policy/bvp-scoring-rubric.md` as committed between
+2026-07-07 (4a198eb5c) and 2026-09-22 (046c26e5b) — a framework-template copy, made while
+those were the live templates. Only three writers copy that exact pair:
+`lib/bvp.sh:_driver_init` (`fw bvp driver --init`, writes `PROJECT_ROOT/policy/…`),
+`lib/init.sh:528-540` (`fw init`, writes `$target_dir/policy/…`) and
+`lib/upgrade.sh:2059-2071` (`fw upgrade` §3c, copy-on-missing into `$target_dir/policy/`).
+`/episodic` + `/working` created in the same second is the shape of
+`agents/context/context.sh:33` `ensure_context_dirs` (`mkdir -p "$CONTEXT_DIR"/{working,project,episodic}`)
+with `CONTEXT_DIR` = `/` (or empty): `/project` already existed, so only the two new names
+appear. No commit names the run; the exact invocation is not recoverable from git
+(Aug 6 18:19 falls inside T-2832's create_task.bats CONTEXT_DIR-hermeticity sweep, which
+ran suites with CONTEXT_DIR rewired; Sep 5 13:08 falls inside T-3280/T-3281, the latter
+about cron entries resolving a wrong PROJECT_ROOT).
+
+**Root cause:** none of these four writers checks that its root is a real project
+directory. A root of `/` (reachable: a stray `/.framework.yaml` makes project discovery
+resolve `PROJECT_ROOT=/` — bin/fw:1940-1946 already warns about exactly that; `fw upgrade /`
+or `fw init /` accept `/` after `cd && pwd`; a caller exporting `CONTEXT_DIR=/` or
+`PROJECT_ROOT=/`) or an empty one (`Path('')` is `.`, so with cwd `/` the bvp writer lands in
+`/policy`; `"$X/policy"` with X empty is literally `/policy`) is joined straight into
+`mkdir -p` / `write_bytes` / `cp`.
+
+**Why structurally allowed:** paths.sh guarantees the variables are *set*, never that they
+are *not the filesystem root*; the T-1747 doctor check only looks for `/.framework.yaml`,
+not for what a mis-rooted run already wrote; and the project-boundary hook governs agent
+Bash commands, not what framework scripts write.
+
+**Prevention:** each writer now refuses an empty or `/` root before creating anything
+(`fw_refuse_fs_root` in lib/paths.sh for the shell writers; the same test inline in
+`_driver_init`), pinned by `tests/unit/t4406_fs_root_writer_guard.bats`.
 
 ## Evolution
 
@@ -281,6 +360,7 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+Not arc-tagged.
 
 ## Recommendation
 
@@ -310,6 +390,20 @@ date_finished: null
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+**Operator cleanup (outside the project — not done by the agent).** Exact debris, checked
+2026-10-19:
+- `/policy/value-drivers.yaml` (18372 B, 2026-09-05 13:08:28, git blob 86979ec — the
+  framework template as of 2026-07-07..09-22)
+- `/policy/bvp-scoring-rubric.md` (12551 B, 2026-09-05 13:08:28, git blob 1b775e4)
+- `/policy/` (holds only those two files)
+- `/episodic/` (empty, 2026-08-06 18:19:21)
+- `/working/` (empty, 2026-08-06 18:19:21)
+
+Proposed one-liner (NOT run; it generates the script, then hand off the printed `bash …/runme.sh` line):
+`cd /opt/999-Agentic-Engineering-Framework && bin/fw runme new t4406-root-debris --desc "T-4406: remove /policy (2 framework-template copies), empty /episodic and /working" -- 'ls -la /policy /episodic /working' 'rm -f /policy/value-drivers.yaml /policy/bvp-scoring-rubric.md' 'rmdir /policy /episodic /working' 'ls -d /policy /episodic /working 2>&1 || true'`
+(`rmdir` refuses a non-empty directory, so anything that appeared there since is kept.)
+Not in scope here but visible at `/` too: `/project`, `/proj`, `/handovers`, `/audits`,
+`/locks` and other test-fixture debris — separate writers (test suites run with cwd `/`).
 
 ## Decisions
 
@@ -338,3 +432,18 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4406-debris-at-the-filesystem-root-policy-wit.md
 - **Context:** Initial task creation
+
+### 2026-10-19T17:46:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-19 — regression test red → green [agent w4406]
+- `tests/unit/t4406_fs_root_writer_guard.bats` before the fix: 1 ok / 4 not ok (legs 1, 2:
+  `fw_refuse_fs_root` absent; leg 3: `fw bvp driver --init` with PROJECT_ROOT=/ never says
+  "filesystem root"; leg 5: no writer calls the guard). Leg 4 (real root still bootstraps)
+  is the positive control and was ok throughout.
+- After: 5/5 ok, 0 skips. Neighbours: lib_paths 11/11, t2230_bvp_driver_init 15/15,
+  t2289_paths_env_leak 5/5, context_focus 15/15, context_init 16/16. A sandbox `fw init`
+  still seeds policy/. (`fw context status` exits 141 from an existing `| head -3`
+  SIGPIPE in status.sh, after the guard and mkdir pass — not this change.)
+- No leg runs a writer against the real `/`: an unguarded regression would write there.

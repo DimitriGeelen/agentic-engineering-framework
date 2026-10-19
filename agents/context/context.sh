@@ -30,6 +30,8 @@ LIB_DIR="$SCRIPT_DIR/lib"
 
 # Ensure context directories exist
 ensure_context_dirs() {
+    # T-4406: CONTEXT_DIR=/ (or empty) made this create /working and /episodic.
+    fw_refuse_fs_root CONTEXT_DIR "$CONTEXT_DIR" || exit 1
     mkdir -p "$CONTEXT_DIR"/{working,project,episodic}
 }
 
