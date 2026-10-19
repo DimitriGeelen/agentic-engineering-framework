@@ -12,16 +12,16 @@ description: >
   take arc-009 orchestration in piece by piece), T-3960 (S-1 contract stakeholder
   check). Artefact: docs/reports/T-4435-shared-worker-contract.md.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-19T21:56:28Z
-last_update: '2026-10-19T22:00:42Z'
-date_finished:
+last_update: 2026-10-19T23:05:42Z
+date_finished: 2026-10-19T23:05:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -120,15 +120,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -206,7 +206,35 @@ This fits T-3977's GO (take arc-009 in piece by piece).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: All three independent seats (codex, claude, and opencode re-run isolated) answer AEF's question "yes, with conditions". They agree just as clearly that the contract is not build-ready: the transition semantics decide correctness and are unspecified. So AEF says yes to owning:
+
+- the run.sh supervisor-writer;
+- the dispatcher recording;
+- the worker instruction;
+- plus the local-evidence reconciler and the session ↔ dispatch binding at spawn.
+
+These conditions go to termlink and ring20:
+
+1. **First deliverable is a jointly agreed transition table** plus a shared conformance suite run against the hub backend and AEF's local backend. The table covers:
+   - CAS on every transition;
+   - fenced `done` outranks `lost`, with a `lost → done` upgrade;
+   - a bounded `unknown` state with a resolution verb;
+   - hub-allocated attempts and nonces;
+   - no overlapping attempts;
+   - an outcome field on `done`.
+
+   No implementation before that.
+2. **Answers are per-attempt record entries** with a fenced read-marker ack, TTL at most the attempt's life, then bounce to the dispatcher. Never the retry ladder, never a worker inbox. Default to pause-and-redispatch.
+3. **Local backend:** same CAS semantics, chosen at dispatch time, same conformance suite.
+4. **The record replaces the completion authority only.** The evaluation ledger stays separate. Shadow mode before switch-over.
+5. **Named durable dispatcher session id**, bound at spawn.
+6. **ring20 maps its T-2281 against the contract** before it is declared absorbed.
+
+This fits T-3977's GO (take arc-009 in piece by piece).
+
+**Date**: 2026-10-19T23:05:25Z
 
 ## Updates
 
@@ -215,3 +243,65 @@ This fits T-3977's GO (take arc-009 in piece by piece).
 
 ### 2026-10-19T21:58:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-19T23:05:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** All three independent seats (codex, claude, and opencode re-run isolated) answer AEF's question "yes, with conditions". They agree just as clearly that the contract is not build-ready: the transition semantics decide correctness and are unspecified. So AEF says yes to owning:
+
+- the run.sh supervisor-writer;
+- the dispatcher recording;
+- the worker instruction;
+- plus the local-evidence reconciler and the session ↔ dispatch binding at spawn.
+
+These conditions go to termlink and ring20:
+
+1. **First deliverable is a jointly agreed transition table** plus a shared conformance suite run against the hub backend and AEF's local backend. The table covers:
+   - CAS on every transition;
+   - fenced `done` outranks `lost`, with a `lost → done` upgrade;
+   - a bounded `unknown` state with a resolution verb;
+   - hub-allocated attempts and nonces;
+   - no overlapping attempts;
+   - an outcome field on `done`.
+
+   No implementation before that.
+2. **Answers are per-attempt record entries** with a fenced read-marker ack, TTL at most the attempt's life, then bounce to the dispatcher. Never the retry ladder, never a worker inbox. Default to pause-and-redispatch.
+3. **Local backend:** same CAS semantics, chosen at dispatch time, same conformance suite.
+4. **The record replaces the completion authority only.** The evaluation ledger stays separate. Shadow mode before switch-over.
+5. **Named durable dispatcher session id**, bound at spawn.
+6. **ring20 maps its T-2281 against the contract** before it is declared absorbed.
+
+This fits T-3977's GO (take arc-009 in piece by piece).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6e7e44ac
+- **Timestamp:** 2026-10-19T23:05:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-75f4a5b5
+- **Timestamp:** 2026-10-19T23:05:46Z
+- **Overall:** CONFIRMED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-2281` | task | ✓ pass |
+| `T-3977` | task | ✓ pass |
+| `T-4437` | task | ✓ pass |
+
+### 2026-10-19T23:05:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
