@@ -532,7 +532,22 @@ _secret_scan_main() {
     local cmd="${1:-scan-staged}"
     shift || true
     case "$cmd" in
-        scan-staged|scan_staged) scan_staged "$@" ;;
+        scan-staged|scan_staged)
+            # T-4427: FW_SECRET_SCAN_TIMING_FILE=<path> records one line
+            # "secret scan: N file(s) in S.s s" there, so fw init can print the
+            # bootstrap commit's scan time (the hook swallows scanner output on
+            # success). Verdict and exit code are scan_staged's, unchanged.
+            [ -z "${FW_SECRET_SCAN_TIMING_FILE:-}" ] && { scan_staged "$@"; return; }
+            local _t0 _t1 _rc=0 _n
+            _t0="${EPOCHREALTIME:-$(date +%s)}"
+            scan_staged "$@" || _rc=$?
+            _t1="${EPOCHREALTIME:-$(date +%s)}"
+            _n=$(git -C "$(_secret_scan_project_root)" diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
+            awk -v n="${_n:-0}" -v a="${_t0/,/.}" -v b="${_t1/,/.}" \
+                'BEGIN { printf "secret scan: %d file(s) in %.1f s\n", n, b - a }' \
+                > "$FW_SECRET_SCAN_TIMING_FILE" 2>/dev/null || true
+            return "$_rc"
+            ;;
         scan-tree|scan_tree)     scan_tree "$@" ;;
         scan-names|scan_names)   scan_names "$@" ;;
         scan-file|scan_file)     scan_file "$@" ;;
