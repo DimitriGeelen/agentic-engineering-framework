@@ -251,6 +251,34 @@ except Exception:
     return 0
 }
 
+# fw_sidecar_orphan_inbox_facts <project_root>
+#
+#   T-4418: project-level inboxes on THIS hub that hold unread posts and that no
+#   known agent reads — mail sent to a nickname (ring20: 14 consults to
+#   inbox:<hub>/ring20-manager, a hub profile name, never fetched). One
+#   `termlink channel list` on our own hub, through `sidecar_cli.py orphan-inboxes`.
+#
+#     stdout : one line per topic: TOPIC<TAB>COUNT
+#     rc 0   : facts printed (possibly empty)
+#     rc 2   : the hub could not be asked, or sidecar_cli.py is missing
+fw_sidecar_orphan_inbox_facts() {
+    local root="${1:?fw_sidecar_orphan_inbox_facts: project root required}"
+    local lib_dir out
+    lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    [ -f "$lib_dir/sidecar_cli.py" ] || return 2
+    out=$(PROJECT_ROOT="$root" timeout 60 python3 "$lib_dir/sidecar_cli.py" orphan-inboxes --json 2>/dev/null)
+    [ -n "$out" ] || return 2
+    printf '%s' "$out" | python3 -c '
+import json, sys
+rows = json.load(sys.stdin)
+if rows is None:
+    sys.exit(2)
+for r in rows:
+    print("%s\t%s" % (r["topic"], r.get("count")))
+' || return 2
+    return 0
+}
+
 # fw_sidecar_held_unsurfaced_facts <project_root> [threshold_hours]
 #
 #   T-4207: peer mail the receiver holds that no session was ever shown. With

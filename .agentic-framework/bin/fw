@@ -3876,6 +3876,21 @@ sys.exit(0 if '$_tl_topic' in names else 1)
                     warnings=$((warnings + 1))
                 done <<< "$_dup_rows"
             fi
+            # T-4418: unread project-level inboxes on this hub that no known agent
+            # reads — mail sent to a nickname (ring20: 14 consults lost). Same fact
+            # function as fw audit's check_sidecar_orphan_inboxes.
+            local _oi_rows _oi_rc _oi_topic _oi_n
+            _oi_rows=$(fw_sidecar_orphan_inbox_facts "$PROJECT_ROOT") && _oi_rc=0 || _oi_rc=$?  # T-3837: set -e
+            if [ "$_oi_rc" -eq 2 ]; then
+                _doctor_warn_host "Orphan-inbox check could not run (fw sidecar orphan-inboxes --json: hub not asked)"
+            elif [ -n "$_oi_rows" ]; then
+                while IFS=$'\t' read -r _oi_topic _oi_n; do
+                    [ -z "$_oi_topic" ] && continue
+                    echo -e "  ${YELLOW}WARN${NC}  Orphan inbox $_oi_topic holds $_oi_n unread post(s) that no known agent reads"
+                    echo "         Mail sent to a nickname? Tell the senders the real circuit. See: fw sidecar orphan-inboxes"
+                    warnings=$((warnings + 1))
+                done <<< "$_oi_rows"
+            fi
         fi
         fi  # T-2452/F6-style --quick guard
     else

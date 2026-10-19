@@ -4499,6 +4499,34 @@ check_sidecar_held_unsurfaced() {
 }
 check_sidecar_held_unsurfaced
 
+# T-4418 (arc-011 sidecar): unread project-level inboxes on this hub that no known
+# agent reads — mail sent to a nickname (ring20: 14 consults to
+# inbox:<hub>/ring20-manager, never fetched). Fact:
+# lib/sidecar-audit.sh:fw_sidecar_orphan_inbox_facts. Skipped without termlink.
+check_sidecar_orphan_inboxes() {
+    [ -f "$FRAMEWORK_ROOT/lib/sidecar-audit.sh" ] || return 0
+    command -v termlink >/dev/null 2>&1 || return 0
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
+    local _oi _oi_rc _oi_n
+    _oi=$(fw_sidecar_orphan_inbox_facts "$PROJECT_ROOT"); _oi_rc=$?
+    if [ "$_oi_rc" -ne 0 ]; then
+        warn "Orphan-inbox check could not run" \
+             "fw sidecar orphan-inboxes --json: the hub could not be asked" \
+             "Run: bin/fw sidecar orphan-inboxes (T-4418)"
+        return 0
+    fi
+    _oi_n=$(printf '%s\n' "$_oi" | grep -c .)
+    if [ "$_oi_n" -gt 0 ] 2>/dev/null; then
+        warn "$_oi_n orphan inbox(es) on this hub: unread posts no known agent reads" \
+             "$(printf '%s' "$_oi" | head -3 | tr '\t\n' ' ;')" \
+             "Mail sent to a nickname? Tell the senders the real circuit. Run: bin/fw sidecar orphan-inboxes (T-4418)"
+    else
+        pass "No orphan inboxes on this hub"
+    fi
+}
+check_sidecar_orphan_inboxes
+
 # T-3428 (OBS-463 leg 3, arc-006). A value driver that the estimator cannot
 # score is only a NAME. T-3427 stopped it distorting the ranking (an unscorable
 # driver is omitted from the scores map and so left out of the normalisation

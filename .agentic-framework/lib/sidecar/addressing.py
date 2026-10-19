@@ -441,3 +441,151 @@ def resolve(to: str, *, hub: str | None = None, level: str = "auto",
         f"(no inbox:{own}/{circuit.project_id()}/{name} on this hub). Address it as "
         f"--to <hubid>/{name}, or --hub <profile> for a peer on another hub, or "
         f"--level agent if it IS your sub-agent")
+
+
+# ── T-4418: is anything reading an explicit circuit? ─────────────────────────
+#
+# ring20 (their T-2431): 14 consults went to `inbox:22c19fedafd73da2/ring20-manager`
+# — a hub profile nickname, not a project — because step 1 above uses an explicit
+# circuit verbatim and `--ensure-topic` then creates the topic. The hub reports per
+# topic when it was last written and last fetched (`channel list --json` →
+# `activity`); a topic nobody reads is written and never fetched. That, the peer
+# directory and local receivers are the evidence below. A host-wide scanner that
+# fetches every topic makes an orphan look read, so hub activity is the weakest
+# of the three — it can only turn a refusal into a send, never the reverse.
+
+#: A fetch older than this is no evidence that anything still reads the topic.
+READ_WINDOW_MS = 7 * 86_400_000
+
+
+def hub_inbox_topics(hub_id: str, hub: str | None, runner=None) -> list[dict] | None:
+    """Every `inbox:<hub_id>/…` topic row on a hub (None = the hub could not be asked)."""
+    runner = runner or subprocess.run
+    argv = [_binary(), "channel", "list", "--prefix", f"{circuit.TOPIC_PREFIX}{hub_id}/", "--json"]
+    if hub:
+        argv += ["--hub", hub]
+    try:
+        proc = runner(argv, capture_output=True, text=True, timeout=15)
+        if proc.returncode != 0:
+            return None
+        topics = json.loads(proc.stdout or "{}").get("topics")
+    except (OSError, subprocess.SubprocessError, json.JSONDecodeError, AttributeError):
+        return None
+    return [t for t in topics if isinstance(t, dict)] if isinstance(topics, list) else None
+
+
+def _ms(v) -> float | None:
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+
+
+def topic_is_read(row: dict, now_ms: float | None = None) -> bool:
+    """The hub says something fetched this topic after its last write, recently."""
+    a = row.get("activity") or {}
+    if a.get("unread_since_ms") is not None:
+        return False
+    fetch = _ms(a.get("last_data_fetch_ms")) or _ms(a.get("last_fetch_ms"))
+    if fetch is None:
+        return False
+    write = _ms(a.get("last_write_ms"))
+    if write is not None and fetch < write:
+        return False
+    now_ms = now_ms if now_ms is not None else datetime.now(timezone.utc).timestamp() * 1000
+    return now_ms - fetch <= READ_WINDOW_MS
+
+
+def topic_is_unread(row: dict) -> bool:
+    """The hub holds posts in this topic that nothing fetched after they were written."""
+    a = row.get("activity") or {}
+    return bool(row.get("count")) and a.get("unread_since_ms") is not None
+
+
+def _local_read_evidence(cid: str) -> str | None:
+    """Why a circuit on OUR hub is read, from this host alone (no hub call)."""
+    from . import inbox, lifecycle
+    parts = circuit.parse_circuit(cid)
+    if parts.get("hub") != own_hub_id():
+        return None
+    if circuit.topic_for_circuit(cid) in inbox.read_topics():
+        return "it is this agent's own inbox"
+    name = circuit_name(cid)
+    try:
+        if name and lifecycle.lookup(name) is not None:
+            return "a receiver is registered on this host under that name"
+    except Exception:
+        pass
+    if not parts.get("agent") and not parts.get("session") and circuit.is_project_id(name or ""):
+        return "a project inbox on this hub (this project, a sibling project, or fleet NNN-name)"
+    return None
+
+
+def explicit_circuit_evidence(cid: str, hub: str | None, *, runner=None,
+                              now_ms: float | None = None) -> dict:
+    """What says an explicit `--to <circuit>` is read (T-4418).
+
+    {known: why | None, known_circuits: [...], candidates: [...], hub_unreadable: bool}
+    `known_circuits` are peer-directory entries the send contradicts: the same name
+    at another circuit, and — when the target has no evidence — the peers on that hub.
+    `candidates` are what the refusal names: those peers plus read project inboxes."""
+    cid = strip_host(cid)
+    hid = circuit.parse_circuit(cid).get("hub") or ""
+    name = circuit_name(cid)
+    peers = load_peers()["peers"]
+    known_circuits = []
+    same = peers.get(name) if name else None
+    if same and same.get("circuit") and same["circuit"] != cid:
+        known_circuits.append(f"{name} -> {same['circuit']}")
+    on_hub = sorted((n, p["circuit"]) for n, p in peers.items()
+                    if p.get("hub_id") == hid and p.get("circuit") and p["circuit"] != cid)
+    out = {"known": None, "known_circuits": known_circuits, "candidates": [],
+           "hub_unreadable": False}
+    if any(p.get("circuit") == cid for p in peers.values()):
+        out["known"] = "peer directory"
+        return out
+    local = _local_read_evidence(cid)
+    if local:
+        out["known"] = local
+        return out
+    rows = hub_inbox_topics(hid, hub, runner)
+    if rows is None:
+        out["hub_unreadable"] = True
+        rows = []
+    topic = circuit.topic_for_circuit(cid)
+    row = next((r for r in rows if r.get("name") == topic), None)
+    if row is not None and topic_is_read(row, now_ms):
+        out["known"] = "the hub reports the topic read (fetched since its last post)"
+        return out
+    prefix = f"{circuit.TOPIC_PREFIX}{hid}/"
+    read = sorted(r["name"][len(circuit.TOPIC_PREFIX):] for r in rows
+                  if str(r.get("name", "")).startswith(prefix) and r["name"] != topic
+                  and "/" not in r["name"][len(prefix):] and topic_is_read(r, now_ms))
+    out["known_circuits"] += [f"{n} -> {c}" for n, c in on_hub]
+    out["candidates"] = list(dict.fromkeys([c for _, c in on_hub] + read))
+    return out
+
+
+def orphan_inboxes(*, runner=None) -> list[dict] | None:
+    """Project-level inboxes on OUR hub that hold unread posts and that no known
+    reader owns (T-4418): not ours, not a project (this one, a sibling, fleet
+    NNN-name), not a peer-directory circuit. Mail posted to a nickname lands here
+    and waits for ever. None = the hub could not be asked."""
+    from . import inbox
+    own = own_hub_id()
+    rows = hub_inbox_topics(own, None, runner)
+    if rows is None:
+        return None
+    mine = set(inbox.read_topics())
+    peer_circuits = {p.get("circuit") for p in load_peers()["peers"].values()}
+    prefix = f"{circuit.TOPIC_PREFIX}{own}/"
+    out = []
+    for r in rows:
+        topic = str(r.get("name") or "")
+        rest = topic[len(prefix):] if topic.startswith(prefix) else ""
+        if not rest or "/" in rest or topic in mine or f"{own}/{rest}" in peer_circuits:
+            continue
+        if circuit.is_project_id(rest) or not topic_is_unread(r):
+            continue
+        a = r.get("activity") or {}
+        out.append({"topic": topic, "count": r.get("count"),
+                    "unread_since_ms": a.get("unread_since_ms"),
+                    "last_writer": a.get("last_writer")})
+    return out

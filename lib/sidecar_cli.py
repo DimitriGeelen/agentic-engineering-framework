@@ -145,6 +145,33 @@ def cmd_send(args) -> int:
     return rc
 
 
+def _explicit_circuit_ok(args, target: str, hub) -> bool:
+    """T-4418: an explicit circuit is used verbatim, so check that something reads
+    it. ring20: 14 consults to `<hub>/ring20-manager`, a hub nickname, all reported
+    delivered. Prints peer-directory circuits the send contradicts; with no evidence
+    WARNs and, without --force, refuses naming the known candidates."""
+    ev = addressing.explicit_circuit_evidence(target, hub)
+    for k in ev["known_circuits"]:
+        print(f"send: known circuit: {k} (peer directory) — this send addresses {target}",
+              file=sys.stderr)
+    if ev["known"]:
+        return True
+    hid = circuit.parse_circuit(target).get("hub")
+    why = (f"no evidence anything reads {circuit.topic_for_circuit(target)} on hub {hid}: not in "
+           f"the peer directory, no receiver known on this host, and the hub "
+           + ("could not be asked" if ev["hub_unreadable"] else "reports no fetch since its last post")
+           + f". Known candidates on that hub: {', '.join(ev['candidates']) or 'none'}")
+    if getattr(args, "force", False):
+        print(f"send: WARNING {why} — sending anyway (--force)", file=sys.stderr)
+        return True
+    if args.json:
+        print(json.dumps({"delivered": False, "state": "REFUSED", "reason": why,
+                          "candidates": ev["candidates"]}))
+    print(f"send: REFUSED, nothing posted — {why}. Address one of those, or pass --force "
+          f"if this circuit is right (T-4418)", file=sys.stderr)
+    return False
+
+
 def _cmd_send(args) -> int:
     # T-3693: a peer with a registered receiver is called directly (D-645 §2).
     # The hub topic path below stays as the fallback when no receiver was ever
@@ -169,6 +196,8 @@ def _cmd_send(args) -> int:
         print(f"send: REFUSED, nothing posted — {exc}", file=sys.stderr)
         return 2
     target, hub = where["circuit"], where["hub"]
+    if str(where.get("how", "")).startswith("explicit circuit") and not _explicit_circuit_ok(args, target, hub):
+        return 2   # T-4418: refused before anything is written or posted
 
     client_msg_id = outbox.write_message(
         from_id=inbox.agent_id(), to=target, body=args.body,
@@ -286,21 +315,45 @@ def cmd_inbox(args) -> int:
                     print(f"receipt for {m.get('client_msg_id')} failed: {e}", file=sys.stderr)
 
 
+def _orphan_lines(orphans) -> list[str]:
+    """T-4418: unread inboxes on our hub that nothing reads (mail sent to a nickname)."""
+    if orphans is None:
+        return ["orphan inboxes: NOT CHECKED (the hub could not be asked)"]
+    lines = [f"orphan inbox: {o['topic']} holds {o['count']} unread post(s) no known agent reads "
+             f"(a nickname address? tell the senders the real circuit)" for o in orphans]
+    return lines
+
+
+def cmd_orphan_inboxes(args) -> int:
+    """T-4418: exit 0 none, 1 found, 2 the hub could not be asked."""
+    rows = addressing.orphan_inboxes() if __import__("shutil").which("termlink") else None
+    if args.json:
+        print(json.dumps(rows))
+    else:
+        print("\n".join(_orphan_lines(rows)) or "orphan inboxes: none")
+    return 2 if rows is None else (1 if rows else 0)
+
+
 def cmd_alerts(args) -> int:
     """T-3856: session-start mail check — both routes, read-only, never silent."""
     from lib.sidecar import alerts
+    import shutil
+    orphans = addressing.orphan_inboxes() if shutil.which("termlink") else []
     try:
         rows = alerts.collect(limit=args.limit)
     except Exception as e:
         reason = str(e) or type(e).__name__
         if args.json:
-            print(json.dumps({"checked": False, "reason": reason}))
+            print(json.dumps({"checked": False, "reason": reason, "orphan_inboxes": orphans}))
         else:
             print(f"NOT CHECKED: {reason}")
+            for line in _orphan_lines(orphans):
+                print(line)
         return 3
     if args.json:
         print(json.dumps({"checked": True, "mail": [
-            {k: v for k, v in r.items() if not k.startswith("_")} for r in rows]}, indent=2))
+            {k: v for k, v in r.items() if not k.startswith("_")} for r in rows],
+            "orphan_inboxes": orphans}, indent=2))
     elif not rows:
         print("peer mail: nothing unseen")
     else:
@@ -310,6 +363,9 @@ def cmd_alerts(args) -> int:
             print(f"  - {flag}{_who(r['from'])} [{_meta(r['conversation_id'])}] "
                   f"{_meta(r['id'][:12])} ({_meta(r['route'])}):")
             print(_framed(r["first_line"]))
+    if not args.json:
+        for line in _orphan_lines(orphans):
+            print(line)
     if args.mark_seen and rows:
         alerts.mark_seen(rows)
     return 0
@@ -1288,6 +1344,8 @@ def build_parser() -> argparse.ArgumentParser:
                       help="direct path: seconds until a missing HANDED_OVER is ESCALATED")
     send.add_argument("--retries", type=int, default=direct.DEFAULT_RETRIES,
                       help="direct path: attempts before UNDELIVERABLE")
+    send.add_argument("--force", action="store_true",
+                      help="send to an explicit circuit nothing is known to read (T-4418)")
     send.add_argument("--json", action="store_true")
     send.set_defaults(func=cmd_send)
 
@@ -1306,6 +1364,12 @@ def build_parser() -> argparse.ArgumentParser:
     al.add_argument("--mark-seen", action="store_true",
                     help="record the listed messages as shown (prompt hook will not repeat them)")
     al.set_defaults(func=cmd_alerts)
+
+    oi = sub.add_parser("orphan-inboxes", help="unread project-level inboxes on this hub that "
+                        "no known agent reads — mail sent to a nickname (T-4418; exit 1 found, "
+                        "2 the hub could not be asked)")
+    oi.add_argument("--json", action="store_true")
+    oi.set_defaults(func=cmd_orphan_inboxes)
 
     st = sub.add_parser("status", help="out-of-band channel status from our own "
                         "outbox/ledger/inbox state; never asks the hub")

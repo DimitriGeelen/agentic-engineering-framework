@@ -1,10 +1,22 @@
 ---
 id: T-4418
-name: "fw sidecar send to an explicit circuit nobody reads succeeds silently: 14 consults sat 2 weeks in inbox:<hub>/ring20-manager"
+name: "fw sidecar send to an explicit circuit nobody reads succeeds silently: 14 consults
+  sat 2 weeks in inbox:<hub>/ring20-manager"
 description: >
-  Reported by ring20 (msg 1fa56c18, their T-2431): 2026-10-05..19, 14 consults from ring20-dashboard, dimitri-mint-dev and 1409-sprind went to inbox:22c19fedafd73da2/ring20-manager, a topic no receiver reads; senders used a nickname seen in ring20's signatures (since fixed on their side); e.g. 'send --to 22c19fedafd73da2/ring20-manager --hub ring20-manager' although the sender's peers.json held the right circuit; send reported success. Same spirit as T-3855 'never a guessed topic'. Fix: (1) send to an explicit circuit whose name is neither in the peer directory nor a known live receiver on that hub WARNs and, without --force, refuses with the known candidates; (2) a receiver alarms (sidecar alerts / doctor WARN) on unread topics under its own hub namespace inbox:<own-hub>/* that it does not read, naming them; (3) a send that contradicts a peers.json entry for the same hub prints the known circuit. Tests with a fake hub; never the live sidecar (T-4315).
+  Reported by ring20 (msg 1fa56c18, their T-2431): 2026-10-05..19, 14 consults from
+  ring20-dashboard, dimitri-mint-dev and 1409-sprind went to inbox:22c19fedafd73da2/ring20-manager,
+  a topic no receiver reads; senders used a nickname seen in ring20's signatures (since
+  fixed on their side); e.g. 'send --to 22c19fedafd73da2/ring20-manager --hub ring20-manager'
+  although the sender's peers.json held the right circuit; send reported success.
+  Same spirit as T-3855 'never a guessed topic'. Fix: (1) send to an explicit circuit
+  whose name is neither in the peer directory nor a known live receiver on that hub
+  WARNs and, without --force, refuses with the known candidates; (2) a receiver alarms
+  (sidecar alerts / doctor WARN) on unread topics under its own hub namespace inbox:<own-hub>/*
+  that it does not read, naming them; (3) a send that contradicts a peers.json entry
+  for the same hub prints the known circuit. Tests with a fake hub; never the live
+  sidecar (T-4315).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T17:51:22Z
-last_update: 2026-10-19T17:51:22Z
-date_finished: null
+last_update: 2026-10-19T19:27:11Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +62,54 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T18:00:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T18:01:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4418: fw sidecar send to an explicit circuit nobody reads succeeds silently: 14 consults sat 2 weeks in inbox:<hub>/ring20-manager
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Ring20 msg 1fa56c18 (their T-2431). Scope: lib/sidecar/addressing.py (evidence that an
+explicit circuit is read; orphan-inbox scan), lib/sidecar_cli.py (send --force, alerts),
+bin/fw doctor + agents/audit/audit.sh (WARN). "Read" evidence is the hub's own per-topic
+`activity` (last fetch) from `termlink channel list --json` — a topic that `--ensure-topic`
+created exists but is never fetched.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw sidecar send --to <explicit circuit>` whose target is neither in the peer directory (exact circuit) nor evidenced as read (local receiver / own inbox / own sub-agent / own-hub project id / hub `activity` shows a fetch within the window) prints a WARN and, without `--force`, is REFUSED (exit 2, nothing written to the outbox, nothing posted), naming the known candidates on that hub (peer-directory entries + read project inboxes)
+- [x] With `--force` the same send proceeds (WARN still printed); a send to a peer-directory circuit or a read topic proceeds with no WARN (control)
+- [x] A send whose name has a peer-directory entry with a different circuit, or whose hub has peer-directory entries other than the target, prints the known circuit(s) (`known circuit: …`)
+- [x] `fw sidecar alerts` and `fw doctor` / `fw audit` name unread topics `inbox:<own-hub>/<name>` (project level) that this agent does not read and whose name is not a known project (not us, not a sibling project, not NNN-name, not a peer-directory circuit); quiet when there are none; a hub that cannot be asked is reported, never read as "none"
+- [x] Regression test `tests/unit/test_sidecar_orphan_circuit_t4418.py` (fake hub runner, temp project): red before, green after (recorded under Updates); T-3855 cross-hub + T-3905 + T-3693 send tests still green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -242,7 +288,36 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_orphan_circuit_t4418.py > /tmp/.t4418a 2>&1 && grep -q passed /tmp/.t4418a
+timeout 900 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_cross_hub_t3855.py tests/unit/test_sidecar_credential_refused_t3905.py > /tmp/.t4418b 2>&1 && grep -q passed /tmp/.t4418b
+bash -n bin/fw && bash -n agents/audit/audit.sh && bash -n lib/sidecar-audit.sh
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4418c 2>&1 && grep -q clean /tmp/.t4418c
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** 2026-10-05..19, 14 consults from ring20-dashboard, dimitri-mint-dev and
+1409-sprind went to `inbox:22c19fedafd73da2/ring20-manager` — a topic no receiver reads
+(ring20-manager is a hub profile nickname; the project is proxmox-ring20-management).
+Each send reported success.
+
+**Root cause:** `lib/sidecar/addressing.py:resolve` step 1 ("an explicit circuit — used
+verbatim") returns any `<hubid>/<name>` whose hub segment matches `--hub`, with no
+evidence that anything reads the topic; the post then runs with `--ensure-topic`, which
+creates the topic, and the hub's acceptance is reported as delivered. T-3899 added the
+"inbox must exist" check only for BARE names on a remote hub, and the peer directory is
+consulted only for bare names — so a circuit that contradicted the sender's own peers.json
+went unremarked.
+
+**Why structurally allowed:** "delivered" means "the hub accepted a post"; no rail on the
+send side asks whether the topic has a reader, and no rail on the receiving hub's side
+looks for project-level inboxes that collect mail nobody fetches. Both ends were blind for
+14 days.
+
+**Prevention:** send-side evidence check with refusal + candidates (T-3855's "never a
+guessed topic" extended to explicit circuits), peer-directory contradiction notice, and a
+receiver-side orphan-inbox alarm in `fw sidecar alerts` / doctor / audit. Pinned by
+`tests/unit/test_sidecar_orphan_circuit_t4418.py`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -338,3 +413,13 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4418-fw-sidecar-send-to-an-explicit-circuit-n.md
 - **Context:** Initial task creation
+
+### 2026-10-19T19:27:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-19 — fix + regression test [worker w4423]
+- **Red before:** `tests/unit/test_sidecar_orphan_circuit_t4418.py` — 14 failed, 4 errors, 0 passed.
+- **Green after:** 18 passed. Neighbours: T-3855 cross-hub, T-3905, T-3693 receiver, T-3684 receipts, T-4131, T-4348, T-4423 — 141 passed.
+- **Live read (fact source only, `channel list` on this hub):** one orphan today — `inbox:cacc73ea32b121dd/claude-shared-toolkit`, 11 unread posts. The doctor/audit WARN will show it; who the senders meant is the operator's call.
+- **Limit (documented in addressing.py):** hub `activity` is the weakest evidence — a host-wide scanner that fetches every topic (one ran here ~13 h before) makes an orphan look read, so it can only turn a refusal into a send. Hubs without `activity` give no evidence: explicit circuits not in the peer directory then need `--force`.
+- **Vendor:** `vendor self --check` red only on another worker's untracked `tools/shellcheck-sc2006-cached.py`; all T-4418 paths synced.
