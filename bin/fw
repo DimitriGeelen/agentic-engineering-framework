@@ -4115,8 +4115,19 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
         cutoff_epoch=$(date -d "7 days ago" +%s 2>/dev/null || date -v-7d +%s 2>/dev/null || echo 0)
         if [ "$cutoff_epoch" -gt 0 ]; then
             # T-4386: one process, not ~5 forks per active task (~18 s per doctor).
-            stale_count=$(python3 "$FW_LIB_DIR/task_debt.py" "$active_dir" "$cutoff_epoch" 2>/dev/null || echo 0)
+            # T-4433: keep stderr — task_debt.py reports 'unparsed: N (files)' there (T-4430).
+            local debt_err_file debt_unparsed=""
+            debt_err_file=$(mktemp 2>/dev/null || echo /dev/null)
+            stale_count=$(python3 "$FW_LIB_DIR/task_debt.py" "$active_dir" "$cutoff_epoch" 2>"$debt_err_file" || echo 0)
             [[ "$stale_count" =~ ^[0-9]+$ ]] || stale_count=0
+            if [ "$debt_err_file" != /dev/null ]; then
+                debt_unparsed=$(grep '^unparsed:' "$debt_err_file" 2>/dev/null | head -1)
+                rm -f "$debt_err_file"
+            fi
+            if [ -n "$debt_unparsed" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  Task debt: last_update unreadable — $debt_unparsed"
+                warnings=$((warnings + 1))
+            fi
         fi
         if [ "$stale_count" -gt 10 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Task debt: $stale_count stale tasks (no updates in 7+ days)"
