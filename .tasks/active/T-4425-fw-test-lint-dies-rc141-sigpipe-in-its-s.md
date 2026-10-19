@@ -12,10 +12,10 @@ description: >
   it no longer exposes this). Repro: cd /opt/999-Agentic-Engineering-Framework &&
   timeout 600 bin/fw test lint; echo rc=$?
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T19:58:33Z
-last_update: '2026-10-19T20:02:02Z'
+last_update: 2026-10-19T20:20:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,8 +98,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] No `echo "$var" | head ...` pipe in bin/fw's `test lint` section can kill fw with SIGPIPE under set -euo pipefail
+- [x] Regression bats test with a fake shellcheck on PATH emitting >5 findings lines shows `fw test lint` reaches the Silent-Skip step and prints its summary (fails without the fix)
+- [x] `bin/fw test lint` runs to its summary on the real tree (no rc=141)
+- [x] `bash -n bin/fw` clean and `bin/fw vendor self --check --task T-4425` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -284,6 +286,12 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n bin/fw
+! grep -nE 'echo "\$_sc_output" \|' bin/fw
+timeout 900 bats tests/unit/t4425_lint_sigpipe.bats > /tmp/.t4425.out 2>&1 && ! grep -q "^not ok" /tmp/.t4425.out
+test "$(grep -c '# skip' /tmp/.t4425.out)" -eq 0
+timeout 900 bin/fw test lint > /tmp/.t4425-lint.out 2>&1; rc=$?; [ "$rc" -ne 141 ] && grep -q "Silent-Skip" /tmp/.t4425-lint.out && grep -q "Test-Isolation Lint" /tmp/.t4425-lint.out
+bin/fw vendor self --check --task T-4425
 
 ## RCA
 
@@ -300,6 +308,29 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `bin/fw test lint` exits 141 partway through the ShellCheck loop; the Lint
+summary, the Silent-Skip lint and the Test-Isolation lint never run.
+
+**Root cause:** `bin/fw:11079` printed each failing file's findings with
+`echo "$_sc_output" | head -5 | sed ...`. bin/fw runs under `set -euo pipefail`
+(bin/fw:12): once a file's findings exceed what head reads before exiting, echo takes
+SIGPIPE, pipefail makes the pipeline 141 and errexit kills fw. Sibling at bin/fw:11071,
+`echo "$_sc_output" | grep -q "error"`, has the same SIGPIPE shape (inside `&&`, so not
+fatal, but a 141 there silently misclassifies an error file as WARN). Reproduced
+deterministically with a fake shellcheck emitting 5000 lines: rc=141 on the first file.
+
+**Why structurally allowed:** the only test that ran the real `fw test lint` end-to-end
+(tests/lint/bats-silent-skip.bats) stubbed shellcheck to exit 0 since T-4375, so the
+findings-printing branch was never exercised; before that it was simply red and read as
+a silent-skip problem. L-387 documents the echo|grep/head SIGPIPE class for
+verification lines, but nothing lints bin/fw itself for it.
+
+**Prevention:** both pipes now read from a here-string (bash writes the whole string
+before head/grep start, so no writer can be SIGPIPEd). Regression test
+tests/unit/t4425_lint_sigpipe.bats runs `fw test lint` with a fake shellcheck emitting
+5000 lines of findings and asserts rc != 141 and that the Lint summary and Silent-Skip
+step are reached; it fails on the pre-fix bin/fw.
 
 ## Evolution
 
@@ -381,3 +412,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4425-fw-test-lint-dies-rc141-sigpipe-in-its-s.md
 - **Context:** Initial task creation
+
+### 2026-10-19T20:20:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
