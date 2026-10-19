@@ -205,9 +205,11 @@ def _tests_cannot_stop_the_real_sidecar(request):
     going red. Detection, not prevention: the stop has already happened, but the
     test that did it is named instead of the operator finding a dead sidecar.
     """
-    existed = _REAL_SIDECAR_STOPPED.exists()
+    # os.path, not pathlib: a test that patches Path.stat must not break this
+    # teardown (same reason as the T-4205 tripwire reader below).
+    existed = os.path.exists(_REAL_SIDECAR_STOPPED)
     yield
-    if not existed and _REAL_SIDECAR_STOPPED.exists():
+    if not existed and os.path.exists(_REAL_SIDECAR_STOPPED):
         pytest.fail(f"{request.node.nodeid} explicitly stopped the REAL project's sidecar "
                     f"({_REAL_SIDECAR_STOPPED} created); point PROJECT_ROOT at tmp for every "
                     "sidecar call, cleanup included. Restart it: bin/fw sidecar start")
