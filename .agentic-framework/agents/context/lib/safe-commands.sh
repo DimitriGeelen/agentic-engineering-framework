@@ -347,6 +347,24 @@ _fw_git_skip_globals() {
     echo "git ${words[*]:$i}"
 }
 
+# T-4367: git diff|log|show|diff-tree|diff-index|whatchanged take --output=FILE (or
+# `--output FILE`), which writes FILE although the verb is a read. git accepts any
+# unambiguous prefix of a long option, so --ou/--out/--outp/--outpu match too.
+# --output-indicator-* are display options and `-o` is not an output flag: neither
+# matches. Words after `--` are pathspecs but are refused as well (fail closed).
+# _fw_git_has_output_opt <sub-verb> <normalised "git verb args...">; 0 = has one.
+_fw_git_has_output_opt() {
+    case "$1" in
+        diff|log|show|diff-tree|diff-index|whatchanged) ;;
+        *) return 1 ;;
+    esac
+    local w
+    for w in $2; do
+        [[ "$w" =~ ^--ou(t(p(u(t)?)?)?)?(=.*)?$ ]] && return 0
+    done
+    return 1
+}
+
 # Single (non-compound) command classification. This is the original
 # is_bash_safe_command body, unchanged apart from the name.
 _fw_single_command_is_safe() {
@@ -607,6 +625,8 @@ _fw_single_command_is_safe() {
             local git_norm git_sub
             git_norm=$(_fw_git_skip_globals "$cmd") || return 1
             git_sub=$(echo "$git_norm" | awk '{print $2}')
+            # T-4367: --output[=FILE] on the diff-family verbs WRITES FILE.
+            _fw_git_has_output_opt "$git_sub" "$git_norm" && return 1
             case "$git_sub" in
                 # T-2888 added the second line. The first had grown one verb per
                 # incident — T-2052, T-2054, T-2462 and T-2878 each patched this

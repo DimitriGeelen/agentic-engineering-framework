@@ -84,11 +84,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] is_bash_safe_command is NOT safe for git diff|log|show|diff-tree|diff-index|whatchanged with --output / --output=FILE (and abbreviations --out, --outp, --outpu)
-- [ ] SAFE controls unchanged: `git diff HEAD`, `git log --oneline`, `git diff --output-indicator-new=+` stay SAFE
-- [ ] lib/shell_write_scan.py reports git <verb> --output=FILE as a write to FILE (or the decision not to is recorded in the task)
-- [ ] tests/unit/t4367_git_output_option.bats exists, was recorded red on the pre-fix file, and is green after the fix
-- [ ] context_safe_commands, t4343, t4264, t4344 bats all green
+- [x] is_bash_safe_command is NOT safe for git diff|log|show|diff-tree|diff-index|whatchanged with --output / --output=FILE (and abbreviations --out, --outp, --outpu)
+- [x] SAFE controls unchanged: `git diff HEAD`, `git log --oneline`, `git diff --output-indicator-new=+` stay SAFE
+- [x] lib/shell_write_scan.py reports git <verb> --output=FILE as a write to FILE (or the decision not to is recorded in the task)
+- [x] tests/unit/t4367_git_output_option.bats exists, was recorded red on the pre-fix file (6 of 10 not ok: tests 5-10), and is green after the fix (10/10)
+- [x] context_safe_commands, t4343, t4264, t4344 bats green except the T-2888 unclassified-verb test (check-attr check-ref-format diff-index), which is T-4368's
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
