@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4427: Installer prints no separate scan timing, so T-4400's speed-up cannot be field-measured
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T21:23:33Z
+# ============================================================================
+
+task_id: T-4427
+task_name: "Installer prints no separate scan timing, so T-4400's speed-up cannot be field-measured"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T21:01:49Z
+completed: 2026-10-19T21:21:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T23:14:26+02:00
+last_commit: 2026-10-19T23:14:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init prints 'secret scan: N file(s) in S.s s' for the bootstrap commit's pre-commit scan — scan-staged records its own timing to FW_SECRET_SCAN_TIMING_FILE (verdict/exit code unchanged), init prints it; regression test (4)
+
+# Key outcomes
+outcomes:
+  - '`secret-scan.sh scan-staged` with `FW_SECRET_SCAN_TIMING_FILE=<path>` writes one line `secret scan: N file(s) in S.s s` there; without the variable it writes nothing (behaviour unchanged)'
+  - 'Verdict and exit code unchanged: a planted secret still exits 1 with the timing file set, a clean diff exits 0'
+  - '`fw init` prints that line after the bootstrap commit (the scan path in install; the pre-commit hook swallows scanner output on success)'
+  - 'Regression test `tests/unit/t4427_secret_scan_timing_line.bats` passes and asserts a file count and a duration; T-4400 bats still green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - '.agentic-framework/lib/init.sh'
+  - 'agents/git/lib/secret-scan.sh'
+  - 'lib/init.sh'
+  - '.tasks/active/T-4427-installer-prints-no-separate-scan-timing.md'
+  - 'tests/unit/t4427_secret_scan_timing_line.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T23:14:26'
+    action: 'T-4427: fw init prints ''secret scan: N file(s) in S.s s'' for the bootstrap commit''s pre-commit scan — scan-staged records its own timing to FW_SECRET_SCAN_TIMING_FILE (verdict/exit code unchanged), init prints it; regression test (4)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 19
+  commits: 1
+  files_changed: 6
+  lines_added: 519
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4427-installer-prints-no-separate-scan-timing.md
+generated_by: context-agent-hybrid

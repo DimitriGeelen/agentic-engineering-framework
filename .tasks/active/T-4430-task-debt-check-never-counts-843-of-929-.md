@@ -1,12 +1,15 @@
 ---
-id: T-4427
-name: "Installer prints no separate scan timing, so T-4400's speed-up cannot be field-measured"
+id: T-4430
+name: "Task-debt check never counts 843 of 929 active tasks: single-quoted last_update
+  is rejected by date -d, so the stale figure is too low"
 description: >
-  dimitri-mint-dev T-155 (round 4, docs/reports/field-test-v1.8.13-results.md): installer
-  wall time fell 220 s -> 138/140 s between v1.8.12 and bleeding-edge, but the scan
-  T-4400 sped up is not timed on its own, so T-4400's field verdict is INCONCLUSIVE.
-  Print one timing line for that scan (e.g. 'scan: N files in S s') so a field test
-  can measure it.
+  Found by w4386 (T-4386, docs/reports/T-4386-doctor-profile.md). The doctor/audit
+  task-debt loop (now lib/task_debt.py, parity-preserved) parses last_update with
+  date -d semantics; a single-quoted value ('2026-10-19T...') is rejected, so those
+  tasks are silently skipped and the reported '63 stale' undercounts. Parse YAML properly
+  (strip quotes / yaml.safe_load the frontmatter) and add a regression test with quoted
+  and unquoted forms. Silent-skip class: a parse failure must count or be reported,
+  never vanish.
 
 status: started-work
 workflow_type: build
@@ -41,8 +44,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T21:01:49Z
-last_update: 2026-10-19T21:06:32Z
+created: 2026-10-19T21:20:53Z
+last_update: 2026-10-19T21:24:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,7 +58,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-19T21:06:33Z'
+  - ts: '2026-10-19T21:24:02Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -74,24 +77,20 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4427: Installer prints no separate scan timing, so T-4400's speed-up cannot be field-measured
+# T-4430: Task-debt check never counts 843 of 929 active tasks: single-quoted last_update is rejected by date -d, so the stale figure is too low
 
 ## Context
 
-The scan T-4400 sped up runs inside the pre-commit hook on `fw init`'s T-000 bootstrap
-commit (`lib/init.sh` bootstrap block); the hook captures the scanner's output and prints
-nothing on success, so the scan is not timed on its own. The scanner now records its own
-timing to a file named by `FW_SECRET_SCAN_TIMING_FILE` (env passes through git into the
-hook), and init prints it. `fw upgrade` makes no commit, so it does not run this scan.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `secret-scan.sh scan-staged` with `FW_SECRET_SCAN_TIMING_FILE=<path>` writes one line `secret scan: N file(s) in S.s s` there; without the variable it writes nothing (behaviour unchanged)
-- [x] Verdict and exit code unchanged: a planted secret still exits 1 with the timing file set, a clean diff exits 0
-- [x] `fw init` prints that line after the bootstrap commit (the scan path in install; the pre-commit hook swallows scanner output on success)
-- [x] Regression test `tests/unit/t4427_secret_scan_timing_line.bats` passes and asserts a file count and a duration; T-4400 bats still green
+- [ ] `lib/task_debt.py` reads `last_update` from the frontmatter YAML-aware: single-quoted, double-quoted, unquoted, date-only, datetime with `Z` and with a numeric offset all parse to the right epoch
+- [ ] A missing or unparseable `last_update` is never silently skipped: it is counted in the stale figure (the frozen caller's only channel) and reported on stderr as `unparsed: N` with the files
+- [ ] Regression test `tests/unit/test_t4430_task_debt_dates.py` covers every form above and fails against the pre-fix code; `tests/unit/test_t4386_doctor_perf.py` updated to pin the corrected count
+- [ ] Before/after stale count on the live repo recorded in this task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,11 +275,8 @@ hook), and init prints it. `fw upgrade` makes no commit, so it does not run this
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 600 bats tests/unit/t4427_secret_scan_timing_line.bats > /tmp/.t4427.out 2>&1 && ! grep -q "^not ok" /tmp/.t4427.out
-test "$(grep -c '# skip' /tmp/.t4427.out)" -eq 0
-timeout 600 bats tests/unit/t4400_secret_scan_bootstrap_scale.bats > /tmp/.t4400.out 2>&1 && ! grep -q "^not ok" /tmp/.t4400.out
-grep -q "FW_SECRET_SCAN_TIMING_FILE" lib/init.sh
-bin/fw vendor self --check --task T-4427
+python3 -m pytest tests/unit/test_t4430_task_debt_dates.py tests/unit/test_t4386_doctor_perf.py -q > /tmp/.t4430.out 2>&1 && grep -q passed /tmp/.t4430.out
+bin/fw vendor self --check --task T-4430
 
 ## RCA
 
@@ -297,6 +293,14 @@ bin/fw vendor self --check --task T-4427
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw doctor` "Task debt" reports far fewer stale tasks than exist; 843 of 929 active tasks never enter the count.
+
+**Root cause:** `lib/task_debt.py:34` strips only double quotes from the raw `last_update:` line, so a single-quoted value (`'2026-10-19T12:29:28Z'`, the form the task writer emits for 843 tasks) reaches `datetime.fromisoformat` with its quotes, raises `ValueError`, and `to_epoch` (`lib/task_debt.py:44-46`) returns 0; `stale_count` (`:63`) then skips it as if it were fresh. The predicate was ported verbatim from the bash loop (`date -d` rejected the same value), so the bug predates T-4386.
+
+**Why structurally allowed:** a parse failure was folded into the same 0 as "not stale" — no counter, no stderr, nothing distinguishable from a healthy corpus. The T-4386 parity test pinned the bug on purpose (parity-preserving move) and no test asserted the stale count against the real frontmatter forms.
+
+**Prevention:** values are now parsed as YAML scalars; a missing/unparseable value counts as debt and prints `unparsed: N` on stderr, so the silent-skip class cannot recur silently. `tests/unit/test_t4430_task_debt_dates.py` pins every value form and the unparsed path.
 
 ## Evolution
 
@@ -374,11 +378,11 @@ bin/fw vendor self --check --task T-4427
 
 ## Updates
 
-### 2026-10-19T21:01:49Z — task-created [task-create-agent]
+### 2026-10-19T21:20:53Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4427-installer-prints-no-separate-scan-timing.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4430-task-debt-check-never-counts-843-of-929-.md
 - **Context:** Initial task creation
 
-### 2026-10-19T21:06:32Z — status-update [task-update-agent]
+### 2026-10-19T21:24:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
