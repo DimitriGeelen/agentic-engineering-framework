@@ -126,7 +126,11 @@ jobs:
   status: active
   description: Incrementally re-embeds changed/added/removed corpus files and replants
     the freshness canaries every hour, so index_freshness() age actually drops between
-    runs instead of only being watched (T-3005 slice 5).
+    runs instead of only being watched (T-3005 slice 5). Since T-4351 the minute 20
+    is the seeded default and is NOT used as-is — fw cron generate derives a per-project
+    minute (lib/cron_schedule.py) so projects on one host do not reindex together;
+    any other minute, or schedule_pinned true, is kept. Hours between runs come from
+    INDEX_REINDEX_INTERVAL_HOURS (default 1).
 - id: oe-fast-30m
   name: OE fast checks (30 min)
   schedule: 15,45 * * * *

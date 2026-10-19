@@ -37,6 +37,9 @@ import re
 import sys
 import yaml
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from cron_schedule import effective_schedule  # noqa: E402  T-4351
+
 
 def main() -> int:
     if len(sys.argv) != 4:
@@ -66,7 +69,7 @@ def main() -> int:
         "",
     ]
     for job in jobs:
-        schedule = job.get("schedule", "")
+        schedule = effective_schedule(job, project_root)  # T-4351
         command = job.get("command", "")
         name = job.get("name", "")
         status = job.get("status", "active")

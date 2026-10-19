@@ -9,10 +9,10 @@ description: >
   id (keep the registry's explicit minute when set deliberately), and add a per-project
   frequency knob for large, slowly changing indexes.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cron, index, io]
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:57:46Z
-last_update: '2026-10-18T23:01:56Z'
+last_update: 2026-10-19T21:10:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw cron generate` derives index-reindex-hourly's minute from a stable hash of the project identity (realpath of PROJECT_ROOT): same root → same minute on every run, different roots → spread over 0-59
+- [x] An explicitly chosen minute is kept: any minute other than the seeded default, or `schedule_pinned: true` on the entry; the `H` minute token requests a derived minute for any job (documented in the generator, the helper and the registry entry)
+- [x] New config key `INDEX_REINDEX_INTERVAL_HOURS` (default 1, range 1-24) in `lib/config.sh` FW_CONFIG_REGISTRY changes the hour field of the generated reindex line (`*` at 1, `*/N` otherwise)
+- [x] Regression tests: two roots get different minutes, same root stable, explicit minute kept, knob changes hour field — fail without the fix, pass with it
+- [ ] Framework registry regenerated with `env -u FRAMEWORK_ROOT`; doctor reports the registry in sync; vendor sync clean for this task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -275,8 +278,25 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4351_cron_reindex_stagger.bats > /tmp/.t4351-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4351-bats.out
+test "$(grep -c '# skip' /tmp/.t4351-bats.out)" -eq 0
+timeout 300 bats tests/unit/test_cron_generate_shape.bats tests/unit/t3171_cron_generate_requires_id.bats tests/lint/config-registry-parity.bats > /tmp/.t4351-adj.out 2>&1 && ! grep -q "^not ok" /tmp/.t4351-adj.out
+grep -qE "^[0-9]+ \* \* \* \* root .*index reindex" .context/cron/agentic-audit.crontab && ! grep -qE "^20 \* \* \* \* root .*index reindex" .context/cron/agentic-audit.crontab
+grep -q '"INDEX_REINDEX_INTERVAL_HOURS|1|' lib/config.sh
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+bin/fw vendor self --check --task T-4351
+bin/fw watchtower current
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4351-lint.out 2>&1 && grep -q "clean" /tmp/.t4351-lint.out
 
 ## RCA
+
+**Symptom:** 6 of 8 projects on .107 (termlink, 832, 050, 999, dimitri-mint-dev, 055) run `index-reindex-hourly` at minute :20, stacking the heaviest disk writer at one minute (dimitri-mint-dev T-135).
+
+**Root cause:** `lib/cron-seed.sh:47` seeds the job as `20 * * * *` into every consumer, and the generator copies `schedule:` verbatim: `bin/fw` cron generate (`schedule = job.get('schedule', '')`), its dry-run twin `lib/cron_dry_run.py:68`. Nothing in the chain knows the project, so every project gets the same line.
+
+**Why structurally allowed:** the seed was written for one project (AEF's own registry, T-3014) and widened to the fleet by T-3783 without anyone looking at host-level co-scheduling. Generator tests pin line *shape* per project and never compare two projects. There is no host-wide view of cron minutes.
+
+**Prevention:** the schedule now goes through one helper (`lib/cron_schedule.py:effective_schedule`) used by both the generator and the doctor dry run, so they cannot diverge. `tests/unit/t4351_cron_reindex_stagger.bats` pins that different roots spread, the same root is stable, an explicit minute or `schedule_pinned` is kept, the knob drives the hour field, and dry run equals generate. The seeded `20` is treated as not deliberate, so existing consumers stagger on their next `fw cron generate` without a registry migration.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -356,6 +376,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-19 — how "deliberate" is expressed
+- **Chose:** `schedule_pinned: true` = verbatim always; minute `H` = derive (any job); for index-reindex-hourly the seeded minute `20` = not deliberate, any other minute = deliberate. Identity = realpath(PROJECT_ROOT), sha256 mod 60.
+- **Why:** every existing consumer registry carries the seeded `20`, and the seed never overwrites a same-id job, so a new token alone would leave the 6 stacked projects stacked. Treating the legacy value as unset fixes them on the next generate with no migration.
+- **Rejected:** writing `H` into the seed/registry — Watchtower's own regenerator (`web/blueprints/cron.py:_regenerate_cron`, already divergent) copies `schedule` verbatim and would install a literal `H`, which cron rejects. `project_id` from .framework.yaml as identity — not every consumer has one; the root path is always there and is what the crontab line already embeds.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -372,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4351-generated-cron-schedules-start-the-hourl.md
 - **Context:** Initial task creation
+
+### 2026-10-19T21:10:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

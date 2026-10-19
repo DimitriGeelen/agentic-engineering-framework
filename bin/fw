@@ -6854,11 +6854,14 @@ EOF
                     && [ -x "$PROJECT_ROOT/.agentic-framework/bin/fw" ]; then
                     _cron_fw="$PROJECT_ROOT/.agentic-framework/bin/fw"
                 fi
-                FW_CRON_FW_PATH="$_cron_fw" python3 -c "
+                FW_CRON_FW_PATH="$_cron_fw" FW_CRON_LIB_DIR="$FRAMEWORK_ROOT/lib" python3 -c "
 import yaml, os, re, sys, tempfile
 
 project_root = '$PROJECT_ROOT'
 fw_path = os.environ['FW_CRON_FW_PATH']
+# T-4351: per-project schedule (staggered reindex minute, interval knob)
+sys.path.insert(0, os.environ['FW_CRON_LIB_DIR'])
+from cron_schedule import effective_schedule
 registry_file = '$_cron_registry'
 
 # T-3835: refuse a fw path that will not exist when cron runs it — missing now,
@@ -6933,7 +6936,7 @@ lines = [
 
 active = paused = 0
 for job in jobs:
-    schedule = job.get('schedule', '')
+    schedule = effective_schedule(job, project_root)
     command = job.get('command', '')
     name = job.get('name', '')
     status = job.get('status', 'active')
