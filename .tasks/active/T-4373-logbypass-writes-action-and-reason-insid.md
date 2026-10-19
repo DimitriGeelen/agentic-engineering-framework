@@ -1,13 +1,18 @@
 ---
 id: T-4373
-name: "log_bypass writes action and reason inside double quotes without escaping, so a quote or newline in either produces invalid YAML"
+name: "log_bypass writes action and reason inside double quotes without escaping,
+  so a quote or newline in either produces invalid YAML"
 description: >
-  Found by T-4349's worker: agents/git/lib/bypass.sh writes action/reason as "..." with no escaping; a commit subject or --reason containing a double quote or newline breaks .context/bypass-log.yaml. T-4349 fixed the indent class only. Fix: emit via a YAML-safe quoter (python yaml.safe_dump of the scalar, or single-quote with '' doubling) and keep the post-append parse check returning 1.
+  Found by T-4349's worker: agents/git/lib/bypass.sh writes action/reason as "..."
+  with no escaping; a commit subject or --reason containing a double quote or newline
+  breaks .context/bypass-log.yaml. T-4349 fixed the indent class only. Fix: emit via
+  a YAML-safe quoter (python yaml.safe_dump of the scalar, or single-quote with ''
+  doubling) and keep the post-append parse check returning 1.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T10:11:01Z
-last_update: 2026-10-19T10:11:01Z
-date_finished: null
+last_update: 2026-10-19T13:33:05Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T10:15:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T10:16:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4373: log_bypass writes action and reason inside double quotes without escaping, so a quote or newline in either produces invalid YAML
@@ -62,8 +95,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `log_bypass_entry` emits `action` and `reason` as YAML single-quoted scalars (`'` doubled, CR/LF collapsed to a space, other C0 control chars dropped), so a double quote, backslash, newline or colon in either still yields a parseable `.context/bypass-log.yaml`
+- [x] The parsed values round-trip: quote, backslash and colon are preserved verbatim; a newline reads back as a single space
+- [x] T-4349 behaviour kept: indent matching for indentless and 2-space logs, append-only, post-append parse failure returns non-zero (`tests/unit/t4349_bypass_log_indent.bats` green)
+- [x] Regression bats `tests/unit/t4373_bypass_log_quoting.bats` covers quote/backslash/newline/colon in both reason and action, red before the fix and green after (pre-fix: tests 1-4 and 8 red; the newline-only cases 5-6 parsed even before, because YAML folds a line break inside a double-quoted scalar — the combined case 8 is the red newline case)
+- [x] Existing log entries are not rewritten; vendored copy synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,8 +277,22 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/git/lib/bypass.sh
+timeout 300 bats tests/unit/t4373_bypass_log_quoting.bats > /tmp/.t4373.out 2>&1 && grep -q '^ok 1 ' /tmp/.t4373.out && ! grep -q '^not ok' /tmp/.t4373.out
+test "$(grep -c '# skip' /tmp/.t4373.out)" -eq 0
+timeout 300 bats tests/unit/t4349_bypass_log_indent.bats > /tmp/.t4349.out 2>&1 && grep -q '^ok 1 ' /tmp/.t4349.out && ! grep -q '^not ok' /tmp/.t4349.out
+test "$(grep -c '# skip' /tmp/.t4349.out)" -eq 0
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** a commit subject (used as `action`) or a `--reason` containing a double quote, a backslash escape such as `\x`, or a newline makes `.context/bypass-log.yaml` unparseable after the append (and, since T-4349, `log-bypass` returns non-zero).
+
+**Root cause:** `agents/git/lib/bypass.sh:120` and `:123` interpolate the raw strings into YAML double-quoted scalars (`action: "$action"`, `reason: "$reason"`) with no escaping. In a double-quoted YAML scalar `"` terminates the scalar, `\` starts an escape sequence (invalid ones are parse errors), and a raw newline inside an indented block either folds or breaks the mapping when the next line is under-indented.
+
+**Why structurally allowed:** the writer was built and tested only with plain ASCII sentences; T-4349's tests use `T-1: test action`. Nothing exercised hostile-but-ordinary input (quoted words in a commit subject are common), and before T-4349 the post-append parse check only warned.
+
+**Prevention:** the writer now goes through one quoting helper (`_bypass_yaml_sq`) that is valid for any input; `tests/unit/t4373_bypass_log_quoting.bats` pins quote, backslash, newline and colon in both fields plus round-trip values, alongside the T-4349 indent suite.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -338,3 +388,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4373-logbypass-writes-action-and-reason-insid.md
 - **Context:** Initial task creation
+
+### 2026-10-19T13:33:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

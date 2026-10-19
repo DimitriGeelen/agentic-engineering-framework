@@ -72,6 +72,20 @@ do_log_bypass() {
     log_bypass_entry "$commit" "$action" "$reason" "$authorized_by" "$retroactive_task"
 }
 
+# T-4373: emit a string as a YAML single-quoted scalar that is valid for any
+# input. Inside single quotes only ' is special (doubled); CR/LF collapse to a
+# space so the entry stays on one line; other C0 control chars (not allowed in
+# YAML scalars) are dropped. Backslashes, double quotes and colons pass verbatim.
+_bypass_yaml_sq() {
+    local s="$1"
+    s="${s//$'\r\n'/ }"
+    s="${s//$'\r'/ }"
+    s="${s//$'\n'/ }"
+    s=$(printf '%s' "$s" | tr -d '\000-\010\013\014\016-\037\177')
+    s="${s//\'/\'\'}"
+    printf "'%s'" "$s"
+}
+
 # Internal function to log a bypass entry
 log_bypass_entry() {
     local commit="$1"
@@ -114,13 +128,17 @@ EOF
         item_indent=""
     fi
 
+    local action_q reason_q
+    action_q=$(_bypass_yaml_sq "$action")
+    reason_q=$(_bypass_yaml_sq "$reason")
+
     # Append the entry
     cat >> "$BYPASS_LOG" << EOF
 ${item_indent}- timestamp: $timestamp
-${item_indent}  action: "$action"
+${item_indent}  action: $action_q
 ${item_indent}  commit: $commit
 ${item_indent}  authorized_by: $authorized_by
-${item_indent}  reason: "$reason"
+${item_indent}  reason: $reason_q
 ${item_indent}  retroactive_task: $retroactive_task
 EOF
 
