@@ -30,6 +30,7 @@ import socket
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
+from fnmatch import fnmatchcase
 from pathlib import Path
 
 import yaml
@@ -224,6 +225,22 @@ def _marked_on_issue(issue: int, stage: str) -> bool:
     return False
 
 
+def _label_spec(name: str) -> tuple:
+    if name in LABELS:
+        return LABELS[name]
+    if name.startswith("area:"):  # T-4411: one per area in policy/issue-areas.yaml
+        return (f"Area {name[5:]} (from the component fabric)", "c5def5")
+    if name.startswith("severity:"):
+        return (f"Severity {name[9:]}", {"high": "b60205", "medium": "fbca04"}.get(name[9:], "c2e0c6"))
+    raise IssuesError(f"no definition for label {name!r}", 2)
+
+
+def _triage_labels(area: str, severity: str) -> list:
+    """area:<x> / severity:<y> (T-4411); 'unspecified' and unknown severities get no label."""
+    out = [f"area:{area}"] if area and area != "unspecified" else []
+    return out + ([f"severity:{severity}"] if severity in SEVERITIES else [])
+
+
 def _ensure_labels(names: list) -> None:
     p = _gh(["label", "list", "--repo", _repo(), "--limit", "500", "--json", "name"])
     if p.returncode != 0:
@@ -235,7 +252,7 @@ def _ensure_labels(names: list) -> None:
     for n in names:
         if n in have:
             continue
-        desc, colour = LABELS[n]
+        desc, colour = _label_spec(n)
         q = _gh(["label", "create", n, "--repo", _repo(), "--description", desc, "--color", colour])
         if q.returncode != 0:
             raise IssuesError(f"cannot create label {n!r}: {q.stderr.strip()[:300]}", 2)
@@ -423,7 +440,10 @@ def cmd_comment(a) -> int:
         print(body, end="")
         return 0
 
-    labels = STAGE_LABELS[st]
+    labels = list(STAGE_LABELS[st])
+    if st == "classified":  # T-4411: the triage labels ride on the Classified edit
+        ex = getattr(a, "extra", None) or {}
+        labels += _triage_labels(str(ex.get("area", "")), str(ex.get("severity", "")))
     _ensure_labels(labels)
     p = _gh(["issue", "comment", str(a.issue), "--repo", _repo(), "--body-file", "-"], stdin=body)
     url = next((w for w in p.stdout.split() if w.startswith("https://")), "") if p.returncode == 0 else ""
@@ -470,7 +490,76 @@ ROUTES = {  # operator ruling 2026-10-10: every issue by this submitter goes to 
     "mikeechovoid": {"arc_id": "mikeechovoid-requests", "horizon": "now"},
 }
 DUP_THRESHOLD = 0.6   # Jaccard over title words; a hint only, never a decision
-AREAS = {"lib", "bin", "agents", "web", "tests", "docs", "policy"}
+
+# T-4411: the area is a functional one taken from the component fabric through ONE committed
+# mapping (policy/issue-areas.yaml), not the first directory prefix in the text.
+AREA_MAP_FILE = Path(__file__).resolve().parent.parent / "policy" / "issue-areas.yaml"
+_PATH_RE = re.compile(r"(?<![\w/.-])((?:lib|bin|agents|web|tests|docs|policy|tools)/[\w./-]*\w)")
+_FW_CMD_RE = re.compile(r"\bfw\s+([a-z][a-z0-9-]+)")
+_SEVERITY_RE = re.compile(r"\bseverity:\s*(low|medium|high)\b", re.I)
+SEVERITIES = ("low", "medium", "high")
+
+
+def _area_map() -> dict:
+    try:
+        d = yaml.safe_load(AREA_MAP_FILE.read_text()) or {}
+    except (OSError, yaml.YAMLError) as e:
+        raise IssuesError(f"cannot read the area mapping {AREA_MAP_FILE}: {e}", 2)
+    return {"paths": d.get("paths") or [], "subsystems": d.get("subsystems") or {},
+            "commands": d.get("commands") or {}, "weak": set(d.get("weak") or [])}
+
+
+def _fabric_cards() -> dict:
+    """location -> subsystem, plus name -> location, from .fabric/components (project root)."""
+    by_loc, by_name = {}, {}
+    d = _project_root() / ".fabric" / "components"
+    for f in sorted(d.glob("*.yaml")) if d.is_dir() else []:
+        try:
+            c = yaml.safe_load(f.read_text(errors="replace")) or {}
+        except yaml.YAMLError:
+            continue
+        loc, sub = str(c.get("location") or ""), str(c.get("subsystem") or "")
+        if loc and sub:
+            by_loc[loc] = sub
+            name = str(c.get("name") or "")
+            if len(name) >= 6 and re.search(r"[-_.]", name):  # generic one-word names are noise
+                by_name[name] = loc
+    return {"loc": by_loc, "name": by_name}
+
+
+def _path_area(path: str, amap: dict, cards: dict) -> str:
+    for rule in amap["paths"]:
+        if fnmatchcase(path, str(rule.get("match", ""))):
+            return str(rule.get("area", ""))
+    return str(amap["subsystems"].get(cards["loc"].get(path, ""), ""))
+
+
+def _resolve_area(paths: list, text: str = "") -> str:
+    """Most-mentioned area over the given paths and the paths, `fw <cmd>` commands and component
+    names in `text`; weak areas only when nothing else resolved; else 'unspecified'."""
+    amap, cards = _area_map(), _fabric_cards()
+    hits = [_path_area(p, amap, cards) for p in paths]
+    for m in sorted([(m.start(), "p", m.group(1)) for m in _PATH_RE.finditer(text)]
+                    + [(m.start(), "c", m.group(1)) for m in _FW_CMD_RE.finditer(text)]
+                    + [(m.start(), "n", nm) for nm in cards["name"]
+                       for m in re.finditer(r"(?<![\w/.-])" + re.escape(nm) + r"(?![\w-])", text)]):
+        _, kind, val = m
+        if kind == "p":
+            hits.append(_path_area(val, amap, cards))
+        elif kind == "n":
+            hits.append(_path_area(cards["name"][val], amap, cards))
+        elif val in amap["commands"]:
+            hits.append(str(amap["commands"][val]))
+        else:
+            for cand in (f"lib/{val}.sh", f"lib/{val}.py", f"agents/{val}/{val}.sh"):
+                if cand in cards["loc"]:
+                    hits.append(_path_area(cand, amap, cards))
+                    break
+    hits = [h for h in hits if h]
+    strong = [h for h in hits if h not in amap["weak"]] or hits
+    if not strong:
+        return "unspecified"
+    return max(dict.fromkeys(strong), key=strong.count)  # first mention breaks a tie
 
 
 def _project_root() -> Path:
@@ -539,8 +628,7 @@ def _classify(issue: dict, others: list, tasks: list, owner: str) -> dict:
         typ = "enhancement"
     else:
         typ = "question"  # unclear from the title: parked for the maintainer to read
-    m = re.search(r"\b(lib|bin|agents|web|tests|docs|policy)/", f"{title} {body}")
-    area = m.group(1) if m and m.group(1) in AREAS else "unspecified"
+    area = _resolve_area([], f"{title}\n{body}")
     if typ in ("enhancement", "question", "proposal"):
         sev = "low"
     elif re.search(r"data loss|corrupt|crash|security|cannot|fails? on every", f"{title} {body}".lower()):
@@ -1158,6 +1246,82 @@ def _task_last_commit(root: Path, tid: str) -> str:
     return p.stdout.strip() if p.returncode == 0 else ""
 
 
+# ── area/severity labels (T-4411) ────────────────────────────────────────────
+# On a linked task's close (and via `fw issues labels` for backfill) the area is recomputed from
+# the files the task changed: its `components:` when resolved, else the files of its commits —
+# lifecycle runs before update-task.sh fills components:, from the same commits. Labels only:
+# nothing is posted. The old area:* label is removed in the same edit that adds the new one.
+
+def _task_paths(root: Path, tid: str) -> list:
+    hits = sorted(root.glob(f".tasks/*/{tid}-*.md"))
+    if hits:
+        text = hits[0].read_text(errors="replace")
+        fm = text.split("---", 2)[1] if text.startswith("---") and text.count("---") >= 2 else ""
+        try:
+            comps = (yaml.safe_load(fm) or {}).get("components") or []
+        except (yaml.YAMLError, AttributeError):
+            comps = []
+        if isinstance(comps, list) and comps:
+            return [str(c) for c in comps]
+    p = _run(["git", "-C", str(root), "log", "--format=", "--name-only", "-E",
+              f"--grep=^{tid}([^0-9]|$)"])
+    out = p.stdout.splitlines() if p.returncode == 0 else []
+    return [x for x in dict.fromkeys(out) if x and not x.startswith(".")]
+
+
+def _refine_labels(n: int, tasks: list, root: Path, dry_run: bool) -> str:
+    p = _gh(["issue", "view", str(n), "--repo", _repo(), "--json", "title,body,labels,comments"])
+    if p.returncode != 0:
+        raise IssuesError(f"cannot read issue #{n}: {p.stderr.strip()[:300]}", 2)
+    try:
+        info = json.loads(p.stdout or "{}")
+    except ValueError:
+        raise IssuesError(f"gh returned unparseable JSON for issue #{n}", 2)
+    have = [str((x or {}).get("name") or "") for x in info.get("labels") or []]
+    me = _maintainer_login()
+    cls_text = "\n".join(c.get("body") or "" for c in info.get("comments") or []
+                         if _login(c.get("author")) == me and any(
+                             "classified" in m.group(1).split("+") for m in MARKER_RE.finditer(c.get("body") or "")))
+    paths = [x for t in tasks for x in _task_paths(root, t)]
+    area = _resolve_area(paths) if paths else "unspecified"
+    if area == "unspecified":
+        area = _resolve_area([], f"{cls_text}\n{info.get('title') or ''}\n{info.get('body') or ''}")
+    m = _SEVERITY_RE.search(cls_text)
+    sev = m.group(1).lower() if m else next(
+        (str(r["severity"]) for r in reversed(_read_rows(_issues_dir() / "intake.jsonl"))
+         if r.get("issue") == n and r.get("severity") in SEVERITIES),
+        next((h[9:] for h in have if h.startswith("severity:")), ""))
+    want = _triage_labels(area, sev)
+    add = [x for x in want if x not in have]
+    drop = [h for h in have if (h.startswith("area:") and any(w.startswith("area:") for w in add))
+            or (h.startswith("severity:") and any(w.startswith("severity:") for w in add))]
+    if not add:
+        return f"#{n}: labels unchanged ({', '.join(want) or 'nothing resolved'})"
+    what = f"#{n}: +{','.join(add)}" + (f" -{','.join(drop)}" if drop else "")
+    if dry_run:
+        return what + " (dry-run: nothing changed)"
+    _ensure_labels(add)
+    args = ["issue", "edit", str(n), "--repo", _repo()]
+    if drop:
+        args += ["--remove-label", ",".join(drop)]
+    e = _gh(args + ["--add-label", ",".join(add)])
+    if e.returncode != 0:
+        raise IssuesError(f"cannot edit labels on #{n}: {e.stderr.strip()[:300]}", 2)
+    return what
+
+
+def cmd_labels(a) -> int:
+    root = Path(a.root or os.environ.get("PROJECT_ROOT") or os.getcwd())
+    tasks = a.task or list(dict.fromkeys(
+        t for r in _read_rows(_issues_dir() / "intake.jsonl") if r.get("issue") == a.issue
+        for t in r.get("tasks") or []))
+    for t in tasks:
+        if not _TASK_RE.match(t):
+            raise IssuesError(f"--task must be T-NNN, got {t!r}")
+    print(_refine_labels(a.issue, tasks, root, a.dry_run))
+    return 0
+
+
 def cmd_lifecycle(a) -> int:
     if os.environ.get("FW_ISSUES_LIFECYCLE", "1") == "0":
         return 0
@@ -1167,6 +1331,12 @@ def cmd_lifecycle(a) -> int:
     if not facts or not facts["issue"]:
         return 0
     n = facts["issue"]
+    if a.event == "closed":  # T-4411: refine the area label from what the task changed
+        try:
+            print(_refine_labels(n, [a.task_id], root, False))
+        except (IssuesError, OSError) as e:
+            print(f"WARN: GitHub #{n} area label not refined ({str(e)[:160]}); re-run "
+                  f"`fw issues labels {n} --task {a.task_id}`", file=sys.stderr)
     try:
         if _ledger_has(n, stage):
             return 0
@@ -1214,6 +1384,12 @@ def main(argv=None) -> int:
     lc.add_argument("--event", required=True, choices=sorted(LIFECYCLE_STAGES))
     lc.add_argument("--root", help="project root (default PROJECT_ROOT or cwd)")
     lc.set_defaults(fn=cmd_lifecycle)
+    lb = sub.add_parser("labels", help="set area:/severity: labels from the fabric; labels only, no comment (T-4411)")
+    lb.add_argument("issue", type=int)
+    lb.add_argument("--task", action="append", help="linked task (default: the ledger's tasks for the issue)")
+    lb.add_argument("--root", help="project root (default PROJECT_ROOT or cwd)")
+    lb.add_argument("--dry-run", action="store_true", help="print the label change, change nothing")
+    lb.set_defaults(fn=cmd_labels)
     rl = sub.add_parser("release", help="post the Released stage for a release's tasks, apply the close rule (T-4340)")
     rl.add_argument("version", help="the release tag, vX.Y.Z")
     rl.add_argument("--range", dest="rng", required=True, help="commit range, e.g. v1.8.10..HEAD")

@@ -1,0 +1,120 @@
+# T-4411: GitHub issue areas, derived from the component fabric.
+#
+# lib/issues.py resolves the files, `fw <cmd>` commands and component names an issue
+# mentions (and, when a linked task closes, the files that task changed) to
+# .fabric/components cards, then maps each hit to ONE area below:
+#   1. `paths:` — ordered fnmatch rules (`*` crosses `/`), first match wins. These
+#      refine broad subsystems such as framework-core by file (lib/upgrade.sh -> upgrade).
+#   2. `subsystems:` — the card's fabric subsystem -> area.
+# The area mentioned most often wins (first mention breaks a tie); `weak:` areas win only
+# when nothing else resolved. Nothing resolved -> `unspecified`, which is not applied as
+# a label. The label applied is `area:<area>`. A new subsystem or path is a data edit here.
+
+areas: [watchtower, upgrade, init, sidecar, audit, doctor, governance, context, termlink,
+        git-hooks, tasks, fabric, dispatch, release, cli, testing, docs, core]
+
+weak: [core, testing, docs]
+
+paths:
+  - {match: "bin/watchtower.sh", area: watchtower}
+  - {match: "web/*", area: watchtower}
+  - {match: "lib/watchtower*", area: watchtower}
+  - {match: "lib/upgrade*", area: upgrade}
+  - {match: "lib/vendor*", area: upgrade}
+  - {match: "lib/update*", area: upgrade}
+  - {match: "lib/consumer-recover*", area: upgrade}
+  - {match: "lib/upstream*", area: upgrade}
+  - {match: "lib/init*", area: init}
+  - {match: "lib/seed*", area: init}
+  - {match: "agents/init/*", area: init}
+  - {match: "lib/validate-init*", area: init}
+  - {match: "lib/sidecar*", area: sidecar}
+  - {match: "lib/termlink*", area: termlink}
+  - {match: "agents/termlink/*", area: termlink}
+  - {match: "agents/git/*", area: git-hooks}
+  - {match: "lib/git*", area: git-hooks}
+  - {match: "agents/audit/*", area: audit}
+  - {match: "lib/audit*", area: audit}
+  - {match: "lib/doctor*", area: doctor}
+  - {match: "lib/vector_index_health*", area: doctor}
+  - {match: "lib/tier0*", area: governance}
+  - {match: "lib/review*", area: governance}
+  - {match: "lib/human_ac*", area: governance}
+  - {match: "lib/delegation*", area: governance}
+  - {match: "lib/inception*", area: governance}
+  - {match: "lib/render_surface*", area: governance}
+  - {match: "agents/context/check-*", area: governance}
+  - {match: "agents/context/*", area: context}
+  - {match: "agents/handover/*", area: context}
+  - {match: "agents/resume/*", area: context}
+  - {match: "agents/task-create/*", area: tasks}
+  - {match: "lib/task*", area: tasks}
+  - {match: "agents/fabric/*", area: fabric}
+  - {match: "lib/fabric*", area: fabric}
+  - {match: "agents/dispatch/*", area: dispatch}
+  - {match: "lib/dispatch*", area: dispatch}
+  - {match: "lib/resolver*", area: dispatch}
+  - {match: "lib/issues*", area: release}
+  - {match: "lib/release*", area: release}
+  - {match: "lib/cron*", area: core}
+  - {match: "bin/fw", area: cli}
+  - {match: "bin/claude-fw", area: cli}
+  - {match: "tests/*", area: testing}
+  - {match: "docs/*", area: docs}
+  - {match: "*.md", area: docs}
+
+subsystems:
+  watchtower: watchtower
+  watchtower-web-ui: watchtower
+  upgrade: upgrade
+  context-fabric: context
+  capture: context
+  handover: context
+  learnings-pipeline: context
+  learnings-bus: context
+  budget-management: context
+  healing: context
+  git-traceability: git-hooks
+  component-fabric: fabric
+  task-management: tasks
+  task-system: tasks
+  audit: audit
+  enforcement: governance
+  hook-enforcement: governance
+  governance: governance
+  termlink-integration: termlink
+  orchestrator-arc: dispatch
+  cli-entrypoints: cli
+  tests: testing
+  tests-playwright: testing
+  testing: testing
+  docs: docs
+  framework-core: core
+  agents: core
+
+# `fw <cmd>` mentioned in an issue -> area. Commands not listed fall back to the card for
+# lib/<cmd>.sh|.py or agents/<cmd>/<cmd>.sh when one exists.
+commands:
+  upgrade: upgrade
+  vendor: upgrade
+  update: upgrade
+  init: init
+  sidecar: sidecar
+  termlink: termlink
+  audit: audit
+  doctor: doctor
+  watchtower: watchtower
+  serve: watchtower
+  context: context
+  handover: context
+  resume: context
+  git: git-hooks
+  task: tasks
+  work-on: tasks
+  inception: governance
+  tier0: governance
+  reviewer: governance
+  fabric: fabric
+  dispatch: dispatch
+  issues: release
+  release: release

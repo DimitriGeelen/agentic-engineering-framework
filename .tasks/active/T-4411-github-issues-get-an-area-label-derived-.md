@@ -1,10 +1,27 @@
 ---
 id: T-4411
-name: "GitHub issues get an area label derived from the component fabric (area:watchtower, area:upgrade, ...), plus severity, applied automatically and backfilled on #95-#106"
+name: "GitHub issues get an area label derived from the component fabric (area:watchtower,
+  area:upgrade, ...), plus severity, applied automatically and backfilled on #95-#106"
 description: >
-  Operator 2026-10-19: issues #85-#94 carried area:* and severity:* labels from the earlier triage; #95-#105 (posted with hand-written Classified text) and #106 (automatic sync) carry none. Root cause in lib/issues.py: _classify derives area from a directory prefix in the text (lib/bin/agents/web/tests/docs/policy) — far coarser than the functional areas used before — and area/severity are written to the ledger and the comment but never applied as labels (STAGE_LABELS holds status labels only). Fix: (1) resolve the files, commands and component names an issue mentions to fabric cards (.fabric/components, fw fabric search) and take the card's subsystem as the area, via one committed mapping from fabric subsystems to a small area vocabulary (e.g. watchtower, upgrade, init, sidecar, audit, governance, context, termlink, git-hooks, testing, docs; framework-core refined by path, e.g. lib/upgrade.sh -> upgrade); when a linked task closes, refine the area from the task's resolved components: field; 'unspecified' only when nothing resolves. (2) apply area:<x> and severity:<y> labels at Classified (and update area on refinement, removing the old area label). (3) backfill: apply area and severity labels to #95-#106 from their tasks' components (dry-run first, list the proposed labels in the task, then apply; labels only, no new comments). Tests with the fake-gh fixtures (t4077).
+  Operator 2026-10-19: issues #85-#94 carried area:* and severity:* labels from the
+  earlier triage; #95-#105 (posted with hand-written Classified text) and #106 (automatic
+  sync) carry none. Root cause in lib/issues.py: _classify derives area from a directory
+  prefix in the text (lib/bin/agents/web/tests/docs/policy) — far coarser than the
+  functional areas used before — and area/severity are written to the ledger and the
+  comment but never applied as labels (STAGE_LABELS holds status labels only). Fix:
+  (1) resolve the files, commands and component names an issue mentions to fabric
+  cards (.fabric/components, fw fabric search) and take the card's subsystem as the
+  area, via one committed mapping from fabric subsystems to a small area vocabulary
+  (e.g. watchtower, upgrade, init, sidecar, audit, governance, context, termlink,
+  git-hooks, testing, docs; framework-core refined by path, e.g. lib/upgrade.sh ->
+  upgrade); when a linked task closes, refine the area from the task's resolved components:
+  field; 'unspecified' only when nothing resolves. (2) apply area:<x> and severity:<y>
+  labels at Classified (and update area on refinement, removing the old area label).
+  (3) backfill: apply area and severity labels to #95-#106 from their tasks' components
+  (dry-run first, list the proposed labels in the task, then apply; labels only, no
+  new comments). Tests with the fake-gh fixtures (t4077).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +55,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T16:41:19Z
-last_update: 2026-10-19T16:41:19Z
-date_finished: null
+last_update: 2026-10-19T16:56:21Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +67,81 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T16:45:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T16:46:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4411: GitHub issues get an area label derived from the component fabric (area:watchtower, area:upgrade, ...), plus severity, applied automatically and backfilled on #95-#106
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Area labels on GitHub issues come from the component fabric through one committed mapping
+(`policy/issue-areas.yaml`), and area/severity become `area:<x>` / `severity:<y>` labels.
+
+### Backfill #95-#106 — dry-run (2026-10-19, `python3 lib/issues.py labels <n> --dry-run`)
+
+Area from the linked task's changed files when it has commits (#99 / T-4356), else from the
+maintainer's Classified comment + title + body; severity from the maintainer's Classified
+comment, else the ledger.
+
+```
+#95: +area:cli,severity:medium        #101: +area:cli,severity:low
+#96: +area:context,severity:low       #102: +area:governance,severity:medium
+#97: +area:doctor,severity:medium     #103: +area:watchtower,severity:high
+#98: +area:doctor,severity:low        #104: +area:governance,severity:medium
+#99: +area:doctor,severity:medium     #105: +area:cli,severity:medium
+#100: +area:doctor,severity:low       #106: +area:upgrade,severity:medium
+```
+
+Applied 2026-10-19 (same list; comment counts on #95-#106 unchanged, re-run reports
+"labels unchanged"). Test evidence: `t4411_issues_area_labels_test.py` 9 failed before the
+lib/issues.py change, 9 passed after; the eight issues suites 93 passed after one intended
+assertion change (t4078:111 `area == "lib"` -> `"init"`: the old directory-prefix vocabulary
+was the defect). Also: `lib/upgrade.sh` `_self_vendor_policy` list gains `issue-areas.yaml`,
+otherwise the vendored `issues.py` would not find its mapping.
+
+Decision: refinement at close reads `components:` when set, else the files of the task's
+commits — `update-task.sh` calls `fw issues lifecycle` (line ~2425) before it fills
+`components:` (~2816), from those same commits. No ledger row is written for a label change
+(`issues_lag` would read it as the latest stage).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `policy/issue-areas.yaml` exists, parses, and holds the area vocabulary, a fabric-subsystem -> area map, and ordered path rules that refine framework-core (e.g. `lib/upgrade.sh` -> upgrade, `bin/fw` -> cli)
+- [x] `_classify` resolves the paths, `fw <cmd>` commands and component names an issue mentions to `.fabric/components` cards and takes the area through the mapping; `unspecified` only when nothing resolves (pytest: `lib/upgrade.sh` -> upgrade, a watchtower card's location -> watchtower, plain text -> unspecified)
+- [x] The Classified stage applies `area:<x>` and `severity:<y>` labels with the status label in the same `gh issue edit` (labels created on demand); `area:unspecified` is not applied
+- [x] Refinement: when a linked task closes (`fw issues lifecycle T-X --event closed`), the area is recomputed from the task's `components:` and, if it differs, the old `area:*` label is removed and the new one added in one edit; a `fw issues labels <n> [--task T-X] [--dry-run]` verb does the same for backfill and posts no comment
+- [x] Regression test `tests/unit/t4411_issues_area_labels_test.py` red before the fix, green after; t4077 t4078 t4088 t4108 t4340 t4346 t4347 t4370 green
+- [x] Backfill #95-#106: dry-run listing recorded in this task, then applied (labels only, no comments)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,6 +191,10 @@ date_finished: null
 
 ## Verification
 
+python3 -c "import yaml; d=yaml.safe_load(open('policy/issue-areas.yaml')); assert d['subsystems'] and d['paths'] and d['areas']"
+python3 -m pytest -q tests/unit/t4411_issues_area_labels_test.py
+python3 -m pytest -q tests/unit/t4077_issues_comment_test.py tests/unit/t4078_issues_sync_test.py tests/unit/t4088_issues_close_test.py tests/unit/t4108_issues_security_test.py tests/unit/t4340_issues_release_test.py tests/unit/t4346_release_block_test.py tests/unit/t4347_issues_standing_permission_test.py tests/unit/t4370_issues_lag_test.py
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -258,6 +340,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** #85-#94 carry `area:*`/`severity:*` labels from the earlier hand triage; #95-#106 carry none, and the area the pipeline does compute is a top-level directory (`lib`, `web`), not a functional area.
+
+**Root cause:** `lib/issues.py` `_classify` (area line: `re.search(r"\b(lib|bin|agents|web|tests|docs|policy)/", ...)`, against `AREAS`) derives area from the first directory prefix in the text and never consults the component fabric; and `STAGE_LABELS["classified"]` is `["triaged"]` only, so area/severity are written to the ledger and the comment text but never become labels (`cmd_comment` adds exactly `STAGE_LABELS[st]`).
+
+**Why structurally allowed:** the T-4078 tests asserted `area == "lib"` — the coarse vocabulary was pinned as correct — and no test looked at which labels the Classified edit applies beyond the status label. The earlier hand-triage labels hid the gap until the first issues classified only by the pipeline.
+
+**Prevention:** `tests/unit/t4411_issues_area_labels_test.py` pins fabric resolution, the label set on the Classified edit, and the remove-old/add-new refinement edit; the mapping lives in one committed file (`policy/issue-areas.yaml`) so a new subsystem is a data edit.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -338,3 +428,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4411-github-issues-get-an-area-label-derived-.md
 - **Context:** Initial task creation
+
+### 2026-10-19T16:56:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

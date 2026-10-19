@@ -108,7 +108,7 @@ def test_new_issue_gets_received_and_classified_once(env):
     stages = [x["stage"] for x in got if x["issue"] == 101]
     assert stages == ["received", "classified"]
     cls = got[-1]
-    assert cls["type"] == "bug" and cls["area"] == "lib" and cls["severity"] == "high"
+    assert cls["type"] == "bug" and cls["area"] == "init" and cls["severity"] == "high"
     assert cls["class"] == "external"
     p = posts(stub)
     assert len(p) == 2 and p[0].startswith("101 ") and "aef-intake:stage=received" in p[0]
