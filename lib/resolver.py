@@ -532,17 +532,55 @@ def _ac_ticked_count(ac_block: str) -> int:
     return len(re.findall(r"^\s*-\s*\[x\]", ac_block, re.IGNORECASE | re.MULTILINE))
 
 
+# T-4386: `fw doctor` runs `resolver.py stalled`, which looks up every
+# dispatched task (hundreds) in .tasks/active/ — twice. A pathlib glob re-lists
+# and fnmatches the ~900-entry directory per call (~10 ms each), and each lookup
+# re-parsed the task's YAML. Both are cached, keyed so that a change is seen:
+# the listing on the directory's mtime (create/rename/delete all bump it), a
+# snapshot on the file's (mtime_ns, size).
+_ACTIVE_LISTING: Dict[str, Any] = {"key": None, "names": []}
+_SNAPSHOT_CACHE: Dict[str, Tuple[Tuple[int, int], Dict[str, Any]]] = {}
+
+
+def _active_task_candidates(task_id: str) -> List[Path]:
+    """Same result as TASKS_ACTIVE.glob(f"{task_id}-*.md"), from a cached listing."""
+    try:
+        st = TASKS_ACTIVE.stat()
+        key = (str(TASKS_ACTIVE), st.st_mtime_ns)
+        if _ACTIVE_LISTING["key"] != key:
+            _ACTIVE_LISTING["names"] = sorted(
+                n for n in os.listdir(TASKS_ACTIVE)
+                if n.endswith(".md") and not n.startswith("."))
+            _ACTIVE_LISTING["key"] = key
+    except OSError:
+        return []
+    prefix = f"{task_id}-"
+    return [TASKS_ACTIVE / n for n in _ACTIVE_LISTING["names"]
+            if n.startswith(prefix) and len(n) >= len(prefix) + 3]
+
+
 def _task_current_snapshot(task_id: str) -> Optional[Dict[str, Any]]:
     """Read {status, ac_ticked} for `task_id` from .tasks/active/ right now.
     Returns None if the task is no longer in active/ (completed, removed —
     not the stall detector's concern; it only guards the autonomous loop)."""
     if not TASKS_ACTIVE.is_dir():
         return None
-    candidates = list(TASKS_ACTIVE.glob(f"{task_id}-*.md"))
+    candidates = _active_task_candidates(task_id)
     if not candidates:
         return None
-    meta = _read_task_meta(candidates[0])
-    return {"status": meta["status"], "ac_ticked": _ac_ticked_count(meta["ac_block"])}
+    path = candidates[0]
+    try:
+        st = path.stat()
+        sig = (st.st_mtime_ns, st.st_size)
+    except OSError:
+        return None
+    hit = _SNAPSHOT_CACHE.get(str(path))
+    if hit is not None and hit[0] == sig:
+        return dict(hit[1])
+    meta = _read_task_meta(path)
+    snap = {"status": meta["status"], "ac_ticked": _ac_ticked_count(meta["ac_block"])}
+    _SNAPSHOT_CACHE[str(path)] = (sig, snap)
+    return dict(snap)
 
 
 def _task_touched_since(task_id: str, since_iso: str) -> bool:
@@ -553,7 +591,7 @@ def _task_touched_since(task_id: str, since_iso: str) -> bool:
     the function could not actually read."""
     if not TASKS_ACTIVE.is_dir():
         return True
-    candidates = list(TASKS_ACTIVE.glob(f"{task_id}-*.md"))
+    candidates = _active_task_candidates(task_id)
     if not candidates:
         return True
     # last_update lives in the raw frontmatter dict, not the flattened meta —
@@ -576,7 +614,40 @@ def _task_touched_since(task_id: str, since_iso: str) -> bool:
     return last > since
 
 
-def _git_commit_count_since(task_id: str, since_iso: str) -> int:
+def _iso_epoch(since_iso: str) -> Optional[int]:
+    """ISO-8601 timestamp → epoch seconds, or None when unparseable."""
+    try:
+        dt = datetime.fromisoformat(str(since_iso).replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return int(dt.timestamp())
+
+
+def _git_subject_log(since_iso: str) -> Optional[List[Tuple[int, str]]]:
+    """[(committer epoch, subject)] for commits since `since_iso`, in ONE
+    `git log` (T-4386) — the stall scan used to run one per dispatched task.
+    None when git fails; callers then fall back to the per-task query."""
+    try:
+        result = subprocess.run(
+            ["git", "log", f"--since={since_iso}", "--format=%ct %s"],
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode != 0:
+        return None
+    rows: List[Tuple[int, str]] = []
+    for line in result.stdout.splitlines():
+        ct, _, subj = line.partition(" ")
+        if ct.isdigit():
+            rows.append((int(ct), subj))
+    return rows
+
+
+def _git_commit_count_since(task_id: str, since_iso: str,
+                            subject_log: Optional[List[Tuple[int, str]]] = None) -> int:
     """Count commits landed after `since_iso` whose SUBJECT LINE references
     `task_id`. P-002 requires every commit reference a task id in the form
     `T-XXXX: ...`, so the subject is where a commit declares what it advances.
@@ -589,7 +660,15 @@ def _git_commit_count_since(task_id: str, since_iso: str) -> int:
     387a1465b and e7cce384b — the T-2914 and T-2916 commits, which cite T-2862
     in their bodies *as the example of a stalled task*. Writing the RCA about a
     stall was enough to make the stall undetectable.
+
+    `subject_log` (T-4386): rows from `_git_subject_log` covering `since_iso`;
+    when given, the count is taken from it instead of one `git log` per task.
     """
+    if subject_log is not None:
+        since_ts = _iso_epoch(since_iso)
+        if since_ts is not None:
+            pat = re.compile(rf"\b{re.escape(task_id)}\b")
+            return sum(1 for ct, subj in subject_log if ct >= since_ts and pat.search(subj))
     try:
         result = subprocess.run(
             ["git", "log", f"--since={since_iso}", "--format=%s"],
@@ -665,6 +744,12 @@ def _stalled_task_ids(stall_after: int) -> Dict[str, Dict[str, Any]]:
             # guard the record.
             per_task[tid].append((str(ts), snap if isinstance(snap, dict) else None))
 
+    # T-4386: one `git log` from the earliest window start serves every task.
+    starts = [sorted(r[0] for r in rows)[-stall_after]
+              for rows in per_task.values() if len(rows) >= stall_after]
+    epochs = [(e, s) for s in starts for e in [_iso_epoch(s)] if e is not None]
+    subject_log = _git_subject_log(min(epochs)[1]) if epochs else None
+
     stalled: Dict[str, Dict[str, Any]] = {}
     for tid, rows in per_task.items():
         rows.sort(key=lambda r: r[0])
@@ -676,7 +761,7 @@ def _stalled_task_ids(stall_after: int) -> Dict[str, Dict[str, Any]]:
         if current is None:
             continue  # not active anymore — outside the loop's concern
 
-        commits = _git_commit_count_since(tid, earliest_ts)
+        commits = _git_commit_count_since(tid, earliest_ts, subject_log)
         if earliest_snap is not None:
             # Full evidence: compare against the snapshot captured AT dispatch,
             # which a worker cannot retroactively edit.
