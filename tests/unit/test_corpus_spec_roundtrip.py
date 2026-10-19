@@ -421,3 +421,80 @@ def test_validate_verb_exit_codes(monkeypatch, tmp_path, capsys):
     bad.write_text(_call_xml(called="no-such-map"))
     assert corpus_spec.main(["validate", str(bad)]) == 1
     assert "ERROR c1" in capsys.readouterr().out
+
+
+# ── T-4399: standard BPMN default="<sequenceFlow id>" on gateways/activities ──
+
+def _default_flow_xml(tag="exclusiveGateway", default="f2", f2_source="n1",
+                      extra=""):
+    default_part = f' default="{default}"' if default is not None else ""
+    return HEAD + (
+        f'<bpmn:{tag} id="n1" name="decide"{default_part}{extra}>'
+        '<bpmn:extensionElements><aef:uid value="u1"/></bpmn:extensionElements>'
+        f"</bpmn:{tag}>"
+        '<bpmn:endEvent id="e1"/><bpmn:endEvent id="e2"/>'
+        '<bpmn:sequenceFlow id="f1" sourceRef="n1" targetRef="e1"/>'
+        f'<bpmn:sequenceFlow id="f2" sourceRef="{f2_source}" targetRef="e2"/>'
+    ) + TAIL
+
+
+@pytest.mark.parametrize("tag", ["exclusiveGateway", "serviceTask", "userTask",
+                                 "scriptTask", "subProcess"])
+def test_default_flow_round_trips_on_gateway_and_activities(tag):
+    spec = corpus_spec.parse_map(_default_flow_xml(tag))
+    n1 = next(n for n in spec["nodes"] if n["id"] == "n1")
+    assert n1["default"] == "f2"
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert f'<bpmn:{tag} id="n1" name="decide" default="f2">' in out
+    spec2 = corpus_spec.parse_map(out)
+    assert spec2["nodes"] == spec["nodes"]
+    assert corpus_spec.emit_map(spec2, version=1, compat_alias=False) == out
+
+
+def test_default_flow_round_trips_on_call_activity(monkeypatch):
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _CALL_IDX)
+    xml = _default_flow_xml("callActivity", extra=' calledElement="live-map"')
+    spec = corpus_spec.parse_map(xml)
+    assert spec["nodes"][0]["default"] == "f2"
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert 'default="f2"' in out
+    assert corpus_spec.parse_map(out)["nodes"] == spec["nodes"]
+
+
+def test_default_flow_naming_no_sequence_flow_is_a_hard_error():
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.parse_map(_default_flow_xml(default="f9"))
+    msg = str(e.value)
+    assert "n1" in msg and "f9" in msg
+
+
+def test_default_flow_from_another_node_is_a_hard_error():
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.parse_map(_default_flow_xml(f2_source="e1"))
+    msg = str(e.value)
+    assert "n1" in msg and "f2" in msg and "e1" in msg
+
+
+def test_default_flow_is_checked_at_emit_too():
+    spec = corpus_spec.parse_map(_default_flow_xml())
+    spec["nodes"][0]["default"] = "f1x"
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert "n1" in str(e.value) and "f1x" in str(e.value)
+
+
+def test_default_flow_on_non_carrier_and_other_unprefixed_attrs_stay_dropped():
+    xml = HEAD + (
+        '<bpmn:startEvent id="s" default="f1" foo="bar"/>'
+        '<bpmn:exclusiveGateway id="n1" default="f1" gatewayDirection="Diverging"/>'
+        '<bpmn:endEvent id="e1"/>'
+        '<bpmn:sequenceFlow id="f0" sourceRef="s" targetRef="n1"/>'
+        '<bpmn:sequenceFlow id="f1" sourceRef="n1" targetRef="e1"/>'
+    ) + TAIL
+    spec = corpus_spec.parse_map(xml)
+    by_id = {n["id"]: n for n in spec["nodes"]}
+    assert "default" not in by_id["s"] and "attrs" not in by_id["s"]
+    assert by_id["n1"]["default"] == "f1" and "attrs" not in by_id["n1"]
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert "foo=" not in out and "gatewayDirection" not in out
+    assert out.count(' default="') == 1  # not tier_default

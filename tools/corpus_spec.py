@@ -69,6 +69,14 @@ TYPE_TO_TAG = {
 }
 TAG_TO_TYPE = {v: k for k, v in TYPE_TO_TAG.items()}
 
+# T-4399: tags whose BPMN schema type defines the unprefixed `default`
+# attribute (tExclusive/tInclusive/tComplexGateway, tActivity) — the flow taken
+# when no condition holds. inclusive/complex are not parsed yet (unknown tags
+# hard-error); they are listed so adding them to TYPE_TO_TAG carries `default`.
+DEFAULT_FLOW_TAGS = {"exclusiveGateway", "inclusiveGateway", "complexGateway",
+                     "serviceTask", "userTask", "scriptTask", "subProcess",
+                     "callActivity"}
+
 # Known structured aef:* ext children; everything else is preserved verbatim.
 _KNOWN_EXT = {"uid", "position", "eventDef", "link", "meta", "workflowMeta", "laneMeta",
               "callRef", "ioMapping"}
@@ -328,6 +336,8 @@ def parse_map(xml_text: str) -> dict:
                 "type": TAG_TO_TYPE[local],
                 "name": el.get("name"),
             }
+            if local in DEFAULT_FLOW_TAGS and el.get("default"):
+                n["default"] = el.get("default")
             # T-4389: namespace-qualified attributes (camunda:asyncBefore, …)
             # with the source prefix and the declaration they need.
             for key, val in el.attrib.items():
@@ -418,7 +428,27 @@ def parse_map(xml_text: str) -> dict:
             )
     spec["nodes"] = nodes
     spec["flows"] = flows
+    _check_default_flows(spec, "parse")
     return spec
+
+
+def _check_default_flows(spec: dict, where: str) -> None:
+    """T-4399: a node's `default` must name a sequenceFlow leaving that node."""
+    src = {f["id"]: f["from"] for f in spec.get("flows", [])}
+    bad = []
+    for n in spec["nodes"]:
+        fid = n.get("default")
+        if fid is None:
+            continue
+        if fid not in src:
+            bad.append(f"node \"{n['id']}\" default=\"{fid}\" names no "
+                       f"sequenceFlow in this process")
+        elif src[fid] != n["id"]:
+            bad.append(f"node \"{n['id']}\" default=\"{fid}\" names a "
+                       f"sequenceFlow whose sourceRef is \"{src[fid]}\", "
+                       f"not \"{n['id']}\"")
+    if bad:
+        raise SystemExit(f"{where}: " + "; ".join(bad))
 
 
 def _dim(v: str):
@@ -518,6 +548,7 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
     if errors:
         raise SystemExit("generate: " + "; ".join(
             f"{f['node']}: {f['message']}" for f in errors))
+    _check_default_flows(spec, "generate")
     mid = spec["id"]
     L = []
     a = L.append
@@ -600,6 +631,8 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         name_attr = f" name={quoteattr(n['name'])}" if n.get("name") else ""
         if n.get("called_element"):
             name_attr += f" calledElement={quoteattr(n['called_element'])}"
+        if n.get("default"):
+            name_attr += f" default={quoteattr(n['default'])}"
         name_attr += "".join(f" xmlns:{p}={quoteattr(u)}"
                              for p, u in n.get("xmlns", {}).items())
         name_attr += "".join(f" {k}={quoteattr(v)}"

@@ -1,10 +1,18 @@
 ---
 id: T-4399
-name: "corpus_spec drops the standard BPMN default attribute (gateway/activity default flow); keep it and validate it resolves to a sequenceFlow"
+name: "corpus_spec drops the standard BPMN default attribute (gateway/activity default
+  flow); keep it and validate it resolves to a sequenceFlow"
 description: >
-  832 (msg 6031e3ad): default="<sequenceFlow id>" on exclusiveGateway/inclusiveGateway/complexGateway and on activities (tActivity) is standard BPMN, not foreign, and carries meaning (the branch taken when no condition holds); tools/corpus_spec.py drops it (unprefixed attributes are not carried, after T-4389). Keep default on those node types through parse/emit; validate it names a sequenceFlow in the same process whose sourceRef is that node (error otherwise); round-trip tests. Other unknown unprefixed attributes may stay dropped. 832's T-347 keeps default on their side, remapped to their emitted flow ids.
+  832 (msg 6031e3ad): default="<sequenceFlow id>" on exclusiveGateway/inclusiveGateway/complexGateway
+  and on activities (tActivity) is standard BPMN, not foreign, and carries meaning
+  (the branch taken when no condition holds); tools/corpus_spec.py drops it (unprefixed
+  attributes are not carried, after T-4389). Keep default on those node types through
+  parse/emit; validate it names a sequenceFlow in the same process whose sourceRef
+  is that node (error otherwise); round-trip tests. Other unknown unprefixed attributes
+  may stay dropped. 832's T-347 keeps default on their side, remapped to their emitted
+  flow ids.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:22:46Z
-last_update: 2026-10-19T15:22:46Z
-date_finished: null
+last_update: 2026-10-19T15:50:01Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T15:30:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T15:32:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4399: corpus_spec drops the standard BPMN default attribute (gateway/activity default flow); keep it and validate it resolves to a sequenceFlow
@@ -62,8 +98,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `parse_map` records `default="<flow id>"` on exclusiveGateway/inclusiveGateway/complexGateway and on activity tags (serviceTask, userTask, scriptTask, subProcess, callActivity) as node key `default`; `emit_map` writes it back as an unprefixed `default` attribute (round-trip: parse→emit→parse identical, emit→parse→emit byte-stable)
+- [x] A `default` naming no sequenceFlow, or a sequenceFlow whose sourceRef is not that node, is a hard error (SystemExit) at parse and at emit, naming both the node id and the flow id
+- [x] `default` on a node type that cannot carry it (e.g. startEvent) and other unknown unprefixed attributes stay dropped
+- [x] Regression tests in tests/unit/test_corpus_spec_roundtrip.py fail before the fix and pass after; whole file green
+- [x] No committed corpus map changes on re-emit (checked; reported if any)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,22 +280,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q > /tmp/.t4399.out 2>&1 && grep -q passed /tmp/.t4399.out
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k default_flow > /tmp/.t4399b.out 2>&1 && grep -q passed /tmp/.t4399b.out
+grep -q '"default"' tools/corpus_spec.py
+bin/fw vendor self --check
 
 ## Evolution
 
@@ -281,6 +308,20 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** 832 (msg 6031e3ad) — a map with `<bpmn:exclusiveGateway default="f2">` loses `default` after a corpus_spec parse/emit; the "no condition holds" branch silently disappears.
+
+**Root cause:** `tools/corpus_spec.py` parse_map node branch (~line 327-339) reads only `id`, `name`, `calledElement` and namespace-qualified (`{uri}local`) attributes (T-4389). Every other unprefixed attribute is dropped by design, and the standard BPMN `default` (tExclusiveGateway/tInclusiveGateway/tComplexGateway/tActivity) was never modelled, so it fell into the drop bucket.
+
+**Why structurally allowed:** T-4389 decided "unprefixed unknown attributes are not carried" as a blanket rule without enumerating which unprefixed attributes the BPMN schema itself defines on the supported tags; round-trip tests only exercised qualified foreign attributes. The canonical-diff guard is blind because both sides go through the same lossy parse (T-2614 class).
+
+**Fix:** `DEFAULT_FLOW_TAGS` + node key `default` in parse_map, re-emitted after `calledElement`; `_check_default_flows` runs at the end of parse_map and at the start of emit_map.
+
+**Regression evidence (2026-10-19):** before the fix 10 new tests failed, 25 passed; after: 35 passed (whole file). test_corpus_prove_guard + test_corpus_spec_doc_guard: 16 passed. No committed map under .context/designer/projects carries `default=`; all 46 stored maps parse+emit (the 47th, draft-t2584-scratch, fails on its by-design ghost handoff target, unrelated). inclusiveGateway/complexGateway are still not in TYPE_TO_TAG (they hard-error at parse), so `default` on them is listed in DEFAULT_FLOW_TAGS but only takes effect once those tags are supported. `vendor self --check` red at verification time only on agents/git/lib/hooks.sh (another worker's in-flight edit, not synced by me).
+
+**Prevention:** `default` is modelled explicitly with a referential check (must name a sequenceFlow whose sourceRef is the node; hard error otherwise), and round-trip tests pin keep + byte-stability + both error shapes + drop-on-non-carrier.
 
 ## Recommendation
 
@@ -338,3 +379,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4399-corpusspec-drops-the-standard-bpmn-defau.md
 - **Context:** Initial task creation
+
+### 2026-10-19T15:50:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
