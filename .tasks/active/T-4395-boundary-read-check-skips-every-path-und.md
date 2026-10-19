@@ -1,10 +1,19 @@
 ---
 id: T-4395
-name: "Boundary read check skips every path under a top-level dir not in KNOWN_TOPS (/work, /data, NAS mounts): the 'at least 2 slashes' clause in the comment was never implemented"
+name: "Boundary read check skips every path under a top-level dir not in KNOWN_TOPS
+  (/work, /data, NAS mounts): the 'at least 2 slashes' clause in the comment was never
+  implemented"
 description: >
-  Reported by dimitri-mint-dev (T-141 testbed, msg 5d8c8e7a): agents/context/check-project-boundary.sh _read_outside (~:822-829) comments 'at least 2 slashes OR a known top-level dir' but returns only top in KNOWN_TOPS, so reads under any other top-level dir are never checked: /work/* in containers, /data/*, a NAS mount on the dev host (cat /<nas>/x -> rc=0, verified by the reporter). Fix as proposed: outside-read when cand.count('/') >= 2 OR top in KNOWN_TOPS; keep single-slash regex tokens skipped. Security class of T-4343/T-4344; regression tests per shape, red run on the current code; field test with dimitri-mint-dev's testbed.
+  Reported by dimitri-mint-dev (T-141 testbed, msg 5d8c8e7a): agents/context/check-project-boundary.sh
+  _read_outside (~:822-829) comments 'at least 2 slashes OR a known top-level dir'
+  but returns only top in KNOWN_TOPS, so reads under any other top-level dir are never
+  checked: /work/* in containers, /data/*, a NAS mount on the dev host (cat /<nas>/x
+  -> rc=0, verified by the reporter). Fix as proposed: outside-read when cand.count('/')
+  >= 2 OR top in KNOWN_TOPS; keep single-slash regex tokens skipped. Security class
+  of T-4343/T-4344; regression tests per shape, red run on the current code; field
+  test with dimitri-mint-dev's testbed.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T14:40:17Z
-last_update: 2026-10-19T14:40:17Z
-date_finished: null
+last_update: 2026-10-19T14:55:34Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T14:45:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T14:46:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4395: Boundary read check skips every path under a top-level dir not in KNOWN_TOPS (/work, /data, NAS mounts): the 'at least 2 slashes' clause in the comment was never implemented
@@ -62,8 +99,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_read_outside` refuses a path with >= 2 slashes whose top-level dir exists on the host but is not in KNOWN_TOPS (the NAS-mount / `/work` / `/data` case), for cat, grep, head and sed -n, plain and quoted
+- [x] Paths under a top-level dir that does not exist stay unflagged (nothing to read there), so sed/awk regex words (`/^## X/,/^## /p`, `/foo/p`) and single-slash tokens do not become false positives
+- [x] Every existing boundary case holds: in-project, /tmp, /usr, /etc, relative in-project paths allowed; KNOWN_TOPS behaviour unchanged (existing boundary bats files green)
+- [x] Regression test `tests/unit/t4395_boundary_unknown_top_reads.bats` red on the pre-fix code, green after (both runs recorded in Updates)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,6 +280,11 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4395_boundary_unknown_top_reads.bats > /tmp/.t4395.out 2>&1 && ! grep -q "^not ok" /tmp/.t4395.out
+test "$(grep -c '# skip' /tmp/.t4395.out)" -eq 0
+timeout 600 bats tests/unit/t3768_boundary_quoted_read_paths.bats tests/unit/t4344_boundary_read_free_text_opts.bats tests/unit/t4343_git_repo_path_boundary.bats tests/unit/check_project_boundary.bats > /tmp/.t4395b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4395b.out
+bash -n agents/context/check-project-boundary.sh
+bin/fw vendor self --check
 
 ## RCA
 
@@ -257,6 +301,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** `cat /<nas-mount>/x` (and `/work/x`, `/data/x`) passed the project-boundary hook with rc=0 (reported by dimitri-mint-dev, T-141 testbed).
+
+**Root cause:** `agents/context/check-project-boundary.sh` `_read_outside` (~:822-829): the comment promises "at least 2 slashes OR a known top-level dir", but the code returns only `top in KNOWN_TOPS`. Any top-level directory absent from the hard-coded tuple — mounts, container work dirs — was never judged. Both Pattern 4 and Pattern 4b (T-3768) call the same predicate, so neither caught it.
+
+**Why structurally allowed:** the boundary tests only ever probed tops in KNOWN_TOPS (`/root`, `/opt`, `/etc`); the comment described the intended behaviour, so a reader of the code saw the clause as present. No test asserted the slash-count branch.
+
+**Prevention:** `tests/unit/t4395_boundary_unknown_top_reads.bats` probes a top-level dir created for the test (never in KNOWN_TOPS) plus the real NAS mount when present, and pins the regex-word non-flags so the fix cannot be "simplified" into a false-positive storm.
 
 ## Evolution
 
@@ -321,6 +372,12 @@ date_finished: null
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+### 2026-10-19 — what "looks like a path" means for an unknown top-level dir
+- **Chose:** `cand.count('/') >= 2` AND the top-level dir exists on the host (`os.path.isdir('/' + top)`), in addition to the unchanged KNOWN_TOPS clause.
+- **Why:** Pattern 4b judges every bash word, quoted or not, so the reporter's bare `count >= 2` would refuse `sed -n '/^## Verification/,/^## /p' f`, `sed -n /foo/p f`, `awk '/a/,/b/'` — the most common read idiom in this repo (measured: those cases go BLOCKED under the bare rule). A top-level dir that does not exist has nothing to read, so skipping it gives up no data; creating one would be a write, which the write-side patterns judge.
+- **Rejected:** bare `count >= 2` (FP storm above); a filename-character whitelist on the top component (`/foo/p`, `/TODO/d` still pass it).
+- **Deviation from the brief:** `/work/other/x` and `/data/x` are refused only on a host where `/work` / `/data` exist (containers, the reporter's NAS host). The test creates its own top-level probe dir so it is host-independent, and also probes the real NAS mount when present.
+- **Residual:** a regex word whose first component happens to name an existing top-level dir (on this host `/policy/`, `/working/`, `/episodic/` exist at `/`) is refused; single-slash `ls /<mount>` (directory listing only) is still not judged, as the brief required.
 
 ## Decision
 
@@ -338,3 +395,11 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4395-boundary-read-check-skips-every-path-und.md
 - **Context:** Initial task creation
+
+### 2026-10-19T14:55:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-19 — red/green [w4395]
+- **Red (pre-fix):** `bats tests/unit/t4395_boundary_unknown_top_reads.bats` → 8 of 20 `not ok` (tests 1-8: cat/grep/head/sed -n/quoted/single-quoted/relative/real NAS mount all ALLOWED); the 12 allow/FP pins ok.
+- **Green (post-fix):** 20/20 ok, 0 skips. Neighbouring boundary suites (check_project_boundary, t2920, t3076, t3768, t4114, t4126, t4149, t4284, t4343, t4344, test_boundary_hook_arguments): 259 tests, 0 `not ok`.
+- **Vendor:** `.agentic-framework/agents/context/check-project-boundary.sh` synced; `fw vendor self --check` is red only on `web/shared.py`, another worker's in-flight edit (not synced or committed here).
