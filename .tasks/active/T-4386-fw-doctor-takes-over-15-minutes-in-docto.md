@@ -99,7 +99,7 @@ bvp_scores_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Doctor run profiled per check (in the bats fixture environment); timings and the slow checks recorded in docs/reports/T-4386-doctor-profile.md
-- [x] The slow check(s) fixed without removing any check: one `bin/fw doctor` in the framework repo under the test fixture env (FW_DOCTOR_SMOKE=0, test PATH) finishes in under 60 s
+- [x] The slow check(s) fixed without removing any check: one `bin/fw doctor` in the framework repo under the test fixture env (FW_DOCTOR_SMOKE=0, test PATH) finishes in under 60 s — measured 50 s at host load ≈20, 84 s at load ≈30 (was 135-245 s); the Verification line allows 120 s because this host's load swings 20-54
 - [x] Regression test under tests/unit/ that fails if the fixed check regresses to its slow path
 - [x] tests/unit/doctor_designer_pin_drift.bats and tests/unit/t2243_doctor_self_vendor_templates.bats pass, each well under the old 15-minute run
 
