@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4349: log_bypass appends with a hard-coded 2-space indent, producing invalid YAML when the log was re-dumped indentless; the post-append check only warns
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T10:31:17Z
+# ============================================================================
+
+task_id: T-4349
+task_name: "log_bypass appends with a hard-coded 2-space indent, producing invalid YAML when the log was re-dumped indentless; the post-append check only warns"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T22:56:29Z
+completed: 2026-10-19T10:30:13Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-19T11:49:02+02:00
+last_commit: 2026-10-19T11:49:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  log_bypass keeps the log parseable (indent matches existing sequence; failed post-append parse returns 1)
+
+# Key outcomes
+outcomes:
+  - 'Reproduced: appending with the pre-fix `log_bypass_entry` to a PyYAML-dumped (indentless `bypasses:` / `- timestamp:` at column 0) bypass log leaves a file that `yaml.safe_load` rejects; red bats run recorded in Updates'
+  - 'Fix: `log_bypass_entry` (agents/git/lib/bypass.sh) writes new entries at the indent the existing sequence uses, so the file still parses for indentless logs and 2-space logs alike'
+  - 'Fix: a post-append parse failure makes `log_bypass_entry` return non-zero (hard error) instead of only printing a WARNING'
+  - 'Regression test `tests/unit/t4349_bypass_log_indent.bats` fails before the fix and passes after'
+  - 'Existing log content is append-only: bytes before the old EOF are unchanged after an append (no load+dump rewrite of history)'
+  - '`bin/fw vendor self --check` is clean (agents/git is vendored)'
+  - 'Ring20 instance outside this repo: count of malformed entries in THIS repo''s `.context/bypass-log.yaml` recorded in Updates (expected 0; leave any found in place)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/bypass.sh'
+  - 'agents/git/lib/bypass.sh'
+  - '.tasks/active/T-4349-logbypass-appends-with-a-hard-coded-2-sp.md'
+  - 'tests/unit/t4349_bypass_log_indent.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T11:49:02'
+    action: 'T-4349: log_bypass keeps the log parseable (indent matches existing sequence; failed post-append parse returns 1)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 693 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, bypass-log, yaml]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 693
+  commits: 1
+  files_changed: 4
+  lines_added: 171
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4349-logbypass-appends-with-a-hard-coded-2-sp.md
+generated_by: context-agent-hybrid

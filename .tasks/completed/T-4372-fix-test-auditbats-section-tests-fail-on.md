@@ -1,24 +1,23 @@
 ---
-id: T-4336
-name: "check-human-ac-tick refuses a shell write to a .tasks/ path OUTSIDE the project
-  (e.g. a scratch fixture under /tmp)"
+id: T-4372
+name: "Fix test: audit.bats section tests fail on any live audit FAIL, so one new
+  red keeps itself red forever via the unit-suite ratchet"
 description: >
-  832 T-1204 (msg 7422e8d9): the Human-AC tick guard (T-3695, agents/context/check-human-ac-tick*)
-  matches '.tasks/' anywhere in a Bash command, so 'cp X /tmp/fixture/.tasks/active/T-1.md'
-  is refused even with a literal absolute path outside PROJECT_ROOT. The guard protects
-  THIS project's task files; a literal absolute path outside PROJECT_ROOT cannot tick
-  this project's Human ACs. Scope the match to paths that resolve under PROJECT_ROOT
-  (relative paths and absolute paths under it), keep refusing anything ambiguous (variables,
-  globs that could resolve inside).
+  tests/unit/audit.bats 'audit runs <section>' tests run audit.sh against the live
+  repo and treat exit 2 (ran, found FAILs) as a test failure. Any live FAIL (e.g.
+  a new unit red, cron drift) turns them red; that red is then a NEW red in the next
+  report, which keeps the live audit FAILing: a self-sustaining loop (observed 2026-10-19,
+  'audit runs structure section' new red after the 01:03 nightly carried cron drift
+  + 3 reds). Mutable-corpus anchor (T-3326). Fix: a section test asserts the audit
+  RAN (report printed through its SUMMARY), not that the live corpus is clean.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [hooks, false-positive, human-ac]
-components: []
+horizon: null
+tags: []
+components: [tests/unit/audit.bats]
 related_tasks: []
-origin: {kind: "peer", source: "832"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -45,9 +44,9 @@ origin: {kind: "peer", source: "832"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T21:20:14Z
-last_update: 2026-10-19T09:44:54Z
-date_finished:
+created: 2026-10-19T10:08:44Z
+last_update: 2026-10-19T10:29:29Z
+date_finished: 2026-10-19T10:29:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,18 +57,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-18T21:30:33Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=287,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-18T21:31:23Z'
+  - ts: '2026-10-19T10:09:07Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -86,9 +75,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-19T10:15:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=292,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4336: check-human-ac-tick refuses a shell write to a .tasks/ path OUTSIDE the project (e.g. a scratch fixture under /tmp)
+# T-4372: Fix test: audit.bats section tests fail on any live audit FAIL, so one new red keeps itself red forever via the unit-suite ratchet
 
 ## Context
 
@@ -98,12 +97,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Reproduced: a Bash write whose literal target resolves OUTSIDE PROJECT_ROOT to a `.tasks/` path is refused by `shell_write_scan.scan` before the fix (regression test red run recorded in Updates)
-- [x] Fix: `scan()` takes an optional `project_root`; a resolved target whose every candidate path lies outside it is no longer treated as guarded; `check_bash` passes PROJECT_ROOT
-- [x] Unresolvable targets (variables, substitutions, unmatched globs) that name a guarded path are still refused (fail-closed unchanged)
-- [x] Targets resolving INSIDE PROJECT_ROOT to `.tasks/` (absolute, relative, via symlink into project, `..` escape back in) are still refused
-- [x] Regression bats test under tests/unit/ fails without the fix and passes with it; existing t3695 / t2954 / t3768 / t4344 / t4367 bats stay green
-- [ ] `lib/shell_write_scan.py` and `agents/context/check-human-ac-tick.py` vendored clean (`bin/fw vendor self --check`) — OPEN: my two files are in sync, but `web/embeddings.py` (another worker's uncommitted change) keeps `--check` in DRIFT; not synced by me
+- [x] `_assert_audit_ran` passes exit 2 only when the output is a complete report (`=== SUMMARY ===` and `=== END AUDIT ===` present); exit 2 without them (crash, truncated) still fails, and exit >2 other than 75 still fails
+- [x] "audit YAML report is valid" accepts exit 2 the same way (its subject is the YAML, not the live corpus)
+- [x] Hermetic controls: the existing stubbed exit-2 (no report) still fails; a new stub exit 2 WITH a full report passes; exit 0/1/75 unchanged
+- [x] audit.bats "audit runs structure section" passes against the live repo while the live audit has a FAIL (measured, recorded below)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -152,11 +149,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-bash -n agents/context/check-human-ac-tick.sh
-bats tests/unit/t4336_outside_project_task_write.bats > /tmp/t4336-bats.out 2>&1 && ! grep -q "^not ok" /tmp/t4336-bats.out
-bats tests/unit/t3695_human_ac_tick_bash.bats tests/unit/human_ac_tick_guard.bats tests/unit/t2954_human_ac_tick_comment_aware.bats > /tmp/t4336-regress.out 2>&1 && ! grep -q "^not ok" /tmp/t4336-regress.out
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -286,16 +278,20 @@ bin/fw vendor self --check
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u CLAUDECODE -u CLAUDE_PROJECT_DIR timeout 300 bats -f 'control' tests/unit/audit.bats > /tmp/.t4372 2>&1 && ! grep -q "^not ok" /tmp/.t4372 && grep -q "^ok 6 " /tmp/.t4372
+grep -q '=== END AUDIT ===' tests/unit/audit.bats
 
 ## RCA
 
-**Symptom:** a Bash command writing to a `.tasks/` path that resolves outside PROJECT_ROOT (e.g. `cp X /tmp/fixture/.tasks/active/T-1.md`) is refused by the Human-AC tick guard, although it cannot touch this project's task files.
+**Symptom:** after the 2026-10-19 08:54 suite run cleared the three earlier reds, `audit.bats: audit runs structure section` was a NEW red. Run alone it failed with "audit exited 2", and the only FAIL in the live audit was the ratchet listing that same test.
 
-**Root cause:** `lib/shell_write_scan.py:558` `is_guarded_path()` tests only whether any path component equals `.tasks` (or the ledger basename), with no notion of the project root. `_check_target` (`:592-595`) resolves the target and calls it guarded on that test alone, so `/tmp/fixture/.tasks/...` matches exactly like `$PROJECT_ROOT/.tasks/...`. `scan()` (`:1053`) never receives the project root, and `check_bash` (`agents/context/check-human-ac-tick.py:203-204`) does not pass it.
+**Root cause:** the section tests run audit.sh against the LIVE repo, and `_assert_audit_ran` (T-3328) treats exit 2 as a test failure. Exit 2 is a verdict on the live corpus, not on audit.sh. Once anything in the repo is red (here the 01:03 nightly carried cron drift and 3 reds), the test goes red, the next suite run records it as a NEW red, and the structure section FAILs on that. The loop sustains itself after the original cause is fixed.
 
-**Why structurally allowed:** the guard predicate is a name match on the path, not a containment check against the protected project. No test pinned the outside-project case, so the over-broad match was never exercised.
+**Why structurally allowed:** T-3328 fixed the exit-75 vs exit-2 conflation and named exit 2 "a real red", correctly for the code but without the mutable-corpus lens (T-3326). Until the T-3621 ratchet made unit reds an audit FAIL, a live exit 2 did not feed back into itself.
 
-**Prevention:** the regression test `tests/unit/t4336_outside_project_task_write.bats` pins both sides: resolved outside targets pass, and inside / unresolvable / symlink-into-project targets stay refused. A future change to `is_guarded_path` that drops the containment rule fails the test.
+**Prevention:** the helper now passes exit 2 only with a complete report (`=== SUMMARY ===` and `=== END AUDIT ===`); a crash or truncation still fails. Two hermetic controls pin both sides. The general rule (T-3326): a test of a tool that grades the live repo must assert the tool ran, not that the repo is clean.
+
+**Measured:** live run 2026-10-19 ~12:30 with the live audit FAILing on the ratchet (audit.bats new red): `ok 1 audit runs structure section`, `ok 2 audit YAML report is valid`. Controls: 6/6 ok.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -387,21 +383,27 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-18T21:20:14Z — task-created [task-create-agent]
+### 2026-10-19T10:08:44Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4336-check-human-ac-tick-refuses-a-shell-writ.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4372-fix-test-auditbats-section-tests-fail-on.md
 - **Context:** Initial task creation
 
-### 2026-10-19T09:44:54Z — status-update [task-update-agent]
+### 2026-10-19T10:09:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
 
-### 2026-10-19 — red run before fix (tests/unit/t4336_outside_project_task_write.bats)
-- `not ok 1` cp to absolute outside .tasks path: allowed expected, hook returned 2
-- `not ok 2` redirect into outside .tasks path: allowed expected, hook returned 2
-- `not ok 3` sed -i on outside .tasks file: allowed expected, hook returned 2
-- controls 4-11 `ok` before the fix (inside, symlink-into-project, `..` escape, variable, unmatched glob, ledger, mixed, PROJECT_ROOT unset)
+## Reviewer Verdict (v1.5)
 
-### 2026-10-19 — green after fix
-- Regression file: 11/11 ok. Neighbours (t3695, human_ac_tick_guard, t2954, t3768, t4344, t4367): 94 ok, 0 not ok.
-- Vendored: `FW_VENDOR_ONLY="lib/shell_write_scan.py agents/context/check-human-ac-tick.py" bin/fw vendor self` — both copies identical to source. `--check` still DRIFT on `web/embeddings.py` (another worker's uncommitted change; withheld, not synced).
+- **Scan ID:** R-0133724c
+- **Timestamp:** 2026-10-19T10:29:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T10:29:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

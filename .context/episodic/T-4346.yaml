@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4346: fw issues release: the automatic Released evidence block should match the reviewed hand drafts (summary, full-suite comparison, operator decision, per-issue notes, stable links)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T10:37:02Z
+# ============================================================================
+
+task_id: T-4346
+task_name: "fw issues release: the automatic Released evidence block should match the reviewed hand drafts (summary, full-suite comparison, operator decision, per-issue notes, stable links)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T22:14:40Z
+completed: 2026-10-19T10:34:43Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-19T11:54:06+02:00
+last_commit: 2026-10-19T11:54:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw issues release — Released block carries summary, tests, full-suite comparison, decision and tag links, with hosts scrubbed
+
+# Key outcomes
+outcomes:
+  - 'Released block carries a one-line plain-words summary of the fix, taken from the task name with the GitHub parenthetical dropped (descriptions give context, not the fix)'
+  - 'Released block says how it was tested: the task''s test files, plus the release''s full-suite comparison report when one names the release'
+  - 'Released block states field evidence from the release''s field-evidence report, or says none recorded'
+  - 'Released block states why it was released: the T-4146 field-test rule line, or the operator''s recorded decision from .context/releases/decisions.jsonl for that version'
+  - 'Released block links the release tag (blob/vX.Y.Z/...), never master, for every link it posts'
+  - 'No hostname or IP address appears in any posted Released evidence text (scrubbed; tested with a fixture that contains one)'
+  - 'Existing footer, idempotence (ledger and readback) and --dry-run behaviour unchanged'
+  - 'tests/unit/t4346_* added and green; all issues suites green (t4077 t4078 t4088 t4108 t4340 t4347)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw issues release — Released block carries summary, tests, full-suite comparison, decision and tag links, with hosts scrubbed'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - 'lib/issues.py'
+  - '.tasks/active/T-4346-fw-issues-release-the-automatic-released.md'
+  - 'tests/unit/t4346_release_block_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T11:54:06'
+    action: 'T-4346: fw issues release — Released block carries summary, tests, full-suite comparison, decision and tag links, with hosts scrubbed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 740 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, issues, release]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 740
+  commits: 1
+  files_changed: 4
+  lines_added: 489
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4346-fw-issues-release-the-automatic-released.md
+generated_by: context-agent-hybrid

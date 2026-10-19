@@ -1,21 +1,26 @@
 ---
-id: T-4370
-name: "Audit check: a shipped task with github_issue whose issue ledger is behind
-  its stage (G-119 detection)"
+id: T-4346
+name: "fw issues release: the automatic Released evidence block should match the reviewed
+  hand drafts (summary, full-suite comparison, operator decision, per-issue notes,
+  stable links)"
 description: >
-  G-119 prevention leg. fw audit (structure section, WARN) lists tasks with github_issue:
-  whose ledger (.context/issues/intake.jsonl) lacks the stage the task's state implies:
-  started-work → in-progress; completed (on bleeding-edge) → fixed-on-bleeding-edge;
-  task commits reachable from a released tag (master) → released. Internal-author
-  issues (T-4342 ledger rows) are exempt. Detection, never posts.
+  Dogfooding T-4340 on v1.8.11 (T-4339): the generated block names only the test file,
+  'none recorded' field evidence and generic gate text, and links the field report
+  on master (the release-time copy). The reviewed drafts in docs/reports/T-4339-github-issue-retro.md
+  add a one-line summary of what was fixed, the release's full-suite comparison report
+  and the operator's release decision, per-issue notes (#87: the 'Upgrading from v1.8.10'
+  route), and links pinned to a commit. Build: summary from the task name/description;
+  the comparison report and decision from the release task; an optional per-issue
+  note file; permalinks to the GitHub commit carrying the current field report.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
+horizon: null
+tags: [github, issues, release]
 components: []
 related_tasks: []
+origin: {kind: "agent", source: "T-4339"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -42,9 +47,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T09:43:29Z
-last_update: '2026-10-19T09:45:44Z'
-date_finished:
+created: 2026-10-18T22:14:40Z
+last_update: 2026-10-19T10:34:43Z
+date_finished: 2026-10-19T10:34:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,8 +60,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T22:15:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T09:44:16Z'
+  - ts: '2026-10-18T22:16:18Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -73,19 +88,9 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-19T09:45:44Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=309,acs=11)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4370: Audit check: a shipped task with github_issue whose issue ledger is behind its stage (G-119 detection)
+# T-4346: fw issues release: the automatic Released evidence block should match the reviewed hand drafts (summary, full-suite comparison, operator decision, per-issue notes, stable links)
 
 ## Context
 
@@ -95,15 +100,14 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `lib/issues_lag.py` exists, is pure read-only (no network, no `gh`, no ledger writes) and exposes `check_lag(root)` plus a CLI `audit --root`
-- [x] A task with `github_issue:` and `status: started-work` whose issue has no `in-progress` ledger row yields a finding `#N T-XXXX expected in-progress, ledger has <last>`
-- [x] A task with `status: work-completed` whose issue has no `fixed-on-bleeding-edge` row yields the same shape of finding with expected `fixed-on-bleeding-edge`
-- [x] A task whose commits (subject starting with its id) are contained in a `v*` tag yields `expected released` when the issue has no `released` row; `closed-released` counts as at-or-beyond released
-- [x] Issues whose ledger rows carry `class: internal` (T-4342) are exempt and produce no finding
-- [x] Each finding carries the mitigation text naming `bin/fw issues lifecycle T-XXXX --event ...` and `bin/fw issues release vX --range ...`
-- [x] `agents/audit/audit.sh` calls the check from the structure section as a WARN (never FAIL), wired like neighbouring python-backed checks, and `bash -n agents/audit/audit.sh` passes
-- [x] `tests/unit/t4370_issues_lag_test.py` (pytest, committed fixtures, temp git repo with a `v*` tag) passes and fails without the implementation
-- [x] `lib/issues.py` is not modified by this task (T-4346 owns its posting code)
+- [x] Released block carries a one-line plain-words summary of the fix, taken from the task name with the GitHub parenthetical dropped (descriptions give context, not the fix)
+- [x] Released block says how it was tested: the task's test files, plus the release's full-suite comparison report when one names the release
+- [x] Released block states field evidence from the release's field-evidence report, or says none recorded
+- [x] Released block states why it was released: the T-4146 field-test rule line, or the operator's recorded decision from .context/releases/decisions.jsonl for that version
+- [x] Released block links the release tag (blob/vX.Y.Z/...), never master, for every link it posts
+- [x] No hostname or IP address appears in any posted Released evidence text (scrubbed; tested with a fixture that contains one)
+- [x] Existing footer, idempotence (ledger and readback) and --dry-run behaviour unchanged
+- [x] tests/unit/t4346_* added and green; all issues suites green (t4077 t4078 t4088 t4108 t4340 t4347)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -153,10 +157,10 @@ cost_estimate_proposed:
 
 ## Verification
 
-out=$(python3 -m pytest tests/unit/t4370_issues_lag_test.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-bash -n agents/audit/audit.sh
-bash -n bin/fw
+python3 -m pytest tests/unit/t4346_release_block_test.py -q > /tmp/.t4346-out 2>&1 && grep -q passed /tmp/.t4346-out
+python3 -m pytest tests/unit/t4077_issues_comment_test.py tests/unit/t4078_issues_sync_test.py tests/unit/t4088_issues_close_test.py tests/unit/t4108_issues_security_test.py tests/unit/t4340_issues_release_test.py tests/unit/t4347_issues_standing_permission_test.py -q > /tmp/.t4346-suites 2>&1 && grep -q passed /tmp/.t4346-suites
 bin/fw vendor self --check
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -288,13 +292,36 @@ bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** G-119 — v1.8.11 shipped fixes for #86-#89 and every issue still read "fixed on bleeding-edge"; nothing flagged that the issue ledger was behind the task lifecycle.
+**Symptom:** the Released comment that `fw issues release` posts (T-4340) carried only the test file, "none recorded" field evidence, and a generic "release gates passed" line. It linked the field report on master, and it had no summary, no full-suite comparison and no release decision. The reviewed hand drafts for #86-#94 (T-4339) carried all of these.
 
-**Root cause:** the lifecycle legs (T-4341 `fw issues lifecycle`, T-4340 `fw issues release`) only post when something calls them; no audit reads the task files against `.context/issues/intake.jsonl` afterwards, so a missed or failed post leaves the ledger silently behind.
+**Root cause:** `lib/issues.py` `_evidence_block` (was ~line 838) assembled the block from the task's Verification test names and the field-report table rows only. It never read the task name, the release's comparison report, `.context/releases/decisions.jsonl`, or the release tag, and it hard-wired `blob/master` for the field report.
 
-**Why structurally allowed:** `fw audit` had no check comparing task state with the issue ledger, and lifecycle failures are recorded to `*-pending.jsonl` that nothing reads back.
+**Why structurally allowed:** T-4340's tests pinned the block's shape (test name present, WORKS present, `blob/master` not asserted) but not its content, so the drafts-vs-generated gap had no test. The hand-assembly in `.context/scratch/v1812/extract_released.py` lived outside the repo, so nothing compared the two.
 
-**Prevention:** the structure-section WARN (`lib/issues_lag.py`) derives the expected stage from each linked task and lists the lag with its mitigation command; the pytest suite pins each expected stage and the internal-row exemption.
+**Prevention:** `tests/unit/t4346_release_block_test.py` pins each required element (summary, tests and comparison, field evidence or none recorded, decision or the T-4146 line, tag-only links, no host or address after scrubbing), and fails on the T-4340 output. The Released block is now built from repo data only, so there is no hand step left to drift from.
+
+## Sample Released block
+
+Output of `FW_ISSUES_DIR=<empty temp dir> python3 lib/issues.py release v1.8.11 --range v1.8.10..v1.8.11 --dry-run`, for #87 (posts nothing; the real ledger already has the logged comment, so the dry-run skips it):
+
+```
+<!-- aef-intake:stage=released -->
+**[AEF intake] Released** — 2026-10-19
+
+**T-3886** is released in **v1.8.11**.
+
+Please confirm it fixes this for you. Reply here if it does not. With no reply in 14 days this issue is closed with a note, and you can reopen it.
+
+**What was fixed:** Bare fw upgrade from a consumer auto-clones the source with --depth=1, so ever_in_source_history sees one commit and upstream-deleted residue counts as local — clone with --filter=blob:none instead.
+**How it was tested:** `tests/unit/t3886_upgrade_autoclone_history.bats`; the release's full-suite comparison is linked below
+**Field evidence:** none recorded for this fix.
+**Why it was released:** v1.8.11 passed the release gates; no release decision is recorded for it in .context/releases/decisions.jsonl.
+**Links:** release notes https://github.com/DimitriGeelen/agentic-engineering-framework/releases/tag/v1.8.11 · field-evidence report https://github.com/DimitriGeelen/agentic-engineering-framework/blob/v1.8.11/docs/reports/field-test-v1.8.11-results.md · full-suite comparison https://github.com/DimitriGeelen/agentic-engineering-framework/blob/v1.8.11/docs/reports/T-4246-full-suite-comparison.md
+
+*These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read.*
+```
+
+Known gaps, by design: field evidence is read from table rows only (the T-4340 rule; T-3886's round-10 evidence is prose, so it shows "none recorded"); and v1.8.11 has no `decisions.jsonl` row, so its "why" line says so. The scrub catches IPs, `.local/.lan/.internal` names and this machine's hostname, but not a bare host name such as `ring20` in free text.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -386,10 +413,32 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-19T09:43:29Z — task-created [task-create-agent]
+### 2026-10-18T22:14:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4370-audit-check-a-shipped-task-with-githubis.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4346-fw-issues-release-the-automatic-released.md
 - **Context:** Initial task creation
 
-### 2026-10-19T09:44:15Z — status-update [task-update-agent]
+### 2026-10-19T09:44:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7f6e78b1
+- **Timestamp:** 2026-10-19T10:36:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Released block states why it was released: the T-4146 field-test rule line, or the operator's recorded decision from .context/releases/decisions.jsonl for that version
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/releases/decisions.jsonl in: Released block states why it was released: the T-4146 field-test rule line, or the operator's recorded decision from .context/releases/decisions.jsonl`
+- **AC#5 (Agent)** — Released block links the release tag (blob/vX.Y.Z/...), never master, for every link it posts
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=blob/vX.Y in: Released block links the release tag (blob/vX.Y.Z/...), never master, for every link it posts`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T10:34:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -12,12 +12,12 @@ description: >
   item's indent), and make a failed post-append parse a hard error or an audit/doctor
   FAIL.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, bypass-log, yaml]
-components: []
+components: [agents/git/lib/bypass.sh]
 related_tasks: []
 origin: {kind: "peer", source: "ring20"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -47,8 +47,8 @@ origin: {kind: "peer", source: "ring20"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:56:29Z
-last_update: 2026-10-19T09:44:50Z
-date_finished:
+last_update: 2026-10-19T10:30:13Z
+date_finished: 2026-10-19T10:30:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -404,3 +404,22 @@ bin/fw vendor self --check
 - **Repo bypass log (`.context/bypass-log.yaml`):** 110 entries, whole file parses. 0 unparseable. 97 entries use another writer's tier-0 schema (`command_hash`, `tier`, ...), which is not malformed; left untouched. No history rewritten.
 - **Vendor side effect:** `FW_VENDOR_ONLY=agents/git/lib/bypass.sh bin/fw vendor self` also synced `agents/context/check-human-ac-tick.py`, which another worker had modified uncommitted. Not committed by this task.
 - **Open, not fixed (separate bug):** `action` and `reason` are written inside `"..."` unescaped, so a commit subject or reason containing `"` or a newline still yields invalid YAML.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-530419a1
+- **Timestamp:** 2026-10-19T10:30:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#7 (Agent)** — Ring20 instance outside this repo: count of malformed entries in THIS repo's `.context/bypass-log.yaml` recorded in Updates (expected 0; leave any found in place)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/bypass-log.yaml in: Ring20 instance outside this repo: count of malformed entries in THIS repo's `.context/bypass-log.yaml` recorded in Updates (expected 0; leave any fou`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T10:30:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

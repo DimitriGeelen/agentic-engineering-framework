@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4336: check-human-ac-tick refuses a shell write to a .tasks/ path OUTSIDE the project (e.g. a scratch fixture under /tmp)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T10:32:51Z
+# ============================================================================
+
+task_id: T-4336
+task_name: "check-human-ac-tick refuses a shell write to a .tasks/ path OUTSIDE the project (e.g. a scratch fixture under /tmp)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T21:20:14Z
+completed: 2026-10-19T10:31:23Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-10-19T11:50:04+02:00
+last_commit: 2026-10-19T11:50:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  human-AC tick guard — Bash write to a .tasks path provably outside PROJECT_ROOT is allowed
+
+# Key outcomes
+outcomes:
+  - 'Reproduced: a Bash write whose literal target resolves OUTSIDE PROJECT_ROOT to a `.tasks/` path is refused by `shell_write_scan.scan` before the fix (regression test red run recorded in Updates)'
+  - 'Fix: `scan()` takes an optional `project_root`; a resolved target whose every candidate path lies outside it is no longer treated as guarded; `check_bash` passes PROJECT_ROOT'
+  - 'Unresolvable targets (variables, substitutions, unmatched globs) that name a guarded path are still refused (fail-closed unchanged)'
+  - 'Targets resolving INSIDE PROJECT_ROOT to `.tasks/` (absolute, relative, via symlink into project, `..` escape back in) are still refused'
+  - 'Regression bats test under tests/unit/ fails without the fix and passes with it; existing t3695 / t2954 / t3768 / t4344 / t4367 bats stay green'
+  - '`lib/shell_write_scan.py` and `agents/context/check-human-ac-tick.py` vendored clean (`bin/fw vendor self --check`) — the web/embeddings.py drift was T-4350''s in-flight edit; after T-4350 committed, `--check` reports in sync (parent, 2026-10-19)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-human-ac-tick.py'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/check-human-ac-tick.py'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4336-check-human-ac-tick-refuses-a-shell-writ.md'
+  - 'tests/unit/t4336_outside_project_task_write.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T11:50:04'
+    action: 'T-4336: human-AC tick guard — Bash write to a .tasks path provably outside PROJECT_ROOT is allowed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 791 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [hooks, false-positive, human-ac]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 791
+  commits: 1
+  files_changed: 6
+  lines_added: 240
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4336-check-human-ac-tick-refuses-a-shell-writ.md
+generated_by: context-agent-hybrid

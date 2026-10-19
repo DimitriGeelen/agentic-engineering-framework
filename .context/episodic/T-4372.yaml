@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4372: Fix test: audit.bats section tests fail on any live audit FAIL, so one new red keeps itself red forever via the unit-suite ratchet
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T10:30:05Z
+# ============================================================================
+
+task_id: T-4372
+task_name: "Fix test: audit.bats section tests fail on any live audit FAIL, so one new red keeps itself red forever via the unit-suite ratchet"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T10:08:44Z
+completed: 2026-10-19T10:29:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T12:15:09+02:00
+last_commit: 2026-10-19T12:15:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit.bats section tests pass on a complete report with exit 2 (live corpus FAIL is not a test red; breaks the ratchet self-loop); file T-4373, T-4374
+
+# Key outcomes
+outcomes:
+  - '`_assert_audit_ran` passes exit 2 only when the output is a complete report (`=== SUMMARY ===` and `=== END AUDIT ===` present); exit 2 without them (crash, truncated) still fails, and exit >2 other than 75 still fails'
+  - '"audit YAML report is valid" accepts exit 2 the same way (its subject is the YAML, not the live corpus)'
+  - 'Hermetic controls: the existing stubbed exit-2 (no report) still fails; a new stub exit 2 WITH a full report passes; exit 0/1/75 unchanged'
+  - 'audit.bats "audit runs structure section" passes against the live repo while the live audit has a FAIL (measured, recorded below)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4372-fix-test-auditbats-section-tests-fail-on.md'
+  - '.tasks/active/T-4373-logbypass-writes-action-and-reason-insid.md'
+  - '.tasks/active/T-4374-corpus-spec-accept-bpmncallactivity-with.md'
+  - 'tests/unit/audit.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T12:15:09'
+    action: 'T-4372: audit.bats section tests pass on a complete report with exit 2 (live corpus FAIL is not a test red; breaks the ratchet self-loop); file T-4373, T-4374'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 20
+  commits: 1
+  files_changed: 4
+  lines_added: 1083
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4372-fix-test-auditbats-section-tests-fail-on.md
+generated_by: context-agent-hybrid

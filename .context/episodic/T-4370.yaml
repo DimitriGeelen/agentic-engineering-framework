@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4370: Audit check: a shipped task with github_issue whose issue ledger is behind its stage (G-119 detection)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T10:37:55Z
+# ============================================================================
+
+task_id: T-4370
+task_name: "Audit check: a shipped task with github_issue whose issue ledger is behind its stage (G-119 detection)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T09:43:29Z
+completed: 2026-10-19T10:37:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T11:58:40+02:00
+last_commit: 2026-10-19T11:58:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw audit WARN for issue-ledger lag (G-119 detection)
+
+# Key outcomes
+outcomes:
+  - '`lib/issues_lag.py` exists, is pure read-only (no network, no `gh`, no ledger writes) and exposes `check_lag(root)` plus a CLI `audit --root`'
+  - 'A task with `github_issue:` and `status: started-work` whose issue has no `in-progress` ledger row yields a finding `#N T-XXXX expected in-progress, ledger has <last>`'
+  - 'A task with `status: work-completed` whose issue has no `fixed-on-bleeding-edge` row yields the same shape of finding with expected `fixed-on-bleeding-edge`'
+  - 'A task whose commits (subject starting with its id) are contained in a `v*` tag yields `expected released` when the issue has no `released` row; `closed-released` counts as at-or-beyond released'
+  - 'Issues whose ledger rows carry `class: internal` (T-4342) are exempt and produce no finding'
+  - 'Each finding carries the mitigation text naming `bin/fw issues lifecycle T-XXXX --event ...` and `bin/fw issues release vX --range ...`'
+  - '`agents/audit/audit.sh` calls the check from the structure section as a WARN (never FAIL), wired like neighbouring python-backed checks, and `bash -n agents/audit/audit.sh` passes'
+  - '`tests/unit/t4370_issues_lag_test.py` (pytest, committed fixtures, temp git repo with a `v*` tag) passes and fails without the implementation'
+  - '`lib/issues.py` is not modified by this task (T-4346 owns its posting code)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw audit WARN for issue-ledger lag (G-119 detection)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/issues_lag.py'
+  - 'agents/audit/audit.sh'
+  - 'lib/issues_lag.py'
+  - '.tasks/active/T-4370-audit-check-a-shipped-task-with-githubis.md'
+  - 'tests/unit/fixtures/t4370_issues_lag/ledger/intake.jsonl'
+  - 'tests/unit/fixtures/t4370_issues_lag/tasks/active/T-9001-lagging-started.md'
+  - 'tests/unit/fixtures/t4370_issues_lag/tasks/active/T-9002-in-step-started.md'
+  - 'tests/unit/fixtures/t4370_issues_lag/tasks/active/T-9004-internal-started.md'
+  - 'tests/unit/fixtures/t4370_issues_lag/tasks/active/T-9008-reply-only-started.md'
+  - 'tests/unit/fixtures/t4370_issues_lag/tasks/completed/T-9003-completed-untagged.md'
+  - 'tests/unit/fixtures/t4370_issues_lag/tasks/completed/T-9005-released-lagging.md'
+  - 'tests/unit/fixtures/t4370_issues_lag/tasks/completed/T-9006-released-recorded.md'
+  - 'tests/unit/fixtures/t4370_issues_lag/tasks/completed/T-9007-released-closed.md'
+  - 'tests/unit/fixtures/t4370_issues_lag/tasks/completed/T-9009-no-github.md'
+  - 'tests/unit/t4370_issues_lag_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T11:58:40'
+    action: 'T-4370: fw audit WARN for issue-ledger lag (G-119 detection)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 53 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 53
+  commits: 1
+  files_changed: 16
+  lines_added: 1079
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4370-audit-check-a-shipped-task-with-githubis.md
+generated_by: context-agent-hybrid

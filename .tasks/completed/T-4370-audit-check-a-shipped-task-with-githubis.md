@@ -1,22 +1,20 @@
 ---
-id: T-4372
-name: "Fix test: audit.bats section tests fail on any live audit FAIL, so one new
-  red keeps itself red forever via the unit-suite ratchet"
+id: T-4370
+name: "Audit check: a shipped task with github_issue whose issue ledger is behind
+  its stage (G-119 detection)"
 description: >
-  tests/unit/audit.bats 'audit runs <section>' tests run audit.sh against the live
-  repo and treat exit 2 (ran, found FAILs) as a test failure. Any live FAIL (e.g.
-  a new unit red, cron drift) turns them red; that red is then a NEW red in the next
-  report, which keeps the live audit FAILing: a self-sustaining loop (observed 2026-10-19,
-  'audit runs structure section' new red after the 01:03 nightly carried cron drift
-  + 3 reds). Mutable-corpus anchor (T-3326). Fix: a section test asserts the audit
-  RAN (report printed through its SUMMARY), not that the live corpus is clean.
+  G-119 prevention leg. fw audit (structure section, WARN) lists tasks with github_issue:
+  whose ledger (.context/issues/intake.jsonl) lacks the stage the task's state implies:
+  started-work → in-progress; completed (on bleeding-edge) → fixed-on-bleeding-edge;
+  task commits reachable from a released tag (master) → released. Internal-author
+  issues (T-4342 ledger rows) are exempt. Detection, never posts.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,9 +42,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T10:08:44Z
-last_update: 2026-10-19T10:09:07Z
-date_finished:
+created: 2026-10-19T09:43:29Z
+last_update: 2026-10-19T10:37:07Z
+date_finished: 2026-10-19T10:37:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,7 +56,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-19T10:09:07Z'
+  - ts: '2026-10-19T09:44:16Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -75,9 +73,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-19T09:45:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=309,acs=11)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4372: Fix test: audit.bats section tests fail on any live audit FAIL, so one new red keeps itself red forever via the unit-suite ratchet
+# T-4370: Audit check: a shipped task with github_issue whose issue ledger is behind its stage (G-119 detection)
 
 ## Context
 
@@ -87,10 +95,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_assert_audit_ran` passes exit 2 only when the output is a complete report (`=== SUMMARY ===` and `=== END AUDIT ===` present); exit 2 without them (crash, truncated) still fails, and exit >2 other than 75 still fails
-- [ ] "audit YAML report is valid" accepts exit 2 the same way (its subject is the YAML, not the live corpus)
-- [ ] Hermetic controls: the existing stubbed exit-2 (no report) still fails; a new stub exit 2 WITH a full report passes; exit 0/1/75 unchanged
-- [ ] audit.bats "audit runs structure section" passes against the live repo while the live audit has a FAIL (measured, recorded below)
+- [x] `lib/issues_lag.py` exists, is pure read-only (no network, no `gh`, no ledger writes) and exposes `check_lag(root)` plus a CLI `audit --root`
+- [x] A task with `github_issue:` and `status: started-work` whose issue has no `in-progress` ledger row yields a finding `#N T-XXXX expected in-progress, ledger has <last>`
+- [x] A task with `status: work-completed` whose issue has no `fixed-on-bleeding-edge` row yields the same shape of finding with expected `fixed-on-bleeding-edge`
+- [x] A task whose commits (subject starting with its id) are contained in a `v*` tag yields `expected released` when the issue has no `released` row; `closed-released` counts as at-or-beyond released
+- [x] Issues whose ledger rows carry `class: internal` (T-4342) are exempt and produce no finding
+- [x] Each finding carries the mitigation text naming `bin/fw issues lifecycle T-XXXX --event ...` and `bin/fw issues release vX --range ...`
+- [x] `agents/audit/audit.sh` calls the check from the structure section as a WARN (never FAIL), wired like neighbouring python-backed checks, and `bash -n agents/audit/audit.sh` passes
+- [x] `tests/unit/t4370_issues_lag_test.py` (pytest, committed fixtures, temp git repo with a `v*` tag) passes and fails without the implementation
+- [x] `lib/issues.py` is not modified by this task (T-4346 owns its posting code)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,6 +153,10 @@ bvp_scores_proposed:
 
 ## Verification
 
+out=$(python3 -m pytest tests/unit/t4370_issues_lag_test.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+bash -n agents/audit/audit.sh
+bash -n bin/fw
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -271,6 +288,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** G-119 — v1.8.11 shipped fixes for #86-#89 and every issue still read "fixed on bleeding-edge"; nothing flagged that the issue ledger was behind the task lifecycle.
+
+**Root cause:** the lifecycle legs (T-4341 `fw issues lifecycle`, T-4340 `fw issues release`) only post when something calls them; no audit reads the task files against `.context/issues/intake.jsonl` afterwards, so a missed or failed post leaves the ledger silently behind.
+
+**Why structurally allowed:** `fw audit` had no check comparing task state with the issue ledger, and lifecycle failures are recorded to `*-pending.jsonl` that nothing reads back.
+
+**Prevention:** the structure-section WARN (`lib/issues_lag.py`) derives the expected stage from each linked task and lists the lag with its mitigation command; the pytest suite pins each expected stage and the internal-row exemption.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -361,10 +386,27 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-19T10:08:44Z — task-created [task-create-agent]
+### 2026-10-19T09:43:29Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4372-fix-test-auditbats-section-tests-fail-on.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4370-audit-check-a-shipped-task-with-githubis.md
 - **Context:** Initial task creation
 
-### 2026-10-19T10:09:07Z — status-update [task-update-agent]
+### 2026-10-19T09:44:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5031561b
+- **Timestamp:** 2026-10-19T10:37:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T10:37:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

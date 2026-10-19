@@ -13,12 +13,12 @@ description: >
   readers keep the old snapshot until commit; keep copy+swap only for a full rebuild
   (model/schema change, corruption).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [index, performance, io]
-components: []
+components: [tests/unit/test_incremental_reindex.py, web/embeddings.py]
 related_tasks: []
 origin: {kind: "peer", source: "dimitri-mint-dev"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -48,8 +48,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:57:14Z
-last_update: 2026-10-19T09:44:52Z
-date_finished:
+last_update: 2026-10-19T10:39:57Z
+date_finished: 2026-10-19T10:39:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -138,6 +138,12 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] Watchtower search results still look right after the reindex change
+  **Steps:**
+  1. Open the Watchtower search page (`cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` prints the base URL; append `/search?q=release decision`)
+  2. Look at the result list
+  **Expected:** relevant tasks and learnings listed with titles and snippets, as before; no error panel or empty list
+  **If not:** note the query and what is wrong; the reindex change is in web/embeddings.py reindex_incremental (T-4350)
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -366,6 +372,12 @@ bin/fw watchtower current
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+**Recommendation:** GO
+**Rationale:** The hourly incremental reindex no longer writes a full-size scratch copy of the index for small deltas (≤32 files): it updates in one SQLite transaction, where commit is the publish and a killed run rolls back. Large deltas, the bootstrap and the resume path keep copy plus os.replace. Search is served from the same index, so the one human check is that results still look right.
+**Evidence:**
+- Temp index, one changed file: scratch copy 11,825,152 B → 0 B; process write_bytes 12,939,264 B → 544,768 B
+- Regression test test_incremental_run_has_no_full_size_scratch_copy red before, green after; 41 passed in the two reindex files, 68 in adjacent embed suites
+- Live search after the change (Watchtower restarted, `watchtower current` exit 0): /search?q=release+decision returns HTTP 200 with 40 distinct task references
 
 ## Decisions
 
@@ -416,3 +428,20 @@ bin/fw watchtower current
 - **Vendor:** `FW_VENDOR_ONLY="web/embeddings.py" bin/fw vendor self` (the full sync withheld other workers' in-flight files: lib/issues_lag.py, agents/audit/audit.sh, lib/issues.py). `bin/fw vendor self --check` clean.
 - **Watchtower:** `web/` changed → `bin/fw watchtower restart` (PID 1273447 → 291230); `bin/fw watchtower current` exit 0.
 - **Not done:** no live-index run; the hourly job on the live host will exercise the in-place path on its next firing. Not closed (per brief).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7d0014d7
+- **Timestamp:** 2026-10-19T10:41:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `reindex_incremental()` in `web/embeddings.py` updates the live database in place for a small delta (≤ `IN_PLACE_MAX_FILES` = 32 changed files, against an existing file_state baseline): changed/remove
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/embeddings.py in: `reindex_incremental()` in `web/embeddings.py` updates the live database in place for a small delta (≤ `IN_PLACE_MAX_FILES` = 32 changed files, agains`
+
+### 2026-10-19T10:39:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
