@@ -100,7 +100,7 @@ bvp_scores_proposed:
 - [x] lib/upgrade.sh declares the upgrade flags once (`_FW_UPGRADE_VALUE_FLAGS`, `_FW_UPGRADE_SWITCH_FLAGS`); the parser refuses a value flag with no value (it used to loop forever on `shift 2`) and the handoff replay keeps a value flag together with its value
 - [x] The replay refuses (non-zero, names the flag and the arrays) a `-*` word in neither list instead of guessing whether it takes a value
 - [x] Regression bats `tests/unit/t4424_upgrade_flag_declaration.bats`: every parser case label is declared in exactly one list; a value flag's value is never taken as the target; unknown flag fails loudly; missing value fails fast
-- [ ] `tests/unit/t4405_upgrade_handoff_forwards_args.bats` and `tests/unit/upgrade_fresh_machine_simulation.bats` stay green
+- [x] `tests/unit/t4405_upgrade_handoff_forwards_args.bats` and `tests/unit/upgrade_fresh_machine_simulation.bats` stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
