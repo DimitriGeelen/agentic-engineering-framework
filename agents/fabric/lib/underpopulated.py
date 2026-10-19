@@ -23,6 +23,10 @@ import sys
 
 import yaml
 
+# T-4386: libyaml when present — the pure-Python loader cost ~5 s of every
+# `fw doctor` over ~1.5k cards. Same loader choice as lib/design_register.py.
+_SafeLoader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import describe  # noqa: E402
 
@@ -35,7 +39,7 @@ def scan(components_dir):
     for card_path in sorted(glob.glob(os.path.join(components_dir, "*.yaml"))):
         try:
             with open(card_path) as f:
-                card = yaml.safe_load(f)
+                card = yaml.load(f, Loader=_SafeLoader)  # noqa: S506 — a SafeLoader
         except (OSError, yaml.YAMLError):
             continue
         if not card:

@@ -252,10 +252,32 @@ def classify_line(
     return CARRIER, "bare_hardcode"
 
 
+# HIT_RE without its optional scheme, anchored at the host: a file has a hit iff
+# some ":3000" occurrence is preceded by one of the hosts. The hosts are 9 or 7
+# characters long, so each occurrence is tested at exactly those two offsets.
+_HOST_PORT_RE = re.compile(r"(?:localhost|127\.0\.0\.1|0\.0\.0\.0):3000\b")
+
+
+def _has_hit(text: str) -> bool:
+    """Same truth value as HIT_RE.search(text), without running HIT_RE over the
+    whole file (T-4386): ~1.9k files mention ":3000" (78 MB), and the
+    whole-text search cost ~6 s of every `fw doctor`."""
+    i = text.find(":3000")
+    while i >= 0:
+        if _HOST_PORT_RE.match(text, max(0, i - 9)) or _HOST_PORT_RE.match(text, max(0, i - 7)):
+            return True
+        i = text.find(":3000", i + 1)
+    return False
+
+
 def scan_file(path: Path, root: Path) -> list:
     try:
         text = path.read_text(encoding="utf-8", errors="replace")
     except (OSError, UnicodeDecodeError):
+        return []
+    # Every HIT_RE match contains ":3000"; the substring test is exact and
+    # ~100x cheaper than the regex over a whole file (T-3083).
+    if not _has_hit(text):
         return []
     lines = text.splitlines()
     relpath = path.relative_to(root).as_posix()
@@ -263,10 +285,6 @@ def scan_file(path: Path, root: Path) -> list:
     is_claude_md = basename == "CLAUDE.md"
     section_lines = find_claude_watchtower_section(lines) if is_claude_md else set()
     is_code = path.suffix in CODE_EXTENSIONS
-    # Every HIT_RE match contains ":3000"; the substring test is exact and
-    # ~100x cheaper than the regex over a whole file (T-3083).
-    if ":3000" not in text or not HIT_RE.search(text):
-        return []
     docstring_lines = python_docstring_lines(path) if path.suffix == ".py" else set()
 
     hits = []

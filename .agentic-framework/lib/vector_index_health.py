@@ -52,6 +52,7 @@ import sqlite3
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 REQUIRED_JOB = "index-reindex-hourly"
@@ -255,6 +256,7 @@ def _source_drift(project_root: Path, state: dict) -> int:
     0.8s on AEF.
     """
     n = 0
+    root_prefix = len(str(project_root).rstrip("/")) + 1
     for parts in DRIFT_DIRS:
         d = project_root.joinpath(*parts)
         if not d.is_dir():
@@ -262,7 +264,9 @@ def _source_drift(project_root: Path, state: dict) -> int:
         for f in d.rglob("*"):
             if f.suffix not in DRIFT_SUFFIXES or not f.is_file():
                 continue
-            seen = state.get(f.relative_to(project_root).as_posix())
+            # == f.relative_to(project_root).as_posix(): f comes from rglob under
+            # project_root (T-4386 — pathlib's relative_to cost ~2 s here).
+            seen = state.get(str(f)[root_prefix:])
             if seen is None:
                 n += 1
                 continue
@@ -610,12 +614,18 @@ def evaluate(project_root: Path, framework_root: Path, canary: bool = True,
     # falls through to a FULL rebuild when the index is missing or empty, and a
     # health probe must never start a multi-hour build.
     mode = "canary" if (canary and idx["verdict"] == "OK" and man["verdict"] == "OK") else "import"
-    child = run_child(project_root, framework_root, mode, token, path, timeout)
+    # T-4386: the child (an import of web.embeddings plus the canary, ~8 s) and
+    # the lag scan (hashing every source file, ~6 s) are independent; run them
+    # side by side instead of back to back. The checks keep their order.
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        child_f = pool.submit(run_child, project_root, framework_root, mode, token, path, timeout)
+        lag = (check_lag(path, project_root, max_lag) if idx["verdict"] == "OK"
+               else _check("lag", "FAIL", "index lag unmeasurable (no usable index)",
+                           f"Build it: {REMEDY_REINDEX}"))
+        child = child_f.result()
     checks.append(check_import(child))
     checks.append(check_age(manifest, max_age, now))
-    checks.append(check_lag(path, project_root, max_lag) if idx["verdict"] == "OK"
-                  else _check("lag", "FAIL", "index lag unmeasurable (no usable index)",
-                              f"Build it: {REMEDY_REINDEX}"))
+    checks.append(lag)
     if not canary:
         checks.append(_check("canary", "SKIP", "canary not run (fast mode)"))
     elif mode != "canary":

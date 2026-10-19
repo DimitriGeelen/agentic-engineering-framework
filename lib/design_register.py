@@ -280,7 +280,10 @@ def find_register_docs(root: Path) -> list:
 
 
 def register_violations(root: Path, tasks: dict | None = None) -> list:
-    tasks = task_index(root) if tasks is None else tasks
+    # T-4386: only the owner ids the registers name are looked up, so load them
+    # per id (LazyTaskIndex, same entries) instead of parsing all ~4.4k tasks —
+    # ~5 s of every `fw doctor`.
+    tasks = LazyTaskIndex(root) if tasks is None else tasks
     out = []
     for doc in find_register_docs(root):
         rel = str(doc.relative_to(root)) if doc.is_relative_to(root) else str(doc)

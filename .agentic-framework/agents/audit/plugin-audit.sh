@@ -80,22 +80,29 @@ find_plugin_dir() {
 # Scan a single markdown file for task-awareness
 # Returns: AWARE, SILENT, or BYPASSING
 # --------------------------------------------------------------------------
-classify_file() {
-    local filepath="$1"
-    python3 - "$filepath" << 'PYEOF'
+# classify_files FILE... — one AWARE|BYPASSING|SILENT line per FILE, in order.
+# T-4386: one python3 for all files; a python3 per file cost `fw doctor` ~8 s.
+classify_files() {
+    python3 - "$@" << 'PYEOF'
 import re, sys
 
-filepath = sys.argv[1] if len(sys.argv) > 1 else ""
-if not filepath:
-    print("SILENT")
-    sys.exit(0)
 
-try:
-    with open(filepath, "r") as f:
-        content = f.read()
-except Exception:
-    print("SILENT")
-    sys.exit(0)
+def classify(filepath):
+    if not filepath:
+        return "SILENT"
+    try:
+        with open(filepath, "r") as f:
+            content = f.read()
+    except Exception:
+        return "SILENT"
+    for pattern in task_patterns:
+        if re.search(pattern, content, re.IGNORECASE):
+            return "AWARE"
+    for pattern in bypass_patterns:
+        if re.search(pattern, content):
+            return "BYPASSING"
+    return "SILENT"
+
 
 # Task-awareness indicators
 task_patterns = [
@@ -111,10 +118,6 @@ task_patterns = [
     r'focus\.yaml',
 ]
 
-for pattern in task_patterns:
-    if re.search(pattern, content, re.IGNORECASE):
-        print("AWARE")
-        sys.exit(0)
 
 # Authority-bypassing indicators (strong language that could override task gates)
 bypass_patterns = [
@@ -131,13 +134,13 @@ bypass_patterns = [
     r'invoke.*skill.*BEFORE\s+ANY',
 ]
 
-for pattern in bypass_patterns:
-    if re.search(pattern, content):
-        print("BYPASSING")
-        sys.exit(0)
-
-print("SILENT")
+for filepath in (sys.argv[1:] or [""]):
+    print(classify(filepath))
 PYEOF
+}
+
+classify_file() {
+    classify_files "$1"
 }
 
 # --------------------------------------------------------------------------
@@ -249,15 +252,17 @@ doctor_check() {
     [ -z "$plugins" ] && echo "0" && return 0
 
     local bypassing=0
+    local files=()
     while IFS= read -r plugin_name; do
         local plugin_dir
         plugin_dir=$(find_plugin_dir "$plugin_name" 2>/dev/null) || continue
         while IFS= read -r -d '' filepath; do
-            local classification
-            classification=$(classify_file "$filepath")
-            [ "$classification" = "BYPASSING" ] && bypassing=$((bypassing + 1))
+            files+=("$filepath")
         done < <(find "$plugin_dir" \( -path "*/skills/*/SKILL.md" -o -path "*/agents/*.md" -o -path "*/commands/*.md" \) -not -name "README.md" -print0 2>/dev/null)
     done <<< "$plugins"
+    if [ "${#files[@]}" -gt 0 ]; then
+        bypassing=$(classify_files "${files[@]}" | grep -c '^BYPASSING$')
+    fi
 
     echo "$bypassing"
     [ "$bypassing" -eq 0 ] && return 0 || return 1

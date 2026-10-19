@@ -97,8 +97,13 @@ def fmt_tokens(n):
         return f"{n / 1_000:.1f}K"
     return str(n)
 
-def parse_session(filepath):
-    """Parse a single JSONL file, return session stats dict."""
+def parse_session(filepath, usage_only=False):
+    """Parse a single JSONL file, return session stats dict.
+
+    usage_only (T-4386): decode only lines that can carry a usage block. Token
+    and turn counts are exact; first_ts/last_ts are then unreliable, so only
+    callers that never print them ("current") may set it. A live session
+    transcript reaches hundreds of MB, nearly all of it tool output."""
     session = os.path.basename(filepath).replace('.jsonl', '')
     stats = {
         'id': session[:8],
@@ -117,6 +122,8 @@ def parse_session(filepath):
 
     with open(filepath, 'r') as f:
         for line in f:
+            if usage_only and '"usage"' not in line:
+                continue
             try:
                 e = json.loads(line)
             except:
@@ -186,10 +193,15 @@ if mode == "session-detail" and session_id:
         sys.exit(1)
     files = match[:1]
 
+if mode == "current":
+    # T-4386: "current" reports sessions[-1] only, so parse only that file.
+    # Parsing every transcript first cost 25 s per `fw doctor` (455 files, 1.5 GB).
+    files = files[-1:]
+
 # Parse all sessions
 sessions = []
 for f in files:
-    sessions.append(parse_session(f))
+    sessions.append(parse_session(f, usage_only=(mode == "current")))
 
 if mode == "summary":
     # Project totals

@@ -4113,18 +4113,9 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
         local cutoff_epoch
         cutoff_epoch=$(date -d "7 days ago" +%s 2>/dev/null || date -v-7d +%s 2>/dev/null || echo 0)
         if [ "$cutoff_epoch" -gt 0 ]; then
-            for tf in "$active_dir"/*.md; do
-                [ -f "$tf" ] || continue
-                local lu
-                lu=$(grep '^last_update:' "$tf" 2>/dev/null | head -1 | sed 's/last_update: *//' | tr -d '"' || true)
-                if [ -n "$lu" ]; then
-                    local lu_epoch
-                    lu_epoch=$(date -d "${lu}" +%s 2>/dev/null || date -jf "%Y-%m-%dT%H:%M:%SZ" "${lu}" +%s 2>/dev/null || echo 0)
-                    if [ "$lu_epoch" -gt 0 ] && [ "$lu_epoch" -lt "$cutoff_epoch" ]; then
-                        stale_count=$((stale_count + 1))
-                    fi
-                fi
-            done
+            # T-4386: one process, not ~5 forks per active task (~18 s per doctor).
+            stale_count=$(python3 "$FW_LIB_DIR/task_debt.py" "$active_dir" "$cutoff_epoch" 2>/dev/null || echo 0)
+            [[ "$stale_count" =~ ^[0-9]+$ ]] || stale_count=0
         fi
         if [ "$stale_count" -gt 10 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Task debt: $stale_count stale tasks (no updates in 7+ days)"
