@@ -16,10 +16,14 @@ DECISIONS = [("accepted", ["--task", "T-1"]), ("needs-info", ["--text", "q"]),
 
 
 @pytest.mark.parametrize("stage,extra", DECISIONS)
-def test_key_0_refuses_without_approval(env, stage, extra):
+def test_key_0_refuses_without_approval(env, stage, extra, tmp_path):
     e, stub, ledger = env
+    # An empty env value falls back to .framework.yaml: point it at a project
+    # with none, not at this checkout (which sets the key to 1).
+    proj = tmp_path / "proj"
+    proj.mkdir()
     for v in ("0", ""):
-        r = run(dict(e, **{KEY: v}), "comment", "86", "--stage", stage, *extra)
+        r = run(dict(e, PROJECT_ROOT=str(proj), **{KEY: v}), "comment", "86", "--stage", stage, *extra)
         assert r.returncode != 0 and "--approved-by-operator" in r.stderr
     assert not (stub / "body.txt").exists() and rows(ledger) == []
 

@@ -106,10 +106,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Config key ISSUES_DECISIONS_STANDING_PERMISSION (default 0) registered in lib/config.sh and web/blueprints/config.py
-- [ ] lib/issues.py cmd_comment: key 1 posts a decision stage without --approved-by-operator and writes approved_by 'standing-permission:operator-2026-10-19' on the ledger row; key 0 is unchanged
-- [ ] Tests t4347 cover key 0 refuses, key 1 posts + provenance, template stages unchanged; existing issues suites green
-- [ ] Key set to 1 for this project; T-4039 report has the new operator answer with the verbatim ruling; vendor synced
+- [x] Config key ISSUES_DECISIONS_STANDING_PERMISSION (default 0) registered in lib/config.sh and web/blueprints/config.py
+- [x] lib/issues.py cmd_comment: key 1 posts a decision stage without --approved-by-operator and writes approved_by 'standing-permission:operator-2026-10-19' on the ledger row; key 0 is unchanged
+- [x] Tests t4347 cover key 0 refuses, key 1 posts + provenance, template stages unchanged; existing issues suites green
+  - The key-0 test read this checkout's .framework.yaml once the key was set to 1 here (4 reds); it now uses an empty temp PROJECT_ROOT. All issues suites: 77 passed.
+- [x] Key set to 1 for this project; T-4039 report has the new operator answer with the verbatim ruling; vendor synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

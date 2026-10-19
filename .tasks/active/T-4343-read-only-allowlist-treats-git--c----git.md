@@ -101,11 +101,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `git -C`, `--git-dir` and `--work-tree` (separate-word and `=` forms) with a value resolving (realpath) inside PROJECT_ROOT stay SAFE for read verbs; outside values, `..` escapes, symlinks pointing out, quoted/variable/`~`/glob values and unresolvable values are NOT SAFE (new bats tests/unit/t4343_git_repo_path_boundary.bats)
-- [ ] Relative values resolve against the command's effective cwd: a leading `cd X &&` (inside → SAFE, outside → NOT SAFE), and a cd to an unknown or variable target makes a relative value NOT SAFE
-- [ ] Cumulative `-C`: `git -C <in> -C <rel-escape>` is NOT SAFE (second value resolves against the first, as git does)
-- [ ] T-4264 `-c` fail-closed tests and the command-form tests still pass; their SAFE cases use in-project paths, their `/tmp` cases are kept as NOT-SAFE controls
-- [ ] The new bats file fails on the pre-fix safe-commands.sh (recorded red run) and is green on the fix
+- [x] `git -C`, `--git-dir` and `--work-tree` (separate-word and `=` forms) with a value resolving (realpath) inside PROJECT_ROOT stay SAFE for read verbs; outside values, `..` escapes, symlinks pointing out, quoted/variable/`~`/glob values and unresolvable values are NOT SAFE (new bats tests/unit/t4343_git_repo_path_boundary.bats)
+- [x] Relative values resolve against the command's effective cwd: a leading `cd X &&` (inside → SAFE, outside → NOT SAFE), and a cd to an unknown or variable target makes a relative value NOT SAFE
+- [x] Cumulative `-C`: `git -C <in> -C <rel-escape>` is NOT SAFE (second value resolves against the first, as git does)
+- [x] T-4264 `-c` fail-closed tests and the command-form tests still pass; their SAFE cases use in-project paths, their `/tmp` cases are kept as NOT-SAFE controls
+- [x] The new bats file fails on the pre-fix safe-commands.sh (recorded red run) and is green on the fix
+  - Red run 2026-10-19: the file copied into the v1.8.11 scratch clone (e42aa41bf) gives 14 ok / 26 not ok (first: "control: git -C <absolute outside project> status is NOT SAFE"). Green: t4343 + t4264 on bleeding-edge, 59 ok / 0 not ok / 0 skip. Field: ring20-dashboard WORKS on every case (docs/reports/T-4345-hotfix-v1812.md).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
