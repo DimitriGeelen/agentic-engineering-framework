@@ -97,6 +97,18 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+Field input from 010-termlink's operator (msg 41af19b4, 2026-10-19):
+- **Signals:** when an inception reaches its exploration-commit limit and is high-value, the gate, doctor or Watchtower
+  should detect it and suggest extending the limit for that inception, not flat-block it. High-value signals:
+  - a high BVP rank;
+  - many open IW questions still being answered;
+  - an active external review;
+  - a research artefact still growing.
+- **Approval:** a one-command or one-click operator approval, logged.
+- **Failure mode today:** the agent hits the block, the latest research stays uncommitted, and only a human who happens
+  to read the hint can act.
+- **Related:** T-3924, the lowercase-key bug that silently disabled termlink's configured limit for six months.
+
 ## Acceptance Criteria
 
 ### Agent
