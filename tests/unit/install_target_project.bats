@@ -35,6 +35,49 @@ teardown() {
     hermetic_teardown
 }
 
+# T-4434: tests 1-3 only read the result of one install.sh run, so it runs once
+# here (five full installs took 5-6 min and timed out in the loaded nightly).
+# Tests 4 and 5 keep their own runs: 4 re-runs install.sh against the target and
+# 5 has no target. The SHARED_* names survive the per-test hermetic_setup that
+# re-points HERMETIC_*, TMPDIR and FW_PORT.
+setup_file() {
+    hermetic_setup
+    TEST_HOME="$HERMETIC_HOME"
+    TEST_TARGET="$HERMETIC_ROOT/target"
+    git init -q "$TEST_TARGET"
+    CURRENT_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD)"
+    SHARED_ROOT="$HERMETIC_ROOT"
+    SHARED_HOME="$TEST_HOME"
+    SHARED_TARGET="$TEST_TARGET"
+    SHARED_TMPDIR="$TMPDIR"
+    SHARED_FW_PORT="$FW_PORT"
+    SHARED_DECOY_PID="$HERMETIC_DECOY_PID"
+    SHARED_SIDECAR_WAS_STOPPED="$HERMETIC_SIDECAR_WAS_STOPPED"
+    SHARED_STATUS=skipped
+    SHARED_OUTPUT=""
+    SHARED_LEAK=""
+    if [[ "$CURRENT_BRANCH" != "HEAD" ]]; then
+        SHARED_OUTPUT="$(run_install 2>&1)" && SHARED_STATUS=0 || SHARED_STATUS=$?
+        SHARED_LEAK="$(compgen -G "$TMPDIR/agentic-fw-fetch-*" || true)"
+    fi
+    export SHARED_ROOT SHARED_HOME SHARED_TARGET SHARED_TMPDIR SHARED_FW_PORT \
+        SHARED_DECOY_PID SHARED_SIDECAR_WAS_STOPPED \
+        SHARED_STATUS SHARED_OUTPUT SHARED_LEAK
+}
+
+teardown_file() {
+    # setup_file's decoy and tripwires belong to the shared install; the probe is
+    # the same deliberate fw init /api/_identity call as allow_init_probe.
+    HERMETIC_ROOT="$SHARED_ROOT"
+    HERMETIC_DECOY_PID="$SHARED_DECOY_PID"
+    HERMETIC_SIDECAR_WAS_STOPPED="$SHARED_SIDECAR_WAS_STOPPED"
+    HERMETIC_SIDECAR_STOPPED="$HERMETIC_REPO/.context/sidecar/watcher/stopped"
+    FW_PORT="$SHARED_FW_PORT"
+    TERMLINK_TRIPWIRE_LOG="$SHARED_ROOT/termlink-tripwire.log"
+    allow_init_probe
+    hermetic_teardown
+}
+
 # T-4428: install.sh <target> runs fw init, which probes /api/_identity
 # (lib/watchtower.sh:67) with no switch to skip it. FW_PORT is passed through
 # env -i so the probe lands on the hermetic decoy; before this migration it
@@ -60,19 +103,17 @@ run_install() {
         skip "detached HEAD -- --local install needs a real branch name"
     fi
 
-    allow_init_probe
-    run run_install
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"All verification steps passed"* ]]
+    [ "$SHARED_STATUS" -eq 0 ] || { echo "$SHARED_OUTPUT"; false; }
+    [[ "$SHARED_OUTPUT" == *"All verification steps passed"* ]]
 
     # The project was created where named...
-    [ -f "$TEST_TARGET/.framework.yaml" ]
-    [ -f "$TEST_TARGET/.agentic-framework/FRAMEWORK.md" ]
+    [ -f "$SHARED_TARGET/.framework.yaml" ]
+    [ -f "$SHARED_TARGET/.agentic-framework/FRAMEWORK.md" ]
 
     # ...and NOTHING was written to \$HOME beyond the router + claude-fw.
-    [ ! -d "$TEST_HOME/.agentic-framework" ]
-    [ -x "$TEST_HOME/.local/bin/fw" ]
-    [ -x "$TEST_HOME/.local/bin/claude-fw" ]
+    [ ! -d "$SHARED_HOME/.agentic-framework" ]
+    [ -x "$SHARED_HOME/.local/bin/fw" ]
+    [ -x "$SHARED_HOME/.local/bin/claude-fw" ]
 }
 
 @test "T-2809: fw in the target project reports Mode: vendored, with no global install" {
@@ -80,17 +121,15 @@ run_install() {
         skip "detached HEAD -- --local install needs a real branch name"
     fi
 
-    allow_init_probe
-    run run_install
-    [ "$status" -eq 0 ]
+    [ "$SHARED_STATUS" -eq 0 ] || { echo "$SHARED_OUTPUT"; false; }
 
-    run env -i HOME="$TEST_HOME" \
-        PATH="$TEST_HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-        TMPDIR="$TMPDIR" FW_PORT="$FW_PORT" \
-        bash -c "cd '$TEST_TARGET' && fw version"
+    run env -i HOME="$SHARED_HOME" \
+        PATH="$SHARED_HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+        TMPDIR="$SHARED_TMPDIR" FW_PORT="$SHARED_FW_PORT" \
+        bash -c "cd '$SHARED_TARGET' && fw version"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Mode:      vendored"* ]]
-    [[ "$output" == *"Framework: $TEST_TARGET/.agentic-framework"* ]]
+    [[ "$output" == *"Framework: $SHARED_TARGET/.agentic-framework"* ]]
 }
 
 @test "T-2809: the temporary fetch directory does not survive the run" {
@@ -100,14 +139,9 @@ run_install() {
 
     # T-4318: TMPDIR is private (hermetic_setup). The shared /tmp listing also
     # changes when parallel tests create and remove their own agentic-fw-fetch-* dirs.
-    local after
-
-    allow_init_probe
-    run run_install
-    [ "$status" -eq 0 ]
-
-    after="$(compgen -G "$TMPDIR/agentic-fw-fetch-*" || true)"
-    [ -z "$after" ] || { echo "fetch dir leaked: $after"; false; }
+    # T-4434: the listing was taken in setup_file, right after the shared install.
+    [ "$SHARED_STATUS" -eq 0 ] || { echo "$SHARED_OUTPUT"; false; }
+    [ -z "$SHARED_LEAK" ] || { echo "fetch dir leaked: $SHARED_LEAK"; false; }
 }
 
 @test "T-2809: re-running install.sh against an already-initialised target leaves it untouched" {
