@@ -100,11 +100,11 @@ ledger with per-file cause, outcome, and red-before/green-after evidence:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every one of the 28 baselined files has a row in `docs/reports/T-4385-baseline-triage.md` naming: result when run alone today, cause (file:line), and one outcome — `fixed` / `defect T-XXXX` / `deleted (reason)` / `green-alone (load-only)` / `stays (proposed expiry+owner)`
+- [x] Every one of the 28 baselined files has a row in `docs/reports/T-4385-baseline-triage.md` naming: result when run alone today, cause (file:line), and one outcome — `fixed` / `defect T-XXXX` / `deleted (reason)` / `green-alone (load-only)` / `stays (proposed expiry+owner)`
 - [ ] Every `fixed` test is red before the change and green after when run alone, both results recorded in the triage report; no fix weakens an assertion so that it no longer fails on its origin bug (fault-detection-fidelity)
-- [ ] Each real product defect found has its own captured task (one bug = one task), referenced from the triage row
-- [ ] Entries that must stay are listed in `## Proposed baseline changes` below with a proposed new expiry (staggered, not one cliff day) and owner, plus a single `fw runme` line the operator can run; the agent did NOT run `unit_suite_baseline.py add` and did not edit `baseline.yaml`
-- [ ] `bash -n` clean on every edited shell file; `bin/fw vendor self --check` clean (or red only on other workers' in-flight files, named)
+- [x] Each real product defect found has its own captured task (one bug = one task), referenced from the triage row
+- [x] Entries that must stay are listed in `## Proposed baseline changes` below with a proposed new expiry (staggered, not one cliff day) and owner, plus a single `fw runme` line the operator can run; the agent did NOT run `unit_suite_baseline.py add` and did not edit `baseline.yaml`
+- [x] `bash -n` clean on every edited shell file; `bin/fw vendor self --check` clean (or red only on other workers' in-flight files, named) — no shell/lib/vendored path edited (tests/ + docs/ only); 2026-10-19 `--check` red only on `tools/corpus_spec.py`, another worker's uncommitted edit, not synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -157,6 +157,11 @@ ledger with per-file cause, outcome, and red-before/green-after evidence:
 test -f docs/reports/T-4385-baseline-triage.md
 for f in $(grep -oE "file: [^ ]+" .context/audits/unit-suite/baseline.yaml | awk '{print $2}' | sort -u); do grep -q "$f" docs/reports/T-4385-baseline-triage.md || { echo "missing $f"; exit 1; }; done
 git diff --quiet HEAD -- .context/audits/unit-suite/baseline.yaml
+bats tests/unit/handover_push_timeout.bats
+bats tests/unit/check_render_surface_human_ac_sigpipe.bats
+bats tests/unit/t2298_audit_structure_no_perfile_fork.bats
+bats tests/unit/t2244_audit_self_vendor_drift.bats
+bats tests/unit/test_cron_registry_generated_drift.bats
 bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -304,7 +309,69 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 32 of 44 baseline entries expire on 2026-10-31 and 22 tests are red in 20/20
+suite reports. On expiry every one of them turns into a pre-push FAIL on the same day.
+
+**Root cause:** two separate things.
+(1) *The cliff:* `unit_suite_baseline.py cmd_add` (`agents/audit/unit_suite_baseline.py:220`)
+sets expiry to `today + --days`, and the catch-up re-arm (runme `t4221-extend-baseline`,
+2026-10-17) re-armed all 28 expired reds in one run, each with `--days 14`, so every entry
+got the same day as its deadline. The original batch (all added 2026-10-01, 14 days) had
+already fallen due together on 2026-10-15, so 10-31 is the second cliff of the same shape.
+(2) *The always-red core:* 7 of the 22 were test-side. The tests pinned wording or structure
+that later commits changed on purpose: T-3063 (`handover.sh:229`), T-3450 (`handover.sh:159`),
+the checkpoint `bash` prefix (`checkpoint.sh:299`), T-3099's rename in the audit.sh T-2096
+block, and T-2436's mitigation wording (`audit.sh:3405`). Or they ran a ~690 s live audit
+twice (`t2244`, `audit.bats`). The other 16 are correct tests on real product defects that
+already had owner tasks (T-3611, T-3609, T-3615, T-3612, T-3614, T-3632, T-3605) but no
+horizon pressure. Off the always-red list, three more were test-side: the sigpipe sentinel
+relied on a race (2/20), and the cron test inferred severity from doctor's whole exit code,
+which T-3783's vector-index FAILs moved to 2 (17/20).
+
+**Why structurally allowed:** a baselined red grades WARN, so nothing escalates while it is
+baselined. A commit that changes the pinned string never runs the pinning test (it runs only
+nightly, in a 900 s per-file pool), and the owner tasks sat at `captured`/`horizon: next`.
+Nothing tied an entry's expiry to the size of its fix.
+
+**Prevention:** (a) the stale tests now pin the invariant rather than the wording, and the
+two live-audit tests became hermetic, so they're quick and no longer read shared state;
+(b) the proposed re-arm staggers expiries by fix size (7–25 days, below), so at most a few
+entries fall due on any one day; (c) re-owning: T-4221 → T-3632 / T-4325 and completed
+T-2787 → T-4325, so every remaining entry points at a live task.
+
+## Proposed baseline changes
+
+Operator-only (`add --i-am-human`). The agent did not run it and did not edit `baseline.yaml`.
+`--days` is counted from the day the script runs; the dates below assume it runs 2026-10-19.
+
+| Entries | File | Owner (new) | Expires | Why this date |
+|---:|---|---|---|---|
+| 1 | atomic_yaml_write_lint.bats | T-3612 | 2026-10-26 | one-file atomic write |
+| 5 | approvals_close_ready_arcs.bats | T-3611 | 2026-10-28 | catch SystemExit, one site |
+| 1 | test_bin_fw_no_heredoc_cmd_sub.bats | T-3632 (was T-4221) | 2026-10-30 | two bin/fw sites |
+| 3 | doctor_hook_counters.bats | T-3615 | 2026-11-02 | re-route Stop hook + parity |
+| 4 | audit_inception_recommendation / lib_review (2) / review_pipefail | T-3609 | 2026-11-04 | needs a decision (honour or retire the env) |
+| 1 | audit_split_root_asset_lint.bats | T-3614 | 2026-11-06 | 8 sites to disposition |
+| 1 | test_operator_facing_stderr.py | T-3605 (+T-4407) | 2026-11-09 | two web/ sites + Watchtower restart |
+| 4 | t1719_index_one_post_write, t3662, t4119, no_root_framework_markers | T-4325 (was T-4221 / T-2787) | 2026-11-11 | load-only: green alone |
+| 1 | t2243_doctor_self_vendor_templates.bats (expired 10-18) | T-4325 (was T-3747) | 2026-11-13 | load-only: green alone |
+
+Left alone: the 10 entries fixed here plus context_safe_commands (fixed by T-4368), which
+`regenerate` drops after the next full green report; fw_focus_alias, t1719_ask_routing, audit,
+hook_telemetry_race (T-4325), t2452 (T-3992), fw_mode_detection (T-4038) and
+test_doctor_litellm_ollama (T-4138), which are already staggered between 10-22 and 11-01; and
+fabric_coverage_single_source, which another worker has in flight.
+
+One line (generated with `fw runme new`, not run):
+
+    bash /opt/999-Agentic-Engineering-Framework/.context/runme/t4385-baseline-rearm/runme.sh
+
 ## Evolution
+
+### 2026-10-19 — the cliff is mostly owned defects, not broken tests
+- **What changed:** at filing, "22 always-red tests" read as 22 tests that cannot pass. Run alone, 6 of the 22 were stale/slow tests (fixed here), and 16 are correct tests on real product defects, each already with an owner task.
+- **Plan impact:** "fix it or delete it" covers only the test-side third. The rest needs the owner tasks to move (they sit at captured/next) plus staggered re-arms, which is the operator's call.
+- **Triggered:** T-4407 (second stderr site, approvals.py:643); proposed re-own of T-4221's and T-2787's entries.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at

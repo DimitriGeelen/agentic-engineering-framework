@@ -54,12 +54,11 @@ _assert_audit_ran() {
 
 # --- Section filtering ---
 
-@test "audit runs structure section" {
-    run "$AUDIT" --section structure
-    # Should complete with status 0 or 1 (warnings); 75 = contention → skip
-    _assert_audit_ran
-    [[ "$output" == *"STRUCTURE"* ]]
-}
+# "audit runs structure section" was merged into "the live structure section
+# completes with a full report" below (T-4385): both ran the identical live
+# `--section structure` (~690 s on 2026-10-19), so the file paid for it twice
+# and hit the suite's 900 s per-file cap. Its STRUCTURE-header assertion moved
+# with it, so no assertion was lost.
 
 @test "audit runs compliance section" {
     run "$AUDIT" --section compliance
@@ -102,6 +101,7 @@ _assert_audit_ran() {
     # is asserted against the synthetic project below, where it is known.
     run "$AUDIT" --section structure
     _assert_audit_ran
+    [[ "$output" == *"STRUCTURE"* ]]
     [[ "$output" == *"=== END AUDIT ==="* ]]
 }
 
