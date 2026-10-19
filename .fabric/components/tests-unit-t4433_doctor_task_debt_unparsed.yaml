@@ -1,0 +1,21 @@
+id: tests/unit/t4433_doctor_task_debt_unparsed.bats
+name: t4433_doctor_task_debt_unparsed
+type: script
+subsystem: tests
+location: tests/unit/t4433_doctor_task_debt_unparsed.bats
+tags: []
+
+purpose: "T-4433: fw doctor surfaces task_debt.py's 'unparsed: N (files)' stderr (T-4430)"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-19
+created_by: unknown

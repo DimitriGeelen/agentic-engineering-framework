@@ -100,7 +100,7 @@ bvp_scores_proposed:
 - [x] An explicitly chosen minute is kept: any minute other than the seeded default, or `schedule_pinned: true` on the entry; the `H` minute token requests a derived minute for any job (documented in the generator, the helper and the registry entry)
 - [x] New config key `INDEX_REINDEX_INTERVAL_HOURS` (default 1, range 1-24) in `lib/config.sh` FW_CONFIG_REGISTRY changes the hour field of the generated reindex line (`*` at 1, `*/N` otherwise)
 - [x] Regression tests: two roots get different minutes, same root stable, explicit minute kept, knob changes hour field — fail without the fix, pass with it
-- [ ] Framework registry regenerated with `env -u FRAMEWORK_ROOT`; doctor reports the registry in sync; vendor sync clean for this task
+- [x] Framework registry regenerated with `env -u FRAMEWORK_ROOT`; doctor reports the registry in sync; vendor sync clean for this task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

@@ -1,0 +1,21 @@
+id: tests/unit/helpers/known_cwd.bash
+name: known_cwd
+type: script
+subsystem: tests
+location: tests/unit/helpers/known_cwd.bash
+tags: []
+
+purpose: "tests/unit/helpers/known_cwd.bash — classify commands from a KNOWN cwd (T-4429)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-19
+created_by: unknown

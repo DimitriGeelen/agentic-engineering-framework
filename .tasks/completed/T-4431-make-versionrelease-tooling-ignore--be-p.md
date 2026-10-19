@@ -1,20 +1,26 @@
 ---
-id: T-4428
-name: "Migrate install_target_project.bats to the T-4378 hermetic helper (private
-  TMPDIR, T-4318) and stop it timing out in the unit run"
+id: T-4431
+name: "Make version/release tooling ignore -be pre-release tags so the first bleeding-edge
+  release (v1.8.14-be.1) can be cut safely"
 description: >
-  T-4378 built tests/unit/helpers/hermetic.bash and migrated five offenders; install_target_project.bats
-  (hand-rolled private TMPDIR, T-4318) was left out as too large. It is also one of
-  the 8 files that hit the per-file timeout in today's unit run (LATEST.yaml). Migrate
-  it to load helpers/hermetic, keep every test's assertion, and measure its wall time
-  before/after. Arc test-suite-health (arc-026).
+  T-4023 (operator): we cut numbered bleeding-edge pre-releases (vX.Y.Z-be.N) for
+  field projects to pin. proxmox-ring20-management (msg 41ab10e6) only upgrades from
+  a pinned -be tag and asked for one at 89c4823f3 or later. No -be tag exists yet,
+  and tooling resolves 'the latest release' with git describe --tags (lib/version.sh:220,
+  :298 tag floor 'v[0-9]*', :458) and possibly lib/release.sh bump logic; a -be tag
+  would become the nearest tag on bleeding-edge and be read as the release version
+  (1.8.14-be.1). Make every latest-release lookup exclude *-be.* (e.g. --exclude '*-be.*'
+  or a shared helper), add a regression test in a temp repo (tags v1.8.12, v1.8.13
+  and v1.8.14-be.1: floor/latest is 1.8.13, bump --patch from it gives 1.8.14), and
+  add a 'fw release be-tag' or documented one-liner that creates an annotated vX.Y.Z-be.N
+  tag on bleeding-edge only (refuses on master). Do not create or push any real tag.
 
-status: started-work
-workflow_type: refactor
+status: work-completed
+workflow_type: build
 owner: agent
-horizon: now
-tags: [arc:test-suite-health]
-components: []
+horizon: null
+tags: []
+components: [agents/audit/self-audit.sh, agents/git/lib/hooks.sh, bin/fw, lib/release-tags.sh, lib/release.sh, lib/version.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,9 +48,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T21:05:48Z
-last_update: '2026-10-19T21:15:34Z'
-date_finished:
+created: 2026-10-19T21:29:52Z
+last_update: 2026-10-19T21:50:00Z
+date_finished: 2026-10-19T21:50:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,7 +62,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-19T21:06:35Z'
+  - ts: '2026-10-19T21:30:26Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -74,18 +80,18 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-19T21:15:34Z'
+  - ts: '2026-10-19T21:45:30Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
-      tier: 3
+      tier: 2
       effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
-      (workflow:refactor); effort=8 (lines=303,acs=6)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=313,acs=6)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4428: Migrate install_target_project.bats to the T-4378 hermetic helper (private TMPDIR, T-4318) and stop it timing out in the unit run
+# T-4431: Make version/release tooling ignore -be pre-release tags so the first bleeding-edge release (v1.8.14-be.1) can be cut safely
 
 ## Context
 
@@ -95,10 +101,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] tests/unit/install_target_project.bats loads helpers/hermetic and uses hermetic_setup/hermetic_teardown; no hand-rolled mktemp/TMPDIR handling (RUN_TMPDIR, TEST_HOME, TEST_TARGET, cwd mktemp) remains
-- [x] All 5 tests kept with their assertions; the file passes with 0 `not ok` and 0 skips (on a named branch)
-- [x] Wall time measured before and after (timeout 1200 bats …) and both recorded under ## Updates
-- [x] bats dead-negation lint clean over tests/
+- [x] One shared helper (lib/release-tags.sh) resolves the latest release tag excluding `*-be.*`; every latest-release / tag-floor / next-version lookup in lib/, bin/fw, agents/ uses it or passes the same `--exclude`
+- [x] Regression test in a temp git repo (tags v1.8.12, v1.8.13, v1.8.14-be.1): latest release resolves to v1.8.13, `fw version bump patch` floor computes 1.8.14, release.sh's tag lookup ignores the -be tag
+- [x] `fw release be-tag` creates an annotated vX.Y.Z-be.N tag on bleeding-edge (auto-numbering N), refuses on master and with a dirty/unknown branch; never pushes unless asked (tested in temp repo only)
+- [x] No real tag created or pushed in the framework repo; `bin/fw vendor self --check --task T-4431` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,10 +289,12 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-grep -q '^load helpers/hermetic' tests/unit/install_target_project.bats && ! grep -qE 'RUN_TMPDIR|mktemp' tests/unit/install_target_project.bats
-timeout 1200 bats tests/unit/install_target_project.bats > /tmp/.t4428.out 2>&1 && ! grep -q "^not ok" /tmp/.t4428.out
-test "$(grep -c '# skip' /tmp/.t4428.out)" -eq 0
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4428.lint 2>&1 && grep -q clean /tmp/.t4428.lint
+bash -n lib/release-tags.sh && bash -n lib/release.sh && bash -n lib/version.sh && bash -n bin/fw && bash -n agents/git/lib/hooks.sh
+timeout 300 bats tests/unit/t4431_be_tags.bats > /tmp/.t4431.out 2>&1 && ! grep -q "^not ok" /tmp/.t4431.out
+test "$(grep -c '# skip' /tmp/.t4431.out)" -eq 0
+timeout 600 bats tests/unit/lib_release.bats tests/unit/lib_version.bats tests/unit/t4055_version_derivation.bats tests/unit/t3242_version_tag_reconcile.bats tests/unit/t3585_release_status_tag_pattern.bats > /tmp/.t4431b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4431b.out
+test -z "$(git tag -l '*-be.*')"
+bin/fw vendor self --check --task T-4431
 
 ## RCA
 
@@ -303,6 +311,14 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4428.lint 2>&1 && grep 
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** cutting the first bleeding-edge pre-release tag (v1.8.14-be.1, T-4023) would make it the nearest tag on bleeding-edge, and every "latest release" lookup would read it as the release version: `fw version` → `1.8.14-be.1-N-gSHA` (not semver, so `fw version bump` refuses), doctor parity → VERSION 1.8.13 "BELOW" tag 1.8.14 (FAIL), `fw release` would bump from the -be tag, `fw version sync` would refuse below a 1.8.14 floor.
+
+**Root cause:** each caller resolved the latest tag with its own raw `git describe --tags` and no notion of pre-release tags: lib/release.sh:25 (`release_latest_tag`, feeds tag-and-release, status, doctor parity), lib/version.sh:220/:298/:458, bin/fw:31 (`_derive_version` → FW_VERSION → bump), agents/git/lib/hooks.sh:1395 (pre-push VERSION stamp), agents/audit/self-audit.sh:438. The `--match 'v[0-9]*'` glob matches `v1.8.14-be.1` too.
+
+**Why structurally allowed:** no -be tag had ever existed, so every test fixture held only release tags; six copies of the lookup meant no single place to state the rule.
+
+**Prevention:** one helper (lib/release-tags.sh, `RELEASE_PRERELEASE_TAG_EXCLUDE`) used by the lib/agents callers; the two that cannot source lib (bin/fw `_derive_version`, the pre-push stamp) inline the identical `--exclude`. tests/unit/t4431_be_tags.bats pins each caller against a fixture holding a -be tag, plus a lint test that fails on any new `describe --tags` in lib/, bin/fw, agents/ without the exclude.
 
 ## Evolution
 
@@ -380,17 +396,27 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4428.lint 2>&1 && grep 
 
 ## Updates
 
-### 2026-10-19T21:05:48Z — task-created [task-create-agent]
+### 2026-10-19T21:29:52Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4428-migrate-installtargetprojectbats-to-the-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4431-make-versionrelease-tooling-ignore--be-p.md
 - **Context:** Initial task creation
 
-### 2026-10-19T21:06:34Z — status-update [task-update-agent]
+### 2026-10-19T21:30:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-### 2026-10-19 — migration + timings [w4428]
-- **Before:** `time timeout 1200 bats tests/unit/install_target_project.bats` → 5/5 ok, real 5m04s (user 1m59s, sys 2m19s).
-- **After:** 5/5 ok, 0 skips, real 6m07s (user 1m56s, sys 2m13s), load average 19–31. CPU is unchanged; the wall swing is host load. The migration does not make the file faster: its cost is five full `install.sh` runs (vendor copy + fw init). Standalone it is under the 900 s per-file limit; the nightly timeout comes from running it alongside other files on a loaded host. Speeding it up would mean sharing one install across tests (setup_file), a structural change left out of this refactor.
-- **Tripwire found a real leak:** `install.sh <target>` → `fw init` probes `/api/_identity` (lib/watchtower.sh:67). Under `env -i` with no FW_PORT this hit the live Watchtower before. Now FW_PORT (and TMPDIR) are passed through `env -i`, so the probe lands on the hermetic decoy; tests 1–4 call `hermetic_allow_watchtower` with the reason (no switch exists to skip the probe; same exemption as t2746).
-- **Gotcha:** the file's own `FRAMEWORK_ROOT` was stripped by hermetic_setup (inherited, exported in worker shells), so it is renamed `REPO_ROOT`.
-- **Not covered:** `env -i` resets PATH, so the termlink tripwire is not on PATH inside install.sh (same as before the migration).
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f279ef54
+- **Timestamp:** 2026-10-19T21:50:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T21:50:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,26 +1,22 @@
 ---
-id: T-4431
-name: "Make version/release tooling ignore -be pre-release tags so the first bleeding-edge
-  release (v1.8.14-be.1) can be cut safely"
+id: T-4430
+name: "Task-debt check never counts 843 of 929 active tasks: single-quoted last_update
+  is rejected by date -d, so the stale figure is too low"
 description: >
-  T-4023 (operator): we cut numbered bleeding-edge pre-releases (vX.Y.Z-be.N) for
-  field projects to pin. proxmox-ring20-management (msg 41ab10e6) only upgrades from
-  a pinned -be tag and asked for one at 89c4823f3 or later. No -be tag exists yet,
-  and tooling resolves 'the latest release' with git describe --tags (lib/version.sh:220,
-  :298 tag floor 'v[0-9]*', :458) and possibly lib/release.sh bump logic; a -be tag
-  would become the nearest tag on bleeding-edge and be read as the release version
-  (1.8.14-be.1). Make every latest-release lookup exclude *-be.* (e.g. --exclude '*-be.*'
-  or a shared helper), add a regression test in a temp repo (tags v1.8.12, v1.8.13
-  and v1.8.14-be.1: floor/latest is 1.8.13, bump --patch from it gives 1.8.14), and
-  add a 'fw release be-tag' or documented one-liner that creates an annotated vX.Y.Z-be.N
-  tag on bleeding-edge only (refuses on master). Do not create or push any real tag.
+  Found by w4386 (T-4386, docs/reports/T-4386-doctor-profile.md). The doctor/audit
+  task-debt loop (now lib/task_debt.py, parity-preserved) parses last_update with
+  date -d semantics; a single-quoted value ('2026-10-19T...') is rejected, so those
+  tasks are silently skipped and the reported '63 stale' undercounts. Parse YAML properly
+  (strip quotes / yaml.safe_load the frontmatter) and add a regression test with quoted
+  and unquoted forms. Silent-skip class: a parse failure must count or be reported,
+  never vanish.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/task_debt.py, tests/unit/test_t4430_task_debt_dates.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,9 +44,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T21:29:52Z
-last_update: 2026-10-19T21:30:26Z
-date_finished:
+created: 2026-10-19T21:20:53Z
+last_update: 2026-10-19T21:49:27Z
+date_finished: 2026-10-19T21:49:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,7 +58,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-19T21:30:26Z'
+  - ts: '2026-10-19T21:24:02Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -79,9 +75,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-19T21:30:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=317,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4431: Make version/release tooling ignore -be pre-release tags so the first bleeding-edge release (v1.8.14-be.1) can be cut safely
+# T-4430: Task-debt check never counts 843 of 929 active tasks: single-quoted last_update is rejected by date -d, so the stale figure is too low
 
 ## Context
 
@@ -91,10 +97,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] One shared helper (lib/release-tags.sh) resolves the latest release tag excluding `*-be.*`; every latest-release / tag-floor / next-version lookup in lib/, bin/fw, agents/ uses it or passes the same `--exclude`
-- [x] Regression test in a temp git repo (tags v1.8.12, v1.8.13, v1.8.14-be.1): latest release resolves to v1.8.13, `fw version bump patch` floor computes 1.8.14, release.sh's tag lookup ignores the -be tag
-- [x] `fw release be-tag` creates an annotated vX.Y.Z-be.N tag on bleeding-edge (auto-numbering N), refuses on master and with a dirty/unknown branch; never pushes unless asked (tested in temp repo only)
-- [x] No real tag created or pushed in the framework repo; `bin/fw vendor self --check --task T-4431` clean
+- [x] `lib/task_debt.py` reads `last_update` from the frontmatter YAML-aware: single-quoted, double-quoted, unquoted, date-only, datetime with `Z` and with a numeric offset all parse to the right epoch
+- [x] A missing or unparseable `last_update` is never silently skipped: it is counted in the stale figure (the frozen caller's only channel) and reported on stderr as `unparsed: N` with the files
+- [x] Regression test `tests/unit/test_t4430_task_debt_dates.py` covers every form above and fails against the pre-fix code; `tests/unit/test_t4386_doctor_perf.py` updated to pin the corrected count
+- [x] Before/after stale count on the live repo recorded in this task
+
+**Live repo, 2026-10-19 (929 active tasks, cutoff = 7 days ago):** `fw doctor` Task debt **before 63, after 778**; 0 unparsed. Cross-checked independently: `grep -h -m1 '^last_update:' .tasks/active/*.md | tr -d "'\""` compared against the cutoff string with awk → 929 values, 778 older. Pre-fix test run: 10 of 14 new tests fail; post-fix 23/23 pass (new + T-4386 suite).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,12 +287,8 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-bash -n lib/release-tags.sh && bash -n lib/release.sh && bash -n lib/version.sh && bash -n bin/fw && bash -n agents/git/lib/hooks.sh
-timeout 300 bats tests/unit/t4431_be_tags.bats > /tmp/.t4431.out 2>&1 && ! grep -q "^not ok" /tmp/.t4431.out
-test "$(grep -c '# skip' /tmp/.t4431.out)" -eq 0
-timeout 600 bats tests/unit/lib_release.bats tests/unit/lib_version.bats tests/unit/t4055_version_derivation.bats tests/unit/t3242_version_tag_reconcile.bats tests/unit/t3585_release_status_tag_pattern.bats > /tmp/.t4431b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4431b.out
-test -z "$(git tag -l '*-be.*')"
-bin/fw vendor self --check --task T-4431
+python3 -m pytest tests/unit/test_t4430_task_debt_dates.py tests/unit/test_t4386_doctor_perf.py -q > /tmp/.t4430.out 2>&1 && grep -q passed /tmp/.t4430.out
+bin/fw vendor self --check --task T-4430
 
 ## RCA
 
@@ -302,13 +306,13 @@ bin/fw vendor self --check --task T-4431
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** cutting the first bleeding-edge pre-release tag (v1.8.14-be.1, T-4023) would make it the nearest tag on bleeding-edge, and every "latest release" lookup would read it as the release version: `fw version` → `1.8.14-be.1-N-gSHA` (not semver, so `fw version bump` refuses), doctor parity → VERSION 1.8.13 "BELOW" tag 1.8.14 (FAIL), `fw release` would bump from the -be tag, `fw version sync` would refuse below a 1.8.14 floor.
+**Symptom:** `fw doctor` "Task debt" reports far fewer stale tasks than exist; 843 of 929 active tasks never enter the count.
 
-**Root cause:** each caller resolved the latest tag with its own raw `git describe --tags` and no notion of pre-release tags: lib/release.sh:25 (`release_latest_tag`, feeds tag-and-release, status, doctor parity), lib/version.sh:220/:298/:458, bin/fw:31 (`_derive_version` → FW_VERSION → bump), agents/git/lib/hooks.sh:1395 (pre-push VERSION stamp), agents/audit/self-audit.sh:438. The `--match 'v[0-9]*'` glob matches `v1.8.14-be.1` too.
+**Root cause:** `lib/task_debt.py:34` strips only double quotes from the raw `last_update:` line, so a single-quoted value (`'2026-10-19T12:29:28Z'`, the form the task writer emits for 843 tasks) reaches `datetime.fromisoformat` with its quotes, raises `ValueError`, and `to_epoch` (`lib/task_debt.py:44-46`) returns 0; `stale_count` (`:63`) then skips it as if it were fresh. The predicate was ported verbatim from the bash loop (`date -d` rejected the same value), so the bug predates T-4386.
 
-**Why structurally allowed:** no -be tag had ever existed, so every test fixture held only release tags; six copies of the lookup meant no single place to state the rule.
+**Why structurally allowed:** a parse failure was folded into the same 0 as "not stale" — no counter, no stderr, nothing distinguishable from a healthy corpus. The T-4386 parity test pinned the bug on purpose (parity-preserving move) and no test asserted the stale count against the real frontmatter forms.
 
-**Prevention:** one helper (lib/release-tags.sh, `RELEASE_PRERELEASE_TAG_EXCLUDE`) used by the lib/agents callers; the two that cannot source lib (bin/fw `_derive_version`, the pre-push stamp) inline the identical `--exclude`. tests/unit/t4431_be_tags.bats pins each caller against a fixture holding a -be tag, plus a lint test that fails on any new `describe --tags` in lib/, bin/fw, agents/ without the exclude.
+**Prevention:** values are now parsed as YAML scalars; a missing/unparseable value counts as debt and prints `unparsed: N` on stderr, so the silent-skip class cannot recur silently. `tests/unit/test_t4430_task_debt_dates.py` pins every value form and the unparsed path.
 
 ## Evolution
 
@@ -365,6 +369,11 @@ bin/fw vendor self --check --task T-4431
 
 ## Decisions
 
+### 2026-10-19 — how an unparseable value surfaces
+- **Chose:** count it as stale debt AND print `unparsed: N (files)` on stderr; stdout stays one integer.
+- **Why:** the caller (`bin/fw:4117`) reads only stdout, requires `^[0-9]+$`, and discards stderr; bin/fw was out of scope (another worker editing it). Counting is the only channel that reaches the doctor line today; an active task whose age cannot be shown is not provably fresh.
+- **Rejected:** stderr-only (still vanishes in doctor via `2>/dev/null`); a nonzero exit (caller's `|| echo 0` would zero the whole figure). Follow-up for whoever owns bin/fw: surface the stderr `unparsed:` line in the doctor output.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -386,10 +395,28 @@ bin/fw vendor self --check --task T-4431
 
 ## Updates
 
-### 2026-10-19T21:29:52Z — task-created [task-create-agent]
+### 2026-10-19T21:20:53Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4431-make-versionrelease-tooling-ignore--be-p.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4430-task-debt-check-never-counts-843-of-929-.md
 - **Context:** Initial task creation
 
-### 2026-10-19T21:30:26Z — status-update [task-update-agent]
+### 2026-10-19T21:24:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ba0498dc
+- **Timestamp:** 2026-10-19T21:49:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T21:49:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

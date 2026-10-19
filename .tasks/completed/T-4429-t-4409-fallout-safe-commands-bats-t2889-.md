@@ -17,12 +17,12 @@ description: >
   changed (check t3374 'GIT_DIR= stays SAFE'). Not yet in a nightly (last run 10:29),
   so the next nightly turns them into NEW pre-push reds.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/helpers/known_cwd.bash, tests/unit/t3374_env_prefix_denylist.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -51,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T21:20:07Z
-last_update: 2026-10-19T21:21:27Z
-date_finished:
+last_update: 2026-10-19T21:48:45Z
+date_finished: 2026-10-19T21:48:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -80,6 +80,16 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-19T21:30:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=315,acs=8)
     rubric_sha: e4a00f38e801
 ---
 
@@ -397,3 +407,20 @@ out=$(python3 tools/bats-dead-negation-lint.py tests/ 2>&1); echo "$out" | grep 
 
 ### 2026-10-19T21:21:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2b544a52
+- **Timestamp:** 2026-10-19T21:49:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T21:48:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

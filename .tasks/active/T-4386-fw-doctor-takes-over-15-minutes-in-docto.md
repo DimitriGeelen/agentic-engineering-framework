@@ -340,6 +340,11 @@ bin/fw vendor self --check --task T-4386
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-10-19 — the 15 minutes was many medium checks, not one slow one
+- **What changed:** profiling (docs/reports/T-4386-doctor-profile.md) found no single culprit. The time was spread across costs-current transcript parsing, per-task resolver git calls, a whole-file port-3000 regex, serial hook/plugin exercises and the task-debt loop. Doctor fell from 199 s to about 60-84 s. Moving the task-debt loop to lib/task_debt.py exposed a parse bug the old loop shared: 843 single-quoted last_update values were silently skipped.
+- **Plan impact:** "fix the slow checks" became a set of small batching fixes. About 20 s of small forks remain, and the vector-index canary (about 8 s) is still the largest single item.
+- **Triggered:** T-4430 (quoted last_update: the stale count is 778, not 63) and T-4433 (doctor discards task_debt's 'unparsed' stderr).
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it

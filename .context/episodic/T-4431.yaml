@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4431: Make version/release tooling ignore -be pre-release tags so the first bleeding-edge release (v1.8.14-be.1) can be cut safely
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T21:50:46Z
+# ============================================================================
+
+task_id: T-4431
+task_name: "Make version/release tooling ignore -be pre-release tags so the first bleeding-edge release (v1.8.14-be.1) can be cut safely"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T21:29:52Z
+completed: 2026-10-19T21:50:00Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T23:37:01+02:00
+last_commit: 2026-10-19T23:37:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  -be pre-release tags never count as the latest release — shared lib/release-tags.sh (release_tags_latest/describe with --exclude '*-be.*') used by release.sh, version.sh, self-audit; same exclude inlined in bin/fw _derive_version and pre-push stamp; fw release be-tag (annotated vX.Y.Z-be.N on bleeding-edge only); 11 regression tests in temp repos incl. a describe --tags lint. tick vendor/no-real-tag AC
+
+# Key outcomes
+outcomes:
+  - 'One shared helper (lib/release-tags.sh) resolves the latest release tag excluding `*-be.*`; every latest-release / tag-floor / next-version lookup in lib/, bin/fw, agents/ uses it or passes the same `--exclude`'
+  - 'Regression test in a temp git repo (tags v1.8.12, v1.8.13, v1.8.14-be.1): latest release resolves to v1.8.13, `fw version bump patch` floor computes 1.8.14, release.sh''s tag lookup ignores the -be tag'
+  - '`fw release be-tag` creates an annotated vX.Y.Z-be.N tag on bleeding-edge (auto-numbering N), refuses on master and with a dirty/unknown branch; never pushes unless asked (tested in temp repo only)'
+  - 'No real tag created or pushed in the framework repo; `bin/fw vendor self --check --task T-4431` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/self-audit.sh'
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/release.sh'
+  - '.agentic-framework/lib/release-tags.sh'
+  - '.agentic-framework/lib/version.sh'
+  - 'agents/audit/self-audit.sh'
+  - 'agents/git/lib/hooks.sh'
+  - 'bin/fw'
+  - '.fabric/components/lib-release-tags.yaml'
+  - 'lib/release.sh'
+  - 'lib/release-tags.sh'
+  - 'lib/version.sh'
+  - '.tasks/active/T-4431-make-versionrelease-tooling-ignore--be-p.md'
+  - 'tests/unit/t4431_be_tags.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T23:37:01'
+    action: 'T-4431: -be pre-release tags never count as the latest release — shared lib/release-tags.sh (release_tags_latest/describe with --exclude ''*-be.*'') used by release.sh, version.sh, self-audit; same exclude inlined in bin/fw _derive_version and pre-push stamp; fw release be-tag (annotated vX.Y.Z-be.N on bleeding-edge only); 11 regression tests in temp repos incl. a describe --tags lint'
+  - time: '2026-10-19T23:37:17'
+    action: 'T-4431: tick vendor/no-real-tag AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 20
+  commits: 2
+  files_changed: 15
+  lines_added: 833
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4431-make-versionrelease-tooling-ignore--be-p.md
+generated_by: context-agent-hybrid

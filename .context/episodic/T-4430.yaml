@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4430: Task-debt check never counts 843 of 929 active tasks: single-quoted last_update is rejected by date -d, so the stale figure is too low
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T21:49:56Z
+# ============================================================================
+
+task_id: T-4430
+task_name: "Task-debt check never counts 843 of 929 active tasks: single-quoted last_update is rejected by date -d, so the stale figure is too low"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T21:20:53Z
+completed: 2026-10-19T21:49:27Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T23:30:34+02:00
+last_commit: 2026-10-19T23:30:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  task_debt.py parses last_update as a YAML scalar (quoted/unquoted, date-only, Z/offset); missing or unparseable values count as debt and print 'unparsed: N' on stderr; live stale count 63 -> 778; regression test (14)
+
+# Key outcomes
+outcomes:
+  - '`lib/task_debt.py` reads `last_update` from the frontmatter YAML-aware: single-quoted, double-quoted, unquoted, date-only, datetime with `Z` and with a numeric offset all parse to the right epoch'
+  - 'A missing or unparseable `last_update` is never silently skipped: it is counted in the stale figure (the frozen caller''s only channel) and reported on stderr as `unparsed: N` with the files'
+  - 'Regression test `tests/unit/test_t4430_task_debt_dates.py` covers every form above and fails against the pre-fix code; `tests/unit/test_t4386_doctor_perf.py` updated to pin the corrected count'
+  - 'Before/after stale count on the live repo recorded in this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — how an unparseable value surfaces'
+    chose: 'count it as stale debt AND print `unparsed: N (files)` on stderr; stdout stays one integer.'
+    rationale: 'the caller (`bin/fw:4117`) reads only stdout, requires `^[0-9]+$`, and discards stderr; bin/fw was out of scope (another worker editing it). Counting is the only channel that reaches the doctor line today; an active task whose age cannot be shown is not provably fresh.'
+    alternatives_rejected: ['stderr-only (still vanishes in doctor via `2>/dev/null`); a nonzero exit (caller''s `|| echo 0` would zero the whole figure). Follow-up for whoever owns bin/fw: surface the stderr `unparsed:` line in the doctor output.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/task_debt.py'
+  - '.fabric/components/tests-unit-test_t4430_task_debt_dates.yaml'
+  - 'lib/task_debt.py'
+  - '.tasks/active/T-4430-task-debt-check-never-counts-843-of-929-.md'
+  - 'tests/unit/test_t4386_doctor_perf.py'
+  - 'tests/unit/test_t4430_task_debt_dates.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T23:30:34'
+    action: 'T-4430: task_debt.py parses last_update as a YAML scalar (quoted/unquoted, date-only, Z/offset); missing or unparseable values count as debt and print ''unparsed: N'' on stderr; live stale count 63 -> 778; regression test (14)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 28 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 28
+  commits: 1
+  files_changed: 6
+  lines_added: 268
+  lines_removed: 60
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4430-task-debt-check-never-counts-843-of-929-.md
+generated_by: context-agent-hybrid

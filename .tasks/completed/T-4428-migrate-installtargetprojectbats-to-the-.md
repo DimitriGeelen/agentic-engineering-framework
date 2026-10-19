@@ -1,21 +1,19 @@
 ---
-id: T-4430
-name: "Task-debt check never counts 843 of 929 active tasks: single-quoted last_update
-  is rejected by date -d, so the stale figure is too low"
+id: T-4428
+name: "Migrate install_target_project.bats to the T-4378 hermetic helper (private
+  TMPDIR, T-4318) and stop it timing out in the unit run"
 description: >
-  Found by w4386 (T-4386, docs/reports/T-4386-doctor-profile.md). The doctor/audit
-  task-debt loop (now lib/task_debt.py, parity-preserved) parses last_update with
-  date -d semantics; a single-quoted value ('2026-10-19T...') is rejected, so those
-  tasks are silently skipped and the reported '63 stale' undercounts. Parse YAML properly
-  (strip quotes / yaml.safe_load the frontmatter) and add a regression test with quoted
-  and unquoted forms. Silent-skip class: a parse failure must count or be reported,
-  never vanish.
+  T-4378 built tests/unit/helpers/hermetic.bash and migrated five offenders; install_target_project.bats
+  (hand-rolled private TMPDIR, T-4318) was left out as too large. It is also one of
+  the 8 files that hit the per-file timeout in today's unit run (LATEST.yaml). Migrate
+  it to load helpers/hermetic, keep every test's assertion, and measure its wall time
+  before/after. Arc test-suite-health (arc-026).
 
-status: started-work
-workflow_type: build
+status: work-completed
+workflow_type: refactor
 owner: agent
-horizon: now
-tags: []
+horizon: null
+tags: [arc:test-suite-health]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,9 +42,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T21:20:53Z
-last_update: '2026-10-19T21:30:32Z'
-date_finished:
+created: 2026-10-19T21:05:48Z
+last_update: 2026-10-19T21:56:46Z
+date_finished: 2026-10-19T21:56:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,7 +56,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-19T21:24:02Z'
+  - ts: '2026-10-19T21:06:35Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -76,18 +74,18 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-19T21:30:32Z'
+  - ts: '2026-10-19T21:15:34Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
-      tier: 2
+      tier: 3
       effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=317,acs=6)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:refactor); effort=8 (lines=303,acs=6)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4430: Task-debt check never counts 843 of 929 active tasks: single-quoted last_update is rejected by date -d, so the stale figure is too low
+# T-4428: Migrate install_target_project.bats to the T-4378 hermetic helper (private TMPDIR, T-4318) and stop it timing out in the unit run
 
 ## Context
 
@@ -97,12 +95,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `lib/task_debt.py` reads `last_update` from the frontmatter YAML-aware: single-quoted, double-quoted, unquoted, date-only, datetime with `Z` and with a numeric offset all parse to the right epoch
-- [x] A missing or unparseable `last_update` is never silently skipped: it is counted in the stale figure (the frozen caller's only channel) and reported on stderr as `unparsed: N` with the files
-- [x] Regression test `tests/unit/test_t4430_task_debt_dates.py` covers every form above and fails against the pre-fix code; `tests/unit/test_t4386_doctor_perf.py` updated to pin the corrected count
-- [x] Before/after stale count on the live repo recorded in this task
-
-**Live repo, 2026-10-19 (929 active tasks, cutoff = 7 days ago):** `fw doctor` Task debt **before 63, after 778**; 0 unparsed. Cross-checked independently: `grep -h -m1 '^last_update:' .tasks/active/*.md | tr -d "'\""` compared against the cutoff string with awk → 929 values, 778 older. Pre-fix test run: 10 of 14 new tests fail; post-fix 23/23 pass (new + T-4386 suite).
+- [x] tests/unit/install_target_project.bats loads helpers/hermetic and uses hermetic_setup/hermetic_teardown; no hand-rolled mktemp/TMPDIR handling (RUN_TMPDIR, TEST_HOME, TEST_TARGET, cwd mktemp) remains
+- [x] All 5 tests kept with their assertions; the file passes with 0 `not ok` and 0 skips (on a named branch)
+- [x] Wall time measured before and after (timeout 1200 bats …) and both recorded under ## Updates
+- [x] bats dead-negation lint clean over tests/
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,8 +283,10 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_t4430_task_debt_dates.py tests/unit/test_t4386_doctor_perf.py -q > /tmp/.t4430.out 2>&1 && grep -q passed /tmp/.t4430.out
-bin/fw vendor self --check --task T-4430
+grep -q '^load helpers/hermetic' tests/unit/install_target_project.bats && ! grep -qE 'RUN_TMPDIR|mktemp' tests/unit/install_target_project.bats
+timeout 1200 bats tests/unit/install_target_project.bats > /tmp/.t4428.out 2>&1 && ! grep -q "^not ok" /tmp/.t4428.out
+test "$(grep -c '# skip' /tmp/.t4428.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4428.lint 2>&1 && grep -q clean /tmp/.t4428.lint
 
 ## RCA
 
@@ -305,14 +303,6 @@ bin/fw vendor self --check --task T-4430
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `fw doctor` "Task debt" reports far fewer stale tasks than exist; 843 of 929 active tasks never enter the count.
-
-**Root cause:** `lib/task_debt.py:34` strips only double quotes from the raw `last_update:` line, so a single-quoted value (`'2026-10-19T12:29:28Z'`, the form the task writer emits for 843 tasks) reaches `datetime.fromisoformat` with its quotes, raises `ValueError`, and `to_epoch` (`lib/task_debt.py:44-46`) returns 0; `stale_count` (`:63`) then skips it as if it were fresh. The predicate was ported verbatim from the bash loop (`date -d` rejected the same value), so the bug predates T-4386.
-
-**Why structurally allowed:** a parse failure was folded into the same 0 as "not stale" — no counter, no stderr, nothing distinguishable from a healthy corpus. The T-4386 parity test pinned the bug on purpose (parity-preserving move) and no test asserted the stale count against the real frontmatter forms.
-
-**Prevention:** values are now parsed as YAML scalars; a missing/unparseable value counts as debt and prints `unparsed: N` on stderr, so the silent-skip class cannot recur silently. `tests/unit/test_t4430_task_debt_dates.py` pins every value form and the unparsed path.
 
 ## Evolution
 
@@ -369,11 +359,6 @@ bin/fw vendor self --check --task T-4430
 
 ## Decisions
 
-### 2026-10-19 — how an unparseable value surfaces
-- **Chose:** count it as stale debt AND print `unparsed: N (files)` on stderr; stdout stays one integer.
-- **Why:** the caller (`bin/fw:4117`) reads only stdout, requires `^[0-9]+$`, and discards stderr; bin/fw was out of scope (another worker editing it). Counting is the only channel that reaches the doctor line today; an active task whose age cannot be shown is not provably fresh.
-- **Rejected:** stderr-only (still vanishes in doctor via `2>/dev/null`); a nonzero exit (caller's `|| echo 0` would zero the whole figure). Follow-up for whoever owns bin/fw: surface the stderr `unparsed:` line in the doctor output.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -395,11 +380,34 @@ bin/fw vendor self --check --task T-4430
 
 ## Updates
 
-### 2026-10-19T21:20:53Z — task-created [task-create-agent]
+### 2026-10-19T21:05:48Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4430-task-debt-check-never-counts-843-of-929-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4428-migrate-installtargetprojectbats-to-the-.md
 - **Context:** Initial task creation
 
-### 2026-10-19T21:24:02Z — status-update [task-update-agent]
+### 2026-10-19T21:06:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-19 — migration + timings [w4428]
+- **Before:** `time timeout 1200 bats tests/unit/install_target_project.bats` → 5/5 ok, real 5m04s (user 1m59s, sys 2m19s).
+- **After:** 5/5 ok, 0 skips, real 6m07s (user 1m56s, sys 2m13s), load average 19–31. CPU is unchanged; the wall swing is host load. The migration does not make the file faster: its cost is five full `install.sh` runs (vendor copy + fw init). Standalone it is under the 900 s per-file limit; the nightly timeout comes from running it alongside other files on a loaded host. Speeding it up would mean sharing one install across tests (setup_file), a structural change left out of this refactor.
+- **Tripwire found a real leak:** `install.sh <target>` → `fw init` probes `/api/_identity` (lib/watchtower.sh:67). Under `env -i` with no FW_PORT this hit the live Watchtower before. Now FW_PORT (and TMPDIR) are passed through `env -i`, so the probe lands on the hermetic decoy; tests 1–4 call `hermetic_allow_watchtower` with the reason (no switch exists to skip the probe; same exemption as t2746).
+- **Gotcha:** the file's own `FRAMEWORK_ROOT` was stripped by hermetic_setup (inherited, exported in worker shells), so it is renamed `REPO_ROOT`.
+- **Not covered:** `env -i` resets PATH, so the termlink tripwire is not on PATH inside install.sh (same as before the migration).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-de055386
+- **Timestamp:** 2026-10-19T22:01:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T21:56:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
