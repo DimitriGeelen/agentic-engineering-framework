@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4344: Boundary read scanner skips the word after option flags that take no value, hiding outside reads (git diff --no-index -m /etc/shadow, git log --summary /etc/shadow)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T08:50:37Z
+# ============================================================================
+
+task_id: T-4344
+task_name: "Boundary read scanner skips the word after option flags that take no value, hiding outside reads (git diff --no-index -m /etc/shadow, git log --summary /etc/shadow)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T22:02:56Z
+completed: 2026-10-19T08:50:07Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-19T00:11:44+02:00
+last_commit: 2026-10-19T00:12:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary read scanner keys free-text options per command, not one global set. decision — true free-text values are not path reads; file-reading options (-F, --body-file) stay judged (verified)
+
+# Key outcomes
+outcomes:
+  - '`scan_boundary_reads` returns the reported counts: `git diff --no-index /etc/shadow /dev/null` = 2, `git diff --no-index -m /etc/shadow /dev/null` = 2, `git log --summary /etc/shadow` = 1, `cat /etc/shadow` = 1 (regression bats in tests/unit/t4344_boundary_read_free_text_opts.bats)'
+  - 'Free-text value skipping is keyed per command (and git subcommand): a flag that takes no value (git log/diff `--summary`, `-m`) never skips the next word'
+  - 'Options whose value the program READS as a file stay judged as path reads; only true free-text values are skipped (replaces the path-shaped-value criterion, see Decisions): `git commit -F /etc/shadow`, `git tag -F /etc/shadow v1`, `gh issue create --body-file /etc/shadow` each report 1 outside read; `git commit -m /etc/shadow` reports 0 (checked by the parent, 2026-10-19)'
+  - 'T-4284 false positives stay unflagged: commit messages, fw `--rationale` text containing `>` or paths in prose (tests/unit/t4284_boundary_free_text_args.bats passes)'
+  - 'Hook test suites that exercise the boundary scanner pass after the change'
+  - '`bin/fw vendor self --check` clean after the vendor sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4344-boundary-read-scanner-skips-the-word-aft.md'
+  - 'tests/unit/t4344_boundary_read_free_text_opts.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T00:11:44'
+    action: 'T-4344: boundary read scanner keys free-text options per command, not one global set'
+  - time: '2026-10-19T00:12:47'
+    action: 'T-4344: decision — true free-text values are not path reads; file-reading options (-F, --body-file) stay judged (verified)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 647 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, bug, boundary]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 647
+  commits: 2
+  files_changed: 4
+  lines_added: 277
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4344-boundary-read-scanner-skips-the-word-aft.md
+generated_by: context-agent-hybrid

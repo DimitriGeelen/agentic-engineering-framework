@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4341: Task lifecycle posts 'In progress' and 'Fixed on bleeding-edge' on a task's linked GitHub issue
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T08:55:26Z
+# ============================================================================
+
+task_id: T-4341
+task_name: "Task lifecycle posts 'In progress' and 'Fixed on bleeding-edge' on a task's linked GitHub issue"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T21:55:37Z
+completed: 2026-10-19T08:54:56Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-19T10:25:22+02:00
+last_commit: 2026-10-19T10:25:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  task lifecycle posts in-progress / fixed-on-bleeding-edge on the linked GitHub issue (fw issues lifecycle; never blocks a transition)
+
+# Key outcomes
+outcomes:
+  - '`fw issues lifecycle T-XXX --event started|closed` exists in lib/issues.py and posts stage in-progress / fixed-on-bleeding-edge through cmd_comment (the one outward verb), idempotent per stage'
+  - 'agents/task-create/update-task.sh calls it on started-work and on work-completed (partial-complete included: the commit-on-mirror check in cmd_comment is the gate), guarded so it can never fail or block a transition; FW_ISSUES_LIFECYCLE=0 disables it'
+  - 'A gh/GitHub failure is recorded in lifecycle-pending.jsonl, one WARN line is printed, exit status is 0; a task without github_issue: does nothing'
+  - 'Regression suite tests/unit/t4341_lifecycle_issue_stages.bats passes (fake gh, sandbox project); t4077/4078/4088/4108/4340/4347 issues suites stay green'
+  - '`bin/fw vendor self --check` is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'task lifecycle posts in-progress / fixed-on-bleeding-edge on the linked GitHub issue (fw issues lifecycle; never blocks a transition)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/issues.py'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/issues.py'
+  - '.tasks/active/T-4341-task-lifecycle-posts-in-progress-and-fix.md'
+  - 'tests/unit/t4341_lifecycle_issue_stages.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T10:25:22'
+    action: 'T-4341: task lifecycle posts in-progress / fixed-on-bleeding-edge on the linked GitHub issue (fw issues lifecycle; never blocks a transition)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 659 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, issues, lifecycle]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 659
+  commits: 1
+  files_changed: 6
+  lines_added: 341
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4341-task-lifecycle-posts-in-progress-and-fix.md
+generated_by: context-agent-hybrid

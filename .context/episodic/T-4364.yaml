@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4364: Weekly cron ran fw release tag-and-release unattended and nearly published untested bleeding-edge as v1.8.12
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T08:46:32Z
+# ============================================================================
+
+task_id: T-4364
+task_name: "Weekly cron ran fw release tag-and-release unattended and nearly published untested bleeding-edge as v1.8.12"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T08:15:03Z
+completed: 2026-10-19T08:46:13Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-19T10:19:16+02:00
+last_commit: 2026-10-19T10:36:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  revert the unattended v1.8.12 VERSION reconcile (weekly release cron, stopped before push); VERSION back to 1.8.11 until the real v1.8.12 hotfix. pause the weekly unattended release cron (it nearly published untested bleeding-edge as v1.8.12; stopped before push); register G-120. fw release refuses unattended runs without a recorded per-version release decision; fw release decide. regenerate crontab after pausing the weekly release job (registry→generated drift). regenerate crontab with the repo's own bin/fw (previous generate inherited FRAMEWORK_ROOT=.agentic-framework from the session env)
+
+# Key outcomes
+outcomes:
+  - 'The weekly release cron entry is paused in .context/cron-registry.yaml, regenerated and installed (doctor: registry in sync)'
+  - 'Local master is back at e42aa41bf (v1.8.11), the local v1.8.12 tag no longer exists, and both remotes still show master e42aa41bf with no v1.8.12 tag'
+  - 'bleeding-edge VERSION reads 1.8.11 again (the unattended reconcile commit reverted, f1389c904)'
+  - 'fw release tag-and-release refuses an unattended run (no TTY / cron) unless a recorded release decision for that version exists; regression test tests/unit/t4364_release_decision_gate.bats'
+  - '`fw release decide` records decisions append-only in .context/releases/decisions.jsonl; CLAUDE.md §Release-Train states runs need a recorded decision and no scheduled release exists'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'revert the unattended v1.8.12 VERSION reconcile (weekly release cron, stopped before push); VERSION back to 1.8.11 until the real v1.8.12 hotfix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — decision record'
+    chose: 'new minimal append-only .context/releases/decisions.jsonl plus `fw release decide`; no existing mechanism records per-version release approval (Tier 0 approvals are per-action and ephemeral). Gate sits in release_main so direct library calls in other unit tests are unaffected. Under CLAUDECODE=1, `--by operator` needs the operator''s verbatim words (>=12 chars); `--by field-evidence` needs a T-/docs/reports ref.'
+    alternatives_rejected: ['an env-var bypass (defeats the gate); reusing tier0 approvals (wrong granularity).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/release.sh'
+  - '.agentic-framework/VERSION'
+  - 'CLAUDE.md'
+  - '.context/cron/agentic-audit.crontab'
+  - '.context/cron-registry.yaml'
+  - '.context/project/concerns.yaml'
+  - 'lib/release.sh'
+  - '.tasks/active/T-4364-weekly-cron-ran-fw-release-tag-and-relea.md'
+  - 'tests/unit/t4364_release_decision_gate.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T10:19:16'
+    action: 'T-4364: revert the unattended v1.8.12 VERSION reconcile (weekly release cron, stopped before push); VERSION back to 1.8.11 until the real v1.8.12 hotfix'
+  - time: '2026-10-19T10:19:41'
+    action: 'T-4364: pause the weekly unattended release cron (it nearly published untested bleeding-edge as v1.8.12; stopped before push); register G-120'
+  - time: '2026-10-19T10:24:02'
+    action: 'T-4364: fw release refuses unattended runs without a recorded per-version release decision; fw release decide'
+  - time: '2026-10-19T10:35:46'
+    action: 'T-4364: regenerate crontab after pausing the weekly release job (registry→generated drift)'
+  - time: '2026-10-19T10:36:53'
+    action: 'T-4364: regenerate crontab with the repo''s own bin/fw (previous generate inherited FRAMEWORK_ROOT=.agentic-framework from the session env)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [release, cron, governance, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 31
+  commits: 5
+  files_changed: 10
+  lines_added: 735
+  lines_removed: 57
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4364-weekly-cron-ran-fw-release-tag-and-relea.md
+generated_by: context-agent-hybrid

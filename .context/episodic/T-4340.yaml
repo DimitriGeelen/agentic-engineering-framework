@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4340: fw release posts 'Released in vX.Y.Z' on every linked GitHub issue, with a test-evidence and release-reasoning block, and closes it on positive field evidence
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T08:50:04Z
+# ============================================================================
+
+task_id: T-4340
+task_name: "fw release posts 'Released in vX.Y.Z' on every linked GitHub issue, with a test-evidence and release-reasoning block, and closes it on positive field evidence"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T21:55:15Z
+completed: 2026-10-19T08:49:07Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-18T23:59:41+02:00
+last_commit: 2026-10-19T00:28:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  operator close rule for GitHub issues (option 1: close on release + positive field evidence; else 'please confirm' and close after 14 days); file T-4339..T-4342. release posts stage 9 on linked GitHub issues per the close rule. tick the Agent ACs (each is covered by tests/unit/t4340_*). release-leg test asserts 'no tag' with if/then false (bare ! was a dead negation)
+
+# Key outcomes
+outcomes:
+  - '`lib/release.sh` posts the Released stage (via `fw issues comment`, never `gh` directly) for every task in the release range that has `github_issue: N`, with an evidence block (regression tests from the task''s Verification/ACs, field verdict parsed from `docs/reports/field-test-vX.Y.Z-results.md`, gates passed, links to the release notes and field report).'
+  - 'Close rule applied: issue closed only when the task is work-completed AND the field report has a WORKS verdict for it; otherwise "Released — please confirm" is posted and a 14-day due date is recorded in the ledger.'
+  - 'A scheduled sweep (`fw issues sweep`) closes overdue please-confirm issues with a note, and never closes an issue that has a submitter reply after its Released comment.'
+  - 'Posting is idempotent per (issue, stage): a second run posts nothing new.'
+  - '`fw release --dry-run` lists what would be posted/closed and calls no GitHub write.'
+  - 'A GitHub failure during the release-stage posting is reported and recorded for retry; the release exit code is unaffected.'
+  - 'Tests with a fake `gh` (no network) cover: posting with evidence, close vs please-confirm, idempotence, dry-run, overdue sweep, reply blocks close, GitHub failure does not fail release.'
+  - 'One line added to CLAUDE.md §Release-Train and to docs/reports/T-4039-inbound-github-issues.md stating that a release posts stage 9 per the close rule.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'release posts stage 9 on linked GitHub issues per the close rule'
+    source: git-mined
+  - description: 'operator close rule for GitHub issues (option 1: close on release + positive field evidence; else ''please confirm'' and close after 14 days); file T-4339..T-4342'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - '.agentic-framework/lib/release.sh'
+  - 'CLAUDE.md'
+  - 'docs/reports/T-4039-inbound-github-issues.md'
+  - 'lib/issues.py'
+  - 'lib/release.sh'
+  - '.tasks/active/T-4339-retrospective-of-the-22-external-github-.md'
+  - '.tasks/active/T-4340-fw-release-posts-released-in-vxyz-on-eve.md'
+  - '.tasks/active/T-4341-task-lifecycle-posts-in-progress-and-fix.md'
+  - '.tasks/active/T-4342-resume-github-issue-intake-agent-filed-i.md'
+  - 'tests/unit/t4340_issues_release_test.py'
+  - 'tests/unit/t4340_release_issue_leg.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T23:59:41'
+    action: 'T-4340: operator close rule for GitHub issues (option 1: close on release + positive field evidence; else ''please confirm'' and close after 14 days); file T-4339..T-4342'
+  - time: '2026-10-19T00:10:36'
+    action: 'T-4340: release posts stage 9 on linked GitHub issues per the close rule'
+  - time: '2026-10-19T00:11:04'
+    action: 'T-4340: tick the Agent ACs (each is covered by tests/unit/t4340_*)'
+  - time: '2026-10-19T00:28:46'
+    action: 'T-4340: release-leg test asserts ''no tag'' with if/then false (bare ! was a dead negation)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 653 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, issues, release]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 653
+  commits: 4
+  files_changed: 12
+  lines_added: 2626
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4340-fw-release-posts-released-in-vxyz-on-eve.md
+generated_by: context-agent-hybrid

@@ -17,12 +17,12 @@ description: >
   (operator) whether a scheduled release may exist at all, and make fw release refuse
   unattended runs without a recorded release decision.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [release, cron, governance, bug]
-components: []
+components: [lib/release.sh]
 related_tasks: []
 origin: {kind: "agent", source: "T-4345"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -52,8 +52,8 @@ origin: {kind: "agent", source: "T-4345"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T08:15:03Z
-last_update: '2026-10-19T08:31:18Z'
-date_finished:
+last_update: 2026-10-19T08:46:13Z
+date_finished: 2026-10-19T08:46:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -396,3 +396,24 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4364-weekly-cron-ran-fw-release-tag-and-relea.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e44cea99
+- **Timestamp:** 2026-10-19T08:46:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — The weekly release cron entry is paused in .context/cron-registry.yaml, regenerated and installed (doctor: registry in sync)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/cron-registry.yaml in: The weekly release cron entry is paused in .context/cron-registry.yaml, regenerated and installed (doctor: registry in sync)`
+- **AC#5 (Agent)** — `fw release decide` records decisions append-only in .context/releases/decisions.jsonl; CLAUDE.md §Release-Train states runs need a recorded decision and no scheduled release exists
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/releases/decisions.jsonl in: `fw release decide` records decisions append-only in .context/releases/decisions.jsonl; CLAUDE.md §Release-Train states runs need a recorded decision `
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T08:46:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

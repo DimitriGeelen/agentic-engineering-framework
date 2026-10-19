@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4342: Resume GitHub issue intake: agent-filed issues handled as internal (no public comments), then unpause issues-sync-2h
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T08:59:09Z
+# ============================================================================
+
+task_id: T-4342
+task_name: "Resume GitHub issue intake: agent-filed issues handled as internal (no public comments), then unpause issues-sync-2h"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T21:55:59Z
+completed: 2026-10-19T08:55:30Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-19T01:43:40+02:00
+last_commit: 2026-10-19T01:43:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  issues sync treats owner-authored issues as internal (ledger row, no post); unpause issues-sync-2h
+
+# Key outcomes
+outcomes:
+  - 'fw issues sync writes a ledger row (class internal) for issues authored by the repo owner and posts no Received/Classified comment and adds no label'
+  - 'External-author issues still get Received (and Classified) comments'
+  - 'Regression test (pytest, fake gh, t4078_issues_sync_test.py) covers both cases and passes; t4077/4078/4088/4108/4340 green (t4347 has 4 failures that pre-date this change)'
+  - 'bin/fw issues sync --dry-run against the real repo would post only on external issues not in the ledger (summary pasted in Updates)'
+  - 'Cron entry issues-sync-2h is status: active, generated and installed, doctor shows registry in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'issues sync treats owner-authored issues as internal (ledger row, no post); unpause issues-sync-2h'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - '.context/cron/agentic-audit.crontab'
+  - '.context/cron-registry.yaml'
+  - 'lib/issues.py'
+  - '.tasks/active/T-4342-resume-github-issue-intake-agent-filed-i.md'
+  - 'tests/unit/t4078_issues_sync_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T01:43:40'
+    action: 'T-4342: issues sync treats owner-authored issues as internal (ledger row, no post); unpause issues-sync-2h'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 659 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, issues, cron]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 659
+  commits: 1
+  files_changed: 6
+  lines_added: 103
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4342-resume-github-issue-intake-agent-filed-i.md
+generated_by: context-agent-hybrid

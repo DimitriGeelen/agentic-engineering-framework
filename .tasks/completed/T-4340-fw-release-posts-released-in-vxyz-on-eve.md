@@ -11,12 +11,12 @@ description: >
   lists what would be posted. Codify it in the CLAUDE.md release-train section and
   the T-4039 doc as a release step.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [github, issues, release]
-components: []
+components: [lib/release.sh]
 related_tasks: []
 origin: {kind: "operator"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -46,8 +46,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T21:55:15Z
-last_update: '2026-10-18T22:00:50Z'
-date_finished:
+last_update: 2026-10-19T08:49:07Z
+date_finished: 2026-10-19T08:49:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -413,3 +413,22 @@ removes the hook turns the close gate red.
 
 ### 2026-10-18T21:59:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6e86716e
+- **Timestamp:** 2026-10-19T08:49:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/release.sh` posts the Released stage (via `fw issues comment`, never `gh` directly) for every task in the release range that has `github_issue: N`, with an evidence block (regression tests from t
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=docs/reports/field-test-vX.Y in: `lib/release.sh` posts the Released stage (via `fw issues comment`, never `gh` directly) for every task in the release range that has `github_issue: N`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T08:49:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,27 +1,23 @@
 ---
-id: T-4344
-name: "Boundary read scanner skips the word after option flags that take no value,
-  hiding outside reads (git diff --no-index -m /etc/shadow, git log --summary /etc/shadow)"
+id: T-4342
+name: "Resume GitHub issue intake: agent-filed issues handled as internal (no public
+  comments), then unpause issues-sync-2h"
 description: >
-  ring20-dashboard finding (msg 4699f56c), reproduced on v1.8.11: lib/shell_write_scan.py
-  scan_boundary_reads (T-4284 free-text option skipping) returns 2 hits for 'git diff
-  --no-index /etc/shadow /dev/null' but 1 for '... -m /etc/shadow ...' and 0 for 'git
-  log --summary /etc/shadow' (cat /etc/shadow: 1). One global option set plus skip-the-next-word
-  hides paths after flags that take no value. Fix: key value-taking free-text options
-  by command + subcommand (git commit/tag -m/--message/-F?, fw --rationale/--summary/--detail/--reason,
-  gh --body/--title, termlink --body), never skip the next word for a flag that takes
-  no value, and still judge a skipped word that is path-shaped (starts with /, ~,
-  $HOME, ../). Regression tests for the reported cases plus the T-4284 false positives
-  it fixed (must stay unflagged). Regression of v1.8.11 (shipped T-4284).
+  Operator 2026-10-18 chose: acknowledge only external issues; mark our own (DimitriGeelen,
+  fw upstream) 52 open issues as internal without posting; unpause the 2-hourly sync
+  (paused since T-4078, 59f16fb21, waiting on the first-run backlog decision). Make
+  fw issues sync treat author DimitriGeelen as class internal (ledger row, no comment),
+  verify with --dry-run that the first run posts only on external issues, then set
+  the cron entry active and run fw cron generate + install.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [security, bug, boundary]
+horizon: null
+tags: [github, issues, cron]
 components: []
 related_tasks: []
-origin: {kind: "peer", source: "ring20-dashboard"}
+origin: {kind: "operator"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -48,9 +44,9 @@ origin: {kind: "peer", source: "ring20-dashboard"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T22:02:56Z
-last_update: '2026-10-18T22:15:32Z'
-date_finished:
+created: 2026-10-18T21:55:59Z
+last_update: 2026-10-19T08:55:30Z
+date_finished: 2026-10-19T08:55:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,8 +57,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T22:00:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-18T22:04:07Z'
+  - ts: '2026-10-18T22:01:57Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -79,19 +85,9 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-18T22:15:32Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=314,acs=8)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4344: Boundary read scanner skips the word after option flags that take no value, hiding outside reads (git diff --no-index -m /etc/shadow, git log --summary /etc/shadow)
+# T-4342: Resume GitHub issue intake: agent-filed issues handled as internal (no public comments), then unpause issues-sync-2h
 
 ## Context
 
@@ -101,12 +97,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `scan_boundary_reads` returns the reported counts: `git diff --no-index /etc/shadow /dev/null` = 2, `git diff --no-index -m /etc/shadow /dev/null` = 2, `git log --summary /etc/shadow` = 1, `cat /etc/shadow` = 1 (regression bats in tests/unit/t4344_boundary_read_free_text_opts.bats)
-- [x] Free-text value skipping is keyed per command (and git subcommand): a flag that takes no value (git log/diff `--summary`, `-m`) never skips the next word
-- [x] Options whose value the program READS as a file stay judged as path reads; only true free-text values are skipped (replaces the path-shaped-value criterion, see Decisions): `git commit -F /etc/shadow`, `git tag -F /etc/shadow v1`, `gh issue create --body-file /etc/shadow` each report 1 outside read; `git commit -m /etc/shadow` reports 0 (checked by the parent, 2026-10-19)
-- [x] T-4284 false positives stay unflagged: commit messages, fw `--rationale` text containing `>` or paths in prose (tests/unit/t4284_boundary_free_text_args.bats passes)
-- [x] Hook test suites that exercise the boundary scanner pass after the change
-- [x] `bin/fw vendor self --check` clean after the vendor sync
+- [x] fw issues sync writes a ledger row (class internal) for issues authored by the repo owner and posts no Received/Classified comment and adds no label
+- [x] External-author issues still get Received (and Classified) comments
+- [x] Regression test (pytest, fake gh, t4078_issues_sync_test.py) covers both cases and passes; t4077/4078/4088/4108/4340 green (t4347 has 4 failures that pre-date this change)
+- [x] bin/fw issues sync --dry-run against the real repo would post only on external issues not in the ledger (summary pasted in Updates)
+- [x] Cron entry issues-sync-2h is status: active, generated and installed, doctor shows registry in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -157,9 +152,6 @@ cost_estimate_proposed:
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
-out=$(bats tests/unit/t4344_boundary_read_free_text_opts.bats 2>&1); echo "$out" | grep -q "^1\.\." && ! echo "$out" | grep -q "^not ok"
-out=$(bats tests/unit/t4284_boundary_free_text_args.bats 2>&1); echo "$out" | grep -q "^1\.\." && ! echo "$out" | grep -q "^not ok"
-bin/fw vendor self --check
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
@@ -288,7 +280,17 @@ bin/fw vendor self --check
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/t4078_issues_sync_test.py -q > /tmp/.t4342.out 2>&1 && grep -q passed /tmp/.t4342.out
+grep -q "^17 \*/2 .*issues sync" /etc/cron.d/agentic-audit-999-agentic-engineering-framework
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** the first unpaused sync would post Received/Classified on our own agent-filed issues.
+**Root cause:** lib/issues.py cmd_sync detects `internal` (line ~587) but only uses it to skip reply handling; the received/classified stage comments are posted for every new issue.
+**Why structurally allowed:** sync was paused at T-4078 pending a backlog decision, so the path never ran live.
+**Prevention:** regression test with fake gh asserting no post for owner-authored issues.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -303,16 +305,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** on v1.8.11, `scan_boundary_reads` reports 2 outside reads for `git diff --no-index /etc/shadow /dev/null` but 1 for the same command with `-m` before the path, and 0 for `git log --summary /etc/shadow` (`cat /etc/shadow` reports 1). The hook lets the read through.
-
-**Root cause:** `lib/shell_write_scan.py` `_read_words` consulted one global `_FREE_TEXT_OPTS` set (T-4284) for every `git`/`fw`/`gh`/`termlink`/`claude` segment. `-m` (git diff, takes no value) and `--summary` (git log, takes no value) are in that set, so the next word — the path operand — was skipped with `continue` and never judged (`lib/shell_write_scan.py` skip branch, formerly ~1222-1228).
-
-**Why structurally allowed:** the T-4284 test suite pinned the false positives the set fixed (commit messages, prompts) but never a value-taking spelling that is *also* a no-value flag in another subcommand, so the one global key looked correct. The scanner's own tests covered `-m` only under `fw`/`git commit`.
-
-**Prevention:** free-text options are now keyed per command and per git subcommand (`_FREE_TEXT_OPTS_BY_CMD`, `_git_subcommand`, `_free_text_opts`), so `git diff`/`git log` have no free-text options at all. `tests/unit/t4344_boundary_read_free_text_opts.bats` pins the four reported counts (HEAD gives 1 and 0 where 2 and 1 are expected), the no-value flags, the git `-C` subcommand stepping, and the T-4284 false positives.
-
-**Not done — path-shaped skipped values (AC 3):** the task asked that a skipped value still be judged when path-shaped. The T-4284 suite asserts `--prompt="$OUT"` and `--name "$OUT"` (a bare outside path as the free-text value) are allowed, and the task also requires those cases to stay unflagged. Both cannot hold, so this was left out. Decision needed from the operator.
 
 ## Evolution
 
@@ -369,13 +361,6 @@ bin/fw vendor self --check
 
 ## Decisions
 
-- **2026-10-19 — free-text values are not path reads (parent).** Considered: also judging a path-shaped value of a
-  free-text option (`--prompt "/x"`, `-m "/x"`). Rejected: the program never opens that value as a file, so flagging it
-  is a false positive and contradicts T-4284's correct cases (`--prompt="$OUT"`, `--name "$OUT"`). The security
-  property that matters is that every option whose value IS read as a file (`-F`, `--file`, `--body-file`) is not in
-  the free-text set; verified for git commit/tag -F and gh --body-file. The reported bypass came from no-value flags
-  (`-m` on git diff, `--summary` on git log) being treated as value-taking, which the per-command table fixes.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -397,10 +382,32 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-18T22:02:56Z — task-created [task-create-agent]
+### 2026-10-18T21:55:59Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4344-boundary-read-scanner-skips-the-word-aft.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4342-resume-github-issue-intake-agent-filed-i.md
 - **Context:** Initial task creation
 
-### 2026-10-18T22:04:04Z — status-update [task-update-agent]
+### 2026-10-18T23:30:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-19 — dry-run against real repo (T-4342)
+- `bin/fw issues sync --dry-run`: 55 new, 55 classified, 0 edited, 5 submitter replies. Every DimitriGeelen issue prints `INTERNAL #n ... ledger only, nothing posted`; the only `NEW` (would post) line is `NEW #106 from MikeEchoVoid: bug/bin/medium`. The 5 replies are ledger-only (recorded, not answered).
+- Cron: issues-sync-2h active, generated and installed; doctor 'Cron registry in sync'.
+- t4347 test_key_0_refuses_without_approval x4 fail with and without this change (pre-existing).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ecd153e2
+- **Timestamp:** 2026-10-19T08:58:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T08:55:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

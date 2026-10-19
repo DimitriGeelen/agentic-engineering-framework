@@ -15,10 +15,10 @@ description: >
   report; close only on positive field evidence. Decision stages for #95-#105 go to
   the operator. Drafts first, reviewed, then posted via fw issues comment.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [github, issues, release]
 components: []
 related_tasks: []
@@ -50,8 +50,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T21:54:31Z
-last_update: '2026-10-18T22:00:50Z'
-date_finished:
+last_update: 2026-10-19T08:50:40Z
+date_finished: 2026-10-19T08:50:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -395,3 +395,22 @@ python3 -m pytest -q tests/web/test_t4043_docs_detail_title.py tests/web/test_t4
 
 ### 2026-10-18T21:57:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5dc7bb80
+- **Timestamp:** 2026-10-19T08:52:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — After review, posted through fw issues comment (one outward verb, ledgered): Released + please-confirm on #86-#94 (evidence block: how tested, why released, permalinks pinned to 50fae848f); Received +
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/issues/intake.jsonl in: After review, posted through fw issues comment (one outward verb, ledgered): Released + please-confirm on #86-#94 (evidence block: how tested, why rel`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T08:50:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

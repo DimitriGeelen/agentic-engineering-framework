@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4339: Retrospective of the 22 external GitHub issues: draft and post release/status updates with test evidence and release reasoning
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T08:53:12Z
+# ============================================================================
+
+task_id: T-4339
+task_name: "Retrospective of the 22 external GitHub issues: draft and post release/status updates with test evidence and release reasoning"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T21:54:31Z
+completed: 2026-10-19T08:50:40Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-19T00:08:08+02:00
+last_commit: 2026-10-19T01:30:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  retrospective of the 22 external GitHub issues (drafts only; nothing posted). file T-4346 (richer automatic Released evidence block, from dogfooding T-4340). accept GitHub #95-#105 as T-4352..T-4362 (github_issue linked, arc-021 mikeechovoid-requests, horizon now; operator standing permission 2026-10-19). posting phase recorded — Released on #86-#94, Received/Classified/Accepted on #95-#105, Duplicate on #14 (all ledgered with comment URLs)
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/T-4339-github-issue-retro.md exists and has a table row for each of the 22 issues (#13, #14, #85-#105), with author, title, ledger stage, linked task, task state, v1.8.11 status and field evidence'
+  - 'The report has one DRAFT comment per issue in the T-4039 template shape (stage marker, task id, links, footer); no comment is posted (read-only gh use)'
+  - 'Every task id, commit hash and path cited in the report resolves (verified by the Verification script)'
+  - 'Each #95-#105 draft has a classification and a recommended decision (accept / needs-info / duplicate / not-planned) with a one-line reason; code-reproduction and duplicate-search results are recorded'
+  - 'No GitHub write was made by the drafting worker (no gh issue comment/edit/close/label before the parent''s review)'
+  - 'After review, posted through fw issues comment (one outward verb, ledgered): Released + please-confirm on #86-#94 (evidence block: how tested, why released, permalinks pinned to 50fae848f); Received + Classified + Accepted on #95-#105 (tasks T-4352..T-4362, github_issue linked, arc-021, horizon now; decisions under the operator''s standing permission of 2026-10-19); Duplicate of #13 on #14 — every post''s comment URL is in .context/issues/intake.jsonl'
+  - '#13 and #85 left unchanged (outreach notice; not-planned already posted 2026-10-10); #106 arrived after the retrospective and is left to the resumed intake sync (T-4342)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'accept GitHub #95-#105 as T-4352..T-4362 (github_issue linked, arc-021 mikeechovoid-requests, horizon now; operator standing permission 2026-10-19)'
+    source: git-mined
+  - description: 'retrospective of the 22 external GitHub issues (drafts only; nothing posted)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/issues/intake.jsonl'
+  - 'docs/reports/T-4339-github-issue-retro.md'
+  - '.tasks/active/T-4339-retrospective-of-the-22-external-github-.md'
+  - '.tasks/active/T-4346-fw-issues-release-the-automatic-released.md'
+  - '.tasks/active/T-4352-gh-95-auto-restart-is-documented-as-clau.md'
+  - '.tasks/active/T-4353-gh-96-after-a-fresh-auto-restart-the-new.md'
+  - '.tasks/active/T-4354-gh-97-fw-doctor-watchtower-smoke-test-pr.md'
+  - '.tasks/active/T-4355-gh-98-let-a-project-declare-optional-com.md'
+  - '.tasks/active/T-4356-gh-99-vector-index-health-reports-index-.md'
+  - '.tasks/active/T-4357-gh-100-fw-doctor-says-resolver-looptimer.md'
+  - '.tasks/active/T-4358-gh-101-fw-doctor-warns-turn-driver-is-no.md'
+  - '.tasks/active/T-4359-gh-102-human-criterion-classification-on.md'
+  - '.tasks/active/T-4360-gh-103-watchtower-binds-0000-by-default-.md'
+  - '.tasks/active/T-4361-gh-104-project-boundary-gate-hard-codes-.md'
+  - '.tasks/active/T-4362-gh-105-a-clones-binfw-called-by-full-pat.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T00:08:08'
+    action: 'T-4339: retrospective of the 22 external GitHub issues (drafts only; nothing posted)'
+  - time: '2026-10-19T00:14:58'
+    action: 'T-4339: file T-4346 (richer automatic Released evidence block, from dogfooding T-4340)'
+  - time: '2026-10-19T01:21:37'
+    action: 'T-4339: accept GitHub #95-#105 as T-4352..T-4362 (github_issue linked, arc-021 mikeechovoid-requests, horizon now; operator standing permission 2026-10-19)'
+  - time: '2026-10-19T01:30:30'
+    action: 'T-4339: posting phase recorded — Released on #86-#94, Received/Classified/Accepted on #95-#105, Duplicate on #14 (all ledgered with comment URLs)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 656 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, issues, release]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 656
+  commits: 4
+  files_changed: 15
+  lines_added: 4921
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4339-retrospective-of-the-22-external-github-.md
+generated_by: context-agent-hybrid
