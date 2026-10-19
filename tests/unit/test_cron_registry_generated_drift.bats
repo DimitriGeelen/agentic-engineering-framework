@@ -85,8 +85,13 @@ EOF
     _two_job_registry
 
     run "$FRAMEWORK_ROOT/bin/fw" doctor
-    [ "$status" -ne 2 ]  # doctor exits non-zero on FAILs; WARN-only stays exit 0 or 1
-    echo "$output" | grep -q "Cron registry edited but not generated"
+    # The drift must surface as a WARN, never a FAIL. T-4385: this used to be
+    # asserted as `[ "$status" -ne 2 ]`, which reads every doctor check — and
+    # since T-3783 the vector-index health checks FAIL in any fixture project
+    # without an index, so the exit code was 2 for a reason unrelated to cron.
+    # The severity is asserted on the drift line itself instead.
+    echo "$output" | grep -E "WARN.*Cron registry edited but not generated"
+    ! echo "$output" | grep -E "FAIL.*Cron registry"
 }
 
 @test "T-1942: clean state (registry == generated == deployed) → OK, no drift WARN" {
