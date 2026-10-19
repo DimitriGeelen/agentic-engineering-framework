@@ -13,6 +13,7 @@
 # Sections: structure, compliance, quality, traceability, enforcement,
 #           learning, episodic, observations, gaps, handover, graduation,
 #           research, oe-research, discovery, discovery-trends, deployment
+# Default (no --section): all except deployment, which is opt-in (T-275, T-4410)
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -316,7 +317,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: audit.sh [options]"
             echo ""
             echo "Options:"
-            echo "  --section NAMES   Comma-separated sections to run (default: all)"
+            echo "  --section NAMES   Comma-separated sections to run (default: all except deployment)"
             echo "  --check IDS       Run only these checks (comma-separated ids; see --list-checks)"
             echo "  --list-checks     Print the available check ids and their section"
             echo "  --output DIR      Write YAML report to custom directory"
@@ -327,6 +328,7 @@ while [[ $# -gt 0 ]]; do
             echo "          learning, episodic, observations, gaps, handover, graduation,"
             echo "          oe-research, oe-fast, oe-hourly, oe-daily, oe-weekly,"
             echo "          discovery, discovery-trends, deployment"
+            echo "          (deployment is opt-in: it runs only with --section deployment)"
             echo ""
             echo "Subcommands:"
             echo "  schedule install  Install cron entries for periodic audits"
