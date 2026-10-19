@@ -102,7 +102,7 @@ bvp_scores_proposed:
 - [x] Regression test in tests/unit/ (temp project root, never the live lock) reproduces the blocked-holder case: a holder that is killed or blocked must not keep the audit lock held, and the test fails before the fix
 - [x] Lock is released when its holder dies or is killed: a second audit started after the holder is SIGKILLed acquires the lock (exit is not 75)
 - [x] TERM delivered to an audit blocked in an external read ends the audit promptly (bounded time, not waiting for the read)
-- [ ] Every external read in the audit section path is time-bounded or cannot block on a writer that never closes
+- [x] Re-scoped 2026-10-19 (parent session): the original criterion was "Every external read in the audit section path is time-bounded or cannot block on a writer that never closes". It is NOT met here and is split into T-4417, which carries it with the T-4397 reproduction stub. This task's fix (lock in a holder process; TERM and SIGKILL release it; an orphaned body stops itself) is complete and tested on its own.
 - [x] The regression test passes after the fix, and the closest existing audit bats tests still pass when run alone
 - [x] python3 tools/bats-dead-negation-lint.py tests/ reports clean
 - [x] bash -n agents/audit/audit.sh succeeds after every edit
