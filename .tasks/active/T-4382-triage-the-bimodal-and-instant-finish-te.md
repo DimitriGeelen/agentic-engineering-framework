@@ -9,7 +9,7 @@ description: >
   split history by revision, report the cause per file; fix or file one task per real
   defect. Arc test-suite-health (arc-026); source: external review T-4376 (docs/reports/T-4376-reviews/).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:27:59Z
-last_update: '2026-10-19T12:30:40Z'
+last_update: 2026-10-19T14:55:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,6 +66,27 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T12:31:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: verdict-determinacy=? (unscored (no scorer for 
+      verdict-determinacy; not counted)); fault-detection-fidelity=? (unscored 
+      (no scorer for fault-detection-fidelity; not counted)); D1=4 
+      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4382: Triage the bimodal and instant-finish test files: hang, skip, or old code?
@@ -78,8 +99,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] History of the six files (audit.bats, fw_doctor_vendored_drift.bats, fabric_coverage_single_source.bats, t2332_bvp_propose_queue.bats, t4248_install_init_failure.bats, install_target_project.bats) split by report date/revision, table in docs/reports/T-4382-bimodal-triage.md
+- [ ] Each file run 5x alone with `bats --timing`; per-run wall time and skip count recorded in the report; a ps/lock snapshot taken on any slow run
+- [ ] Per-file verdict in the report: hang (where) / skip (why) / lock contention / old code
+- [ ] One-file test defects fixed with a regression proof (red before / green after, recorded here); every product defect or larger fix filed as its own task and named in the report
+- [ ] No test touched loses the ability to fail on its origin bug (fault-detection-fidelity); touched files pass alone with zero unexpected skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -128,6 +152,11 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+test -f docs/reports/T-4382-bimodal-triage.md
+timeout 600 bats tests/unit/fabric_coverage_single_source.bats > /tmp/.t4382-fc.out 2>&1 && ! grep -q "^not ok" /tmp/.t4382-fc.out
+test "$(grep -c '# skip' /tmp/.t4382-fc.out)" -eq 0
+grep -q '^ok [0-9]* T-4382: the live legs read the same function' /tmp/.t4382-fc.out
+grep -q "## Verdicts" docs/reports/T-4382-bimodal-triage.md && for f in audit.bats fw_doctor_vendored_drift.bats fabric_coverage_single_source.bats t2332_bvp_propose_queue.bats t4248_install_init_failure.bats install_target_project.bats; do grep -q "$f" docs/reports/T-4382-bimodal-triage.md || exit 1; done
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -260,6 +289,31 @@ cost_estimate_proposed:
 
 ## RCA
 
+**Symptom:** six test files swing between seconds and the 900 s per-file cap (or finish in 0 s) across nightly
+unit-suite reports, and reviewers disagreed whether that is a hang, a skip or old code.
+
+**Root cause (one per file; full evidence in docs/reports/T-4382-bimodal-triage.md):**
+- `fabric_coverage_single_source.bats:150,194` — the two live legs ran `audit.sh --sections structure` in the real
+  repo. That takes the repo-wide audit flock (`agents/audit/audit.sh:612-620`). The legs either lose the lock and
+  skip (the fast runs: no coverage measured) or win it and pay the whole structure section twice (547 s measured
+  today → ~1100 s > 900 s cap). Not a hang: a lock lottery plus a section that grew. A lockless single-check path
+  for exactly this check has existed since T-4209 (`audit.sh --check fabric-coverage`, `check_fabric_coverage`
+  at audit.sh:2613, called by the structure section at audit.sh:2817).
+- `audit.bats` — same lock lottery, ~7 live structure runs per file: 2 s = every live test skipped on exit 75;
+  900 s = it won the lock. In flight under T-4383 (not edited here).
+- `fw_doctor_vendored_drift.bats` — old code: ran a full live `fw doctor` until 4ee603957 (T-3950, 2026-10-06);
+  1 s in every report since.
+- `t2332_bvp_propose_queue.bats` — live Watchtower curl with no timeout; fixed by T-4384, re-measured 10 s.
+- `t4248_install_init_failure.bats` 0 s / `install_target_project.bats` 2 s on the v1.8.11 base tree — skips:
+  that tree is a detached-HEAD checkout and both files skip every test when `rev-parse --abbrev-ref HEAD` is `HEAD`.
+
+**Why structurally allowed:** a bats skip is reported `ok`, and the runner's per-file duration does not carry the
+skip count, so "2 s" and "measured nothing" were indistinguishable in the report; the reviewers each saw half.
+
+**Prevention:** fabric_coverage's live legs now use the lockless `--check fabric-coverage` path (cannot skip on
+contention, ~30 s instead of ~550 s per leg) with a guard test pinning that the structure section still calls the
+same function; the report records skip counts per run; the remaining defects are filed as their own tasks.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -354,3 +408,6 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4382-triage-the-bimodal-and-instant-finish-te.md
 - **Context:** Initial task creation
+
+### 2026-10-19T14:55:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

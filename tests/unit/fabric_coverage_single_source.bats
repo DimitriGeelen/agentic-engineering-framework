@@ -147,11 +147,31 @@ _require_audit_ran() {
     local out
     # `|| true` — audit exits 1 on WARN by design, and bats runs under set -e,
     # so the substitution would abort the test before any assertion ran.
-    out="$(cd "$FRAMEWORK_ROOT" && bash agents/audit/audit.sh --sections structure 2>&1 || true)"
+    # T-4382: the lockless single-check path (T-4209), not --sections structure:
+    # the whole section took the repo audit lock, so this leg either skipped
+    # (lock held elsewhere) or ran ~550 s of unrelated checks.
+    out="$(cd "$FRAMEWORK_ROOT" && bash agents/audit/audit.sh --check fabric-coverage 2>&1 || true)"
     _require_audit_ran "$out"
     # The registered-count line must no longer carry an unregistered claim.
     echo "$out" | grep -q "Fabric: [0-9]* registered card(s)"
     ! echo "$out" | grep -qE "registered, [0-9]+ unregistered"
+}
+
+@test "T-4382: the live legs read the same function the structure section runs" {
+    # The live legs use `--check fabric-coverage`, which runs check_fabric_coverage
+    # alone. That only speaks for the structure section while the section still
+    # calls that function and the live legs never fall back to the whole section
+    # in the real repo (lock lottery: skip, or ~550 s per leg).
+    local a="$FRAMEWORK_ROOT/agents/audit/audit.sh"
+    run awk '/^section_mark "structure"/{s=1; next} s && /^section_mark "/{exit}
+             s && /^check_fabric_coverage$/{found=1} END{exit !found}' "$a"
+    [ "$status" -eq 0 ]
+    # Patterns assembled from pieces so these lines do not match themselves.
+    local live='cd "$FRAMEWORK_ROOT" && bash agents/audit/'"audit.sh"
+    run grep -cF "$live --check fabric-coverage" "$BATS_TEST_FILENAME"
+    [ "$output" -eq 2 ]
+    run grep -cF "$live --section" "$BATS_TEST_FILENAME"
+    [ "$output" -eq 0 ]
 }
 
 @test "T-2735: canonical and naive expansion are DISTINGUISHABLE" {
@@ -191,7 +211,8 @@ PY
     local out drift expected
     # `|| true` — audit exits 1 on WARN by design, and bats runs under set -e,
     # so the substitution would abort the test before any assertion ran.
-    out="$(cd "$FRAMEWORK_ROOT" && bash agents/audit/audit.sh --sections structure 2>&1 || true)"
+    # T-4382: lockless single-check path, as above.
+    out="$(cd "$FRAMEWORK_ROOT" && bash agents/audit/audit.sh --check fabric-coverage 2>&1 || true)"
     # Without this the `else drift=0` arm below would silently absorb a locked
     # audit and compare 0 against the real expander answer.
     _require_audit_ran "$out"
