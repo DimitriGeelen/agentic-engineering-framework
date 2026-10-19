@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# T-101: start the Perplexity seat's DEDICATED Chrome on the operator's desktop, with the
+# DevTools protocol (CDP) on 127.0.0.1 only, so seat_ask.py can drive it via Playwright.
+# The operator logs in to Perplexity BY HAND in this window; the session lives only in the
+# profile dir below and never in any repo. Generic: everything host-specific is a setting.
+#
+# Settings (env):
+#   SEAT_PORT         CDP port on 127.0.0.1             (default 9333)
+#   SEAT_PROFILE_DIR  Chrome --user-data-dir            (default $XDG_DATA_HOME/perplexity-seat/chrome)
+#   SEAT_USER         desktop user to run Chrome as     (default: active seat0 session user; only used when run as root)
+#   SEAT_CHROME       Chrome binary                     (default: google-chrome, else chromium)
+#   SEAT_START_URL    first page                        (default https://www.perplexity.ai/)
+set -euo pipefail
+
+PORT="${SEAT_PORT:-9333}"
+START_URL="${SEAT_START_URL:-https://www.perplexity.ai/}"
+die() { echo "seat-chrome: $*" >&2; exit 1; }
+
+# Run Chrome as the desktop user, never as root (root Chrome needs --no-sandbox).
+if [ "$(id -u)" -eq 0 ]; then
+  USER_NAME="${SEAT_USER:-}"
+  if [ -z "$USER_NAME" ]; then
+    sid=$(loginctl list-sessions --no-legend 2>/dev/null | awk '$4=="seat0" && $6=="active" {print $1; exit}')
+    [ -n "$sid" ] || die "no active seat0 session; set SEAT_USER"
+    USER_NAME=$(loginctl show-session "$sid" -p Name --value)
+  fi
+  [ "$USER_NAME" != root ] || die "refusing to run Chrome as root; set SEAT_USER to the desktop user"
+  uid=$(id -u "$USER_NAME")
+  home=$(getent passwd "$USER_NAME" | cut -d: -f6)
+  exec runuser -u "$USER_NAME" -- env -i \
+    HOME="$home" USER="$USER_NAME" LOGNAME="$USER_NAME" PATH="/usr/local/bin:/usr/bin:/bin" \
+    DISPLAY="${DISPLAY:-:0}" XAUTHORITY="$home/.Xauthority" \
+    XDG_RUNTIME_DIR="/run/user/$uid" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$uid/bus" \
+    SEAT_PORT="$PORT" SEAT_START_URL="$START_URL" \
+    ${SEAT_PROFILE_DIR:+SEAT_PROFILE_DIR="$SEAT_PROFILE_DIR"} ${SEAT_CHROME:+SEAT_CHROME="$SEAT_CHROME"} \
+    bash "$(readlink -f "$0")"
+fi
+
+PROFILE="${SEAT_PROFILE_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/perplexity-seat/chrome}"
+CHROME="${SEAT_CHROME:-$(command -v google-chrome || command -v chromium || true)}"
+[ -n "$CHROME" ] || die "no Chrome/Chromium found; set SEAT_CHROME"
+[[ "$PORT" =~ ^[0-9]+$ ]] || die "SEAT_PORT must be a number"
+
+# Credentials rule: the profile (cookies, session) must never be reachable by `git add`.
+mkdir -p "$PROFILE"; chmod 700 "$PROFILE"
+if git -C "$PROFILE" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  git -C "$PROFILE" check-ignore -q "$PROFILE/Default" \
+    || die "profile dir $PROFILE is inside git repo $(git -C "$PROFILE" rev-parse --show-toplevel) and NOT ignored; add it to .gitignore or set SEAT_PROFILE_DIR"
+fi
+
+if curl -sf "http://127.0.0.1:$PORT/json/version" >/dev/null 2>&1; then
+  echo "seat-chrome: already running, CDP on 127.0.0.1:$PORT"; exit 0
+fi
+
+# CDP binds to 127.0.0.1 by default for a headed Chrome; allow-origins limited to that address.
+nohup "$CHROME" \
+  --user-data-dir="$PROFILE" \
+  --remote-debugging-port="$PORT" \
+  --remote-allow-origins="http://127.0.0.1:$PORT" \
+  --no-first-run --no-default-browser-check \
+  "$START_URL" >/dev/null 2>&1 &
+
+for _ in $(seq 1 30); do
+  curl -sf "http://127.0.0.1:$PORT/json/version" >/dev/null 2>&1 && break
+  sleep 0.5
+done
+curl -sf "http://127.0.0.1:$PORT/json/version" >/dev/null 2>&1 || die "Chrome did not open CDP on 127.0.0.1:$PORT"
+if ss -tln | awk '{print $4}' | grep -E ":$PORT\$" | grep -qvE '^127\.0\.0\.1:|^\[::1\]:'; then
+  die "CDP port $PORT is listening on a non-loopback address; stop that Chrome"
+fi
+echo "seat-chrome: window open, profile $PROFILE, CDP on 127.0.0.1:$PORT only"
+echo "seat-chrome: log in to Perplexity BY HAND in that window (and pass any check yourself)"

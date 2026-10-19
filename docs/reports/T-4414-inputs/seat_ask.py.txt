@@ -1,0 +1,225 @@
+#!/usr/bin/env python3
+"""T-101: ask ONE question in the Perplexity seat's dedicated Chrome, via Playwright over CDP.
+
+The Chrome is started by seat-chrome.sh and logged in BY HAND by the operator. This script
+never logs in, never stores cookies, and never tries to get past a check: on a login prompt,
+captcha, Cloudflare check or refusal it exits 3 with the reason, and the caller stops.
+
+Usage:
+  seat_ask.py --check                      # connect, open a page, report state, close
+  seat_ask.py --id ID --brief-file F       # ask; prints JSON {id, answer, sources, thread_url}
+  seat_ask.py --id ID --brief-file F --format sidecar   # prints the PERPLEXITY-ANSWER body
+Settings (env): SEAT_PORT (default 9333), SEAT_TIMEOUT seconds (default 300),
+  SEAT_DENY_FILE (optional file of extra regexes, one per line, a brief must not match).
+Exit codes: 0 ok, 2 refused brief or usage, 3 STOP (check/login/captcha/refusal), 4 error.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import sys
+import time
+
+PORT = int(os.environ.get("SEAT_PORT", "9333"))
+TIMEOUT = int(os.environ.get("SEAT_TIMEOUT", "300"))
+HOME_URL = "https://www.perplexity.ai/"
+
+DENY = [
+    (r"\b(?:\d{1,3}\.){3}\d{1,3}\b", "IPv4 address"),
+    (r"(?i)\b(password|passwd|passphrase|secret|api[_-]?key|access[_-]?token|bearer)\s*[:=]", "credential assignment"),
+    (r"-----BEGIN [A-Z ]*PRIVATE KEY-----", "private key"),
+    (r"\b(?:sk|pk|ghp|gho|xox[abp])[-_][A-Za-z0-9_-]{16,}", "token-like string"),
+]
+
+
+class Stop(Exception):
+    """A check, login prompt, captcha or refusal: report and stop, never get past it."""
+
+
+def screen_brief(brief: str) -> str | None:
+    rules = list(DENY)
+    deny_file = os.environ.get("SEAT_DENY_FILE")
+    if deny_file and os.path.exists(deny_file):
+        for line in open(deny_file, encoding="utf-8"):
+            line = line.strip()
+            if line and not line.startswith("#"):
+                rules.append((line, "deny-file pattern"))
+    for pattern, label in rules:
+        if re.search(pattern, brief):
+            return label
+    return None
+
+
+def check_blockers(page) -> None:
+    title = (page.title() or "").lower()
+    url = page.url.lower()
+    # A seat tab that leaves Perplexity was navigated by someone else (seen 2026-10-11: the
+    # operator's dictation landed in the focused seat window and turned the tab into a Google search).
+    if not re.match(r"https://(www\.)?perplexity\.ai/", url):
+        raise Stop(f"seat tab left perplexity.ai (now {url[:60]}); was something typed into the seat window?")
+    if "just a moment" in title or "/cdn-cgi/" in url or "challenge" in url:
+        raise Stop("Cloudflare check page")
+    for frame in page.frames:
+        if "challenges.cloudflare.com" in frame.url or "captcha" in frame.url:
+            raise Stop("captcha / Cloudflare challenge frame")
+    body = page.locator("body").inner_text(timeout=10_000).lower()
+    for marker in ("verify you are human", "are you a robot", "unusual activity"):
+        if marker in body:
+            raise Stop(f"check on page: '{marker}'")
+    if "/login" in url or "/signin" in url or "/auth" in url:
+        raise Stop("login page")
+    login_btn = page.get_by_role("button", name=re.compile(r"^(log ?in|sign ?in|sign up)$", re.I))
+    if login_btn.count() and login_btn.first.is_visible():
+        raise Stop("not logged in (login button visible)")
+
+
+def find_input(page):
+    for sel in ("#ask-input", "textarea", "div[contenteditable='true']"):
+        loc = page.locator(sel)
+        if loc.count() and loc.first.is_visible():
+            return loc.first
+    raise Stop("no question box found (page layout changed or not logged in)")
+
+
+def read_answer(page) -> str:
+    # last answer block, without the inline citation chips ("britannica +1")
+    return page.evaluate("""() => {
+      const prose = [...document.querySelectorAll('[class*=prose]')];
+      if (!prose.length) return '';
+      const clone = prose[prose.length - 1].cloneNode(true);
+      clone.querySelectorAll('.citation').forEach(e => e.remove());
+      // KaTeX renders each formula three times (HTML, MathML, TeX); keep only the TeX source
+      clone.querySelectorAll('.katex').forEach(e => {
+        const tex = e.querySelector('annotation[encoding="application/x-tex"]');
+        if (tex) e.replaceWith('$' + tex.textContent + '$');
+      });
+      return clone.innerText.trim();
+    }""")
+
+
+def generating(page) -> bool:
+    stop_btn = page.locator("button[aria-label*='Stop' i], button[data-testid*='stop' i]")
+    return stop_btn.count() > 0 and stop_btn.first.is_visible()
+
+
+def collect_sources(page) -> list[str]:
+    # inline citation chips first, then the full list behind the thread's "Links" tab
+    hrefs = page.eval_on_selector_all(
+        "[data-pplx-citation-url]", "els => els.map(e => e.getAttribute('data-pplx-citation-url'))")
+    tab = page.get_by_role("tab", name=re.compile(r"^links", re.I))
+    if tab.count():
+        tab.first.click()
+        page.wait_for_timeout(2500)
+        check_blockers(page)
+        hrefs += page.eval_on_selector_all("a[href^='http']", "els => els.map(e => e.href)")
+    seen, out = set(), []
+    for h in hrefs:
+        if "perplexity.ai" in h or h in seen:
+            continue
+        seen.add(h)
+        out.append(h)
+    return out
+
+
+def ask(page, brief: str) -> dict:
+    page.goto(HOME_URL, wait_until="domcontentloaded")
+    page.wait_for_timeout(2500)
+    check_blockers(page)
+    box = find_input(page)
+    box.click()
+    page.keyboard.insert_text(brief)
+    page.keyboard.press("Enter")
+    deadline = time.time() + TIMEOUT
+    try:
+        page.wait_for_url(re.compile(r"/search/"), timeout=60_000)
+    except Exception:
+        check_blockers(page)
+        raise Stop("question was not accepted (no thread opened)")
+    last, stable_since = "", time.time()
+    while time.time() < deadline:
+        page.wait_for_timeout(1500)
+        check_blockers(page)
+        text = read_answer(page)
+        if text != last:
+            last, stable_since = text, time.time()
+        elif text and not generating(page) and time.time() - stable_since >= 5:
+            break
+    else:
+        raise Stop(f"answer not complete within {TIMEOUT}s")
+    thread_url = page.url.split("?")[0]
+    return {"answer": last, "sources": collect_sources(page), "thread_url": thread_url}
+
+
+def minimize(context, page) -> None:
+    # keep the seat window out of the operator's way: a focused seat window catches their typing
+    try:
+        cdp = context.new_cdp_session(page)
+        wid = cdp.send("Browser.getWindowForTarget")["windowId"]
+        cdp.send("Browser.setWindowBounds", {"windowId": wid, "bounds": {"windowState": "minimized"}})
+    except Exception:
+        pass
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
+    ap.add_argument("--check", action="store_true")
+    ap.add_argument("--id")
+    ap.add_argument("--brief-file")
+    ap.add_argument("--format", choices=("json", "sidecar"), default="json")
+    a = ap.parse_args()
+
+    brief = ""
+    if not a.check:
+        if not (a.id and a.brief_file):
+            ap.error("--id and --brief-file are required unless --check")
+        brief = open(a.brief_file, encoding="utf-8").read().strip()
+        if not brief:
+            print("REFUSED: empty brief", file=sys.stderr)
+            return 2
+        reason = screen_brief(brief)
+        if reason:
+            print(f"REFUSED: brief contains {reason}; not sent", file=sys.stderr)
+            return 2
+
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        try:
+            browser = p.chromium.connect_over_cdp(f"http://127.0.0.1:{PORT}")
+        except Exception as e:
+            print(f"ERROR: seat Chrome not reachable on 127.0.0.1:{PORT} ({e.__class__.__name__}); run seat-chrome.sh", file=sys.stderr)
+            return 4
+        context = browser.contexts[0] if browser.contexts else browser.new_context()
+        page = context.new_page()
+        minimize(context, page)
+        try:
+            if a.check:
+                page.goto(HOME_URL, wait_until="domcontentloaded")
+                page.wait_for_timeout(2500)
+                check_blockers(page)
+                find_input(page)
+                print(f"SEAT OK: logged-in page, question box present ({page.title()})")
+                return 0
+            result = {"id": a.id, **ask(page, brief)}
+        except Stop as e:
+            print(f"STOP: {e}", file=sys.stderr)
+            return 3
+        except Exception as e:
+            print(f"ERROR: {e.__class__.__name__}: {str(e).splitlines()[0][:200]}", file=sys.stderr)
+            return 4
+        finally:
+            page.close()
+            browser.close()  # over CDP this disconnects; the operator's Chrome keeps running
+
+    if a.format == "sidecar":
+        print(f"PERPLEXITY-ANSWER {result['id']}\n\n{result['answer']}\n\nSources:")
+        print("\n".join(result["sources"]) or "(none)")
+        print(f"\nThread: {result['thread_url']}")
+    else:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
