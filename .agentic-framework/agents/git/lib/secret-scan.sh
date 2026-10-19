@@ -140,9 +140,17 @@ _secret_scan_run_patterns() {
     fi
 
     local _hits=0
+    # T-4400: the stream goes to a file and each pattern greps the file. Holding
+    # it in a variable and re-echoing it per pattern cost 77 s on fw init's
+    # 57 MB bootstrap diff; grep over the file is < 1 s for all patterns.
     local _input
-    _input=$(cat)
-    [ -z "$_input" ] && return 0
+    _input=$(mktemp "${TMPDIR:-/tmp}/fw-secret-scan.XXXXXX") || {
+        echo "ERROR: secret-scan could not create a temp file in ${TMPDIR:-/tmp} — nothing was scanned, commit blocked (set TMPDIR to a writable dir)" >&2
+        cat >/dev/null
+        return 1
+    }
+    cat > "$_input"
+    [ -s "$_input" ] || { rm -f "$_input"; return 0; }
 
     local _name _re
     while IFS=$'\t' read -r _name _re; do
@@ -156,7 +164,11 @@ _secret_scan_run_patterns() {
         # "filepath:diffline:content"; prefixing grep's own line number would
         # break allowlist regexes anchored at `^`.
         local _matches
-        _matches=$(echo "$_input" | grep -E -e "$_re" 2>/dev/null || true)
+        # T-4400: LC_ALL=C — the catalogue is ASCII, and under a UTF-8 locale
+        # GNU grep spent 8.4 s of a 9.6 s bootstrap scan on `[a-z2-7]{52}`
+        # alone (0.3 s in C). C also never treats invalid UTF-8 as binary,
+        # which would print "binary file matches" in place of the hit line.
+        _matches=$(LC_ALL=C grep -E -e "$_re" "$_input" 2>/dev/null || true)
         [ -z "$_matches" ] && continue
 
         while IFS= read -r _hit; do
@@ -168,6 +180,7 @@ _secret_scan_run_patterns() {
             _hits=$((_hits + 1))
         done <<< "$_matches"
     done < <(_secret_scan_read_catalogue "$patterns_file")
+    rm -f "$_input"
 
     [ "$_hits" -gt 0 ] && return 1
     return 0
@@ -186,8 +199,13 @@ scan_staged() {
 
     # Format: walk the staged diff, prefix each added line with file:line:
     # — this gives the regex run a stable "filepath:linenumber:content" shape.
+    # T-4400: to a temp file, not a variable — see _secret_scan_run_patterns.
     local diff_stream
-    diff_stream=$(git -C "$root" diff --cached -U0 2>/dev/null | awk '
+    diff_stream=$(mktemp "${TMPDIR:-/tmp}/fw-secret-diff.XXXXXX") || {
+        echo "ERROR: secret-scan could not create a temp file in ${TMPDIR:-/tmp} — nothing was scanned, commit blocked (set TMPDIR to a writable dir)" >&2
+        return 1
+    }
+    { git -C "$root" diff --cached -U0 2>/dev/null || true; } | awk '
         /^diff --git/ { in_file=0; next }
         /^\+\+\+ b\// { file=substr($0, 7); in_file=1; next }
         in_file && /^@@/ {
@@ -207,28 +225,31 @@ scan_staged() {
             line_no++
         }
         in_file && /^[^+-]/ { line_no++ }
-    ')
+    ' > "$diff_stream"
 
     local rc=0
-    if [ -n "$diff_stream" ]; then
-        echo "$diff_stream" | _secret_scan_run_patterns "$patterns" "$allow_re" || rc=1
+    if [ -s "$diff_stream" ]; then
+        _secret_scan_run_patterns "$patterns" "$allow_re" < "$diff_stream" || rc=1
     fi
+    rm -f "$diff_stream"
 
     # T-2897 name axis, at the gate rather than only at the audit. scan_tree
     # tells you a key was published; this refuses the commit that publishes it.
     # Newly-added paths only: a rename or a content edit to a file whose name
     # was already accepted is not the event we are gating, and re-flagging it on
     # every touch is how a gate gets bypassed by habit.
-    local _added _path _base _lower _class
-    _added=$(git -C "$root" diff --cached --name-only --diff-filter=A 2>/dev/null)
-    while IFS= read -r _path; do
+    # T-4400: basenames are lowercased in one awk pass and classified without a
+    # subshell — three forks per path cost 24 s on fw init's 3,772 new paths.
+    local _added _path _base _lower
+    _added=$({ git -C "$root" diff --cached --name-only --diff-filter=A 2>/dev/null || true; } \
+             | awk '{ b = $0; sub(/.*\//, "", b); print tolower(b) "\t" $0 }')
+    while IFS=$'\t' read -r _lower _path; do
         [ -z "$_path" ] && continue
+        _secret_name_classify_var "$_lower"
+        [ -z "$_SECRET_NAME_CLASS" ] && continue
         _base="${_path##*/}"
-        _lower="$(printf '%s' "$_base" | tr '[:upper:]' '[:lower:]')"
-        _class="$(_secret_name_classify "$_lower")"
-        [ -z "$_class" ] && continue
         _secret_scan_is_allowed "$_path:0:$_base" "$allow_re" && continue
-        printf '  [name:%s] %s\n' "$_class" "$_path"
+        printf '  [name:%s] %s\n' "$_SECRET_NAME_CLASS" "$_path"
         rc=1
     done <<< "$_added"
 
@@ -430,10 +451,19 @@ _secret_name_is_prose_or_source() {
 
 # Classify one basename. Echoes the class, or nothing.
 _secret_name_classify() {
+    _secret_name_classify_var "$1"
+    [ -n "$_SECRET_NAME_CLASS" ] && echo "$_SECRET_NAME_CLASS"
+    return 0
+}
+
+# Same classification, result in $_SECRET_NAME_CLASS (empty = none). T-4400:
+# lets scan_staged classify thousands of paths without a subshell per path.
+_secret_name_classify_var() {
     local lower="$1"
+    _SECRET_NAME_CLASS=""
     case "$lower" in
         .fw-secret-key|id_rsa|id_dsa|id_ecdsa|id_ed25519|.netrc|.pgpass|.htpasswd)
-            echo DEFINITIVE; return ;;
+            _SECRET_NAME_CLASS=DEFINITIVE; return ;;
         # Bare `credentials` as the whole stem is a credential store by
         # convention. As a compound suffix it is usually prose ABOUT one
         # (url-credentials, strips_upstream_credentials) — which is why it is
@@ -441,13 +471,13 @@ _secret_name_classify() {
         # Known limit, stated rather than papered over: `aws-credentials` and
         # other qualifier-less compounds fall through both classes.
         credentials|.credentials|credentials.json|credentials.yaml|credentials.yml|credentials.ini)
-            echo DEFINITIVE; return ;;
+            _SECRET_NAME_CLASS=DEFINITIVE; return ;;
         *.pem|*.p12|*.pfx|*.jks|*.keystore|*.ppk|*.key)
-            echo DEFINITIVE; return ;;
+            _SECRET_NAME_CLASS=DEFINITIVE; return ;;
     esac
     _secret_name_is_prose_or_source "$lower" && return
     if _secret_name_pair_disjoint "$lower"; then
-        echo ANNOUNCED
+        _SECRET_NAME_CLASS=ANNOUNCED
     fi
 }
 

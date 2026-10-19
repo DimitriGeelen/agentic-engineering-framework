@@ -1,13 +1,22 @@
 ---
 id: T-4400
-name: "fw init bootstrap commit secret-scans the whole vendored framework (~92 s per fresh install)"
+name: "fw init bootstrap commit secret-scans the whole vendored framework (~92 s per
+  fresh install)"
 description: >
-  fw init (lib/init.sh ~line 870) runs 'git add -A' then the T-000 bootstrap commit, so the project's own pre-commit hook runs secret-scan.sh scan-staged over all 2,678 vendored .agentic-framework files (38 MB). Measured T-4382, 2026-10-19: 92 s alone (14 s of it the per-file name-axis loop with forks per path). Every fresh install pays it; install_target_project.bats (5 installs) and t4248_install_init_failure.bats (3 installs + fixture clone) inherit it and run 550-730 s alone, 900 s timeout under suite load. Candidate fixes: skip vendored framework bytes in the bootstrap scan (they are the framework's own, scanned upstream), or scan the bootstrap commit with a scoped path list; keep the scan on project files. Evidence: docs/reports/T-4382-bimodal-triage.md.
+  fw init (lib/init.sh ~line 870) runs 'git add -A' then the T-000 bootstrap commit,
+  so the project's own pre-commit hook runs secret-scan.sh scan-staged over all 2,678
+  vendored .agentic-framework files (38 MB). Measured T-4382, 2026-10-19: 92 s alone
+  (14 s of it the per-file name-axis loop with forks per path). Every fresh install
+  pays it; install_target_project.bats (5 installs) and t4248_install_init_failure.bats
+  (3 installs + fixture clone) inherit it and run 550-730 s alone, 900 s timeout under
+  suite load. Candidate fixes: skip vendored framework bytes in the bootstrap scan
+  (they are the framework's own, scanned upstream), or scan the bootstrap commit with
+  a scoped path list; keep the scan on project files. Evidence: docs/reports/T-4382-bimodal-triage.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4382, T-4377]
@@ -39,8 +48,8 @@ origin: {kind: "agent", source: "T-4382"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:25:48Z
-last_update: 2026-10-19T15:25:48Z
-date_finished: null
+last_update: 2026-10-19T16:56:23Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T15:30:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T15:32:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4400: fw init bootstrap commit secret-scans the whole vendored framework (~92 s per fresh install)
@@ -63,8 +100,13 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Baseline measured: scan-staged time over a fresh `fw init` bootstrap index recorded in ## Updates (before)
+- [x] The bootstrap commit's scan no longer spends its time on the vendored framework files; after-time recorded (target: scan < 10 s)
+- [x] A secret planted in a project-owned file staged in the same bootstrap commit is still caught (regression test)
+- [x] No path is exempted: a secret (content and name axis) in a staged `.agentic-framework/` file is still caught (regression test)
+- [x] Regression test red before the fix, green after (recorded here)
+- [ ] tests/unit/upgrade_fresh_machine_simulation.bats and tests/unit/install_target_project.bats green, each run alone
+- [ ] `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,6 +155,13 @@ date_finished: null
 -->
 
 ## Verification
+
+bash -n agents/git/lib/secret-scan.sh
+timeout 600 bats tests/unit/t4400_secret_scan_bootstrap_scale.bats > /tmp/.t4400.out 2>&1 && ! grep -q "^not ok" /tmp/.t4400.out
+test "$(grep -c '# skip' /tmp/.t4400.out)" -eq 0
+timeout 600 bats tests/unit/test_secret_scan.bats tests/unit/secret_scan_name_axis.bats tests/unit/t4211_secret_scan_no_catalogue_sigpipe.bats tests/unit/t4316_secret_scan_allowlist_union.bats tests/unit/t3665_secret_scan_crlf.bats tests/unit/t3971_secret_scan_no_catalogue.bats > /tmp/.t4400b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4400b.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4400l.out 2>&1 && grep -q clean /tmp/.t4400l.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -245,6 +294,32 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** every fresh `fw init` spends 92 s (T-4382, quiet host) to 198 s (this
+measurement, loaded host) in the T-000 bootstrap commit's pre-commit secret scan;
+install tests inherit it and run 9-12 min.
+
+**Root cause:** three compounding costs in `agents/git/lib/secret-scan.sh`, none of
+them in what the scan checks:
+- the content-pattern grep ran under the user's UTF-8 locale, where GNU grep's
+  multibyte matcher spends 8.4 s on the Azure PAT pattern `[a-z2-7]{52}` over the
+  57 MB stream (0.3 s under LC_ALL=C; all 13 patterns < 1.5 s in C).
+- `scan_staged` (line ~190) captures the whole staged diff into `diff_stream=$(…)`, then
+  `echo "$diff_stream" |` pipes it into `_secret_scan_run_patterns`, which captures it
+  AGAIN (`_input=$(cat)`, line ~145) and re-echoes the 57 MB variable once per pattern
+  (`echo "$_input" | grep -E`, line ~158) — 77 s measured for the pattern loop.
+- the name axis (line ~224) forks 3 processes per newly added path
+  (`$(printf | tr)` + `$(_secret_name_classify)`) — 24 s for 3,772 paths.
+
+**Why structurally allowed:** the scanner was written for ordinary commits (a few KB
+of diff, a handful of new paths) where both costs are invisible; nothing exercised it
+at bootstrap scale with a time bound, and the only symptom was "install tests are slow",
+which reads as load rather than as a defect.
+
+**Prevention:** `tests/unit/t4400_secret_scan_bootstrap_scale.bats` stages a
+bootstrap-scale commit (thousands of new paths + a multi-MB diff) and bounds scan time,
+alongside legs proving a planted secret in a project file and in a vendored file are
+still caught in that same commit.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -323,6 +398,30 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-19 — make the scan fast instead of narrowing it
+- **Chose:** keep scanning every staged byte and every new path; remove the bash
+  overhead (stream the diff through a temp file, grep the file per pattern; classify
+  all new paths in one pass with no per-path forks).
+- **Why:** measurement showed the regex work itself is < 1 s; the 100 s was pure
+  variable/fork overhead. Fixing that keeps the scan's coverage identical (no new trust
+  assumption) and speeds up every large commit, not only the bootstrap.
+- **Rejected:** (a) skip `.agentic-framework/` files byte-identical to the vendored
+  source — needs a trusted reference copy and hashing, adds a trust assumption
+  ("framework bytes were scanned upstream"), and a tampered or locally edited vendored
+  file would need special handling; (b) scope the bootstrap scan to project-owned paths
+  — a blanket path exemption is exactly the weakening the task forbids, and would also
+  exempt a secret dropped into `.agentic-framework/` by hand.
+
+### 2026-10-19 — run the catalogue greps under LC_ALL=C
+- **Chose:** `LC_ALL=C grep -E` for the content patterns only.
+- **Why:** every catalogue regex is ASCII; GNU grep's multibyte matching made one
+  pattern cost 8.4 s of 9.6 s. Under C a non-ASCII byte is just a byte, so negated
+  classes like `[^[:space:]@]+` match at least as much as before, and invalid UTF-8 no
+  longer flips grep into "binary file matches" (which hid the hit line). Accepted edge:
+  `[[:space:]]` no longer matches Unicode spaces (e.g. U+2003) inside the AWS secret
+  pattern's `key = value` gap — not a shape real credentials files use.
+- **Rejected:** dropping or rewriting the Azure PAT regex — that changes coverage.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -339,3 +438,26 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4400-fw-init-bootstrap-commit-secret-scans-th.md
 - **Context:** Initial task creation
+
+### 2026-10-19T16:56:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-19 — baseline measurement (before)
+- `bin/fw init` into a fresh git repo (loaded host): 4m16s wall; bootstrap commit staged 3,772 files.
+- `secret-scan.sh scan-staged` alone over that bootstrap index (HEAD unset, same staging): **3m18s** wall.
+- Breakdown: name axis 24 s; diff+awk 2 s; pattern loop 77 s (13 patterns). Each grep on the
+  57 MB stream as a FILE: 24-347 ms, < 1 s total — the cost is variable capture/echo, not regex.
+  CORRECTION: those per-grep numbers came from the agent harness's `grep` shell function
+  (ugrep). Real `/usr/bin/grep` under en_US.UTF-8 spends 8.4 s on the Azure PAT pattern
+  `[a-z2-7]{52}` alone (0.3 s under LC_ALL=C); the other 12 patterns are < 0.25 s each.
+
+### 2026-10-19 — after
+- Step 1 (temp file instead of variables + fork-free name axis): scan-staged 198 s → 15 s.
+- Step 2 (`LC_ALL=C` on the pattern grep): **3.3 s** (two runs, same 3,772-file bootstrap index).
+- `bin/fw init` end-to-end into a fresh repo: 4m16s → **31 s** wall (load avg ~12-19 both times;
+  bootstrap commit still created, 3,777 files).
+- Regression test `tests/unit/t4400_secret_scan_bootstrap_scale.bats`: BEFORE fix
+  `not ok 1 … scans within 30 s` (took 66 s), legs 2-4 ok; AFTER fix 4/4 ok, 0 skips.
+- Neighbouring secret-scan suites (test_secret_scan, name_axis, span_rule, t3665, t3971,
+  t4211, t4316): 72/72 ok after the fix.
