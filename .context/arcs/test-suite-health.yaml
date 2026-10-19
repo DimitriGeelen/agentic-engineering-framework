@@ -1,0 +1,85 @@
+id: arc-026
+slug: test-suite-health
+name: "Test-suite health: a fast, hermetic push gate and a trustworthy nightly suite"
+description: "Refactor the test set the way the code base is refactored: measure first,
+  split into a fast hermetic tier that gates every push and a slow nightly tier, one
+  shared fixture helper, lints for the defect classes that keep recurring (live-state
+  anchors, leaked env/config, load-only timing), and prune by evidence. Every step
+  proves its tests still fail on the bug they were written for."
+status: in-progress
+anchor_task: T-4376
+# close_task: T-XXX  # T-3843: the arc's close-out task. Its ## Recommendation (CLOSE|KEEP-OPEN,
+#                    # Rationale, Evidence) is the close recommendation on /arcs/<slug>/close and
+#                    # gates fw arc review; anchor_task is the fallback when unset.
+headline_mechanic: "agent pushes a framework change → the pre-push gate runs only
+  the hermetic fast tier and returns a determined verdict in under 10 minutes with
+  no file timing out → operator reads one line in the push output and never has to
+  baseline a load-only red to unblock a release"
+demo_evidence:
+created: 2026-10-19T11:56:49Z
+closed_at:
+decision:
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers:              # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+  - name: verdict-determinacy
+    weight: 3
+    approved_at: '2026-10-19T11:57:24Z'
+    approved_by: reviewer:static-v1
+    rationale: "Every test in the push gate returns a determined verdict: no file
+      timeout, no red that appears only under parallel load, no assertion on live
+      repo or host state. Distinguishes from D2 (Reliability), which asks whether
+      the framework's own runtime behaviour is predictable and has no silent failures;
+      this asks whether the TEST VERDICT is a function of the code under test. A load-only
+      red is not a framework failure at all, yet it blocks releases and trains the
+      operator to baseline reds (2026-10-19: two extra suite runs and a baseline step
+      for one push)."
+    reviewer:
+      verdict: pass
+      checks:
+        a:
+          check: scorable
+          verdict: pass
+          reason: 'inline scoring: validates (3 level(s))'
+        b:
+          check: distinct
+          verdict: pass
+          reason: no collision with D1-D4, free_drivers[] or this arc's 
+            scoped_drivers[]
+        c:
+          check: distinguishes
+          verdict: pass
+          reason: 555 chars, distinguishes from D2, Reliability
+      ts: '2026-10-19T11:57:24Z'
+      reviewer_id: static-v1
+  - name: fault-detection-fidelity
+    weight: 3
+    approved_at: '2026-10-19T11:57:26Z'
+    approved_by: reviewer:static-v1
+    rationale: 'A refactored, merged or pruned test still fails on the bug it was
+      written for, proven by a recorded red run on the pre-fix code. Distinguishes
+      from D1 (Antifragility), which is about the system getting stronger from failures;
+      this is the opposite risk specific to a test refactor: the suite quietly getting
+      WEAKER while turning green and faster. Without it, speed and determinacy can
+      be bought by deleting coverage, and no other driver would notice.'
+    reviewer:
+      verdict: pass
+      checks:
+        a:
+          check: scorable
+          verdict: pass
+          reason: 'inline scoring: validates (3 level(s))'
+        b:
+          check: distinct
+          verdict: pass
+          reason: no collision with D1-D4, free_drivers[] or this arc's 
+            scoped_drivers[]
+        c:
+          check: distinguishes
+          verdict: pass
+          reason: 449 chars, distinguishes from D1, Antifragility
+      ts: '2026-10-19T11:57:25Z'
+      reviewer_id: static-v1
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.
+  # T-4376: two candidates; a third (push latency) would restate D3 and was not proposed (R5).

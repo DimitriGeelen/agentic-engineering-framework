@@ -1,8 +1,14 @@
 ---
 id: T-4375
-name: "Structure-section audit takes ~510 s alone against its 600 s scoped budget, so it times out (exit 124) under suite load and on busy hosts"
+name: "Structure-section audit takes ~510 s alone against its 600 s scoped budget,
+  so it times out (exit 124) under suite load and on busy hosts"
 description: >
-  2026-10-19: audit.bats 'audit runs structure section' alone ran 516 s; in the 10:29 suite run the audit hit FW_AUDIT_TIMEOUT 600 (exit 124) and the test went red. The pre-push audit is the same section (~12 min with the push). Measure per-check cost (T-3127 timing capture), find the slow checks, and either make them cheaper or move them out of the pre-push section; the test should not run a full live structure audit under suite load.
+  2026-10-19: audit.bats 'audit runs structure section' alone ran 516 s; in the 10:29
+  suite run the audit hit FW_AUDIT_TIMEOUT 600 (exit 124) and the test went red. The
+  pre-push audit is the same section (~12 min with the push). Measure per-check cost
+  (T-3127 timing capture), find the slow checks, and either make them cheaper or move
+  them out of the pre-push section; the test should not run a full live structure
+  audit under suite load.
 
 status: captured
 workflow_type: build
@@ -11,6 +17,7 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+arc_id: test-suite-health
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T11:26:05Z
-last_update: 2026-10-19T11:26:05Z
-date_finished: null
+last_update: '2026-10-19T11:31:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T11:30:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T11:31:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4375: Structure-section audit takes ~510 s alone against its 600 s scoped budget, so it times out (exit 124) under suite load and on busy hosts

@@ -19,6 +19,7 @@ horizon: next
 tags: [tests, flaky]
 components: []
 related_tasks: []
+arc_id: test-suite-health
 origin: {kind: "agent", source: "T-4246"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
