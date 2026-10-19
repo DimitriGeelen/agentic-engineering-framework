@@ -1,10 +1,20 @@
 ---
 id: T-4405
-name: "fw upgrade's bare-from-consumer handoff to upstream bin/fw drops the caller's flags (e.g. --allow-delete-locals), then refuses asking for the flag that was passed"
+name: "fw upgrade's bare-from-consumer handoff to upstream bin/fw drops the caller's
+  flags (e.g. --allow-delete-locals), then refuses asking for the flag that was passed"
 description: >
-  Reported by ring20-dashboard (msg 41b1ed56) upgrading to v1.8.12: 'Handing off to upstream's bin/fw: upgrade <target>' forwards only the target, so --allow-delete-locals was lost and the T-4278 precheck refused with 'REAL RUN WOULD REFUSE without --allow-delete-locals'. Safe (nothing written) but confusing. Fix: forward the original arguments in the handoff (quoted, exactly), or refuse up front with 'flags not forwarded'. Test with a flag that changes behaviour. Related, same report: an explicitly invoked bin/fw honours an inherited FRAMEWORK_ROOT over its own tree (claude-fw exports it), which is what sent the run down the bare-from-consumer path — that part is T-4369's class; check T-4369's fix covers 'invoked by explicit path from another framework tree', or extend it.
+  Reported by ring20-dashboard (msg 41b1ed56) upgrading to v1.8.12: 'Handing off to
+  upstream's bin/fw: upgrade <target>' forwards only the target, so --allow-delete-locals
+  was lost and the T-4278 precheck refused with 'REAL RUN WOULD REFUSE without --allow-delete-locals'.
+  Safe (nothing written) but confusing. Fix: forward the original arguments in the
+  handoff (quoted, exactly), or refuse up front with 'flags not forwarded'. Test with
+  a flag that changes behaviour. Related, same report: an explicitly invoked bin/fw
+  honours an inherited FRAMEWORK_ROOT over its own tree (claude-fw exports it), which
+  is what sent the run down the bare-from-consumer path — that part is T-4369's class;
+  check T-4369's fix covers 'invoked by explicit path from another framework tree',
+  or extend it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:37:39Z
-last_update: 2026-10-19T15:37:39Z
-date_finished: null
+last_update: 2026-10-19T16:25:24Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +60,72 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T15:45:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T15:46:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4405: fw upgrade's bare-from-consumer handoff to upstream bin/fw drops the caller's flags (e.g. --allow-delete-locals), then refuses asking for the flag that was passed
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+lib/upgrade.sh do_upgrade, bare-from-consumer auto-clone branch (T-1634): the replay to
+the cloned upstream's bin/fw is rebuilt from two booleans instead of the caller's
+arguments.
+
+**T-4369 coverage (checked, not extended):** T-4369 drops an inherited FRAMEWORK_ROOT
+only when it is the vendored copy of the repo the running bin/fw lives in
+(bin/fw:1401). ring20's run (`<framework>/bin/fw upgrade <consumer>` with
+FRAMEWORK_ROOT=<consumer>/.agentic-framework exported by claude-fw) does not match it.
+Extending the rule would not change the route either: with PROJECT_ROOT = the consumer,
+`resolve_framework` prefers the consumer's vendored copy by design (T-498,
+bin/fw:166-167), so the run reaches the bare-from-consumer handoff with or without the
+inherited value. The handoff is the designed path, so the fix is to make it lossless.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The handoff forwards every caller argument exactly (each quoted, order kept), with the target replaced by the resolved absolute target and `--from-upstream URL` / `--from-upstream=URL` removed (the clone is the source); this covers `--allow-delete-locals`, `--strict`, `--no-self-vendor`, `--force-downgrade`, `--with-messaging` / `--without-messaging`, `--dry-run`, which were dropped before
+- [x] The "Handing off" line and the dry-run "would re-invoke" line print the same forwarded argument list, shell-quoted
+- [x] Regression test `tests/unit/t4405_upgrade_handoff_forwards_args.bats` fails before and passes after: a stub upstream records its argv; `--allow-delete-locals` (the reported behaviour-changing flag) and an argument containing a space arrive intact; `--from-upstream` does not
+- [x] upgrade_auto_clone.bats, upgrade_fresh_machine_simulation.bats and upgrade_fresh_machine_simulation_vendored.bats stay green (each run alone)
+- [x] `bin/fw vendor self --check` clean for the touched files
+
+## Test record (2026-10-19)
+
+- Red before the fix: t4405 4/4 `not ok` — argv held only `upgrade <target> [--force]`;
+  `--allow-delete-locals`, `--strict`, `--no-self-vendor`, `--with-messaging` missing; the
+  dry-run plan lacked the flag.
+- Green after: t4405 4/4; upgrade_auto_clone 7, test_upgrade_self_target_guard 4,
+  upgrade_fresh_machine_simulation 16, upgrade_fresh_machine_simulation_vendored 4 — each
+  run alone, 0 `not ok`, 0 skips. Dead-negation lint clean. `vendor self --check` in sync.
+- Not covered here: the stub verifies argv delivery; the flag's effect in the upstream run
+  (T-4278 precheck honouring --allow-delete-locals) is T-3850/T-4278's own tests.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,22 +303,37 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/upgrade.sh
+timeout 600 bats tests/unit/t4405_upgrade_handoff_forwards_args.bats > /tmp/.t4405.out 2>&1 && ! grep -q "^not ok" /tmp/.t4405.out
+test "$(grep -c '# skip' /tmp/.t4405.out)" -eq 0
+timeout 900 bats tests/unit/upgrade_auto_clone.bats > /tmp/.t4405b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4405b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4405_upgrade_handoff_forwards_args.bats > /tmp/.t4405l.out 2>&1 && grep -q clean /tmp/.t4405l.out
+bin/fw vendor self --check
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** ring20-dashboard (msg 41b1ed56), upgrading to v1.8.12 with
+`--allow-delete-locals`: "Handing off to upstream's bin/fw: upgrade <target>", then the
+T-4278 precheck refused with "REAL RUN WOULD REFUSE without --allow-delete-locals" — the
+flag the operator had passed. Nothing was written, but the refusal named a flag that was
+visibly on the command line.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** lib/upgrade.sh:1412-1414 (pre-fix) built the replay as
+`("upgrade" "$target_dir")` plus `--force` and `--dedupe-user-hooks` re-derived from
+their booleans. Every other option — `--allow-delete-locals` (T-3850), `--strict`,
+`--no-self-vendor`, `--force-downgrade`, `--with/--without-messaging` — was parsed into a
+local and silently not replayed. The dry-run "would re-invoke" line had the same
+hard-coded list.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the replay was an allow-list maintained by hand, separate
+from the option parser; each option added after T-1634 had to be added in two places and
+none was. The only live handoff test (upgrade_auto_clone.bats) invoked with no flags and
+asserted "upgrade" appeared, so a dropped flag could not show.
+
+**Prevention:** the replay is now derived from the caller's own argv (drop-list of the two
+things that must not be forwarded, instead of an allow-list), so a new option is
+forwarded without anyone remembering to. `tests/unit/t4405_upgrade_handoff_forwards_args.bats`
+pins argv exactness through a recording stub upstream.
 
 ## Evolution
 
@@ -338,3 +415,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4405-fw-upgrades-bare-from-consumer-handoff-t.md
 - **Context:** Initial task creation
+
+### 2026-10-19T16:25:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

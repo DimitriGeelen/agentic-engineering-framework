@@ -1143,6 +1143,9 @@ do_upgrade() {
     # T-3850: passed through to do_vendor, which otherwise refuses when local
     # files under .agentic-framework/ would be deleted or overwritten.
     local -a _vendor_extra=()
+    # T-4405: the caller's argv, kept for the bare-from-consumer handoff, which
+    # replays it to the upstream bin/fw (it used to replay two flags and drop the rest).
+    local -a _caller_args=("$@")
 
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -1376,9 +1379,29 @@ do_upgrade() {
         # shellcheck disable=SC2064  # expand _tmpd now, not at trap time
         trap "rm -rf '$_tmpd'" EXIT INT TERM HUP
 
+        # T-4405: replay the caller's own arguments, in order and exactly, minus two
+        # things: the target (re-supplied below as the resolved absolute path) and
+        # --from-upstream (the clone IS the source now). A drop-list, not an allow-list:
+        # the hand-kept allow-list here forwarded --force and --dedupe-user-hooks only,
+        # so --allow-delete-locals reached upstream missing and its run refused asking
+        # for it (ring20-dashboard, msg 41b1ed56).
+        local -a _replay_args=("upgrade" "$target_dir")
+        local _ra _ra_skip=false
+        for _ra in ${_caller_args[@]+"${_caller_args[@]}"}; do
+            if [ "$_ra_skip" = true ]; then _ra_skip=false; continue; fi
+            case "$_ra" in
+                --from-upstream) _ra_skip=true ;;
+                --from-upstream=*) ;;
+                -*) _replay_args+=("$_ra") ;;
+                *) ;;   # the positional target
+            esac
+        done
+        local _replay_shown
+        _replay_shown=$(printf '%q ' "${_replay_args[@]}")
+
         if [ "$dry_run" = true ]; then
             echo "  [dry-run] would clone $_upstream_url into $_tmpd/fw"
-            echo "  [dry-run] would re-invoke: $_tmpd/fw/bin/fw upgrade $target_dir --dry-run"
+            echo "  [dry-run] would re-invoke: $_tmpd/fw/bin/fw ${_replay_shown% }"
             rm -rf "$_tmpd"
             trap - EXIT INT TERM HUP
             return 0
@@ -1408,14 +1431,7 @@ do_upgrade() {
         fi
         echo "ok"
 
-        # Replay arg flags to the upstream's bin/fw
-        local _replay_args=("upgrade" "$target_dir")
-        [ "$force" = true ] && _replay_args+=("--force")
-        [ "$dedupe_user_hooks" = true ] && _replay_args+=("--dedupe-user-hooks")
-        # NOTE: do not replay --from-upstream — the upstream IS the source
-        # now, the target is local-path-based from the upstream's PoV.
-
-        echo -e "  ${GREEN}Handing off to upstream's bin/fw:${NC} ${_replay_args[*]}"
+        echo -e "  ${GREEN}Handing off to upstream's bin/fw:${NC} ${_replay_shown% }"
         echo ""
         # T-2099 (fork-bomb fix, SEV-1): explicitly scope FRAMEWORK_ROOT + PROJECT_ROOT
         # for the cloned upstream's bin/fw. Without this, the cloned fw re-runs
