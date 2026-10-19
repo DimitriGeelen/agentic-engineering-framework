@@ -350,27 +350,48 @@ _fw_env_prefix_is_denied() {
         GIT_EXTERNAL_DIFF|GIT_PAGER|GIT_EDITOR|GIT_SEQUENCE_EDITOR) return 0 ;;
         # GIT_CONFIG_* can inject core.pager / diff.external at invocation time,
         # which is the same arbitrary-execution vector one indirection further out.
-        GIT_CONFIG|GIT_CONFIG_GLOBAL|GIT_CONFIG_SYSTEM) return 0 ;;
-        GIT_CONFIG_COUNT|GIT_CONFIG_KEY_*|GIT_CONFIG_VALUE_*) return 0 ;;
+        # T-4408: every GIT_CONFIG* name, GIT_CONFIG_PARAMETERS included (the
+        # `git -c` channel: 'core.fsmonitor=CMD'), except GIT_CONFIG_NOSYSTEM, which
+        # only switches the system file off and so can only remove config.
+        GIT_CONFIG_NOSYSTEM) return 1 ;;
+        GIT_CONFIG*) return 0 ;;
+        # T-4408: GIT_EXEC_PATH is where git looks up its helper programs
+        # (git-remote-https for fetch/push, ...): a directory of programs it runs.
+        GIT_EXEC_PATH) return 0 ;;
+        # T-4408: a colon-separated list of object stores. Not resolvable as one
+        # path, rarely used, so denied rather than parsed.
+        GIT_ALTERNATE_OBJECT_DIRECTORIES) return 0 ;;
         #
-        # DELIBERATELY NOT DENIED — repository retargeting: GIT_DIR, GIT_WORK_TREE,
-        # GIT_INDEX_FILE, GIT_OBJECT_DIRECTORY, GIT_ALTERNATE_OBJECT_DIRECTORIES.
-        # These change WHICH repository is read, not WHAT executes, and the git
-        # sub-verb allowlist already constrains this path to read-only verbs. A
-        # read of a different repo is still a read.
-        #
-        # This boundary was drawn by a failing test, and the test was right:
-        # tests/unit/safe_commands_env_prefix.bats:44 pins `GIT_DIR=foo git status`
-        # as safe. The first draft of this denylist included GIT_DIR and broke it.
-        # The fix was to narrow the denylist to the execution-causing names —
-        # NOT to edit the test, which would have been weakening a pinned contract
-        # to make a new change pass. Recorded because the distinction (redirecting
-        # what is READ vs. redirecting what RUNS) is the useful line here, and it
-        # was not obvious until something bit.
+        # NOT DENIED BY NAME — repository selection: GIT_DIR, GIT_WORK_TREE,
+        # GIT_COMMON_DIR, GIT_INDEX_FILE, GIT_OBJECT_DIRECTORY. These are judged on
+        # their VALUE by _fw_env_assign_is_denied below (T-4408). The old comment
+        # here said "a read of a different repo is still a read"; T-4343 showed it
+        # is not, because the selected repository's config runs commands
+        # (core.fsmonitor, core.pager, diff.external, filters), and the index and
+        # object store are written by allowlisted verbs (status refreshes the index,
+        # add writes objects). So they are admitted only inside PROJECT_ROOT, the
+        # same rule as -C / --git-dir / --work-tree. `GIT_DIR=foo git status`
+        # (safe_commands_env_prefix.bats) stays SAFE when foo is in the project.
+        # GIT_CEILING_DIRECTORIES is allowed: it can only stop repository discovery
+        # early, never point it at another repository.
         # generic spawn-a-program hooks
         PAGER|EDITOR|VISUAL) return 0 ;;
         *) return 1 ;;
     esac
+}
+
+# T-4408: _fw_env_assign_is_denied <NAME> <VALUE> — the name denylist above, plus
+# the repository-selecting git names judged on VALUE: denied unless VALUE resolves
+# inside PROJECT_ROOT (_fw_git_dir_is_project, relative values against the tracked
+# cwd). A quoted, variable or otherwise unresolvable value is denied. Every place
+# that strips or admits an assignment calls this, not the name-only predicate.
+_fw_env_assign_is_denied() {
+    _fw_env_prefix_is_denied "$1" && return 0
+    case "$1" in
+        GIT_DIR|GIT_WORK_TREE|GIT_COMMON_DIR|GIT_INDEX_FILE|GIT_OBJECT_DIRECTORY)
+            _fw_git_dir_is_project "$2" "${_FW_GIT_CWD-${_FW_PAYLOAD_CWD:-$PWD}}" >/dev/null || return 0 ;;
+    esac
+    return 1
 }
 
 # _fw_strip_env_prefixes <cmd> — strip leading NAME=VALUE prefixes, stopping at
@@ -399,13 +420,14 @@ _fw_env_prefix_is_denied() {
 # still blocked. Interleaving is handled because both forms are consumed by the
 # same loop, so `time FOO=1 git status` and `FOO=1 time git status` behave alike.
 _fw_strip_env_prefixes() {
-    local c="$1" _name _prev=""
+    local c="$1" _name _val _next _prev=""
     while [ "$c" != "$_prev" ]; do
         _prev="$c"
-        if [[ "$c" =~ ^([A-Za-z_][A-Za-z0-9_]*)=[^[:space:]]+[[:space:]]+(.*)$ ]]; then
-            _name="${BASH_REMATCH[1]}"
-            _fw_env_prefix_is_denied "$_name" && break
-            c="${BASH_REMATCH[2]}"
+        if [[ "$c" =~ ^([A-Za-z_][A-Za-z0-9_]*)=([^[:space:]]+)[[:space:]]+(.*)$ ]]; then
+            # the predicate runs regexes of its own, so BASH_REMATCH is read first
+            _name="${BASH_REMATCH[1]}"; _val="${BASH_REMATCH[2]}"; _next="${BASH_REMATCH[3]}"
+            _fw_env_assign_is_denied "$_name" "$_val" && break
+            c="$_next"
             continue
         fi
         # Bare `time` and POSIX `time -p`. Deliberately NOT `/usr/bin/time`,
@@ -568,8 +590,11 @@ _fw_single_command_is_safe() {
     # Writes are still judged separately by has_bash_write_pattern on the
     # original line, so `X=1 > f` stays blocked.
     if [[ "$cmd" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(([^[:space:]\"\'\`\;\&\|\<\>\(\)]|\"[^\"\`]*\"|\'[^\']*\')*)$ ]]; then
-        _fw_env_prefix_is_denied "${BASH_REMATCH[1]}" && return 1
-        [[ "${BASH_REMATCH[2]}" == *'$('* ]] && return 1
+        # T-4408: name AND value (a GIT_DIR=/outside the next git inherits once
+        # exported). BASH_REMATCH is read before the predicate overwrites it.
+        local _an="${BASH_REMATCH[1]}" _av="${BASH_REMATCH[2]}"
+        _fw_env_assign_is_denied "$_an" "$_av" && return 1
+        [[ "$_av" == *'$('* ]] && return 1
         return 0
     fi
 
