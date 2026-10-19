@@ -12,12 +12,12 @@ description: >
   then push master + tag, GitHub release, merge master back into bleeding-edge. Release
   question to the operator if any gate is not met.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [release, hotfix, security]
-components: []
+components: [agents/context/lib/safe-commands.sh, lib/shell_write_scan.py]
 related_tasks: []
 origin: {kind: "operator"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -47,8 +47,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:05:48Z
-last_update: '2026-10-18T22:16:18Z'
-date_finished:
+last_update: 2026-10-19T12:42:52Z
+date_finished: 2026-10-19T12:42:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -301,6 +301,25 @@ git merge-base --is-ancestor origin/master origin/bleeding-edge
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** v1.8.11 shipped two read-only-allowlist holes, reported by ring20-dashboard (msg 4699f56c):
+- `git -C`, `--git-dir` and `--work-tree` pointing outside the project were judged read-only.
+- The boundary read scanner skipped the word after a no-value flag, hiding outside reads.
+
+**Root cause:** the two component RCAs are in T-4343 and T-4344.
+- T-4264's `_fw_git_skip_globals` skipped the repo-selecting globals without judging their value.
+- T-4284's scanner assumed every flag takes a value.
+
+**Why structurally allowed:**
+- Both fixes went out in v1.8.11 with tests that pinned the wrong verdict. T-4264's fixture used `/tmp` as the SAFE path.
+- Nothing tested the allowlist against an adversarial outside path before release.
+- The field round for v1.8.11 tested the fixes it was told about, not new attack shapes on them.
+
+**Prevention:**
+- Boundary tests for every repo- or path-selecting option: `t4343_git_repo_path_boundary.bats` (inside, outside, `..`, symlink, variable), and the per-command free-text option table in t4344.
+- The red-run discipline: a security test must fail on the pre-fix code. Recorded for T-4343: 26 of 40 on v1.8.11.
+- The class recurred the same day as T-4367 (`--output` writes), which was caught internally and fixed before any release.
+- The hotfix lane (T-4035) carried the fix to master in one day without shipping untested bleeding-edge.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -381,3 +400,20 @@ git merge-base --is-ancestor origin/master origin/bleeding-edge
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4345-release-v1812-security-hotfix-t-4343-t-4.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5d96c29b
+- **Timestamp:** 2026-10-19T12:42:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T12:42:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
