@@ -13,12 +13,12 @@ description: >
   of T-4343/T-4344; regression tests per shape, red run on the current code; field
   test with dimitri-mint-dev's testbed.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-project-boundary.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T14:40:17Z
-last_update: 2026-10-19T14:55:34Z
-date_finished:
+last_update: 2026-10-19T15:42:42Z
+date_finished: 2026-10-19T15:42:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -403,3 +403,20 @@ bin/fw vendor self --check
 - **Red (pre-fix):** `bats tests/unit/t4395_boundary_unknown_top_reads.bats` → 8 of 20 `not ok` (tests 1-8: cat/grep/head/sed -n/quoted/single-quoted/relative/real NAS mount all ALLOWED); the 12 allow/FP pins ok.
 - **Green (post-fix):** 20/20 ok, 0 skips. Neighbouring boundary suites (check_project_boundary, t2920, t3076, t3768, t4114, t4126, t4149, t4284, t4343, t4344, test_boundary_hook_arguments): 259 tests, 0 `not ok`.
 - **Vendor:** `.agentic-framework/agents/context/check-project-boundary.sh` synced; `fw vendor self --check` is red only on `web/shared.py`, another worker's in-flight edit (not synced or committed here).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9edba964
+- **Timestamp:** 2026-10-19T15:43:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T15:42:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

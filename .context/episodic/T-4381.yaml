@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4381: Unit-suite runner accounting: refuse empty collection, discover every test file, keep timeouts out of LAST-COMPLETE, stamp each run with its revision
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T15:48:39Z
+# ============================================================================
+
+task_id: T-4381
+task_name: "Unit-suite runner accounting: refuse empty collection, discover every test file, keep timeouts out of LAST-COMPLETE, stamp each run with its revision"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T12:27:35Z
+completed: 2026-10-19T15:46:39Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-19T16:07:21+02:00
+last_commit: 2026-10-19T16:07:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unit-suite runner — exit 5 without skips is red, discover every pytest file (348 vs 316), per-file timeouts keep a run out of LAST-COMPLETE, report stamps revision {commit, tree}
+
+# Key outcomes
+outcomes:
+  - 'A pytest file that exits 5 (nothing collected) is recorded red: its leg exit is non-zero, `failed` names it ("collected no tests"), and the runner exits 1; a module-level skip (pytest also exits 5, but reports `N skipped`) stays green — pinned by a fixture suite in `tests/unit/t4381_unit_suite_accounting.bats`'
+  - 'Discovery rule is explicit and pinned: the pytest leg runs every `tests/unit/test_*.py` and `*_test.py` (pytest''s own naming — a claim to hold tests, so an empty one goes red under item 1), plus any other `tests/unit/*.py` that defines a test (`def test_` / `class Test`), excluding `conftest.py` and `_`-prefixed helpers — so `t2974_*.py`-style files run; a helper with no test definitions is not run. The signal-trap not-run sweep uses the same list'
+  - '`LAST-COMPLETE.yaml` is written only when no file hit its per-file timeout, nothing was interrupted, and nothing was left unrun — a fixture run with one per-file timeout leaves any prior LAST-COMPLETE.yaml untouched'
+  - 'Every report carries `revision: {commit: <HEAD sha or null>, tree: clean|dirty|unknown}` of the repo the suite ran against; existing keys unchanged (schema stays `unit-suite-report-v2`, additive only)'
+  - 'Readers'' tests still pass: t3302, t3602, t3621, t3650, t3794, t4058 bats files (the baseline helper''s tests live in t3621; no pytest or Watchtower reader exists)'
+  - 'Each new test was observed red against the pre-fix runner (recorded in ## Updates)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - 'agents/audit/unit-suite.sh'
+  - '.tasks/active/T-4381-unit-suite-runner-accounting-refuse-empt.md'
+  - 'tests/unit/t4381_unit_suite_accounting.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T16:07:21'
+    action: 'T-4381: unit-suite runner — exit 5 without skips is red, discover every pytest file (348 vs 316), per-file timeouts keep a run out of LAST-COMPLETE, report stamps revision {commit, tree}'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 199 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 199
+  commits: 1
+  files_changed: 4
+  lines_added: 380
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4381-unit-suite-runner-accounting-refuse-empt.md
+generated_by: context-agent-hybrid

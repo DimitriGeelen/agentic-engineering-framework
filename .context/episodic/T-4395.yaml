@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4395: Boundary read check skips every path under a top-level dir not in KNOWN_TOPS (/work, /data, NAS mounts): the 'at least 2 slashes' clause in the comment was never implemented
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T15:44:08Z
+# ============================================================================
+
+task_id: T-4395
+task_name: "Boundary read check skips every path under a top-level dir not in KNOWN_TOPS (/work, /data, NAS mounts): the 'at least 2 slashes' clause in the comment was never implemented"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T14:40:17Z
+completed: 2026-10-19T15:42:42Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-19T17:07:46+02:00
+last_commit: 2026-10-19T17:07:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary read check judges >=2-slash paths under an existing top-level dir outside KNOWN_TOPS (NAS mounts, /work, /data); regex words under absent tops stay unflagged; regression bats red 8/20 -> green 20/20
+
+# Key outcomes
+outcomes:
+  - '`_read_outside` refuses a path with >= 2 slashes whose top-level dir exists on the host but is not in KNOWN_TOPS (the NAS-mount / `/work` / `/data` case), for cat, grep, head and sed -n, plain and quoted'
+  - 'Paths under a top-level dir that does not exist stay unflagged (nothing to read there), so sed/awk regex words (`/^## X/,/^## /p`, `/foo/p`) and single-slash tokens do not become false positives'
+  - 'Every existing boundary case holds: in-project, /tmp, /usr, /etc, relative in-project paths allowed; KNOWN_TOPS behaviour unchanged (existing boundary bats files green)'
+  - 'Regression test `tests/unit/t4395_boundary_unknown_top_reads.bats` red on the pre-fix code, green after (both runs recorded in Updates)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — what "looks like a path" means for an unknown top-level dir'
+    chose: '`cand.count(''/'') >= 2` AND the top-level dir exists on the host (`os.path.isdir(''/'' + top)`), in addition to the unchanged KNOWN_TOPS clause.'
+    rationale: 'Pattern 4b judges every bash word, quoted or not, so the reporter''s bare `count >= 2` would refuse `sed -n ''/^## Verification/,/^## /p'' f`, `sed -n /foo/p f`, `awk ''/a/,/b/''` — the most common read idiom in this repo (measured: those cases go BLOCKED under the bare rule). A top-level dir that does not exist has nothing to read, so skipping it gives up no data; creating one would be a write, which the write-side patterns judge.'
+    alternatives_rejected: ['bare `count >= 2` (FP storm above); a filename-character whitelist on the top component (`/foo/p`, `/TODO/d` still pass it). - **Deviation from the brief:** `/work/other/x` and `/data/x` are refused only on a host where `/work` / `/data` exist (containers, the reporter''s NAS host). The test creates its own top-level probe dir so it is host-independent, and also probes the real NAS mount when present.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - 'agents/context/check-project-boundary.sh'
+  - '.tasks/active/T-4395-boundary-read-check-skips-every-path-und.md'
+  - 'tests/unit/t4395_boundary_unknown_top_reads.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T17:07:46'
+    action: 'T-4395: boundary read check judges >=2-slash paths under an existing top-level dir outside KNOWN_TOPS (NAS mounts, /work, /data); regex words under absent tops stay unflagged; regression bats red 8/20 -> green 20/20'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 62 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 62
+  commits: 1
+  files_changed: 4
+  lines_added: 231
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4395-boundary-read-check-skips-every-path-und.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4369: In the framework repo an inherited FRAMEWORK_ROOT=.agentic-framework makes fw cron generate emit vendored paths and doctor report false cron drift
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T15:44:50Z
+# ============================================================================
+
+task_id: T-4369
+task_name: "In the framework repo an inherited FRAMEWORK_ROOT=.agentic-framework makes fw cron generate emit vendored paths and doctor report false cron drift"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-19T09:09:36Z
+completed: 2026-10-19T15:44:12Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-19T11:10:10+02:00
+last_commit: 2026-10-19T17:09:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — inherited FRAMEWORK_ROOT skews cron generate and doctor in the framework repo. framework repo ignores an inherited FRAMEWORK_ROOT naming its own vendored copy; claude-fw pins the repo first
+
+# Key outcomes
+outcomes:
+  - '`bin/fw` invoked as the framework repo''s own `bin/fw` with an inherited FRAMEWORK_ROOT equal to that repo''s `.agentic-framework` resolves FRAMEWORK_ROOT to the repo (`fw version` prints `Framework: <repo>`)'
+  - 'Under that inherited env, `fw cron generate` writes `<repo>/bin/fw` into the cron lines, not `.agentic-framework/bin/fw` (regression test, red before / green after)'
+  - 'Under that inherited env, `fw doctor` reports no `edited but not generated` WARN on a synced registry (regression test)'
+  - '`bin/claude-fw` pins FRAMEWORK_ROOT to the repo (not its vendored copy) when launched in the framework repo; consumers still get `<project>/.agentic-framework`'
+  - 'Consumer resolution unchanged: an inherited `<consumer>/.agentic-framework` FRAMEWORK_ROOT is still honoured (regression test) and `tests/unit/upgrade_fresh_machine_simulation.bats` stays green'
+  - '`bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — where to fix'
+    chose: 'fix FRAMEWORK_ROOT resolution at the source, both ends: `bin/fw` drops an inherited FRAMEWORK_ROOT that resolves to `<its own repo>/.agentic-framework` when its own tree is a framework repo (the existing `resolve_framework` T-1346-B1 rule then picks the repo); `bin/claude-fw` checks the framework-repo case before the vendored case so it stops exporting the wrong value.'
+    rationale: 'the wrong value is FRAMEWORK_ROOT itself; every consumer of it (generate, doctor''s compare, sourced lib/ and agents/) is wrong the same way, so patching generator and doctor would leave every other subsystem running from the vendored copy. The guard is narrow: it fires only when the vendored copy belongs to the repo bin/fw lives in. That never happens in a consumer (there bin/fw *is* the vendored copy, and its own tree has no `.agentic-framework`), nor in the T-2099 upgrade handoff (temp-clone root) or the upgrade doctor leg (consumer''s own vendored binary + root).'
+    alternatives_rejected: ['teaching the cron generator and doctor that the repo''s vendored copy means the repo — treats two symptoms and leaves lib/ and agents/ sourced from the vendored copy for every other command. Fixing claude-fw alone — sessions already running with the leaked value, and any other exporter, would still hit it.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/bin/fw'
+  - 'bin/claude-fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4369-in-the-framework-repo-an-inherited-frame.md'
+  - 'tests/unit/t4369_inherited_vendored_self_root.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T11:10:10'
+    action: 'T-4369: file — inherited FRAMEWORK_ROOT skews cron generate and doctor in the framework repo'
+  - time: '2026-10-19T17:09:10'
+    action: 'T-4369: framework repo ignores an inherited FRAMEWORK_ROOT naming its own vendored copy; claude-fw pins the repo first'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 394 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 394
+  commits: 2
+  files_changed: 6
+  lines_added: 496
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4369-in-the-framework-repo-an-inherited-frame.md
+generated_by: context-agent-hybrid

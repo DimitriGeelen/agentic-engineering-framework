@@ -1,23 +1,22 @@
 ---
-id: T-4369
-name: "In the framework repo an inherited FRAMEWORK_ROOT=.agentic-framework makes
-  fw cron generate emit vendored paths and doctor report false cron drift"
+id: T-4381
+name: "Unit-suite runner accounting: refuse empty collection, discover every test
+  file, keep timeouts out of LAST-COMPLETE, stamp each run with its revision"
 description: >
-  Session env carried FRAMEWORK_ROOT=<repo>/.agentic-framework. fw cron generate then
-  judged FRAMEWORK_ROOT != PROJECT_ROOT and wrote .agentic-framework/bin/fw into all
-  25 cron lines (caught before commit, e57794eb6 then fixed); doctor compared registry
-  vs generated under the same env and WARNed 'edited but not generated' while a clean
-  env said in sync, which also failed T-4342's close. bin/fw should resolve FRAMEWORK_ROOT
-  from its own location when invoked as the repo's bin/fw, or the generator should
-  treat the repo's own vendored copy as the repo. Found 2026-10-19 (T-4364).
+  pytest exit 5 is accepted as success; discovery is test_*.py only (t2974_greenfield_operator_prose.py
+  never runs); LAST-COMPLETE.yaml can include runs with per-file timeouts; 81 runs
+  collapse into 42 daily reports with no commit identity, so no red can be joined
+  to the code it ran against. Arc test-suite-health (arc-026); source: external review
+  T-4376 (docs/reports/T-4376-reviews/).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/unit-suite.sh]
 related_tasks: []
+arc_id: test-suite-health
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -44,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T09:09:36Z
-last_update: 2026-10-19T14:32:36Z
-date_finished:
+created: 2026-10-19T12:27:35Z
+last_update: 2026-10-19T15:46:39Z
+date_finished: 2026-10-19T15:46:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,7 +57,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-19T09:15:36Z'
+  - ts: '2026-10-19T12:30:40Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -68,7 +67,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T09:16:29Z'
+  - ts: '2026-10-19T12:31:39Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -80,29 +79,32 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+    rationale: verdict-determinacy=? (unscored (no scorer for 
+      verdict-determinacy; not counted)); fault-detection-fidelity=? (unscored 
+      (no scorer for fault-detection-fidelity; not counted)); D1=4 
+      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4369: In the framework repo an inherited FRAMEWORK_ROOT=.agentic-framework makes fw cron generate emit vendored paths and doctor report false cron drift
+# T-4381: Unit-suite runner accounting: refuse empty collection, discover every test file, keep timeouts out of LAST-COMPLETE, stamp each run with its revision
 
 ## Context
 
-In the framework repo, `bin/claude-fw:51` exports FRAMEWORK_ROOT=<repo>/.agentic-framework (the vendored self-copy) and `bin/fw:1385-1398` honours any inherited FRAMEWORK_ROOT that has lib/ + agents/. Cron generate (`_cron_fw` rule) and doctor's dry-run compare (`$FRAMEWORK_ROOT/bin/fw`) then both use the vendored path.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `bin/fw` invoked as the framework repo's own `bin/fw` with an inherited FRAMEWORK_ROOT equal to that repo's `.agentic-framework` resolves FRAMEWORK_ROOT to the repo (`fw version` prints `Framework: <repo>`)
-- [x] Under that inherited env, `fw cron generate` writes `<repo>/bin/fw` into the cron lines, not `.agentic-framework/bin/fw` (regression test, red before / green after)
-- [x] Under that inherited env, `fw doctor` reports no `edited but not generated` WARN on a synced registry (regression test)
-- [x] `bin/claude-fw` pins FRAMEWORK_ROOT to the repo (not its vendored copy) when launched in the framework repo; consumers still get `<project>/.agentic-framework`
-- [x] Consumer resolution unchanged: an inherited `<consumer>/.agentic-framework` FRAMEWORK_ROOT is still honoured (regression test) and `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
-- [x] `bin/fw vendor self --check` clean
+- [x] A pytest file that exits 5 (nothing collected) is recorded red: its leg exit is non-zero, `failed` names it ("collected no tests"), and the runner exits 1; a module-level skip (pytest also exits 5, but reports `N skipped`) stays green — pinned by a fixture suite in `tests/unit/t4381_unit_suite_accounting.bats`
+- [x] Discovery rule is explicit and pinned: the pytest leg runs every `tests/unit/test_*.py` and `*_test.py` (pytest's own naming — a claim to hold tests, so an empty one goes red under item 1), plus any other `tests/unit/*.py` that defines a test (`def test_` / `class Test`), excluding `conftest.py` and `_`-prefixed helpers — so `t2974_*.py`-style files run; a helper with no test definitions is not run. The signal-trap not-run sweep uses the same list
+- [x] `LAST-COMPLETE.yaml` is written only when no file hit its per-file timeout, nothing was interrupted, and nothing was left unrun — a fixture run with one per-file timeout leaves any prior LAST-COMPLETE.yaml untouched
+- [x] Every report carries `revision: {commit: <HEAD sha or null>, tree: clean|dirty|unknown}` of the repo the suite ran against; existing keys unchanged (schema stays `unit-suite-report-v2`, additive only)
+- [x] Readers' tests still pass: t3302, t3602, t3621, t3650, t3794, t4058 bats files (the baseline helper's tests live in t3621; no pytest or Watchtower reader exists)
+- [x] Each new test was observed red against the pre-fix runner (recorded in ## Updates)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,11 +282,10 @@ In the framework repo, `bin/claude-fw:51` exports FRAMEWORK_ROOT=<repo>/.agentic
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-bash -n bin/fw && bash -n bin/claude-fw
-timeout 900 bats tests/unit/t4369_inherited_vendored_self_root.bats > /tmp/.t4369.out 2>&1 && ! grep -q "^not ok" /tmp/.t4369.out
-test "$(grep -c '# skip' /tmp/.t4369.out)" -eq 0
-out=$(FRAMEWORK_ROOT="$PWD/.agentic-framework" bin/fw version 2>&1); echo "$out" | grep -qx "Framework: $PWD"
+timeout 600 bats tests/unit/t4381_unit_suite_accounting.bats > /tmp/.t4381.out 2>&1 && ! grep -q "^not ok" /tmp/.t4381.out
+test "$(grep -c '# skip' /tmp/.t4381.out)" -eq 0
+timeout 900 bats tests/unit/t3302_unit_suite_schedule.bats tests/unit/t3602_unit_suite_partial_run.bats tests/unit/t3794_unit_suite_incomplete_prepush.bats tests/unit/t4058_unit_suite_keeps_failures.bats > /tmp/.t4381r.out 2>&1 && ! grep -q "^not ok" /tmp/.t4381r.out
+bash -n agents/audit/unit-suite.sh
 bin/fw vendor self --check
 
 ## RCA
@@ -303,13 +304,17 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** with FRAMEWORK_ROOT=<repo>/.agentic-framework inherited (every claude-fw session in the framework repo), `fw cron generate` wrote `.agentic-framework/bin/fw` into all 25 cron lines (e57794eb6, caught before commit) and `fw doctor` WARNed `Cron registry edited but not generated` while a clean env said in sync — failing T-4342's close. Reproduced 2026-10-19: `FRAMEWORK_ROOT=$PWD/.agentic-framework bin/fw doctor` → `Framework: …/.agentic-framework` + the WARN.
+**Symptom:** the nightly unit-suite report could say green for files that ran nothing, never ran some test files at all (`t2974_greenfield_operator_prose.py`, every `*_test.py`), could promote a run with per-file timeouts to `LAST-COMPLETE.yaml`, and carried no commit identity, so a red could not be joined to the code it ran against (external review, T-4376).
 
-**Root cause:** two halves. (1) `bin/claude-fw:51` (`_cfw_pin_project`, T-4218) tests for `.agentic-framework/bin/fw` before the framework-repo case, and the framework repo carries a vendored self-copy (`fw vendor self`), so it exports the vendored copy as FRAMEWORK_ROOT. (2) `bin/fw:1385-1398` (T-2099/T-4248) honours any inherited FRAMEWORK_ROOT that has lib/ and agents/ — the vendored copy passes — so `resolve_framework`'s T-1346-B1 self-repo rule (repo when bin/fw's own tree == PROJECT_ROOT) never runs. The cron generator's T-3835 rule then sees FRAMEWORK_ROOT != PROJECT_ROOT and selects `$PROJECT_ROOT/.agentic-framework/bin/fw`; doctor's dry-run compare passes `$FRAMEWORK_ROOT/bin/fw`.
+**Root cause:**
+- `agents/audit/unit-suite.sh:240` (`_leg_rc`) and `:353` (report writer) treat pytest rc 5 ("no tests collected") as success: `[ "$rc" -ne 5 ]` / `rc not in (0, 5)`.
+- `agents/audit/unit-suite.sh:457` (and the signal sweep at `:215`, `:221`) discover the pytest leg with the glob `test_*.py` only; 35 `tests/unit/*.py` files (`*_test.py`, `tNNNN_*.py`) never match, so they were never run.
+- `agents/audit/unit-suite.sh:420` gates LAST-COMPLETE on `timed_out`, which (line 361) deliberately excludes plain per-file timeouts; a run with a file killed by its own cap therefore counts as complete.
+- The report dict (`:383`) has no revision field; nothing records HEAD or tree state.
 
-**Why structurally allowed:** T-4248 validated an inherited FRAMEWORK_ROOT only as "is a framework tree", which a vendored copy always is; no test exercised the framework repo under the env claude-fw itself exports (tests run with a clean or test-scoped env). Doctor compared under the same wrong env, so it reported a false drift instead of the wrong root.
+**Why structurally allowed:** the runner's tests (t3302/t3602/t4058) built fixtures only from names the glob already matched and only from files that collect tests, so the discovery gap and the rc-5 branch were never exercised; no test asserted on LAST-COMPLETE after a per-file timeout; nothing read a revision, so its absence was invisible.
 
-**Prevention:** `tests/unit/t4369_inherited_vendored_self_root.bats` builds a synthetic framework repo with a vendored self-copy and pins version, generate and doctor under the inherited env, plus a consumer control leg; bin/fw drops an inherited FRAMEWORK_ROOT that is the vendored copy of the repo it runs from, and claude-fw no longer exports one.
+**Prevention:** `tests/unit/t4381_unit_suite_accounting.bats` pins each of the four with a fixture suite under a temp `FW_UNIT_SUITE_DIR`/`FW_UNIT_SUITE_REPORT_DIR` (empty-collection file → red; `*_test.py` + `tNNNN_*.py` discovered, helper not; per-file timeout → no LAST-COMPLETE; `revision.commit`/`revision.tree` present and correct for clean and dirty fixture repos). Each was run red against the pre-fix runner.
 
 ## Evolution
 
@@ -334,6 +339,11 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-19 — discovery rule
+- **What changed:** 35 `tests/unit/*.py` files do not match `test_*.py`; most are `*_test.py` (pytest's own default pattern) plus `tNNNN_*.py`, mixed with real helpers (`_*.py`, adapters).
+- **Plan impact:** a pure filename rule either misses tests or sweeps in helpers that would (correctly, under item 1) go red on exit 5. Rule chosen: name OR content — pytest's names (`test_*.py`, `*_test.py`) always run; any other non-underscore, non-conftest `.py` runs when it defines a test.
+- **Triggered:** none.
 
 ## Recommendation
 
@@ -375,11 +385,6 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-19 — where to fix
-- **Chose:** fix FRAMEWORK_ROOT resolution at the source, both ends: `bin/fw` drops an inherited FRAMEWORK_ROOT that resolves to `<its own repo>/.agentic-framework` when its own tree is a framework repo (the existing `resolve_framework` T-1346-B1 rule then picks the repo); `bin/claude-fw` checks the framework-repo case before the vendored case so it stops exporting the wrong value.
-- **Why:** the wrong value is FRAMEWORK_ROOT itself; every consumer of it (generate, doctor's compare, sourced lib/ and agents/) is wrong the same way, so patching generator and doctor would leave every other subsystem running from the vendored copy. The guard is narrow: it fires only when the vendored copy belongs to the repo bin/fw lives in. That never happens in a consumer (there bin/fw *is* the vendored copy, and its own tree has no `.agentic-framework`), nor in the T-2099 upgrade handoff (temp-clone root) or the upgrade doctor leg (consumer's own vendored binary + root).
-- **Rejected:** teaching the cron generator and doctor that the repo's vendored copy means the repo — treats two symptoms and leaves lib/ and agents/ sourced from the vendored copy for every other command. Fixing claude-fw alone — sessions already running with the leaked value, and any other exporter, would still hit it.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -392,17 +397,34 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-19 — regression evidence
-- `tests/unit/t4369_inherited_vendored_self_root.bats`, 5 tests. With HEAD's bin/fw: tests 1-3 (version, generate, doctor) **not ok**, consumer control ok. With HEAD's claude-fw: the claude-fw leg **not ok**. With the fix: 5/5 ok, 0 skips.
-- Neighbours green: t4218_inherited_project_root (4), t4298_inherited_root_warning (4), test_cron_generate_shape (6), t2391_project_root_inherited_stale (7).
-- `test_cron_registry_generated_drift.bats` test 1 fails (`doctor` exit 2 in the fixture) — **pre-existing**: identical failure with HEAD's bin/fw; not touched here.
-- `tests/unit/upgrade_fresh_machine_simulation.bats` run alone: 16/16 ok, 0 skips.
-
-### 2026-10-19T09:09:36Z — task-created [task-create-agent]
+### 2026-10-19T12:27:35Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4369-in-the-framework-repo-an-inherited-frame.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4381-unit-suite-runner-accounting-refuse-empt.md
 - **Context:** Initial task creation
 
-### 2026-10-19T14:32:36Z — status-update [task-update-agent]
+### 2026-10-19T13:49:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-19 — red run recorded [worker w4381]
+- `bats tests/unit/t4381_unit_suite_accounting.bats` against the pre-fix runner: `not ok` 1, 3, 4, 5, 7, 8, 9 (empty collection graded green; `*_test.py`/`tNNNN_*.py` not discovered; LAST-COMPLETE overwritten after a per-file timeout; no `revision` key). Controls 2 and 6 `ok`.
+- After the rc-5 fix alone, control 2 (module-level skip) went `not ok`: pytest exits 5 for a module-level skip too (probed: `1 skipped`, rc=5; live case `test_frontmatter_loader_equivalence.py`). Refined: rc 5 with a `N skipped` summary is a measured skip. Then 9/9 `ok`.
+- Readers: t3302, t3602, t3621, t3650, t3794, t4058 — 72/72 `ok`.
+- Consequence to note: the 2026-10-19 nightly had 8 bats per-file timeouts, so under item 3 LAST-COMPLETE.yaml will not refresh until a run has none; the pre-push ratchet then falls back to the newest dated report that passes its own tolerance (audit.sh `_incomplete`), as designed by T-3794.
+- Discovery widens the pytest leg from 316 to 348 files (~700 more tests); their first nightly may surface new reds that were always there.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a5d90fb0
+- **Timestamp:** 2026-10-19T15:48:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T15:46:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
