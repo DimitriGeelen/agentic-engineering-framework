@@ -72,7 +72,6 @@ LABELS = {  # name -> (description, colour)
     "status:not-planned": ("Not planned; reason given in the issue", "cfd3d7"),
     "status:in-progress": ("Work has started", "5319e7"),
     "status:fixed-on-bleeding-edge": ("Fixed on bleeding-edge; not yet released", "0e8a16"),
-    "fixed-on-bleeding-edge": ("Fix is on the bleeding-edge branch", "0e8a16"),
     "status:available-for-testing": ("Fix is in a pre-release for testing", "1d76db"),
     "status:released": ("Released", "0e8a16"),
 }
@@ -81,9 +80,16 @@ STAGE_LABELS = {
     "accepted": ["status:accepted"], "needs-info": ["status:needs-info"],
     "duplicate": ["status:duplicate"], "not-planned": ["status:not-planned"],
     "in-progress": ["status:in-progress"],
-    "fixed-on-bleeding-edge": ["status:fixed-on-bleeding-edge", "fixed-on-bleeding-edge"],
+    "fixed-on-bleeding-edge": ["status:fixed-on-bleeding-edge"],
     "available-for-testing": ["status:available-for-testing"], "released": ["status:released"],
 }
+# T-4412: status:* labels are a state, not a history — one at a time. LEGACY_STATUS_LABELS were
+# once added beside the status:* label and are removed with the other status labels.
+LEGACY_STATUS_LABELS = {"fixed-on-bleeding-edge"}
+
+
+def _is_status_label(name: str) -> bool:
+    return name.startswith("status:") or name in LEGACY_STATUS_LABELS
 
 
 class IssuesError(Exception):
@@ -399,6 +405,29 @@ _COMMIT_RE = re.compile(r"^[0-9a-f]{7,40}$")
 _VERSION_RE = re.compile(r"^v?\d+\.\d+\.\d+([-.][0-9A-Za-z.]+)?$")
 
 
+def _current_labels(n: int) -> list:
+    p = _gh(["issue", "view", str(n), "--repo", _repo(), "--json", "labels"])
+    if p.returncode != 0:
+        raise IssuesError(f"cannot read the labels of #{n}: {p.stderr.strip()[:300]}", 2)
+    try:
+        return [str((x or {}).get("name") or "") for x in json.loads(p.stdout or "{}").get("labels") or []]
+    except (ValueError, AttributeError):
+        raise IssuesError(f"gh returned unparseable labels for #{n}", 2)
+
+
+def _stale_status_labels(n: int, adding: list) -> list:
+    """The status labels to remove when `adding` carries a status label (T-4412). Only labels
+    actually on the issue are named. Unreadable labels -> nothing removed (the add still runs)."""
+    if not any(_is_status_label(x) for x in adding):
+        return []
+    try:
+        have = _current_labels(n)
+    except IssuesError as e:
+        print(f"WARN: {e}; previous status labels left in place", file=sys.stderr)
+        return []
+    return [h for h in have if _is_status_label(h) and h not in adding]
+
+
 def cmd_comment(a) -> int:
     st = a.stage
     for t in a.task or []:
@@ -472,7 +501,11 @@ def cmd_comment(a) -> int:
         print(f"LOUD: comment POSTED at {url} but the ledger write failed ({e}). Reconcile by "
               f"appending this row to intake.jsonl:\n{json.dumps(row)}", file=sys.stderr)
         return 4
-    e = _gh(["issue", "edit", str(a.issue), "--repo", _repo(), "--add-label", ",".join(labels)])
+    edit = ["issue", "edit", str(a.issue), "--repo", _repo()]
+    drop = _stale_status_labels(a.issue, labels)
+    if drop:
+        edit += ["--remove-label", ",".join(drop)]
+    e = _gh(edit + ["--add-label", ",".join(labels)])
     if e.returncode != 0:
         print(f"WARN: comment posted and logged ({url}) but adding labels failed: "
               f"{e.stderr.strip()[:200]}", file=sys.stderr)
@@ -1322,6 +1355,39 @@ def cmd_labels(a) -> int:
     return 0
 
 
+def cmd_status_labels(a) -> int:
+    """T-4412: set the one status label from the issue's latest ledger stage. Labels only."""
+    want = ""
+    for r in _read_rows(_issues_dir() / "intake.jsonl"):
+        if r.get("issue") != a.issue:
+            continue
+        for tok in str(r.get("stage", "")).split("+"):
+            want = next((x for x in STAGE_LABELS.get(tok, []) if _is_status_label(x)), want)
+    if not want:
+        raise IssuesError(f"#{a.issue}: no ledger stage with a status label")
+    have = _current_labels(a.issue)
+    drop = [h for h in have if _is_status_label(h) and h != want]
+    add = [] if want in have else [want]
+    if not drop and not add:
+        print(f"#{a.issue}: status label unchanged ({want})")
+        return 0
+    what = f"#{a.issue}: {want}" + (f" (remove {','.join(drop)})" if drop else "")
+    if a.dry_run:
+        print(what + " (dry-run: nothing changed)")
+        return 0
+    edit = ["issue", "edit", str(a.issue), "--repo", _repo()]
+    if drop:
+        edit += ["--remove-label", ",".join(drop)]
+    if add:
+        _ensure_labels(add)
+        edit += ["--add-label", ",".join(add)]
+    e = _gh(edit)
+    if e.returncode != 0:
+        raise IssuesError(f"cannot edit labels on #{a.issue}: {e.stderr.strip()[:300]}", 2)
+    print(what)
+    return 0
+
+
 def cmd_lifecycle(a) -> int:
     if os.environ.get("FW_ISSUES_LIFECYCLE", "1") == "0":
         return 0
@@ -1390,6 +1456,10 @@ def main(argv=None) -> int:
     lb.add_argument("--root", help="project root (default PROJECT_ROOT or cwd)")
     lb.add_argument("--dry-run", action="store_true", help="print the label change, change nothing")
     lb.set_defaults(fn=cmd_labels)
+    sl = sub.add_parser("status-labels", help="set the one status:* label from the latest ledger stage; labels only (T-4412)")
+    sl.add_argument("issue", type=int)
+    sl.add_argument("--dry-run", action="store_true", help="print the label change, change nothing")
+    sl.set_defaults(fn=cmd_status_labels)
     rl = sub.add_parser("release", help="post the Released stage for a release's tasks, apply the close rule (T-4340)")
     rl.add_argument("version", help="the release tag, vX.Y.Z")
     rl.add_argument("--range", dest="rng", required=True, help="commit range, e.g. v1.8.10..HEAD")

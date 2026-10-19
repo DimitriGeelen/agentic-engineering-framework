@@ -1,10 +1,20 @@
 ---
 id: T-4412
-name: "GitHub issue status labels accumulate instead of replacing each other (#99 carries received, accepted, in-progress and fixed-on-bleeding-edge at once), plus a stray unprefixed fixed-on-bleeding-edge label"
+name: "GitHub issue status labels accumulate instead of replacing each other (#99
+  carries received, accepted, in-progress and fixed-on-bleeding-edge at once), plus
+  a stray unprefixed fixed-on-bleeding-edge label"
 description: >
-  Seen 2026-10-19 on #95-#106: lib/issues.py cmd_comment only does --add-label with STAGE_LABELS[stage]; nothing removes the previous status:* label, so an issue shows every stage it has passed through and its current state is unreadable from the labels. STAGE_LABELS['fixed-on-bleeding-edge'] also adds a second, unprefixed 'fixed-on-bleeding-edge' label. Fix: status:* labels are mutually exclusive — adding one removes the other status:* labels in the same gh issue edit (--remove-label); keep non-status labels (bug, triaged, area:*, severity:*); drop the unprefixed duplicate (check nothing reads it first: grep lib/ web/ and the sync). Backfill: normalise #85-#106 to their latest ledger stage (dry-run listing first). Tests with fake-gh.
+  Seen 2026-10-19 on #95-#106: lib/issues.py cmd_comment only does --add-label with
+  STAGE_LABELS[stage]; nothing removes the previous status:* label, so an issue shows
+  every stage it has passed through and its current state is unreadable from the labels.
+  STAGE_LABELS['fixed-on-bleeding-edge'] also adds a second, unprefixed 'fixed-on-bleeding-edge'
+  label. Fix: status:* labels are mutually exclusive — adding one removes the other
+  status:* labels in the same gh issue edit (--remove-label); keep non-status labels
+  (bug, triaged, area:*, severity:*); drop the unprefixed duplicate (check nothing
+  reads it first: grep lib/ web/ and the sync). Backfill: normalise #85-#106 to their
+  latest ledger stage (dry-run listing first). Tests with fake-gh.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T16:41:41Z
-last_update: 2026-10-19T16:41:41Z
-date_finished: null
+last_update: 2026-10-19T17:11:50Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +60,71 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T16:45:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T16:46:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4412: GitHub issue status labels accumulate instead of replacing each other (#99 carries received, accepted, in-progress and fixed-on-bleeding-edge at once), plus a stray unprefixed fixed-on-bleeding-edge label
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+An issue's `status:*` label is its current stage; only one is on the issue at a time.
+
+Readers of the unprefixed label (2026-10-19): `grep -rnE "['\"]fixed-on-bleeding-edge['\"]" lib web agents bin`
+outside lib/issues.py hits only `lib/issues_lag.py:29,133,141` — ledger STAGE names, not labels.
+Nothing reads the label.
+
+### Backfill #85-#106 — dry-run (`python3 lib/issues.py status-labels <n> --dry-run`)
+
+```
+#85: unchanged (status:not-planned)        #96-#98: status:accepted (remove status:received)
+#86-#94: status:released (remove status:accepted)
+#95: unchanged (status:accepted)            #99: status:fixed-on-bleeding-edge (remove status:accepted,
+#100-#105: status:accepted (remove status:received)      status:received,status:in-progress,fixed-on-bleeding-edge)
+#106: unchanged (status:received)
+```
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Posting a stage whose labels include a `status:*` label removes every other `status:*` label on the issue (and the legacy unprefixed `fixed-on-bleeding-edge`) in the SAME `gh issue edit` (`--remove-label` + `--add-label`); `bug`, `triaged`, `area:*`, `severity:*` are kept; Classified (no status label) removes nothing
+- [x] `STAGE_LABELS["fixed-on-bleeding-edge"]` is only `status:fixed-on-bleeding-edge`; nothing in lib/ web/ agents/ reads the unprefixed label (grep recorded below)
+- [x] `fw issues status-labels <n> [--dry-run]` sets the status label to the issue's latest ledger stage (labels only, no comment)
+- [x] Regression test `tests/unit/t4412_issues_status_labels_test.py` red before, green after; t4077 t4078 t4088 t4108 t4340 t4346 t4347 t4370 t4411 green
+- [x] Backfill #85-#106: dry-run listing recorded in this task, then applied (labels only, no comments)
+
+Evidence: t4412 test 3 failed / 1 passed (the Classified guard) before the lib/issues.py change,
+4 passed after; the nine issues suites 102 passed. Backfill applied 2026-10-19 exactly as the
+dry-run; afterwards every issue #85-#106 carries one `status:*` label, comment counts unchanged.
+`bin/fw vendor self --check` reports drift only on `agents/git/lib/secret-scan.sh`, another
+worker's in-flight file, not synced or committed here.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,6 +174,10 @@ date_finished: null
 
 ## Verification
 
+python3 -m pytest -q tests/unit/t4412_issues_status_labels_test.py
+python3 -m pytest -q tests/unit/t4077_issues_comment_test.py tests/unit/t4078_issues_sync_test.py tests/unit/t4088_issues_close_test.py tests/unit/t4108_issues_security_test.py tests/unit/t4340_issues_release_test.py tests/unit/t4346_release_block_test.py tests/unit/t4347_issues_standing_permission_test.py tests/unit/t4370_issues_lag_test.py tests/unit/t4411_issues_area_labels_test.py
+! grep -n '"fixed-on-bleeding-edge": ("' lib/issues.py
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -258,6 +323,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** #95-#106 show every stage they have passed through (`status:received`, `status:accepted`, `status:in-progress`, `status:fixed-on-bleeding-edge` together on #99), plus an unprefixed `fixed-on-bleeding-edge` duplicate; the current state cannot be read from the labels.
+
+**Root cause:** `lib/issues.py` `cmd_comment` ends with `gh issue edit --add-label ",".join(STAGE_LABELS[st])` and never removes anything; `STAGE_LABELS["fixed-on-bleeding-edge"]` lists both `status:fixed-on-bleeding-edge` and the unprefixed `fixed-on-bleeding-edge`.
+
+**Why structurally allowed:** the t4077 label test checks only the last `--add-label` value of one edit; no test looked at the issue's resulting label set across two stages, so "status labels are a state" was never written down as a property.
+
+**Prevention:** `tests/unit/t4412_issues_status_labels_test.py` posts two stages through the fake gh and asserts the second edit removes the first status label, keeps bug/triaged/area/severity, and never adds the unprefixed label.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -338,3 +411,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4412-github-issue-status-labels-accumulate-in.md
 - **Context:** Initial task creation
+
+### 2026-10-19T17:11:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
