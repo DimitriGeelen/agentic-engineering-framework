@@ -321,6 +321,20 @@ entries:
   added: '2026-10-18'
   expires: '2026-11-01'
   added_by: human
+- leg: bats
+  name: 'audit.bats: audit runs structure section'
+  file: audit.bats
+  owner: T-4325
+  added: '2026-10-19'
+  expires: '2026-10-27'
+  added_by: human
+- leg: bats
+  name: 'hook_telemetry_race.bats: T-3371: per-fire cost stays under the documented 5ms budget'
+  file: hook_telemetry_race.bats
+  owner: T-4325
+  added: '2026-10-19'
+  expires: '2026-10-27'
+  added_by: human
 last_regenerated:
   at: '2026-10-17'
   report: /opt/999-Agentic-Engineering-Framework/.context/audits/unit-suite/LATEST.yaml
