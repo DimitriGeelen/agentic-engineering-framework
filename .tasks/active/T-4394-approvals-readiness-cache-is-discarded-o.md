@@ -1,13 +1,19 @@
 ---
 id: T-4394
-name: "/approvals readiness cache is discarded on every commit by any worker (_readiness_stamp includes .git/logs/HEAD), so /approvals stays ~10-17 s in a busy repo"
+name: "/approvals readiness cache is discarded on every commit by any worker (_readiness_stamp
+  includes .git/logs/HEAD), so /approvals stays ~10-17 s in a busy repo"
 description: >
-  Found by T-4363's worker: web/shared.py _readiness_stamp (~:1531) includes .git/logs/HEAD, so any commit invalidates the whole readiness cache behind /approvals (approvals._queue_groups -> review_readiness, ~22 s cold, 8-16 s warm on ~4,400 tasks). Also the warm cost itself: arc demo-state subprocesses ~7 s and Human-AC parsing ~5.6 s. Key the cache on the inputs that actually change readiness (the task files involved, verdict ledger, arc YAMLs) instead of the global git reflog, and cut the two warm costs.
+  Found by T-4363's worker: web/shared.py _readiness_stamp (~:1531) includes .git/logs/HEAD,
+  so any commit invalidates the whole readiness cache behind /approvals (approvals._queue_groups
+  -> review_readiness, ~22 s cold, 8-16 s warm on ~4,400 tasks). Also the warm cost
+  itself: arc demo-state subprocesses ~7 s and Human-AC parsing ~5.6 s. Key the cache
+  on the inputs that actually change readiness (the task files involved, verdict ledger,
+  arc YAMLs) instead of the global git reflog, and cut the two warm costs.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T14:21:49Z
-last_update: 2026-10-19T14:21:49Z
-date_finished: null
+last_update: 2026-10-19T14:55:40Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +56,59 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T14:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T14:31:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4394: /approvals readiness cache is discarded on every commit by any worker (_readiness_stamp includes .git/logs/HEAD), so /approvals stays ~10-17 s in a busy repo
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-4363 (Decisions, "Open (not fixed here)" item 2) measured that `_readiness_stamp`
+(web/shared.py:1527) puts `.git/logs/HEAD` into the stamp of every readiness entry that
+consulted the verdict ledger, so any commit by any worker discards the /approvals
+readiness cache. Re-key on the git inputs the verdict validator actually reads
+(lib/verdict_ledger.py): commits that mention the task id or touch its task file, and
+commits touching task-independent committed inputs (.context/reviews, .context/costs,
+policy/, .fabric/, .framework.yaml, ...). Warm-cost cuts (arc demo-state ~7 s, Human-AC
+parsing ~5.6 s) are secondary scope, only if time allows.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A ledger-consulting readiness entry survives a commit that neither mentions its task id nor touches its task file nor any task-independent validator input (`test_ledger_entry_survives_unrelated_commit` in tests/web/test_t4394_readiness_git_key.py; red before the fix, green after)
+- [x] The same entry is recomputed after a commit whose message mentions the task id, after a commit touching `.context/reviews/`, after a ref moving backwards (reset), and after a new branch carrying a commit that mentions the task (tests in the same file)
+- [x] Substring semantics of the validator's `git log --grep=T-N` are honoured: a commit mentioning `T-91021` invalidates `T-9102` (test)
+- [x] `tests/web/test_t4133_readiness_perf.py`, `test_t4053_review_readiness.py`, `test_t4096_review_parity.py`, `test_t4045_board_awaiting_review.py` pass (T-4133's `test_ledger_dependent_entry_recomputes_after_commit` updated: its "elsewhere" commit now keeps the entry; the recompute leg uses a commit that mentions the task)
+- [x] `bin/fw vendor self --check` clean for web/shared.py
+- [ ] Watchtower restarted once at the end; `bin/fw watchtower current` exits 0
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -95,6 +140,13 @@ date_finished: null
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] /approvals looks and groups exactly as before
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` and open `<url>/approvals`
+  2. Compare the Decisions / Ready / Waiting sections against what you saw before this change (same tasks in the same sections, same reasons)
+  3. Reload the page right after any commit lands and note whether it is faster than before (~10-17 s previously)
+  **Expected:** layout and grouping unchanged; a reload after an unrelated commit no longer pays the cold readiness cost
+  **If not:** note which task moved section (or which reason changed) and reopen T-4394
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -113,6 +165,11 @@ date_finished: null
 
 ## Verification
 
+python3 -m pytest tests/web/test_t4394_readiness_git_key.py -q -p no:cacheprovider > /tmp/.t4394a 2>&1 && grep -q passed /tmp/.t4394a && ! grep -q failed /tmp/.t4394a
+python3 -m pytest tests/web/test_t4133_readiness_perf.py tests/web/test_t4053_review_readiness.py tests/web/test_t4096_review_parity.py tests/web/test_t4045_board_awaiting_review.py -q -p no:cacheprovider > /tmp/.t4394b 2>&1 && grep -q passed /tmp/.t4394b && ! grep -q failed /tmp/.t4394b
+sed -n '/^def _readiness_stamp/,/^def _shared_ledger/p' web/shared.py > /tmp/.t4394c && ! grep -q 'logs/HEAD' /tmp/.t4394c
+bin/fw vendor self --check
+bin/fw watchtower current
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -258,6 +315,29 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** /approvals stays at ~10-17 s in this repo: every commit by any worker
+throws away the readiness cache, so the next page load recomputes readiness for every
+task with an open reviewer-judged Human criterion (T-4363 measurement).
+
+**Root cause:** `_readiness_stamp` (web/shared.py:1527-1533) put the mtime of
+`.git/logs/HEAD` into the stamp of every readiness entry that consulted the verdict
+ledger. The reflog moves on every commit, so the stamp stood in for "git history may
+have changed" as a whole, while the verdict for task X depends only on (a) commits that
+mention X (producer set, components, rung: `git log --grep=X`, a substring match), (b)
+commits touching X's task file, (c) a small set of task-independent committed inputs
+(verdict/acknowledgement/cost ledgers, policy/, .fabric/, .framework.yaml, vendored tree),
+and (d) history being rewritten or dropped.
+
+**Why structurally allowed:** T-4133 narrowed the stamp for ledger-free entries only and
+pinned "ledger-dependent entry recomputes after an unrelated commit" as the *expected*
+behaviour (tests/web/test_t4133_readiness_perf.py), so the over-invalidation was codified
+by a test rather than flagged; no test checked the cache across a commit irrelevant to the task.
+
+**Prevention:** the stamp is derived from the new commits themselves (per-task and global
+generations in web/shared.py), and tests/web/test_t4394_readiness_git_key.py pins both
+directions: an irrelevant commit keeps the entry; every relevant class of commit
+(mention, task file, global input, rewind, new branch) drops it.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -338,3 +418,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4394-approvals-readiness-cache-is-discarded-o.md
 - **Context:** Initial task creation
+
+### 2026-10-19T14:55:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

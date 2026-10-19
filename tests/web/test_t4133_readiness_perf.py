@@ -142,7 +142,9 @@ def test_ledger_free_entry_survives_unrelated_commit(proj, monkeypatch):
 def test_ledger_dependent_entry_recomputes_after_commit(proj):
     text = _task("T-9102", "- [x] done\n", TASTE)
     _readiness(proj, "T-9102", text)
-    _commit(proj, "elsewhere")
+    # T-4394: only a commit that concerns the task drops a ledger-dependent entry (an
+    # unrelated one keeps it: tests/web/test_t4394_readiness_git_key.py).
+    _commit(proj, "T-9102: mentions the task")
     calls = []
     real = shared._compute_readiness
 

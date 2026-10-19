@@ -1524,15 +1524,137 @@ _READINESS_CACHE: dict[str, tuple[int, tuple, tuple]] = {}
 _LEDGER_CACHE: dict[str, tuple] = {}
 
 
+# T-4394: committed inputs the verdict validator reads independently of the task (ledgers it
+# replays from git, the cost ledger, policy/backends/worker settings, fabric cards for the rung,
+# the vendored tree and .framework.yaml for the T-4013 fallback, and the files `start` hashes).
+# A commit touching one of these drops every ledger-consulting entry; any other commit drops
+# only the entries of the tasks it names (message) or whose task file it touches.
+_GLOBAL_GIT_INPUTS = (".context/reviews/", ".context/costs/", ".context/secrets/", "policy/",
+                      ".fabric/", ".framework.yaml", ".agentic-framework/", "agents/termlink/",
+                      "CLAUDE.md", "CLAUDE.local.md", ".claude/", ".mcp.json")
+_TASK_REF_RE = re_mod.compile(r"T-(\d+)", re_mod.I)
+_TASK_PATH_RE = re_mod.compile(r"^\.tasks/[^/]+/T-(\d+)-")
+_GIT_GEN: dict[str, dict] = {}
+
+
+def _git_refs(root: Path) -> dict | None:
+    """{ref: sha} for every ref plus HEAD, or None when git cannot answer."""
+    try:
+        cp = subprocess.run(["git", "for-each-ref", "--format=%(objectname) %(refname)"],
+                            cwd=str(root), capture_output=True, text=True, timeout=30)
+        hd = subprocess.run(["git", "rev-parse", "-q", "--verify", "HEAD"],
+                            cwd=str(root), capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if cp.returncode != 0:
+        return None
+    refs = {r: s for s, r in (ln.split(" ", 1) for ln in cp.stdout.splitlines() if " " in ln)}
+    refs["HEAD"] = hd.stdout.strip() if hd.returncode == 0 else ""
+    return refs
+
+
+def _git(root: Path, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True,
+                          timeout=120)
+
+
+def _changed_task_ids(old: dict, new: dict, root: Path) -> set[str] | None:
+    """Task-id digits the commits between two ref snapshots concern, or None when the change
+    may concern every task (dropped history, a ref or HEAD off its line, a task-independent
+    input touched, or git could not answer). Only the refs that moved are walked: listing
+    too many commits only over-invalidates, which is safe."""
+    moved = [r for r in set(old) | set(new) if old.get(r) != new.get(r)]
+    try:
+        for r in moved:
+            o, n = old.get(r, ""), new.get(r, "")
+            if o and (not n or _git(root, "merge-base", "--is-ancestor", o, n).returncode):
+                return None  # a reset, a deleted or rewritten ref, HEAD leaving its line
+        heads = [n for r in moved if (n := new.get(r))]
+        if not heads:
+            return set()
+        # exclude what was already reachable from the moved refs and the everyday namespaces
+        # (refs/replace alone is thousands of refs here and is not needed for correctness)
+        base = sorted({s for r, s in old.items() if s and (r in moved or r == "HEAD"
+                       or r.startswith(("refs/heads/", "refs/remotes/", "refs/tags/")))})
+        ranges = [[*heads, *(["--not", *base] if base else [])]]
+        oh, nh = old.get("HEAD", ""), new.get("HEAD", "")
+        if oh != nh:
+            if not oh:
+                return None  # first commit: everything is new at HEAD
+            # history read AT HEAD changes even when another ref already carried these commits
+            ranges.append([f"{oh}..{nh}"])
+        out = []
+        for rng in ranges:
+            cp = _git(root, "log", "-m", "--name-only", "--format=%x1e%B%x1d", *rng, "--")
+            if cp.returncode != 0:
+                return None
+            out.append(cp.stdout)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    tasks: set[str] = set()
+    for rec in "".join(out).split("\x1e")[1:]:
+        msg, _, paths = rec.partition("\x1d")
+        for p in paths.split("\n"):
+            p = p.strip()
+            if p.startswith(_GLOBAL_GIT_INPUTS):
+                return None
+            m = _TASK_PATH_RE.match(p)
+            if m:
+                tasks.add(m.group(1))
+        tasks.update(_TASK_REF_RE.findall(msg))
+    return tasks
+
+
+def _git_generation(root: Path) -> tuple:
+    """(epoch, global) generation of the git history verdicts read; the per-task part is
+    ``_task_git_generation``. Re-derived only when the repo's ref state moved (verdict_ledger._git_state_token);
+    when git cannot be read the epoch is fresh on every call, so nothing ledger-derived is
+    served from cache."""
+    key = str(root)
+    st = _GIT_GEN.get(key)
+    try:
+        import verdict_ledger as _vl
+        token = _vl._git_state_token(root)
+    except Exception:
+        token = None
+    if st is None or token is None or st["token"] != token:
+        refs = _git_refs(root)
+        if refs is None:
+            _GIT_GEN.pop(key, None)
+            return (object(), 0)
+        if st is None:
+            st = _GIT_GEN[key] = {"token": token, "refs": refs, "global": 0, "tasks": {}}
+        elif refs != st["refs"]:
+            changed = _changed_task_ids(st["refs"], refs, root)
+            if changed is None:
+                st["global"] += 1
+            for digits in changed or ():
+                # the validator's `git log --grep=T-12` is a substring match, so a commit
+                # naming T-1234 also concerns T-12 and T-123: bump every prefix.
+                for i in range(1, len(digits) + 1):
+                    k = "T-" + digits[:i]
+                    st["tasks"][k] = st["tasks"].get(k, 0) + 1
+            st["refs"] = refs
+        st["token"] = token
+    return (0, st["global"])
+
+
+def _task_git_generation(root: Path, task_id: str) -> int:
+    """How many ref moves so far brought commits that concern ``task_id`` (read after
+    ``_git_generation`` has caught the state up)."""
+    st = _GIT_GEN.get(str(root))
+    return st["tasks"].get(task_id.upper(), 0) if st else 0
+
+
 def _readiness_stamp(root: Path) -> tuple:
-    """What the verdict ledger's verdict depends on besides the task file: the ledger
-    file and the commit history it is verified against."""
-    out = []
-    for rel in (".context/reviews/verdicts.jsonl", ".git/logs/HEAD"):
-        try:
-            out.append((root / rel).stat().st_mtime_ns)
-        except OSError:
-            out.append(0)
+    """What the verdict ledger depends on for every task: the ledger files and the
+    task-independent part of the commit history it is verified against (T-4394; the
+    per-task part is ``_task_git_generation``)."""
+    out: list = [_git_generation(root)]
+    try:
+        out.append((root / ".context/reviews/verdicts.jsonl").stat().st_mtime_ns)
+    except OSError:
+        out.append(0)
     # T-4133: the other ledgers a verdict is validated against (completions, dispatch
     # registry, acknowledgements...) - an uncommitted edit to one changes the verdict too.
     try:
@@ -1619,6 +1741,9 @@ def review_readiness(task_id: str, status: str, body: str,
     root = Path(PROJECT_ROOT)
     p = Path(path) if path else None
     stamp = _readiness_stamp(root)
+    # T-4394: an entry that consulted the ledger is keyed on the ledger-wide stamp plus the
+    # commits that concern THIS task, not on every commit in the repo.
+    tstamp = stamp + (_task_git_generation(root, task_id),)
     mtime = 0
     if p is not None:
         try:
@@ -1629,12 +1754,12 @@ def review_readiness(task_id: str, status: str, body: str,
         hit = _READINESS_CACHE.get(str(p))
         # T-4133: an entry that never consulted the ledger is stored with stamp None - it
         # depends on the task file alone, so a commit elsewhere does not invalidate it.
-        if hit and hit[0] == mtime and (hit[1] is None or hit[1] == stamp):
+        if hit and hit[0] == mtime and (hit[1] is None or hit[1] == tstamp):
             return hit[2][0], list(hit[2][1])
     used: list = []
     state, reasons = _compute_readiness(task_id, body, root, p, stamp, used)
     if p is not None:
-        _READINESS_CACHE[str(p)] = (mtime, stamp if used else None, (state, reasons))
+        _READINESS_CACHE[str(p)] = (mtime, tstamp if used else None, (state, reasons))
     return state, list(reasons)
 
 
