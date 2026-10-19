@@ -19,12 +19,12 @@ description: >
   issue lines if they state the old rule. Tests: key 0 refuses a decision stage without
   approval; key 1 posts it and records the standing-permission provenance (fake gh).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [github, issues, governance]
-components: []
+components: [lib/config.sh, web/blueprints/config.py]
 related_tasks: []
 origin: {kind: "operator"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -54,8 +54,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:54:00Z
-last_update: '2026-10-18T23:00:45Z'
-date_finished:
+last_update: 2026-10-19T09:05:51Z
+date_finished: 2026-10-19T09:05:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -142,6 +142,12 @@ cost_estimate_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] The new ISSUES_DECISIONS_STANDING_PERMISSION row on Watchtower /config reads correctly
+  **Steps:**
+  1. Open Watchtower /config (`cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` prints the base URL)
+  2. Find the row ISSUES_DECISIONS_STANDING_PERMISSION
+  **Expected:** value 1 (set in .framework.yaml), default 0, and the description names the operator ruling of 2026-10-19 and that 0 keeps per-comment approval
+  **If not:** note what is wrong; the text lives in web/blueprints/config.py line 25
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -367,6 +373,12 @@ bin/fw vendor self --check
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+**Recommendation:** GO
+**Rationale:** The standing permission is live and used: decision comments on #95–#105 and #14 posted under it, each ledger row carrying approved_by standing-permission:operator-2026-10-19. The only open item is how the new /config row reads.
+**Evidence:**
+- curl of Watchtower /config contains ISSUES_DECISIONS_STANDING_PERMISSION; `bin/fw watchtower current` exit 0
+- All issues suites: 77 passed (t4347 key-0 test now isolated from this checkout's key=1)
+- Verbatim ruling recorded in docs/reports/T-4039-inbound-github-issues.md:81
 
 ## Decisions
 
@@ -398,3 +410,15 @@ bin/fw vendor self --check
 
 ### 2026-10-18T22:55:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-dd281feb
+- **Timestamp:** 2026-10-19T09:06:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-19T09:05:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
