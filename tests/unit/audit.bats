@@ -24,8 +24,18 @@ _assert_audit_ran() {
         echo "audit lock contention (exit 75, T-2930/T-3297) — could not run, not a verdict"
         skip "audit lock contention (exit 75) — could not run, not a verdict"
     fi
+    # T-4372: these tests run the audit against the LIVE repo, so exit 2 is a
+    # verdict on the corpus, not on audit.sh (mutable-corpus anchor, T-3326).
+    # Treating it as red made one live FAIL self-sustaining: the red test is
+    # itself a NEW red in the next unit-suite report, which the structure
+    # section FAILs on. Exit 2 with a complete report means the audit RAN;
+    # exit 2 with a truncated one (a crash) still fails.
+    if [ "$st" -eq 2 ] && [[ "${output-}" == *"=== SUMMARY ==="* ]] \
+        && [[ "${output-}" == *"=== END AUDIT ==="* ]]; then
+        return 0
+    fi
     if [ "$st" -gt 1 ]; then
-        echo "audit exited $st — ran and found FAILs (or crashed). Output:"
+        echo "audit exited $st — crashed or stopped before its summary. Output:"
         echo "$output"
         return 1
     fi
@@ -124,7 +134,7 @@ _assert_audit_ran() {
     # YAML assertion, ever ran.
     run "$AUDIT" --section structure --output "$tmpdir"
     [ "$status" -eq 75 ] && skip "audit lock contention (T-2930/T-3297) — no verdict, not a failure"
-    [ "$status" -le 1 ]
+    _assert_audit_ran
     local yaml_file
     yaml_file=$(ls "$tmpdir"/*.yaml 2>/dev/null | head -1)
     # T-3315: assert the report exists — the old `if -n` guard turned a
@@ -159,13 +169,33 @@ _audit_exit_stub() {
     [[ "$output" == *"lock contention"* ]]
 }
 
-@test "T-3328 control: stubbed exit 2 still fails (real verdict kept)" {
+@test "T-3328 control: stubbed exit 2 without a complete report still fails" {
     run "$(_audit_exit_stub 2)"
     [ "$status" -eq 2 ]
     run _assert_audit_ran
     [ "$status" -eq 1 ]
     [[ "$output" == *"audit exited 2"* ]]
     [[ "$output" != *"lock contention"* ]]
+}
+
+@test "T-4372 control: stubbed exit 2 with a complete report passes (live corpus FAIL is not a test red)" {
+    local stub="$BATS_TEST_TMPDIR/stub-audit-2-full.sh"
+    printf '#!/bin/sh\necho "=== STRUCTURE CHECKS ==="\necho "[FAIL] something in the live corpus"\necho "=== SUMMARY ==="\necho "=== END AUDIT ==="\nexit 2\n' > "$stub"
+    chmod +x "$stub"
+    run "$stub"
+    [ "$status" -eq 2 ]
+    run _assert_audit_ran
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
+@test "T-4372 control: stubbed exit 2 with SUMMARY but no END (truncated) still fails" {
+    local stub="$BATS_TEST_TMPDIR/stub-audit-2-trunc.sh"
+    printf '#!/bin/sh\necho "=== SUMMARY ==="\nexit 2\n' > "$stub"
+    chmod +x "$stub"
+    run "$stub"
+    run _assert_audit_ran
+    [ "$status" -eq 1 ]
 }
 
 @test "T-3328 control: stubbed exit 1 passes (warnings stay green)" {
