@@ -435,7 +435,9 @@ fi
 
 # 5.3 Tag staleness
 if command -v git >/dev/null 2>&1 && git rev-parse --git-dir >/dev/null 2>&1; then
-    latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || true)
+    # T-4431: -be pre-release tags are not releases
+    source "$FRAMEWORK_ROOT/lib/release-tags.sh"
+    latest_tag=$(release_tags_latest "$(pwd)" "")
     if [ -n "$latest_tag" ]; then
         commits_since=$(git rev-list --count "${latest_tag}..HEAD" 2>/dev/null || echo 0)
         if [ "$commits_since" -gt 50 ]; then

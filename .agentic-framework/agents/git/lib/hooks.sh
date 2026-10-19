@@ -1392,7 +1392,8 @@ _version=""
 if git -C "$PROJECT_ROOT" ls-files --error-unmatch VERSION >/dev/null 2>&1; then
     echo "VERSION is tracked — not stamped (fw release is its only writer, T-3821)"
 else
-    _version=$(git describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+    # T-4431: same exclude as lib/release-tags.sh — a -be tag is not a release
+    _version=$(git describe --tags --match 'v[0-9]*' --exclude '*-be.*' 2>/dev/null) || true
 fi
 if [ -n "$_version" ]; then
     _version="${_version#v}"

@@ -16,13 +16,17 @@
 : "${CYAN:=\\033[0;36m}"
 : "${NC:=\\033[0m}"
 
+# T-4431: -be pre-release tags never count as the latest release.
+# shellcheck source=release-tags.sh
+source "$(dirname "${BASH_SOURCE[0]}")/release-tags.sh"
+
 # ---------------------------------------------------------------------------
 # release_latest_tag  — echo latest v* tag, or empty
 # ---------------------------------------------------------------------------
 release_latest_tag() {
     local root="${1:-${PROJECT_ROOT:-$(pwd)}}"
     local pattern="${2:-v[0-9]*}"
-    git -C "$root" describe --tags --match "$pattern" --abbrev=0 2>/dev/null || true
+    release_tags_latest "$root" "$pattern"
 }
 
 # release_tag_pattern  — the configured release-tag glob (FW_RELEASE_TAG_PATTERN,
@@ -782,6 +786,9 @@ release_main() {
         decide)
             release_decide "$@"
             ;;
+        be-tag)
+            release_be_tag "$@"
+            ;;
         status)
             release_status
             ;;
@@ -794,6 +801,8 @@ Subcommands:
   decide vX.Y.Z     Record a release decision (--by operator|field-evidence --ref ...);
                     unattended runs refuse without one for that version (T-4364)
   status            Show current tag and remote state
+  be-tag            Tag HEAD of bleeding-edge as vX.Y.Z-be.N (annotated; refuses on
+                    master). --version X.Y.Z, --dry-run, --push (T-4431)
 
 Flags (for tag-and-release):
   --dry-run         Show what would happen, change nothing

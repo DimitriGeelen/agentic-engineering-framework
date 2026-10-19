@@ -11,6 +11,10 @@
 #
 # Part of: Agentic Engineering Framework (T-606)
 
+# T-4431: every tag lookup below excludes -be pre-release tags.
+# shellcheck source=release-tags.sh
+source "$(dirname "${BASH_SOURCE[0]}")/release-tags.sh"
+
 # Version staleness threshold (commits since last tag)
 VERSION_STALENESS_THRESHOLD=50
 
@@ -217,7 +221,7 @@ do_version_check() {
     # 5. Latest git tag
     echo ""
     local latest_tag
-    latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || true)
+    latest_tag=$(release_tags_latest "$(pwd)" "")
     if [ -n "$latest_tag" ]; then
         local tag_version="${latest_tag#v}"
         local commits_since
@@ -295,7 +299,7 @@ do_version_sync() {
     # reachable tag keep the old behavior unchanged.
     local tag_floor=""
     if [ -d "$FRAMEWORK_ROOT/.git" ] || [ -f "$FRAMEWORK_ROOT/.git" ]; then
-        tag_floor="$(git -C "$FRAMEWORK_ROOT" describe --tags --match 'v[0-9]*' --abbrev=0 2>/dev/null | sed 's/^v//')"
+        tag_floor="$(release_tags_latest "$FRAMEWORK_ROOT" | sed 's/^v//')"
     fi
     if [ -n "$tag_floor" ] && _version_lt "$fw_version" "$tag_floor"; then
         echo -e "${YELLOW}REFUSING to sync VERSION files down to $fw_version:${NC} below the latest release tag v$tag_floor (tag-as-canonical, T-3242)" >&2
@@ -455,7 +459,7 @@ do_version_audit() {
 
     # Check tag staleness
     local latest_tag
-    latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || true)
+    latest_tag=$(release_tags_latest "$(pwd)" "")
     if [ -n "$latest_tag" ]; then
         local commits_since
         commits_since=$(git rev-list --count "${latest_tag}..HEAD" 2>/dev/null || echo 0)

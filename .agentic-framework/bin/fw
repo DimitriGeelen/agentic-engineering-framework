@@ -28,7 +28,8 @@ _derive_version() {
     # In vendored mode, $fw_dir/.git is absent and walking up would
     # find the consumer's repo and return the consumer's tag.
     if [ -d "$fw_dir/.git" ] || [ -f "$fw_dir/.git" ]; then
-        desc=$(git -C "$fw_dir" describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+        # T-4431: a vX.Y.Z-be.N pre-release tag is never the version (lib/release-tags.sh)
+        desc=$(git -C "$fw_dir" describe --tags --match 'v[0-9]*' --exclude '*-be.*' 2>/dev/null) || true
     fi
     if [ -n "$desc" ]; then
         # v1.8.9 → 1.8.9 | v1.8.9-92-gabc123 → 1.8.9+92.gabc123 (T-4055: the old
