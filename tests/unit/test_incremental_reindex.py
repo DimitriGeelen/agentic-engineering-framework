@@ -106,6 +106,40 @@ def test_incremental_only_reembeds_changed_files(project, monkeypatch):
     )
 
 
+def test_incremental_run_has_no_full_size_scratch_copy(project, monkeypatch):
+    """T-4350: an incremental run updates the live index in place. Copying the
+    whole database to scratch for a 1-file change wrote a second full-size index
+    every hour (11.7 GiB/h on a 1.5 GB index) and pinned the old blocks."""
+    E.reindex_incremental()  # bootstrap
+
+    copied_from_live = []
+    real_copy2 = E.shutil.copy2
+
+    def spy_copy2(src, dst, **kw):
+        if Path(src) == E.DB_PATH:
+            copied_from_live.append(str(dst))
+        return real_copy2(src, dst, **kw)
+
+    scratch_mid_run = []
+    real_embed = E._embed
+
+    def watching_embed(texts, host=None):
+        scratch_mid_run.extend(p.name for p in project.glob("vec.db.reindex.*.tmp"))
+        return real_embed(texts)
+
+    monkeypatch.setattr(E.shutil, "copy2", spy_copy2)
+    monkeypatch.setattr(E, "_embed", watching_embed)
+    (project / "alpha.md").write_text("# Alpha\n\nCHANGED one file.\n")
+
+    stats = E.reindex_incremental()
+
+    assert stats["mode"] == "incremental"
+    assert copied_from_live == [], (
+        f"incremental run copied the whole live index to {copied_from_live}")
+    assert scratch_mid_run == [], (
+        f"full-size scratch existed while embedding: {scratch_mid_run}")
+
+
 def test_removed_file_drops_its_rows(project):
     E.reindex_incremental()
     (project / "beta.md").unlink()
@@ -317,8 +351,10 @@ def test_scratch_file_is_per_process(project):
         seen["dst"] = str(dst)
         return real_copy(src, dst)
 
-    E.reindex_incremental()  # bootstrap so the next run takes the copy path
+    E.reindex_incremental()  # bootstrap so the next run diffs against a baseline
+    (project / "alpha.md").write_text("# Alpha\n\nEdited.\n")
     with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(E, "IN_PLACE_MAX_FILES", 0)  # force the copy path (T-4350)
         mp.setattr(E.shutil, "copy2", spy)
         E.reindex_incremental()
 
@@ -352,7 +388,7 @@ def test_lock_is_released_so_the_next_run_can_proceed(project):
     assert E.reindex_incremental()["mode"] != "skipped-locked"
 
 
-def test_swap_is_refused_if_the_scratch_file_was_replaced(project):
+def test_swap_is_refused_if_the_scratch_file_was_replaced(project, monkeypatch):
     """The worst available outcome is publishing a stranger's database.
 
     If our scratch file is unlinked and recreated by something else, os.replace
@@ -363,6 +399,7 @@ def test_swap_is_refused_if_the_scratch_file_was_replaced(project):
     """
     E.reindex_incremental()
     (project / "alpha.md").write_text("# Alpha\n\nEdited so there is work to do.\n")
+    monkeypatch.setattr(E, "IN_PLACE_MAX_FILES", 0)  # the swap only exists on the copy path
 
     live_before = E.DB_PATH.read_bytes()
 

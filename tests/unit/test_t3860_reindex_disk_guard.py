@@ -123,6 +123,8 @@ def test_resume_needs_only_the_margin(project, monkeypatch):
 
 def test_enospc_mid_copy_leaves_no_scratch_and_no_resume(project, monkeypatch):
     E.reindex_incremental()
+    (project / "alpha.md").write_text("# Alpha\n\nEdited.\n")
+    monkeypatch.setattr(E, "IN_PLACE_MAX_FILES", 0)  # T-4350: the copy path only
     before = E.DB_PATH.read_bytes()
 
     def partial_copy(src, dst, **kw):
@@ -184,6 +186,8 @@ def test_sigterm_mid_run_cleans_up_and_restores_handler(project, monkeypatch):
 
 def test_sigterm_mid_copy_never_parks_the_partial_copy(project, monkeypatch):
     E.reindex_incremental()
+    (project / "alpha.md").write_text("# Alpha\n\nEdited.\n")
+    monkeypatch.setattr(E, "IN_PLACE_MAX_FILES", 0)  # T-4350: the copy path only
 
     def interrupted_copy(src, dst, **kw):
         Path(dst).write_bytes(b"half a database")

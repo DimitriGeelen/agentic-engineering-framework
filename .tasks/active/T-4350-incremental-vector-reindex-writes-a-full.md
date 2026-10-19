@@ -13,10 +13,10 @@ description: >
   readers keep the old snapshot until commit; keep copy+swap only for a full rebuild
   (model/schema change, corruption).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [index, performance, io]
 components: []
 related_tasks: []
@@ -48,7 +48,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:57:14Z
-last_update: '2026-10-18T23:01:55Z'
+last_update: 2026-10-19T09:44:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced on a temp index (not the live one): an incremental run with 1 changed file copies the whole database (copy2 to `.reindex.<pid>.tmp`) and the scratch is the same size as the index; recorded in the Updates section with before/after bytes
+- [x] Regression test in `tests/unit/test_incremental_reindex.py` asserts an incremental run never creates a full-size scratch copy (no `.reindex.*.tmp` created, and no `shutil.copy2` of DB_PATH); it FAILS on the pre-fix code and PASSES after the fix (red run recorded in Updates)
+- [x] `reindex_incremental()` in `web/embeddings.py` updates the live database in place for a small delta (≤ `IN_PLACE_MAX_FILES` = 32 changed files, against an existing file_state baseline): changed/removed rows are deleted and re-inserted in ONE sqlite transaction on DB_PATH; the commit is the only point where the new state is visible. Journal mode stays the default rollback journal, not WAL (see Decisions)
+- [x] Atomicity preserved: the existing ATOMIC tests (`test_a_run_killed_mid_way_does_not_advance_the_manifest`, `test_a_killed_run_leaves_the_previous_index_still_serving`) and the disk-guard tests in `tests/unit/test_t3860_reindex_disk_guard.py` still pass
+- [x] Copy+swap is kept for the full-rebuild paths: `build_index()`, the bootstrap-baseline, large deltas (> 32 files) and the OBS-258 resume path still go through the scratch copy and `os.replace`
+- [x] Disk before/after measured on a temp index for the incremental run: scratch copy 11,825,152 B → 0 B; process write_bytes 12,939,264 B → 544,768 B
+- [x] `bin/fw vendor self --check` is clean after the change (web/ is vendored)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -150,6 +155,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_incremental_reindex.py tests/unit/test_t3860_reindex_disk_guard.py -q > .context/working/T-4350-pytest.out 2>&1 && ! grep -q failed .context/working/T-4350-pytest.out && grep -q passed .context/working/T-4350-pytest.out
+python3 -m pytest tests/unit/test_incremental_reindex.py -q -k no_full_size_scratch > .context/working/T-4350-regress.out 2>&1 && grep -q passed .context/working/T-4350-regress.out
+bin/fw vendor self --check
+bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -282,6 +292,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** every hourly `fw index reindex` run that changes 3-14 files writes a full second copy of the vector index (`vec.db.reindex.<pid>.tmp`, same size as `vec.db`) before embedding anything. Reported on dimitri-mint-dev (T-135): 1,740 GiB written in 6 d 4 h, 26-162 s per "incremental" run, btrfs flush kworkers in D state, disk 87% full. Reproduced on a 11.8 MB temp index with a 1-file change: scratch copy = 11,825,152 B (= index), process write_bytes delta = 12,939,264 B.
+
+**Root cause:** `web/embeddings.py:1114` — `reindex_incremental()` makes its working copy with `shutil.copy2(DB_PATH, tmp_path)` on EVERY non-resumable run (the resume branch at :1112 only covers a parked `.reindex.resume`). The copy exists to give the run an atomic swap (`os.replace` at :1313), but the incremental diff is a few chunks; copying the whole database to carry them is the cost. The same copy+swap design was written for the 29-58 h bootstrap (OBS-258) and was applied unchanged to the steady-state path.
+
+**Why structurally allowed:** the disk-guard (T-3860) checks free space for the copy, so it passes on a big disk and treats the copy as the cost of doing business; `test_incremental_only_reembeds_changed_files` pins how much is *embedded*, not how much is *written*; nothing measures bytes written per run. The ATOMIC tests pin the swap's outcome (old index survives a kill), so they stay green whether or not a copy is made.
+
+**Prevention:** `test_incremental_run_has_no_full_size_scratch_copy` (tests/unit/test_incremental_reindex.py) fails if an incremental run copies the live database or leaves a scratch file while embedding. The fix changes the incremental path to in-place writes in one transaction under WAL; copy+swap stays only for the full-build and bootstrap/resume paths. The atomicity guarantee is preserved by SQLite (readers see the previous snapshot until commit; a killed run rolls back), and the existing ATOMIC tests remain the check on it.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -360,6 +378,13 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-19 — in place for small deltas, copy kept for large ones
+- **Chose:** the copy is skipped only when the run changes ≤ `IN_PLACE_MAX_FILES` (32) files against an existing file_state baseline; the bootstrap-baseline, any parked resume and any larger run keep copy + `os.replace`.
+- **Why:** the copy-based tests pin OBS-258: a 120-file run must park and resume across kills. An in-place run that dies is rolled back, so for a large run the in-place mode would discard hours of work. Small runs (3-14 files in the reported fleet) lose nothing on a rollback.
+- **Rejected:** always in place — breaks OBS-258 resume (`test_a_partial_run_parks_its_work_instead_of_discarding_it`). Keep the copy and only trim it — a copy is still a full index write.
+- **Chose rollback journal, not WAL:** with WAL a `copy2` of the live file misses frames still in `-wal`, and a swap would leave a stale `-wal` beside the new file, so WAL would have to be handled in the copy path too. Default journal keeps readers on the old snapshot until commit and sqlite rolls back a killed run. A 64 MB page cache (`PRAGMA cache_size`) keeps a normal run from spilling dirty pages into the live file, since a spill takes the exclusive lock readers wait on.
+- **Chose:** `index_one` keeps its lock-skip behaviour. The in-place reindex holds the same lock, so its concurrency argument is unchanged.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -376,3 +401,18 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4350-incremental-vector-reindex-writes-a-full.md
 - **Context:** Initial task creation
+
+### 2026-10-19T09:44:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-19 — reproduction, red run, fix (worker w4350)
+- **Repro (temp index, 300 files, `.context/working/T-4350/repro.py`, pre-fix):** index 11,825,152 B; one changed file → scratch copy 11,825,152 B; process write_bytes delta 12,939,264 B.
+- **Red run (pre-fix), new test:** `python3 -m pytest tests/unit/test_incremental_reindex.py -q -k no_full_size_scratch` → `1 failed`: "incremental run copied the whole live index to …/vec.db.reindex.4009080.tmp".
+- **Fix:** `web/embeddings.py` — `_incremental_delta()` (read-only diff vs file_state), `IN_PLACE_MAX_FILES = 32`, in-place single transaction branch in `reindex_incremental()`; docstrings of `reindex_incremental` and `index_one` updated.
+- **Existing tests that pinned the copy path for a small delta** (`test_scratch_file_is_per_process`, `test_swap_is_refused_if_the_scratch_file_was_replaced`, two `test_t3860` mid-copy tests) now force the copy path with `IN_PLACE_MAX_FILES = 0` and make a real change so the copy is reached. The assertions are unchanged.
+- **Green:** `test_incremental_reindex.py` + `test_t3860_reindex_disk_guard.py` → 41 passed; with `test_embed_health.py` and `test_t4305_embeddings_empty_state.py` → 68 passed; bats t1719, t3783 reach/health, t3058, t3045 → 0 not ok (t3045: 1 skip, not investigated).
+- **Disk after (same temp index):** scratch copy 0 B; process write_bytes delta 544,768 B (was 12,939,264 B).
+- **Vendor:** `FW_VENDOR_ONLY="web/embeddings.py" bin/fw vendor self` (the full sync withheld other workers' in-flight files: lib/issues_lag.py, agents/audit/audit.sh, lib/issues.py). `bin/fw vendor self --check` clean.
+- **Watchtower:** `web/` changed → `bin/fw watchtower restart` (PID 1273447 → 291230); `bin/fw watchtower current` exit 0.
+- **Not done:** no live-index run; the hourly job on the live host will exercise the in-place path on its next firing. Not closed (per brief).
