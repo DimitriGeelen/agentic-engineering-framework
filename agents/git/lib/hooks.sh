@@ -36,6 +36,92 @@ _verify_hook_written() {
     [ -f "$1" ] && [ -x "$1" ]
 }
 
+# T-4403 (T-3926): the framework owns only a MARKED BLOCK of each hook file, not
+# the whole file. The whole file used to be compared and copied, so a line a
+# consumer added was indistinguishable from drift and every `fw upgrade` erased it
+# (832). The template runs in a subshell: its `exit 0` ends the block, not the
+# hook, so consumer lines after the block run once the framework checks pass; a
+# non-zero exit stops the hook. Only the block is compared and replaced.
+_FW_HOOK_BEGIN="# >>> agentic-framework hook - managed by fw git install-hooks; edits inside this block are overwritten >>>"
+_FW_HOOK_END="# <<< agentic-framework hook <<<"
+
+# _fw_hook_block TEMPLATE — the marked block for a staged template.
+_fw_hook_block() {
+    printf '%s\n(\n' "$_FW_HOOK_BEGIN"
+    sed '1{/^#!/d;}' "$1"
+    printf '%s\n%s\n' ') || exit $?' "$_FW_HOOK_END"
+}
+
+# _fw_hook_marked FILE — true when FILE holds exactly one well-formed block.
+_fw_hook_marked() {
+    [ -f "$1" ] || return 1
+    awk -v b="$_FW_HOOK_BEGIN" -v e="$_FW_HOOK_END" '
+        $0 == b { nb++; if (ne) bad = 1 }
+        $0 == e { ne++; if (!nb) bad = 1 }
+        END { exit !(nb == 1 && ne == 1 && !bad) }' "$1"
+}
+
+# _fw_hook_installed_block FILE — the block as installed (empty if unmarked).
+_fw_hook_installed_block() {
+    _fw_hook_marked "$1" || return 0
+    awk -v b="$_FW_HOOK_BEGIN" -v e="$_FW_HOOK_END" '
+        $0 == b { inb = 1 } inb { print } $0 == e { inb = 0 }' "$1"
+}
+
+# _fw_hook_compose INSTALLED BLOCK OUT — write the new hook to OUT: the block,
+# with everything the installed file held outside it kept in place. An unmarked
+# installed hook is migrated (backed up to INSTALLED.pre-fw-block first):
+#   - an old framework hook keeps only the lines the template does not contain,
+#     after the block — the template lines are never duplicated;
+#   - a consumer's own sh/bash hook keeps its whole body, after the block;
+#   - a hook in another language, or a merge that does not parse, gets the block
+#     alone and a WARN naming the backup.
+_fw_hook_compose() {
+    local installed="$1" block="$2" out="$3"
+    if [ ! -s "$installed" ]; then
+        { echo '#!/bin/bash'; cat "$block"; } > "$out"
+        return 0
+    fi
+    if _fw_hook_marked "$installed"; then
+        awk -v b="$_FW_HOOK_BEGIN" -v e="$_FW_HOOK_END" -v blk="$block" '
+            $0 == b { while ((getline l < blk) > 0) print l; skip = 1; next }
+            $0 == e { skip = 0; next }
+            !skip { print }' "$installed" > "$out"
+        return 0
+    fi
+    local name backup="$installed.pre-fw-block" kept="$out.kept" first note=""
+    name=$(basename "$installed")
+    first=$(head -n 1 "$installed")
+    if grep -qE 'Agentic Engineering Framework|agents/git/git\.sh install-hooks|^# [<>]{3} agentic-framework hook' "$installed"; then
+        # An old framework hook: lines the current template lacks are either the
+        # consumer's or an OLDER template's, and nothing tells them apart. Keep
+        # them all, commented out, so no stale framework line runs unseen.
+        tail -n +2 "$installed" | grep -vxF -f "$block" | grep -v '^[[:space:]]*$' \
+            | grep -v '^# [<>]\{3\} agentic-framework hook' | sed 's/^/# /' > "$kept" || true
+        note="commented out — uncomment the lines that are yours"
+    elif [[ "$first" =~ ^#!(/usr)?/bin/(env[[:space:]]+)?(ba)?sh([[:space:]]|$) ]]; then
+        tail -n +2 "$installed" > "$kept"
+        note="unchanged — they now run after the framework checks pass"
+    else
+        : > "$kept"
+        echo -e "${YELLOW}WARN: $name is not a shell script ($first) — it cannot be merged with the framework block; your previous hook is $backup${NC}" >&2
+    fi
+    [ -s "$kept" ] || [ -z "$note" ] && cp -p "$installed" "$backup" 2>/dev/null
+    { echo '#!/bin/bash'; cat "$block"
+      if [ -s "$kept" ]; then
+          echo "# T-4403: kept from the previous $name by fw git install-hooks ($note); original: $(basename "$backup")"
+          cat "$kept"
+      fi; } > "$out"
+    if [ -s "$kept" ] && ! bash -n "$out" 2>/dev/null; then
+        { echo '#!/bin/bash'; cat "$block"; } > "$out"
+        echo -e "${YELLOW}WARN: your lines from $name do not parse after the framework block — installed the block alone; your previous hook is $backup${NC}" >&2
+    elif [ -s "$kept" ]; then
+        echo -e "${YELLOW}$name: kept $(wc -l < "$kept") line(s) of the previous hook below the framework block ($note); previous file: $backup${NC}" >&2
+    fi
+    rm -f "$kept"
+    return 0
+}
+
 do_install_hooks() {
     local force=false
     local install_failed=false
@@ -1540,10 +1626,14 @@ HOOK_EOF
     _verify_hook_written "$pre_push_hook" || { install_failed=true; failed_hooks+=("$pre_push_hook"); }
 
     # T-3998: compare the staged hooks with the installed ones; deploy what differs.
+    # T-4403: only the framework BLOCK is compared and replaced — lines outside it
+    # are the consumer's (see _fw_hook_compose).
     local _names="commit-msg pre-commit pre-merge-commit post-commit pre-push" _n _differ=""
     if [ "$install_failed" = false ]; then
         for _n in $_names; do
-            if [ "$force" = true ] || [ ! -x "$hooks_dir/$_n" ] || ! cmp -s "$stage_dir/$_n" "$hooks_dir/$_n"; then
+            _fw_hook_block "$stage_dir/$_n" > "$stage_dir/$_n.block"
+            if [ "$force" = true ] || [ ! -x "$hooks_dir/$_n" ] \
+                || ! _fw_hook_installed_block "$hooks_dir/$_n" | cmp -s "$stage_dir/$_n.block" -; then
                 _differ="$_differ $_n"
             fi
         done
@@ -1558,8 +1648,9 @@ HOOK_EOF
         [ "$force" = true ] || echo -e "${YELLOW}Hook content differs:${_differ} (marker installed: ${existing_version:-none}, template: $COMMIT_MSG_HOOK_VERSION) — reinstalling${NC}"
         failed_hooks=()
         for _n in $_differ; do
-            if cp "$stage_dir/$_n" "$hooks_dir/$_n" 2>/dev/null && chmod +x "$hooks_dir/$_n" \
-                && cmp -s "$stage_dir/$_n" "$hooks_dir/$_n"; then
+            if _fw_hook_compose "$hooks_dir/$_n" "$stage_dir/$_n.block" "$stage_dir/$_n.new" \
+                && cp "$stage_dir/$_n.new" "$hooks_dir/$_n" 2>/dev/null && chmod +x "$hooks_dir/$_n" \
+                && _fw_hook_installed_block "$hooks_dir/$_n" | cmp -s "$stage_dir/$_n.block" -; then
                 :
             else
                 install_failed=true; failed_hooks+=("$hooks_dir/$_n")
@@ -1632,6 +1723,12 @@ Installs:
   - pre-push hook: Runs audit before push (blocks on FAIL, and on could-not-run)
 
 The hooks enforce task traceability (P-002: Structural Enforcement).
+
+Each hook file holds the framework's checks between the markers
+"# >>> agentic-framework hook" and "# <<< agentic-framework hook <<<" (T-4403).
+Only that block is compared and replaced; lines you add above or below it are
+kept across install-hooks and fw upgrade, and lines below it run after the
+framework checks pass.
 
 Pre-push behavior:
   - Audit FAIL (exit 2): Push blocked

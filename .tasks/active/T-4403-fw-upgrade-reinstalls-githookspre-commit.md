@@ -1,10 +1,17 @@
 ---
 id: T-4403
-name: "fw upgrade reinstalls .git/hooks/pre-commit and erases project lines a consumer added there"
+name: "fw upgrade reinstalls .git/hooks/pre-commit and erases project lines a consumer
+  added there"
 description: >
-  Reported by 832 (msg 62736fc8, peer exchange 2026-10-19): every fw upgrade rewrites .git/hooks/pre-commit wholesale, so project-specific lines are lost and must be re-added by hand after each upgrade. Fix: install the framework hook as a marked block (or chain to a project-owned hook such as .git/hooks/pre-commit.local / a hooks.d directory) and preserve everything outside the block; the same for commit-msg / pre-push / post-commit. Test: a consumer hook with a custom line survives fw upgrade (tests/unit/upgrade_fresh_machine_simulation.bats must stay green, T-1633).
+  Reported by 832 (msg 62736fc8, peer exchange 2026-10-19): every fw upgrade rewrites
+  .git/hooks/pre-commit wholesale, so project-specific lines are lost and must be
+  re-added by hand after each upgrade. Fix: install the framework hook as a marked
+  block (or chain to a project-owned hook such as .git/hooks/pre-commit.local / a
+  hooks.d directory) and preserve everything outside the block; the same for commit-msg
+  / pre-push / post-commit. Test: a consumer hook with a custom line survives fw upgrade
+  (tests/unit/upgrade_fresh_machine_simulation.bats must stay green, T-1633).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:29:57Z
-last_update: 2026-10-19T15:29:57Z
-date_finished: null
+last_update: 2026-10-19T15:50:03Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +57,69 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T15:45:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T15:46:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4403: fw upgrade reinstalls .git/hooks/pre-commit and erases project lines a consumer added there
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw upgrade` step 4 (lib/upgrade.sh:2099) runs `agents/git/git.sh install-hooks`,
+which compares and copies whole hook files. Same defect as T-3926 (filed from
+832's 1.8.3 report, `fw git install-hooks` directly); this task fixes it at the
+shared install path, so T-3926 is covered by the same change.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Each of the five framework hooks (commit-msg, pre-commit, pre-merge-commit, post-commit, pre-push) is installed as a block between `# >>> agentic-framework hook` / `# <<< agentic-framework hook <<<` markers; lines a consumer adds above or below the block survive `install-hooks` (plain and `--force`) and `fw upgrade`
+- [x] Re-install compares only the framework block: a consumer line outside it does not trigger a rewrite; a changed line inside it does (T-3998 behaviour kept)
+- [x] Migration of an existing unmarked hook: an old framework hook with consumer-added lines keeps those lines below the block, commented out (they cannot be told apart from an older template's lines, so none runs unseen), with a WARN and a backup at `<hook>.pre-fw-block`; a wholly consumer-owned sh/bash hook keeps its whole body, executable, after the block; the template lines are never duplicated; a merged file that does not pass `bash -n` falls back to block-only with the backup and a WARN; a second install is a no-op
+- [x] The framework block still blocks: a commit without a task reference is refused by the marked commit-msg hook, and a consumer line after the block runs when the block passes
+- [x] Regression test `tests/unit/t4403_hook_block_preserve.bats` fails before the fix and passes after; t3998, hook_version_marker_parity and upgrade_fresh_machine_simulation stay green
+- [x] `bin/fw vendor self --check` clean for the touched files
+
+## Test record (2026-10-19)
+
+- Red before the fix: t4403_hook_block_preserve.bats 6/6 `not ok` (pre-fix hooks.sh).
+- Green after: t4403 7/7; t3998 4/4 (case 1 updated: its stale line now goes INSIDE the
+  block — it previously asserted the very erasure this task removes); hook_version_marker_parity 7/7.
+- Hook-exercising neighbours, each run alone: t3511 13, t3110 22, t3740 2, t4167 12,
+  t3594_prepush_forced_update_guard 23, init_head_bootstrap 8, t3126 20,
+  pre_push_version_monotonicity 6, t2240 5, t3297 11, upgrade_fresh_machine_simulation 16,
+  upgrade_fresh_machine_simulation_vendored 4 — 0 `not ok`, 0 skips.
+- `vendor self --check`: agents/git/lib/hooks.sh synced; at commit time the check is red only on
+  other workers' in-flight files (agents/context/lib/safe-commands.sh, untracked
+  agents/audit/unit_tier.py), not synced here.
+- Pre-existing, out of scope: a commit-msg hook in a project without the framework's libs prints
+  `find_task_file: command not found` (same with the HEAD template, unwrapped).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,22 +297,36 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/git/lib/hooks.sh
+timeout 600 bats tests/unit/t4403_hook_block_preserve.bats > /tmp/.t4403.out 2>&1 && ! grep -q "^not ok" /tmp/.t4403.out
+test "$(grep -c '# skip' /tmp/.t4403.out)" -eq 0
+timeout 600 bats tests/unit/t3998_install_hooks_content_compare.bats tests/unit/hook_version_marker_parity.bats > /tmp/.t4403b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4403b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4403_hook_block_preserve.bats tests/unit/t3998_install_hooks_content_compare.bats > /tmp/.t4403l.out 2>&1 && grep -q clean /tmp/.t4403l.out
+bin/fw vendor self --check
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** 832 (msg 62736fc8; earlier msg 3fdccbb3 → T-3926): every `fw upgrade`
+rewrote `.git/hooks/pre-commit` wholesale; project-specific lines had to be re-added
+by hand after each upgrade.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `agents/git/lib/hooks.sh:1546` compared the staged template with the
+WHOLE installed hook file (`cmp -s`), and `:1561` replaced the whole file (`cp`). A
+hook file was treated as framework-owned in its entirety, so a consumer line was
+indistinguishable from drift: it made the file "differ" and the redeploy erased it.
+`fw upgrade` reaches this unconditionally via lib/upgrade.sh:2099.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** no ownership boundary existed inside a hook file, and no
+test installed hooks over a file carrying non-framework lines. T-3998 (content compare
+replacing the VERSION short-circuit) made it strictly worse: before it, consumer lines
+survived until the next marker bump; after it, any consumer line counted as drift and
+was erased on every upgrade — and T-3998's own regression test asserted exactly that
+(appended line → rewritten).
+
+**Prevention:** the framework content now lives between markers and only the block is
+compared/replaced; `tests/unit/t4403_hook_block_preserve.bats` pins survival of
+consumer lines (plain, `--force`, migration from unmarked, no duplicate block) and
+that the block still enforces.
 
 ## Evolution
 
@@ -338,3 +408,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4403-fw-upgrade-reinstalls-githookspre-commit.md
 - **Context:** Initial task creation
+
+### 2026-10-19T15:50:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

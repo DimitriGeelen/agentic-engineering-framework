@@ -31,8 +31,10 @@ _install() {
     run _install
     [ "$status" -eq 0 ]
     cp "$PROJ/.git/hooks/pre-push" "$TEST_TMP/want"
-    # The pre-T-3821 shape: same marker everywhere, different body.
-    echo '# stale body line' >> "$PROJ/.git/hooks/pre-push"
+    # The pre-T-3821 shape: same marker everywhere, different body. T-4403: the
+    # stale line goes INSIDE the framework block — a line outside it is the
+    # consumer's and is kept (tests/unit/t4403_hook_block_preserve.bats).
+    sed -i '/^# >>> agentic-framework hook/a # stale body line' "$PROJ/.git/hooks/pre-push"
     grep -q "^# VERSION=" "$PROJ/.git/hooks/commit-msg"
     run _install
     [ "$status" -eq 0 ]
