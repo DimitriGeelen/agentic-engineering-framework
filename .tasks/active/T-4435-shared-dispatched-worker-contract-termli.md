@@ -20,7 +20,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-19T21:56:28Z
-last_update: 2026-10-19T21:58:30Z
+last_update: '2026-10-19T22:00:42Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -46,6 +46,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-19T22:00:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=128,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -78,17 +88,17 @@ bvp_scores_proposed:
 -->
 
 - **IW-1: Is the shared contract sound (single-writer done, (dispatch id, attempt, nonce) fencing, lost only on confirmed session end), with no race, split-brain or stuck state left open?**
-  confidence: 1
-  disposition:
-  rationale: to be answered from the three reviews (docs/reports/T-4435-reviews/)
+  confidence: 3
+  disposition: answered
+  rationale: No — sound in shape, not as specified. All 3 seats independently: done/lost race with no precedence (needs CAS + fenced done > lost), stuck running without a bounded unknown state, hub-allocated attempts/nonce + no overlapping attempts. Artefact §6.2 items 1-3
 - **IW-2: Should AEF own the run.sh supervisor-writer, the dispatcher recording and the worker instruction, and are AEF's four conditions right?**
-  confidence: 1
-  disposition:
-  rationale: draft position in docs/reports/T-4435-shared-worker-contract.md §4; reviews pending
+  confidence: 3
+  disposition: answered
+  rationale: Yes, all 3 seats; add the local-evidence reconciler and the session<->dispatch binding at spawn. Conditions 1-3 kept but sharpened; condition 4 narrowed to the completion authority (evaluation ledger separate, shadow mode first). Artefact §6.2-6.5
 - **IW-3: How does an answer reach a running worker given no worker receiver (T-4423), circuit addressing / the orphan-inbox class (T-3855, T-4418) and a retry ladder that outlives any worker (D-600)?**
-  confidence: 0
-  disposition:
-  rationale: operator question 2026-10-19; artefact §3; reviews pending
+  confidence: 2
+  disposition: answered
+  rationale: Per-attempt answer entries in the fenced record, acked by a fenced read-marker; TTL <= attempt life then bounce to the dispatcher; never the retry ladder, never a worker inbox (excludes the T-4418 class by construction, keeps T-4423). Default pause-and-redispatch until in-run consumption is demonstrated (codex). Artefact §6.2 item 4, §6.4
 
 ## Exploration Plan
 
@@ -150,9 +160,38 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO, for the ownership plus a spec-first first slice, not for code.
 
-**Rationale:** Evidence gap, not a confidence gap: the operator asked for three independent reviews (codex, opencode, a fresh Claude) of the proposal and of AEF's four proposed conditions before the decision; they are being run now. Recommendation will be rewritten to GO or NO-GO from their findings.
+**Rationale:** All three independent seats (codex, claude, and opencode re-run isolated) answer AEF's question "yes, with conditions". They agree just as clearly that the contract is not build-ready: the transition semantics decide correctness and are unspecified. So AEF says yes to owning:
+
+- the run.sh supervisor-writer;
+- the dispatcher recording;
+- the worker instruction;
+- plus the local-evidence reconciler and the session ↔ dispatch binding at spawn.
+
+These conditions go to termlink and ring20:
+
+1. **First deliverable is a jointly agreed transition table** plus a shared conformance suite run against the hub backend and AEF's local backend. The table covers:
+   - CAS on every transition;
+   - fenced `done` outranks `lost`, with a `lost → done` upgrade;
+   - a bounded `unknown` state with a resolution verb;
+   - hub-allocated attempts and nonces;
+   - no overlapping attempts;
+   - an outcome field on `done`.
+
+   No implementation before that.
+2. **Answers are per-attempt record entries** with a fenced read-marker ack, TTL at most the attempt's life, then bounce to the dispatcher. Never the retry ladder, never a worker inbox. Default to pause-and-redispatch.
+3. **Local backend:** same CAS semantics, chosen at dispatch time, same conformance suite.
+4. **The record replaces the completion authority only.** The evaluation ledger stays separate. Shadow mode before switch-over.
+5. **Named durable dispatcher session id**, bound at spawn.
+6. **ring20 maps its T-2281 against the contract** before it is declared absorbed.
+
+This fits T-3977's GO (take arc-009 in piece by piece).
+
+**Evidence:**
+- docs/reports/T-4435-shared-worker-contract.md §6: verdicts, convergence, the condition-4 disagreement and how it resolves.
+- Verbatim reviews: docs/reports/T-4435-reviews/{codex,claude,opencode}.md.
+- The first opencode seat was not independent: it is kept as opencode-contaminated.md and not counted. No host data was exposed (checked); follow-up T-4437.
 
 ## Decisions
 
