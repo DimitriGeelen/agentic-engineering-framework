@@ -311,6 +311,62 @@ def _blob(root: Path, rev: str, path: str) -> str:
                           check=True, encoding="utf-8", errors="replace").stdout
 
 
+class _BlobReader:
+    """`git show REV:PATH` for many blobs through ONE `git cat-file --batch` (T-4375).
+
+    The audit read ~5,000 blobs, one process each: ~57 s of the pre-push structure audit.
+    Same bytes, same decoding, same failure (CalledProcessError -> rc 3) as _blob."""
+
+    def __init__(self, root: Path):
+        self.root = root
+        self.proc = subprocess.Popen(["git", "-C", str(root), "cat-file", "--batch"],
+                                     stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                     stderr=subprocess.DEVNULL)
+
+    def show(self, rev: str, path: str) -> str:
+        spec = f"{rev}:{path}"
+        if "\n" in spec:
+            return _blob(self.root, rev, path)
+        self.proc.stdin.write(spec.encode() + b"\n")
+        self.proc.stdin.flush()
+        header = self.proc.stdout.readline()
+        parts = header.split()
+        if len(parts) != 3 or parts[1] != b"blob":
+            raise subprocess.CalledProcessError(128, ["git", "show", spec], header)
+        data = self.proc.stdout.read(int(parts[2]) + 1)[:-1]
+        return data.decode("utf-8", errors="replace")
+
+    def close(self) -> None:
+        try:
+            self.proc.stdin.close()
+        except OSError:
+            pass
+        self.proc.wait()
+
+
+def _diff_trees(root: Path, pairs: list[tuple[str, str | None]]) -> list[str]:
+    """For each (sha, parent), the stdout of `git diff-tree -r -M -z --no-commit-id
+    --name-status [parent sha | --root sha] -- .tasks`, from ONE `--stdin` run (T-4375).
+
+    diff-tree echoes a stdin line that is not a commit, so a sentinel line before each
+    pair splits the output back per pair, empty diffs included."""
+    if not pairs:
+        return []
+    lines = []
+    for i, (sha, parent) in enumerate(pairs):
+        lines.append(f"#fw-t4375-{i}")
+        lines.append(f"{sha} {parent}" if parent else sha)
+    out = subprocess.run(["git", "-C", str(root), "diff-tree", "--stdin", "--root", "-r", "-M",
+                          "-z", "--no-commit-id", "--name-status", "--", ".tasks"],
+                         input="\n".join(lines) + "\n", capture_output=True, text=True,
+                         check=True).stdout
+    chunks = re.split(r"#fw-t4375-(\d+)\n", out)
+    got = [""] * len(pairs)
+    for k in range(1, len(chunks) - 1, 2):
+        got[int(chunks[k])] = chunks[k + 1]
+    return got
+
+
 def _task_id(path: str) -> str:
     m = re.search(r"T-\d+", os.path.basename(path))
     return m.group(0) if m else "?"
@@ -357,21 +413,33 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
     budget = Counter(r.get("digest") for r in ledger_rows(root))
     checkers: dict = {}
     findings = []
+    commits = []
     for rec in log.split("\x1e")[1:]:
         parts = rec.split("\x1f", 5)
         if len(parts) < 6:
             continue
-        sha, parents, who, aemail, cemail, msg = parts
+        commits.append(parts)
+    # T-4375: every diff-tree in one process, every blob through one cat-file --batch
+    # (was one process per commit-parent pair and per blob: ~6,500 forks, ~90 s).
+    diffs = iter(_diff_trees(root, [(p[0], parent) for p in commits
+                                    for parent in (p[1].split() or [None])]))
+    blobs = _BlobReader(root)
+    try:
+        return _scan(root, commits, diffs, blobs, budget, checkers, findings), where
+    finally:
+        blobs.close()
+
+
+def _scan(root, commits, diffs, blobs, budget, checkers, findings) -> list[dict]:
+    for sha, parents, who, aemail, cemail, msg in commits:
         parents = parents.split() or [None]
         agent = is_agent_identity(aemail, cemail, msg)
         per_parent: list[dict] = []
         for parent in parents:
             # -z: NUL-separated, never C-quoted — a non-ASCII filename is otherwise printed
             # as "...caf\303\251.md" and silently skipped (review round 3)
-            args = ["diff-tree", "-r", "-M", "-z", "--no-commit-id", "--name-status"]
-            args += [parent, sha] if parent else ["--root", sha]
             got: dict = {}
-            fields = _git(root, *args, "--", ".tasks").split("\0")
+            fields = next(diffs).split("\0")
             j = 0
             while j < len(fields) - 1:
                 status = fields[j]
@@ -388,10 +456,10 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
                     continue
                 if not new_path.endswith(".md") or not re.search(r"(^|/)T-\d+", os.path.basename(new_path)):
                     continue
-                old = "" if (status.startswith("A") or not parent) else _blob(root, parent, old_path)
+                old = "" if (status.startswith("A") or not parent) else blobs.show(parent, old_path)
                 tid = _task_id(new_path)
                 backing = checkers.setdefault(tid, VerdictBacking(root, tid))
-                got[new_path] = (tid, unprovenanced_ticks(old, _blob(root, sha, new_path), backing))
+                got[new_path] = (tid, unprovenanced_ticks(old, blobs.show(sha, new_path), backing))
             per_parent.append(got)
         # a tick is NEW in this commit only if it is new relative to EVERY parent; a tick
         # inherited from a merged branch was judged in that branch's own commit
@@ -416,7 +484,7 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
                 findings.append({"commit": sha, "who": who, "agent": agent, "task": tid,
                                  "path": path, "kind": kind if not vid else kind + " (verdict replayed)",
                                  "criterion": key[:100], "merge": len(parents) > 1})
-    return findings, where
+    return findings
 
 
 def _no_history(root: Path) -> str | None:

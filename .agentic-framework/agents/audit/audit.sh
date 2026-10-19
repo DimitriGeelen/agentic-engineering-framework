@@ -2013,18 +2013,36 @@ FRACTION = float(sys.argv[4])
 
 _FM_RE = re.compile(r'^---\n(.*?)\n---', re.S)
 
-def task_score(path, driver_id):
-    """Return int score for driver_id from task frontmatter, or None if absent."""
+# T-4375: each task's frontmatter is parsed once per run, not once per arc driver.
+# Pure-python YAML over ~4,400 task files was ~40 s of the pre-push audit.
+_FM_CACHE = {}
+
+def _frontmatter(path):
+    """Parsed frontmatter dict, or None (unreadable / no frontmatter / bad YAML)."""
+    if path in _FM_CACHE:
+        return _FM_CACHE[path]
+    fm = None
     try:
         text = path.read_text()
     except Exception:
-        return None
-    m = _FM_RE.match(text)
-    if not m:
-        return None
-    try:
-        fm = yaml.safe_load(m.group(1)) or {}
-    except yaml.YAMLError:
+        text = None
+    m = _FM_RE.match(text) if text is not None else None
+    if m:
+        try:
+            fm = yaml.safe_load(m.group(1)) or {}
+        except yaml.YAMLError:
+            fm = None
+    _FM_CACHE[path] = fm
+    return fm
+
+# A frontmatter whose only `arc_id` mentions sit on comment lines (the template's
+# `# arc_id:` hint) has no arc_id key: skip parsing it for the index.
+_ARC_ID_LINE_RE = re.compile(r'^(?![ \t]*#).*arc_id', re.M)
+
+def task_score(path, driver_id):
+    """Return int score for driver_id from task frontmatter, or None if absent."""
+    fm = _frontmatter(path)
+    if fm is None:
         return None
     scores = fm.get('bvp_scores') or {}
     if not isinstance(scores, dict):
@@ -2048,9 +2066,10 @@ for sub in ('active', 'completed'):
         m = _FM_RE.match(text)
         if not m:
             continue
-        try:
-            fm = yaml.safe_load(m.group(1)) or {}
-        except yaml.YAMLError:
+        if not _ARC_ID_LINE_RE.search(m.group(1)):
+            continue
+        fm = _frontmatter(p)
+        if fm is None:
             continue
         arc_id = fm.get('arc_id')
         if not arc_id:

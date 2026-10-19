@@ -63,7 +63,9 @@ _bash_files() {
             done
         )
         [ -n "$files" ] || { echo "NO FILES MATCHED — guard would be vacuous"; exit 3; }
-        echo "$files" | xargs -P 8 -n 25 shellcheck -f gcc -i SC2006 2>/dev/null | grep SC2006 || true
+        # T-4375: same shellcheck call, cached per (shellcheck version, path, bytes)
+        # — bin/fw alone cost ~52 s of the pre-push audit on every run.
+        echo "$files" | tr "\n" "\0" | xargs -0 python3 tools/shellcheck-sc2006-cached.py || true
     '
 
     [ "$status" -ne 3 ] || { echo "$output"; false; }

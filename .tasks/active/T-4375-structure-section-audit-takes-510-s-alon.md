@@ -10,7 +10,7 @@ description: >
   them out of the pre-push section; the test should not run a full live structure
   audit under suite load.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T11:26:05Z
-last_update: '2026-10-19T11:31:17Z'
+last_update: 2026-10-19T19:16:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Per-check cost of `--section structure` measured (a live run's lock was held all session, so it ran on a `git clone --shared` of HEAD, plus `--check <id>` timings live) and the slowest checks named with seconds in `docs/reports/T-4375-structure-audit-cost.md`
+- [x] The top slow checks are made cheaper without changing any verdict (same PASS/WARN/FAIL lines for the same inputs); before/after seconds per check recorded in the report (section 651 s → 325 s on the same clone)
+- [x] Checks that do not belong in the pre-push gate are proposed (not moved) in ## Decisions
+- [x] Regression test pins the cheaper path (red before the fix, green after) and the run is recorded here — tests/unit/t4375_sc2006_cache.bats 9/9 green; with the fixes reverted: SC2006 legs 5/6 red, Human-AC fork count 80 git calls (limit 10) red, frontmatter-once red
+- [x] `bash -n agents/audit/audit.sh` clean; `python3 tools/bats-dead-negation-lint.py tests/` clean; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,8 +279,28 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/audit/audit.sh
+timeout 600 bats tests/unit/t4375_sc2006_cache.bats > /tmp/.t4375.out 2>&1 && ! grep -q "^not ok" /tmp/.t4375.out && grep -q "^ok 9 " /tmp/.t4375.out
+test "$(grep -c '# skip' /tmp/.t4375.out)" -eq 0
+timeout 600 bats tests/unit/t3695_human_ac_tick_bash.bats tests/unit/t4075_inception_decide_tick_provenance.bats > /tmp/.t4375b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4375b.out
+timeout 600 bats tests/lint/no-backticks-in-quoted-strings.bats > /tmp/.t4375c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4375c.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4375d.out 2>&1 && grep -q "clean" /tmp/.t4375d.out
+test -s docs/reports/T-4375-structure-audit-cost.md
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** `fw audit --section structure` (the pre-push gate) ran ~510-650 s against its 600 s scoped budget and timed out (exit 124) under load; audit.bats's structure test went red on the timeout.
+
+**Root cause:** the cost was a handful of checks whose work grows with the corpus, each doing the same work again on every run:
+- `check_invariant_suite` (agents/audit/audit.sh:3587) runs `bats tests/lint/`: ~283-300 s. Inside it, `tests/lint/bats-silent-skip.bats` "fw test lint actually reports a silent-skip section" ran the whole `bin/fw test lint`, i.e. real ShellCheck over every .sh in the repo, only to check that one header is printed (~180 s). `tests/lint/no-backticks-in-quoted-strings.bats` re-ran ShellCheck SC2006 over every bash source each time (~69 s; bin/fw alone 52 s, audit.sh 35 s) for files that had not changed.
+- Human-AC ticks (agents/audit/audit.sh:3073, `lib/human_ac_ticks.py` `scan_commits`): one `git diff-tree` per commit and one `git show` per changed task blob since the detector commit, ~6,500 forks, ~92-119 s, growing with every commit.
+- BVP coherence (agents/audit/audit.sh:~2005): pure-python YAML parse of every task's frontmatter for the arc index, then again per driver per constituent, ~40-47 s.
+- Stale-arc check (agents/audit/audit.sh:1756): one pathspec `git log --since=30.days` per in-progress arc, ~61 s (not changed here — see Decisions).
+
+**Why structurally allowed:** the timing ledger (T-3127/T-3451) records per-SECTION seconds only, so the structure section's growth was visible as one number with no attribution; and nothing asserts a per-check cost, so each check was cheap when written (T-2837 measured the invariant suite at "51 tests in ~6s") and grew with the corpus and with lint tests that were added to tests/lint/ without anyone pricing them into the pre-push gate.
+
+**Prevention:** tests/unit/t4375_sc2006_cache.bats pins the cheap paths: the SC2006 cache contract (hit = no rerun, change = rerun, failed run never stored), the Human-AC audit's git fork count staying constant as commits grow (≤10 for 26 commits; 80 before), BVP coherence parsing each frontmatter once with identical findings, and the two lint legs using the cheap path. Per-check timing method recorded in docs/reports/T-4375-structure-audit-cost.md so the next growth can be attributed the same way. The per-check timing ledger itself is a proposal (Decisions), not built here.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -316,6 +339,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-19 — the cost is mostly the lint suite the audit shells, not the audit's own checks
+- **What changed:** filed as "the structure section is slow"; measured, ~45% of it is `check_invariant_suite` running `bats tests/lint/`, and ~250 s of that is two lint tests running real ShellCheck over the repo. The audit's own inline checks are the other half, dominated by three that scale with git history or task count.
+- **Plan impact:** the fix is mostly in tests/lint/ and lib/, not audit.sh. A live `--section structure` run was held by other workers for the whole session (and by scratch-clone audits), so measurement used a `git clone --shared` of HEAD under `.context/scratch/t4375/` with xtrace timing (method in the report); single-check timings used `audit.sh --check <id>`, which takes no lock.
+- **Triggered:** T-4425 (`fw test lint` exits 141 via SIGPIPE before its Silent-Skip step — why the silent-skip lint leg was red); proposals below for stale-arc and a per-check timing ledger.
 
 ## Recommendation
 
@@ -357,6 +385,17 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-19 — make it cheaper, not move it (what changed)
+- **Chose:** keep every check in the structure section and remove repeated work: SC2006 cached per (shellcheck version, path, bytes) (tools/shellcheck-sc2006-cached.py); the silent-skip wiring leg stubs shellcheck (it asserts the header, not ShellCheck's findings); human_ac_ticks reads git through one `diff-tree --stdin` and one `cat-file --batch`; BVP coherence parses each frontmatter once and skips files whose only `arc_id` is a comment.
+- **Why:** each preserves the verdict for the same inputs — checked: human_ac_ticks old vs new identical on the live repo, 0 mismatches over all 1,554 diff pairs + 181 sampled blobs, existing 44 tests green; BVP coherence identical on the live repo and on a fixture that produces findings; SC2006 same lines, same files.
+- **Rejected:** raising the 600 s budget (it hides the growth); CSafeLoader for the YAML (libyaml edge cases differ from the pure loader, so it could change a verdict); batching stale-arc into one `git log` (pathspec history simplification differs per pathspec, so a union is not equivalent).
+
+### 2026-10-19 — PROPOSED, not done: move to the daily audit
+- **Stale-arc check** (audit.sh:1756, ~61 s): "no task commit in 30 days" is a property of the calendar, not of the commit being pushed — a push cannot make an arc stale or fresh beyond its own commit. It belongs with the daily (oe-daily) audit. Exactness forbids the cheap batched version (see above).
+- **Draft-arc-complete, fabric coverage (~25 s), Watchtower-decision revert (~13 s; memoizing ls-tree only saved ~2 s, so left alone)**: same argument — corpus-health properties, not push properties.
+- **Per-check timing ledger:** extend T-3127's `section_runs:` with per-check seconds so the next growth is attributed without an xtrace run.
+- Operator/parent's call; nothing moved here.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -373,3 +412,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4375-structure-section-audit-takes-510-s-alon.md
 - **Context:** Initial task creation
+
+### 2026-10-19T19:16:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

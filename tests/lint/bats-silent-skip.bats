@@ -294,6 +294,13 @@ EOF
 }
 
 @test "fw test lint actually reports a silent-skip section" {
-    run bash -c "cd '$ROOT' && timeout 600 bin/fw test lint 2>&1"
+    # T-4375: shellcheck is stubbed. This leg asserts the wiring — that the real
+    # `fw test lint` reaches and prints the Silent-Skip step — not ShellCheck's
+    # findings. Real ShellCheck over every .sh in the repo cost ~180 s here, inside
+    # check_invariant_suite, i.e. inside every pre-push audit.
+    mkdir -p "$BATS_TEST_TMPDIR/bin"
+    printf '#!/bin/sh\nexit 0\n' > "$BATS_TEST_TMPDIR/bin/shellcheck"
+    chmod +x "$BATS_TEST_TMPDIR/bin/shellcheck"
+    run bash -c "cd '$ROOT' && PATH='$BATS_TEST_TMPDIR/bin':\"\$PATH\" timeout 600 bin/fw test lint 2>&1"
     echo "$output" | grep -q 'Silent-Skip'
 }
