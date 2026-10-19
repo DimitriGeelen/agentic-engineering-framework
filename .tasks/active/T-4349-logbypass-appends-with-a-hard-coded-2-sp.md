@@ -12,10 +12,10 @@ description: >
   item's indent), and make a failed post-append parse a hard error or an audit/doctor
   FAIL.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, bypass-log, yaml]
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ origin: {kind: "peer", source: "ring20"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:56:29Z
-last_update: '2026-10-18T23:01:55Z'
+last_update: 2026-10-19T09:44:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced: appending with the pre-fix `log_bypass_entry` to a PyYAML-dumped (indentless `bypasses:` / `- timestamp:` at column 0) bypass log leaves a file that `yaml.safe_load` rejects; red bats run recorded in Updates
+- [x] Fix: `log_bypass_entry` (agents/git/lib/bypass.sh) writes new entries at the indent the existing sequence uses, so the file still parses for indentless logs and 2-space logs alike
+- [x] Fix: a post-append parse failure makes `log_bypass_entry` return non-zero (hard error) instead of only printing a WARNING
+- [x] Regression test `tests/unit/t4349_bypass_log_indent.bats` fails before the fix and passes after
+- [x] Existing log content is append-only: bytes before the old EOF are unchanged after an append (no load+dump rewrite of history)
+- [x] `bin/fw vendor self --check` is clean (agents/git is vendored)
+- [x] Ring20 instance outside this repo: count of malformed entries in THIS repo's `.context/bypass-log.yaml` recorded in Updates (expected 0; leave any found in place)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -149,6 +154,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n agents/git/lib/bypass.sh
+out=$(bats tests/unit/t4349_bypass_log_indent.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -281,6 +290,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** after a `log-bypass` append, `.context/bypass-log.yaml` no longer parses as YAML; every reader and the audit D12 check see nothing wrong until someone parses it (ring20 report: unparseable since 2026-10-04, 8 appends).
+
+**Root cause:** `agents/git/lib/bypass.sh:110-117` appends each entry with a hard-coded two-space item indent (`  - timestamp:` / `    action:`). Any re-dump of the log by PyYAML emits an indentless sequence (`bypasses:` followed by `- timestamp:` at column 0, keys at column 2). Appending a `  - ` item after that makes the new item a sibling key of the previous item's mapping, which is a YAML parse error. The writer assumes a layout it never checks.
+
+**Why structurally allowed:** the post-append check (`bypass.sh:124-130`) runs `yaml.safe_load` but only prints a WARNING and returns 0, so the caller sees success and the broken file is never repaired or flagged. No test appends to a non-2-space log, so the indent assumption was never exercised.
+
+**Prevention:** (1) the writer matches the indent of the existing sequence, so the append is valid for both layouts; (2) a failed post-append parse is a non-zero return, so `commit.sh` and any direct caller see the failure; (3) regression test `tests/unit/t4349_bypass_log_indent.bats` pins both layouts plus append-only content.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -375,3 +392,15 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4349-logbypass-appends-with-a-hard-coded-2-sp.md
 - **Context:** Initial task creation
+
+### 2026-10-19T09:44:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-19 — bug-fix evidence [worker w4349]
+- **Red (pre-fix, `bats tests/unit/t4349_bypass_log_indent.bats`):** test 1 failed at the parse of an indentless log after one append; the run printed `WARNING: ... is not valid YAML after this write.`; test 4 failed (`status` was 0, expected non-zero). Tests 3 (2-space control) and 5 (append-only) passed before the fix, as intended.
+- **Green (post-fix):** 5/5 ok. Neighbours `t3412_bypass_log_utf8_truncation.bats` + `audit_gate_bypass_log.bats`: 11 ok, 0 not ok.
+- **Fix:** `agents/git/lib/bypass.sh` detects indentless sequences (`^-[[:space:]]`) and writes the item at matching indent; a failed post-append parse now returns 1.
+- **Repo bypass log (`.context/bypass-log.yaml`):** 110 entries, whole file parses. 0 unparseable. 97 entries use another writer's tier-0 schema (`command_hash`, `tier`, ...), which is not malformed; left untouched. No history rewritten.
+- **Vendor side effect:** `FW_VENDOR_ONLY=agents/git/lib/bypass.sh bin/fw vendor self` also synced `agents/context/check-human-ac-tick.py`, which another worker had modified uncommitted. Not committed by this task.
+- **Open, not fixed (separate bug):** `action` and `reason` are written inside `"..."` unescaped, so a commit subject or reason containing `"` or a newline still yields invalid YAML.

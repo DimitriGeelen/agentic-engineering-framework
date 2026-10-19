@@ -106,14 +106,22 @@ EOF
         sed -i 's/^bypasses: \[\]$/bypasses:/' "$BYPASS_LOG"
     fi
 
+    # T-4349: match the indent the existing sequence uses. A PyYAML re-dump
+    # emits `- timestamp:` at column 0 (indentless); a 2-space item appended
+    # after that is a parse error. Default to the 2-space layout for new files.
+    local item_indent="  "
+    if grep -qE '^-[[:space:]]' "$BYPASS_LOG" 2>/dev/null; then
+        item_indent=""
+    fi
+
     # Append the entry
     cat >> "$BYPASS_LOG" << EOF
-  - timestamp: $timestamp
-    action: "$action"
-    commit: $commit
-    authorized_by: $authorized_by
-    reason: "$reason"
-    retroactive_task: $retroactive_task
+${item_indent}- timestamp: $timestamp
+${item_indent}  action: "$action"
+${item_indent}  commit: $commit
+${item_indent}  authorized_by: $authorized_by
+${item_indent}  reason: "$reason"
+${item_indent}  retroactive_task: $retroactive_task
 EOF
 
     # F-21: a writer that can produce an unparseable audit trail without
@@ -121,11 +129,13 @@ EOF
     # written and surface it loudly rather than silently. Best-effort: skip
     # if python3/PyYAML aren't available rather than blocking the commit flow
     # the bypass log exists to audit.
+    # T-4349: a failed parse is now a hard error (non-zero return), not a warning.
     if command -v python3 >/dev/null 2>&1; then
         if ! python3 -c "import yaml; yaml.safe_load(open('$BYPASS_LOG'))" 2>/dev/null; then
-            echo -e "${RED}WARNING: $BYPASS_LOG is not valid YAML after this write.${NC}" >&2
+            echo -e "${RED}ERROR: $BYPASS_LOG is not valid YAML after this write.${NC}" >&2
             echo "  The bypass entry was appended but the file no longer parses." >&2
             echo "  Inspect and repair it manually — this is the audit trail for Tier-2 bypasses." >&2
+            return 1
         fi
     fi
 
