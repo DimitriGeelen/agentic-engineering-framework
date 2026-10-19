@@ -99,10 +99,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] hotfix/v1.8.12 is v1.8.11 plus only the T-4343 and T-4344 fix commits (and vendored copies) plus VERSION 1.8.12; diffstat recorded in docs/reports/T-4345-hotfix-v1812.md
-- [ ] ring20-dashboard's probe re-run on the hotfix: the six reported cases now judged correctly (WORKS recorded)
-- [ ] Full unit suite hotfix vs v1.8.11 in scratch clones: no failure attributed to the hotfix diff
-- [ ] master fast-forwarded to the hotfix and tagged v1.8.12 (pushed), GitHub release created with notes, bleeding-edge contains master again (merge-back)
+- [x] hotfix/v1.8.12 is v1.8.11 plus only the T-4343 and T-4344 fix commits (and vendored copies) plus VERSION 1.8.12; diffstat recorded in docs/reports/T-4345-hotfix-v1812.md
+- [x] ring20-dashboard's probe re-run on the hotfix: the six reported cases now judged correctly (WORKS recorded)
+- [x] Full unit suite hotfix vs v1.8.11 in scratch clones: no failure attributed to the hotfix diff
+- [x] master fast-forwarded to the hotfix and tagged v1.8.12 (pushed), GitHub release created with notes, bleeding-edge contains master again (merge-back)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
