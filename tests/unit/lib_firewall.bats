@@ -23,7 +23,7 @@ setup() {
     [ "$status" -eq 0 ]
 }
 
-@test "ensure_firewall_open succeeds silently when ufw not installed" {
+@test "ensure_firewall_open succeeds and says so when ufw not installed" {
     command() {
         if [[ "$2" == "ufw" ]]; then return 1; fi
         builtin command "$@"
@@ -31,7 +31,9 @@ setup() {
     export -f command
     run ensure_firewall_open 3000
     [ "$status" -eq 0 ]
-    [ -z "$output" ]  # No output when ufw not found
+    # T-4330: no change is made, but the operator is told (silence hid it)
+    [[ "$output" == *"ufw not installed: no firewall change made"* ]]
+    [[ "$output" == *"port 3000"* ]]
 }
 
 @test "ensure_firewall_open uses default comment" {
