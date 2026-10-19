@@ -221,6 +221,8 @@ except Exception:
 #              WAKE (T-3855) is `none` when this agent has a sidecar inbox and nothing
 #              would wake it on arrival (watcher not live), else `ok` / `no-inbox`.
 #              Appended last so a caller reading six fields keeps working.
+#              WARNINGS (T-4423, 8th, "; "-joined or "-"): e.g. enabled.json persists
+#              an agent id that is not this project's — WARN, independent of STATE.
 #              STATE is live | not-live | absent (see lib/sidecar/watcher.py:liveness_verdict)
 #     rc 0   : facts printed
 #     rc 2   : the verdict could not be read — the caller says so
@@ -241,7 +243,8 @@ try:
     wake = "none" if w.get("nothing_wakes") else ("ok" if w.get("has_inbox") else "no-inbox")
     print("\t".join((v["state"], str(live.get("seq")), str(v.get("age_s")),
                      str(live.get("last_probe_latency_ms")), str(v.get("injection_transport")),
-                     "; ".join(v.get("reasons") or []) or "-", wake)))
+                     "; ".join(v.get("reasons") or []) or "-", wake,
+                     "; ".join(v.get("warnings") or []) or "-")))
 except Exception:
     sys.exit(2)
 ' || return 2

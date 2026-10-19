@@ -4429,7 +4429,7 @@ check_sidecar_watcher() {
     [ -f "$FRAMEWORK_ROOT/lib/sidecar-audit.sh" ] || return 0
     # shellcheck source=/dev/null
     source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
-    local _sw _sw_rc _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why _sw_wake
+    local _sw _sw_rc _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why _sw_wake _sw_warn
     _sw=$(fw_sidecar_watcher_facts "$PROJECT_ROOT"); _sw_rc=$?
     if [ "$_sw_rc" -ne 0 ]; then
         fail "Sidecar watcher liveness unreadable" \
@@ -4437,7 +4437,7 @@ check_sidecar_watcher() {
              "Run: bin/fw sidecar liveness — an unreadable liveness check is a deaf agent that cannot tell (T-3685)"
         return 0
     fi
-    IFS=$'\t' read -r _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why _sw_wake <<< "$_sw"
+    IFS=$'\t' read -r _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why _sw_wake _sw_warn <<< "$_sw"
     case "$_sw_state" in
         live)
             if [ "$_sw_tl" = "absent" ]; then
@@ -4463,6 +4463,12 @@ check_sidecar_watcher() {
                      "R14: every agent runs a sidecar. Start: bin/fw sidecar start (claude-fw --termlink starts it)"
             fi ;;
     esac
+    # T-4423: enabled.json persisting a non-project agent id (a worker's start).
+    if [ -n "$_sw_warn" ] && [ "$_sw_warn" != "-" ]; then
+        warn "Sidecar enabled.json agent is not this project's agent" \
+             "$_sw_warn" \
+             "From the project's own session: bin/fw sidecar stop && bin/fw sidecar start (ensure already uses the project agent)"
+    fi
 }
 check_sidecar_watcher
 

@@ -213,6 +213,26 @@ def foreign_session_reason(environ=None) -> str | None:
     return None
 
 
+def persisted_agent_mismatch(cfg: dict | None) -> str | None:
+    """The agent id enabled.json persists when it is NOT this project's agent, else
+    None (T-4423). A dispatched worker's `fw sidecar start` once wrote its own id
+    there ('w4315'), and every later ensure would have replayed it."""
+    agent = str((cfg or {}).get("agent") or "")
+    return agent if agent and agent != project_agent() else None
+
+
+def receiver_agent(cfg: dict | None, via: str) -> str:
+    """The agent id an ensure / supervisor restart starts the receiver as (T-4423):
+    always the project's own. A persisted foreign id is recorded as
+    ENSURE_AGENT_MISMATCH and left in enabled.json for the operator to see
+    (doctor/audit WARN) rather than rewritten silently."""
+    own = project_agent()
+    bad = persisted_agent_mismatch(cfg)
+    if bad:
+        record_event("ENSURE_AGENT_MISMATCH", persisted=bad, project=own, via=via)
+    return own
+
+
 # ── enable / disable ────────────────────────────────────────────────────────
 
 def enable(agent: str, tick: float | None, inject_on: bool) -> dict:
@@ -536,7 +556,17 @@ def liveness_verdict(now: datetime | None = None) -> dict:
     now = now or _now()
     live = read_liveness()
     enabled = read_enabled()
-    v = {"enabled": enabled is not None, "liveness": live, "reasons": []}
+    v = {"enabled": enabled is not None, "liveness": live, "reasons": [], "warnings": []}
+    # T-4423: a foreign agent id persisted in enabled.json. ensure and the
+    # supervisor start the receiver as the project agent regardless, so this is
+    # a WARN (state unaffected), not a deaf sidecar — but the value is wrong.
+    bad = persisted_agent_mismatch(enabled)
+    if bad:
+        v["warnings"].append(
+            f"enabled.json persists agent {bad!r}, not this project's agent "
+            f"{project_agent()!r} (written by a worker's start, T-4423; ensure uses the "
+            f"project agent) — remedy: from the project's own session run "
+            f"`fw sidecar stop && fw sidecar start`")
     if live is None:
         if enabled is None:
             v["state"] = "absent"
@@ -560,8 +590,9 @@ def liveness_verdict(now: datetime | None = None) -> dict:
     # T-4416: ticking under another agent's identity is not this project's
     # sidecar — injection targets that agent's (likely gone) session.
     own = project_agent()
-    foreign = sorted({str(x) for x in ((enabled or {}).get("agent"), live.get("identity"))
-                      if x and str(x) != own})
+    # T-4423: enabled.json alone is a warning (above); a TICKING foreign identity
+    # is the deaf case.
+    foreign = sorted({str(x) for x in (live.get("identity"),) if x and str(x) != own})
     if foreign:
         v["reasons"].append(
             f"identity {', '.join(foreign)} is not this project's agent {own!r} (a dispatched "
@@ -838,7 +869,7 @@ def _restart_receiver(cfg: dict) -> None:
     its inject setting. Done through the CLI so there is one start path."""
     cli = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sidecar_cli.py")
     argv = [sys.executable, cli, "receiver", "start", "--quiet", "--no-watcher",
-            "--agent", str(cfg.get("agent") or _agent())]
+            "--agent", receiver_agent(cfg, "supervisor")]   # T-4423
     if not cfg.get("inject", True):
         argv.append("--no-inject")
     root = str(receiver._root().resolve())

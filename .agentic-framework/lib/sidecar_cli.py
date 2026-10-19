@@ -872,6 +872,26 @@ def _ensure_inbox_topic(agent: str | None, quiet: bool) -> dict:
     return row
 
 
+def _refuse_persist(agent: str, args) -> bool:
+    """T-4423: True (refusal printed) when this start would persist `agent` in
+    enabled.json and must not. A dispatched worker never persists anything —
+    the project's ensure would replay its id after it exits. Any other agent id
+    than the project's needs --force / --i-am-human."""
+    if os.environ.get("FW_DISPATCHED_WORKER") == "1":
+        print("sidecar: refusing to start — FW_DISPATCHED_WORKER=1: a dispatched worker never "
+              "starts the project sidecar (it would persist its own agent id in enabled.json, "
+              "T-4423). Start it from the project's own session.", file=sys.stderr)
+        return True
+    own = watcher.project_agent()
+    if agent != own and not (getattr(args, "force", False) or getattr(args, "i_am_human", False)):
+        print(f"sidecar: refusing to persist agent {agent!r} — this project's agent is {own!r} "
+              f"(T-4423: ensure would restart the receiver as {agent!r} for good). "
+              f"Run without --agent / FW_SIDECAR_AGENT_ID, or pass --force if {agent!r} "
+              f"really is this project's sidecar.", file=sys.stderr)
+        return True
+    return False
+
+
 def cmd_receiver_start(args) -> int:
     """Start the per-agent receiver (T-3693) and, unless --no-watcher, its
     supervised watcher (T-3684/T-3685).
@@ -883,6 +903,8 @@ def cmd_receiver_start(args) -> int:
     """
     agent = args.agent or _agent_or_none()
     if not agent:
+        return 2
+    if not args.no_watcher and _refuse_persist(agent, args):   # T-4423
         return 2
     rc, _info = _start_receiver(agent, args.port, args.no_inject, args.quiet)
     if rc != 2:
@@ -897,6 +919,8 @@ def cmd_start(args) -> int:
     Exit 0 when both are up (already-running counts), 2 on failure."""
     agent = args.agent or _agent_or_none()
     if not agent:
+        return 2
+    if _refuse_persist(agent, args):   # T-4423
         return 2
     rc, info = _start_receiver(agent, args.port, args.no_inject, args.quiet)
     if rc == 2:
@@ -963,7 +987,15 @@ def cmd_ensure(args) -> int:
                          if watcher.stopped_marker().exists()
                          else "not enabled (fw sidecar start enables it)")
     else:
-        agent = str(cfg.get("agent") or _agent_or_none() or "")
+        # T-4423: never the persisted id when it is not the project's agent — a
+        # worker's start once wrote its own id there; it is recorded, not replayed.
+        agent = watcher.receiver_agent(cfg, "ensure")
+        bad = watcher.persisted_agent_mismatch(cfg)
+        if bad:
+            row["agent_mismatch"] = {"persisted": bad, "used": agent}
+            print(f"sidecar: ENSURE_AGENT_MISMATCH — enabled.json persists agent {bad!r}; "
+                  f"started as this project's agent {agent!r} instead (T-4423). Fix: "
+                  f"fw sidecar stop && fw sidecar start", file=sys.stderr)
         rc, info = _start_receiver(agent, None, _ensure_no_inject(cfg), True)
         row["receiver"] = {0: "restarted", 1: "running", 2: "FAILED"}[rc]
         if rc == 1 and info is None:
@@ -985,7 +1017,8 @@ def cmd_ensure(args) -> int:
     # T-3803: every ensure (cron, @reboot, SessionStart) also makes sure the
     # owner's inbox topic exists, enabled or not — `fw sidecar inbox` reads it
     # either way, and an absent topic otherwise stays absent until a peer posts.
-    t = _ensure_inbox_topic((cfg or {}).get("agent") or None, True)
+    t = _ensure_inbox_topic((watcher.project_agent() if cfg and watcher.persisted_agent_mismatch(cfg)
+                             else (cfg or {}).get("agent")) or None, True)
     row["inbox_topic"] = {"topic": t["topic"], "action": t["action"], "reason": t["reason"]}
     if args.json:
         print(json.dumps(row))
@@ -1359,6 +1392,9 @@ def build_parser() -> argparse.ArgumentParser:
                             help="receiver only; do not start the supervised watcher (T-3684)")
     recv_start.add_argument("--tick", type=float, default=None,
                             help="watcher tick seconds (default SIDECAR_TICK, 30)")
+    recv_start.add_argument("--force", action="store_true",
+                            help="persist an --agent that is not this project's agent (T-4423)")
+    recv_start.add_argument("--i-am-human", action="store_true", dest="i_am_human")
     recv_start.set_defaults(func=cmd_receiver_start)
 
     recv_stop = recv_sub.add_parser("stop", help="stop the receiver")
@@ -1392,6 +1428,9 @@ def build_parser() -> argparse.ArgumentParser:
                      help="store and confirm, never inject (negative control)")
     st_.add_argument("--quiet", action="store_true")
     st_.add_argument("--json", action="store_true")
+    st_.add_argument("--force", action="store_true",
+                     help="persist an --agent that is not this project's agent (T-4423)")
+    st_.add_argument("--i-am-human", action="store_true", dest="i_am_human")
     st_.set_defaults(func=cmd_start)
 
     sp_ = sub.add_parser("stop", help="stop and disable the watcher and the receiver")

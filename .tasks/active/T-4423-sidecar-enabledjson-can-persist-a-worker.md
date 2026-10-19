@@ -1,10 +1,22 @@
 ---
 id: T-4423
-name: "sidecar enabled.json can persist a worker's agent id, and ensure restarts the receiver as that id (T-4416 gap)"
+name: "sidecar enabled.json can persist a worker's agent id, and ensure restarts the
+  receiver as that id (T-4416 gap)"
 description: >
-  Found 2026-10-19 after T-4416 closed: this repo's .context/sidecar/watcher/enabled.json held agent 'w4315' since 2026-10-18 20:37 (written by the worker of T-4315). T-4416 makes ensure skip when the CALLER is a worker, but lib/sidecar_cli.py cmd_ensure still takes the agent from cfg.get('agent') (~:966), so the next cron restart would have brought the receiver up as 'w4315' (inbox topic for the wrong agent). Repaired here by 'fw sidecar start --agent 999-Agentic-Engineering-Framework' from the main session. Fix: (1) fw sidecar start/enable refuses to persist an agent id that is not the project agent (circuit.project_id()) unless --i-am-human/--force, and refuses outright under FW_DISPATCHED_WORKER; (2) ensure uses the project agent when cfg agent differs, records ENSURE_AGENT_MISMATCH and rewrites nothing silently; (3) doctor/liveness WARN on an enabled.json agent != project agent. Consumers may carry the same bad value: the WARN is how they find it.
+  Found 2026-10-19 after T-4416 closed: this repo's .context/sidecar/watcher/enabled.json
+  held agent 'w4315' since 2026-10-18 20:37 (written by the worker of T-4315). T-4416
+  makes ensure skip when the CALLER is a worker, but lib/sidecar_cli.py cmd_ensure
+  still takes the agent from cfg.get('agent') (~:966), so the next cron restart would
+  have brought the receiver up as 'w4315' (inbox topic for the wrong agent). Repaired
+  here by 'fw sidecar start --agent 999-Agentic-Engineering-Framework' from the main
+  session. Fix: (1) fw sidecar start/enable refuses to persist an agent id that is
+  not the project agent (circuit.project_id()) unless --i-am-human/--force, and refuses
+  outright under FW_DISPATCHED_WORKER; (2) ensure uses the project agent when cfg
+  agent differs, records ENSURE_AGENT_MISMATCH and rewrites nothing silently; (3)
+  doctor/liveness WARN on an enabled.json agent != project agent. Consumers may carry
+  the same bad value: the WARN is how they find it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T19:14:49Z
-last_update: 2026-10-19T19:14:49Z
-date_finished: null
+last_update: 2026-10-19T19:15:48Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +62,44 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-19T19:15:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4423: sidecar enabled.json can persist a worker's agent id, and ensure restarts the receiver as that id (T-4416 gap)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Follow-up to T-4416 (commit 4bc847cda). Scope: lib/sidecar_cli.py (start / receiver
+start / ensure), lib/sidecar/watcher.py (project-agent resolution, supervisor receiver
+restart, liveness verdict), lib/sidecar-audit.sh + bin/fw doctor + agents/audit/audit.sh
+(surface the WARN). Related open task: T-4289 (inherited FW_SIDECAR_AGENT_ID).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw sidecar start` and `fw sidecar receiver start` (when it would start the watcher, i.e. persist enabled.json) refuse (exit 2, enabled.json untouched) under `FW_DISPATCHED_WORKER=1`, even with `--force`/`--i-am-human`
+- [x] Same commands refuse (exit 2, nothing persisted) an agent id that is not `circuit.project_id()`, unless `--force` or `--i-am-human` is given; the project's own agent id still starts (control test)
+- [x] `fw sidecar ensure` with an enabled.json agent != project agent starts the receiver as the PROJECT agent, records an `ENSURE_AGENT_MISMATCH` event naming both ids, and does not rewrite enabled.json
+- [x] The supervisor's receiver restart (`watcher._restart_receiver`) uses the project agent on the same mismatch (never the persisted foreign id) and records `ENSURE_AGENT_MISMATCH`
+- [x] `liveness_verdict` reports an enabled.json-only agent mismatch as a `warnings` entry (state unaffected), while a ticking foreign identity stays not-live (T-4416 test still green); `fw doctor` and `fw audit` emit a WARN with the remedy for it
+- [x] Regression test `tests/unit/test_sidecar_agent_persist_t4423.py`: red before the fix, green after (recorded under Updates); T-4416 / T-3684 / T-3693 / T-4208 sidecar tests still green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,8 +277,36 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_agent_persist_t4423.py > /tmp/.t4423a 2>&1 && grep -q passed /tmp/.t4423a
+timeout 900 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_worker_hijack_t4416.py tests/unit/test_sidecar_watcher_t3684.py > /tmp/.t4423b 2>&1 && grep -q passed /tmp/.t4423b
+bash -n bin/fw && bash -n lib/sidecar-audit.sh && bash -n agents/audit/audit.sh
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4423c 2>&1 && grep -q clean /tmp/.t4423c
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** this repo's `.context/sidecar/watcher/enabled.json` held agent `w4315` (the
+worker of T-4315) from 2026-10-18 20:37; every cron `fw sidecar ensure` would have
+restarted the receiver as `w4315`, so the inbox topic and injection target belonged to a
+worker that no longer existed.
+
+**Root cause:** `lib/sidecar_cli.py:cmd_start` / `cmd_receiver_start` take
+`args.agent or circuit.agent_name()` — and `agent_name()` honours the session's
+`FW_SIDECAR_AGENT_ID` — then `_start_watcher` → `watcher.enable(agent, …)`
+(`lib/sidecar/watcher.py:218`) persists it with no check that it is the project's agent.
+`cmd_ensure` (`lib/sidecar_cli.py:966`) and the supervisor's `_restart_receiver`
+(`lib/sidecar/watcher.py:840`) then trust `cfg["agent"]` forever. T-4416 stopped a worker
+from *calling* ensure, but not a worker-written value from being *replayed* by a later,
+legitimate ensure.
+
+**Why structurally allowed:** enabled.json is a persisted identity with a single writer
+path and no validator; liveness (T-4416) flagged the foreign id only as not-live, i.e.
+after damage, and nothing at write time compared it to `circuit.project_id()`.
+
+**Prevention:** write-time refusal (start/receiver start), read-time override (ensure +
+supervisor use the project agent, ENSURE_AGENT_MISMATCH event), and a doctor/audit WARN so
+consumers already carrying a bad value find it. Pinned by
+`tests/unit/test_sidecar_agent_persist_t4423.py`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -338,3 +402,12 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4423-sidecar-enabledjson-can-persist-a-worker.md
 - **Context:** Initial task creation
+
+### 2026-10-19T19:15:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-19 — fix + regression test [worker w4423]
+- **Red before:** `tests/unit/test_sidecar_agent_persist_t4423.py` — 11 failed, 3 passed (the 3 are controls).
+- **Green after:** 14 passed. Neighbours: T-4416 + T-3684 watcher 37 passed; T-3693 receiver + T-4208 + T-3684 receipts 72 passed; T-3855 facts/wake/doctor 5 passed.
+- **Design:** an enabled.json-only mismatch is a WARN (`warnings`, 8th facts field), not not-live — ensure/supervisor now run the project agent regardless; a TICKING foreign identity stays not-live (T-4416).
+- **Commit hygiene:** bin/fw carries another worker's in-flight T-4419 hunks; only the T-4423 hunks were committed (private index).
