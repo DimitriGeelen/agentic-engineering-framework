@@ -240,6 +240,13 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
+# web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
+#     bin/fw vendor self --check --task T-XXXX
+# (your own task id). It checks only the files your commits changed, so another
+# worker's uncommitted edit does not block your close; that drift is listed as
+# "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
 ## RCA
 

@@ -1,10 +1,20 @@
 ---
 id: T-4419
-name: "vendor self --check in a task's Verification blocks every close while any other worker has an uncommitted framework edit: scope the check to the task's own files"
+name: "vendor self --check in a task's Verification blocks every close while any other
+  worker has an uncommitted framework edit: scope the check to the task's own files"
 description: >
-  2026-10-19: with 5 parallel workers in one checkout, nearly every close failed on 'bin/fw vendor self --check' because ANOTHER worker had an uncommitted edit under agents/ lib/ bin/ web/ tools/; 14 finished tasks waited hours for a quiet moment. The check answers 'is the whole vendored tree in sync', but the close needs 'are THIS task's changed files in sync'. Fix: 'fw vendor self --check --task T-XXXX' (or --paths) that checks only the files the task's commits changed (git log --grep '^T-XXXX' --name-only), plus the task template's Verification hint using it; keep the whole-tree --check for audit/pre-push, where drift in committed content is what matters. Also consider: whole-tree --check ignoring source files with uncommitted working-tree changes (in-flight), reporting them as 'in flight' instead of DRIFT.
+  2026-10-19: with 5 parallel workers in one checkout, nearly every close failed on
+  'bin/fw vendor self --check' because ANOTHER worker had an uncommitted edit under
+  agents/ lib/ bin/ web/ tools/; 14 finished tasks waited hours for a quiet moment.
+  The check answers 'is the whole vendored tree in sync', but the close needs 'are
+  THIS task's changed files in sync'. Fix: 'fw vendor self --check --task T-XXXX'
+  (or --paths) that checks only the files the task's commits changed (git log --grep
+  '^T-XXXX' --name-only), plus the task template's Verification hint using it; keep
+  the whole-tree --check for audit/pre-push, where drift in committed content is what
+  matters. Also consider: whole-tree --check ignoring source files with uncommitted
+  working-tree changes (in-flight), reporting them as 'in flight' instead of DRIFT.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T17:53:10Z
-last_update: 2026-10-19T17:53:10Z
-date_finished: null
+last_update: 2026-10-19T19:15:48Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T18:00:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T18:01:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4419: vendor self --check in a task's Verification blocks every close while any other worker has an uncommitted framework edit: scope the check to the task's own files
@@ -62,8 +100,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw vendor self --check --task T-XXXX` checks only the vendored copies of files the task's commits changed (`git log --grep '^T-XXXX'`), and `--paths p1 p2…` checks the named paths; exit 0 when those are in sync, 1 when any is drifted
+- [x] Drift in files outside the scope is reported as `in flight, not this task` and does not change the scoped exit code; whole-tree `--check` (no scope flag) is unchanged
+- [x] Regression test `tests/unit/t4419_vendor_check_scoped.bats` (temp clone): task file in sync + unrelated drifted file → scoped 0, whole-tree 1; task's own file drifted → scoped 1; red before the fix, green after (before: 4/4 not ok — scoped exit 1 on unrelated agents/ drift; after: 4/4 ok; t2436, t4392, self_vendor_version suites still green)
+- [x] Task template Verification hint and `.context/working/worker-common.md` name the scoped form; `bash -n bin/fw` clean; dead-negation lint clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,6 +281,13 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/fw
+timeout 600 bats tests/unit/t4419_vendor_check_scoped.bats > /tmp/.t4419.out 2>&1 && ! grep -q "^not ok" /tmp/.t4419.out
+test "$(grep -c '# skip' /tmp/.t4419.out)" -eq 0
+grep -q -- "--check --task" .tasks/templates/default.md
+grep -q -- "--check --task" .context/working/worker-common.md
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4419.lint 2>&1 && grep -q clean /tmp/.t4419.lint
+bin/fw vendor self --check --task T-4419
 
 ## RCA
 
@@ -257,6 +304,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 2026-10-19, 5 parallel workers in one checkout: nearly every task close failed on its `bin/fw vendor self --check` Verification line because ANOTHER worker had an uncommitted edit under lib/ agents/ bin/ web/ tools/; 14 finished tasks waited hours.
+
+**Root cause:** `bin/fw` `vendor self --check` (the `_vs_check` branch, ~bin/fw:10571-10627) has one scope only — the whole vendored tree. It runs every `_self_vendor_*` helper in dry-run and exits 1 on any `would sync` line, so a close answers "is the whole tree in sync" when it needs "are THIS task's files in sync". The source side is the working tree, so another worker's in-flight edit is drift for everyone.
+
+**Why structurally allowed:** the check was designed (T-2436) for single-writer contexts — audit and pre-push — and then prescribed by CLAUDE.md (OBS-250, T-3236) and the task template as a per-task close line without a per-task scope. No test ran it with two writers.
+
+**Prevention:** `--task T-XXXX` / `--paths` scoped mode, template + worker-common guidance switched to it, and `tests/unit/t4419_vendor_check_scoped.bats` pinning scoped-vs-whole-tree behaviour with an unrelated drifted file.
 
 ## Evolution
 
@@ -338,3 +393,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4419-vendor-self---check-in-a-tasks-verificat.md
 - **Context:** Initial task creation
+
+### 2026-10-19T19:15:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

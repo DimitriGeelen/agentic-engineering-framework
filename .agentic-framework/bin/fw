@@ -10536,6 +10536,9 @@ PYSEARCH
                 echo "  --dry-run   print what WOULD sync; never mutates; always exits 0"
                 echo "  --check     read-only drift verifier; never mutates; exits 1 if any"
                 echo "              class is out of sync (CI / pre-push form) — T-2436"
+                echo "  --check --task T-XXXX   only the files T-XXXX's commits changed (task-close"
+                echo "              form); other drift is reported 'in flight, not this task' — T-4419"
+                echo "  --check --paths p1 p2…  only the named repo-relative paths"
                 echo ""
                 echo "Refreshes vendored classes from \$FRAMEWORK_ROOT:"
                 echo "  - .agentic-framework/lib/                 ← lib/*.sh           (T-2095 V1-D)"
@@ -10572,8 +10575,39 @@ PYSEARCH
             _vs_check=false
             case "${1:-}" in
                 --dry-run) _vs_dry=true ;;
-                --check)   _vs_dry=true; _vs_check=true ;;
+                --check)   _vs_dry=true; _vs_check=true; shift ;;
             esac
+            # T-4419: `--check --task T-XXXX` / `--check --paths p…` scope the
+            # verdict to the task's own files (its commits' paths) so a close is
+            # not blocked by another worker's in-flight edit. Out-of-scope drift is
+            # named as "in flight, not this task" and does not change the exit code.
+            # The whole-tree --check (no scope flag) is unchanged: audit and
+            # pre-push need every vendored class in sync.
+            _SV_SCOPE_ACTIVE=0
+            _SV_SCOPE=""
+            if [ "$_vs_check" = true ]; then
+                while [ $# -gt 0 ]; do
+                    case "$1" in
+                        --task)
+                            [[ "${2:-}" =~ ^T-[0-9]+$ ]] || { echo "fw vendor self --check --task: need a task id (T-NNNN), got '${2:-}'" >&2; exit 2; }
+                            _SV_SCOPE_ACTIVE=1
+                            _SV_SCOPE="${_SV_SCOPE}$(git -C "$FRAMEWORK_ROOT" log --format= --name-only -E \
+                                --grep="^(T-[0-9]+[, ]+)*${2}([^0-9]|\$)" 2>/dev/null | sort -u)
+"
+                            shift 2 ;;
+                        --paths)
+                            _SV_SCOPE_ACTIVE=1
+                            shift
+                            while [ $# -gt 0 ] && [ "${1#--}" = "$1" ]; do
+                                _SV_SCOPE="${_SV_SCOPE}${1#./}
+"
+                                shift
+                            done ;;
+                        *) echo "fw vendor self --check: unknown option '$1' (use --task T-NNNN or --paths p…)" >&2; exit 2 ;;
+                    esac
+                done
+            fi
+            export _SV_SCOPE_ACTIVE _SV_SCOPE
             # Run all six classes; capture combined output so --check can inspect
             # it for the dry-run "would sync" marker without re-running.
             _vs_out=$(

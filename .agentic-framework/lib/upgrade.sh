@@ -231,6 +231,25 @@ _sv_is_withheld() {
     return 0
 }
 
+# T-4419: scoped detection for `fw vendor self --check --task T-XXXX | --paths p…`.
+# The whole-tree --check answers "is every vendored class in sync", which is right for
+# audit and pre-push but wrong at a task close: with parallel workers in one checkout,
+# another worker's uncommitted edit is drift for everyone. When _SV_SCOPE_ACTIVE=1,
+# helpers skip any source not named in _SV_SCOPE (newline-separated repo-relative
+# paths), and a skipped source that IS out of sync is named as in flight. The line
+# deliberately lacks "would sync", so it never reaches the --check verdict.
+# 0 = skip this file (out of scope), 1 = examine it.
+_sv_scope_skip() {
+    local src="$1" dst="$2" rel
+    [ "${_SV_SCOPE_ACTIVE:-0}" = "1" ] || return 1
+    rel="${src#$FRAMEWORK_ROOT/}"
+    printf '%s\n' "${_SV_SCOPE:-}" | grep -qxF -- "$rel" && return 1
+    if [ ! -f "$dst" ] || ! cmp -s "$src" "$dst"; then
+        echo "  Self-vendor: in flight, not this task: $rel"
+    fi
+    return 0
+}
+
 _self_vendor_libs() {
     local dry_run="${1:-false}"
     local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
@@ -262,6 +281,7 @@ _self_vendor_libs() {
         [ "$dry_run" = true ] || ! _sv_is_withheld "$_sv_src" || continue
         _sv_rel="${_sv_src#$FRAMEWORK_ROOT/lib/}"
         _sv_dst="$_self_vendor/lib/$_sv_rel"
+        _sv_scope_skip "$_sv_src" "$_sv_dst" && continue   # T-4419
         if [ ! -f "$_sv_dst" ] || ! diff -q "$_sv_src" "$_sv_dst" > /dev/null 2>&1; then
             if [ "$dry_run" != true ]; then
                 _sv_dst_dir=$(dirname "$_sv_dst")
@@ -324,6 +344,7 @@ _self_vendor_templates() {
         [ "$dry_run" = true ] || ! _sv_is_withheld "$_svt_src" || continue
         _svt_name=$(basename "$_svt_src")
         _svt_dst="$_self_vendor/.tasks/templates/$_svt_name"
+        _sv_scope_skip "$_svt_src" "$_svt_dst" && continue   # T-4419
         if [ ! -f "$_svt_dst" ] || ! diff -q "$_svt_src" "$_svt_dst" > /dev/null 2>&1; then
             if [ "$dry_run" != true ]; then
                 cp "$_svt_src" "$_svt_dst"
@@ -337,6 +358,7 @@ _self_vendor_templates() {
         [ -f "$_svt_src" ] || continue
         [ "$dry_run" = true ] || ! _sv_is_withheld "$_svt_src" || continue
         _svt_dst="$_self_vendor/.tasks/workflow/$(basename "$_svt_src")"
+        _sv_scope_skip "$_svt_src" "$_svt_dst" && continue   # T-4419
         if [ ! -f "$_svt_dst" ] || ! diff -q "$_svt_src" "$_svt_dst" > /dev/null 2>&1; then
             if [ "$dry_run" != true ]; then
                 mkdir -p "$_self_vendor/.tasks/workflow"
@@ -418,6 +440,7 @@ _self_vendor_policy() {
         _svp_src="$FRAMEWORK_ROOT/policy/$_svp_name"
         _svp_dst="$_self_vendor/policy/$_svp_name"
         [ -f "$_svp_src" ] || continue
+        _sv_scope_skip "$_svp_src" "$_svp_dst" && continue   # T-4419
         # T-3165: real runs withhold a concurrent task's uncommitted files.
         # Detectors (dry-run / --check) are deliberately exempt.
         [ "$dry_run" = true ] || ! _sv_is_withheld "$_svp_src" || continue
@@ -495,6 +518,7 @@ _self_vendor_shim() {
         [ "$dry_run" = true ] || ! _sv_is_withheld "$_svs_src" || continue
         _svs_rel="${_svs_src#$FRAMEWORK_ROOT/bin/}"
         _svs_dst="$_self_vendor/bin/$_svs_rel"
+        _sv_scope_skip "$_svs_src" "$_svs_dst" && continue   # T-4419
         if [ ! -f "$_svs_dst" ] || ! diff -q "$_svs_src" "$_svs_dst" > /dev/null 2>&1; then
             if [ "$dry_run" != true ]; then
                 mkdir -p "$(dirname "$_svs_dst")"
@@ -580,6 +604,7 @@ _self_vendor_agents() {
         [ "$dry_run" = true ] || ! _sv_is_withheld "$_sva_src" || continue
         _sva_rel="${_sva_src#$FRAMEWORK_ROOT/agents/}"
         _sva_dst="$_self_vendor/agents/$_sva_rel"
+        _sv_scope_skip "$_sva_src" "$_sva_dst" && continue   # T-4419
         if [ ! -f "$_sva_dst" ] || ! diff -q "$_sva_src" "$_sva_dst" > /dev/null 2>&1; then
             if [ "$dry_run" != true ]; then
                 _sva_dst_dir=$(dirname "$_sva_dst")
@@ -645,6 +670,7 @@ _self_vendor_web() {
         [ "$dry_run" = true ] || ! _sv_is_withheld "$_svw_src" || continue
         _svw_rel="${_svw_src#$FRAMEWORK_ROOT/web/}"
         _svw_dst="$_self_vendor/web/$_svw_rel"
+        _sv_scope_skip "$_svw_src" "$_svw_dst" && continue   # T-4419
         if [ ! -f "$_svw_dst" ] || ! diff -q "$_svw_src" "$_svw_dst" > /dev/null 2>&1; then
             if [ "$dry_run" != true ]; then
                 _svw_dst_dir=$(dirname "$_svw_dst")
@@ -697,6 +723,7 @@ _self_vendor_tools() {
         [ "$dry_run" = true ] || ! _sv_is_withheld "$_svx_src" || continue
         _svx_rel="${_svx_src#$FRAMEWORK_ROOT/tools/}"
         _svx_dst="$_self_vendor/tools/$_svx_rel"
+        _sv_scope_skip "$_svx_src" "$_svx_dst" && continue   # T-4419
         if [ ! -f "$_svx_dst" ] || ! diff -q "$_svx_src" "$_svx_dst" > /dev/null 2>&1; then
             if [ "$dry_run" != true ]; then
                 _svx_dst_dir=$(dirname "$_svx_dst")
@@ -837,6 +864,7 @@ _self_vendor_designer() {
     # `fw doctor` already WARNs on pinned-but-absent (T-3064 A1) at the surface an
     # operator reads; a second voice here would fire on every vendor run.
     [ -f "$_svd_src" ] || return 0
+    _sv_scope_skip "$_svd_src" "$_svd_dst" && return 0   # T-4419
 
     local _svd_updated=0 _svd_pruned=0 _svd_dir _svd_old
     _svd_dir="$(dirname "$_svd_dst")"
