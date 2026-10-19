@@ -571,12 +571,13 @@ CORPUS_MEASURED_2026_08_09 = {
     "unknown-aef-ext-child": PRESERVED,
     "foreign-ns-ext-child": PRESERVED,
     "non-ext-child-of-flow": PRESERVED,
+    # T-4388: node non-extension children now pass through like a flow's
+    "documentation-child-of-node": PRESERVED,
     # (c) refuse — T-2614 again: losing a node while keeping its flows is worse
     "unsupported-identified-process-child": REFUSED,
     # (b) drop, silently
     "foreign-attr-on-node": DROPPED_SILENT,
     "text-in-node": DROPPED_SILENT,
-    "documentation-child-of-node": DROPPED_SILENT,
     "unidentified-process-child": DROPPED_SILENT,
     "foreign-top-level-subtree": DROPPED_SILENT,
     "trailing-comment": DROPPED_SILENT,
@@ -684,10 +685,13 @@ def test_node_edge_asymmetry_is_real(corpus_baseline):
 
     Not asserted as correct — asserted as CURRENT, so that closing the asymmetry is
     a deliberate act with a red test attached rather than a quiet drift.
+
+    CLOSED by T-4388 (node `raw_children`, re-emitted in BPMN schema order): both
+    sides now preserve, and this pins the symmetry so it cannot reopen quietly.
     """
     verdicts = measure_corpus(corpus_baseline)
     assert verdicts["non-ext-child-of-flow"] == PRESERVED
-    assert verdicts["documentation-child-of-node"] == DROPPED_SILENT
+    assert verdicts["documentation-child-of-node"] == PRESERVED
 
 
 def test_the_hard_error_is_gated_on_having_an_id(corpus_baseline):

@@ -298,6 +298,14 @@ def parse_map(xml_text: str) -> dict:
             raw = _ext_raw(el)
             if raw:
                 n["ext_raw"] = raw
+            # T-4388: unmodelled node children (loop characteristics,
+            # ioSpecification, documentation, …) verbatim, as flows do.
+            # incoming/outgoing are derived from flows on emit.
+            raw = [_raw_xml(c) for c in el
+                   if isinstance(c.tag, str) and c.tag.split("}")[-1]
+                   not in ("extensionElements", "incoming", "outgoing")]
+            if raw:
+                n["raw_children"] = raw
             nodes.append(n)
         elif local == "sequenceFlow":
             f = {
@@ -352,6 +360,26 @@ def _dim(v: str):
 
 def _pos(v: float) -> str:
     return f"{v:.1f}" if v == int(v) else repr(v)
+
+
+#: tActivity's own children in schema sequence (BPMN 2.0 Semantic.xsd); loop
+#: characteristics close it. Anything else (subProcess flow elements, event
+#: definitions) ranks after and keeps source order (sort is stable).
+_ACTIVITY_ORDER = ("ioSpecification", "property", "dataInputAssociation",
+                   "dataOutputAssociation", "resourceRole")
+_LOOP_TAGS = ("standardLoopCharacteristics", "multiInstanceLoopCharacteristics")
+
+
+def _raw_local(raw: str) -> str:
+    """Local name of a verbatim-captured element's root tag."""
+    return re.match(r"<([^\s/>]+)", raw).group(1).split(":")[-1]
+
+
+def _node_child_rank(raw: str) -> int:
+    local = _raw_local(raw)
+    if local in _ACTIVITY_ORDER:
+        return _ACTIVITY_ORDER.index(local)
+    return len(_ACTIVITY_ORDER) + (0 if local in _LOOP_TAGS else 1)
 
 
 def _resolve_target(target: str, ghost_intent: bool, idx: dict) -> str:
@@ -461,6 +489,14 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         tag = TYPE_TO_TAG[n["type"]]
         name_attr = f" name={quoteattr(n['name'])}" if n.get("name") else ""
         a(f'    <bpmn:{tag} id={quoteattr(n["id"])}{name_attr}>')
+        # T-4388: BPMN schema order — documentation precedes extensionElements;
+        # the rest follow incoming/outgoing, loop characteristics last in tActivity.
+        raws = n.get("raw_children", [])
+        for raw in raws:
+            if _raw_local(raw) == "documentation":
+                a(f"      {raw}")
+        after = sorted((r for r in raws if _raw_local(r) != "documentation"),
+                       key=_node_child_rank)
         a("      <bpmn:extensionElements>")
         if n.get("uid"):
             a(f'        <aef:uid value={quoteattr(n["uid"])}/>')
@@ -495,6 +531,8 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
             a(f"      <bpmn:incoming>{escape(fid)}</bpmn:incoming>")
         for fid in outgoing.get(n["id"], []):
             a(f"      <bpmn:outgoing>{escape(fid)}</bpmn:outgoing>")
+        for raw in after:
+            a(f"      {raw}")
         a(f"    </bpmn:{tag}>")
 
     a("")

@@ -211,3 +211,57 @@ def test_foreign_extension_child_does_not_overwrite_flow_aef_uid():
     assert spec2["flows"] == spec["flows"]
     again = corpus_spec.emit_map(spec2, version=1, compat_alias=False)
     assert corpus_spec.canonical(again) == corpus_spec.canonical(out)
+
+
+# ── T-4388: unmodelled node children round-trip in BPMN schema order ─────────
+
+_LOOPS = {
+    "standardLoopCharacteristics":
+        '<bpmn:standardLoopCharacteristics testBefore="true"/>',
+    "multiInstanceLoopCharacteristics":
+        '<bpmn:multiInstanceLoopCharacteristics isSequential="true">'
+        "<bpmn:loopCardinality>3</bpmn:loopCardinality>"
+        "</bpmn:multiInstanceLoopCharacteristics>",
+}
+
+
+@pytest.mark.parametrize("tag", sorted(_LOOPS))
+def test_loop_characteristics_round_trip_on_service_task(tag):
+    xml = HEAD + (
+        '<bpmn:serviceTask id="s1" name="svc"><bpmn:extensionElements>'
+        '<aef:uid value="u1"/></bpmn:extensionElements>'
+        f"{_LOOPS[tag]}</bpmn:serviceTask>"
+    ) + TAIL
+    spec = corpus_spec.parse_map(xml)
+    node = spec["nodes"][0]
+    assert len(node["raw_children"]) == 1 and tag in node["raw_children"][0]
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert tag in out
+    spec2 = corpus_spec.parse_map(out)
+    assert spec2["nodes"] == spec["nodes"]
+    again = corpus_spec.emit_map(spec2, version=1, compat_alias=False)
+    assert corpus_spec.canonical(again) == corpus_spec.canonical(out)
+
+
+def test_node_children_loop_characteristics_emit_in_schema_order():
+    """tBaseElement: documentation, extensionElements; tFlowNode: incoming,
+    outgoing; tActivity: ioSpecification … loopCharacteristics LAST."""
+    xml = HEAD + (
+        '<bpmn:serviceTask id="a"/>'
+        '<bpmn:serviceTask id="s1" name="svc">'
+        "<bpmn:documentation>why</bpmn:documentation>"
+        '<bpmn:extensionElements><aef:uid value="u1"/></bpmn:extensionElements>'
+        "<bpmn:incoming>f1</bpmn:incoming>"
+        '<bpmn:property id="p1" name="x"/>'
+        f'{_LOOPS["multiInstanceLoopCharacteristics"]}'
+        "</bpmn:serviceTask>"
+        '<bpmn:sequenceFlow id="f1" sourceRef="a" targetRef="s1"/>'
+    ) + TAIL
+    out = corpus_spec.emit_map(corpus_spec.parse_map(xml), version=1,
+                               compat_alias=False)
+    block = out[out.index('<bpmn:serviceTask id="s1"'):]
+    block = block[:block.index("</bpmn:serviceTask>")]
+    order = [block.index(t) for t in (
+        "<bpmn:documentation", "<bpmn:extensionElements", "<bpmn:incoming",
+        "<bpmn:property", "<bpmn:multiInstanceLoopCharacteristics")]
+    assert order == sorted(order), block
