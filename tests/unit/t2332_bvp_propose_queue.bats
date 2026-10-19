@@ -183,6 +183,6 @@ EOF
     run _render_bvp
     [ "$status" -eq 0 ]
     echo "$output" | grep -qx 'STATUS=200'
-    ! echo "$output" | grep -q 'id="bvp-driver-proposals"'
+    ! echo "$output" | grep -q 'id="bvp-driver-proposals"' || false
     ! echo "$output" | grep -q "Pending driver proposals"
 }

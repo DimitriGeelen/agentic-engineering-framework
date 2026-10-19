@@ -109,8 +109,8 @@ EOF
     [ "$status" -eq 0 ]
     echo "$output" | grep -q '/t2974_greenfield_operator_prose.py$'
     echo "$output" | grep -q '/t3580_judge_cli_test.py$'
-    ! echo "$output" | grep -q '/conftest.py$'
-    ! echo "$output" | grep -q '/_review_runtime.py$'
+    ! echo "$output" | grep -q '/conftest.py$' || false
+    ! echo "$output" | grep -q '/_review_runtime.py$' || false
     ! echo "$output" | grep -q '/check_handover_suggestion.py$'
 }
 
