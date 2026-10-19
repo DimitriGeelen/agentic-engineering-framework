@@ -124,8 +124,9 @@ _run_audit() {
 
 @test "t3298: no watchdog sleep survives a normal audit exit" {
     command -v flock >/dev/null 2>&1 || skip "flock not available"
-    # A distinctive timeout value scopes the ps scan to THIS test's watchdog —
-    # host-wide sleeps (including pre-fix orphans still draining) don't match.
+    # T-4397: the watchdog ticks in one-second sleeps (so it can notice a dead lock
+    # holder), not one AUDIT_TIMEOUT-long sleep. A tick's parent is the watchdog
+    # subshell; an orphaned tick is one reparented to init (PPID 1).
     run env FW_AUDIT_TIMEOUT=5417 PROJECT_ROOT="$PROJ" \
         FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
         bash "$AUDIT" --section t3298-no-such-section --quiet
@@ -134,12 +135,12 @@ _run_audit() {
     # trap it and kill its sleep child, then require the subtree gone.
     local i
     for i in 1 2 3 4 5 6 7 8 9 10; do
-        ps -e -o args= | grep -q '^sleep 5417$' || break
+        ps -e -o ppid=,args= | awk '$1 == 1 && $2 == "sleep" && $3 == "1"' | grep -q . || break
         sleep 0.5
     done
-    if ps -e -o args= | grep -q '^sleep 5417$'; then
+    if ps -e -o ppid=,args= | awk '$1 == 1 && $2 == "sleep" && $3 == "1"' | grep -q .; then
         echo "FAIL: watchdog sleep outlived the audit (reparented orphan)" >&2
-        ps -e -o pid,ppid,args | grep 'sleep 5417' >&2
+        ps -e -o pid,ppid,args | awk '$2 == 1 && $3 == "sleep"' >&2
         return 1
     fi
 }

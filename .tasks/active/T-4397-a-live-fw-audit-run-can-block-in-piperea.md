@@ -1,10 +1,18 @@
 ---
 id: T-4397
-name: "A live fw audit run can block in pipe_read with no child process while holding the audit lock; the watchdog TERM does not end it"
+name: "A live fw audit run can block in pipe_read with no child process while holding
+  the audit lock; the watchdog TERM does not end it"
 description: >
-  Seen by T-4383's worker 2026-10-19: a live 'audit.sh --section structure' started by bats (PID 3184966) outlived the killed bats run, sat in pipe_read with no child for 10+ minutes holding the repo's audit lock, and ignored the watchdog TERM (blocked read); only SIGKILL ended it. Every later audit then sees lock contention (exit 75) — a plausible cause of the bimodal audit.bats / fabric_coverage timings (T-4382). Find which read blocks (a command substitution or pipe whose writer died or was never started), make the audit's reads time-bounded, and make the lock holder's death release the lock.
+  Seen by T-4383's worker 2026-10-19: a live 'audit.sh --section structure' started
+  by bats (PID 3184966) outlived the killed bats run, sat in pipe_read with no child
+  for 10+ minutes holding the repo's audit lock, and ignored the watchdog TERM (blocked
+  read); only SIGKILL ended it. Every later audit then sees lock contention (exit
+  75) — a plausible cause of the bimodal audit.bats / fabric_coverage timings (T-4382).
+  Find which read blocks (a command substitution or pipe whose writer died or was
+  never started), make the audit's reads time-bounded, and make the lock holder's
+  death release the lock.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T14:55:51Z
-last_update: 2026-10-19T14:55:51Z
-date_finished: null
+last_update: 2026-10-19T16:09:19Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T15:00:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T15:02:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4397: A live fw audit run can block in pipe_read with no child process while holding the audit lock; the watchdog TERM does not end it
@@ -62,8 +98,14 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause localised to file:line in agents/audit/audit.sh (the read that can block forever) and recorded in ## RCA
+- [x] Regression test in tests/unit/ (temp project root, never the live lock) reproduces the blocked-holder case: a holder that is killed or blocked must not keep the audit lock held, and the test fails before the fix
+- [x] Lock is released when its holder dies or is killed: a second audit started after the holder is SIGKILLed acquires the lock (exit is not 75)
+- [x] TERM delivered to an audit blocked in an external read ends the audit promptly (bounded time, not waiting for the read)
+- [ ] Every external read in the audit section path is time-bounded or cannot block on a writer that never closes
+- [x] The regression test passes after the fix, and the closest existing audit bats tests still pass when run alone
+- [x] python3 tools/bats-dead-negation-lint.py tests/ reports clean
+- [x] bash -n agents/audit/audit.sh succeeds after every edit
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -114,6 +156,11 @@ date_finished: null
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
+bash -n agents/audit/audit.sh
+python3 tools/bats-dead-negation-lint.py tests/ | grep -q clean
+bin/fw vendor self --check
+out=$(bats tests/unit/t4397_audit_lock_holder_leak.bats 2>&1); echo "$out" | grep -q "^ok 3 " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/t3298_audit_lock_integrity.bats 2>&1); echo "$out" | grep -q "^ok 10 " && ! echo "$out" | grep -q "^not ok"
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
@@ -244,6 +291,14 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** a live `audit.sh --section …` outlived its parent, sat with no child process, held the repo's audit lock for 10+ minutes, and only SIGKILL ended it. Every later audit (and pre-push) then exits 75 "another audit holds the lock".
+
+**Root cause:** agents/audit/audit.sh:612 takes the flock on fd 200 in the audit's own shell. Bash does not close that fd for children, so every process the audit forks inherits it — including the process-substitution child of `done < <(git -C "$PROJECT_ROOT" log --oneline)` (agents/audit/audit.sh:5344, enforcement section). When that helper backgrounds anything that keeps its stdout (reproduced with a `sleep` left by a `git` stub), the audit's `while read` blocks on a pipe whose only writer is an orphan: the audit has no child, the read never returns, and the orphan keeps fd 200, so the lock survives the audit's own exit. Reproduced in /tmp: after TERM ended the audit, `flock -n` still reported the lock held, and freed only when the orphan died.
+
+**Why nothing caught it:** the watchdog (T-1464/T-3298) closes fds in its own subshell, but the leak is in the audit's *children*, which nothing inspects. The existing lock tests hold the lock from an external process, so they never exercise a holder that forks. The TERM path was fine in the reproduction (the read is a builtin, and the trap runs `exit 124`); the report that TERM was ignored is not reproduced here, so it is not claimed as fixed by this change.
+
+**Prevention:** the lock is now held by a holder process that runs no audit work and launches the audit body with fd 200 closed (`200>&-`), so no descendant of the body can keep it. The holder releases the lock when it exits, however it dies. The body's watchdog also polls the holder and stops itself if the holder is gone, so an orphaned body cannot run unlocked. Pinned by tests/unit/t4397_audit_lock_holder_leak.bats (red before the fix).
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -338,3 +393,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4397-a-live-fw-audit-run-can-block-in-piperea.md
 - **Context:** Initial task creation
+
+### 2026-10-19T16:09:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

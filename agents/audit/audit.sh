@@ -302,6 +302,7 @@ OUTPUT_DIR=""     # Custom output directory (empty = default AUDITS_DIR)
 QUIET=false       # Suppress terminal output
 CHECK_IDS=""      # T-4209: comma-separated check ids (empty = not a single-check run)
 LIST_CHECKS=false # T-4209: print the check ids and exit
+_AUDIT_ARGV=("$@") # T-4397: the lock holder re-runs this script with the same arguments
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -608,7 +609,14 @@ if [ -n "$CHECK_IDS" ]; then
     # watchdog or section ledger, because it runs no section. It also writes
     # neither the dated audit YAML nor history (see the dispatch after the header).
     :
-elif command -v flock >/dev/null 2>&1; then
+elif command -v flock >/dev/null 2>&1 && [ -z "${_FW_AUDIT_LOCK_HOLDER:-}" ]; then
+    # T-4397 — this process is the LOCK HOLDER and does no audit work. It takes the
+    # flock, then runs the audit body as a child with the lock fd CLOSED (200>&-).
+    # Bash does not close fd 200 for children, so when the audit itself held it, any
+    # descendant that outlived the audit kept the lock: a process-substitution child
+    # that backgrounded something holding its stdout did exactly that. Here no
+    # descendant of the body can inherit the lock fd, so the lock is released the
+    # moment this process exits, however it dies.
     exec 200>"$AUDIT_LOCK_FILE"
     if ! flock -n 200; then
         # Another audit is running. Cron mode (QUIET=true) stays silent; foreground
@@ -619,6 +627,25 @@ elif command -v flock >/dev/null 2>&1; then
         fi
         exit 75
     fi
+    _FW_AUDIT_LOCK_HOLDER=$$ bash "${BASH_SOURCE[0]}" "${_AUDIT_ARGV[@]}" 200>&- &
+    _audit_body_pid=$!
+    # TERM to the holder is forwarded to the body, whose own trap runs the section
+    # ledger write and exits 124. `wait` returns early on a trapped signal, so loop
+    # until the body is really gone before reporting its status.
+    trap 'kill -TERM "$_audit_body_pid" 2>/dev/null' TERM
+    wait "$_audit_body_pid"
+    _audit_rc=$?
+    while kill -0 "$_audit_body_pid" 2>/dev/null; do
+        wait "$_audit_body_pid"
+        _audit_rc=$?
+    done
+    exit "$_audit_rc"
+elif command -v flock >/dev/null 2>&1; then
+    # T-4397 — the lock is held by the holder process that launched this body. The
+    # body takes no lock fd, and it is removed from the environment so a nested audit
+    # started by a section takes its own lock.
+    _audit_lock_holder="$_FW_AUDIT_LOCK_HOLDER"
+    unset _FW_AUDIT_LOCK_HOLDER
     # Apply timeout: kill self if still running after AUDIT_TIMEOUT seconds.
     # T-1464 + T-1772: detach EVERY inherited fd in the watchdog subshell, not
     # just stdio. The `sleep` child reparents to init when its subshell exits,
@@ -640,9 +667,19 @@ elif command -v flock >/dev/null 2>&1; then
           case "$_n" in 0|1|2) ;; *) eval "exec $_n>&-" 2>/dev/null ;; esac
       done
       trap 'kill "${_watchdog_sleep_pid:-}" 2>/dev/null; exit 0' TERM
-      sleep "$AUDIT_TIMEOUT" &
-      _watchdog_sleep_pid=$!
-      wait "$_watchdog_sleep_pid" && kill -TERM $$ 2>/dev/null
+      # T-4397: tick once a second rather than sleeping AUDIT_TIMEOUT in one piece,
+      # so the watchdog also notices its lock holder has died. An orphaned body must
+      # not carry on unlocked alongside a new audit; it stops, and that stop is the
+      # TERM below.
+      _watchdog_left="$AUDIT_TIMEOUT"
+      while [ "$_watchdog_left" -gt 0 ]; do
+          sleep 1 &
+          _watchdog_sleep_pid=$!
+          wait "$_watchdog_sleep_pid"
+          kill -0 "$_audit_lock_holder" 2>/dev/null || break
+          _watchdog_left=$(( _watchdog_left - 1 ))
+      done
+      kill -TERM $$ 2>/dev/null
     ) </dev/null >/dev/null 2>&1 &
     AUDIT_TIMEOUT_PID=$!
     trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null" EXIT
