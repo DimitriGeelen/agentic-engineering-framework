@@ -44,8 +44,9 @@ AUDIT_SH="$FRAMEWORK_ROOT/agents/audit/audit.sh"
     # Extract from `# T-2096 (OBS-036` to `# Fabric drift detection`.
     local block
     block="$(awk '/^# T-2096 \(OBS-036/,/^# Fabric drift detection/' "$AUDIT_SH")"
-    # Must reference batched pre-scan variable
-    echo "$block" | grep -q 'go_scope_unprop_list=' || { echo "go_scope_unprop_list= not present in T-2096 block"; return 1; }
+    # Must reference batched pre-scan variable (T-3099 renamed it from
+    # go_scope_unprop_list= to go_scope_summary=; T-4385 follows the rename)
+    echo "$block" | grep -q 'go_scope_summary=$(python3 -c' || { echo "go_scope_summary=\$(python3 -c not present in T-2096 block"; return 1; }
     # Must NOT have the old per-task grep fan-out pattern
     # (original: `grep -qE "^workflow_type: inception\$" "\$task_file" || continue`)
     if echo "$block" | grep -qE 'grep -qE.*workflow_type.*\$task_file'; then
@@ -63,7 +64,9 @@ AUDIT_SH="$FRAMEWORK_ROOT/agents/audit/audit.sh"
     local block
     block="$(awk '/^# T-2096 \(OBS-036/,/^# Fabric drift detection/' "$AUDIT_SH")"
     local n
-    n="$(echo "$block" | grep -c 'python3 -c')"
+    # T-4385: comment lines are excluded — T-3099 added a comment inside the
+    # pre-scan that names 'python3 -c', which counted as a second invocation.
+    n="$(echo "$block" | grep -v '^[[:space:]]*#' | grep -c 'python3 -c')"
     [ "$n" -eq 1 ] || { echo "expected 1 python3 -c in T-2096 block, got $n"; return 1; }
 }
 
