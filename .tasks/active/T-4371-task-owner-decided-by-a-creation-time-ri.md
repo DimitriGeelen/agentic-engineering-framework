@@ -1,10 +1,12 @@
 ---
 id: T-4371
-name: "Task owner decided by a creation-time risk assessment (agent by default, human only for high risk or reviewer escalation)"
+name: "Task owner decided by a creation-time risk assessment (agent by default, human
+  only for high risk or reviewer escalation)"
 description: >
-  Inception: Task owner decided by a creation-time risk assessment (agent by default, human only for high risk or reviewer escalation)
+  Inception: Task owner decided by a creation-time risk assessment (agent by default,
+  human only for high risk or reviewer escalation)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +14,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-19T09:57:40Z
-last_update: 2026-10-19T09:57:40Z
-date_finished: null
+last_update: 2026-10-19T10:13:00Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +24,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-10-19T10:00:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=120,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T10:01:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4371: Task owner decided by a creation-time risk assessment (agent by default, human only for high risk or reviewer escalation)
@@ -51,6 +80,19 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
      §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
+
+- **IW-1: Does every agent-owned close get an independent reviewer dispatch, or only tasks carrying a reviewer-judged criterion?**
+  confidence: 1
+  disposition:
+  rationale:
+- **IW-2: Re-classify the existing human-owned backlog once (dry-run first), or apply to new tasks only?**
+  confidence: 1
+  disposition:
+  rationale:
+- **IW-3: Can lib/delegation.py's classifier decide owner at create from the task's name, description and criteria, or does it need the criteria that are only written later?**
+  confidence: 1
+  disposition:
+  rationale:
 
 ## Exploration Plan
 
@@ -143,3 +185,6 @@ Proposed by 832 (operator decision there 2026-10-19, msg d9c04ae8): owner: human
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-19T10:13:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
