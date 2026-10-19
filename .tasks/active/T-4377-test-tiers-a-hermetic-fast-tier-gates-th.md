@@ -10,10 +10,10 @@ description: >
   measurement). Arc test-suite-health (arc-026), anchor T-4376; build only after the
   inception GO.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T11:57:49Z
-last_update: '2026-10-19T12:01:46Z'
+last_update: 2026-10-19T16:09:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,17 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Committed manifest `tests/unit/tiers.yaml` assigns every discovered test file (the runner's bats `*.bats` and pytest discovery) to exactly one of `fast`, `slow`, `perf`; `python3 agents/audit/unit_tier.py check` exits 0 and prints the per-tier counts
+- [x] Membership is selected from MEASURED durations, not hand-picked: `unit_tier.py select` puts a file in `fast` only when its trailing median (last 7 schema-v2 dated reports) is ≤ 8 s and no report in that window timed it out; unmeasured files go to `slow`; the four wall-clock budget files (hook_telemetry, hook_telemetry_race, both t1719 latency files) go to `perf` by declaration
+- [x] Fast tier selection's summed median is ≤ 2,400 file-seconds (2,194 s at 8 s; 30 s measured 4,614 s, so the threshold is 8 s) and the fast per-file cap defaults to 120 s (`FW_UNIT_SUITE_FAST_FILE_TIMEOUT`)
+- [x] `FW_UNIT_SUITE_TIER=fast|slow|perf` runs only that tier's files; with a manifest present and the tier unset, the runner runs fast, slow and perf in turn; `perf` runs with jobs=1 (serial)
+- [x] Fast tier writes the root `LATEST.yaml`/`LAST-COMPLETE.yaml` (the pre-push ratchet's files); slow and perf write under `<report-dir>/slow/` and `<report-dir>/perf/`
+- [x] In the fast tier a skipped test marks its file NOT DETERMINED (listed in `files_not_determined`, and in `files_timed_out` so the ratchet's completeness rule counts it like a timeout; leg exit 124); a skip in the slow or perf tier does not change the verdict
+- [x] With a manifest present the runner exits 2 and runs nothing when any discovered file is unassigned or assigned twice
+- [x] Report format is backward compatible: every existing top-level and per-leg key is unchanged; new keys are `tier` and per-leg `files_not_determined` only
+- [x] Regression test `tests/unit/t4377_unit_tiers.bats` (fixture corpus, never the real suite) fails before the runner change and passes after; both results recorded in the task Updates
+- [x] This task adds no existing test file: its commit touches only `tests/unit/tiers.yaml` and `tests/unit/t4377_unit_tiers.bats` under tests/unit (other workers' edits there are theirs)
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` reports clean, and `bash -n agents/audit/unit-suite.sh` passes after each edit
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -150,6 +159,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n agents/audit/unit-suite.sh
+python3 -I agents/audit/unit_tier.py check
+python3 tools/bats-dead-negation-lint.py tests/ | grep -q clean
+bats tests/unit/t4377_unit_tiers.bats
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -320,6 +335,12 @@ bvp_scores_proposed:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-10-19 — the threshold moved from 30 s to 8 s
+- **What changed:** the plan said fast = median ≤ 30 s. Measured over the last 7 schema-v2 reports, that selects 1,030 files summing 4,614 file-seconds, about twice the 2,400 budget. 8 s selects 886 files summing 2,194 s.
+- **Plan impact:** fast is 886 files, not ~1,030. Slow is 331 files (the long tail plus everything unmeasured).
+- **Triggered:** none. The threshold is a flag (`select --max-median`); the measurement is in the Updates.
+- **Also:** a fast-tier skip is listed as a timeout too. The ratchet's completeness rule only counts `files_timed_out`, so a skip listed only under `files_not_determined` would have read as an incomplete run.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -376,3 +397,14 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4377-test-tiers-a-hermetic-fast-tier-gates-th.md
 - **Context:** Initial task creation
+
+### 2026-10-19T16:09:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-19 — regression evidence and estimate (worker w4377)
+- **Red before the runner change:** `bats tests/unit/t4377_unit_tiers.bats` → 4/4 `not ok` (no tier support yet). Test 5 (unset tier runs all three) was added after the implementation and has no separate red record.
+- **Green after:** 5/5 `ok`. The 56 existing runner tests (t3302, t3602, t3794, t4058, t4381) also pass: 56 ok, 0 not ok.
+- **Fast-tier budget:** dry selection at 8 s: 886 files, median sum 2,194 s against 2,400 s. Not measured by a run: host load was 24–32 on 24 cores, so no fast-tier run was started. Estimate: at the latest run's effective parallelism (about 10.7) the fast tier is about 205 s wall, well under the 10-minute target. Confirm on an idle host.
+- **Manifest drift:** another worker added `t4409_git_cwd_repo_boundary.bats` mid-task. `check` refused (unassigned), as designed. Regenerated with `select --write`, which put it in `slow`.
+- **Vendor:** `FW_VENDOR_ONLY` synced my two files, but the sync also brought `.agentic-framework/agents/context/lib/safe-commands.sh` up to HEAD (T-4396's committed change). An earlier sync also pulled in another worker's uncommitted `audit.sh`; I restored that with `git checkout`. `vendor self --check` is now clean.

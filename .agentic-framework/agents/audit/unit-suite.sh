@@ -22,6 +22,15 @@
 #   FW_UNIT_SUITE_PY_RESERVE  seconds reserved for the pytest leg (default: 1800)
 #   FW_UNIT_SUITE_JOBS        files run concurrently (default: nproc/2, max 12)
 #   FW_UNIT_SUITE_FILE_TIMEOUT per-file seconds cap (default: 900)
+#   FW_UNIT_SUITE_TIER        fast | slow | perf (T-4377). Unset with a manifest
+#                             (tests/unit/tiers.yaml) present = run all three in turn.
+#   FW_UNIT_SUITE_FAST_FILE_TIMEOUT  fast tier's per-file cap (default: 120)
+#
+# Tiers (T-4377). fast is graded by the pre-push ratchet and writes the root
+# LATEST.yaml; slow and perf write <report-dir>/slow/ and <report-dir>/perf/.
+# In the fast tier a skipped test makes its file NOT DETERMINED, like a timeout.
+# perf runs serially. Membership is declared in tests/unit/tiers.yaml; see
+# agents/audit/unit_tier.py.
 #
 # Per-file execution (T-3602, OBS-587). The run used to be ONE `bats tests/unit`
 # process under one 5400s cap. It hit the cap on every nightly from 2026-09-08
@@ -57,6 +66,38 @@ if [ "$PY_RESERVE" -ge "$TOTAL_TIMEOUT" ]; then
     PY_RESERVE=$(( TOTAL_TIMEOUT / 2 ))
 fi
 [ "$PY_RESERVE" -lt 1 ] && PY_RESERVE=1
+
+# ── T-4377: tiers ───────────────────────────────────────────────────────────
+# A manifest (tests/unit/tiers.yaml) splits the corpus into fast | slow | perf.
+# Tier unset + manifest present = run all three in turn, one child run each (its
+# own report and lock). A named tier runs only that tier. A manifest that does
+# not cover every discovered file exactly once refuses the run: exit 2, nothing
+# written, so no tier can silently grade a corpus it did not fully assign.
+TIER="${FW_UNIT_SUITE_TIER:-}"
+case "$TIER" in
+    ""|fast|slow|perf) ;;
+    *) echo "unit-suite: FW_UNIT_SUITE_TIER must be fast, slow or perf (got '$TIER')" >&2; exit 2 ;;
+esac
+if [ -f "$SUITE_DIR/tiers.yaml" ]; then
+    if [ -z "$TIER" ]; then
+        ALL_RC=0
+        for _t in fast slow perf; do
+            FW_UNIT_SUITE_TIER="$_t" bash "${BASH_SOURCE[0]}"; _rc=$?
+            [ "$_rc" -gt "$ALL_RC" ] && ALL_RC=$_rc
+        done
+        exit "$ALL_RC"
+    fi
+    if ! _tier_check="$(python3 -I "$SCRIPT_DIR/unit_tier.py" check --dir "$SUITE_DIR" 2>&1)"; then
+        echo "unit-suite: tiers.yaml does not cover the corpus; refusing to run:" >&2
+        echo "$_tier_check" >&2
+        exit 2
+    fi
+    # Tier reports: fast keeps the root (the pre-push ratchet's files).
+    if [ "$TIER" != fast ]; then REPORT_DIR="$REPORT_DIR/$TIER"; fi
+elif [ -n "$TIER" ]; then
+    echo "unit-suite: FW_UNIT_SUITE_TIER=$TIER needs $SUITE_DIR/tiers.yaml" >&2
+    exit 2
+fi
 
 mkdir -p "$REPORT_DIR" "$(dirname "$LOCK_FILE")"
 RUN_LOG="$REPORT_DIR/runs.log"
@@ -106,6 +147,21 @@ _discover_pytest() {
 }
 # END _discover_pytest
 
+# _suite_files <bats|pytest> — this run's files of one leg: the whole corpus when
+# untiered, else the manifest's files for FW_UNIT_SUITE_TIER (T-4377).
+_suite_files() {
+    if [ -z "$TIER" ]; then
+        if [ "$1" = bats ]; then ls "$SUITE_DIR"/*.bats 2>/dev/null; else _discover_pytest "$SUITE_DIR"; fi
+        return 0
+    fi
+    if [ "$1" = bats ]; then
+        python3 -I "$SCRIPT_DIR/unit_tier.py" files --tier "$TIER" --dir "$SUITE_DIR" | grep '\.bats$'
+    else
+        python3 -I "$SCRIPT_DIR/unit_tier.py" files --tier "$TIER" --dir "$SUITE_DIR" | grep -v '\.bats$'
+    fi
+    return 0
+}
+
 _remaining() {
     local _left=$(( TOTAL_TIMEOUT - ( $(date +%s) - START_EPOCH ) ))
     [ "$_left" -lt 1 ] && _left=1
@@ -127,6 +183,9 @@ if [ -z "$JOBS" ]; then
 fi
 [ "$JOBS" -lt 1 ] && JOBS=1
 FILE_TIMEOUT="${FW_UNIT_SUITE_FILE_TIMEOUT:-900}"
+# T-4377: the fast tier's own low cap; perf measures wall clock, so it runs alone.
+if [ "$TIER" = fast ]; then FILE_TIMEOUT="${FW_UNIT_SUITE_FAST_FILE_TIMEOUT:-120}"; fi
+if [ "$TIER" = perf ]; then JOBS=1; fi
 [ "$FILE_TIMEOUT" -lt 1 ] && FILE_TIMEOUT=1
 
 BATS_BUDGET=0 PY_BUDGET=0
@@ -139,6 +198,16 @@ trap 'rm -rf "$RESULTS"' EXIT
 #   <status> <rc> <seconds>   status: done | file-timeout | run-ceiling | not-run
 # "file-timeout" = killed by the per-file cap; "run-ceiling" = killed because
 # the leg's deadline arrived first. Both are named in the report.
+# _has_skip <leg> <out> — did this file's output report a skipped test? bats TAP
+# marks one `ok N name # skip …`; pytest's summary counts `N skipped`.
+_has_skip() {
+    if [ "$1" = bats ]; then
+        grep -qE '^ok [0-9]+ .*# skip' "$2"
+    else
+        grep -qE '^(=+ )?([0-9]+ [a-z]+, )*[0-9]+ skipped( in |, |$)' "$2"
+    fi
+}
+
 _run_one() {
     local leg="$1" deadline="$2" file="$3"
     local base out meta now left cap t0 rc st
@@ -173,10 +242,14 @@ _run_one() {
     elif [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ]; then
         if [ "$cap" -lt "$FILE_TIMEOUT" ]; then st=run-ceiling; else st=file-timeout; fi
     fi
+    # T-4377: in the fast tier a skip is NOT DETERMINED, like a timeout. It
+    # measured nothing about that test; a skip that reads as ok is the hazard
+    # T-4382 found (audit.bats, fabric_coverage: skips reported as passes).
+    if [ "$TIER" = fast ] && [ "$st" = done ] && _has_skip "$leg" "$out"; then st=not-determined; fi
     echo "$st $rc $(( $(date +%s) - t0 ))" > "$meta"
 }
-export -f _run_one
-export RESULTS FRAMEWORK_ROOT FILE_TIMEOUT
+export -f _run_one _has_skip
+export RESULTS FRAMEWORK_ROOT FILE_TIMEOUT TIER
 # T-3915: no test may start a real Watchtower for its fixture project — 13 leaked
 # servers were found (up to 5 h old), and a detached one held bats' fd 3 open.
 export FW_WATCHTOWER_ENSURE=0
@@ -254,9 +327,9 @@ _on_signal() {
         [ -f "$f" ] || continue
         case "$f" in *.bats) leg=bats ;; *) leg=pytest ;; esac
         [ -f "$RESULTS/$leg/$(basename "$f").meta" ] || echo "not-run 0 0" > "$RESULTS/$leg/$(basename "$f").meta"
-    done < <(ls "$SUITE_DIR"/*.bats 2>/dev/null; _discover_pytest "$SUITE_DIR")
-    BATS_FILES=$(ls "$SUITE_DIR"/*.bats 2>/dev/null | wc -l | tr -d ' ')
-    PY_FILES=$(_discover_pytest "$SUITE_DIR" | wc -l | tr -d ' ')
+    done < <(_suite_files bats; _suite_files pytest)
+    BATS_FILES=$(_suite_files bats | wc -l | tr -d ' ')
+    PY_FILES=$(_suite_files pytest | wc -l | tr -d ' ')
     echo "$(date -u +%FT%TZ) INTERRUPTED by signal — writing partial report" >> "$RUN_LOG"
     _finish
 }
@@ -333,7 +406,7 @@ T3302_BATS_BUDGET="$BATS_BUDGET" T3302_PY_BUDGET="$PY_BUDGET" \
 T3302_PY_RESERVE="$PY_RESERVE" T3602_JOBS="$JOBS" T3602_FILE_TIMEOUT="$FILE_TIMEOUT" \
 T3302_REPORT_DIR="$REPORT_DIR" T3602_INTERRUPTED="$INTERRUPTED" T3602_WALL=$(( $(date +%s) - START_EPOCH )) \
 T4058_FAILURES="$FAILURES_KEPT" \
-T4381_REV_COMMIT="$REV_COMMIT" T4381_REV_TREE="$REV_TREE" \
+T4381_REV_COMMIT="$REV_COMMIT" T4381_REV_TREE="$REV_TREE" T4377_TIER="$TIER" \
 python3 - "$RESULTS" <<'PY'
 import glob, os, re, sys, yaml, datetime
 
@@ -346,7 +419,7 @@ def _int(name):
 def _leg(leg):
     """Per-file records -> leg summary (T-3602 schema v2)."""
     s = {"tests": 0, "failed": [], "skipped": 0, "completed": 0,
-         "timed_out": [], "not_run": [], "durations": {}}
+         "timed_out": [], "not_run": [], "not_determined": [], "durations": {}}
     for meta in sorted(glob.glob(os.path.join(results, leg, "*.meta"))):
         name = os.path.basename(meta)[:-len(".meta")]
         st, rc, secs = (open(meta).read().split() + ["", "0", "0"])[:3]
@@ -361,6 +434,14 @@ def _leg(leg):
             s["timed_out"].append(name + " (killed at run ceiling)")
         elif st == "interrupted":
             s["timed_out"].append(name + " (interrupted)")
+        elif st == "not-determined":
+            # T-4377: a skip in the fast tier is NOT DETERMINED, like a timeout.
+            # It is listed as a plain timeout too, so the ratchet's completeness
+            # rule (done + timed-out == files) counts it the same way; the plain
+            # name (no ")" suffix) is what that rule tolerates. Its tests still
+            # count below.
+            s["not_determined"].append(name)
+            s["timed_out"].append(name)
         else:
             s["completed"] += 1
         try:
@@ -414,6 +495,8 @@ def _leg_report(s, leg):
         "files_timed_out": s["timed_out"],
         "files_not_run": len(s["not_run"]),
         "files_not_run_names": s["not_run"],
+        # T-4377: fast-tier files whose skips leave them undetermined (empty elsewhere).
+        "files_not_determined": s["not_determined"],
         "budget_seconds": _int("T3302_%s_BUDGET" % leg),
         "tests": s["tests"],
         "failed_count": len(s["failed"]),
@@ -428,6 +511,8 @@ def _leg_report(s, leg):
 report = {
     "schema": "unit-suite-report-v2",
     "task": "T-3302",
+    # T-4377: which tier this report grades (None = untiered run, the whole corpus).
+    "tier": env.get("T4377_TIER") or None,
     "started": env["T3302_STARTED"],
     "finished": env["T3302_FINISHED"],
     "suite_dir": env["T3302_SUITE_DIR"],
@@ -494,7 +579,7 @@ exit "$RUNNER_EXIT"
 
 # ── Leg 1: bats (tests/unit/*.bats) ─────────────────────────────────────────
 BATS_LIST=()
-while IFS= read -r _f; do BATS_LIST+=("$_f"); done < <(ls "$SUITE_DIR"/*.bats 2>/dev/null)
+while IFS= read -r _f; do BATS_LIST+=("$_f"); done < <(_suite_files bats)
 BATS_FILES=${#BATS_LIST[@]}
 BATS_RC=0 BATS_ERROR=""
 if [ "$BATS_FILES" -eq 0 ]; then
@@ -509,7 +594,7 @@ fi
 
 # ── Leg 2: pytest (tests/unit/*.py per _discover_pytest) ────────────────────
 PY_LIST=()
-while IFS= read -r _f; do PY_LIST+=("$_f"); done < <(_discover_pytest "$SUITE_DIR")
+while IFS= read -r _f; do PY_LIST+=("$_f"); done < <(_suite_files pytest)
 PY_FILES=${#PY_LIST[@]}
 PY_RC=0 PY_ERROR=""
 if [ "$PY_FILES" -eq 0 ]; then
