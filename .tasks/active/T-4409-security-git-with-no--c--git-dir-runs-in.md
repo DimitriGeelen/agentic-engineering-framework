@@ -1,10 +1,20 @@
 ---
 id: T-4409
-name: "SECURITY: git with no -C/--git-dir runs in the tracked cwd's repository, but the allowlist never checks that cwd: 'cd /tmp/evil && git status' is judged read-only"
+name: "SECURITY: git with no -C/--git-dir runs in the tracked cwd's repository, but
+  the allowlist never checks that cwd: 'cd /tmp/evil && git status' is judged read-only"
 description: >
-  Reported by ring20-dashboard (msg 16c721c9), reproduced on bleeding-edge 2026-10-19: 'cd /tmp/evil && git status' and 'cd /tmp/evil; git log' are SAFE; git then reads /tmp/evil's repo config (T-4343 exposure). Fix: in the git arm with no -C/--git-dir/GIT_DIR, require the effective cwd (tracked through cd, else the hook payload's cwd) to resolve inside PROJECT_ROOT; fail closed when unknown. Also make cwd tracking operator-aware: advance across && and ; only, not across |, || or & (today 'cd /tmp/evil || git status' is SAFE and only harmless because git does not run when cd succeeds — the verdict must not depend on that). Keep 'cd <inside> && git status' and plain 'git status' in the project safe. Red run; field test by ring20-dashboard. Serial after T-4396 and the env-var task (same file).
+  Reported by ring20-dashboard (msg 16c721c9), reproduced on bleeding-edge 2026-10-19:
+  'cd /tmp/evil && git status' and 'cd /tmp/evil; git log' are SAFE; git then reads
+  /tmp/evil's repo config (T-4343 exposure). Fix: in the git arm with no -C/--git-dir/GIT_DIR,
+  require the effective cwd (tracked through cd, else the hook payload's cwd) to resolve
+  inside PROJECT_ROOT; fail closed when unknown. Also make cwd tracking operator-aware:
+  advance across && and ; only, not across |, || or & (today 'cd /tmp/evil || git
+  status' is SAFE and only harmless because git does not run when cd succeeds — the
+  verdict must not depend on that). Keep 'cd <inside> && git status' and plain 'git
+  status' in the project safe. Red run; field test by ring20-dashboard. Serial after
+  T-4396 and the env-var task (same file).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:59:42Z
-last_update: 2026-10-19T15:59:42Z
-date_finished: null
+last_update: 2026-10-19T16:17:17Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-19T16:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-19T16:16:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4409: SECURITY: git with no -C/--git-dir runs in the tracked cwd's repository, but the allowlist never checks that cwd: 'cd /tmp/evil && git status' is judged read-only
@@ -58,12 +96,30 @@ date_finished: null
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Red run, pre-fix code (after T-4408, d1f7129c0), 2026-10-19, PROJECT_ROOT=_FW_PAYLOAD_CWD=repo root:**
+
+| command | verdict |
+|---|---|
+| `cd /tmp/evil && git status` | SAFE |
+| `cd /tmp/evil; git log` | SAFE |
+| `cd /tmp/evil \|\| git status` | SAFE |
+| `cd /tmp/evil \| git status` / `cd /tmp/evil & git status` | SAFE |
+| `git status` with no payload cwd, hook PWD=/tmp | SAFE |
+| `cd <project>/docs && git status`, `git status` | SAFE (expected) |
+
+New bats file against the HEAD copy of safe-commands.sh: 13 of 23 not ok (all NOT-SAFE cases except `cd <outside> || true; git log`, refused already because `true` is not allowlisted). After the fix: 23/23 ok.
+
+**Existing tests touched (cases kept):** context_safe_commands, safe_commands_chain and t4396_safe_commands_loops setups now export PROJECT_ROOT and _FW_PAYLOAD_CWD (with the fix they pass only by inheriting the caller's PROJECT_ROOT and PWD: under `env -u PROJECT_ROOT -u _FW_PAYLOAD_CWD` 13 of their git cases went red; after the setup change all suites are green both with and without the ambient variables); test_safe_commands_git_commit's hook payload now carries `cwd` as Claude Code's does; safe_commands_chain "three safe segments" changed `cd /tmp` (the vulnerable shape itself) to `cd $FRAMEWORK_ROOT/docs`. Hook e2e suites whose payloads lacked `cwd` now send it (t2988, t3174, t3179, t3221, t3222, t3238, t3245, t3432); t3814 test 12 now expects a bare `git commit` with NO payload cwd (hook PWD outside the fixture) to be blocked, and adds the with-cwd ADMITTED case. Sweep: 63 hook/safe-commands bats files plus tests/integration/check_active_task.bats, all green, 0 skips.
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Red run on the pre-fix code recorded in this task: `cd /tmp/evil && git status`, `cd /tmp/evil; git log`, `cd /tmp/evil || git status`, `cd /tmp/evil | git status` classify SAFE
+- [x] The git arm requires the effective cwd (after any -C) to resolve inside PROJECT_ROOT; cwd = tracked `cd`, else the payload cwd, else PWD only when it is PROJECT_ROOT; unknown → NOT SAFE
+- [x] cwd tracking advances only across `&&` and `;` (and newline): a directory-changing segment followed by `|`, `||` or `&` leaves the cwd unknown, so `cd /tmp/evil || git status` is NOT SAFE regardless of whether git would run
+- [x] `git status` (cwd = project) and `cd <project>/docs && git status` stay SAFE; tests/unit/t4409_git_cwd_repo_boundary.bats passes, and every safe-commands / boundary bats file passes alone (existing cases kept; a setup may gain PROJECT_ROOT/cwd where it had none)
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` clean; vendored safe-commands.sh matches source (`bin/fw vendor self --check` clean for this file)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,6 +297,13 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/context/lib/safe-commands.sh
+bash -c 'source agents/context/lib/safe-commands.sh; mkdir -p /tmp/evil; export PROJECT_ROOT=$PWD _FW_PAYLOAD_CWD=$PWD; for c in "cd /tmp/evil && git status" "cd /tmp/evil; git log" "cd /tmp/evil || git status" "cd /tmp/evil | git status"; do is_bash_safe_command "$c" && exit 1; done; is_bash_safe_command "git status" && is_bash_safe_command "cd $PWD/docs && git status"'
+timeout 300 bats tests/unit/t4409_git_cwd_repo_boundary.bats > /tmp/.t4409.out 2>&1 && ! grep -q "^not ok" /tmp/.t4409.out
+test "$(grep -c '# skip' /tmp/.t4409.out)" -eq 0
+timeout 600 bats tests/unit/t4408_git_env_repo_boundary.bats tests/unit/safe_commands_env_prefix.bats tests/unit/t4343_git_repo_path_boundary.bats tests/unit/t4264_git_global_opts_safe.bats tests/unit/t4344_boundary_read_free_text_opts.bats tests/unit/t4367_git_output_option.bats tests/unit/t4396_safe_commands_loops.bats tests/unit/context_safe_commands.bats tests/unit/check_project_boundary.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/safe_commands_chain.bats tests/unit/test_safe_commands_git_commit.bats > /tmp/.t4409b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4409b.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4409l.out 2>&1 && grep -q clean /tmp/.t4409l.out
+cmp agents/context/lib/safe-commands.sh .agentic-framework/agents/context/lib/safe-commands.sh
 
 ## RCA
 
@@ -257,6 +320,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `cd /tmp/evil && git status` and `cd /tmp/evil; git log` were classified SAFE; git then reads /tmp/evil's repository config, whose core.fsmonitor / core.pager / diff.external run arbitrary commands (ring20-dashboard, msg 16c721c9). `cd /tmp/evil || git status` was SAFE too, harmless only by accident (git runs only when cd fails).
+
+**Root cause:** T-4343 judged only the paths git is *told* (`-C`, `--git-dir`, `--work-tree`; `_fw_git_skip_globals`, agents/context/lib/safe-commands.sh:~470). With none of those, git discovers the repository from its cwd, and the git arm (`git)` in `_fw_single_command_is_safe`) never looked at the cwd it already tracked (`_FW_GIT_CWD`, `_fw_track_cwd` :116). The initial cwd also fell back to the hook's `$PWD` (:142) whatever that was. `_fw_chain_split` (:58) discards which operator ended a segment, so `_fw_segments_are_safe` advanced the cwd across `|`, `||` and `&` exactly as across `&&`.
+
+**Why structurally allowed:** the cwd was tracked only as a base for *relative* option values, so "no option given" meant "nothing to check". Same blind spot as T-4408: a channel that selects the repository (implicit discovery) without a value on the command line.
+
+**Prevention:** the git arm checks the effective cwd unconditionally (fail closed when unknown); the splitter's ops mode carries each segment's operator, and only `&&`/`;` advance the cwd; tests/unit/t4409_git_cwd_repo_boundary.bats pins every reporter case and the in-project controls.
 
 ## Evolution
 
@@ -322,6 +393,12 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-19 — where the cwd is checked, and the commit-checkpoint path
+- **Chose:** the effective-cwd check sits at the end of `_fw_git_skip_globals`, so it covers every git verb, with or without -C (a -C value replaces the cwd as git does). The starting cwd lives in one helper (`_fw_initial_git_cwd`), and the cwd advance in another (`_fw_advance_cwd`), used by `is_bash_safe_command`/`_fw_segments_are_safe`, `is_commit_checkpoint_command` and `is_task_metadata_update_command`.
+- **Why:** the hook-suite sweep showed `is_commit_checkpoint_command` (T-2054 null-focus / T-3179 partial-complete allowance) judged `git add` with no cwd at all, and admitted a bare `git commit` after `cd /tmp/evil` — same class: git commit runs the hooks and config of the cwd's repository. Its bare `git commit` clause now also needs the cwd inside PROJECT_ROOT.
+- **Rejected:** checking only when no -C / --git-dir / GIT_DIR is given (the spec's literal wording) — with --git-dir inside and the cwd outside, the cwd is still the work tree; the stricter rule is simpler and only over-blocks toward the gate. Modelling `||`/`|`/`&` exactly — "unknown" is simpler and fails closed.
+- **Accepted over-block:** `cd <inside> || git status` and `(cd sub && git status)` now gate.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -338,3 +415,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4409-security-git-with-no--c--git-dir-runs-in.md
 - **Context:** Initial task creation
+
+### 2026-10-19T16:17:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

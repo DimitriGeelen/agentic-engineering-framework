@@ -103,7 +103,8 @@ _close() {
 # control, in the worker's scoped-focus env.
 _gate_scoped() {
     local json
-    json=$(python3 -c "import json,sys; print(json.dumps({'tool_name':'Bash','tool_input':{'command': sys.argv[1]}}))" "$1")
+    # T-4409: `cwd` as Claude Code sends it; git is judged from the shell's cwd.
+    json=$(python3 -c "import json,sys; print(json.dumps({'tool_name':'Bash','cwd':sys.argv[2],'tool_input':{'command': sys.argv[1]}}))" "$1" "$TESTROOT")
     run env PROJECT_ROOT="$TESTROOT" CONTEXT_DIR="$TESTROOT/.context" \
         CLAUDECODE=1 FW_SESSION_SCOPED_FOCUS=1 FW_FOCUS_SESSION_KEY=worker-a \
         GATE_JSON="$json" \

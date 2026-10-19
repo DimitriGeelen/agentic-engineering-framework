@@ -55,8 +55,13 @@
 # start blocking whenever no task is active, which is exactly the recovery state
 # where friction hurts most. Chain operators are the measured, high-frequency
 # hole; substitution is narrower and is filed rather than papered over (OBS-185).
+#
+# T-4409: `_fw_chain_split CMD ops` emits each segment followed by a second
+# NUL-terminated record, the operator that ENDED it: `&&`, `||`, `|`, `&`, `;`
+# (a newline reads as `;`), or empty after the last segment. Callers that only
+# want segments call it with one argument and get the unchanged stream.
 _fw_chain_split() {
-    local cmd="$1" seg="" q="" ch nxt i n=${#1}
+    local cmd="$1" seg="" q="" ch nxt i n=${#1} _ops="${2:-}" _op
     for (( i=0; i<n; i++ )); do
         ch="${cmd:i:1}"
         if [ -n "$q" ]; then
@@ -86,13 +91,15 @@ _fw_chain_split() {
                     seg+="$ch"
                     continue
                 fi
-                [ "$nxt" = "$ch" ] && i=$((i+1))
-                printf '%s\0' "$seg"; seg="" ;;
-            ';'|$'\n') printf '%s\0' "$seg"; seg="" ;;
+                _op="$ch"
+                [ "$nxt" = "$ch" ] && { i=$((i+1)); _op="$ch$ch"; }
+                printf '%s\0' "$seg"; [ -n "$_ops" ] && printf '%s\0' "$_op"; seg="" ;;
+            ';'|$'\n') printf '%s\0' "$seg"; [ -n "$_ops" ] && printf ';\0'; seg="" ;;
             *)       seg+="$ch" ;;
         esac
     done
-    printf '%s\0' "$seg"
+    printf '%s\0' "$seg"; [ -n "$_ops" ] && printf '\0'
+    return 0
 }
 
 # A compound command is safe only if EVERY segment is safe.
@@ -134,22 +141,63 @@ _fw_track_cwd() {
     return 0
 }
 
+# T-4409: _fw_advance_cwd <segment> <operator that ended it>. Only `&&` and `;`
+# carry a cd into what follows. After `|` or `&` the cd ran in a subshell; after
+# `||` the next command runs only if it failed, and later ones run from either
+# place. Rather than model each, the cwd becomes unknown.
+_fw_advance_cwd() {
+    _fw_track_cwd "$1"
+    case "$2" in
+        '&&'|';'|'') ;;
+        *) _fw_segment_may_change_dir "$1" && _FW_GIT_CWD="" ;;
+    esac
+    return 0
+}
+
+# T-4409: the shell's cwd at the start of a command line: the payload cwd when it is
+# absolute; else the hook's $PWD only when it IS PROJECT_ROOT; else empty (unknown).
+_fw_initial_git_cwd() {
+    if [[ "${_FW_PAYLOAD_CWD:-}" == /* ]]; then
+        printf '%s' "$_FW_PAYLOAD_CWD"
+    elif [ -n "${PROJECT_ROOT:-}" ]; then
+        local _rp _rr
+        _rp="$(realpath -e -- "$PWD" 2>/dev/null)"; _rr="$(realpath -e -- "$PROJECT_ROOT" 2>/dev/null)"
+        [ -n "$_rp" ] && [ "$_rp" = "$_rr" ] && printf '%s' "$_rp"
+    fi
+    return 0
+}
+
 is_bash_safe_command() {
     local _cmd="$1" _seg _n=0
     # T-4343: the cwd the git arm resolves -C / --git-dir against. Top level starts at
     # the shell's cwd from the hook payload. A nested call (F-15 `X=$(...)`) inherits
     # the caller's value, and `local` keeps a cd inside it from leaking back out.
-    local _FW_GIT_CWD="${_FW_GIT_CWD-${_FW_PAYLOAD_CWD:-$PWD}}"
-    local -a _segs=() _kept=()
+    # T-4409: with no absolute payload cwd, the hook's $PWD counts only when it IS
+    # PROJECT_ROOT (then the shell started there too); otherwise the cwd is unknown
+    # and the git arm fails closed.
+    # Decided before `local`, which would hide the caller's value.
+    local _c0=""
+    if [ -n "${_FW_GIT_CWD+x}" ]; then
+        _c0="$_FW_GIT_CWD"
+    else
+        _c0="$(_fw_initial_git_cwd)"
+    fi
+    local _FW_GIT_CWD="$_c0"
+    # T-4409: _FW_SEG_OPS[i] is the operator that ended kept segment i, read by
+    # _fw_segments_are_safe to decide whether a cd carries into the next segment.
+    local -a _segs=() _kept=() _FW_SEG_OPS=()
+    local _op
     # T-3223: `-d ''`. mapfile -t here read the splitter's NUL stream as lines,
     # so a segment containing a newline arrived as several bogus segments.
-    while IFS= read -r -d '' _seg; do
-        _segs+=("$_seg")
-    done < <(_fw_chain_split "$_cmd")
-    for _seg in "${_segs[@]}"; do
-        [[ "$_seg" =~ ^[[:space:]]*$ ]] && continue
-        _kept+=("$_seg"); _n=$((_n+1))
-    done
+    while IFS= read -r -d '' _seg && IFS= read -r -d '' _op; do
+        if [[ "$_seg" =~ ^[[:space:]]*$ ]]; then
+            # an empty segment cannot change directory, but a non-advancing
+            # operator after it still breaks the && / ; chain it sits in
+            case "$_op" in '&&'|';'|'') ;; *) [ "$_n" -gt 0 ] && _FW_SEG_OPS[$((_n-1))]="$_op" ;; esac
+            continue
+        fi
+        _kept+=("$_seg"); _FW_SEG_OPS+=("$_op"); _n=$((_n+1))
+    done < <(_fw_chain_split "$_cmd" ops)
     if [ "$_n" -gt 1 ]; then
         _fw_segments_are_safe "$_cmd" "${_kept[@]}"
         return
@@ -183,8 +231,9 @@ is_bash_safe_command() {
 # word-list `$(ls | head)` splits inside the substitution and reads unbalanced.
 _fw_segments_are_safe() {
     local _orig="$1"; shift
-    local _seg _s _kw _rest _depth=0 _expect="" _loops=0
+    local _seg _s _kw _rest _depth=0 _expect="" _loops=0 _si=-1
     for _seg in "$@"; do
+        _si=$((_si+1))
         _s="${_seg#"${_seg%%[![:space:]]*}"}"
         _s="${_s%"${_s##*[![:space:]]}"}"
         while :; do
@@ -222,7 +271,7 @@ _fw_segments_are_safe() {
                         fi
                     fi
                     _fw_single_command_is_safe "$_s" || return 1
-                    _fw_track_cwd "$_s"
+                    _fw_advance_cwd "$_s" "${_FW_SEG_OPS[$_si]:-}"
                     ;;
             esac
             break
@@ -504,6 +553,10 @@ _fw_git_skip_globals() {
         esac
     done
     [ "$i" -lt "$n" ] || return 1
+    # T-4409: with no -C/--git-dir (or with them), git discovers the repository from
+    # its cwd, so the effective cwd must itself be inside PROJECT_ROOT. Unknown
+    # (empty) fails the check: `cd /tmp/evil && git status` reads /tmp/evil's config.
+    _fw_git_dir_is_project "$_cwd" / >/dev/null || return 1
     echo "git ${words[*]:$i}"
 }
 
@@ -1774,7 +1827,10 @@ _fw_is_git_commit_clause() {
         _fw_is_own_launcher "${BASH_REMATCH[1]}"
         return
     fi
-    [[ "$seg" =~ ^git[[:space:]]+commit([[:space:]]|$) ]]
+    [[ "$seg" =~ ^git[[:space:]]+commit([[:space:]]|$) ]] || return 1
+    # T-4409: a bare git commit uses the repository of its cwd (hooks and config
+    # included), so that cwd must be inside PROJECT_ROOT; unknown refuses.
+    _fw_git_dir_is_project "${_FW_GIT_CWD-$(_fw_initial_git_cwd)}" / >/dev/null
 }
 
 # Remove quoted spans, tracking WHICH quote opened each one. A regex that
@@ -1890,16 +1946,22 @@ is_task_metadata_update_command() {
     cmd_view="$(_fw_strip_quoted "$cmd")" || return 1
     has_bash_write_pattern "$cmd_view" && return 1
 
-    while IFS= read -r -d '' seg; do
-        segs+=("$seg")
-    done < <(_fw_chain_split "$cmd")
+    # T-4409: same cwd tracking as is_commit_checkpoint_command, for git clauses.
+    local _FW_GIT_CWD _op _si=-1
+    _FW_GIT_CWD="$(_fw_initial_git_cwd)"
+    local -a ops=()
+    while IFS= read -r -d '' seg && IFS= read -r -d '' _op; do
+        segs+=("$seg"); ops+=("$_op")
+    done < <(_fw_chain_split "$cmd" ops)
     for seg in "${segs[@]}"; do
+        _si=$((_si+1))
         [[ "$seg" =~ ^[[:space:]]*$ ]] && continue
         if _fw_is_task_metadata_update_clause "$seg"; then
             found=1
             continue
         fi
         _fw_single_command_is_safe "$seg" || return 1
+        _fw_advance_cwd "$seg" "${ops[$_si]}"
     done
     [ "$found" -eq 1 ]
 }
@@ -1951,10 +2013,16 @@ is_commit_checkpoint_command() {
     has_bash_write_pattern "$cmd_view" && return 1
 
     # T-3223: `-d ''` — see the splitter's contract note.
-    while IFS= read -r -d '' seg; do
-        segs+=("$seg")
-    done < <(_fw_chain_split "$cmd")
+    # T-4409: git in a clause runs in the tracked cwd (read by the git arm and by
+    # the bare `git commit` clause), so it is established and advanced here too.
+    local _FW_GIT_CWD _op _si=-1
+    _FW_GIT_CWD="$(_fw_initial_git_cwd)"
+    local -a ops=()
+    while IFS= read -r -d '' seg && IFS= read -r -d '' _op; do
+        segs+=("$seg"); ops+=("$_op")
+    done < <(_fw_chain_split "$cmd" ops)
     for seg in "${segs[@]}"; do
+        _si=$((_si+1))
         [[ "$seg" =~ ^[[:space:]]*$ ]] && continue
         if _fw_is_git_commit_clause "$seg"; then
             found=1
@@ -1962,6 +2030,7 @@ is_commit_checkpoint_command() {
         fi
         _fw_single_command_is_safe "$seg" || return 1
         _fw_segment_may_change_dir "$seg" && _FW_CWD_CHANGED=1
+        _fw_advance_cwd "$seg" "${ops[$_si]}"
     done
     [ "$found" -eq 1 ]
 }

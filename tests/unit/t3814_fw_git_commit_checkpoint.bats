@@ -185,5 +185,9 @@ _plant() {
     [ "$(_verdict "$r" '.agentic-framework/bin/fw git commit -m "TT-9: x"' NONE)" = "blocked" ]
     [ "$(_verdict "$r" 'bin/fw git commit -m "TT-9: x"' "relative/dir")" = "blocked" ]
     [ "$(_verdict "$r" 'fw git commit -m "TT-9: x"' NONE)" = "ADMITTED" ]
-    [ "$(_verdict "$r" 'git commit -m "TT-9: x"' NONE)" = "ADMITTED" ]
+    # T-4409: a bare git commit uses its cwd's repository (hooks, config), so with
+    # no payload cwd and a hook PWD that is not the project it is refused; with
+    # the cwd inside the project it is admitted.
+    [ "$(_verdict "$r" 'git commit -m "TT-9: x"' NONE)" = "blocked" ]
+    [ "$(_verdict "$r" 'git commit -m "TT-9: x"')" = "ADMITTED" ]
 }

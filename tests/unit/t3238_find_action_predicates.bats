@@ -37,7 +37,8 @@ _mkroot() {
 
 _verdict() {
     local root="$1" hook="$2" cmd="$3" json
-    json="$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Bash","tool_input":{"command":sys.argv[1]}}))' "$cmd")"
+    # T-4409: `cwd` as Claude Code sends it; git is judged from the shell's cwd.
+    json="$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Bash","cwd":sys.argv[2],"tool_input":{"command":sys.argv[1]}}))' "$cmd" "$root")"
     if printf '%s' "$json" | PROJECT_ROOT="$root" FRAMEWORK_ROOT="$root" \
         CLAUDE_PROJECT_DIR="$root" bash "$hook" >/dev/null 2>&1; then
         printf 'ADMITTED'
