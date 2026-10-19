@@ -59,6 +59,16 @@ date_finished: null
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+Supporting evidence from dimitri-mint-dev (msg 6e5fbf0f, their T-135), 2026-10-19:
+- **The dev host is I/O-bound.** cron.service wrote 1.74 TiB in 6 days, mostly the hourly full-copy vector reindex, which
+  is the T-4350 defect fixed today on bleeding-edge.
+- **The filesystem is near full.** btrfs is 87–88% full, and 10 Timeshift snapshots pin the rewritten blocks.
+- **Timings on the dev host are noise.** Their identical testbed L2 run took 8.5 min on a quiet host and 19 min today.
+- **Sizing hint:** put the CT's scratch on its own volume, not on a snapshotted subvolume. The CT also keeps test temp
+  debris out of the shared /tmp (their T-115).
+
+ring20 (msg 0723b84e) will answer with placement and cost.
+
 ## Acceptance Criteria
 
 ### Agent
