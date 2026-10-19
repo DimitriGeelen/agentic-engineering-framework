@@ -23,7 +23,8 @@ Checks (any FAIL makes the verdict FAIL):
             canary document as top hit — through the real search code, against
             this index (skipped only with --no-canary, and then reported SKIP)
   cron      .context/cron-registry.yaml has an active index-reindex-hourly job AND
-            the deployed crontab (FW_CRON_INSTALL_DIR) has a live line for it (T-4390)
+            the deployed crontab (FW_CRON_INSTALL_DIR) has a live line for it (T-4390);
+            no deployed crontab at all is WARN — not installed yet (T-4413)
 WARN-only:
   usage     recall queries that could not run, as a share of the window
   disk      orphan build/reindex scratch beside the index (dead owner pid), and
@@ -453,11 +454,18 @@ def check_cron(project_root: Path):
         deployed = target.read_text(errors="replace") if target else None
     except OSError:
         deployed = None
-    if not deployed_job_live(deployed, REQUIRED_JOB, str(job.get("name") or "")):
+    if deployed is None:
+        # T-4413: no deployed crontab at all is every fresh install's state — cron
+        # install is a deliberate operator step. WARN, not FAIL: a FAIL here made
+        # every greenfield doctor exit 2. A deployed file that lacks the job is the
+        # real false green (below), and the age check FAILs once recall goes stale.
         where = target if target else "the cron install dir"
-        state = "has no live line for it" if deployed is not None else "is missing"
+        return _check("cron", "WARN",
+                      f"cron not installed yet (operator step) — {REQUIRED_JOB} is in the registry, {where} is missing",
+                      "Install it: fw cron install (operator: writes root cron)")
+    if not deployed_job_live(deployed, REQUIRED_JOB, str(job.get("name") or "")):
         return _check("cron", "FAIL",
-                      f"{REQUIRED_JOB} is in the registry but not deployed — {where} {state}",
+                      f"{REQUIRED_JOB} is in the registry but not deployed — {target} has no live line for it",
                       "Install it: fw cron install (operator: writes root cron)")
     return _check("cron", "OK", f"{REQUIRED_JOB} scheduled")
 

@@ -460,14 +460,38 @@ PY
     [[ "$output" == *"OK|cron: index-reindex-hourly scheduled"* ]]
 }
 
-@test "T-4390: registry-active but no deployed file is FAIL with the install remedy" {
+# T-4413: was FAIL under T-4390. No deployed file at all is the state of every
+# fresh install (cron install is a deliberate operator step), so FAIL made every
+# greenfield doctor exit 2. It is WARN with the install remedy; a deployed file
+# that lacks the job line stays FAIL (next tests) — that is 1023's false green.
+@test "T-4413: registry-active but no deployed file is WARN (not installed yet) with the install remedy" {
     build_index 0
     rm "$FW_CRON_INSTALL_DIR/agentic-audit-proj"
     run check --no-canary
     echo "$output"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"WARN|cron: cron not installed yet (operator step)"* ]]
+    [[ "$output" == *"fw cron install"* ]]
+    [[ "$output" != *"FAIL|"* ]]
+}
+
+@test "T-4413: deployed file present but the job line missing is FAIL" {
+    build_index 0
+    printf '# other\n5 * * * * root true\n' > "$FW_CRON_INSTALL_DIR/agentic-audit-proj"
+    run check --no-canary
+    echo "$output"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FAIL|cron: index-reindex-hourly is in the registry but not deployed"* ]]
-    [[ "$output" == *"fw cron install (operator: writes root cron)"* ]]
+    [[ "$output" == *"FAIL|cron: index-reindex-hourly is in the registry but not deployed"*"has no live line for it"* ]]
+}
+
+@test "T-4413: greenfield project (registry seeded, nothing installed) has 0 FAIL from the health check" {
+    build_index 0
+    export FW_CRON_INSTALL_DIR="$TMPD/fresh-cron.d"   # no deployed file, dir absent too
+    run check --no-canary
+    echo "$output"
+    [ "$status" -ne 2 ]
+    [ "$(printf '%s\n' "$output" | grep -c '^FAIL|')" -eq 0 ]
+    [[ "$output" == *"WARN|cron: cron not installed yet"* ]]
 }
 
 @test "T-4390: deployed line commented out (# PAUSED) is FAIL" {
@@ -497,4 +521,15 @@ PY
     [[ "$line" == *"✓"*"[active]"* && "$line" != *"not deployed"* ]]
     line=$(echo "$output" | grep 'never-installed')
     [[ "$line" == *"✗"*"not deployed"* ]]
+}
+
+@test "T-4413: fw cron status says not installed yet when no deployed file exists" {
+    rm "$FW_CRON_INSTALL_DIR/agentic-audit-proj"
+    echo "framework_root: $ROOT" > "$P/.framework.yaml"
+    PROJECT_ROOT="$P" run "$ROOT/bin/fw" cron status
+    echo "$output"
+    [ "$status" -eq 0 ]
+    line=$(echo "$output" | grep 'index-reindex-hourly')
+    [[ "$line" == *"not installed yet"* ]]
+    [[ "$line" != *"✗"* ]]
 }

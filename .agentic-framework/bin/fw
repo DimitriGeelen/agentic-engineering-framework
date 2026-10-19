@@ -6974,12 +6974,14 @@ except OSError:
 active = sum(1 for j in jobs if j.get('status') == 'active')
 paused = sum(1 for j in jobs if j.get('status') == 'paused')
 print(f'Cron registry: {len(jobs)} jobs ({active} active, {paused} paused)')
-print(f'Deployed: {sys.argv[2]}' + ('' if deployed is not None else '  (missing — fw cron install)'))
+print(f'Deployed: {sys.argv[2]}' + ('' if deployed is not None else '  (missing — not installed yet: fw cron install)'))
 for j in jobs:
     s = j.get('status', 'active')
     icon = '  ✓' if s == 'active' else '  ‖'
     tail = ''
-    if s == 'active' and not deployed_job_live(deployed, j.get('id', ''), j.get('name', '')):
+    if s == 'active' and deployed is None:
+        icon, tail = '  ‖', '  — not installed yet'  # T-4413: fresh install, operator step
+    elif s == 'active' and not deployed_job_live(deployed, j.get('id', ''), j.get('name', '')):
         icon, tail = '  ✗', '  — not deployed'
     print(f'{icon} {j[\"id\"]:25s} {j[\"schedule\"]:20s} [{s}]  {j.get(\"name\",\"\")}{tail}')
 " "$_cron_registry" "$_cron_target" "$FRAMEWORK_ROOT/lib"

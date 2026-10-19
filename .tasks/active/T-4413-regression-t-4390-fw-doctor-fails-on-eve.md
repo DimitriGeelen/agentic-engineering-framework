@@ -1,10 +1,21 @@
 ---
 id: T-4413
-name: "REGRESSION (T-4390): fw doctor FAILs on every fresh install because cron is not deployed yet; WARN until a cron file exists, FAIL only when the deployed file lacks the job"
+name: "REGRESSION (T-4390): fw doctor FAILs on every fresh install because cron is
+  not deployed yet; WARN until a cron file exists, FAIL only when the deployed file
+  lacks the job"
 description: >
-  Found by dimitri-mint-dev's L1 on bleeding-edge (msg d4cfc6e7): doctor on a fresh greenfield install exits 2 with 1 FAIL 'cron: index-reindex-hourly is in the registry but not deployed - /etc/cron.d/agentic-audit-proj is missing' (v1.8.12: rc 0). Cron install is a deliberate operator step, so every new project starts red. T-4390's check_cron must distinguish: no deployed cron file at all -> WARN 'cron not installed yet (operator step): fw cron install'; deployed file present but the job line missing or commented -> FAIL (1023's original false-green case, plus the index-age check FAILs anyway once recall goes stale); registry paused -> FAIL as today. Same split in fw cron status. Tests for all four states with a temp FW_CRON_INSTALL_DIR; a greenfield simulation where doctor has 0 FAIL. Blocks v1.8.13.
+  Found by dimitri-mint-dev's L1 on bleeding-edge (msg d4cfc6e7): doctor on a fresh
+  greenfield install exits 2 with 1 FAIL 'cron: index-reindex-hourly is in the registry
+  but not deployed - /etc/cron.d/agentic-audit-proj is missing' (v1.8.12: rc 0). Cron
+  install is a deliberate operator step, so every new project starts red. T-4390's
+  check_cron must distinguish: no deployed cron file at all -> WARN 'cron not installed
+  yet (operator step): fw cron install'; deployed file present but the job line missing
+  or commented -> FAIL (1023's original false-green case, plus the index-age check
+  FAILs anyway once recall goes stale); registry paused -> FAIL as today. Same split
+  in fw cron status. Tests for all four states with a temp FW_CRON_INSTALL_DIR; a
+  greenfield simulation where doctor has 0 FAIL. Blocks v1.8.13.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T16:54:17Z
-last_update: 2026-10-19T16:54:17Z
-date_finished: null
+last_update: '2026-10-19T17:00:52Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +61,62 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-19T16:56:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-19T17:00:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=323,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4413: REGRESSION (T-4390): fw doctor FAILs on every fresh install because cron is not deployed yet; WARN until a cron file exists, FAIL only when the deployed file lacks the job
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-4390 (64285bd94) made recall-health `check_cron` FAIL when the reindex job is not in the
+deployed crontab. On a fresh install no crontab is deployed yet (cron install is a deliberate
+operator step), so every greenfield `fw doctor` exited 2. Split the "not deployed" case by
+whether a deployed file exists at all.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `check_cron` returns WARN "cron not installed yet (operator step)" with remedy `fw cron install` when the deployed crontab file (`cron_install_target`) does not exist
+- [x] `check_cron` still FAILs when the deployed file exists but the index-reindex-hourly line is missing or commented, and when the registry job is paused
+- [x] `fw cron status` shows the same split: deployed file missing → jobs marked "not installed yet" (not ✗ "not deployed"); file present but job line missing → ✗ "not deployed"
+- [x] Greenfield regression test: temp project with registry, no deployed file → health check has 0 FAIL lines (red before the fix, green after)
+- [x] T-4390's "no deployed file is FAIL" test updated to WARN deliberately, with the reason in a comment; all other t3783 tests still pass
+- [x] `bin/fw vendor self --check` clean; bats dead-negation lint clean
+  (T-4413's own files vendored and identical; at hand-off `--check` was red only on
+  `lib/issues.py`, another worker's in-flight edit, deliberately not synced)
+
+**Red before / green after** (`bats tests/unit/t3783_vector_index_health.bats -f 'T-4390|T-4413'`):
+before the fix `not ok 2` (no deployed file → WARN), `not ok 4` (greenfield 0 FAIL — got
+`FAIL|cron: … /fresh-cron.d/agentic-audit-proj is missing`), `not ok 8` (cron status
+"not installed yet" — got `✗ … not deployed`); after the fix the whole file is 41/41 ok, 0 skip.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,8 +294,34 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t3783_vector_index_health.bats > /tmp/.t4413.out 2>&1 && ! grep -q "^not ok" /tmp/.t4413.out && grep -q "T-4413" /tmp/.t4413.out
+test "$(grep -c '# skip' /tmp/.t4413.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4413.lint 2>&1 && grep -q clean /tmp/.t4413.lint
+grep -q "cron not installed yet (operator step)" lib/vector_index_health.py
+bash -n bin/fw
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** `fw doctor` on a fresh greenfield install exits 2 with
+`FAIL cron: index-reindex-hourly is in the registry but not deployed — /etc/cron.d/agentic-audit-proj is missing`
+(dimitri-mint-dev L1, msg d4cfc6e7; v1.8.12 rc 0).
+
+**Root cause:** `lib/vector_index_health.py:check_cron` (T-4390 block after the
+`status != "active"` check) folded two different states into one FAIL: `deployed is None`
+(no crontab file deployed yet — the normal state of every project before the operator runs
+`fw cron install`) and "file deployed but job line missing/commented" (1023's real
+false-green). Same fold in `bin/fw` `cron status|list` (every active job ✗ "not deployed"
+when the file is missing).
+
+**Why structurally allowed:** T-4390's tests built a fixture with a deployed file in
+`setup()` and pinned "file missing → FAIL" as intended behaviour; no test simulated a
+greenfield project (registry seeded by init, nothing installed), and the upgrade
+fresh-machine simulation does not run doctor's recall-health leg.
+
+**Prevention:** greenfield regression test in `tests/unit/t3783_vector_index_health.bats`
+(registry + no deployed file → 0 FAIL from the health check) plus explicit tests for each
+of the four states, so a future tightening that re-folds them goes red.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -338,3 +417,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4413-regression-t-4390-fw-doctor-fails-on-eve.md
 - **Context:** Initial task creation
+
+### 2026-10-19T16:56:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
