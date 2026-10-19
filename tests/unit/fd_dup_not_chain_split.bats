@@ -18,8 +18,20 @@
 # "preceded by > or <" would admit `>& file` and turn a deadlock fix into a hole.
 
 load ../test_helper
+load helpers/known_cwd
 
 LIB="$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"
+
+# T-4429: classify from a known cwd, as a real hook does (payload cwd); the
+# `bash -c` legs inherit it. Since T-4409 an unknown cwd fails git closed, which
+# turned `git status 2>&1` red for a reason unrelated to fd duplication.
+setup()    { known_cwd_setup; }
+teardown() { known_cwd_teardown; }
+
+@test "T-4409 fail-closed: no payload cwd and PWD != PROJECT_ROOT gates git status" {
+    run known_cwd_assert_fail_closed "$LIB"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+}
 
 _allowed() { bash -c "source '$LIB'; is_bash_safe_command \"\$1\"" _ "$1"; }
 # T-3223: the splitter emits NUL-TERMINATED segments (a quoted argument may

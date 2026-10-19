@@ -8,11 +8,26 @@
 # re-widening nor an over-tightening (null-focus deadlock) slips through.
 
 load ../test_helper
+load helpers/known_cwd
 
+# T-4429: classify from a known cwd, as a real hook does (payload cwd). Without it
+# T-4409 makes every git verb fail closed, and the read legs below go red.
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export FRAMEWORK_ROOT
+    known_cwd_setup
     source "$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"
+}
+
+teardown() {
+    known_cwd_teardown
+    [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
+    return 0
+}
+
+@test "T-4409 fail-closed: no payload cwd and PWD != PROJECT_ROOT gates git status" {
+    run known_cwd_assert_fail_closed "$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
 }
 
 _gated() {
