@@ -151,6 +151,7 @@ _cfw_should_wrap_tmux() {
 if _cfw_should_wrap_tmux; then
     _cfw_self="$(readlink -f "$0")"   # this script itself (not a lib/ lookup, T-3954)
     _cfw_name="fw-$(printf '%s' "$(basename "$PWD")" | tr -c 'A-Za-z0-9_-' '_' | cut -c1-40)-$$"
+    _cfw_sock=fw-agents   # the tmux server this wrap runs on (-L); the redraw hooks below reuse it
     # tmux does not hand the caller's environment to a new session: pass what matters.
     _cfw_env=(-e FW_CLAUDE_FW_IN_TMUX=1)
     while IFS='=' read -r _k _; do
@@ -173,8 +174,15 @@ if _cfw_should_wrap_tmux; then
     # T-4217 (G-116): a tmux server takes its GLOBAL env from the process that starts it. The
     # session's own paths travel via -e below, so the server itself must not inherit the
     # caller's PROJECT_ROOT/FRAMEWORK_ROOT (another project's, if the server is shared).  T-4222: also TASKS_DIR/CONTEXT_DIR.
+    # T-4426: after a mouse-wheel scroll into copy mode, on attach and on resize, Claude Code's
+    # screen stays cluttered until Ctrl+L. Three hooks send C-l to this session's pane. Each is
+    # set on "$_cfw_name" (or its window), never -g: the shared server also carries dispatch
+    # workers, and they must not get Ctrl+L. pane-mode-changed is a window hook in tmux 3.4, so
+    # it targets "$_cfw_name:"; it fires on every mode change, so it sends C-l only when the
+    # pane is back out of its mode (#{pane_in_mode} = 0). run-shell -b expands the formats; a
+    # set-hook command that uses if-shell -F silently did nothing (T-4426 measurement).
     exec env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM -u TASKS_DIR -u CONTEXT_DIR \
-        tmux -L fw-agents -f /dev/null new-session -s "$_cfw_name" -c "$PWD" "${_cfw_env[@]}" -- "$_cfw_self" "$@" \; \
+        tmux -L "$_cfw_sock" -f /dev/null new-session -s "$_cfw_name" -c "$PWD" "${_cfw_env[@]}" -- "$_cfw_self" "$@" \; \
         set-option -s escape-time 0 \; \
         set-option -g prefix None \; \
         set-option -g prefix2 None \; \
@@ -183,7 +191,10 @@ if _cfw_should_wrap_tmux; then
         set-option -g status off \; \
         set-option -t "$_cfw_name" destroy-unattached on \; \
         set-option -g history-limit 50000 \; \
-        set-option -g mouse on
+        set-option -g mouse on \; \
+        set-hook -w -t "$_cfw_name:" pane-mode-changed "run-shell -b '[ #{pane_in_mode} = 0 ] && tmux -L $_cfw_sock send-keys -t #{pane_id} C-l'" \; \
+        set-hook -t "$_cfw_name" client-attached "run-shell -b 'tmux -L $_cfw_sock send-keys -t #{pane_id} C-l'" \; \
+        set-hook -t "$_cfw_name" client-resized "run-shell -b 'tmux -L $_cfw_sock send-keys -t #{pane_id} C-l'"
 fi
 
 # TermLink session management
