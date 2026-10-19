@@ -71,7 +71,40 @@ fi
 
 STARTED="$(date -u +%FT%TZ)"
 START_EPOCH="$(date +%s)"
-echo "$STARTED START suite=$SUITE_DIR timeout=${TOTAL_TIMEOUT}s" >> "$RUN_LOG"
+
+# T-4381: the revision this run measures — HEAD and tree state of the repo
+# holding the suite, taken BEFORE any test runs (tests write into the tree).
+# Without it no red can be joined to the code it ran against. Outside a git
+# repo both are recorded as unknown rather than omitted.
+REV_COMMIT="$(git -C "$SUITE_DIR" rev-parse --verify -q HEAD 2>/dev/null)" || REV_COMMIT=""
+REV_TREE=unknown
+if [ -n "$REV_COMMIT" ] && _rev_status="$(git -C "$SUITE_DIR" status --porcelain 2>/dev/null)"; then
+    if [ -n "$_rev_status" ]; then REV_TREE=dirty; else REV_TREE=clean; fi
+fi
+echo "$STARTED START suite=$SUITE_DIR timeout=${TOTAL_TIMEOUT}s commit=${REV_COMMIT:-unknown} tree=$REV_TREE" >> "$RUN_LOG"
+
+# BEGIN _discover_pytest
+# _discover_pytest <dir> — the pytest leg's files (T-4381). pytest's own names
+# (test_*.py, *_test.py) always run: the name claims tests, so a file that
+# collects none is graded red (exit 5), not skipped. Any other module runs when
+# it defines a test (`def test…` / `class Test…`) — t2974_*.py-style files
+# held ~700 tests the old test_*.py glob never ran. conftest.py and _-prefixed
+# helpers never run; a helper module with no test definitions is not a test file.
+_discover_pytest() {
+    local f b
+    for f in "$1"/*.py; do
+        [ -f "$f" ] || continue
+        b="$(basename "$f")"
+        case "$b" in conftest.py|_*) continue ;; esac
+        case "$b" in
+            test_*.py|*_test.py) echo "$f" ;;
+            *) grep -qE '^[[:space:]]*(async[[:space:]]+)?def[[:space:]]+test|^class[[:space:]]+Test' "$f" \
+                   && echo "$f" ;;
+        esac
+    done
+    return 0
+}
+# END _discover_pytest
 
 _remaining() {
     local _left=$(( TOTAL_TIMEOUT - ( $(date +%s) - START_EPOCH ) ))
@@ -128,6 +161,11 @@ _run_one() {
             env -u FORCE_COLOR PY_COLORS=0 NO_COLOR=1 \
             python3 -m pytest "$file" -q -rf -p no:cacheprovider --color=no ) \
             < /dev/null > "$out" 2>&1 || rc=$?
+        # T-4381: pytest exits 5 both for "no tests collected" (red) and for a
+        # module-level skip (`pytest.skip(..., allow_module_level=True)`, an
+        # optional dependency absent). Only the second reports skips; it is a
+        # measured skip, counted as such, not a failure.
+        if [ "$rc" -eq 5 ] && grep -qE '^(=+ )?[0-9]+ skipped( in |, )' "$out"; then rc=0; fi
     fi
     st=done
     # 143 = TERM from outside (the runner's signal trap stopping the pool).
@@ -212,13 +250,13 @@ _on_signal() {
     # Every file with no verdict record was never reached (or was in flight):
     # record it as not-run so the report names it.
     local f leg
-    for f in "$SUITE_DIR"/*.bats "$SUITE_DIR"/test_*.py; do
+    while IFS= read -r f; do
         [ -f "$f" ] || continue
         case "$f" in *.bats) leg=bats ;; *) leg=pytest ;; esac
         [ -f "$RESULTS/$leg/$(basename "$f").meta" ] || echo "not-run 0 0" > "$RESULTS/$leg/$(basename "$f").meta"
-    done
+    done < <(ls "$SUITE_DIR"/*.bats 2>/dev/null; _discover_pytest "$SUITE_DIR")
     BATS_FILES=$(ls "$SUITE_DIR"/*.bats 2>/dev/null | wc -l | tr -d ' ')
-    PY_FILES=$(ls "$SUITE_DIR"/test_*.py 2>/dev/null | wc -l | tr -d ' ')
+    PY_FILES=$(_discover_pytest "$SUITE_DIR" | wc -l | tr -d ' ')
     echo "$(date -u +%FT%TZ) INTERRUPTED by signal — writing partial report" >> "$RUN_LOG"
     _finish
 }
@@ -237,7 +275,9 @@ _leg_rc() {
         [ -f "$m" ] || continue
         read -r st rc _ < "$m"
         case "$st" in
-            done) [ "$rc" -ne 0 ] && [ "$rc" -ne 5 ] && any_fail=1 ;;  # pytest 5 = nothing collected
+            # T-4381: pytest 5 (nothing collected) is red — a discovered file
+            # that runs no test measured nothing, it did not pass.
+            done) [ "$rc" -ne 0 ] && any_fail=1 ;;
             *) any_to=1 ;;
         esac
     done
@@ -293,6 +333,7 @@ T3302_BATS_BUDGET="$BATS_BUDGET" T3302_PY_BUDGET="$PY_BUDGET" \
 T3302_PY_RESERVE="$PY_RESERVE" T3602_JOBS="$JOBS" T3602_FILE_TIMEOUT="$FILE_TIMEOUT" \
 T3302_REPORT_DIR="$REPORT_DIR" T3602_INTERRUPTED="$INTERRUPTED" T3602_WALL=$(( $(date +%s) - START_EPOCH )) \
 T4058_FAILURES="$FAILURES_KEPT" \
+T4381_REV_COMMIT="$REV_COMMIT" T4381_REV_TREE="$REV_TREE" \
 python3 - "$RESULTS" <<'PY'
 import glob, os, re, sys, yaml, datetime
 
@@ -350,8 +391,12 @@ def _leg(leg):
                             if l.startswith(("FAILED ", "ERROR "))]
         # A file that exited non-zero on its own but recorded no failing test
         # (setup_file error, syntax error, import error) is still red.
-        if st == "done" and rc not in (0, 5) and len(s["failed"]) == before:
-            s["failed"].append("%s: exited rc=%d with no failing test recorded" % (name, rc))
+        if st == "done" and rc != 0 and len(s["failed"]) == before:
+            if leg == "pytest" and rc == 5:
+                # T-4381: pytest's "no tests collected" — red, not green.
+                s["failed"].append("%s: collected no tests (pytest exit 5)" % name)
+            else:
+                s["failed"].append("%s: exited rc=%d with no failing test recorded" % (name, rc))
     return s
 
 B, P = _leg("bats"), _leg("pytest")
@@ -401,6 +446,12 @@ report = {
     # T-4058: where the failing files' output was kept (relative to the report
     # dir), or None when this run had no red file. The audit names it.
     "failures_dir": env.get("T4058_FAILURES") or None,
+    # T-4381: the code this run measured (taken before any test ran). tree is
+    # clean | dirty | unknown; commit is None outside a git repo.
+    "revision": {
+        "commit": env.get("T4381_REV_COMMIT") or None,
+        "tree": env.get("T4381_REV_TREE") or "unknown",
+    },
     "legs": {
         "bats": _leg_report(B, "BATS"),
         "pytest": _leg_report(P, "PY"),
@@ -417,7 +468,11 @@ paths = [dated, latest]
 # overwrites LATEST (and today's dated report); the pre-push ratchet grades
 # this file instead of a run that measured only part of the corpus. The audit
 # re-checks completeness itself; this is the runner's conservative half.
-if not report["interrupted"] and not timed_out and not B["not_run"] and not P["not_run"]:
+# T-4381: a file killed by its own per-file cap has no verdict either, so a run
+# with any per-file timeout is not complete (the audit's tolerance for a few
+# timeouts still applies when it grades LATEST or a dated report directly).
+if (not report["interrupted"] and not timed_out and not B["not_run"] and not P["not_run"]
+        and not B["timed_out"] and not P["timed_out"]):
     paths.append(os.path.join(report_dir, "LAST-COMPLETE.yaml"))
 for path in paths:
     tmp = path + ".tmp"
@@ -452,13 +507,13 @@ else
     LEG_PID=$!; wait "$LEG_PID"; LEG_PID=""
 fi
 
-# ── Leg 2: pytest (tests/unit/test_*.py) ────────────────────────────────────
+# ── Leg 2: pytest (tests/unit/*.py per _discover_pytest) ────────────────────
 PY_LIST=()
-while IFS= read -r _f; do PY_LIST+=("$_f"); done < <(ls "$SUITE_DIR"/test_*.py 2>/dev/null)
+while IFS= read -r _f; do PY_LIST+=("$_f"); done < <(_discover_pytest "$SUITE_DIR")
 PY_FILES=${#PY_LIST[@]}
 PY_RC=0 PY_ERROR=""
 if [ "$PY_FILES" -eq 0 ]; then
-    PY_ERROR="no test_*.py files in $SUITE_DIR"
+    PY_ERROR="no pytest files in $SUITE_DIR"
 elif ! python3 -c 'import pytest' >/dev/null 2>&1; then
     PY_ERROR="pytest not installed"
 else
