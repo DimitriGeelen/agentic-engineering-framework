@@ -1,0 +1,109 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4348: fw sidecar send has no 'notice, no reply expected' kind, so every FYI enters the reply/retry ladder and escalates
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T14:57:50Z
+# ============================================================================
+
+task_id: T-4348
+task_name: "fw sidecar send has no 'notice, no reply expected' kind, so every FYI enters the reply/retry ladder and escalates"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-18T22:55:43Z
+completed: 2026-10-19T14:56:47Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-19T16:46:43+02:00
+last_commit: 2026-10-19T16:46:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sidecar send --notice — delivered and labelled 'notice — no reply expected', never chased (hub: closed at delivery, off the retry ladder; direct: no hand-over deadline; waiting register skips delivered notices); old receivers show it as a normal message
+
+# Key outcomes
+outcomes:
+  - '`fw sidecar send --notice` exists (help text says "no reply expected"); the outbox message (hub path) and the direct envelope + SENT row carry `notice: true`; the hub post carries `--metadata notice=1`. A send without `--notice` writes no `notice` key at all (old message digests unchanged).'
+  - 'Hub path: a POSTED notice is closed at delivery (`error` prefix `notice`, no `next_retry_at`), so the retry sweep never reaches it, instead of re-posting, nudging, operator-escalating or dead-lettering it; `retry.is_open` treats it as closed; an un-posted (STORED) notice is still re-posted (delivery, not reply).'
+  - 'Direct path: a notice is terminal at RECEIVED — no handover deadline, so `direct.escalate_expired` never ESCALATES it.'
+  - 'Waiting register: `waiting.outbound_items` does not list a delivered notice (hub posted, or direct RECEIVED and above) past the warn threshold, so no warn/overdue push fires for it; a non-notice message in the same state is still listed.'
+  - 'Receiver: `inbox.pending` and the watcher carry `notice` from hub metadata into the stored envelope; the prompt hook (`hooks._block`), the topic-surface hook (`sidecar-inbox.sh`) and `fw sidecar inbox` label it `notice — no reply expected` — on the line after the body, never on the block header, which is the finalizer''s HANDED_OVER evidence; a message without the key renders exactly as before.'
+  - 'Backward compat: an envelope carrying `notice` is accepted by `receiver.store_message` (unknown key stored verbatim, so an old receiver shows it as a normal message); old ledger rows / messages without `notice` behave as before (existing sidecar tests green).'
+  - 'Documented in `fw sidecar send --help` and in the peer-message hook frame text.'
+  - 'Regression test `tests/unit/test_t4348_sidecar_notice.py` (temp PROJECT_ROOT, fake transport, never the live sidecar): red before the fix, green after. Plus a bats case in `tests/unit/sidecar_inbox_hook.bats` for the topic-surface hook label.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — where a notice stops being chased'
+    chose: 'close a hub notice at delivery (posted row carries `error: notice: …`, `next_retry_at: null`); keep re-posting an UN-posted notice; direct notice gets no hand-over deadline; waiting register skips a notice once delivered. Label goes on the line after the body, never on the block header.'
+    rationale: 'the task asks for "terminal at RECEIVED" — delivery is still owed, a reply is not. The header line is the finalizer''s HANDED_OVER evidence (`hooks._in_transcript`), so changing it per kind would risk false/missed hand-overs.'
+    alternatives_rejected: ['treating every `--in-reply-to` send as a notice by default (changes behaviour for existing callers whose replies do expect follow-ups — left for a separate decision); suppressing receiver-side unread-backlog WARNs (inbox-stale, dm-stale) — those report undrained mail, not owed replies.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/sidecar-inbox.sh'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/delivery.py'
+  - '.agentic-framework/lib/sidecar/direct.py'
+  - '.agentic-framework/lib/sidecar/hooks.py'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - '.agentic-framework/lib/sidecar/outbox.py'
+  - '.agentic-framework/lib/sidecar/retry.py'
+  - '.agentic-framework/lib/sidecar/termlink_transport.py'
+  - '.agentic-framework/lib/sidecar/waiting.py'
+  - '.agentic-framework/lib/sidecar/watcher.py'
+  - 'agents/context/sidecar-inbox.sh'
+  - '.fabric/components/tests-unit-test_t4348_sidecar_notice.yaml'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/delivery.py'
+  - 'lib/sidecar/direct.py'
+  - 'lib/sidecar/hooks.py'
+  - 'lib/sidecar/inbox.py'
+  - 'lib/sidecar/outbox.py'
+  - 'lib/sidecar/retry.py'
+  - 'lib/sidecar/termlink_transport.py'
+  - 'lib/sidecar/waiting.py'
+  - 'lib/sidecar/watcher.py'
+  - '.tasks/active/T-4348-fw-sidecar-send-has-no-notice-no-reply-e.md'
+  - 'tests/unit/sidecar_inbox_hook.bats'
+  - 'tests/unit/test_t4348_sidecar_notice.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T16:46:43'
+    action: 'T-4348: fw sidecar send --notice — delivered and labelled ''notice — no reply expected'', never chased (hub: closed at delivery, off the retry ladder; direct: no hand-over deadline; waiting register skips delivered notices); old receivers show it as a normal message'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 961 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [sidecar, ux]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 961
+  commits: 1
+  files_changed: 26
+  lines_added: 429
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4348-fw-sidecar-send-has-no-notice-no-reply-e.md
+generated_by: context-agent-hybrid

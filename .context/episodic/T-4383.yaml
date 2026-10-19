@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4383: audit.bats asserts its named contracts again: 'exits 0 for all-pass sections' and '--quiet suppresses output' test against synthetic reports in a private root
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T15:02:54Z
+# ============================================================================
+
+task_id: T-4383
+task_name: "audit.bats asserts its named contracts again: 'exits 0 for all-pass sections' and '--quiet suppresses output' test against synthetic reports in a private root"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T12:28:22Z
+completed: 2026-10-19T15:01:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T16:06:51+02:00
+last_commit: 2026-10-19T16:06:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit.bats contract tests run against a synthetic project — exit 0 all-pass, exit 2 seeded FAIL, empty --quiet; live run kept as one smoke
+
+# Key outcomes
+outcomes:
+  - '''audit exits 0 for all-pass sections'' drives agents/audit/audit.sh against a synthetic project in a private temp root (PROJECT_ROOT under $BATS_TEST_TMPDIR) and asserts `[ "$status" -eq 0 ]` — no exit-2 tolerance'
+  - 'A new seeded-FAIL contract test runs the same synthetic project with one deliberately broken input and asserts `[ "$status" -eq 2 ]` plus a `[FAIL]` line'
+  - '''--quiet suppresses terminal output'' asserts the quiet run''s stdout is empty on the synthetic project, against a non-quiet control run of the same project that prints the report'
+  - 'One live smoke (''the live structure section completes with a full report'') keeps the T-4372 rule; the T-3328/T-4372 hermetic stub controls are unchanged'
+  - 'Red run recorded: with audit.sh temporarily mutated to exit 2 on the synthetic all-pass project, the ''exits 0'' test fails; mutation reverted (git diff agents/audit/audit.sh empty)'
+  - 'The hermetic tests in tests/unit/audit.bats (4 synthetic-project tests, 6 stub controls, --help) pass alone with zero skips. The synthetic tests hold a private lock. Live-repo tests may still skip on exit 75 lock contention, which is the existing T-3328 contract, and their runtime depends on host load'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4383-auditbats-asserts-its-named-contracts-ag.md'
+  - 'tests/unit/audit.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T16:06:51'
+    action: 'T-4383: audit.bats contract tests run against a synthetic project — exit 0 all-pass, exit 2 seeded FAIL, empty --quiet; live run kept as one smoke'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 153 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 153
+  commits: 1
+  files_changed: 2
+  lines_added: 138
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4383-auditbats-asserts-its-named-contracts-ag.md
+generated_by: context-agent-hybrid

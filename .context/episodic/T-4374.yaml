@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4374: Corpus spec: accept bpmn:callActivity with aef: ioMapping (round-trip only) so 832 designer maps using it do not hard-fail
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-19T14:59:06Z
+# ============================================================================
+
+task_id: T-4374
+task_name: "Corpus spec: accept bpmn:callActivity with aef: ioMapping (round-trip only) so 832 designer maps using it do not hard-fail"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T10:14:30Z
+completed: 2026-10-19T14:58:16Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-19T12:21:35+02:00
+last_commit: 2026-10-19T16:12:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record 832's ordering dependency (no callActivity release before this lands; notify them). record 832 proposal C (aef:callRef workflowRef uuid beside calledElement), accepted. corpus_spec accepts bpmn:callActivity — calledElement, aef:ioMapping v1 (in/out source+target) and sibling aef:callRef round-trip; call_findings + validate verb check cross-map refs (uuid wins on disagreement)
+
+# Key outcomes
+outcomes:
+  - '`parse_map` accepts `<bpmn:callActivity>` (type `call`): `calledElement`, `aef:ioMapping` (aef:in / aef:out, each `source` + `target`) and the sibling `<aef:callRef workflowRef=…/>` are captured as structured spec fields, and `emit_map` re-emits them so a second parse is identical (round-trip lossless)'
+  - 'ioMapping content outside the v1 shape (other child, missing source/target, extra attribute such as an expression) is a hard parse error, never a silent drop'
+  - '`call_findings(spec)` reports: calledElement not resolving to a corpus map id (error); callRef workflowRef not equal to any map''s meta.json uuid (error); calledElement/uuid disagreement naming both sides (finding, uuid wins, spec not rewritten); a call without callRef is valid'
+  - '`emit_map` (generate/prove) refuses on call_findings errors; a `corpus_spec validate` verb prints findings and exits 1 only on errors'
+  - 'Unknown process children are still a hard error (the existing strict-parse test moved to a tag that is still unsupported)'
+  - 'Tests added to tests/unit/test_corpus_spec_roundtrip.py; that file passes alone'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4374-corpus-spec-accept-bpmncallactivity-with.md'
+  - 'tests/unit/test_corpus_spec_roundtrip.py'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T12:21:35'
+    action: 'T-4374: record 832''s ordering dependency (no callActivity release before this lands; notify them)'
+  - time: '2026-10-19T15:34:30'
+    action: 'T-4374: record 832 proposal C (aef:callRef workflowRef uuid beside calledElement), accepted'
+  - time: '2026-10-19T16:12:18'
+    action: 'T-4374: corpus_spec accepts bpmn:callActivity — calledElement, aef:ioMapping v1 (in/out source+target) and sibling aef:callRef round-trip; call_findings + validate verb check cross-map refs (uuid wins on disagreement)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 283 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 283
+  commits: 3
+  files_changed: 3
+  lines_added: 298
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4374-corpus-spec-accept-bpmncallactivity-with.md
+generated_by: context-agent-hybrid

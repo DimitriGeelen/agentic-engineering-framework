@@ -6,12 +6,12 @@ description: >
   Fix 3 dead negations in new tests (t2332 from T-4384, t4381 from T-4381) blocking
   the pre-push lint
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/t2332_bvp_propose_queue.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T14:59:10Z
-last_update: '2026-10-19T15:02:22Z'
-date_finished:
+last_update: 2026-10-19T15:03:58Z
+date_finished: 2026-10-19T15:03:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -385,3 +385,20 @@ worker-common verification checklist for any task that adds bats tests. That bel
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4398-fix-3-dead-negations-in-new-tests-t2332-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-95dc45b7
+- **Timestamp:** 2026-10-19T15:04:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T15:03:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

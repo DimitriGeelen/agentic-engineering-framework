@@ -10,12 +10,12 @@ description: >
   keep a separate smoke that the live audit completes. Arc test-suite-health (arc-026);
   source: external review T-4376 (docs/reports/T-4376-reviews/).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/audit.bats]
 related_tasks: []
 arc_id: test-suite-health
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,8 +45,8 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:28:22Z
-last_update: 2026-10-19T13:49:52Z
-date_finished:
+last_update: 2026-10-19T15:01:58Z
+date_finished: 2026-10-19T15:01:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -408,3 +408,20 @@ git diff --quiet -- agents/audit/audit.sh
 
 ### 2026-10-19T13:49:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7e9951d4
+- **Timestamp:** 2026-10-19T15:02:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-19T15:01:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
