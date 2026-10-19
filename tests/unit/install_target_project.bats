@@ -13,22 +13,35 @@
 # exists and the target project does not).
 
 bats_require_minimum_version 1.5.0
+load helpers/hermetic
 
-FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
-INSTALL="$FRAMEWORK_ROOT/install.sh"
+# Not FRAMEWORK_ROOT: hermetic_setup strips that name when it is inherited.
+REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+INSTALL="$REPO_ROOT/install.sh"
 
 setup() {
-    TEST_HOME=$(mktemp -d)
-    TEST_TARGET=$(mktemp -d)
+    # T-4428: the shared hermetic fixture (T-4378) replaces the hand-rolled
+    # temp HOME/target and the private TMPDIR of T-4318. HERMETIC_PROJECT is
+    # left empty (no --project): it is the cwd test 5 asserts stays empty.
+    hermetic_setup
+    TEST_HOME="$HERMETIC_HOME"
+    TEST_TARGET="$HERMETIC_ROOT/target"
     # T-4261: own repo, so an enclosing repo cannot stand in for the project's HEAD.
     git init -q "$TEST_TARGET"
-    # mktemp already creates the dir; do_init refuses on a non-empty dir only
-    # via the .framework.yaml check, so an empty dir here is fine to reuse.
-    CURRENT_BRANCH="$(git -C "$FRAMEWORK_ROOT" rev-parse --abbrev-ref HEAD)"
+    CURRENT_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD)"
 }
 
 teardown() {
-    rm -rf "$TEST_HOME" "$TEST_TARGET"
+    hermetic_teardown
+}
+
+# T-4428: install.sh <target> runs fw init, which probes /api/_identity
+# (lib/watchtower.sh:67) with no switch to skip it. FW_PORT is passed through
+# env -i so the probe lands on the hermetic decoy; before this migration it
+# reached the live Watchtower. Called in the test body, not inside run_install:
+# `run` is a subshell and the flag must reach teardown.
+allow_init_probe() {
+    hermetic_allow_watchtower "install.sh -> fw init probes /api/_identity on purpose"
 }
 
 run_install() {
@@ -38,8 +51,8 @@ run_install() {
         GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@example.com \
         GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@example.com \
         PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-        ${RUN_TMPDIR:+TMPDIR="$RUN_TMPDIR"} \
-        bash "$INSTALL" "$TEST_TARGET" --local "$FRAMEWORK_ROOT" --branch "$CURRENT_BRANCH" --no-scan
+        TMPDIR="$TMPDIR" FW_PORT="$FW_PORT" \
+        bash "$INSTALL" "$TEST_TARGET" --local "$REPO_ROOT" --branch "$CURRENT_BRANCH" --no-scan
 }
 
 @test "T-2809: install.sh <target> vendors into the target project, not \$HOME" {
@@ -47,6 +60,7 @@ run_install() {
         skip "detached HEAD -- --local install needs a real branch name"
     fi
 
+    allow_init_probe
     run run_install
     [ "$status" -eq 0 ]
     [[ "$output" == *"All verification steps passed"* ]]
@@ -66,11 +80,13 @@ run_install() {
         skip "detached HEAD -- --local install needs a real branch name"
     fi
 
+    allow_init_probe
     run run_install
     [ "$status" -eq 0 ]
 
     run env -i HOME="$TEST_HOME" \
         PATH="$TEST_HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+        TMPDIR="$TMPDIR" FW_PORT="$FW_PORT" \
         bash -c "cd '$TEST_TARGET' && fw version"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Mode:      vendored"* ]]
@@ -82,18 +98,15 @@ run_install() {
         skip "detached HEAD -- --local install needs a real branch name"
     fi
 
-    # T-4318: a private TMPDIR. The shared /tmp listing also changes when parallel
-    # tests create and remove their own agentic-fw-fetch-* dirs.
+    # T-4318: TMPDIR is private (hermetic_setup). The shared /tmp listing also
+    # changes when parallel tests create and remove their own agentic-fw-fetch-* dirs.
     local after
-    RUN_TMPDIR="$(mktemp -d)"
-    export RUN_TMPDIR
 
+    allow_init_probe
     run run_install
     [ "$status" -eq 0 ]
 
-    after="$(compgen -G "$RUN_TMPDIR/agentic-fw-fetch-*" || true)"
-    rm -rf "$RUN_TMPDIR"
-    unset RUN_TMPDIR
+    after="$(compgen -G "$TMPDIR/agentic-fw-fetch-*" || true)"
     [ -z "$after" ] || { echo "fetch dir leaked: $after"; false; }
 }
 
@@ -102,6 +115,7 @@ run_install() {
         skip "detached HEAD -- --local install needs a real branch name"
     fi
 
+    allow_init_probe
     run run_install
     [ "$status" -eq 0 ]
 
@@ -126,12 +140,12 @@ run_install() {
         skip "detached HEAD -- --local install needs a real branch name"
     fi
 
-    local cwd
-    cwd=$(mktemp -d)
+    local cwd="$HERMETIC_PROJECT"
 
     run env -i HOME="$TEST_HOME" \
         PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-        bash -c "cd '$cwd' && bash '$INSTALL' --local '$FRAMEWORK_ROOT' --branch '$CURRENT_BRANCH' --no-scan"
+        TMPDIR="$TMPDIR" FW_PORT="$FW_PORT" \
+        bash -c "cd '$cwd' && bash '$INSTALL' --local '$REPO_ROOT' --branch '$CURRENT_BRANCH' --no-scan"
     [ "$status" -eq 0 ]
 
     local entries
@@ -139,6 +153,4 @@ run_install() {
     [ "$entries" -eq 0 ] || { echo "cwd was NOT empty: $(ls -A "$cwd")"; false; }
     [ ! -d "$TEST_HOME/.agentic-framework" ]
     [ -x "$TEST_HOME/.local/bin/fw" ]
-
-    rm -rf "$cwd"
 }
