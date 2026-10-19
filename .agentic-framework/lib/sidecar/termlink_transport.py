@@ -112,6 +112,10 @@ def build_post_command(msg: dict, *, binary: str | None = None,
         # parent OFFSET for its thread views. A message id gets its own key.
         argv[argv.index("--payload"):argv.index("--payload")] = [
             "--metadata", f"in_reply_to_msg_id={msg['in_reply_to']}"]
+    if msg.get("notice"):
+        # T-4348: no reply expected. An older reader ignores the key and shows
+        # the message as an ordinary consult.
+        argv[argv.index("--payload"):argv.index("--payload")] = ["--metadata", "notice=1"]
     if msg.get("urgent"):
         # T-3684: urgency survives the hub fallback (R5) — the receiving
         # watcher injects it at once instead of waiting for readiness.

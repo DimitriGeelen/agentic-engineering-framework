@@ -186,7 +186,7 @@ def send(entry: dict, *, from_id: str, to: str, body: str, conversation_id: str,
          urgent: bool = False, in_reply_to: str | None = None,
          handover_deadline_s: int = DEFAULT_HANDOVER_DEADLINE_S,
          retries: int = DEFAULT_RETRIES, token: str | None = None,
-         sleep=time.sleep) -> dict:
+         sleep=time.sleep, notice: bool = False) -> dict:
     """Send one message to a registered receiver. Returns the final ledger row.
 
     `token` overrides the token read from the peer's token_file (tests use it
@@ -203,10 +203,15 @@ def send(entry: dict, *, from_id: str, to: str, body: str, conversation_id: str,
         "body": body,
         "created_at": _now().isoformat(),
     }
+    if notice:
+        # T-4348: no reply expected. Only present when set: an older receiver
+        # stores it verbatim and surfaces the message as an ordinary consult.
+        envelope["notice"] = True
     _mark_epoch()
     record(client_msg_id, SENT, by="sender", target=to, url=entry.get("url"),
            conversation_id=conversation_id, in_reply_to=in_reply_to,
-           urgent=bool(urgent) or None)   # T-3782: the sender-side escalation reads it
+           urgent=bool(urgent) or None,   # T-3782: the sender-side escalation reads it
+           notice=True if notice else None)
 
     last_error = None
     for attempt in range(1, retries + 1):
@@ -218,7 +223,10 @@ def send(entry: dict, *, from_id: str, to: str, body: str, conversation_id: str,
                 sleep(_BACKOFF_S[min(attempt - 1, len(_BACKOFF_S) - 1)])
             continue
         if status == 200 and resp.get("status") == RECEIVED:
-            deadline = (_now() + timedelta(seconds=handover_deadline_s)).isoformat()
+            # T-4348: a notice is terminal at RECEIVED — no hand-over deadline,
+            # so escalate_expired never turns it into ESCALATED.
+            deadline = None if notice else \
+                (_now() + timedelta(seconds=handover_deadline_s)).isoformat()
             return record(client_msg_id, RECEIVED, by="receiver-response",
                           deadline=deadline, attempts=attempt)
         if status in (401, 403):

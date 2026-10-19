@@ -434,6 +434,8 @@ def outbound_items(now: datetime | None = None) -> list[dict]:
         st = direct._effective(hist)
         if st in (direct.HANDED_OVER, direct.REPLIED):
             continue
+        if sent.get("notice") and st not in (direct.SENT, direct.UNDELIVERABLE, direct.REJECTED):
+            continue   # T-4348: a notice the peer received owes us nothing more
         row = {k: v for r in hist for k, v in r.items()}
         wrow = next((r for r in hist if r.get("state") == WAITING), None)
         failed = st in (direct.UNDELIVERABLE, direct.REJECTED, direct.ESCALATED)
@@ -449,6 +451,7 @@ def outbound_items(now: datetime | None = None) -> list[dict]:
         files = sorted(outbox._outbox_dir().glob("*.json"))
     except OSError:
         files = []
+    posted: set[str] | None = None   # T-4348: read the hub ledger only if a notice needs it
     for f in files:
         try:
             msg = json.loads(f.read_text(encoding="utf-8"))
@@ -461,6 +464,14 @@ def outbound_items(now: datetime | None = None) -> list[dict]:
         got = rc.get(cid, {})
         if receipts.HANDED_OVER in got or receipts.REPLIED in got:
             continue
+        if msg.get("notice"):
+            # T-4348: no reply expected — closed once the hub took it (or the
+            # peer said it RECEIVED it). An undelivered notice is still listed.
+            if posted is None:
+                posted = {r.get("client_msg_id") for r in outbox._read_ledger()
+                          if r.get("state") in (outbox.HUB_ACCEPTED, outbox.INJECTED_LATER)}
+            if cid in posted or receipts.RECEIVED in got:
+                continue
         wrow = got.get(WAITING)
         age = _age_s(t0, now)
         if not (wrow or age >= thr):

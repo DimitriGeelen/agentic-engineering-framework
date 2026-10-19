@@ -83,7 +83,7 @@ def _send_direct(args, entry: dict) -> int:
                       urgent=args.urgent,
                       in_reply_to=receipts.base_id(args.in_reply_to) if args.in_reply_to else None,
                       handover_deadline_s=args.handover_deadline,
-                      retries=args.retries)
+                      retries=args.retries, notice=args.notice)
     ok = row["state"] == direct.RECEIVED
     payload = {"client_msg_id": row["client_msg_id"], "state": row["state"],
                "delivered": ok, "reason": row.get("error"), "path": "direct",
@@ -174,7 +174,8 @@ def _cmd_send(args) -> int:
         from_id=inbox.agent_id(), to=target, body=args.body,
         conversation_id=args.conversation or f"consult-{args.to}",
         urgent=args.urgent, hub=hub,
-        in_reply_to=receipts.base_id(args.in_reply_to) if args.in_reply_to else None)
+        in_reply_to=receipts.base_id(args.in_reply_to) if args.in_reply_to else None,
+        notice=args.notice)
 
     result = delivery.deliver(client_msg_id, transport.termlink_transport,
                               transport.probe_hub)
@@ -367,6 +368,8 @@ def _print_inbox(args, messages) -> int:
         print(f"--- consult @{_meta(msg.get('offset'))} from {_who(sender)} "
               f"[{_meta(msg.get('conversation_id'))}] ---")
         print(_framed(msg.get("body", "")))
+        if msg.get("notice"):
+            print("(notice — no reply expected)")   # T-4348
         print()
     if dm_rows or dm_posts:
         print(f"NOTE: {DM_SCOPE_NOTE}")
@@ -1233,6 +1236,12 @@ def build_parser() -> argparse.ArgumentParser:
                       help="direct path: inject even if the peer agent is busy (R5)")
     send.add_argument("--in-reply-to", default=None,
                       help="client_msg_id this message answers (direct path: REPLIED)")
+    send.add_argument("--notice", action="store_true",
+                      help="FYI / status / done / thanks: no reply expected (T-4348). "
+                           "Delivered and surfaced like any message, labelled 'notice — no "
+                           "reply expected' by the receiver, and never chased: no re-post "
+                           "after delivery, no nudge, no warn/overdue push, no dead-letter "
+                           "for want of a reply. An older receiver shows it as an ordinary message")
     send.add_argument("--handover-deadline", type=int,
                       default=direct.DEFAULT_HANDOVER_DEADLINE_S,
                       help="direct path: seconds until a missing HANDED_OVER is ESCALATED")

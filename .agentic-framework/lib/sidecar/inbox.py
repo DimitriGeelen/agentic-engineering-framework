@@ -435,6 +435,8 @@ def pending(agent: str | None = None, *, reader=default_reader,
                 "from_circuit": meta.get("from_circuit"),
                 "conversation_id": meta.get("conversation_id"),
                 "urgent": str(meta.get("urgent") or "").lower() in ("1", "true", "yes"),
+                # T-4348: `fw sidecar send --notice` — no reply expected.
+                "notice": str(meta.get("notice") or "").lower() in ("1", "true", "yes"),
                 "body": _decode(env),
                 "ts": env.get("ts"),
             })

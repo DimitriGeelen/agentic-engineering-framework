@@ -11,10 +11,10 @@ description: >
   consider treating --in-reply-to sends as notices by default. Evidence: their .context/sidecar/awaiting-ack.jsonl,
   drops 2026-10-18 22:14Z/22:20Z.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [sidecar, ux]
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ origin: {kind: "peer", source: "ring20"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:55:43Z
-last_update: '2026-10-18T23:01:55Z'
+last_update: 2026-10-19T14:32:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,14 +92,25 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+ring20 (msg a3f8780f) dropped 23 FYI/status/thank-you sends that the sidecar
+had been chasing for 1-12 days. Every `fw sidecar send` is a consult awaiting a
+reply; there is no kind for "deliver this, expect nothing back". Scope: sender-side
+reply tracking (hub retry ladder, direct handover escalation, waiting register).
+Receiver-side *unread backlog* checks (inbox-stale, dm-stale) are about mail not
+being drained, not about replies, and stay as they are.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw sidecar send --notice` exists (help text says "no reply expected"); the outbox message (hub path) and the direct envelope + SENT row carry `notice: true`; the hub post carries `--metadata notice=1`. A send without `--notice` writes no `notice` key at all (old message digests unchanged).
+- [x] Hub path: a POSTED notice is closed at delivery (`error` prefix `notice`, no `next_retry_at`), so the retry sweep never reaches it, instead of re-posting, nudging, operator-escalating or dead-lettering it; `retry.is_open` treats it as closed; an un-posted (STORED) notice is still re-posted (delivery, not reply).
+- [x] Direct path: a notice is terminal at RECEIVED — no handover deadline, so `direct.escalate_expired` never ESCALATES it.
+- [x] Waiting register: `waiting.outbound_items` does not list a delivered notice (hub posted, or direct RECEIVED and above) past the warn threshold, so no warn/overdue push fires for it; a non-notice message in the same state is still listed.
+- [x] Receiver: `inbox.pending` and the watcher carry `notice` from hub metadata into the stored envelope; the prompt hook (`hooks._block`), the topic-surface hook (`sidecar-inbox.sh`) and `fw sidecar inbox` label it `notice — no reply expected` — on the line after the body, never on the block header, which is the finalizer's HANDED_OVER evidence; a message without the key renders exactly as before.
+- [x] Backward compat: an envelope carrying `notice` is accepted by `receiver.store_message` (unknown key stored verbatim, so an old receiver shows it as a normal message); old ledger rows / messages without `notice` behave as before (existing sidecar tests green).
+- [x] Documented in `fw sidecar send --help` and in the peer-message hook frame text.
+- [x] Regression test `tests/unit/test_t4348_sidecar_notice.py` (temp PROJECT_ROOT, fake transport, never the live sidecar): red before the fix, green after. Plus a bats case in `tests/unit/sidecar_inbox_hook.bats` for the topic-surface hook label.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -277,6 +288,13 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t4348_sidecar_notice.py -q > /tmp/.t4348.out 2>&1 && grep -q passed /tmp/.t4348.out
+python3 lib/sidecar_cli.py send --help > /tmp/.t4348h.out 2>&1 && grep -q -- "--notice" /tmp/.t4348h.out && grep -qi "no reply expected" /tmp/.t4348h.out
+grep -q "notice — no reply expected" lib/sidecar/hooks.py
+timeout 300 bats tests/unit/sidecar_inbox_hook.bats > /tmp/.t4348b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4348b.out
+test "$(grep -c '# skip' /tmp/.t4348b.out)" -eq 0
+bash -n bin/fw
+bin/fw vendor self --check
 
 ## RCA
 
@@ -293,6 +311,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** peers' FYI/done/thank-you messages were re-posted, nudged, escalated to warn/overdue pushes and filed as OBS notes for days; ring20's operator had to `fw sidecar drop` 23 of them.
+
+**Root cause:** the send verb has one kind only. `lib/sidecar_cli.py` `send` parser (≈line 1222) offers no way to say "no reply expected", and every downstream tracker assumes a reply is owed: `lib/sidecar/delivery.py` `deliver()` schedules a `next_retry_at` on every successful post, `lib/sidecar/retry.py` `is_open()`/`sweep()` keeps a posted row open until a reply or HANDED_OVER arrives and then nudges/escalates/dead-letters it, `lib/sidecar/direct.py` `send()` sets a HANDED_OVER deadline that `escalate_expired()` turns into ESCALATED, and `lib/sidecar/waiting.py` `outbound_items()` lists anything not handed over/replied past the warn threshold (warn/overdue pushes).
+
+**Why structurally allowed:** the reply ladder (T-3434) and the waiting register (T-3782) were designed for consults; T-3908's READ close (HANDED_OVER) only helps when the receiver confirms a hand-over, which a busy/absent peer never does — so an FYI was indistinguishable from an unanswered question. No test exercised a message that needs no answer.
+
+**Prevention:** `--notice` is a first-class message kind carried end to end (outbox / envelope / hub metadata), every reply tracker checks it, and `tests/unit/test_t4348_sidecar_notice.py` pins sweep, direct escalation, waiting listing and hook label for notice vs non-notice.
 
 ## Evolution
 
@@ -358,6 +384,16 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-19 — where a notice stops being chased
+- **Chose:** close a hub notice at delivery (posted row carries `error: notice: …`, `next_retry_at: null`); keep re-posting an UN-posted notice; direct notice gets no hand-over deadline; waiting register skips a notice once delivered. Label goes on the line after the body, never on the block header.
+- **Why:** the task asks for "terminal at RECEIVED" — delivery is still owed, a reply is not. The header line is the finalizer's HANDED_OVER evidence (`hooks._in_transcript`), so changing it per kind would risk false/missed hand-overs.
+- **Rejected:** treating every `--in-reply-to` send as a notice by default (changes behaviour for existing callers whose replies do expect follow-ups — left for a separate decision); suppressing receiver-side unread-backlog WARNs (inbox-stale, dm-stale) — those report undrained mail, not owed replies.
+
+## Test evidence
+
+- Before the fix: `python3 -m pytest tests/unit/test_t4348_sidecar_notice.py -q` → 9 failed, 1 passed (the passing one is the backward-compat store test, which holds already). Bats case 14 against the HEAD hook → `not ok`.
+- After: 10 passed; `sidecar_inbox_hook.bats` 14/14 ok, 0 skips. Neighbours green, each run alone: sweep 20, delivery 12, outbox 4, termlink_transport 17, waiting_t3782 36, receiver_t3693 52, inbox 15, status 11, reply_settles_t3804 11, cli_peer_frame 8, truncation_t4131 5, watcher_t3684 24, receipts_t3684 10, seen_ledger_t3840 8; t3559 contract bats 5/5.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -374,3 +410,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4348-fw-sidecar-send-has-no-notice-no-reply-e.md
 - **Context:** Initial task creation
+
+### 2026-10-19T14:32:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

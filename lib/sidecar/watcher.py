@@ -275,6 +275,8 @@ def ingest_hub(reader=None) -> dict:
             "hub_offset": m.get("offset"),
             "hub_ts": m.get("ts"),
         }
+        if m.get("notice"):
+            envelope["notice"] = True   # T-4348; absent otherwise, so old digests hold
         ok, err = receiver.store_message(mid, envelope)
         if not ok and err.startswith("conflict"):
             # Same id, DIFFERENT content: a second message, not a duplicate

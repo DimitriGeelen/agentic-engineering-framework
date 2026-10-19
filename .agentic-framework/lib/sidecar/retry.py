@@ -74,6 +74,10 @@ RELEASED = "released"
 #: Without this, informational messages that need no reply (acks, release
 #: notes) were nudged until the ladder ran out (ring20 s6: "v1.8.3 note x3").
 READ = "read"
+#: T-4348: error prefix for a delivered `fw sidecar send --notice` — no reply
+#: was ever expected, so the ladder has nothing to chase (delivery.deliver
+#: writes it). Not a dead-letter.
+NOTICE = "notice"
 EXHAUSTED = "ladder-exhausted"
 UNRETRYABLE = "ladder-unretryable"
 
@@ -103,7 +107,7 @@ def is_open(row: dict) -> bool:
     if state == outbox.UNKNOWN:
         return False
     error = row.get("error") or ""
-    if error.startswith(ANSWERED) or error.startswith(RELEASED) or error.startswith(READ):
+    if error.startswith((ANSWERED, RELEASED, READ, NOTICE)):
         return False
     if row.get("attempts") is None and state in (outbox.INJECTED_NOW,
                                                  outbox.INJECTED_LATER):

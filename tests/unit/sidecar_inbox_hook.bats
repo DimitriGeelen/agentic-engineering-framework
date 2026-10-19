@@ -195,3 +195,16 @@ PY
     [ "$status" -eq 0 ]
     [ -z "$output" ]
 }
+
+@test "T-4348: a notice is labelled 'no reply expected'; an ordinary consult is not" {
+    export FAKE_INBOX='{"consults":[{"offset":1,"client_msg_id":"n1","from":"peer","conversation_id":"c","body":"fyi: shipped","notice":true},{"offset":0,"client_msg_id":"c1","from":"peer","conversation_id":"c","body":"a real question"}],"dm_rails":[]}'
+    run bash "$HOOK" < /dev/null
+    [ "$status" -eq 0 ]
+    ctx=$(printf '%s' "$output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])')
+    echo "$ctx" | grep -q 'fyi: shipped'
+    echo "$ctx" | grep -q 'a real question'
+    [ "$(echo "$ctx" | grep -c '^(notice — no reply expected)$')" -eq 1 ]
+    # the label follows the notice's body, not the consult's
+    echo "$ctx" | grep -A1 '^fyi: shipped$' | grep -q '^(notice — no reply expected)$'
+    ! echo "$ctx" | grep -A1 '^a real question$' | grep -q 'notice — no reply expected'
+}

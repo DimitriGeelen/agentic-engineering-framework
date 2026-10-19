@@ -94,7 +94,7 @@ def _now_iso() -> str:
 
 def write_message(from_id: str, to: str, body: str, conversation_id: str,
                    urgent: bool = False, hub: str | None = None,
-                   in_reply_to: str | None = None) -> str:
+                   in_reply_to: str | None = None, notice: bool = False) -> str:
     """Write a message file, then its flag file. Returns client_msg_id.
 
     Ordering is the whole point: the message file is written to a temp path
@@ -124,6 +124,10 @@ def write_message(from_id: str, to: str, body: str, conversation_id: str,
         # T-3804: the id this answers, so the original sender's retry sweep
         # can settle it by id (transport carries it as in_reply_to_msg_id).
         msg["in_reply_to"] = in_reply_to
+    if notice:
+        # T-4348: no reply expected. Absent (not False) on an ordinary send,
+        # so a consult's stored shape is exactly what it was before.
+        msg["notice"] = True
 
     msg_path = outbox / f"{client_msg_id}.json"
     tmp_path = outbox / f"{client_msg_id}.json.tmp"

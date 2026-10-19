@@ -184,7 +184,14 @@ def deliver(client_msg_id: str, transport, probe=always_ok_probe, *,
         return DeliveryResult(client_msg_id, outbox.STORED, False, reason)
 
     state = outbox.INJECTED_NOW if fast_path else outbox.INJECTED_LATER
-    _record(state)
+    if msg.get("notice"):
+        # T-4348: a notice expects no reply, so once the hub has it there is
+        # nothing left to chase — closed here, never scheduled on the ladder.
+        outbox.record_ack(client_msg_id, target, hub, state, deadline=deadline,
+                          error="notice: delivered, no reply expected",
+                          attempts=attempts, next_retry_at=None, rung=rung)
+    else:
+        _record(state)
     _consume_flag(client_msg_id)
     return DeliveryResult(client_msg_id, state, True)
 
