@@ -9,7 +9,7 @@ description: >
 status: captured
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "msg 0edfc78d"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T08:46:02Z
-last_update: '2026-10-06T09:01:01Z'
+last_update: 2026-10-19T15:51:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -351,3 +351,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3924-fw-config-set-writes-a-lowercase-key-inc.md
 - **Context:** Initial task creation
+
+### 2026-10-19T15:51:51Z — status-update [task-update-agent]
+- **Change:** horizon: next → now
