@@ -16,7 +16,7 @@ description: >
   comment executed fw update and recursed. Any patch to this region needs a warning
   comment. Reported by consumer 001-CashWeb (their T-111).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -34,7 +34,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T08:59:55Z
-last_update: '2026-08-25T09:15:13Z'
+last_update: 2026-10-20T21:16:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,8 +86,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect re-checked at HEAD: doctor's direct-script hook branch expands `${CLAUDE_PROJECT_DIR}`/`$CLAUDE_PROJECT_DIR` before os.path.exists / os.access (bin/fw, `resolved_path =` line)
+- [x] Regression test exists and is green: tests/unit/t3226_doctor_direct_script_claude_project_dir.bats (project-owned `${CLAUDE_PROJECT_DIR}/x.sh` hook reports no "script not found")
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -180,8 +180,31 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -qF "T-3226: expand the placeholder for DIRECT-SCRIPT hooks" bin/fw && grep -qF "if not os.path.exists(resolved_path):" bin/fw
+out=$(bats tests/unit/t3226_doctor_direct_script_claude_project_dir.bats 2>&1); echo "$out" | grep -q '^ok 3 ' && ! echo "$out" | grep -q '^not ok'
 
 ## RCA
+
+**Status at HEAD (2026-10-20): already fixed — no new code in this task.** Duplicate of T-3226
+(commit 7c06c84b2, 2026-08-30), filed independently from the consumer report (001-CashWeb T-111)
+before T-3226 landed.
+
+**Symptom:** `fw doctor` reported `script not found` for a project-owned hook written as
+`${CLAUDE_PROJECT_DIR}/x.sh`, a hook that resolves and runs correctly.
+
+**Root cause:** T-2709 put the placeholder expansion inside the `is_fw` branch of doctor's hook
+check (bin/fw, `fw hook` branch); the direct-script path reached `os.path.exists(script_path)` and
+`os.access` with the placeholder literal.
+
+**Why structurally allowed:** every hook in the framework repo routes through `fw hook`, so the
+direct-script branch had zero live exposure here; no test exercised it.
+
+**Prevention (already shipped by T-3226):** bin/fw now computes `resolved_path` (both `${…}` and
+`$…` forms expanded, relative paths joined to PROJECT_ROOT) before the existence and executable
+checks, with the double-quoted-string hazard comment (backtick / double quote / dollar) the
+description asked for. Pinned by tests/unit/t3226_doctor_direct_script_claude_project_dir.bats:
+resolves → no FAIL; genuinely missing → FAIL (mutation control); not executable → WARN.
+Evidence: `bats tests/unit/t3226_doctor_direct_script_claude_project_dir.bats` → ok 1..3 at HEAD.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -277,3 +300,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3137-doctor-expands-claudeprojectdir-only-in-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:16:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
