@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4446: test_corpus_conformance_registry.py: registered test map now SKIPs (no state-carrier nodes) instead of PASS/DIVERGENT
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T08:51:30Z
+# ============================================================================
+
+task_id: T-4446
+task_name: "test_corpus_conformance_registry.py: registered test map now SKIPs (no state-carrier nodes) instead of PASS/DIVERGENT"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T08:08:13Z
+completed: 2026-10-20T08:50:32Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T10:19:10+02:00
+last_commit: 2026-10-20T10:19:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  conformance-registry fixtures declare the real AEF namespace (corpus_spec.AEF_NS) — T-4387 keys ext children by namespace, so the old aef.dev URL made every carrier foreign and the rail SKIP; pin the namespace and the foreign-ns behaviour. reword fixture comment so the no-wrong-namespace verification line checks only real xmlns declarations
+
+# Key outcomes
+outcomes:
+  - 'Root cause of the SKIP is localised to a file:line, and the RCA says whether it is a product regression or expectation drift'
+  - 'test_registered_map_pass, test_registered_map_divergent and test_all_iterates_entries_and_reports_worst pass, and none of their PASS/DIVERGENT assertions is weakened'
+  - 'A regression test pins the root cause (it fails without the fix)'
+  - 'tests/unit/test_corpus_conformance_registry.py and the corpus_spec round-trip tests are green; vendor self --check --task T-4446 is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'reword fixture comment so the no-wrong-namespace verification line checks only real xmlns declarations'
+    source: git-mined
+  - description: 'conformance-registry fixtures declare the real AEF namespace (corpus_spec.AEF_NS) — T-4387 keys ext children by namespace, so the old aef.dev URL made every carrier foreign and the rail SKIP; pin the namespace and the foreign-ns behaviour'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4446-testcorpusconformanceregistrypy-register.md'
+  - 'tests/unit/test_corpus_conformance_registry.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T10:19:10'
+    action: 'T-4446: conformance-registry fixtures declare the real AEF namespace (corpus_spec.AEF_NS) — T-4387 keys ext children by namespace, so the old aef.dev URL made every carrier foreign and the rail SKIP; pin the namespace and the foreign-ns behaviour'
+  - time: '2026-10-20T10:19:43'
+    action: 'T-4446: reword fixture comment so the no-wrong-namespace verification line checks only real xmlns declarations'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 42 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 42
+  commits: 2
+  files_changed: 2
+  lines_added: 86
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4446-testcorpusconformanceregistrypy-register.md
+generated_by: context-agent-hybrid

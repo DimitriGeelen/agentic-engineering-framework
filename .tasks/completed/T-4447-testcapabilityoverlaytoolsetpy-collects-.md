@@ -1,17 +1,18 @@
 ---
-id: T-4445
-name: "test_corpus_lint_lane_overflow.py: spec type 'call' has no lane-occupancy entry"
+id: T-4447
+name: "test_capability_overlay_toolset.py collects no tests (pytest exit 5)"
 description: >
-  test_every_spec_type_has_an_occupancy_entry: types with no occupancy entry: ['call'].
-  A new corpus spec type (likely from T-4399's BPMN work) was added without its occupancy
-  entry. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push
-  (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or
-  expectation drift from a deliberate change (update the test, say why).
+  The file is discovered by the unit runner but pytest collects 0 tests (exit 5 counts
+  as red in the fast tier, T-4377). Find out why (import-time skip, renamed tests,
+  missing fixture) and either restore its tests or remove/rename the file. Found by
+  the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push (ratchet).
+  Still red at HEAD 2026-10-20. Decide: product regression (fix code) or expectation
+  drift from a deliberate change (update the test, say why).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -41,9 +42,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T08:07:53Z
-last_update: '2026-10-20T08:15:35Z'
-date_finished:
+created: 2026-10-20T08:08:31Z
+last_update: 2026-10-20T08:51:46Z
+date_finished: 2026-10-20T08:51:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,7 +56,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T08:11:48Z'
+  - ts: '2026-10-20T08:12:41Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -80,11 +81,11 @@ cost_estimate_proposed:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=309,acs=5)
+      (workflow:build); effort=8 (lines=308,acs=5)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4445: test_corpus_lint_lane_overflow.py: spec type 'call' has no lane-occupancy entry
+# T-4447: test_capability_overlay_toolset.py collects no tests (pytest exit 5)
 
 ## Context
 
@@ -94,9 +95,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `tools/corpus_lint.py` NODE_OCCUPANCY has a `call` entry (64, activity box with the name inside, same as service/subprocess) and `test_every_spec_type_has_an_occupancy_entry` passes unchanged
-- [x] A new regression test shows that a lane holding a `call` node is evaluated (it fires on spill, and it is not skipped)
-- [x] tests/unit/test_corpus_lint_lane_overflow.py green; vendor self --check --task T-4445 clean
+- [x] Cause of pytest collecting 0 tests from test_capability_overlay_toolset.py localised to a file:line and recorded in ## RCA
+- [x] Classified as product regression or expectation drift; tests restored (or file fixed) without weakening what they protect
+- [x] pytest on the file exits 0 and collects ≥1 test, with none failed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,19 +282,10 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_corpus_lint_lane_overflow.py -q > /tmp/.t4445.out 2>&1 && grep -q passed /tmp/.t4445.out
-python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_lint as c; assert c.NODE_OCCUPANCY['call'] == 64"
-bin/fw vendor self --check --task T-4445
+python3 -m pytest tests/unit/test_capability_overlay_toolset.py -q > /tmp/.t4447.out 2>&1 && grep -q "1 passed" /tmp/.t4447.out
+out=$(python3 tests/unit/test_capability_overlay_toolset.py 2>&1); echo "$out" | grep -q "^OK$"
 
 ## RCA
-
-**Symptom:** `test_every_spec_type_has_an_occupancy_entry` red in the 2026-10-20T01:03Z nightly: `types with no occupancy entry: ['call']`.
-
-**Root cause:** product regression, not expectation drift. T-4374 (a86d4a226) added `"call": "callActivity"` to `tools/corpus_spec.py:68` TYPE_TO_TAG but did not add it to `tools/corpus_lint.py:457` NODE_OCCUPANCY. lane-overflow treats a type with no occupancy entry as unevaluable, so every lane holding a call activity would be skipped by the rule, silently, for good. That is exactly the gap this test exists to catch.
-
-**Why structurally allowed:** T-4374 ran its own corpus_spec tests but not the lint suite. Only this cross-module parity test pins the two tables together, and it runs in the nightly, not at commit time.
-
-**Prevention:** the parity test catches it, and now passes. A new test proves that a lane holding a `call` node is evaluated and fires on spill, so if the entry is removed the failure points at the behaviour, not only at the table.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -308,6 +300,14 @@ bin/fw vendor self --check --task T-4445
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the fast-tier nightly grades `tests/unit/test_capability_overlay_toolset.py` red: "collected no tests (pytest exit 5)".
+
+**Root cause:** expectation drift, not a product regression. The file is T-2258's script-mode validator for `policy/capability-overlay/tool-set.yaml` (it exposes `main()` and is run as `python3 tests/unit/test_capability_overlay_toolset.py | grep ^OK$`); it has never had a `test_*` function. T-4381 (d859c3c11) deliberately made the unit runner discover every pytest file and grade exit 5 as red (`agents/audit/unit-suite.sh:476`), and T-4377 placed the file in the fast tier (`tests/unit/tiers.yaml:666`). The validator itself still prints OK.
+
+**Why structurally allowed:** before T-4381 the runner silently passed (or skipped) pytest files that collected nothing, so a `test_*.py` that was really a script looked like coverage while running nothing under the suite.
+
+**Prevention:** the file now carries a pytest test that runs the same validation and asserts `OK` (and fails with the FAIL line otherwise), so the suite actually guards tool-set.yaml; script mode is unchanged for T-2258's verification. T-4381's exit-5-is-red grading is what catches the next script-shaped test file.
 
 ## Evolution
 
@@ -385,10 +385,27 @@ bin/fw vendor self --check --task T-4445
 
 ## Updates
 
-### 2026-10-20T08:07:53Z — task-created [task-create-agent]
+### 2026-10-20T08:08:31Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4445-testcorpuslintlaneoverflowpy-spec-type-c.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4447-testcapabilityoverlaytoolsetpy-collects-.md
 - **Context:** Initial task creation
 
-### 2026-10-20T08:11:48Z — status-update [task-update-agent]
+### 2026-10-20T08:12:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e863457e
+- **Timestamp:** 2026-10-20T08:52:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T08:51:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

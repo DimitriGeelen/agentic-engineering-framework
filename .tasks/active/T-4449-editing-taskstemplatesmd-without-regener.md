@@ -1,15 +1,18 @@
 ---
-id: T-4441
-name: "test_upgrade_template_sync_t3955.py: shipped template-hash module is stale
-  after T-4419 changed .tasks/templates/default.md"
+id: T-4449
+name: "Editing .tasks/templates/*.md without regenerating lib/upgrade_template_shipped.py
+  is caught only by the nightly — third occurrence (T-4035, T-4213, T-4441)"
 description: >
-  test_shipped_hash_module_is_current_t3965: generate_known(ROOT) != shipped.SHIPPED
-  for a .tasks/templates file. T-4419 edited the default.md Verification hint. Regenerate
-  the shipped hash module the way T-3965 documents, and check whether the template
-  edit path should have regenerated it automatically. Found by the 2026-10-20T01:03Z
-  fast-tier nightly as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20.
-  Decide: product regression (fix code) or expectation drift from a deliberate change
-  (update the test, say why).
+  w4440 (T-4441): T-4419 edited .tasks/templates/default.md and nothing regenerated
+  the shipped-hash list (python3 lib/upgrade_template_sync.py --gen-known); test_upgrade_template_sync_t3955
+  caught it a day later in the fast-tier nightly, blocking pre-push. Same class as
+  T-4035 and T-4213. Add a commit-time check (pre-commit hook leg) that refuses a
+  commit touching .tasks/templates/*.md when lib/upgrade_template_shipped.py is not
+  current (generate_known(ROOT) != SHIPPED), naming the regenerate command; plus a
+  regression test. Register the class in concerns.yaml (third occurrence = systemic).
+  Also from w4440: task_id_race.bats test 4's assertion is weaker than it looks (bash's
+  own 'No such file' already contains 'keylock.sh'); tighten it to match create-task.sh's
+  own error text.
 
 status: started-work
 workflow_type: build
@@ -44,8 +47,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T08:06:40Z
-last_update: 2026-10-20T08:11:04Z
+created: 2026-10-20T08:46:10Z
+last_update: 2026-10-20T08:47:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -58,7 +61,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T08:11:05Z'
+  - ts: '2026-10-20T08:47:04Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -77,7 +80,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4441: test_upgrade_template_sync_t3955.py: shipped template-hash module is stale after T-4419 changed .tasks/templates/default.md
+# T-4449: Editing .tasks/templates/*.md without regenerating lib/upgrade_template_shipped.py is caught only by the nightly — third occurrence (T-4035, T-4213, T-4441)
 
 ## Context
 
@@ -87,10 +90,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] lib/upgrade_template_shipped.py regenerated via `python3 lib/upgrade_template_sync.py --gen-known`; the diff only ADDS hashes (no shipped version dropped)
-- [x] `test_shipped_hash_module_is_current_t3965` and the rest of tests/unit/test_upgrade_template_sync_t3955.py pass
-- [x] Vendored copy synced: `bin/fw vendor self --check --task T-4441` clean
-- [x] RCA names why the template-edit path did not regenerate it (3rd recurrence: T-4035, T-4213, T-4419) and the prevention gap
+- [ ] Pre-commit hook (agents/git/lib/hooks.sh) gains a leg that, when the staged set touches `.tasks/templates/*.md`, refuses unless `lib/upgrade_template_shipped.py` is current (`generate_known` reused, not reimplemented), printing the regenerate command
+- [ ] Regression bats test in a fixture repo: stale shipped list + staged template edit is refused; regenerated list passes; commit not touching templates passes
+- [ ] Class registered in `.context/concerns.yaml` (third occurrence: T-4035, T-4213, T-4441)
+- [ ] `tests/unit/task_id_race.bats` test 4 asserts create-task.sh's own error text, not bash's "No such file"
+- [ ] `bin/fw vendor self --check --task T-4449` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -275,9 +279,6 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_upgrade_template_sync_t3955.py -q > /tmp/.t4441.out 2>&1 && grep -q passed /tmp/.t4441.out
-c=$(git log -1 --format=%H --grep='^T-4441' -- lib/upgrade_template_shipped.py); test -n "$c" && git diff "$c~1" "$c" -- lib/upgrade_template_shipped.py > /tmp/.t4441.diff && grep -q '^+  "' /tmp/.t4441.diff && ! grep -q '^-  "' /tmp/.t4441.diff
-bin/fw vendor self --check --task T-4441
 
 ## RCA
 
@@ -294,14 +295,6 @@ bin/fw vendor self --check --task T-4441
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `test_shipped_hash_module_is_current_t3965` red in the 2026-10-20T01:03Z fast-tier nightly: `generate_known(ROOT)` has a `.tasks/templates/default.md` hash that `lib/upgrade_template_shipped.py` SHIPPED lacks.
-
-**Root cause:** expectation drift from a deliberate change. T-4419 (commit 7cff23319) edited the Vendored-path hint in `.tasks/templates/default.md` but did not run `python3 lib/upgrade_template_sync.py --gen-known` (lib/upgrade_template_sync.py:168), so the committed shipped-hash list (lib/upgrade_template_shipped.py) misses the new version. Consequence if shipped: a consumer holding a stock copy of this default.md with no stamp would be classified KEPT instead of UPDATED (lib/upgrade_template_sync.py:157). The test is correct and unchanged; the fix is regenerating the data module.
-
-**Why structurally allowed:** nothing on the template-edit path regenerates the list — no commit hook, no `fw vendor self` step, no lint; `--gen-known` is only referenced in its own module and the test docstring. The only detector is this unit test, which runs nightly/pre-push, after the commit. Third instance of the same class: T-4035 (c3c992a60), T-4213 (8e64ae771), T-4419.
-
-**Prevention:** this task restores the list. The structural gap (template edit path should regenerate, or a commit-time check should refuse a `.tasks/templates/*.md` commit whose hash is absent from SHIPPED) is out of this task's scope and is reported to the parent for filing as its own task/concern — 3 recurrences meets the Level-C threshold.
 
 ## Evolution
 
@@ -379,10 +372,11 @@ bin/fw vendor self --check --task T-4441
 
 ## Updates
 
-### 2026-10-20T08:06:40Z — task-created [task-create-agent]
+### 2026-10-20T08:46:10Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4441-testupgradetemplatesynct3955py-shipped-t.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4449-editing-taskstemplatesmd-without-regener.md
 - **Context:** Initial task creation
 
-### 2026-10-20T08:11:04Z — status-update [task-update-agent]
+### 2026-10-20T08:47:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

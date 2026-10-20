@@ -1,21 +1,21 @@
 ---
-id: T-4443
-name: "t2296_audit_mcp_manifest_drift.bats: audit no longer emits PASS:/FAIL:/ABSENT
-  for the MCP manifest check"
+id: T-4446
+name: "test_corpus_conformance_registry.py: registered test map now SKIPs (no state-carrier
+  nodes) instead of PASS/DIVERGENT"
 description: >
-  All 3 tests fail at the output assertion (lines 79, 88, 100). Likely the T-4375
-  structure-audit speed-ups or another audit.sh change altered how this check is invoked
-  or printed. Localise the change. Found by the 2026-10-20T01:03Z fast-tier nightly
-  as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product
-  regression (fix code) or expectation drift from a deliberate change (update the
-  test, say why).
+  3 tests (test_registered_map_pass / _divergent / test_all_iterates_entries_and_reports_worst):
+  conformance prints 'SKIP — test-map has no state-carrier nodes (aef:meta state=)'.
+  The fixture map lost its state annotations or the rail changed what it judges. Found
+  by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push (ratchet).
+  Still red at HEAD 2026-10-20. Decide: product regression (fix code) or expectation
+  drift from a deliberate change (update the test, say why).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_corpus_conformance_registry.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T08:07:17Z
-last_update: 2026-10-20T08:09:21Z
-date_finished:
+created: 2026-10-20T08:08:13Z
+last_update: 2026-10-20T08:50:32Z
+date_finished: 2026-10-20T08:50:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,27 +56,37 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T08:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T08:09:22Z'
+  - ts: '2026-10-20T08:15:47Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
       D2: 4
       D3: 3
-      D4: 3
+      D4: 2
       F-RECALL: 2
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=3 (body:portability-abstraction); 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4443: t2296_audit_mcp_manifest_drift.bats: audit no longer emits PASS:/FAIL:/ABSENT for the MCP manifest check
+# T-4446: test_corpus_conformance_registry.py: registered test map now SKIPs (no state-carrier nodes) instead of PASS/DIVERGENT
 
 ## Context
 
@@ -86,9 +96,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause of the 3 reds in tests/unit/t2296_audit_mcp_manifest_drift.bats localised to a file:line and recorded in ## RCA
-- [x] Classified as product regression or expectation drift; code or test fixed accordingly without weakening what the test protects
-- [x] `bats tests/unit/t2296_audit_mcp_manifest_drift.bats` passes with no skips
+- [x] Root cause of the SKIP is localised to a file:line, and the RCA says whether it is a product regression or expectation drift
+- [x] test_registered_map_pass, test_registered_map_divergent and test_all_iterates_entries_and_reports_worst pass, and none of their PASS/DIVERGENT assertions is weakened
+- [x] A regression test pins the root cause (it fails without the fix)
+- [x] tests/unit/test_corpus_conformance_registry.py and the corpus_spec round-trip tests are green; vendor self --check --task T-4446 is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,10 +284,10 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t2296_audit_mcp_manifest_drift.bats > /tmp/.t4443.out 2>&1 && ! grep -q "^not ok" /tmp/.t4443.out
-test "$(grep -c '# skip' /tmp/.t4443.out)" -eq 0
-timeout 300 bats tests/unit/t4417_audit_bounded_reads.bats > /tmp/.t4443b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4443b.out
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4443c.out 2>&1 && grep -q clean /tmp/.t4443c.out
+python3 -m pytest tests/unit/test_corpus_conformance_registry.py -q > /tmp/.t4446.out 2>&1 && grep -q passed /tmp/.t4446.out
+bin/fw vendor self --check --task T-4446
+! grep -q 'xmlns:aef="https://aef.dev' tests/unit/test_corpus_conformance_registry.py
+python3 -m pytest tests/unit/test_corpus_conformance_registry.py -q -k "aef_namespace or foreign_namespace" > /tmp/.t4446b.out 2>&1 && grep -q "2 passed" /tmp/.t4446b.out
 
 ## RCA
 
@@ -293,14 +304,13 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4443c.out 2>&1 && grep 
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** 3 tests in test_corpus_conformance_registry.py red in the 2026-10-20T01:03Z nightly: the rail printed `SKIP — test-map has no state-carrier nodes (aef:meta state=)` where they expected PASS/DIVERGENT.
 
-**Symptom:** all 3 tests in `tests/unit/t2296_audit_mcp_manifest_drift.bats` fail at their verdict assertions (lines 79, 88, 100): no `PASS:`/`FAIL:`/`ABSENT` in the output.
+**Root cause:** expectation drift in a test fixture, not a product regression. The fixtures `_MINIMAL_BPMN` and `_GATEWAY_BPMN` (tests/unit/test_corpus_conformance_registry.py:28, :47) declared `xmlns:aef="https://aef.dev/schema/bpmn/1.0"`. The AEF namespace is `http://anchorpoint.framework/aef/extensions` (tools/corpus_spec.py:46), and every one of the 49 corpus maps declares it. The fixtures still worked because corpus_spec matched extension children by local name only. T-4387 (02b22dacb) deliberately keys them by namespace AND local name, so foreign children pass through `ext_raw`. After that change the fixture's `aef:meta` was foreign, `parse_map` gave `meta=None`, and `carrier_count` (tools/corpus_conformance.py:155) returned 0, which produced the SKIP. Real maps are unaffected.
 
-**Root cause:** expectation drift, not a product regression. T-4417 (commit b70c0cb3b) deliberately routed every read in the audit body through `_audit_bounded` (`agents/audit/audit.sh:770`), including the MCP block (`agents/audit/audit.sh:8463`: `MCP_DRIFT_OUT=$(_audit_bounded "$PROJECT_ROOT/bin/fw" mcp check 2>&1)`). The test extracts only that block into a stand-alone runner, so `_audit_bounded` is undefined there: the call returns 127 ("command not found"), which the `*)` branch reports as `INFO: ... status=127 (unexpected)`. Every branch the test drives was unreachable. The audit itself is correct (real audit.sh defines the helper).
+**Why structurally allowed:** T-4387 ran test_corpus_spec_roundtrip.py but not the conformance suite that consumes `parse_map`. Nothing tied the test fixtures to `corpus_spec.AEF_NS`, so the wrong namespace looked harmless until the parser got strict.
 
-**Why structurally allowed:** the harness defined its own stubs for every helper the block used *at the time*, and nothing asserted that the extracted block ran without an undefined command, so a new helper dependency degraded silently into the catch-all branch instead of a clear harness error. T-4417's own suite (`t4417_audit_bounded_reads.bats`) tested the wrapper, not the extract-a-block consumers of the body.
-
-**Prevention:** the harness now extracts the real `_audit_timeout_probe`/`_audit_bounded` definitions from audit.sh (so the test exercises the shipped wrapper, not a stub), and every test asserts the runner output contains no `command not found` — the next helper added to the block fails with a named cause rather than a mystery verdict.
+**Prevention:** the fixtures now declare the real namespace, and two new tests cover the gap. `test_fixtures_declare_the_aef_namespace` fails if a fixture drifts from `corpus_spec.AEF_NS`. `test_state_meta_on_a_foreign_namespace_is_not_a_carrier` pins the T-4387 behaviour from the rail's side.
 
 ## Evolution
 
@@ -378,10 +388,27 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4443c.out 2>&1 && grep 
 
 ## Updates
 
-### 2026-10-20T08:07:17Z — task-created [task-create-agent]
+### 2026-10-20T08:08:13Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4443-t2296auditmcpmanifestdriftbats-audit-no-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4446-testcorpusconformanceregistrypy-register.md
 - **Context:** Initial task creation
 
-### 2026-10-20T08:09:21Z — status-update [task-update-agent]
+### 2026-10-20T08:15:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c2f7c0cc
+- **Timestamp:** 2026-10-20T08:50:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T08:50:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

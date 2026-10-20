@@ -1,19 +1,19 @@
 ---
-id: T-4440
-name: "vendor_self_withhold.bats: _sv_is_withheld call-site count is 8, test pins
-  7 (T-4419 added a helper call in lib/upgrade.sh)"
+id: T-4443
+name: "t2296_audit_mcp_manifest_drift.bats: audit no longer emits PASS:/FAIL:/ABSENT
+  for the MCP manifest check"
 description: >
-  tests/unit/vendor_self_withhold.bats:107 counts '_sv_is_withheld "$' in lib/upgrade.sh.
-  T-4419 (_sv_scope_skip) touched every _self_vendor_* helper. Check the new call
-  site is guarded and dry-run-exempt like the others, then update the count and its
-  comment. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push
-  (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or
-  expectation drift from a deliberate change (update the test, say why).
+  All 3 tests fail at the output assertion (lines 79, 88, 100). Likely the T-4375
+  structure-audit speed-ups or another audit.sh change altered how this check is invoked
+  or printed. Localise the change. Found by the 2026-10-20T01:03Z fast-tier nightly
+  as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product
+  regression (fix code) or expectation drift from a deliberate change (update the
+  test, say why).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -43,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T08:06:21Z
-last_update: 2026-10-20T08:09:19Z
-date_finished:
+created: 2026-10-20T08:07:17Z
+last_update: 2026-10-20T08:47:35Z
+date_finished: 2026-10-20T08:47:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,26 +57,36 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T08:09:19Z'
+  - ts: '2026-10-20T08:09:22Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
       D2: 4
       D3: 3
-      D4: 2
+      D4: 3
       F-RECALL: 2
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T08:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=310,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4440: vendor_self_withhold.bats: _sv_is_withheld call-site count is 8, test pins 7 (T-4419 added a helper call in lib/upgrade.sh)
+# T-4443: t2296_audit_mcp_manifest_drift.bats: audit no longer emits PASS:/FAIL:/ABSENT for the MCP manifest check
 
 ## Context
 
@@ -86,9 +96,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Every `_sv_is_withheld "$` call site in lib/upgrade.sh (now 8, incl. `_self_vendor_tools` from T-4392) is dry-run-exempt — guard count equals exempt-form count
-- [x] tests/unit/vendor_self_withhold.bats pins 8 call sites, with a comment naming T-4392 as the change; the parity test still fails if a helper drops the guard or the dry-run exemption
-- [x] `bats tests/unit/vendor_self_withhold.bats` passes, no skips; dead-negation lint clean
+- [x] Root cause of the 3 reds in tests/unit/t2296_audit_mcp_manifest_drift.bats localised to a file:line and recorded in ## RCA
+- [x] Classified as product regression or expectation drift; code or test fixed accordingly without weakening what the test protects
+- [x] `bats tests/unit/t2296_audit_mcp_manifest_drift.bats` passes with no skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,10 +283,10 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-test "$(grep -c '_sv_is_withheld "\$' lib/upgrade.sh)" -eq "$(grep -c '\[ "\$dry_run" = true \] || ! _sv_is_withheld' lib/upgrade.sh)"
-timeout 300 bats tests/unit/vendor_self_withhold.bats > /tmp/.t4440.out 2>&1 && ! grep -q "^not ok" /tmp/.t4440.out
-test "$(grep -c '# skip' /tmp/.t4440.out)" -eq 0
-python3 tools/bats-dead-negation-lint.py tests/unit/vendor_self_withhold.bats > /tmp/.t4440.lint 2>&1 && grep -q clean /tmp/.t4440.lint
+timeout 300 bats tests/unit/t2296_audit_mcp_manifest_drift.bats > /tmp/.t4443.out 2>&1 && ! grep -q "^not ok" /tmp/.t4443.out
+test "$(grep -c '# skip' /tmp/.t4443.out)" -eq 0
+timeout 300 bats tests/unit/t4417_audit_bounded_reads.bats > /tmp/.t4443b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4443b.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4443c.out 2>&1 && grep -q clean /tmp/.t4443c.out
 
 ## RCA
 
@@ -294,13 +304,13 @@ python3 tools/bats-dead-negation-lint.py tests/unit/vendor_self_withhold.bats > 
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** `vendor_self_withhold.bats` "every file-loop helper consults the guard" red in the 2026-10-20T01:03Z fast-tier nightly: grep counts 8 `_sv_is_withheld "$` call sites in lib/upgrade.sh, test pins 7.
+**Symptom:** all 3 tests in `tests/unit/t2296_audit_mcp_manifest_drift.bats` fail at their verdict assertions (lines 79, 88, 100): no `PASS:`/`FAIL:`/`ABSENT` in the output.
 
-**Root cause:** expectation drift, not a product regression. T-4392 (commit 425d05177) added a new `_self_vendor_tools` helper (lib/upgrade.sh:709) whose file loop carries the guard in the correct dry-run-exempt form (lib/upgrade.sh:723). The parity test at tests/unit/vendor_self_withhold.bats:107/110 pins the exact count and was not updated in that commit. (The task title attributes it to T-4419; `git log -L723,723` shows T-4392.)
+**Root cause:** expectation drift, not a product regression. T-4417 (commit b70c0cb3b) deliberately routed every read in the audit body through `_audit_bounded` (`agents/audit/audit.sh:770`), including the MCP block (`agents/audit/audit.sh:8463`: `MCP_DRIFT_OUT=$(_audit_bounded "$PROJECT_ROOT/bin/fw" mcp check 2>&1)`). The test extracts only that block into a stand-alone runner, so `_audit_bounded` is undefined there: the call returns 127 ("command not found"), which the `*)` branch reports as `INFO: ... status=127 (unexpected)`. Every branch the test drives was unreachable. The audit itself is correct (real audit.sh defines the helper).
 
-**Why structurally allowed:** T-4392's verification did not run vendor_self_withhold.bats; the pinned count only goes red in the nightly suite, which is exactly its design (a new helper must be consciously counted).
+**Why structurally allowed:** the harness defined its own stubs for every helper the block used *at the time*, and nothing asserted that the extracted block ran without an undefined command, so a new helper dependency degraded silently into the catch-all branch instead of a clear harness error. T-4417's own suite (`t4417_audit_bounded_reads.bats`) tested the wrapper, not the extract-a-block consumers of the body.
 
-**Prevention:** the pin is kept exact (so an unguarded ninth helper still fails), updated to 8 with the change named in the comment; the second assertion still requires every call site to be dry-run-exempt.
+**Prevention:** the harness now extracts the real `_audit_timeout_probe`/`_audit_bounded` definitions from audit.sh (so the test exercises the shipped wrapper, not a stub), and every test asserts the runner output contains no `command not found` — the next helper added to the block fails with a named cause rather than a mystery verdict.
 
 ## Evolution
 
@@ -378,10 +388,27 @@ python3 tools/bats-dead-negation-lint.py tests/unit/vendor_self_withhold.bats > 
 
 ## Updates
 
-### 2026-10-20T08:06:21Z — task-created [task-create-agent]
+### 2026-10-20T08:07:17Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4440-vendorselfwithholdbats-sviswithheld-call.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4443-t2296auditmcpmanifestdriftbats-audit-no-.md
 - **Context:** Initial task creation
 
-### 2026-10-20T08:09:19Z — status-update [task-update-agent]
+### 2026-10-20T08:09:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-26a4143b
+- **Timestamp:** 2026-10-20T08:48:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T08:47:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

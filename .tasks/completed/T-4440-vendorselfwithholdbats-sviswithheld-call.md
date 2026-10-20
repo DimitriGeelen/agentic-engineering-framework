@@ -1,19 +1,19 @@
 ---
-id: T-4442
-name: "task_id_race.bats: create-task.sh no longer names keylock.sh/keylock_acquire
-  when keylock.sh is missing"
+id: T-4440
+name: "vendor_self_withhold.bats: _sv_is_withheld call-site count is 8, test pins
+  7 (T-4419 added a helper call in lib/upgrade.sh)"
 description: >
-  tests/unit/task_id_race.bats:108 expects the failure output to name keylock.sh or
-  keylock_acquire. Find what create-task.sh now prints when keylock.sh is absent and
-  whether it still fails loudly. Found by the 2026-10-20T01:03Z fast-tier nightly
-  as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product
-  regression (fix code) or expectation drift from a deliberate change (update the
-  test, say why).
+  tests/unit/vendor_self_withhold.bats:107 counts '_sv_is_withheld "$' in lib/upgrade.sh.
+  T-4419 (_sv_scope_skip) touched every _self_vendor_* helper. Check the new call
+  site is guarded and dry-run-exempt like the others, then update the count and its
+  comment. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push
+  (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or
+  expectation drift from a deliberate change (update the test, say why).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -43,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T08:06:58Z
-last_update: 2026-10-20T08:13:23Z
-date_finished:
+created: 2026-10-20T08:06:21Z
+last_update: 2026-10-20T08:45:48Z
+date_finished: 2026-10-20T08:45:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,7 +57,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T08:13:24Z'
+  - ts: '2026-10-20T08:09:19Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -74,9 +74,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T08:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=310,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4442: task_id_race.bats: create-task.sh no longer names keylock.sh/keylock_acquire when keylock.sh is missing
+# T-4440: vendor_self_withhold.bats: _sv_is_withheld call-site count is 8, test pins 7 (T-4419 added a helper call in lib/upgrade.sh)
 
 ## Context
 
@@ -86,9 +96,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause localised: with keylock.sh absent, the fake root dies in lib/paths.sh sourcing a lib the fixture does not copy (fs-root-guard.sh, T-4406), before create-task.sh reaches its keylock check — product still fails loudly
-- [x] Fixture in tests/unit/task_id_race.bats copies every lib/*.sh except keylock.sh, so a future hard-sourced lib cannot mask the test again; the assertion (non-zero exit AND output names keylock.sh/keylock_acquire) is unchanged
-- [x] `bats tests/unit/task_id_race.bats` passes, no skips; dead-negation lint clean
+- [x] Every `_sv_is_withheld "$` call site in lib/upgrade.sh (now 8, incl. `_self_vendor_tools` from T-4392) is dry-run-exempt — guard count equals exempt-form count
+- [x] tests/unit/vendor_self_withhold.bats pins 8 call sites, with a comment naming T-4392 as the change; the parity test still fails if a helper drops the guard or the dry-run exemption
+- [x] `bats tests/unit/vendor_self_withhold.bats` passes, no skips; dead-negation lint clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,9 +283,10 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/task_id_race.bats > /tmp/.t4442.out 2>&1 && ! grep -q "^not ok" /tmp/.t4442.out
-test "$(grep -c '# skip' /tmp/.t4442.out)" -eq 0
-python3 tools/bats-dead-negation-lint.py tests/unit/task_id_race.bats > /tmp/.t4442.lint 2>&1 && grep -q clean /tmp/.t4442.lint
+test "$(grep -c '_sv_is_withheld "\$' lib/upgrade.sh)" -eq "$(grep -c '\[ "\$dry_run" = true \] || ! _sv_is_withheld' lib/upgrade.sh)"
+timeout 300 bats tests/unit/vendor_self_withhold.bats > /tmp/.t4440.out 2>&1 && ! grep -q "^not ok" /tmp/.t4440.out
+test "$(grep -c '# skip' /tmp/.t4440.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/vendor_self_withhold.bats > /tmp/.t4440.lint 2>&1 && grep -q clean /tmp/.t4440.lint
 
 ## RCA
 
@@ -293,13 +304,13 @@ python3 tools/bats-dead-negation-lint.py tests/unit/task_id_race.bats > /tmp/.t4
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** task_id_race.bats test 4 ("fails loudly when keylock.sh is missing") red in the 2026-10-20T01:03Z fast-tier nightly at line 108: exit was non-zero but output did not name keylock.sh/keylock_acquire.
+**Symptom:** `vendor_self_withhold.bats` "every file-loop helper consults the guard" red in the 2026-10-20T01:03Z fast-tier nightly: grep counts 8 `_sv_is_withheld "$` call sites in lib/upgrade.sh, test pins 7.
 
-**Root cause:** fixture drift, not a product regression. T-4406 (94de6b05c) made lib/paths.sh:422 hard-source `fs-root-guard.sh`. The test's fake root copied a hand-picked list of libs (tests/unit/task_id_race.bats:97) without it, so the run died in paths.sh (`fs-root-guard.sh: No such file or directory`) before create-task.sh:19 ever tried keylock.sh. With the full lib set present, create-task.sh still exits 1 naming keylock.sh — the guarded behaviour is intact.
+**Root cause:** expectation drift, not a product regression. T-4392 (commit 425d05177) added a new `_self_vendor_tools` helper (lib/upgrade.sh:709) whose file loop carries the guard in the correct dry-run-exempt form (lib/upgrade.sh:723). The parity test at tests/unit/vendor_self_withhold.bats:107/110 pins the exact count and was not updated in that commit. (The task title attributes it to T-4419; `git log -L723,723` shows T-4392.)
 
-**Why structurally allowed:** the fixture enumerated paths.sh's dependencies by hand; every new hard-sourced lib breaks it silently until the nightly. Identical class already hit once (T-3624, worktree-identity.sh).
+**Why structurally allowed:** T-4392's verification did not run vendor_self_withhold.bats; the pinned count only goes red in the nightly suite, which is exactly its design (a new helper must be consciously counted).
 
-**Prevention:** the fixture now copies every lib/*.sh except keylock.sh (and asserts keylock.sh is absent), so a new hard-sourced lib can no longer mask the check. Assertion unchanged. Residual weakness noted for the parent: bash's own "No such file" error also contains "keylock.sh", so assertion 4 passes even without create-task.sh's own message; test 5 (no silent-skip guard) is what actually protects the anti-pattern.
+**Prevention:** the pin is kept exact (so an unguarded ninth helper still fails), updated to 8 with the change named in the comment; the second assertion still requires every call site to be dry-run-exempt.
 
 ## Evolution
 
@@ -377,10 +388,27 @@ python3 tools/bats-dead-negation-lint.py tests/unit/task_id_race.bats > /tmp/.t4
 
 ## Updates
 
-### 2026-10-20T08:06:58Z — task-created [task-create-agent]
+### 2026-10-20T08:06:21Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4442-taskidracebats-create-tasksh-no-longer-n.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4440-vendorselfwithholdbats-sviswithheld-call.md
 - **Context:** Initial task creation
 
-### 2026-10-20T08:13:23Z — status-update [task-update-agent]
+### 2026-10-20T08:09:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-da8dda1b
+- **Timestamp:** 2026-10-20T08:45:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T08:45:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

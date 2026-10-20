@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4441: test_upgrade_template_sync_t3955.py: shipped template-hash module is stale after T-4419 changed .tasks/templates/default.md
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T08:46:44Z
+# ============================================================================
+
+task_id: T-4441
+task_name: "test_upgrade_template_sync_t3955.py: shipped template-hash module is stale after T-4419 changed .tasks/templates/default.md"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T08:06:40Z
+completed: 2026-10-20T08:46:16Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T10:12:51+02:00
+last_commit: 2026-10-20T10:13:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  regenerate shipped task-template hash list (--gen-known) for T-4419's default.md edit; vendored copy synced. agent ACs ticked, verification run green
+
+# Key outcomes
+outcomes:
+  - 'lib/upgrade_template_shipped.py regenerated via `python3 lib/upgrade_template_sync.py --gen-known`; the diff only ADDS hashes (no shipped version dropped)'
+  - '`test_shipped_hash_module_is_current_t3965` and the rest of tests/unit/test_upgrade_template_sync_t3955.py pass'
+  - 'Vendored copy synced: `bin/fw vendor self --check --task T-4441` clean'
+  - 'RCA names why the template-edit path did not regenerate it (3rd recurrence: T-4035, T-4213, T-4419) and the prevention gap'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade_template_shipped.py'
+  - 'lib/upgrade_template_shipped.py'
+  - '.tasks/active/T-4441-testupgradetemplatesynct3955py-shipped-t.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T10:12:51'
+    action: 'T-4441: regenerate shipped task-template hash list (--gen-known) for T-4419''s default.md edit; vendored copy synced'
+  - time: '2026-10-20T10:13:17'
+    action: 'T-4441: agent ACs ticked, verification run green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 39 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 39
+  commits: 2
+  files_changed: 3
+  lines_added: 55
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4441-testupgradetemplatesynct3955py-shipped-t.md
+generated_by: context-agent-hybrid

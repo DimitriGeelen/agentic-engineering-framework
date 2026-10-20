@@ -1,21 +1,22 @@
 ---
-id: T-4446
-name: "test_corpus_conformance_registry.py: registered test map now SKIPs (no state-carrier
-  nodes) instead of PASS/DIVERGENT"
+id: T-4441
+name: "test_upgrade_template_sync_t3955.py: shipped template-hash module is stale
+  after T-4419 changed .tasks/templates/default.md"
 description: >
-  3 tests (test_registered_map_pass / _divergent / test_all_iterates_entries_and_reports_worst):
-  conformance prints 'SKIP — test-map has no state-carrier nodes (aef:meta state=)'.
-  The fixture map lost its state annotations or the rail changed what it judges. Found
-  by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push (ratchet).
-  Still red at HEAD 2026-10-20. Decide: product regression (fix code) or expectation
-  drift from a deliberate change (update the test, say why).
+  test_shipped_hash_module_is_current_t3965: generate_known(ROOT) != shipped.SHIPPED
+  for a .tasks/templates file. T-4419 edited the default.md Verification hint. Regenerate
+  the shipped hash module the way T-3965 documents, and check whether the template
+  edit path should have regenerated it automatically. Found by the 2026-10-20T01:03Z
+  fast-tier nightly as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20.
+  Decide: product regression (fix code) or expectation drift from a deliberate change
+  (update the test, say why).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade_template_shipped.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,9 +44,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T08:08:13Z
-last_update: 2026-10-20T08:15:46Z
-date_finished:
+created: 2026-10-20T08:06:40Z
+last_update: 2026-10-20T08:46:16Z
+date_finished: 2026-10-20T08:46:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,18 +57,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-20T08:15:35Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T08:15:47Z'
+  - ts: '2026-10-20T08:11:05Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -84,9 +75,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T08:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=310,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4446: test_corpus_conformance_registry.py: registered test map now SKIPs (no state-carrier nodes) instead of PASS/DIVERGENT
+# T-4441: test_upgrade_template_sync_t3955.py: shipped template-hash module is stale after T-4419 changed .tasks/templates/default.md
 
 ## Context
 
@@ -96,10 +97,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause of the SKIP is localised to a file:line, and the RCA says whether it is a product regression or expectation drift
-- [x] test_registered_map_pass, test_registered_map_divergent and test_all_iterates_entries_and_reports_worst pass, and none of their PASS/DIVERGENT assertions is weakened
-- [x] A regression test pins the root cause (it fails without the fix)
-- [x] tests/unit/test_corpus_conformance_registry.py and the corpus_spec round-trip tests are green; vendor self --check --task T-4446 is clean
+- [x] lib/upgrade_template_shipped.py regenerated via `python3 lib/upgrade_template_sync.py --gen-known`; the diff only ADDS hashes (no shipped version dropped)
+- [x] `test_shipped_hash_module_is_current_t3965` and the rest of tests/unit/test_upgrade_template_sync_t3955.py pass
+- [x] Vendored copy synced: `bin/fw vendor self --check --task T-4441` clean
+- [x] RCA names why the template-edit path did not regenerate it (3rd recurrence: T-4035, T-4213, T-4419) and the prevention gap
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -284,10 +285,9 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_corpus_conformance_registry.py -q > /tmp/.t4446.out 2>&1 && grep -q passed /tmp/.t4446.out
-bin/fw vendor self --check --task T-4446
-! grep -q 'xmlns:aef="https://aef.dev' tests/unit/test_corpus_conformance_registry.py
-python3 -m pytest tests/unit/test_corpus_conformance_registry.py -q -k "aef_namespace or foreign_namespace" > /tmp/.t4446b.out 2>&1 && grep -q "2 passed" /tmp/.t4446b.out
+python3 -m pytest tests/unit/test_upgrade_template_sync_t3955.py -q > /tmp/.t4441.out 2>&1 && grep -q passed /tmp/.t4441.out
+c=$(git log -1 --format=%H --grep='^T-4441' -- lib/upgrade_template_shipped.py); test -n "$c" && git diff "$c~1" "$c" -- lib/upgrade_template_shipped.py > /tmp/.t4441.diff && grep -q '^+  "' /tmp/.t4441.diff && ! grep -q '^-  "' /tmp/.t4441.diff
+bin/fw vendor self --check --task T-4441
 
 ## RCA
 
@@ -304,13 +304,14 @@ python3 -m pytest tests/unit/test_corpus_conformance_registry.py -q -k "aef_name
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-**Symptom:** 3 tests in test_corpus_conformance_registry.py red in the 2026-10-20T01:03Z nightly: the rail printed `SKIP — test-map has no state-carrier nodes (aef:meta state=)` where they expected PASS/DIVERGENT.
 
-**Root cause:** expectation drift in a test fixture, not a product regression. The fixtures `_MINIMAL_BPMN` and `_GATEWAY_BPMN` (tests/unit/test_corpus_conformance_registry.py:28, :47) declared `xmlns:aef="https://aef.dev/schema/bpmn/1.0"`. The AEF namespace is `http://anchorpoint.framework/aef/extensions` (tools/corpus_spec.py:46), and every one of the 49 corpus maps declares it. The fixtures still worked because corpus_spec matched extension children by local name only. T-4387 (02b22dacb) deliberately keys them by namespace AND local name, so foreign children pass through `ext_raw`. After that change the fixture's `aef:meta` was foreign, `parse_map` gave `meta=None`, and `carrier_count` (tools/corpus_conformance.py:155) returned 0, which produced the SKIP. Real maps are unaffected.
+**Symptom:** `test_shipped_hash_module_is_current_t3965` red in the 2026-10-20T01:03Z fast-tier nightly: `generate_known(ROOT)` has a `.tasks/templates/default.md` hash that `lib/upgrade_template_shipped.py` SHIPPED lacks.
 
-**Why structurally allowed:** T-4387 ran test_corpus_spec_roundtrip.py but not the conformance suite that consumes `parse_map`. Nothing tied the test fixtures to `corpus_spec.AEF_NS`, so the wrong namespace looked harmless until the parser got strict.
+**Root cause:** expectation drift from a deliberate change. T-4419 (commit 7cff23319) edited the Vendored-path hint in `.tasks/templates/default.md` but did not run `python3 lib/upgrade_template_sync.py --gen-known` (lib/upgrade_template_sync.py:168), so the committed shipped-hash list (lib/upgrade_template_shipped.py) misses the new version. Consequence if shipped: a consumer holding a stock copy of this default.md with no stamp would be classified KEPT instead of UPDATED (lib/upgrade_template_sync.py:157). The test is correct and unchanged; the fix is regenerating the data module.
 
-**Prevention:** the fixtures now declare the real namespace, and two new tests cover the gap. `test_fixtures_declare_the_aef_namespace` fails if a fixture drifts from `corpus_spec.AEF_NS`. `test_state_meta_on_a_foreign_namespace_is_not_a_carrier` pins the T-4387 behaviour from the rail's side.
+**Why structurally allowed:** nothing on the template-edit path regenerates the list — no commit hook, no `fw vendor self` step, no lint; `--gen-known` is only referenced in its own module and the test docstring. The only detector is this unit test, which runs nightly/pre-push, after the commit. Third instance of the same class: T-4035 (c3c992a60), T-4213 (8e64ae771), T-4419.
+
+**Prevention:** this task restores the list. The structural gap (template edit path should regenerate, or a commit-time check should refuse a `.tasks/templates/*.md` commit whose hash is absent from SHIPPED) is out of this task's scope and is reported to the parent for filing as its own task/concern — 3 recurrences meets the Level-C threshold.
 
 ## Evolution
 
@@ -388,10 +389,27 @@ python3 -m pytest tests/unit/test_corpus_conformance_registry.py -q -k "aef_name
 
 ## Updates
 
-### 2026-10-20T08:08:13Z — task-created [task-create-agent]
+### 2026-10-20T08:06:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4446-testcorpusconformanceregistrypy-register.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4441-testupgradetemplatesynct3955py-shipped-t.md
 - **Context:** Initial task creation
 
-### 2026-10-20T08:15:46Z — status-update [task-update-agent]
+### 2026-10-20T08:11:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-57b35615
+- **Timestamp:** 2026-10-20T08:46:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T08:46:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

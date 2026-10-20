@@ -1,20 +1,21 @@
 ---
-id: T-4447
-name: "test_capability_overlay_toolset.py collects no tests (pytest exit 5)"
+id: T-4442
+name: "task_id_race.bats: create-task.sh no longer names keylock.sh/keylock_acquire
+  when keylock.sh is missing"
 description: >
-  The file is discovered by the unit runner but pytest collects 0 tests (exit 5 counts
-  as red in the fast tier, T-4377). Find out why (import-time skip, renamed tests,
-  missing fixture) and either restore its tests or remove/rename the file. Found by
-  the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push (ratchet).
-  Still red at HEAD 2026-10-20. Decide: product regression (fix code) or expectation
-  drift from a deliberate change (update the test, say why).
+  tests/unit/task_id_race.bats:108 expects the failure output to name keylock.sh or
+  keylock_acquire. Find what create-task.sh now prints when keylock.sh is absent and
+  whether it still fails loudly. Found by the 2026-10-20T01:03Z fast-tier nightly
+  as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product
+  regression (fix code) or expectation drift from a deliberate change (update the
+  test, say why).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/task_id_race.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T08:08:31Z
-last_update: 2026-10-20T08:12:40Z
-date_finished:
+created: 2026-10-20T08:06:58Z
+last_update: 2026-10-20T08:46:49Z
+date_finished: 2026-10-20T08:46:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,7 +57,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T08:12:41Z'
+  - ts: '2026-10-20T08:13:24Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -73,9 +74,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T08:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=309,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4447: test_capability_overlay_toolset.py collects no tests (pytest exit 5)
+# T-4442: task_id_race.bats: create-task.sh no longer names keylock.sh/keylock_acquire when keylock.sh is missing
 
 ## Context
 
@@ -85,9 +96,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Cause of pytest collecting 0 tests from test_capability_overlay_toolset.py localised to a file:line and recorded in ## RCA
-- [x] Classified as product regression or expectation drift; tests restored (or file fixed) without weakening what they protect
-- [x] pytest on the file exits 0 and collects ≥1 test, with none failed
+- [x] Root cause localised: with keylock.sh absent, the fake root dies in lib/paths.sh sourcing a lib the fixture does not copy (fs-root-guard.sh, T-4406), before create-task.sh reaches its keylock check — product still fails loudly
+- [x] Fixture in tests/unit/task_id_race.bats copies every lib/*.sh except keylock.sh, so a future hard-sourced lib cannot mask the test again; the assertion (non-zero exit AND output names keylock.sh/keylock_acquire) is unchanged
+- [x] `bats tests/unit/task_id_race.bats` passes, no skips; dead-negation lint clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,8 +283,9 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_capability_overlay_toolset.py -q > /tmp/.t4447.out 2>&1 && grep -q "1 passed" /tmp/.t4447.out
-out=$(python3 tests/unit/test_capability_overlay_toolset.py 2>&1); echo "$out" | grep -q "^OK$"
+timeout 300 bats tests/unit/task_id_race.bats > /tmp/.t4442.out 2>&1 && ! grep -q "^not ok" /tmp/.t4442.out
+test "$(grep -c '# skip' /tmp/.t4442.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/task_id_race.bats > /tmp/.t4442.lint 2>&1 && grep -q clean /tmp/.t4442.lint
 
 ## RCA
 
@@ -291,13 +303,13 @@ out=$(python3 tests/unit/test_capability_overlay_toolset.py 2>&1); echo "$out" |
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** the fast-tier nightly grades `tests/unit/test_capability_overlay_toolset.py` red: "collected no tests (pytest exit 5)".
+**Symptom:** task_id_race.bats test 4 ("fails loudly when keylock.sh is missing") red in the 2026-10-20T01:03Z fast-tier nightly at line 108: exit was non-zero but output did not name keylock.sh/keylock_acquire.
 
-**Root cause:** expectation drift, not a product regression. The file is T-2258's script-mode validator for `policy/capability-overlay/tool-set.yaml` (it exposes `main()` and is run as `python3 tests/unit/test_capability_overlay_toolset.py | grep ^OK$`); it has never had a `test_*` function. T-4381 (d859c3c11) deliberately made the unit runner discover every pytest file and grade exit 5 as red (`agents/audit/unit-suite.sh:476`), and T-4377 placed the file in the fast tier (`tests/unit/tiers.yaml:666`). The validator itself still prints OK.
+**Root cause:** fixture drift, not a product regression. T-4406 (94de6b05c) made lib/paths.sh:422 hard-source `fs-root-guard.sh`. The test's fake root copied a hand-picked list of libs (tests/unit/task_id_race.bats:97) without it, so the run died in paths.sh (`fs-root-guard.sh: No such file or directory`) before create-task.sh:19 ever tried keylock.sh. With the full lib set present, create-task.sh still exits 1 naming keylock.sh — the guarded behaviour is intact.
 
-**Why structurally allowed:** before T-4381 the runner silently passed (or skipped) pytest files that collected nothing, so a `test_*.py` that was really a script looked like coverage while running nothing under the suite.
+**Why structurally allowed:** the fixture enumerated paths.sh's dependencies by hand; every new hard-sourced lib breaks it silently until the nightly. Identical class already hit once (T-3624, worktree-identity.sh).
 
-**Prevention:** the file now carries a pytest test that runs the same validation and asserts `OK` (and fails with the FAIL line otherwise), so the suite actually guards tool-set.yaml; script mode is unchanged for T-2258's verification. T-4381's exit-5-is-red grading is what catches the next script-shaped test file.
+**Prevention:** the fixture now copies every lib/*.sh except keylock.sh (and asserts keylock.sh is absent), so a new hard-sourced lib can no longer mask the check. Assertion unchanged. Residual weakness noted for the parent: bash's own "No such file" error also contains "keylock.sh", so assertion 4 passes even without create-task.sh's own message; test 5 (no silent-skip guard) is what actually protects the anti-pattern.
 
 ## Evolution
 
@@ -375,10 +387,27 @@ out=$(python3 tests/unit/test_capability_overlay_toolset.py 2>&1); echo "$out" |
 
 ## Updates
 
-### 2026-10-20T08:08:31Z — task-created [task-create-agent]
+### 2026-10-20T08:06:58Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4447-testcapabilityoverlaytoolsetpy-collects-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4442-taskidracebats-create-tasksh-no-longer-n.md
 - **Context:** Initial task creation
 
-### 2026-10-20T08:12:40Z — status-update [task-update-agent]
+### 2026-10-20T08:13:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cfb61384
+- **Timestamp:** 2026-10-20T08:46:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T08:46:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

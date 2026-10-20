@@ -1,22 +1,19 @@
 ---
-id: T-4444
-name: "test_sidecar_alerts_t3856.py: 'NOT CHECKED' output now carries an extra line
-  (T-4418 orphan-inbox WARN)"
+id: T-4445
+name: "test_corpus_lint_lane_overflow.py: spec type 'call' has no lane-occupancy entry"
 description: >
-  test_cli_prints_not_checked_and_exits_3 expects the output to be exactly 'NOT CHECKED:
-  hub down'; T-4418 added an orphan-inbox line to fw sidecar alerts. Decide whether
-  the orphan line should print when the hub is down (probably not: nothing was checked)
-  and fix code or test accordingly. Found by the 2026-10-20T01:03Z fast-tier nightly
-  as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product
-  regression (fix code) or expectation drift from a deliberate change (update the
-  test, say why).
+  test_every_spec_type_has_an_occupancy_entry: types with no occupancy entry: ['call'].
+  A new corpus spec type (likely from T-4399's BPMN work) was added without its occupancy
+  entry. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push
+  (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or
+  expectation drift from a deliberate change (update the test, say why).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_corpus_lint_lane_overflow.py, tools/corpus_lint.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,9 +41,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T08:07:35Z
-last_update: 2026-10-20T08:09:19Z
-date_finished:
+created: 2026-10-20T08:07:53Z
+last_update: 2026-10-20T08:49:34Z
+date_finished: 2026-10-20T08:49:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,7 +55,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T08:09:20Z'
+  - ts: '2026-10-20T08:11:48Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -75,9 +72,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T08:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=309,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4444: test_sidecar_alerts_t3856.py: 'NOT CHECKED' output now carries an extra line (T-4418 orphan-inbox WARN)
+# T-4445: test_corpus_lint_lane_overflow.py: spec type 'call' has no lane-occupancy entry
 
 ## Context
 
@@ -87,9 +94,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] test_sidecar_alerts_t3856.py is hermetic: the CLI tests stub `addressing.orphan_inboxes` instead of asking the live hub, and `test_cli_prints_not_checked_and_exits_3` passes with its exact-text assertion unchanged
-- [x] A new test pins the T-4418 behaviour on the NOT CHECKED path: when the orphan check cannot ask the hub, the second line `orphan inboxes: NOT CHECKED` still follows `NOT CHECKED: hub down` (exit 3)
-- [x] Whole file and test_sidecar_orphan_circuit_t4418.py green
+- [x] `tools/corpus_lint.py` NODE_OCCUPANCY has a `call` entry (64, activity box with the name inside, same as service/subprocess) and `test_every_spec_type_has_an_occupancy_entry` passes unchanged
+- [x] A new regression test shows that a lane holding a `call` node is evaluated (it fires on spill, and it is not skipped)
+- [x] tests/unit/test_corpus_lint_lane_overflow.py green; vendor self --check --task T-4445 clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -274,10 +281,19 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_sidecar_alerts_t3856.py tests/unit/test_sidecar_orphan_circuit_t4418.py -q > /tmp/.t4444.out 2>&1 && grep -q passed /tmp/.t4444.out
-grep -q "orphan_inboxes" tests/unit/test_sidecar_alerts_t3856.py
+python3 -m pytest tests/unit/test_corpus_lint_lane_overflow.py -q > /tmp/.t4445.out 2>&1 && grep -q passed /tmp/.t4445.out
+python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_lint as c; assert c.NODE_OCCUPANCY['call'] == 64"
+bin/fw vendor self --check --task T-4445
 
 ## RCA
+
+**Symptom:** `test_every_spec_type_has_an_occupancy_entry` red in the 2026-10-20T01:03Z nightly: `types with no occupancy entry: ['call']`.
+
+**Root cause:** product regression, not expectation drift. T-4374 (a86d4a226) added `"call": "callActivity"` to `tools/corpus_spec.py:68` TYPE_TO_TAG but did not add it to `tools/corpus_lint.py:457` NODE_OCCUPANCY. lane-overflow treats a type with no occupancy entry as unevaluable, so every lane holding a call activity would be skipped by the rule, silently, for good. That is exactly the gap this test exists to catch.
+
+**Why structurally allowed:** T-4374 ran its own corpus_spec tests but not the lint suite. Only this cross-module parity test pins the two tables together, and it runs in the nightly, not at commit time.
+
+**Prevention:** the parity test catches it, and now passes. A new test proves that a lane holding a `call` node is evaluated and fires on spill, so if the entry is removed the failure points at the behaviour, not only at the table.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -292,13 +308,6 @@ grep -q "orphan_inboxes" tests/unit/test_sidecar_alerts_t3856.py
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-**Symptom:** `test_cli_prints_not_checked_and_exits_3` red in the 2026-10-20T01:03Z nightly: output was `NOT CHECKED: hub down` plus an extra orphan-inbox line.
-
-**Root cause:** expectation drift plus a non-hermetic test, not a product regression. T-4418 (206b5d62b) made `cmd_alerts` (lib/sidecar_cli.py:341, :350) run an independent orphan-inbox check and print its result on every path, the NOT CHECKED path included. That is deliberate: the orphan check reads the hub's topic list, a different route from mail collection, so a mail failure says nothing about it, and it reports `NOT CHECKED` for itself when it cannot ask (sidecar_cli.py:321). The T-3856 test stubbed `alerts.collect` but not `addressing.orphan_inboxes`, so on a host with `termlink` it asked the live hub with the fixture's fake hub id, got None, and printed `orphan inboxes: NOT CHECKED (...)`.
-
-**Why structurally allowed:** T-4418's own tests exercised the orphan path in a separate file; nobody re-ran the T-3856 file, whose exact-equality assertion was the only one that could see the new line. The test also depended on whether `termlink` is on PATH, so it would pass on a host without it.
-
-**Prevention:** the `proj` fixture now stubs `orphan_inboxes` (hermetic, host-independent), and a new test pins the two-line NOT CHECKED output so a future change to either line fails here.
 
 ## Evolution
 
@@ -376,10 +385,29 @@ grep -q "orphan_inboxes" tests/unit/test_sidecar_alerts_t3856.py
 
 ## Updates
 
-### 2026-10-20T08:07:35Z — task-created [task-create-agent]
+### 2026-10-20T08:07:53Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4444-testsidecaralertst3856py-not-checked-out.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4445-testcorpuslintlaneoverflowpy-spec-type-c.md
 - **Context:** Initial task creation
 
-### 2026-10-20T08:09:19Z — status-update [task-update-agent]
+### 2026-10-20T08:11:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-017bf119
+- **Timestamp:** 2026-10-20T08:49:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `tools/corpus_lint.py` NODE_OCCUPANCY has a `call` entry (64, activity box with the name inside, same as service/subprocess) and `test_every_spec_type_has_an_occupancy_entry` passes unchanged
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/corpus_lint.py in: `tools/corpus_lint.py` NODE_OCCUPANCY has a `call` entry (64, activity box with the name inside, same as service/subprocess) and `test_every_spec_type`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T08:49:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
