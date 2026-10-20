@@ -1,10 +1,16 @@
 ---
 id: T-4440
-name: "vendor_self_withhold.bats: _sv_is_withheld call-site count is 8, test pins 7 (T-4419 added a helper call in lib/upgrade.sh)"
+name: "vendor_self_withhold.bats: _sv_is_withheld call-site count is 8, test pins
+  7 (T-4419 added a helper call in lib/upgrade.sh)"
 description: >
-  tests/unit/vendor_self_withhold.bats:107 counts '_sv_is_withheld "$' in lib/upgrade.sh. T-4419 (_sv_scope_skip) touched every _self_vendor_* helper. Check the new call site is guarded and dry-run-exempt like the others, then update the count and its comment. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or expectation drift from a deliberate change (update the test, say why).
+  tests/unit/vendor_self_withhold.bats:107 counts '_sv_is_withheld "$' in lib/upgrade.sh.
+  T-4419 (_sv_scope_skip) touched every _self_vendor_* helper. Check the new call
+  site is guarded and dry-run-exempt like the others, then update the count and its
+  comment. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push
+  (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or
+  expectation drift from a deliberate change (update the test, say why).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T08:06:21Z
-last_update: 2026-10-20T08:06:21Z
-date_finished: null
+last_update: 2026-10-20T08:09:19Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T08:09:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4440: vendor_self_withhold.bats: _sv_is_withheld call-site count is 8, test pins 7 (T-4419 added a helper call in lib/upgrade.sh)
@@ -62,8 +86,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every `_sv_is_withheld "$` call site in lib/upgrade.sh (now 8, incl. `_self_vendor_tools` from T-4392) is dry-run-exempt — guard count equals exempt-form count
+- [x] tests/unit/vendor_self_withhold.bats pins 8 call sites, with a comment naming T-4392 as the change; the parity test still fails if a helper drops the guard or the dry-run exemption
+- [x] `bats tests/unit/vendor_self_withhold.bats` passes, no skips; dead-negation lint clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +273,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+test "$(grep -c '_sv_is_withheld "\$' lib/upgrade.sh)" -eq "$(grep -c '\[ "\$dry_run" = true \] || ! _sv_is_withheld' lib/upgrade.sh)"
+timeout 300 bats tests/unit/vendor_self_withhold.bats > /tmp/.t4440.out 2>&1 && ! grep -q "^not ok" /tmp/.t4440.out
+test "$(grep -c '# skip' /tmp/.t4440.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/vendor_self_withhold.bats > /tmp/.t4440.lint 2>&1 && grep -q clean /tmp/.t4440.lint
 
 ## RCA
 
@@ -264,6 +293,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `vendor_self_withhold.bats` "every file-loop helper consults the guard" red in the 2026-10-20T01:03Z fast-tier nightly: grep counts 8 `_sv_is_withheld "$` call sites in lib/upgrade.sh, test pins 7.
+
+**Root cause:** expectation drift, not a product regression. T-4392 (commit 425d05177) added a new `_self_vendor_tools` helper (lib/upgrade.sh:709) whose file loop carries the guard in the correct dry-run-exempt form (lib/upgrade.sh:723). The parity test at tests/unit/vendor_self_withhold.bats:107/110 pins the exact count and was not updated in that commit. (The task title attributes it to T-4419; `git log -L723,723` shows T-4392.)
+
+**Why structurally allowed:** T-4392's verification did not run vendor_self_withhold.bats; the pinned count only goes red in the nightly suite, which is exactly its design (a new helper must be consciously counted).
+
+**Prevention:** the pin is kept exact (so an unguarded ninth helper still fails), updated to 8 with the change named in the comment; the second assertion still requires every call site to be dry-run-exempt.
 
 ## Evolution
 
@@ -345,3 +382,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4440-vendorselfwithholdbats-sviswithheld-call.md
 - **Context:** Initial task creation
+
+### 2026-10-20T08:09:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
