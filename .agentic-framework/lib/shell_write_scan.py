@@ -621,6 +621,80 @@ def option_words(command: str) -> tuple[list[tuple[str, str]] | None, str | None
     return out, None
 
 
+# T-4509: tokens after which a `/` in awk opens a regex literal rather than dividing.
+_AWK_REGEX_AFTER = set("(,{};!~&|=<>+-*%^?:\n") | {""}
+_AWK_REGEX_KEYWORDS = {"print", "printf", "return", "in"}
+
+
+def awk_program_risk(prog: str) -> str | None:
+    """T-4509: why an awk program may run a command, or None. awk runs commands with
+    system(), `"cmd" | getline`, `print | "cmd"` / printf, and gawk's `|&` coprocess;
+    gawk's @load / @include pull in code. String literals, regex literals and comments
+    are skipped, so `/a|b/` and `"a|b"` are data; `||` is logical or. Every other `|`,
+    and `system` called as a function, is refused."""
+    code: list[str] = []
+    i, n, prev = 0, len(prog), ""
+    while i < n:
+        c = prog[i]
+        if c == '"':
+            i += 1
+            while i < n and prog[i] != '"':
+                i += 2 if prog[i] == "\\" else 1
+            if i >= n:
+                return "unterminated string"
+            i += 1
+            code.append(" S ")
+            prev = "S"
+        elif c == "/" and (prev in _AWK_REGEX_AFTER or prev in _AWK_REGEX_KEYWORDS):
+            i += 1
+            while i < n and prog[i] != "/":
+                if prog[i] == "\\":
+                    i += 2
+                elif prog[i] == "[":
+                    j = i + 1
+                    if j < n and prog[j] == "^":
+                        j += 1
+                    if j < n and prog[j] == "]":
+                        j += 1
+                    while j < n and prog[j] != "]":
+                        j += 1
+                    i = j + 1
+                elif prog[i] == "\n":
+                    return "unterminated regex"
+                else:
+                    i += 1
+            if i >= n:
+                return "unterminated regex"
+            i += 1
+            code.append(" R ")
+            prev = "R"
+        elif c == "#":
+            while i < n and prog[i] != "\n":
+                i += 1
+        elif c.isspace() and c != "\n":
+            code.append(c)
+            i += 1
+        elif c.isalnum() or c in "_$":
+            j = i
+            while j < n and (prog[j].isalnum() or prog[j] in "_$"):
+                j += 1
+            prev = prog[i:j]
+            code.append(prev)
+            i = j
+        else:
+            code.append(c)
+            prev = c
+            i += 1
+    text = "".join(code)
+    if "@" in text:
+        return "gawk @load/@include"
+    if re.search(r"(?<!\|)\|(?!\|)", text):
+        return "a pipe to or from a command (| getline, print |, |&)"
+    if re.search(r"\bsystem\s*\(", text):
+        return "system()"
+    return None
+
+
 def _decode_ansi_c_quoted(text: str) -> str:
     """Like _decode_ansi_c, but re-quote the decoded text so it stays ONE word."""
     def dec(m):

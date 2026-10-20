@@ -1,10 +1,16 @@
 ---
 id: T-4509
-name: "Read-only allowlist: awk runs commands via system(), cmd|getline and print|cmd but is classed SAFE"
+name: "Read-only allowlist: awk runs commands via system(), cmd|getline and print|cmd
+  but is classed SAFE"
 description: >
-  awk is in the read-only filter list (safe-commands.sh ~987) and the write scan knows nothing about awk execution. Refuse system(, |getline and print/printf to a pipe (or drop awk from the list). Reported by ring20-dashboard msg af2bbc85 (found by their cloud review of the public repo); reproduced on bleeding-edge HEAD 2026-10-20 with a classification-only probe: has_bash_write_pattern = no write AND is_bash_safe_command = SAFE. Concern G-121.
+  awk is in the read-only filter list (safe-commands.sh ~987) and the write scan knows
+  nothing about awk execution. Refuse system(, |getline and print/printf to a pipe
+  (or drop awk from the list). Reported by ring20-dashboard msg af2bbc85 (found by
+  their cloud review of the public repo); reproduced on bleeding-edge HEAD 2026-10-20
+  with a classification-only probe: has_bash_write_pattern = no write AND is_bash_safe_command
+  = SAFE. Concern G-121.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T20:18:46Z
-last_update: 2026-10-20T20:18:46Z
-date_finished: null
+last_update: 2026-10-20T20:50:08Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +56,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T20:30:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T20:31:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4509: Read-only allowlist: awk runs commands via system(), cmd|getline and print|cmd but is classed SAFE
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+G-121 cause 1 of 5 (ring20-dashboard msg af2bbc85). Probe: `docs/reports/G-121-bypass-probe.sh` (classification only). The awk program word comes from T-4512's shared tokenizer (`_fw_option_words`).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `awk 'BEGIN{system("touch pwned")}'`, `awk 'BEGIN{"touch pwned"|getline x}'`, `awk 'BEGIN{print "d"|"cat"}'`, `printf` to a pipe, `|&` coprocess, `system (…)` with a space, and a program from a file (`awk -f P`) or an expansion (`awk "$P"`) are gated by is_bash_safe_command
+- [x] A string or regex that merely contains `|` or `system` stays SAFE: `awk '/a|b/' F`, `awk '{print "a|b"}' F`, `awk '$1 == "system" {print}' F`, `awk '$1 || $2' F`
+- [x] Controls stay SAFE: `awk '{print $1}' F`, `awk -F: '{print $1}' F`, `awk -v n=2 'NR==n' F`, `git grep pattern`, `sed -n 1p F`
+- [x] New bats test covers both directions; T-4511, T-4512, T-4485, T-4367, T-4487, T-4499 and safe-commands suites stay green
+- [x] `bin/fw vendor self --check --task T-4509` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +285,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4509_awk_exec.bats > /tmp/.t4509.out 2>&1 && ! grep -q "^not ok" /tmp/.t4509.out
+test "$(grep -c '# skip' /tmp/.t4509.out)" -eq 0
+out=$(bash docs/reports/G-121-bypass-probe.sh 2>&1); test "$(echo "$out" | grep -cE '^nowrite +gated +awk .BEGIN')" -eq 3 && echo "$out" | grep -qE "^nowrite +SAFE +awk '\{print"
+bin/fw vendor self --check --task T-4509
 
 ## RCA
 
@@ -264,6 +305,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `awk 'BEGIN{system("touch pwned")}'`, `awk 'BEGIN{"touch pwned"|getline x}'` and `awk 'BEGIN{print "d"|"cat"}'` classified `nowrite` + `SAFE`, so awk ran a command with no active task.
+
+**Root cause:** the Category 2b arm of `_fw_single_command_is_safe` (agents/context/lib/safe-commands.sh, the `sed|awk|sort|uniq|…) return 0` arm) admitted awk unconditionally. Its comment argued awk's only write form needs a literal `>`, which the outer redirect scan sees; that is true of writing, and says nothing about awk's command-execution features (system(), `| getline`, `print |`, gawk `|&`) or about options that load code from a file (`-f`, `-E`, `-i`, `-l`) or write one (gawk `-d`, `-D`, `-o`, `-p`).
+
+**Why structurally allowed:** admission to that arm was argued per tool from its WRITE forms only ("cannot write a file without a redirect"); executing a command was never one of the criteria, and no test enumerated the execution features of each admitted tool. The budget gate's classifier (lib/cmd_classify.py) does not admit awk at all, so the two gates never disagreed visibly.
+
+**Fix / prevention:** `_fw_awk_runs_command` (safe-commands.sh) reads the words through T-4512's `_fw_option_words`, whitelists options (unknown → gated), and hands the program text(s) to `awk_program_risk` (lib/shell_write_scan.py): a small awk lexer that skips string literals, regex literals (bracket-expression aware, with regex-vs-division decided by the previous token) and comments, then refuses any `|` that is not `||`, `system(`, and gawk `@`. A program that begins with an expansion is gated. `tests/unit/t4509_awk_exec.bats` (6 tests, both directions) pins it; on HEAD the three probe lines read SAFE. Over-blocks toward the gate: a multi-line awk program (the chain splitter splits on the newline), and `gawk`/`mawk`/`nawk` are not admitted at all (unchanged).
 
 ## Evolution
 
@@ -345,3 +394,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4509-read-only-allowlist-awk-runs-commands-vi.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:50:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

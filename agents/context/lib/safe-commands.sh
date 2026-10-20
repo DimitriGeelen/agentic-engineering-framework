@@ -652,6 +652,47 @@ sys.stdout.write("".join(k + w + "\0" for w, k in words) + "OK\0")' "$_FW_SAFE_C
     return 1
 }
 
+# T-4509: can this awk clause run a command? The arm below admitted awk on the
+# argument that its only write form needs a literal `>`, but awk also RUNS commands:
+# system("…"), "cmd" | getline, print | "cmd", gawk's |& coprocess. The program text
+# is judged by lib/shell_write_scan.py awk_program_risk (strings, regex literals and
+# comments are data). Options are a whitelist: -f/-E/-i/-l load code the text does
+# not show, -d/-D/-o/-p write files (gawk), and anything unknown fails closed, as do
+# a program that begins with an expansion and a missing python3 or library.
+_fw_awk_runs_command() {
+    local i tok n prog_seen=0
+    local -a progs=()
+    _fw_option_words "$1" || return 0
+    n=${#_FW_OW[@]}
+    for (( i=1; i<n; i++ )); do
+        tok="${_FW_OW[i]}"
+        [ "${_FW_OWK[i]}" = E ] && return 0
+        case "$tok" in
+            --) i=$((i + 1)); break ;;
+            -F|-v|--field-separator|--assign) i=$((i + 1)) ;;
+            -F?*|-v?*|--field-separator=*|--assign=*) ;;
+            -e|--source) i=$((i + 1)); progs+=("${_FW_OW[i]:-}"); prog_seen=1 ;;
+            --source=*) progs+=("${tok#--source=}"); prog_seen=1 ;;
+            -b|-c|-n|-N|-M|-O|-P|-r|-s|-S|-t|-L|-V|--posix|--traditional|--sandbox|--version|\
+            --characters-as-bytes|--non-decimal-data|--re-interval|--bignum|--optimize|\
+            --use-lc-numeric|--lint|--lint=*|--copyright) ;;
+            -*) return 0 ;;
+            *) break ;;
+        esac
+    done
+    if [ "$prog_seen" -eq 0 ]; then
+        [ "$i" -lt "$n" ] || return 1
+        [ "${_FW_OWK[i]}" = E ] && return 0
+        progs+=("${_FW_OW[i]}")
+    fi
+    python3 -I -c 'import sys
+sys.path.insert(0, sys.argv[1])
+import shell_write_scan as s
+sys.exit(1 if any(s.awk_program_risk(p) for p in sys.argv[2:]) else 3)' "$_FW_SAFE_COMMANDS_LIB" "${progs[@]}" 2>/dev/null
+    [ $? -eq 3 ] && return 1
+    return 0
+}
+
 # T-4512: does this sed/sort clause name its in-place / output option? The outer
 # has_bash_write_pattern regexes read the raw line, so a quoted or brace-built
 # `-i` / `-o` passed them. Judged on _fw_option_words; a word that cannot be
@@ -1051,7 +1092,9 @@ _fw_single_command_is_safe() {
         #
         # `awk` is here despite having a write form (`{print > "f"}`): that form needs a
         # literal `>`, which the outer redirect scan sees whether or not it sits inside
-        # quotes. Verified in the task's Decisions rather than assumed.
+        # quotes. Verified in the task's Decisions rather than assumed. That argument
+        # covers WRITING only: awk also runs commands, judged by _fw_awk_runs_command
+        # below (T-4509).
         #
         # `sed` is here despite `sed -i`: has_bash_write_pattern carries a dedicated
         # `\bsed\b.*-i` rule (:430), so in-place edits never reach this arm. Same
@@ -1068,6 +1111,8 @@ _fw_single_command_is_safe() {
             # T-4512: the outer sed -i / sort -o rules read raw text; a quoted or
             # brace-built option is judged here on the dequoted words.
             case "$base" in sed|sort) _fw_filter_option_writes "$base" "$cmd" && return 1 ;; esac
+            # T-4509: awk runs commands with system(), | getline, print | and |&.
+            [ "$base" = awk ] && _fw_awk_runs_command "$cmd" && return 1
             return 0
             ;;
 
