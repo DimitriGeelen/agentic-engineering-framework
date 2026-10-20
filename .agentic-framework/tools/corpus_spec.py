@@ -278,6 +278,40 @@ def _is_boilerplate_comment(text: str) -> bool:
     return len([ln for ln in stripped.splitlines() if ln.strip()]) == 1
 
 
+def _is_empty_shell(proc) -> bool:
+    """A process holding nothing a spec could carry: only childless, textless
+    documentation / laneSet / extensionElements (Bizagi's second-pool shell)."""
+    for c in proc:
+        if not isinstance(c.tag, str):
+            continue
+        if (c.tag.split("}")[-1] not in ("documentation", "laneSet", "extensionElements")
+                or len(c) or (c.text or "").strip()):
+            return False
+    return True
+
+
+def _single_process(root):
+    """T-4502: a spec models ONE process. A second one used to be skipped by
+    root.find() — exit 0, its tasks gone (832 multiple-diagrams). Refuse when an
+    extra process carries content; an empty shell is dropped with a warning."""
+    procs = root.findall(_q("process"))
+    if not procs:
+        raise SystemExit("parse: no <bpmn:process> in this document — nothing to derive")
+    extra = [p for p in procs[1:] if not _is_empty_shell(p)]
+    if extra:
+        named = ", ".join(
+            f"{p.get('id')!r} ({sum(isinstance(c.tag, str) for c in p)} child elements)"
+            for p in extra)
+        raise SystemExit(
+            f"parse: {len(procs)} <bpmn:process> elements; a spec models one "
+            f"({procs[0].get('id')!r}) and would drop {named} — refusing rather "
+            f"than losing them silently (T-4502). Split the document per process.")
+    for p in procs[1:]:
+        print(f"parse: warning: dropping empty process {p.get('id')!r} "
+              f"(name={p.get('name')!r}; no flow elements, lanes or text)", file=sys.stderr)
+    return procs[0]
+
+
 def parse_map(xml_text: str) -> dict:
     prefixes = _source_prefixes(xml_text)
     parser = ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))
@@ -299,7 +333,7 @@ def parse_map(xml_text: str) -> dict:
             doc = cand
         break
 
-    proc = root.find(_q("process"))
+    proc = _single_process(root)
     wm = _ext(proc).get("workflowMeta", {})
     spec = {
         "spec_version": 1,

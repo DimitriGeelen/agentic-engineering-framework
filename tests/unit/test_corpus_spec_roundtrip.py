@@ -641,3 +641,48 @@ def test_boundary_event_dangling_host_is_checked_at_emit_too():
     with pytest.raises(SystemExit) as e:
         corpus_spec.emit_map(spec, version=1, compat_alias=False)
     assert "generate" in str(e.value) and "gone" in str(e.value)
+
+
+# ── T-4502: a second bpmn:process is refused, never dropped silently ──
+
+_PROC2 = ('<process xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Proc_B">'
+          '<task id="Task_B" name="B"/></process>')
+
+
+def test_multiple_diagrams_golden_second_process_refuses_naming_it():
+    src = (GOLDENS / "multiple-diagrams.bpmn").read_text()
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.parse_map(src)  # was: exit 0, Task_B gone
+    assert "'Process_2'" in str(e.value) and "2 <bpmn:process>" in str(e.value)
+
+
+def test_inline_second_process_refuses_and_derive_exits_nonzero(tmp_path):
+    src = _plain_task_xml() + ""
+    src = src.replace("</bpmn:definitions>", _PROC2 + "</bpmn:definitions>")
+    p = tmp_path / "two.bpmn"
+    p.write_text(src)
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.main(["derive", str(p)])
+    assert "'Proc_B'" in str(e.value)
+
+
+def test_empty_second_process_shell_is_dropped_with_a_warning(capsys):
+    shell = ('<process xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Proc_E" '
+             'name="Hauptprozess"><documentation/><laneSet id="LS_E"/></process>')
+    src = _plain_task_xml().replace("</bpmn:definitions>", shell + "</bpmn:definitions>")
+    spec = corpus_spec.parse_map(src)
+    assert [n["id"] for n in spec["nodes"] if n["type"] == "task"] == ["t1", "t2"]
+    assert "dropping empty process 'Proc_E'" in capsys.readouterr().err
+
+
+def test_document_without_process_refuses():
+    xml = ('<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" '
+           'id="D"/>')
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.parse_map(xml)
+    assert "no <bpmn:process>" in str(e.value)
+
+
+def test_single_process_map_is_unaffected(capsys):
+    spec = corpus_spec.parse_map(_plain_task_xml())
+    assert len(spec["nodes"]) == 4 and capsys.readouterr().err == ""

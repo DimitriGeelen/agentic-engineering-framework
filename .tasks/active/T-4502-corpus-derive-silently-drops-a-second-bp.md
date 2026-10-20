@@ -2,9 +2,14 @@
 id: T-4502
 name: "corpus derive silently drops a second bpmn process (exit 0, its tasks lost)"
 description: >
-  832 golden multiple-diagrams.bpmn.golden has two processes: Process_process_1 (task A) and Process_2 (default-namespace, task Task_B). corpus derive exits 0 and emits only task A: Task_B is lost with no warning. A derive that cannot represent an element must refuse, never drop it silently. Either represent multiple processes or refuse naming the dropped process; regression test. Same file as T-4495/T-4496: after those land.
+  832 golden multiple-diagrams.bpmn.golden has two processes: Process_process_1 (task
+  A) and Process_2 (default-namespace, task Task_B). corpus derive exits 0 and emits
+  only task A: Task_B is lost with no warning. A derive that cannot represent an element
+  must refuse, never drop it silently. Either represent multiple processes or refuse
+  naming the dropped process; regression test. Same file as T-4495/T-4496: after those
+  land.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T18:30:42Z
-last_update: 2026-10-20T18:30:42Z
-date_finished: null
+last_update: 2026-10-20T19:14:08Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T18:45:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T18:46:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4502: corpus derive silently drops a second bpmn process (exit 0, its tasks lost)
@@ -62,8 +95,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `parse_map` (so `corpus_spec derive`, `canon`, `diff`, `validate`) refuses a document with more than one `bpmn:process` (prefixed or default-namespace) with a SystemExit naming every process it would have dropped and how many child elements each holds. It must never exit 0 with a partial spec. Exception: an extra process that is an empty shell (only childless, textless documentation/laneSet/extensionElements, Bizagi's second pool) is dropped with a stderr warning naming it, so that drop is not silent either
+- [x] A document with no `bpmn:process` refuses with a clear message, not an AttributeError
+- [x] Regression tests: fixture tests/fixtures/corpus-832-goldens/multiple-diagrams.bpmn (copied from 832's golden) refuses naming `Process_2`; an inline two-process map refuses naming the second (through `main(["derive", …])`); an empty shell warns; single-process maps are unaffected. They fail without the fix (4 failed on stashed source)
+- [x] tests/unit/test_corpus_spec_roundtrip.py and the neighbouring corpus tests green (57 + 154 passed)
+- [x] docs/reports/T-4502-832-goldens-counts.md: for each of bizagi-nested-ns, boundary-events, collaboration-message-flows, i18n-documentation, kitchen-sink, multiple-diagrams, simple and zeebe-service-task, the plain `bpmn:task` count in the source, derived and generated (or the refusal), before and after
+- [x] `bin/fw vendor self --check --task T-4502` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +285,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 tools/corpus_spec.py derive tests/fixtures/corpus-832-goldens/multiple-diagrams.bpmn > /tmp/.t4502.out 2>&1; test $? -eq 1 && grep -q "Process_2" /tmp/.t4502.out && ! grep -q Traceback /tmp/.t4502.out
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k process > /tmp/.t4502p.out 2>&1 && grep -q passed /tmp/.t4502p.out
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_importer_fidelity.py tests/unit/test_corpus_lint_lane_overflow.py -q > /tmp/.t4502a.out 2>&1 && grep -q passed /tmp/.t4502a.out
+test -s docs/reports/T-4502-832-goldens-counts.md && grep -q multiple-diagrams docs/reports/T-4502-832-goldens-counts.md
+bin/fw vendor self --check --task T-4502
 
 ## RCA
 
@@ -264,6 +306,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `corpus_spec derive` on 832's multiple-diagrams golden exited 0 and emitted only task A; `Process_2`'s Task_B was gone, with no warning. The same happened, unnoticed, on collaboration-message-flows: a message startEvent in `Process_2` was lost while the task counts still matched (see docs/reports/T-4502-832-goldens-counts.md).
+
+**Root cause:** in tools/corpus_spec.py, parse_map read the process with `proc = root.find(_q("process"))` (the line after the doc-comment loop, ~:300 before this fix). `find` returns the FIRST match, so every later `<bpmn:process>` was never visited at all. T-2614's "unsupported element" guard only covers children of the process it walks, so a whole second process sat outside every check.
+
+**Why structurally allowed:** the spec model is one process per map (one workflowMeta, one pool), and every AEF-authored map has exactly one (47/47 store versions checked). Third-party multi-pool documents were never fed through derive until 832's goldens. The T-2614 loudness guarantee was scoped to elements, not to processes, so nothing asked how many processes there were.
+
+**Prevention:** `_single_process` counts all processes. It refuses when any extra process has content and names each one with its child count. An empty shell is dropped with a stderr warning, and a document with no process refuses. Regression tests pin the golden, an inline two-process map through the derive verb, the empty-shell warning, the no-process case and an unchanged single-process map. Representing multi-process documents is out of scope: they can be refused, not represented, and the report lists that as open.
 
 ## Evolution
 
@@ -345,3 +395,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4502-corpus-derive-silently-drops-a-second-bp.md
 - **Context:** Initial task creation
+
+### 2026-10-20T19:14:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

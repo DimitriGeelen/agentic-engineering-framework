@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_process_1"
+                  exporter="aef-workflow-designer"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <bpmn:collaboration id="Collaboration_process_1">
+    <bpmn:participant id="Process_1" name="Process_1" processRef="Process_process_1"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_process_1" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="process_1" version="1" schemaVersion="2" title="Process_1" tier_default="2"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="130"/>
+        </bpmn:extensionElements>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="frw" authority="authority" height="130"/>
+        </bpmn:extensionElements>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="320"/>
+        </bpmn:extensionElements>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:task id="lan_1_node" name="A">
+      <bpmn:extensionElements>
+        <aef:uid value="u1"/>
+        <aef:position x="156.0" y="81.0"/>
+      </bpmn:extensionElements>
+    </bpmn:task>
+  </bpmn:process>
+
+  <process xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Process_2" isExecutable="false">
+    <task id="Task_B" name="B"/>
+  </process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_process_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_process_1" bpmnElement="Collaboration_process_1">
+      <bpmndi:BPMNShape id="BPMNShape_Process_1" bpmnElement="Process_1" isHorizontal="true">
+        <dc:Bounds x="30" y="30" width="1540" height="612"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_lan_1_node" bpmnElement="lan_1_node">
+        <dc:Bounds x="156.0" y="81.0" width="110" height="64"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BpmnDiagram_2_Task_B_di" bpmnElement="Task_B">
+        <omgdc:Bounds xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" x="256" y="81" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
