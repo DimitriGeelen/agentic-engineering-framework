@@ -8,7 +8,7 @@ description: >
   Parent caught and killed them. Dispatch must refuse an empty or whitespace-only
   prompt (exit non-zero, nothing spawned).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T12:19:36Z
-last_update: '2026-10-02T12:30:38Z'
+last_update: 2026-10-20T21:16:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect reproduced (or ruled out) at HEAD: `fw termlink dispatch --prompt-file <empty file>` checked against current `agents/termlink/termlink.sh`
+- [x] `fw termlink dispatch` refuses an empty or whitespace-only prompt (from `--prompt-file` or `--prompt`) with a non-zero exit and an actionable message, before any worker is spawned
+- [x] Regression test `tests/unit/t3720_dispatch_empty_prompt.bats` covers empty file, whitespace-only file, and empty `--prompt`, and asserts no worker directory/session is created
+- [x] `bin/fw vendor self --check --task T-3720` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -256,7 +258,21 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/termlink/termlink.sh
+timeout 300 bats tests/unit/t3720_dispatch_empty_prompt.bats > /tmp/.t3720.out 2>&1 && ! grep -q "^not ok" /tmp/.t3720.out
+test "$(grep -c '# skip' /tmp/.t3720.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/t3720_dispatch_empty_prompt.bats > /tmp/.t3720-lint.out 2>&1 && grep -q "clean" /tmp/.t3720-lint.out
+bin/fw vendor self --check --task T-3720
+
 ## RCA
+
+**Symptom:** On 2026-10-02 a failed prompt write left four empty prompt files. `fw termlink dispatch --prompt-file` spawned four opus workers anyway, and the only thing each one received was the 430-byte T-3407 sidecar consult stanza.
+
+**Root cause:** `agents/termlink/termlink.sh:962-967` (`cmd_dispatch`) checks only that `--prompt` or `--prompt-file` was *given* and that the file *exists*. It then does `prompt=$(cat "$prompt_file")` and never checks the content again. An empty file, a whitespace-only file or `--prompt '   '` all go on to the spawn, and the preamble that is prepended later makes the final prompt look non-empty.
+
+**Why structurally allowed:** Validation was about the arguments (present, file exists), not about the prompt itself. No test dispatched with an empty prompt. Because the sidecar preamble is added downstream, the worker always got *some* text, so nothing failed and the error stayed silent.
+
+**Prevention:** Dispatch now refuses (die, exit 1) when the resolved prompt is empty after removing whitespace. The check runs before the task-type/model resolution and before any worker dir or session is created. It is pinned by `tests/unit/t3720_dispatch_empty_prompt.bats`: empty file, whitespace-only file and whitespace `--prompt` must all be refused with no worker dir, plus a control showing that a real prompt still gets through.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -352,3 +368,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3720-fw-termlink-dispatch-launches-a-worker-w.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:16:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

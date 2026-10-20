@@ -965,6 +965,11 @@ cmd_dispatch() {
         [ -f "$prompt_file" ] || die "Prompt file not found: $prompt_file"
         prompt=$(cat "$prompt_file")
     fi
+    # T-3720: an empty prompt still launches a worker — the sidecar preamble alone reaches
+    # the model, with no task in it. Refuse before anything is spawned.
+    if [ -z "${prompt//[[:space:]]/}" ]; then
+        die "Dispatch refused: prompt is empty${prompt_file:+ (--prompt-file $prompt_file)}. Nothing was spawned — check that the prompt was written before dispatching."
+    fi
 
     # T-1643/W1: auto-derive task_type from focus.yaml when omitted.
     if [ -z "$task_type" ]; then
