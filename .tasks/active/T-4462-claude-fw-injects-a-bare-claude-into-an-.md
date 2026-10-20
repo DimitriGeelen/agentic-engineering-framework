@@ -103,7 +103,7 @@ cost_estimate_proposed:
 - [x] bin/claude-fw TermLink mode injects `command claude…` (not a bare `claude`), so a shell function or alias named `claude` in the PTY's interactive shell cannot intercept the launch
 - [x] Regression test tests/unit/t4462_claude_fw_inject_bypasses_function.bats runs the exact injected line in a scratch `bash -i` whose rc defines a `claude()` function and a `claude` alias, with a stand-in binary on PATH: the binary is reached, the function is not, and the exit marker prints 0 — and it fails against the pre-fix line
 - [x] Existing claude-fw tests stay green (t4426, t4454, t3954, t3647, t3648, t4118, t3358)
-- [ ] Vendored copy synced (`bin/fw vendor self --check --task T-4462` clean)
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4462` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
