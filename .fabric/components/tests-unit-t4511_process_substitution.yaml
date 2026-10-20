@@ -1,0 +1,21 @@
+id: tests/unit/t4511_process_substitution.bats
+name: t4511_process_substitution
+type: script
+subsystem: tests
+location: tests/unit/t4511_process_substitution.bats
+tags: []
+
+purpose: "T-4511 (SECURITY, G-121): process substitution runs a command whatever the outer verb is, and the read-only allowlist judged only the outer verb: `cat <(touch x)`, `grep x <(touch x)` and `diff <(touch a) <(touch b)` read as SAFE (the…"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

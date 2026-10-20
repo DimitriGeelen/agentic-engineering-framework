@@ -167,7 +167,33 @@ _fw_initial_git_cwd() {
     return 0
 }
 
+# T-4511: does the text carry process substitution, `<(CMD)` or `>(CMD)`? Bash runs
+# CMD whatever the outer verb is, so `cat <(touch x)` executes touch, and the outer
+# redirect scan only sees `>`. Quote-aware so a mention is not a use: single-quoted
+# text and a backslash-escaped character are skipped. Double-quoted text is NOT
+# skipped, because a "$(…)" inside it parses afresh and may hold one (over-blocks a
+# literal "<(" in double quotes, toward the gate).
+_fw_has_process_subst() {
+    local s="$1" i n=${#1} ch sq=0 dq=0
+    for (( i=0; i<n; i++ )); do
+        ch="${s:i:1}"
+        if [ "$sq" -eq 1 ]; then
+            [ "$ch" = "'" ] && sq=0
+            continue
+        fi
+        case "$ch" in
+            '"') dq=$((1 - dq)) ;;
+            "'") [ "$dq" -eq 0 ] && sq=1 ;;
+            '\') i=$((i+1)) ;;
+            '<'|'>') [ "${s:i+1:1}" = "(" ] && return 0 ;;
+        esac
+    done
+    return 1
+}
+
 is_bash_safe_command() {
+    # T-4511: process substitution runs a command anywhere on the line.
+    _fw_has_process_subst "$1" && return 1
     local _cmd="$1" _seg _n=0
     # T-4343: the cwd the git arm resolves -C / --git-dir against. Top level starts at
     # the shell's cwd from the hook payload. A nested call (F-15 `X=$(...)`) inherits

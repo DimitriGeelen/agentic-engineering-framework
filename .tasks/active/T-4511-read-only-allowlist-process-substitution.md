@@ -1,10 +1,15 @@
 ---
 id: T-4511
-name: "Read-only allowlist: process substitution <(...) and >(...) runs the inner command but is classed SAFE"
+name: "Read-only allowlist: process substitution <(...) and >(...) runs the inner
+  command but is classed SAFE"
 description: >
-  The redirect regex (~1441) only sees >. Refuse process substitution anywhere in the command (cat <(CMD), grep x <(CMD), diff <(A) <(B)). Reported by ring20-dashboard msg af2bbc85 (found by their cloud review of the public repo); reproduced on bleeding-edge HEAD 2026-10-20 with a classification-only probe: has_bash_write_pattern = no write AND is_bash_safe_command = SAFE. Concern G-121.
+  The redirect regex (~1441) only sees >. Refuse process substitution anywhere in
+  the command (cat <(CMD), grep x <(CMD), diff <(A) <(B)). Reported by ring20-dashboard
+  msg af2bbc85 (found by their cloud review of the public repo); reproduced on bleeding-edge
+  HEAD 2026-10-20 with a classification-only probe: has_bash_write_pattern = no write
+  AND is_bash_safe_command = SAFE. Concern G-121.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T20:20:22Z
-last_update: 2026-10-20T20:20:22Z
-date_finished: null
+last_update: 2026-10-20T20:42:58Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +55,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T20:30:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T20:31:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4511: Read-only allowlist: process substitution <(...) and >(...) runs the inner command but is classed SAFE
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+G-121 cause 3 of 5 (ring20-dashboard msg af2bbc85). Probe: `docs/reports/G-121-bypass-probe.sh` (classification only).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `cat <(touch pwned)`, `grep x <(touch pwned)`, `diff <(touch a) <(touch b)`, `cat >(touch x)`, `ls && cat <(x)` and `cat "$(cat <(x))"` are gated by is_bash_safe_command
+- [x] A quoted or escaped mention stays SAFE: `grep '<(' F`, `grep -F '>(' F`, `grep \<\( F`
+- [x] Controls stay SAFE: `git grep pattern`, `awk '{print $1}' F`, `sed -n 1p F`, `cat F`, a T-4396 `while read` loop with `done < F`
+- [x] New bats test covers both directions; T-4512, T-4485, T-4367, T-4487, T-4499, T-4396 and safe-commands suites stay green
+- [x] `bin/fw vendor self --check --task T-4511` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +284,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4511_process_substitution.bats > /tmp/.t4511.out 2>&1 && ! grep -q "^not ok" /tmp/.t4511.out
+test "$(grep -c '# skip' /tmp/.t4511.out)" -eq 0
+out=$(bash docs/reports/G-121-bypass-probe.sh 2>&1); test "$(echo "$out" | grep -cE '^nowrite +gated +(cat|grep x|diff) <\(')" -eq 3
+bin/fw vendor self --check --task T-4511
 
 ## RCA
 
@@ -264,6 +304,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `cat <(touch pwned)`, `grep x <(touch pwned)` and `diff <(touch a) <(touch b)` classified `nowrite` + `SAFE`, so the inner command ran with no active task.
+
+**Root cause:** `is_bash_safe_command` (agents/context/lib/safe-commands.sh, `is_bash_safe_command()` at HEAD :170) judges the outer verb of each chain segment, and `_fw_chain_split` does not treat `<(` as a command boundary, so the substitution body was never judged. `has_bash_write_pattern`'s redirect regex (`[^2>&]>[^>&]`) catches `>(` by accident (it looks like a redirect) but has no `<` rule. Only the T-4396 loop grammar refused `<(` / `>(`, in its word list.
+
+**Why structurally allowed:** the allowlist is a list of "read-only verbs" plus a denylist of write forms; shell features that run a command inside an argument (process substitution, like command substitution, OBS-185) sit outside both lists. The budget gate's own classifier (lib/cmd_classify.py, T-4150) already refused process substitution, but nothing compared the two classifiers on that shape.
+
+**Fix / prevention:** `_fw_has_process_subst` refuses an unescaped `<(` / `>(` anywhere on the line, as the first statement of `is_bash_safe_command` (so chains, loops and the F-15 `X=$(…)` recursion all pass through it). Single-quoted text is skipped only on a line with no double quote, because a flat scan cannot tell `'` inside `"…"` (literal) from `'` inside `"$(…)"` (a quote) — mixed lines over-block toward the gate. `tests/unit/t4511_process_substitution.bats` (5 tests, both directions) pins it; on HEAD the three probe lines read SAFE.
 
 ## Evolution
 
@@ -345,3 +393,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4511-read-only-allowlist-process-substitution.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:42:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
