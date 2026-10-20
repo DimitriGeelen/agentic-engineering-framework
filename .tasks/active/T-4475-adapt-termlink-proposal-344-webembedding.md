@@ -2,12 +2,18 @@
 id: T-4475
 name: "Adapt termlink proposal 344: web/embeddings.py concurrent embed batches (FW_EMBED_WORKERS)"
 description: >
-  010-termlink pickup offset 344 (their T-3336). Serial batch embedding replaced by ThreadPoolExecutor map (order preserved); measured 70 -> 107 chunks/s at 3 workers on Ollama NUM_PARALLEL=3. Applies at HEAD. Adapt: register FW_EMBED_WORKERS in lib/config.sh registry; decide default (proposal 3; consider 1 until the server's parallelism is known, since 3 changes behaviour on every consumer); test order alignment. Analysis: docs/reports/T-4472-termlink-proposals-triage.md, diff docs/reports/T-4472-inputs/344-web_embeddings.py.diff. Triage only, not applied.
+  010-termlink pickup offset 344 (their T-3336). Serial batch embedding replaced by
+  ThreadPoolExecutor map (order preserved); measured 70 -> 107 chunks/s at 3 workers
+  on Ollama NUM_PARALLEL=3. Applies at HEAD. Adapt: register FW_EMBED_WORKERS in lib/config.sh
+  registry; decide default (proposal 3; consider 1 until the server's parallelism
+  is known, since 3 changes behaviour on every consumer); test order alignment. Analysis:
+  docs/reports/T-4472-termlink-proposals-triage.md, diff docs/reports/T-4472-inputs/344-web_embeddings.py.diff.
+  Triage only, not applied.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4472, T-4463]
@@ -39,8 +45,8 @@ origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T14:07:46Z
-last_update: 2026-10-20T14:07:46Z
-date_finished: null
+last_update: 2026-10-20T15:11:44Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T14:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T14:16:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4475: Adapt termlink proposal 344: web/embeddings.py concurrent embed batches (FW_EMBED_WORKERS)
@@ -63,8 +97,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `web/embeddings.py` embeds batches through a `FW_EMBED_WORKERS`-sized thread pool (`map`, order preserved); `FW_EMBED_WORKERS=1` (the default) keeps the serial loop, so no consumer's embedding server load changes unless they opt in
+- [x] `FW_EMBED_WORKERS` registered in `lib/config.sh` `FW_CONFIG_REGISTRY` AND `web/blueprints/config.py` (parity lint green); invalid values (non-int, <1) fall back to 1, never crash a reindex
+- [x] Regression test proves vectors stay aligned with input order when batches complete out of order under >1 workers, and that the default is serial
+- [x] `bin/fw vendor self --check --task T-4475` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +285,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_t4475_embed_workers.py -q > /tmp/.t4475 2>&1 && grep -q "7 passed" /tmp/.t4475
+timeout 120 bats tests/lint/config-registry-parity.bats > /tmp/.t4475b 2>&1 && ! grep -q "^not ok" /tmp/.t4475b
+test "$(grep -c '# skip' /tmp/.t4475b)" -eq 0
+grep -qF 'FW_EMBED_WORKERS="${_rx_workers:-1}"' bin/fw
+bash -n bin/fw
+bin/fw vendor self --check --task T-4475
 
 ## RCA
 
@@ -265,6 +307,11 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the bulk reindex (`fw index reindex`, hourly cron) sent one 64-chunk embed batch at a time; 010-termlink measured their GPU ~11% busy, 70 chunks/s serial vs 107 at 3 concurrent requests on a 3-slot Ollama.
+**Root cause:** `web/embeddings.py` `reindex_incremental._flush` (was line 1264-1265) looped `_embed()` serially with no concurrency knob, so a server configured with `OLLAMA_NUM_PARALLEL>1` could never be used in parallel.
+**Why structurally allowed:** a throughput limit, not a failure — nothing measures reindex chunks/s, and the proposal's own knob (`FW_EMBED_WORKERS`, default 3) bypassed the config registry, so it would have been invisible to `fw config list`/Watchtower and changed load on every consumer's server silently.
+**Prevention:** the knob is a registered key (`lib/config.sh` + `web/blueprints/config.py`, held together by `tests/lint/config-registry-parity.bats`), resolved by `fw index reindex` through `fw_config` so `fw config set EMBED_WORKERS N` works; default 1 so behaviour changes only on opt-in; `tests/unit/test_t4475_embed_workers.py` pins serial default, real overlap, input-order alignment under reversed completion, and malformed-value fallback.
 
 ## Evolution
 
@@ -321,6 +368,11 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-20 — default worker count
+- **Chose:** default 1 (serial), opt in via `fw config set EMBED_WORKERS N` / `FW_EMBED_WORKERS`.
+- **Why:** the right value is the embedding server's `OLLAMA_NUM_PARALLEL`, which the framework cannot see; 3 would triple concurrent load on every consumer's server on upgrade.
+- **Rejected:** proposal's default 3 (unasked behaviour change fleet-wide); env-only knob (not in registry, `fw config set` inert).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -346,3 +398,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4475-adapt-termlink-proposal-344-webembedding.md
 - **Context:** Initial task creation
+
+### 2026-10-20T15:11:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

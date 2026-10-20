@@ -72,6 +72,7 @@ SETTINGS = [
     ("RECALL_USAGE_DAYS", "7", "Window fw doctor looks back over for semantic-recall queries; zero rows in the window WARNs — the G-064 zero-consumer signal; T-3019"),
     ("INDEX_MAX_AGE_HOURS", "24", "Hours since the vector index manifest was written before the vector-index health check FAILs (doctor, audit, handover, operator push); T-3783"),
     ("INDEX_REINDEX_INTERVAL_HOURS", "1", "Hours between runs of the index-reindex-hourly cron job (1-24): 1 writes hour field '*', N writes '*/N'; read by fw cron generate (lib/cron_schedule.py). The job's minute is derived per project unless the registry pins it; T-4351"),
+    ("EMBED_WORKERS", "1", "Concurrent embed requests the vector reindex sends to the bulk embedding host (web/embeddings.py:_embed_batches; order preserved). Match it to the server's OLLAMA_NUM_PARALLEL; 1 is serial. Malformed or <1 means 1; T-4475"),
     ("INDEX_MAX_LAG", "50", "Task ids or learning ids on disk the vector index has never seen before the vector-index health check FAILs; T-3783"),
     ("RECALL_FAIL_PCT_WARN", "10", "Percent of recall queries in 7 days that could not run above which the vector-index health check WARNs; T-3783"),
     ("INDEX_HANDOVERS", "1", "Include .context/handovers/ in the semantic index (web/search_utils.py:collect_files). 0 excludes them: ~90MB / 1,710 files leave fw ask, fw recall, /search and the RAG path. Reversible; deletes nothing. T-3024"),

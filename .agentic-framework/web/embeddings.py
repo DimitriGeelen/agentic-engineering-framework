@@ -228,6 +228,45 @@ def _embed(texts: list[str], host: str | None = None) -> list[bytes]:
     raise EmbedUnavailable(last)
 
 
+def _embed_workers() -> int:
+    """Concurrent embed requests for bulk reindex (FW_EMBED_WORKERS, default 1).
+
+    T-4475 (010-termlink T-3336): serial batches left their GPU ~11% busy;
+    measured on an RTX 5060 Ti with Ollama OLLAMA_NUM_PARALLEL=3: 1 worker
+    70 chunks/s, 2 = 98, 3 = 107, 4 = 104. The default stays 1 because the
+    right value is the embedding server's parallelism, which the framework
+    cannot see — 3 would triple the load on every consumer's server. Match it
+    to OLLAMA_NUM_PARALLEL. A malformed value falls back to 1: a typo in a
+    tuning knob must not fail the hourly reindex.
+    """
+    try:
+        return max(1, int(os.environ.get("FW_EMBED_WORKERS", "1")))
+    except ValueError:
+        return 1
+
+
+def _embed_batches(texts: list[str], batch_size: int,
+                   host: str | None = None) -> list[bytes]:
+    """Embed `texts` in `batch_size` batches, up to _embed_workers() at once.
+
+    The result is in input order whatever order the batches finish in
+    (`Executor.map` yields in submission order), so callers can zip it
+    against their metadata rows.
+    """
+    batches = [texts[j:j + batch_size] for j in range(0, len(texts), batch_size)]
+    workers = _embed_workers()
+    vecs: list[bytes] = []
+    if workers == 1 or len(batches) <= 1:
+        for batch in batches:
+            vecs.extend(_embed(batch, host=host))
+        return vecs
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=min(workers, len(batches))) as ex:
+        for batch_vecs in ex.map(lambda b: _embed(b, host=host), batches):
+            vecs.extend(batch_vecs)
+    return vecs
+
+
 # Query embedding cache — LRU avoids re-embedding repeated queries (T-263)
 @lru_cache(maxsize=256)
 def _embed_single_cached(text: str) -> bytes:
@@ -1260,9 +1299,7 @@ def reindex_incremental() -> dict:
         def _flush(meta_rows: list[dict], texts: list[str]) -> None:
             """Embed `texts`, insert their rows, and commit as one durable step."""
             nonlocal embedded_chunks
-            vecs: list[bytes] = []
-            for j in range(0, len(texts), BATCH_SIZE):
-                vecs.extend(_embed(texts[j:j + BATCH_SIZE], host=bulk_host))
+            vecs = _embed_batches(texts, BATCH_SIZE, host=bulk_host)
             stamp = time.time()
             done: set[str] = set()
             for meta, emb in zip(meta_rows, vecs):

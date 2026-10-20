@@ -343,6 +343,7 @@ FW_CONFIG_REGISTRY=(
     # 24h is a full day of missed runs, not jitter.
     "INDEX_MAX_AGE_HOURS|24|Hours since the vector index manifest was written before the vector-index health check FAILs (fw doctor, fw audit corpus-health, handover, operator push). The reindex cron runs hourly. T-3783."
     "INDEX_REINDEX_INTERVAL_HOURS|1|Hours between runs of the index-reindex-hourly cron job (1-24). 1 writes hour field '*', N writes '*/N'; read by fw cron generate (lib/cron_schedule.py). Raise for large, slowly changing indexes; keep it under INDEX_MAX_AGE_HOURS. The job's minute is derived per project unless the registry pins it. T-4351."
+    "EMBED_WORKERS|1|Concurrent embed requests the vector reindex sends to the bulk embedding host (web/embeddings.py:_embed_batches; order preserved). Match it to the server's OLLAMA_NUM_PARALLEL; 1 is serial. Measured 70 to 107 chunks/s at 3 on a 3-slot Ollama. Malformed or <1 means 1. T-4475."
     "INDEX_MAX_LAG|50|Task ids or learning ids on disk that the vector index has never seen before the vector-index health check FAILs. T-3783."
     "RECALL_FAIL_PCT_WARN|10|Percent of recall queries in 7 days that could not run (embed path failed mid-query) above which the vector-index health check WARNs. T-3783."
     # T-3028 (T-3025 GO, option 3). State dumps are 97.3% of a handover and the
