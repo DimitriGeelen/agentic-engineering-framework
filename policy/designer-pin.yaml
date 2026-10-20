@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.23.0"
-sha256: "431cc5114d86b061ba12a92b8f2bcfa7c8d766bbc79a390803f561492b3857ee"
-bytes: 1171433
+version: "0.24.0"
+sha256: "a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f"
+bytes: 1176028
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.23.0.html"
-source_tag: "designer-v0.23.0"
+source_artifact: "dist/aef-workflow-designer-0.24.0.html"
+source_tag: "designer-v0.24.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -159,7 +159,11 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 # T-4310 (2026-10-18): re-pinned 0.22.0 -> 0.23.0 (832 announce 590beaba, 832 T-1202). Only the version string
 #   changes in the designer; the authoring kit's CONFORMANCE.md gains a CONVENTIONAL rule class (832 T-1165).
 #   No node ids, fields, validator findings or migration change.
-vendored_path: "vendor/designer/aef-workflow-designer-0.23.0.html"
+# T-4448 (2026-10-20): re-pinned 0.23.0 -> 0.24.0 (832 announce c859278f). Extra aef:input/aef:output attributes
+#   preserved (832 T-1220); link events kept; unnamed start/end gain an aef:meta slug on next save (no element id
+#   change); the one-way exclusive-gateway finding is now W-GW-OUTGOING/W-XML-GW-OUTGOING (was the E- prefixed
+#   id), FAIL->WARN (exit 2 -> 1). AEF grep for the old ids and for an exit-2 expectation: none.
+vendored_path: "vendor/designer/aef-workflow-designer-0.24.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for

@@ -1,10 +1,23 @@
 ---
 id: T-4448
-name: "Re-pin designer 0.23.0 -> 0.24.0 (832: aef:io extra attributes preserved, link events kept, unnamed start/end via aef:meta slug, E-GW-OUTGOING -> W-GW-OUTGOING)"
+name: "Re-pin designer 0.23.0 -> 0.24.0 (832: aef:io extra attributes preserved, link
+  events kept, unnamed start/end via aef:meta slug, E-GW-OUTGOING -> W-GW-OUTGOING)"
 description: >
-  832 announce (msg c859278f, 2026-10-20): tag designer-v0.24.0, artifact dist/aef-workflow-designer-0.24.0.html, sha256 a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f, 1176028 bytes; notes docs/releases/RELEASE-NOTES-0.24.0.md; 832 full suite 306/0. Procedure as T-4310 (e936b5adf): update policy/designer-pin.yaml from the announce (version, sha256, bytes, source_artifact, source_tag), then fw designer sync --from-tag (independent sha256 must match the MANIFEST at the tag AND the pin). Impact checks: (1) finding-id rename E-GW-OUTGOING/E-XML-GW-OUTGOING -> W-GW-OUTGOING/W-XML-GW-OUTGOING and FAIL->WARN (exit 2 -> 1): grep AEF (lib, agents, tests, policy, docs/designs) for the old ids and any exit-code expectation; (2) stored maps with unnamed start/end events gain aef:meta slug on their next save (no element id changes): note, do not mass-resave; (3) T-1220 extra aef:input/aef:output attributes are preserved — relevant to inception T-4415 (mapping v1.1 traceable aef:io). Keep doctor_designer_pin_drift and the designer tests green.
+  832 announce (msg c859278f, 2026-10-20): tag designer-v0.24.0, artifact dist/aef-workflow-designer-0.24.0.html,
+  sha256 a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f, 1176028
+  bytes; notes docs/releases/RELEASE-NOTES-0.24.0.md; 832 full suite 306/0. Procedure
+  as T-4310 (e936b5adf): update policy/designer-pin.yaml from the announce (version,
+  sha256, bytes, source_artifact, source_tag), then fw designer sync --from-tag (independent
+  sha256 must match the MANIFEST at the tag AND the pin). Impact checks: (1) finding-id
+  rename E-GW-OUTGOING/E-XML-GW-OUTGOING -> W-GW-OUTGOING/W-XML-GW-OUTGOING and FAIL->WARN
+  (exit 2 -> 1): grep AEF (lib, agents, tests, policy, docs/designs) for the old ids
+  and any exit-code expectation; (2) stored maps with unnamed start/end events gain
+  aef:meta slug on their next save (no element id changes): note, do not mass-resave;
+  (3) T-1220 extra aef:input/aef:output attributes are preserved — relevant to inception
+  T-4415 (mapping v1.1 traceable aef:io). Keep doctor_designer_pin_drift and the designer
+  tests green.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T08:11:10Z
-last_update: 2026-10-20T08:11:10Z
-date_finished: null
+last_update: 2026-10-20T08:45:55Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +63,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T08:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T08:16:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4448: Re-pin designer 0.23.0 -> 0.24.0 (832: aef:io extra attributes preserved, link events kept, unnamed start/end via aef:meta slug, E-GW-OUTGOING -> W-GW-OUTGOING)
@@ -62,8 +103,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Impact grep: no AEF file under lib/ agents/ tools/ tests/ policy/ web/ docs/designs/ references E-GW-OUTGOING / E-XML-GW-OUTGOING, and nothing expects a one-way exclusive gateway check to exit 2
+- [x] policy/designer-pin.yaml pins 0.24.0 (version, sha256 a42f16b3…, bytes 1176028, source_artifact, source_tag, vendored_path) with a T-4448 history note
+- [x] `bin/fw designer sync --from-tag` succeeds: sha256 matches the MANIFEST at designer-v0.24.0 and the pin; vendor/designer/aef-workflow-designer-0.24.0.html exists with that sha256
+- [ ] Designer unit tests (tests/unit/*designer*.bats) green, and `bin/fw doctor` reports the designer pin current (no pin drift)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +291,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+out=$(grep -rlE 'E-GW-OUTGOING|E-XML-GW-OUTGOING' lib/ agents/ tools/ tests/ policy/ web/ docs/; echo "rc=$?"); test "$out" = "rc=1"
+grep -q '^version: "0.24.0"' policy/designer-pin.yaml && grep -q '^sha256: "a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f"' policy/designer-pin.yaml
+test "$(sha256sum vendor/designer/aef-workflow-designer-0.24.0.html | cut -d' ' -f1)" = a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f
+timeout 600 bats tests/unit/designer_ghost_gate.bats tests/unit/designer_sync_from_tag.bats tests/unit/designer_sync_sha256.bats tests/unit/doctor_designer_pin_drift.bats tests/unit/t3064_designer_onboarding_install.bats tests/unit/t3119_designer_currency.bats tests/unit/t3158_designer_currency_check.bats > /tmp/.t4448-bats 2>&1 && ! grep -q "^not ok" /tmp/.t4448-bats
+bin/fw doctor > /tmp/.t4448-doc 2>&1; grep -q 'designer vendored build matches pin (a42f16b309ea' /tmp/.t4448-doc && grep -q 'designer pin current with origin' /tmp/.t4448-doc
+bin/fw vendor self --check --task T-4448
 
 ## RCA
 
@@ -345,3 +394,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4448-re-pin-designer-0230---0240-832-aefio-ex.md
 - **Context:** Initial task creation
+
+### 2026-10-20T08:45:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

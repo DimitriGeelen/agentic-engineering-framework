@@ -7025,6 +7025,10 @@ function openDetails(uid) {
   _detailsUid = uid;
   $('details-modal').classList.add('visible');
   renderProperties();
+  // T-1209: every open starts at the top (the element header and its name). closeDetails() empties the body but the
+  // container kept its scrollTop, so a reopen started where the last view was left. Only on OPEN: an edit while
+  // open re-renders through renderDetails() and must keep the place.
+  $('details-body').scrollTop = 0;
 }
 function closeDetails() {
   if (!_detailsUid) return;
@@ -11972,6 +11976,20 @@ function renderFindingsPanel_close() {
 // rule — the producer's own reader agreeing with the producer's own defect.
 // The `&` replacement MUST stay first, or it re-escapes the ampersands of the references below.
 function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\n/g, '&#10;').replace(/\r/g, '&#13;').replace(/\t/g, '&#9;'); }
+
+// T-1220: attributes on <aef:input>/<aef:output> beyond the ones the designer names are kept, in their
+// order, and written back unread (AEF msg 42018c4e: "preserving is not interpreting"). A consumer that
+// generates aef:io from its ontology (ref, role, cardinality, dataType; AEF T-4415) loses nothing on save.
+const IO_NAMED_ATTRS = { input: new Set(['name', 'type', 'required']), output: new Set(['name', 'type']) };
+const XML_ATTR_NAME = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
+function ioExtraAttrs(el, named) {
+  const extra = [];
+  for (const a of Array.from(el.attributes)) if (!named.has(a.name) && XML_ATTR_NAME.test(a.name)) extra.push([a.name, a.value]);
+  return extra;
+}
+function ioExtraAttrXml(extra) {
+  return (extra || []).filter(([k]) => XML_ATTR_NAME.test(k)).map(([k, v]) => ` ${k}="${escAttr(v)}"`).join('');
+}
 // escText is deliberately NOT given the same treatment: normalisation applies to attribute
 // values only, and newlines in element text content are legal and preserved. Escaping them here
 // would invent a behaviour rather than restore one.
@@ -12093,7 +12111,9 @@ function aefExtensionXml(node) {
     // `name` rides <aef:link> and only alongside a workflowRef. Excluded rather than
     // carried because aef.name on a non-link node would shadow node.name on re-import,
     // and the corpus census found it on no <aef:meta> element (0 of 823 values).
-    'name']);
+    'name',
+    // T-1218: written below from node.slug, only for an unnamed start/end event; never carried as stale state.
+    'slug']);
   // The kind-specific binding is emitted by <aef:eventDef> ONLY for a typed event node.
   // On any other type it has no emitter, so it must be carried rather than skipped.
   if (EVENT_KIND[node.type] && EVENT_BINDING_FIELD[node.type]) scalarHandled.add(EVENT_BINDING_FIELD[node.type]);
@@ -12105,7 +12125,11 @@ function aefExtensionXml(node) {
   // re-exporting an unchanged document twice yields identical bytes.
   const metaAttrs = [...metaKeys.filter(k => aefKeys.includes(k)), ...carriedKeys]
     .map(k => `${k}="${escAttr(aef[k])}"`).join(' ');
-  if (metaAttrs) out += `        <aef:meta ${metaAttrs}/>\n`;
+  // T-1218: an unnamed start/end event carries its slug, so its display id survives the next open.
+  const slugAttr = (node.type === 'startEvent' || node.type === 'endEvent') && !node.name && node.slug
+    ? `slug="${escAttr(node.slug)}"` : '';
+  const metaLine = [metaAttrs, slugAttr].filter(Boolean).join(' ');
+  if (metaLine) out += `        <aef:meta ${metaLine}/>\n`;
   if (aef.endpoint) out += `        <aef:endpoint>${escText(aef.endpoint)}</aef:endpoint>\n`;
   if (aef.contextReads) out += `        <aef:contextReads paths="${escAttr(aef.contextReads)}"/>\n`;
   if (aef.artifactsWrites) out += `        <aef:artifactsWrites paths="${escAttr(aef.artifactsWrites)}"/>\n`;
@@ -12160,10 +12184,10 @@ function aefExtensionXml(node) {
     out += `        <aef:io>\n`;
     for (const i of inputs) {
       const reqAttr = i.required ? ' required="true"' : '';
-      out += `          <aef:input name="${escAttr(i.name)}" type="${escAttr(i.type)}"${reqAttr}/>\n`;
+      out += `          <aef:input name="${escAttr(i.name)}" type="${escAttr(i.type)}"${reqAttr}${ioExtraAttrXml(i.extra)}/>\n`;
     }
     for (const o of outputs) {
-      out += `          <aef:output name="${escAttr(o.name)}" type="${escAttr(o.type)}"/>\n`;
+      out += `          <aef:output name="${escAttr(o.name)}" type="${escAttr(o.type)}"${ioExtraAttrXml(o.extra)}/>\n`;
     }
     out += `        </aef:io>\n`;
   }
@@ -12318,7 +12342,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.23.0';
+const APP_VERSION = '0.24.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -12537,7 +12561,8 @@ function buildBpmnXml(s) {
     const incoming = s.edges.filter(e => e.target === n.id).map(e => `      <bpmn:incoming>${displayIdOf(e)}</bpmn:incoming>`).join('\n');
     const outgoing = s.edges.filter(e => e.source === n.id).map(e => `      <bpmn:outgoing>${displayIdOf(e)}</bpmn:outgoing>`).join('\n');
     lines.push(``);
-    lines.push(`    <bpmn:${tag} id="${escAttr(nodeDisplayId)}" name="${escAttr(n.name)}"${boundaryAttrs}>`);
+    // T-1218: no name is written as no name attribute, not as name="" (no committed map carries name="").
+    lines.push(`    <bpmn:${tag} id="${escAttr(nodeDisplayId)}"${n.name ? ` name="${escAttr(n.name)}"` : ''}${boundaryAttrs}>`);
     // T-602: documentation first — the BPMN XSD orders tBaseElement as
     // documentation* then extensionElements?, so emitting it after the aef block
     // would produce a schema-invalid element.
@@ -12550,6 +12575,12 @@ function buildBpmnXml(s) {
     if (aefBlock) lines.push(aefBlock.trimEnd());
     if (incoming) lines.push(incoming);
     if (outgoing) lines.push(outgoing);
+    // T-1217: the kept native link definition, named by the current linkId so an edit in the panel
+    // keeps throw and catch paired in both encodings.
+    if (n.linkDef && (n.type === 'linkEventThrow' || n.type === 'linkEventCatch')) {
+      const ldName = (n.aef && n.aef.linkId) || n.linkDef.name;
+      lines.push(`      <bpmn:linkEventDefinition${n.linkDef.id ? ` id="${escAttr(n.linkDef.id)}"` : ''}${ldName ? ` name="${escAttr(ldName)}"` : ''}/>`);
+    }
     // T-1096: the task's kept data content, after incoming/outgoing in tActivity's order
     const kd = s.dataKept && s.dataKept.perNode && s.dataKept.perNode[n.uid];
     if (kd) for (const t of DATA_TASK_TAGS) for (const x of kd[t] || []) lines.push(`      ${x}`);
@@ -13322,7 +13353,15 @@ function parseBpmnXml(text) {
   {
     for (const [tag, el, foreignTag] of nodeWork) {
       const displayId = el.getAttribute('id') || '';
-      const name = el.getAttribute('name') || displayId;
+      // T-1218: an unnamed start or end event stays unnamed. The id used to stand in as its name, so the
+      // canvas showed "Start_8" and the save wrote it back as name="Start_8" (aef-greenfield-test, 41 maps).
+      // Other node types keep the id as their label: an empty task box cannot be found on the canvas.
+      // An unnamed event's slug still derives from its id the first time (StartEvent_1 -> 'startevent', so its
+      // display id is the one it always had), and is then carried as <aef:meta slug> while the event stays
+      // unnamed: re-deriving it from the id it is saved under (lan_start_startevent -> 'lan') would rename it on
+      // every save. See aefExtensionXml.
+      const unnamedEvent = !el.getAttribute('name') && (tag === 'startEvent' || tag === 'endEvent');
+      const name = el.getAttribute('name') || (unnamedEvent ? '' : displayId);
       // let, not const: <aef:eventDef> below can override the shared
       // intermediateCatchEvent tag to a specific typed-event node type (T-204).
       let type = REVERSE_TYPE[tag] || 'serviceTask';
@@ -13397,6 +13436,18 @@ function parseBpmnXml(text) {
         aef.targetWorkflow = linkEl.getAttribute('targetWorkflow') || '';
         aef.linkId = linkEl.getAttribute('linkId') || '';
       }
+      // T-1217: a link event marked the standard way (<bpmn:linkEventDefinition id name>, as bpmn.io and a
+      // third-party author write it) keeps that element: the save writes it back. Its name is BPMN's pairing
+      // key between throw and catch, so it seeds our linkId when no aef:link names one. Maps the designer
+      // authored carry no native definition and are unchanged (T-190 IW-1 stands for them).
+      let linkDef = null;
+      if (type === 'linkEventThrow' || type === 'linkEventCatch') {
+        const nativeLink = Array.from(el.children).find(c => c.localName === 'linkEventDefinition');
+        if (nativeLink) {
+          linkDef = { id: nativeLink.getAttribute('id') || '', name: nativeLink.getAttribute('name') || '' };
+          if (!aef.linkId && linkDef.name) aef.linkId = linkDef.name;
+        }
+      }
       // T-204: typed intermediate event — <aef:eventDef> disambiguates the shared
       // intermediateCatchEvent tag (which also decodes to linkEventCatch) into the
       // specific typed-event node type, and restores the kind-specific binding
@@ -13448,18 +13499,26 @@ function parseBpmnXml(text) {
       const io = { inputs: [], outputs: [] };
       const ioEl = byAef(el, 'io')[0];
       if (ioEl) {
+        // T-1220: `extra` is set only when the element carries attributes beyond the named ones, so a map
+        // without them parses to exactly the state it always did.
         for (const inp of byAef(ioEl, 'input')) {
-          io.inputs.push({
+          const item = {
             name: inp.getAttribute('name') || '',
             type: inp.getAttribute('type') || 'string',
             required: inp.getAttribute('required') === 'true',
-          });
+          };
+          const extra = ioExtraAttrs(inp, IO_NAMED_ATTRS.input);
+          if (extra.length) item.extra = extra;
+          io.inputs.push(item);
         }
         for (const out of byAef(ioEl, 'output')) {
-          io.outputs.push({
+          const item = {
             name: out.getAttribute('name') || '',
             type: out.getAttribute('type') || 'string',
-          });
+          };
+          const extra = ioExtraAttrs(out, IO_NAMED_ATTRS.output);
+          if (extra.length) item.extra = extra;
+          io.outputs.push(item);
         }
       }
 
@@ -13507,8 +13566,9 @@ function parseBpmnXml(text) {
           return entry;
         });
 
-      // Derive slug from name if not encoded
-      const slug = deriveSlug(name);
+      // Derive slug from name if not encoded (T-1218: an unnamed start/end event reads its carried slug, else its id)
+      const slug = unnamedEvent ? (aef.slug || deriveSlug(displayId)) : deriveSlug(name);
+      if (tag === 'startEvent' || tag === 'endEvent') delete aef.slug;
 
       // Default position if none was encoded — simple flow layout per lane
       if (x == null || isNaN(x) || y == null || isNaN(y)) {
@@ -13527,6 +13587,7 @@ function parseBpmnXml(text) {
         aef, io,
         ...(documentation.length ? { documentation } : {}),
         ...(foreignTag ? { foreignTag } : {}),
+        ...(linkDef ? { linkDef } : {}),
       });
       displayIdToUid.set(displayId, uid);
     }
