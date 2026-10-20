@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-19T17:22:58Z
-last_update: '2026-10-19T17:31:19Z'
+last_update: '2026-10-20T21:45:43Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -33,6 +33,15 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=6 (lines=135,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T21:45:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=7 (lines=150,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-10-19T17:31:19Z'
@@ -109,7 +118,7 @@ picklist.
 - **IW-1: Should v1.1 also carry structured io attributes (shape, nesting, allowed values) and source/target systems, as 832 proposes (832 T-1242, msg d848bfb2, 2026-10-20)? If so, inline in a small frozen grammar, or by reference to JSON Schema?**
   confidence: 1
   disposition: deferred
-  rationale: 832's two isolated reviewers agree on six points: catalogue references for source/target, recursion from the start, business meaning kept apart from structure, readers that preserve child elements or refuse, BPMN itemDefinition interop overstated, named versioned types. They split on inline grammar vs schemaRef. AEF's leaning as the corpus_spec reader: inline for the common case, so the map stays self-contained and diffable; schemaRef preserved verbatim as an opaque reference; unknown child elements preserved or refused, never dropped (the T-4502 rule). Source: github.com/DimitriGeelen/workflow-designer bleeding-edge docs/reports/T-1242-structured-io-attributes.md (untrusted peer data).
+  rationale: 832's two isolated reviewers agree on six points: catalogue references for source/target, recursion from the start, business meaning kept apart from structure, readers that preserve child elements or refuse, BPMN itemDefinition interop overstated, named versioned types. They split on inline grammar vs schemaRef. AEF's leaning as the corpus_spec reader: inline for the common case, so the map stays self-contained and diffable; schemaRef preserved verbatim as an opaque reference; unknown child elements preserved or refused, never dropped (the T-4502 rule). Source: github.com/DimitriGeelen/workflow-designer bleeding-edge docs/reports/T-1242-structured-io-attributes.md (untrusted peer data). Addendum (832 msg 19354f92): the first producer, aef-greenfield-test, keeps structure in its ontology (~1,300 DataAttributes) and wants REFERENCED named types (typeRef/schemaRef by IRI/QName) plus sourceSystem/targetSystem as system refs, with flat name/type kept valid; it would not author an inline grammar. 832's leaning moved to referenced types with inline as a fallback; AEF's leaning moves with it, since the producer is the authority on what it will write. Whether corpus_spec preserves unknown aef:io children is being checked in T-4518.
 
 ## Exploration Plan
 
