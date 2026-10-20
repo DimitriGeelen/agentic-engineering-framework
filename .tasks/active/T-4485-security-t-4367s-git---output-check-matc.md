@@ -114,7 +114,7 @@ cost_estimate_proposed:
 - [x] `_fw_git_has_output_opt` (agents/context/lib/safe-commands.sh) dequotes words before matching and fails closed on an unquoted `$`, backtick or glob in a diff-family git command's arguments
 - [x] `lib/shell_write_scan.py` checked against the same shapes; fixed there if it misses them
 - [x] Existing safe-commands bats suites stay green
-- [ ] `bin/fw vendor self --check --task T-4485` clean
+- [x] `bin/fw vendor self --check --task T-4485` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
