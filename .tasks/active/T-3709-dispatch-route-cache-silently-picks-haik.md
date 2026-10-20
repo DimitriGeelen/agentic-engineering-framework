@@ -13,7 +13,7 @@ description: >
   to the strongest model, and route-cache learning must not count outcomes that later
   proved false (episodic false-completion tag).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T23:47:50Z
-last_update: '2026-10-02T00:00:44Z'
+last_update: 2026-10-20T21:02:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect re-checked at HEAD before the fix: `_resolve_dispatch_model_and_fallback "" build` returns the route cache's success-rate winner (haiku in a seeded cache), ahead of config — reproduces (`haiku|true|route_cache`, 2026-10-20)
+- [x] Build-class task types (build, design, specification, refactor) never take their model from the route cache: resolution is explicit → DISPATCH_MODEL_FOR_<TYPE> → DISPATCH_MODEL_DEFAULT → `opus` (source `strongest-default`)
+- [x] Non-build task types keep the T-1669 route-cache-first behaviour (existing tests stay green; the two tests that pinned haiku-for-build moved to task type `test`)
+- [x] `fw termlink dispatch` prints the resolved model and its source to stderr at dispatch time
+- [x] Regression test `tests/unit/test_t3709_build_model_routing.py` fails without the fix (6 failed, 1 passed) and passes with it (7/7); neighbouring route-cache / dispatch-task-type tests green (89 passed, 1 pre-existing T-1650 skip)
+- [x] `bin/fw vendor self --check --task T-3709` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,6 +264,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/termlink/termlink.sh
+python3 -m pytest tests/unit/test_t3709_build_model_routing.py -q > /tmp/.t3709a 2>&1 && grep -q passed /tmp/.t3709a && ! grep -q failed /tmp/.t3709a
+python3 -m pytest tests/unit/test_route_cache_resolve.py tests/unit/test_termlink_dispatch_task_type.py tests/unit/test_route_cache_record.py -q > /tmp/.t3709b 2>&1 && grep -q passed /tmp/.t3709b && ! grep -q failed /tmp/.t3709b
+bin/fw vendor self --check --task T-3709
 
 ## RCA
 
@@ -276,6 +284,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** with no DISPATCH_MODEL_* config set, build dispatches on 2026-10-02 ran on haiku (meta.json model=haiku, 141× claude-haiku-4-5 in result.jsonl); T-3561 and T-3691 closed falsely, T-3693/T-3694 stopped short. Nothing at dispatch said which model was picked.
+
+**Root cause:** `agents/termlink/termlink.sh` `_resolve_dispatch_model_and_fallback` (~line 256) consulted `_route_cache_query_best_model` (line 57) FIRST for every task type, ahead of operator config. That query ranks models by successes/(successes+failures), and a "success" is recorded by `_route_cache_record_outcome` (line 158) from exit code + close state — close gates a worker can satisfy with its own tests. A cheap model that closes its own tasks wins the ranking, so the cache steered build work to the weakest model. `tests/unit/test_route_cache_resolve.py::test_resolve_route_cache_hit_takes_precedence_over_env` pinned exactly that outcome (haiku beats a configured pin for build). Still reproduced at HEAD on 2026-10-20 (live cache now favours sonnet over opus for build: 212/263 vs 66/437 — same proxy, different winner).
+
+**Why structurally allowed:** the route cache optimises a proxy (gates passed) with no notion of model strength or of later-falsified closes, and the choice was recorded only in meta.json — no stderr line, so a dispatcher never saw it.
+
+**Prevention:** build-class types (build, design, specification, refactor) no longer read the route cache; they resolve explicit → per-type config → default config → `opus` (`strongest-default`). Dispatch prints `Model: <m> (source: <s>)` to stderr. `tests/unit/test_t3709_build_model_routing.py` pins both. Open: route-cache *learning* still counts closes that later proved false — there is no structural false-completion tag to exclude; with build-class no longer consuming the cache, that leg only affects non-build types.
 
 ## Evolution
 
@@ -357,3 +373,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3709-dispatch-route-cache-silently-picks-haik.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:02:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

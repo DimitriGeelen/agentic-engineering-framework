@@ -245,15 +245,28 @@ finally:
 PY
 }
 
+# T-3709: build-class work never takes its model from the route cache. The cache ranks
+# by close-gate outcomes a worker can satisfy with its own tests, so it steered build
+# dispatches to the weakest model (haiku, 2026-10-02). These types resolve from config,
+# then the strongest model.
+_DISPATCH_BUILD_CLASS_TYPES="build design specification refactor"
+_DISPATCH_STRONGEST_MODEL="opus"
+
 _resolve_dispatch_model_and_fallback() {
     local explicit="$1" task_type="$2"
     if [ -n "$explicit" ]; then
         echo "${explicit}|false|explicit"
         return 0
     fi
+    local build_class=false
+    case " $_DISPATCH_BUILD_CLASS_TYPES " in
+        *" $task_type "*) [ -n "$task_type" ] && build_class=true ;;
+    esac
     if [ -n "$task_type" ]; then
-        local cached
-        cached=$(_route_cache_query_best_model "$task_type" 2>/dev/null || true)
+        local cached=""
+        if [ "$build_class" = false ]; then
+            cached=$(_route_cache_query_best_model "$task_type" 2>/dev/null || true)
+        fi
         if [ -n "$cached" ]; then
             echo "${cached}|true|route_cache"
             return 0
@@ -270,6 +283,8 @@ _resolve_dispatch_model_and_fallback() {
     d=$(fw_config "DISPATCH_MODEL_DEFAULT" "" 2>/dev/null || true)
     if [ -n "$d" ]; then
         echo "${d}|true|env-default"
+    elif [ "$build_class" = true ]; then
+        echo "${_DISPATCH_STRONGEST_MODEL}|true|strongest-default"
     else
         echo "||none"
     fi
@@ -984,6 +999,8 @@ cmd_dispatch() {
         _resolved=$(_resolve_dispatch_model_and_fallback "$model" "$task_type")
         IFS='|' read -r model fallback_used resolution_source <<< "$_resolved"
     fi
+    # T-3709: the model choice is visible at dispatch, not only in meta.json.
+    echo "Model: ${model:-worker default} (source: ${resolution_source:-none}, task type: ${task_type:-none})" >&2
     # JSON-safe: empty resolution → null (not the string "null"); non-empty model → quoted string.
     local model_used_json
     if [ -n "$model" ]; then

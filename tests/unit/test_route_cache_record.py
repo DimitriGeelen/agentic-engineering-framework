@@ -187,12 +187,15 @@ def test_cmd_record_outcome_failure_path(cache_dir):
 # ─── Integration with read path (Step 1 + Step 2 together) ───────────────────
 
 def test_recorded_outcomes_drive_subsequent_resolution(cache_dir):
-    """Record enough successes for haiku:build → resolver picks haiku."""
+    """Record enough successes for haiku:test → resolver picks haiku.
+
+    T-3709: a non-build type — build-class types no longer read the route cache.
+    """
     for _ in range(5):
-        _bash_eval('_route_cache_record_outcome haiku build 0', cache_dir)
-    _bash_eval('_route_cache_record_outcome opus build 1', cache_dir)
+        _bash_eval('_route_cache_record_outcome haiku test 0', cache_dir)
+    _bash_eval('_route_cache_record_outcome opus test 1', cache_dir)
     out, _, _ = _bash_eval(
-        '_resolve_dispatch_model_and_fallback "" build', cache_dir
+        '_resolve_dispatch_model_and_fallback "" test', cache_dir
     )
     assert out == "haiku|true|route_cache"
 

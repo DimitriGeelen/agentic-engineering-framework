@@ -98,13 +98,15 @@ def test_resolve_explicit_model_short_circuits(cache_dir):
 
 
 def test_resolve_route_cache_hit_takes_precedence_over_env(cache_dir):
+    # T-3709: a non-build type. Build-class types no longer read the route cache
+    # (tests/unit/test_t3709_build_model_routing.py).
     _seed_cache(cache_dir, {
-        "haiku:build":  {"model":"haiku","task_type":"build","successes":8,"failures":2,"last_used":"2026-05-02T08:00:00Z"},
-        "sonnet:build": {"model":"sonnet","task_type":"build","successes":3,"failures":7,"last_used":"2026-05-02T08:00:00Z"},
+        "haiku:test":  {"model":"haiku","task_type":"test","successes":8,"failures":2,"last_used":"2026-05-02T08:00:00Z"},
+        "sonnet:test": {"model":"sonnet","task_type":"test","successes":3,"failures":7,"last_used":"2026-05-02T08:00:00Z"},
     })
     out, _, _ = _bash_eval(
-        '_resolve_dispatch_model_and_fallback "" build', cache_dir,
-        env_extra={"FW_DISPATCH_MODEL_FOR_BUILD": "fallback-pinned"},
+        '_resolve_dispatch_model_and_fallback "" test', cache_dir,
+        env_extra={"FW_DISPATCH_MODEL_FOR_TEST": "fallback-pinned"},
     )
     # Cache hit MUST win even when env-per-type also pins a value.
     assert out == "haiku|true|route_cache"
