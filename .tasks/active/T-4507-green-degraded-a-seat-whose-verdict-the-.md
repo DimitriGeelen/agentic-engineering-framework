@@ -14,7 +14,7 @@ description: >
   holds a row for the dispatch (a refused verdict is a verdict, not unavailability);
   regression test with a refused-row fixture.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -49,7 +49,7 @@ origin: {kind: "agent", source: "T-4456"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T19:57:19Z
-last_update: '2026-10-20T20:02:05Z'
+last_update: 2026-10-20T20:33:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,8 +101,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/verdict_ledger.py:_unavailable_seat` refuses (returns no reason) when `.context/reviews/refusals-interim.jsonl` holds any row for the seat's dispatch — a refused verdict is a verdict, not unavailability
+- [ ] Regression test in `tests/unit/t4490_green_degraded_test.py`: a panel with one green seat, one seat whose verdict the ledger refused, and one unavailable seat does NOT close green-degraded, and the refusal is named as the reason; the test fails without the fix
+- [ ] T-4490, T-3580 (judge CLI), T-3986 and T-3852 suites stay green
+- [ ] `bin/fw vendor self --check --task T-4507` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -151,6 +153,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+python3 -m pytest tests/unit/t4490_green_degraded_test.py -q > /tmp/.t4507a 2>&1 && grep -q passed /tmp/.t4507a
+python3 -m pytest tests/unit/t4490_green_degraded_test.py -q -k refused_verdict > /tmp/.t4507b 2>&1 && grep -q "1 passed" /tmp/.t4507b
+python3 -m pytest tests/unit/t3852_unavailable_seat_test.py tests/unit/t3986_not_evaluated_test.py tests/unit/t3580_judge_cli_test.py -q > /tmp/.t4507c 2>&1 && grep -q passed /tmp/.t4507c
+sed -n '/^def _unavailable_seat/,/^def green_degraded_of/p' lib/verdict_ledger.py > /tmp/.t4507d && grep -q "REFUSALS" /tmp/.t4507d
+bin/fw vendor self --check --task T-4507
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -290,6 +297,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** under GREEN-DEGRADED (T-4490) a rung-5 panel seat whose printed verdict the ledger REFUSED (e.g. T-4490's antigravity seat, 2026-10-20, class unseen-page) would be counted as provably UNAVAILABLE, so a panel could close green-degraded over a seat whose verdict — possibly red — was merely malformed.
+
+**Root cause:** `lib/verdict_ledger.py:_unavailable_seat` (~line 3045) proved "no verdict" only by the absence of a row in `verdicts.jsonl` (plus an empty `verdicts` list on the signed completion). But `record()` (called by `record_for_worker`) writes a refused verdict through `_refuse_row` to `refusals-interim.jsonl`, carrying the `dispatch_id`, and never to `verdicts.jsonl` — so a seat that judged and was refused looked identical to one that produced nothing.
+
+**Why structurally allowed:** T-4490's refusal tests covered every way a seat can *fail to judge* (not-evaluated, never registered, never started, duplicate completion) but none where the seat judged and the ledger rejected its row; the unavailability proof never joined the refusal ledger.
+
+**Prevention:** `_unavailable_seat` now also refuses when any refusal row names the dispatch (fail closed), and `test_refused_when_the_seat_left_a_refused_verdict` pins the panel shape (green + refused + unavailable must not close green-degraded).
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -384,3 +399,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4507-green-degraded-a-seat-whose-verdict-the-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:33:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

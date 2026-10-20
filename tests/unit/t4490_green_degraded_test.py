@@ -162,6 +162,20 @@ class TestMissingSeatMustBeUnavailable:
         good, why = vl.satisfying_verdict(ctx, crit)
         assert good is None and "2 runtime completion(s)" in why, why
 
+    def test_refused_when_the_seat_left_a_refused_verdict(self, panel_repo, monkeypatch):
+        # T-4507: one green (claude), one unavailable (codex), one seat that JUDGED but whose
+        # printed verdict the ledger refused (opencode) — it lands in refusals-interim.jsonl, never
+        # in verdicts.jsonl, exactly as record() writes it. A refused verdict could have been red.
+        _res, seen = _panel(panel_repo, {"codex": "dead", "opencode": "dead"}, monkeypatch)
+        did = next(s["did"] for s in seen if s["kind"] == "opencode")
+        vl._refuse_row(panel_repo, TID, "unseen-page", "the screenshot is not cited as evidence",
+                       ac=1, reviewer=f"w:{did}", dispatch_id=did)
+        ctx, crit = _crit(panel_repo)
+        reason, why = vl._unavailable_seat(ctx, vl.run_for_dispatch(panel_repo, did)[0], "opencode")
+        assert reason == "" and "refused" in why, why
+        good, why = vl.satisfying_verdict(ctx, crit)
+        assert good is None and "not provably unavailable" in why and "refused" in why, why
+
 
 # ── condition 2: >= 2 distinct vendors green; no dissent ─────────────────────────────────────
 

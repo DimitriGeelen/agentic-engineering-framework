@@ -3033,6 +3033,11 @@ def _unavailable_seat(ctx: _Ctx, run: dict, seat: str) -> tuple[str, str]:
         return "", f"dispatch {did!r} is not at run {rid}'s pinned revision"
     if any(r.get("dispatch_id") == did for r in _read(VERDICTS, root)):
         return "", f"seat {seat!r} (dispatch {did}) left a ledger row — that is a verdict, not unavailable"
+    # T-4507: a printed verdict the ledger REFUSED lands in the refusal ledger, never in VERDICTS.
+    # The seat judged — its refused verdict could have been red — so it is not unavailable.
+    if any(r.get("dispatch_id") == did for r in _read(REFUSALS, root)):
+        return "", (f"seat {seat!r} (dispatch {did}) left a refused verdict — that is a verdict, "
+                    f"not unavailable")
     starts = _starts_for(root, did)
     if len(starts) != 1 or not _signed_ok(root, starts[0]) \
             or starts[0].get("wdir") != drec.get("wdir"):
