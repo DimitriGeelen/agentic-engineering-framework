@@ -67,7 +67,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     __package__ = "lib.sidecar"
 
-from . import circuit, direct, identity, inbox, inject, lifecycle, receipts, receiver  # noqa: E402
+from . import circuit, direct, identity, inbox, inject, lifecycle, receipts, receiver, runtime_dir  # noqa: E402
 
 DEFAULT_TICK_S = 30
 STALL_TICKS = 2          # IW-2: seq not advanced for 2 ticks = not live
@@ -1110,6 +1110,9 @@ def ensure_all() -> list[dict]:
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     identity.apply()  # T-4311: sign as the project key when configured
+    if argv[:1] in (["run"], ["supervise"]):
+        rdir, source = runtime_dir.apply()   # T-4482: same dir the hub registers sessions in
+        record_event("RUNTIME_DIR", dir=rdir or "(termlink default)", source=source)
     if argv[:1] == ["run"]:
         tick = None
         if len(argv) >= 3 and argv[1] == "--tick":

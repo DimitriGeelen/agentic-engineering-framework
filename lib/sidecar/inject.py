@@ -42,7 +42,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import adapter, lifecycle, receiver, seen
+from . import adapter, lifecycle, receiver, runtime_dir, seen
 
 REINJECT_AFTER_S = 120   # an inject that never produced a hand-over may be retried
 
@@ -57,11 +57,17 @@ def project_tag(root: Path | None = None) -> str:
 
 
 def _discover(runner=subprocess.run) -> list[dict]:
+    rdir = runtime_dir.resolve()[0]   # T-4482: the hub's dir, not the inherited default
     proc = runner(["termlink", "discover", "--json"], capture_output=True,
-                  text=True, timeout=15)
+                  text=True, timeout=15, env=runtime_dir.env_for(rdir))
     if proc.returncode != 0:
         raise RuntimeError(f"termlink discover failed: {proc.stderr.strip()[:200]}")
-    return json.loads(proc.stdout).get("sessions", [])
+    sessions = json.loads(proc.stdout).get("sessions", [])
+    if not sessions:
+        warn = runtime_dir.mismatch_warning(rdir, runner)
+        if warn:
+            receiver.record_event("-", "RUNTIME_DIR_MISMATCH", warning=warn)
+    return sessions
 
 
 def _real(path) -> str | None:
