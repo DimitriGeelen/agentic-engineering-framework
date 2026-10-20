@@ -333,6 +333,20 @@ termlink_inject() {
     termlink pty inject "$TERMLINK_SESSION" "$cmd" --enter >/dev/null 2>&1
 }
 
+# T-4474 (010-termlink T-3464, framework:pickup offset 342): the arc-011 sidecar
+# sockets are launch-scoped, and the PTY shell the injected line runs in is spawned
+# by termlink, not by us. termlink >= 0.12.665 no longer forwards them into that
+# PTY, so hand them to the injected claude explicitly, as assignment words before
+# `command claude`. Values are %q-quoted: the PTY shell re-parses the line. Unset or
+# empty adds nothing. Prints the prefix (each word followed by a space).
+_tl_sidecar_env_prefix() {
+    local _v
+    for _v in TERMLINK_SIDECAR_SOCKET TERMLINK_SIDECAR_STATUS_SOCKET; do
+        [ -n "${!_v:-}" ] && printf '%s=%q ' "$_v" "${!_v}"
+    done
+    return 0
+}
+
 # T-3648 (port of 055 P-011/P-012, framework:pickup offsets 242/244): one ping
 # is a liveness SAMPLE, not a verdict. Under CPU load a single ping fails or
 # times out while the session is fine, and the wait loop used to end the agent
@@ -1271,8 +1285,9 @@ while true; do
         # in command position, which `claude` no longer holds.
         _tl_args=""
         [ "${#CLAUDE_ARGS[@]}" -gt 0 ] && _tl_args=$(printf ' %q' "${CLAUDE_ARGS[@]}")
+        _tl_env=$(_tl_sidecar_env_prefix)   # T-4474: sidecar sockets, per command
         _tl_tok="r${restart_count}p$$e$(date +%s)"   # T-4249: this run's marker token
-        termlink_inject "command claude${_tl_args}; printf '__CLAUDE_FW_EXIT_${_tl_tok}_%s__\n' \"\$?\""
+        termlink_inject "${_tl_env}command claude${_tl_args}; printf '__CLAUDE_FW_EXIT_${_tl_tok}_%s__\n' \"\$?\""
         _TL_PING_FAILS=0 # T-3648: each run starts with a clean failure count
         # Wait for claude to exit by polling the PTY for shell prompt
         # We check if claude process is still running inside the session

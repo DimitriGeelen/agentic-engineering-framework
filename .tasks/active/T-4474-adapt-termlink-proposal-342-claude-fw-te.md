@@ -1,13 +1,20 @@
 ---
 id: T-4474
-name: "Adapt termlink proposal 342: claude-fw TermLink inject carries TERMLINK_SIDECAR_SOCKET / _STATUS_SOCKET"
+name: "Adapt termlink proposal 342: claude-fw TermLink inject carries TERMLINK_SIDECAR_SOCKET
+  / _STATUS_SOCKET"
 description: >
-  010-termlink pickup offset 342 (their T-3464). termlink >= 0.12.665 no longer forwards the arc-011 sidecar sockets into a spawned PTY, so claude-fw must hand them to the injected claude per command. Diff does NOT apply at HEAD: T-4462 changed the injected line to 'command claude...'. Re-merge: keep 'command claude', the T-4249 marker token, prefix ${_tl_env}. Env values printf %q quoted. Add a bats that runs the injected line with the vars set and unset. Analysis: docs/reports/T-4472-termlink-proposals-triage.md, diff docs/reports/T-4472-inputs/342-bin_claude-fw.diff. Triage only, not applied.
+  010-termlink pickup offset 342 (their T-3464). termlink >= 0.12.665 no longer forwards
+  the arc-011 sidecar sockets into a spawned PTY, so claude-fw must hand them to the
+  injected claude per command. Diff does NOT apply at HEAD: T-4462 changed the injected
+  line to 'command claude...'. Re-merge: keep 'command claude', the T-4249 marker
+  token, prefix ${_tl_env}. Env values printf %q quoted. Add a bats that runs the
+  injected line with the vars set and unset. Analysis: docs/reports/T-4472-termlink-proposals-triage.md,
+  diff docs/reports/T-4472-inputs/342-bin_claude-fw.diff. Triage only, not applied.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4472, T-4463]
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T14:07:26Z
-last_update: 2026-10-20T14:07:26Z
-date_finished: null
+last_update: 2026-10-20T14:40:57Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T14:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T14:16:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4474: Adapt termlink proposal 342: claude-fw TermLink inject carries TERMLINK_SIDECAR_SOCKET / _STATUS_SOCKET
@@ -63,8 +98,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The `--termlink` injected command line prefixes `TERMLINK_SIDECAR_SOCKET=` / `TERMLINK_SIDECAR_STATUS_SOCKET=` (values `printf %q`-quoted) when set in claude-fw's environment, and adds nothing when unset
+- [x] The injected line still runs `command claude` (T-4462) and carries the T-4249 per-run marker token; T-4454's identity export is untouched
+- [x] A bats test runs the injected line with the sockets set (including a value with a space) and unset, and asserts what the launched `claude` sees; it fails against the pre-fix line
+- [x] `bash -n bin/claude-fw` is clean and vendored copy is in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +286,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n bin/claude-fw
+grep -q 'termlink_inject "${_tl_env}command claude${_tl_args}; printf' bin/claude-fw
+timeout 300 bats tests/unit/t4474_claude_fw_inject_sidecar_env.bats tests/unit/t4462_claude_fw_inject_bypasses_function.bats tests/unit/t4454_claude_fw_rail_identity.bats > /tmp/.t4474.out 2>&1 && ! grep -q "^not ok" /tmp/.t4474.out
+test "$(grep -c '# skip' /tmp/.t4474.out)" -eq 0
+bin/fw vendor self --check --task T-4474
 
 ## RCA
 
@@ -289,6 +331,13 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA (filled)
+
+**Symptom:** under termlink >= 0.12.665 (their T-3463), a `claude-fw --termlink` session's claude starts without `TERMLINK_SIDECAR_SOCKET` / `TERMLINK_SIDECAR_STATUS_SOCKET`, so the arc-011 sidecar rails are unreachable from inside it (reported by 010-termlink as their T-3464, pickup offset 342).
+**Root cause:** `bin/claude-fw:1275` injects `command claude…` as text into the TermLink PTY shell. That shell is spawned by termlink, not by claude-fw, so claude-fw's environment never reaches it; the sockets only arrived because older termlink forwarded them into the spawned PTY. claude-fw relied on that implicit forwarding instead of passing launch-scoped variables on the line it injects.
+**Why structurally allowed:** no test ran the injected line with the sidecar variables set; T-4462's test covers only function/alias bypass and argument quoting. The dependency on termlink's forwarding was undocumented, so a termlink-side change silently removed it.
+**Prevention:** `tests/unit/t4474_claude_fw_inject_sidecar_env.bats` runs the exact injected line (built from claude-fw's own source) in a clean `env -i` shell, standing in for the PTY, and asserts the stand-in claude sees the sockets when set (including a value with spaces and `$`), and does not see them when unset.
 
 ## Recommendation
 
@@ -346,3 +395,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4474-adapt-termlink-proposal-342-claude-fw-te.md
 - **Context:** Initial task creation
+
+### 2026-10-20T14:40:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
