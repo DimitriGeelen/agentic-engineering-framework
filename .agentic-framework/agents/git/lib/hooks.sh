@@ -24,7 +24,7 @@
 # PL-078 still applies: when you change the CONTENT of any hook template below,
 # bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
 # together, so consumers' next install-hooks redeploys all four.
-COMMIT_MSG_HOOK_VERSION="1.19"
+COMMIT_MSG_HOOK_VERSION="1.20"
 
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
@@ -184,7 +184,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.19
+# VERSION=1.20
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -287,12 +287,26 @@ _count_inception_exploration_commits() {
         files=$(git show --name-only --format= "$sha" 2>/dev/null || echo "")
         # If ANY file is outside .tasks/{active,completed}/T-XXX-*, this is exploration.
         # grep -v matches storage-pattern lines; if anything remains, we count.
-        if echo "$files" | grep -vE "^\.tasks/(active|completed)/${task_ref}-" | grep -q '[^[:space:]]'; then
+        # T-4469: reviewer verdict rows (.context/reviews/, .context/costs/reviews.jsonl)
+        # are not exploration either — a verdict commit must not spend the budget.
+        if echo "$files" | grep -vE "^\.tasks/(active|completed)/${task_ref}-|^\.context/reviews/|^\.context/costs/reviews\.jsonl$" | grep -q '[^[:space:]]'; then
             total=$((total + 1))
         fi
     done < <(git log --oneline 2>/dev/null | grep -E "^[0-9a-f]+ ${task_ref}:" | awk '{print $1}')
     echo "$total"
 }
+
+# --- Reviewer verdict commits (T-4469) ---
+# A commit whose staged set lies ENTIRELY under .context/reviews/ (plus the review
+# cost ledger) is a reviewer recording a verdict row, not inception exploration.
+# Both inception gates below skip it. Refusing it left the row staged, the next
+# unrelated commit carried it, and the append-only ledger then blocked every push
+# (832, row V-20261020-2c550c7f). Exact: any other staged path re-applies the gates.
+REVIEW_LEDGER_ONLY=false
+_staged_files=$(git diff --cached --name-only 2>/dev/null || true)
+if [ -n "$_staged_files" ] && ! echo "$_staged_files" | grep -qvE '^\.context/reviews/|^\.context/costs/reviews\.jsonl$'; then
+    REVIEW_LEDGER_ONLY=true
+fi
 
 # --- Inception Gate (T-126, T-1176) ---
 # Block commits on inception tasks after exploration threshold unless decision recorded
@@ -306,7 +320,9 @@ if [ -n "$TASK_REF" ]; then
             HAS_DECISION=true
         fi
 
-        if [ "$HAS_DECISION" = false ]; then
+        if [ "$HAS_DECISION" = false ] && [ "$REVIEW_LEDGER_ONLY" = true ]; then
+            echo "NOTE: Inception task $TASK_REF — reviewer verdict commit (.context/reviews/ only), inception gates skipped (T-4469)"
+        elif [ "$HAS_DECISION" = false ]; then
             # Count existing exploration commits for this inception task (T-2195).
             # Storage commits (task-file-only edits: filing, demote, status flips,
             # frontmatter changes) are exempt. The classifier looks at each commit's
@@ -348,7 +364,7 @@ fi
 # inception-research-warnings: audit marker (C-002 OE check)
 # First commit is allowed (task creation). Subsequent commits must have the artifact
 # either on disk already or in the staged changes.
-if [ -n "$TASK_REF" ] && [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE" 2>/dev/null; then
+if [ -n "$TASK_REF" ] && [ -n "$TASK_FILE" ] && [ "$REVIEW_LEDGER_ONLY" = false ] && grep -q "^workflow_type: inception" "$TASK_FILE" 2>/dev/null; then
     # T-2195: exploration-only counter; storage commits exempt.
     INCEPTION_COMMITS=$(_count_inception_exploration_commits "$TASK_REF")
     if [ "$INCEPTION_COMMITS" -gt 0 ]; then

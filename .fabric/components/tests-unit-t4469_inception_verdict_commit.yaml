@@ -1,0 +1,21 @@
+id: tests/unit/t4469_inception_verdict_commit.bats
+name: t4469_inception_verdict_commit
+type: script
+subsystem: tests
+location: tests/unit/t4469_inception_verdict_commit.bats
+tags: []
+
+purpose: "T-4469 — a reviewer's verdict-only commit (.context/reviews/ only) on an undecided inception must pass the commit-msg inception gates (commit limit + research artifact), and a refused verdict commit must not leave its row staged."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

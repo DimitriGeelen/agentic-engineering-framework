@@ -254,7 +254,11 @@ def _commit_rows(root: Path, paths: list[str], identity: str, message: str,
         if "index.lock" not in err:
             break
         time.sleep(0.5 * (attempt + 1))
-    return "", err
+    # T-4469: a refused commit must not leave its rows staged — the next unrelated commit
+    # carried one on 832 and the append-only ledger then blocked every push.
+    subprocess.run(["git", "reset", "-q", "--", *paths], cwd=str(root), env=env,
+                   capture_output=True, text=True)
+    return "", err + " (the ledger paths were unstaged; the row stays uncommitted on disk)"
 
 
 def _brief_criteria(drec: dict) -> set[int]:
