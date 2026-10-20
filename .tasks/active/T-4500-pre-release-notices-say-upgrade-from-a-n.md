@@ -89,7 +89,7 @@ and name the `git fetch --unshallow` remedy.
 - [x] `fw release be-tag` (after tagging, and when HEAD is already tagged) prints an upgrade notice that says to upgrade from a NON-SHALLOW clone (no `--depth`), says why (a shallow clone cannot see the recorded version_sha and is refused as foreign-source), and names `git -C <clone> fetch --unshallow`
 - [x] The `available-for-testing` issue comment for a `-be.N` version carries the same non-shallow wording and unshallow remedy; a plain `vX.Y.Z` version does not
 - [x] `tests/unit/t4500_be_notice_non_shallow.bats` pins both wordings (fails without the fix) and passes; the be-tag tests in `tests/unit/t4431_be_tags.bats` and the issues comment tests still pass (t4431 test 11 is red at HEAD independently: `lib/upgrade.sh` `describe --tags --exact-match` without the -be exclude — not this task)
-- [ ] Vendored copy in sync (`bin/fw vendor self --check --task T-4500` clean)
+- [x] Vendored copy in sync (`bin/fw vendor self --check --task T-4500` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
