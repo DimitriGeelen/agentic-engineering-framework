@@ -16,6 +16,9 @@ v0.3.1, and answers open question 6 (what carries the supervisor credential on t
 3. **Open question 6 closed** for the hub; the reconciler's credential for non-hub backends stays open. [termlink v0.3 agree]
 4. **§6 honest limit:** with supervisor and worker under one uid the token is a speed bump, not a boundary.
    [termlink v0.3 agree]
+5. **§4.4:** a writer delivers a change plus the commission marker; who records the commit is a backend detail.
+   Clarification, no semantics change. [ring20 arc-009 evidence 2] (ring20 msg 976856dd: a codex writer cannot
+   commit inside its sandbox, so their supervisor records it.)
 
 ## Changelog v0.3.1 → v0.3.2
 
@@ -444,6 +447,8 @@ touches N+1's fields; the dispatcher is notified of the double result. [claude Q
 4.4 **Result binding.** `result` is written only with `done` (I5) and is keyed `(dispatch_id, attempt)`. A review
 verdict names `(dispatch_id, attempt, result.value)`. A multi-commit worker records a `commit_range`; a worker with
 no commits records `handback_sha256`; neither → `kind: none`. [claude Q1 "several commits or none", §6.2.3]
+A writer delivers a change plus the commission marker; whether the worker or its supervisor records the commit is a
+backend detail (some harnesses cannot commit inside their sandbox). [ring20 arc-009 evidence 2]
 
 4.5 **Session ↔ attempt binding at spawn.** AEF passes `--worker-binding <dispatch_id>:<attempt>` to the spawn or
 register call; the backend persists it in the same step as T1, returns it from discovery, and refuses a second **live**
