@@ -7,7 +7,7 @@ description: >
   that something else handles them; verified only by counting references. Needs a
   per-member mutate-and-round-trip test.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
 horizon: now
@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T23:12:56Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: 2026-10-20T21:59:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,8 +86,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced at HEAD: no committed test exercises `_KNOWN_EXT` membership by behaviour (the T-2967 7/7 probe was ad hoc and never committed; `_KNOWN_EXT` has since grown to 9 members)
+- [x] `tests/unit/test_corpus_spec_roundtrip.py` carries a per-member, per-modelled-attribute mutate-and-round-trip test: for every `_KNOWN_EXT` member, changing each modelled value changes the emitted map, so a member whose handler is a no-op fails the test
+- [x] A completeness test pins the probe table to `_KNOWN_EXT` itself (and `_KNOWN_EXT` to the union of the per-context read sets), so a new member without a behaviour probe fails
+- [x] Neighbouring corpus_spec / corpus_lint tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -186,6 +188,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k known_ext > /tmp/.t2962 2>&1 && grep -q "22 passed" /tmp/.t2962
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_lint.py -q > /tmp/.t2962b 2>&1 && grep -q passed /tmp/.t2962b
+bin/fw vendor self --check --task T-2962
 
 ## RCA
 
@@ -202,6 +207,16 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `_KNOWN_EXT` (`tools/corpus_spec.py:144`) is a skip list: members are excluded from the `ext_raw` verbatim catch-all (`_ext_raw`, `tools/corpus_spec.py:347`, via `_is_read`) on the claim that a structured handler in `parse_map`/`emit_map` reads them. That claim was audited only by counting references (832 rail 599/601). A member whose handler is a no-op would be skipped by the catch-all AND dropped by the parser — silent data loss with every audit green.
+
+**Reproduced at HEAD (2026-10-21):** `grep -ln "_KNOWN_EXT\|_EXT_ATTRS\|_NODE_EXT" tests/unit/*.py` → only `test_corpus_lint.py`, which names `_KNOWN_EXT` in a docstring. No committed test mutated a member's value. The T-2967 (0d317ad2b) 7/7 probe was ad hoc, never committed, mutated only the first attribute of each member (rail 609 says so), and predates `callRef`/`ioMapping` joining the set (now 9 members, 21 modelled values).
+
+**Root cause:** the coverage list and the per-context read sets (`_NODE_EXT`/`_CALL_EXT`/`_FLOW_EXT`/`_PROCESS_EXT`/`_LANE_EXT`, `tools/corpus_spec.py:241-246`) had no behavioural pin. The round-trip tests exercise some members incidentally, never the list as a whole, so adding a name without a handler (or neutering a handler) changed no test outcome.
+
+**Why structurally allowed:** a name in a coverage list reads as evidence; nothing tied list membership to a value that varies.
+
+**Prevention:** T-2962 block in `tests/unit/test_corpus_spec_roundtrip.py`: (1) `_KNOWN_EXT` == union of the per-context read sets == `_EXT_ATTRS` keys; (2) the probe table == every modelled value derived from `_EXT_ATTRS`, so a new member/attribute without a probe fails; (3) each value is mutated in its own carrier and round-tripped — the emitted map must move and carry the new value, and be stable on a second pass; (4) the one deliberately un-carried value (`workflowMeta@version`, written from `emit_map(version=…)`) is pinned as derived, so a stale reason fails. Sabotage check: neutering the `aef:meta` read and the `laneMeta@authority` read in a scratch copy failed exactly `meta.*` and `laneMeta.authority`; the other 20 passed.
 
 ## Evolution
 
@@ -283,3 +298,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2962-knownext-membership-is-audited-by-refere.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:59:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -796,3 +796,153 @@ def test_new_types_have_lint_occupancy():
     import corpus_lint
     missing = set(corpus_spec.TYPE_TO_TAG) - set(corpus_lint.NODE_OCCUPANCY)
     assert not missing
+
+
+# ── T-2962: _KNOWN_EXT membership proven by behaviour, not by reference count ──
+#
+# A _KNOWN_EXT member is SKIPPED by the ext_raw verbatim catch-all on the claim
+# that a structured handler reads it. A name in that list is a claim; only a
+# value that varies is evidence (832 rail 599). So every modelled value of every
+# member is mutated in its own carrier and round-tripped: the emitted map must
+# move and carry the new value. A member whose handler is a no-op drops the
+# value (the catch-all skipped it, nothing else read it) and fails here.
+
+def _probe_doc(ctx, child, legacy_link=False):
+    """A minimal map carrying `child` (one aef:* element) in context `ctx`."""
+    if ctx == "process":
+        return HEAD.replace(
+            '<aef:workflowMeta id="m" version="1" schemaVersion="2" title="m" '
+            'tier_default="1"/>', child) + '<bpmn:task id="n1"/>' + TAIL
+    if ctx == "lane":
+        return HEAD + (
+            '<bpmn:laneSet id="ls"><bpmn:lane id="L1" name="Lane">'
+            f"<bpmn:extensionElements>{child}</bpmn:extensionElements>"
+            "<bpmn:flowNodeRef>n1</bpmn:flowNodeRef></bpmn:lane></bpmn:laneSet>"
+            '<bpmn:task id="n1"/>') + TAIL
+    if ctx == "flow":
+        return HEAD + (
+            '<bpmn:task id="n1"/><bpmn:task id="n2"/>'
+            '<bpmn:sequenceFlow id="f1" sourceRef="n1" targetRef="n2">'
+            f"<bpmn:extensionElements>{child}</bpmn:extensionElements>"
+            "</bpmn:sequenceFlow>") + TAIL
+    if ctx == "call":
+        return HEAD + (
+            '<bpmn:callActivity id="n1" calledElement="live-map">'
+            f"<bpmn:extensionElements>{child}</bpmn:extensionElements>"
+            "</bpmn:callActivity>") + TAIL
+    return HEAD + (
+        '<bpmn:intermediateThrowEvent id="n1">'
+        f"<bpmn:extensionElements>{child}</bpmn:extensionElements>"
+        "</bpmn:intermediateThrowEvent>") + TAIL
+
+
+#: (member, modelled value) → (context, element with {v}, base, mutated, token
+#: the emitted map must carry after the mutation; positions emit as floats).
+#: None-shaped members (any
+#: plain attribute, carried as one dict) are probed on one arbitrary attribute;
+#: ioMapping models no attributes, so its entries' source/target are probed.
+_EXT_PROBES = {
+    ("uid", "value"): ("node", '<aef:uid value="{v}"/>', "u1", "u9", 'value="u9"'),
+    ("position", "x"): ("node", '<aef:position x="{v}" y="20"/>', "10", "37", 'x="37.0"'),
+    ("position", "y"): ("node", '<aef:position x="10" y="{v}"/>', "20", "41", 'y="41.0"'),
+    ("eventDef", "*"): ("node", '<aef:eventDef kind="{v}"/>', "timer", "signal",
+                        'kind="signal"'),
+    ("link", "linkId"): ("node", f'<aef:link workflowRef="{LIVE_UUID}" linkId="{{v}}"/>',
+                         "l1", "l9", 'linkId="l9"'),
+    ("link", "workflowRef"): ("node", '<aef:link workflowRef="{v}" linkId="l1"/>',
+                              LIVE_UUID, OTHER_UUID, f'workflowRef="{OTHER_UUID}"'),
+    # legacy slug form: read only when workflowRef is absent, emitted as its uuid
+    ("link", "targetWorkflow"): ("node", '<aef:link targetWorkflow="{v}" linkId="l1"/>',
+                                 "live-map", "other-map", f'workflowRef="{OTHER_UUID}"'),
+    ("link", "name"): ("node", f'<aef:link workflowRef="{LIVE_UUID}" name="{{v}}" '
+                       'linkId="l1"/>', "hand off", "pass on", 'name="pass on"'),
+    ("meta", "*"): ("node", '<aef:meta note="{v}"/>', "a", "b", 'note="b"'),
+    ("callRef", "workflowRef"): ("call", '<aef:callRef workflowRef="{v}"/>',
+                                 LIVE_UUID, OTHER_UUID, f'workflowRef="{OTHER_UUID}"'),
+    ("ioMapping", "in.source"): ("call", '<aef:ioMapping><aef:in source="{v}" '
+                                 'target="t"/></aef:ioMapping>', "s1", "s9",
+                                 'source="s9"'),
+    ("ioMapping", "out.target"): ("call", '<aef:ioMapping><aef:out source="s" '
+                                  'target="{v}"/></aef:ioMapping>', "t1", "t9",
+                                  'target="t9"'),
+    ("workflowMeta", "id"): ("process", '<aef:workflowMeta id="{v}" version="1" '
+                             'schemaVersion="2" title="m" tier_default="1"/>',
+                             "m", "q", 'id="q"'),
+    ("workflowMeta", "schemaVersion"): ("process", '<aef:workflowMeta id="m" version="1" '
+                                        'schemaVersion="{v}" title="m" tier_default="1"/>',
+                                        "2", "3", 'schemaVersion="3"'),
+    ("workflowMeta", "title"): ("process", '<aef:workflowMeta id="m" version="1" '
+                                'schemaVersion="2" title="{v}" tier_default="1"/>',
+                                "m", "Q title", 'title="Q title"'),
+    ("workflowMeta", "tier_default"): ("process", '<aef:workflowMeta id="m" version="1" '
+                                       'schemaVersion="2" title="m" tier_default="{v}"/>',
+                                       "1", "2", 'tier_default="2"'),
+    ("laneMeta", "abbr"): ("lane", '<aef:laneMeta abbr="{v}" authority="agent"/>',
+                           "A", "Z", 'abbr="Z"'),
+    ("laneMeta", "authority"): ("lane", '<aef:laneMeta abbr="A" authority="{v}"/>',
+                                "agent", "human", 'authority="human"'),
+    ("laneMeta", "height"): ("lane", '<aef:laneMeta abbr="A" authority="agent" '
+                             'height="{v}"/>', "120", "240", 'height="240"'),
+}
+
+#: Modelled values that are deliberately NOT carried from the source, with why.
+#: A source change must leave the emitted map unchanged — anything else means
+#: the reason below is stale.
+_EXT_DERIVED = {
+    ("workflowMeta", "version"): "the store version: emit_map(version=…) writes it, "
+                                 "the source's value is never read",
+}
+
+
+def _modelled_values():
+    out = set()
+    for member, attrs in corpus_spec._EXT_ATTRS.items():
+        if attrs is None:
+            out.add((member, "*"))
+        elif not attrs:  # ioMapping: no attributes, content is its entries
+            out |= {(member, "in.source"), (member, "out.target")}
+        else:
+            out |= {(member, a) for a in attrs}
+    return out
+
+
+def test_known_ext_is_exactly_the_members_some_context_reads():
+    read = (corpus_spec._NODE_EXT | corpus_spec._CALL_EXT | corpus_spec._FLOW_EXT
+            | corpus_spec._PROCESS_EXT | corpus_spec._LANE_EXT)
+    assert corpus_spec._KNOWN_EXT == read
+    assert set(corpus_spec._EXT_ATTRS) == corpus_spec._KNOWN_EXT
+
+
+def test_every_modelled_known_ext_value_has_a_behaviour_probe():
+    # a member or attribute added to _KNOWN_EXT/_EXT_ATTRS without a probe fails
+    probed = set(_EXT_PROBES) | set(_EXT_DERIVED)
+    assert probed == _modelled_values()
+    assert not set(_EXT_PROBES) & set(_EXT_DERIVED)
+
+
+def _round_trip(monkeypatch, xml, version=1):
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _CALL_IDX)
+    return corpus_spec.emit_map(corpus_spec.parse_map(xml), version=version,
+                                compat_alias=False)
+
+
+@pytest.mark.parametrize("key", sorted(_EXT_PROBES), ids="{0[0]}.{0[1]}".format)
+def test_known_ext_value_moves_the_emitted_map(key, monkeypatch):
+    ctx, child, base, mutated, token = _EXT_PROBES[key]
+    before = _round_trip(monkeypatch, _probe_doc(ctx, child.format(v=base)))
+    after = _round_trip(monkeypatch, _probe_doc(ctx, child.format(v=mutated)))
+    assert token not in before
+    assert token in after and after != before, (
+        f"aef:{key[0]} {key[1]} is skipped by ext_raw but its value does not reach "
+        f"the emitted map — the structured handler does not read it")
+    # the mutated value is itself stable across a second pass
+    assert _round_trip(monkeypatch, after) == after
+
+
+@pytest.mark.parametrize("key", sorted(_EXT_DERIVED), ids="{0[0]}.{0[1]}".format)
+def test_derived_known_ext_value_is_not_read_from_the_source(key, monkeypatch):
+    child = ('<aef:workflowMeta id="m" version="{v}" schemaVersion="2" title="m" '
+             'tier_default="1"/>')
+    doc = lambda v: _probe_doc("process", child.format(v=v))  # noqa: E731
+    assert _round_trip(monkeypatch, doc("1")) == _round_trip(monkeypatch, doc("7"))
+    assert 'version="5"' in _round_trip(monkeypatch, doc("1"), version=5)
