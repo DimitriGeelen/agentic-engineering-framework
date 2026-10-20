@@ -103,6 +103,13 @@ bvp_scores_proposed:
 - [x] `bin/fw vendor self --check --task T-4475` clean
 
 ### Human
+- [ ] [REVIEW] The new EMBED_WORKERS row on /config reads clearly next to its neighbours
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`
+  2. Open `<that URL>/config` and find the row `EMBED_WORKERS`
+  **Expected:** default `1`; the description says it sets concurrent embed requests during reindex, to match the server's OLLAMA_NUM_PARALLEL, and that 1 is serial; the row's layout matches its neighbours
+  **If not:** note what reads wrong; the text lives in `web/blueprints/config.py` (`EMBED_WORKERS`)
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -292,6 +299,12 @@ grep -qF 'FW_EMBED_WORKERS="${_rx_workers:-1}"' bin/fw
 bash -n bin/fw
 bin/fw vendor self --check --task T-4475
 
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | EMBED_WORKERS row | ok | ok | ok | new registry row; shots in .context/visual/T-4475/ |
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -365,6 +378,13 @@ bin/fw vendor self --check --task T-4475
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** All four Agent criteria are met (a64b540e0). The reindex can send embed batches concurrently, with vector order preserved, and `EMBED_WORKERS=1` (the default) keeps the serial path, so no consumer's embedding-server load changes unless they opt in. The only open criterion is how the new /config row reads. The row is live on the running Watchtower, and screenshots at 1024, 1440 and 1920 are in `.context/visual/T-4475/`.
+**Evidence:**
+- A regression pytest shows vectors stay aligned with input order when batches complete out of order, and that the default is serial
+- The key is registered in both `lib/config.sh` and `web/blueprints/config.py`; config-registry parity lint is green
+- `curl <watchtower>/config` contains the `EMBED_WORKERS` row
 
 ## Decisions
 
