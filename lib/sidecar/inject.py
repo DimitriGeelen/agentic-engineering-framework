@@ -38,6 +38,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -137,12 +138,36 @@ def _tagged_sessions(runner) -> tuple[list[dict] | None, str]:
     tag = project_tag()
     root = str(receiver._root().resolve())
     tagged = [s for s in sessions if tag in (s.get("tags") or [])]
-    if tagged:
-        return tagged, f"tag {tag}"
-    tagged = [s for s in sessions
-              if "claude" in (s.get("tags") or [])
-              and _real((s.get("metadata") or {}).get("cwd")) == root]
-    return tagged, f"tag claude + cwd {root}"
+    how = f"tag {tag}"
+    if not tagged:
+        tagged = [s for s in sessions
+                  if "claude" in (s.get("tags") or [])
+                  and _real((s.get("metadata") or {}).get("cwd")) == root]
+        how = f"tag claude + cwd {root}"
+    # T-4481: a live session record that NAMES a TermLink session discover can see
+    # is that agent's own statement of where it runs. A hand-registered shell
+    # (`termlink register --shell`) lacks the project tag; skipping it fell through
+    # to tmux and a false "terminal not injectable". Use it, and say what to fix.
+    have = {str(s.get("id")) for s in tagged}
+    by_id = {str(s.get("id")): s for s in sessions}
+    untagged = []
+    for r in adapter.session_records():
+        tl = r.get("termlink_session")
+        # A session tagged for ANOTHER project is deliberately not ours; only an
+        # untagged one (no fw-project=* tag at all) is taken on the record's word.
+        if (tl and str(tl) not in have and str(tl) in by_id
+                and r.get("alive") is not False and not r.get("headless")
+                and not any(str(t).startswith("fw-project=")
+                            for t in by_id[str(tl)].get("tags") or [])):
+            tagged.append(by_id[str(tl)])
+            have.add(str(tl))
+            untagged.append(str(tl))
+    if untagged:
+        warn = "; ".join(f"WARN record names {t} but {t} lacks the project tag {tag}"
+                         for t in untagged)
+        print(f"sidecar inject: {warn}", file=sys.stderr)
+        how += f" + {warn}"
+    return tagged, how
 
 
 def _injectable_path() -> Path:
