@@ -253,6 +253,27 @@ _cfw_lib() {
     return 0
 }
 
+# T-4454: TermLink registration resolves its identity from TERMLINK_IDENTITY_FILE, the same
+# env precedence as signing. Without it the session registered with the HOST key (shared by
+# every co-resident session) while every signing path used the project key. Resolve the
+# project's RAIL_IDENTITY_FILE through lib/rail-identity.sh (env > .framework.yaml, relative
+# to PROJECT_ROOT) in a subshell, and export it ONLY when the key file exists: TermLink
+# creates a keypair at a missing path, so a guessed path would mint a new identity.
+_cfw_rail_identity() {
+    local _lib _fwd _idf
+    _lib="$(_cfw_lib rail-identity.sh)"
+    [ -n "$_lib" ] || return 0
+    _fwd="$(_cfw_framework_dir)"
+    _idf=$(FRAMEWORK_ROOT="$_fwd" bash -c '. "$1" && rail_identity_configured_path' _ "$_lib" 2>/dev/null) || _idf=""
+    [ -n "$_idf" ] || return 0
+    if [ -f "$_idf" ]; then
+        export TERMLINK_IDENTITY_FILE="$_idf"
+        echo "claude-fw: TermLink identity: project key $_idf (T-4454)"
+    else
+        echo "claude-fw: WARNING: RAIL_IDENTITY_FILE=$_idf does not exist; registering with the default TermLink identity (T-4454)" >&2
+    fi
+}
+
 termlink_start() {
     if [ "$TERMLINK_ENABLED" != "1" ]; then return; fi
     [ "$_CFW_RESUMED" = 1 ] && return   # T-4118: reuse the session spawned before the re-exec
@@ -279,6 +300,8 @@ termlink_start() {
                 echo "claude-fw: WARNING: TermLink runtime: ${_tlrt#* } (T-3779)" >&2 ;;
         esac
     fi
+
+    _cfw_rail_identity
 
     TERMLINK_SESSION="claude-master-$$"
     echo "claude-fw: Registering TermLink session: $TERMLINK_SESSION"
