@@ -10,7 +10,7 @@ description: >
   rejected, or dual-read during a window is a compatibility ruling on a ratified format
   (T-3287 GO, D-599), not an agent call.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-28T19:23:46Z
-last_update: '2026-09-28T19:30:31Z'
+last_update: 2026-10-20T22:06:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,14 +90,48 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice 2 of T-3534 (closed `ba781dbea`). The four criteria below come verbatim from T-3534 as
+filed (`git show da23708cc:.tasks/active/T-3534-project-identity-an-immutable-project-id.md`,
+lines 128-131). Slice 1 shipped the id (`project_id: pid-…` in `.framework.yaml`,
+`lib/project_identity.sh`, `fw whoami`).
+
+### 2026-10-21 — state at HEAD (`aaf171907`), worker w3541
+
+- **Still open: slot 3 is still a path.** `lib/aef_address.py:120-124` (`display()` elides the
+  project path), `:238-244` (`serialize()` refuses the elided form), `:274` (`elide_path`). None
+  of the aef_* modules reads `project_id`.
+- **Slot 3 isn't only a label. It's used as a filesystem path in 5 places.** That's why the swap
+  can't be a local edit:
+  - `lib/aef_resolve.py:335` checks that the path exists on disk ("ladder" climb).
+  - `lib/aef_resolve.py:360-367` anchors the D7 `WriteClaim` at `intended.project`, and its error
+    text cites T-3287 **D2: "a session is bound to a project path"**.
+  - `lib/aef_resolve.py:532-533` is a liveness probe through `_path_exists(addr.project)`.
+  - `lib/aef_circuit.py:214` / `:374` is the D4-C reconnect: `default_fabric_loader(addr.project)`
+    loads `<project>/.context`.
+
+  If an id goes in slot 3, each of these needs an **id → local root** resolver on the receiving
+  host. That resolver doesn't exist, and having it would change ratified D2.
+- **Migration has nothing real to test against on this host.** `.context/circuits/` is empty: no
+  `registry.jsonl`, so there are no pre-migration path-form entries. The criterion asks for a
+  test "over a real pre-migration entry, not a synthetic one". If the entries exist anywhere,
+  they're on other hosts' circuits.
+- **The scoring-spec criterion is already met**, by T-3547 (`7860501a0`). There's an inline
+  `scoring:` block on `identity-fidelity` in `.context/arcs/arc-020.yaml`.
+  `bin/fw arc review-driver arc-020 identity-fidelity --dry-run` reports PASS: (a) scorable,
+  inline spec validates with 3 levels; (b) distinct; (c) distinguishes.
+
+**Stopped here for an operator ruling.** The options are under `## Recommendation`. None of the
+three remaining criteria can be built without the ruling: the migration answer decides how
+`parse()` treats path-form input, and the id→root question decides whether D2 changes.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **The minted id replaces the path in slot 3 of the ratified five-part address** — `aef::host=<fqdn>::hub=<H>::project=<project-id>::@<agent>::` instead of `project=<path>`. This task does NOT invent a second identity notion beside `lib/aef_address.py`; it supplies the stable token that slot was always reaching for. (BLOCKED on operator ruling — see Recommendation.)
+- [ ] **The elision machinery is retired or justified, not left dangling.** `elide_path()`, the display-only ellipsis form, and `serialize()`'s refusal to emit it exist *because* slot 3 is a long, layout-leaking path. With an id, display and wire are the same string. Either remove that code or record in the task why it must stay — leaving a mechanism whose reason has gone is how dead guards accumulate. (BLOCKED: depends on the migration ruling — under dual-read the elision path stays live for legacy input.)
+- [ ] **Migration is answered, not assumed:** existing circuit-registry entries (`lib/aef_circuit.py`) carry path-form addresses. State whether path-form is accepted-and-upgraded, rejected, or dual-read during a window — and pin the chosen behaviour with a test over a real pre-migration entry, not a synthetic one. (OPERATOR RULING REQUIRED — options under Recommendation.)
+- [x] A **scoring spec** is written for arc-020's `identity-fidelity` driver from this use case, checked with `bin/fw bvp driver --validate-scoring`, so the driver stops being a live-looking axis with no mechanism (the audit WARN and today's RED verdict from `fw arc judge-driver`). — Shipped by T-3547 (`7860501a0`). It's an inline `scoring:` block in `.context/arcs/arc-020.yaml`, and `fw arc review-driver arc-020 identity-fidelity --dry-run` → PASS (a)(b)(c).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,6 +165,14 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+# Scoring-spec AC (already met by T-3547): the reviewer accepts the driver's spec.
+out=$(bin/fw arc review-driver arc-020 identity-fidelity --dry-run 2>&1); echo "$out" | grep -q 'PASS  identity-fidelity' && echo "$out" | grep -q 'scorable       PASS'
+# Slot-3 swap (fails until the ruled build lands). NOTE: the address grammar ALREADY round-trips
+# an opaque `project=pid-…` (checked 2026-10-21), so a parse/serialize check would pass before any
+# fix. The real gap is the consumers that treat slot 3 as a path; they must resolve an id.
+grep -q 'project_id' lib/aef_resolve.py && grep -q 'project_id' lib/aef_circuit.py
+! grep -q '^def elide_path' lib/aef_address.py || grep -q 'elision kept because' .tasks/active/T-3541-*.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -300,6 +342,37 @@ bvp_scores_proposed:
 
 ## Recommendation
 
+**Recommendation:** GO on option B (dual-read window, then reject). It only applies if the operator also rules YES on question 2.
+**Rationale:** Slot 3 is a ratified wire format (T-3287 GO, D-599), and four consumers
+dereference it as a filesystem path (`aef_resolve.py:335,360-367,532`, `aef_circuit.py:374`).
+So there are two decisions here, not one, and neither is the agent's to make.
+
+**Question 1 — migration of path-form addresses (the criterion's question):**
+1. **A. Accept-and-upgrade:** `parse()` sees a path in slot 3, reads `project_id` from
+   `<path>/.framework.yaml`, and rewrites the address. Nothing breaks for old entries. The cost:
+   parsing depends on the local disk, and an address naming a path that doesn't exist on this
+   host can't be upgraded.
+2. **B. Dual-read for a window, then reject:** both forms resolve until a set date, a path-form
+   read logs a WARN to `fw audit`, and after the date path-form is refused. This is the
+   recommended option. Nothing breaks during the window, and the old form has a visible,
+   finite end.
+3. **C. Reject now:** path-form is an `AddressError` immediately. This is the simplest option.
+   The registry on this host is empty, so nothing breaks here. Other hosts' circuits are
+   unverified.
+
+**Question 2 — the id must be resolved back to a root (this changes ratified D2):** the
+write-claim, the reconnect loader and the existence/liveness probes all need `<project>/` on
+the local disk. Swapping slot 3 means adding an **id → local root** resolver per host (for
+example, a host-local index that `fw whoami --register` populates) and amending D2 ("a session
+is bound to a project path") to "bound to a project id, resolved to a local root". Yes or no?
+
+**Evidence:**
+- `.context/circuits/` is empty at HEAD: there are 0 real path-form entries here to pin a test
+  against, so the "real pre-migration entry" condition can't be met on this host.
+- The grammar already round-trips `project=pid-…`. The work is entirely in the consumers, plus
+  retiring `elide_path`, which stays live under B for legacy input.
+- The fourth criterion (identity-fidelity scoring spec) is already met (T-3547, reviewer PASS).
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -354,3 +427,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3541-t-3534-slice-2-swap-the-project-id-into-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T22:06:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
