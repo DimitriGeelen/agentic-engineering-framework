@@ -10,7 +10,7 @@ description: >
   bin/claude-fw would reinstate the fixed-copy design T-2854 deliberately removed,
   so following the advice regresses the install. Confirmed present at 1.6.227.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-14T19:54:43Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: 2026-10-20T21:52:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,14 +83,25 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Re-checked 2026-10-20 at HEAD c332f5b8d: **no longer reproduces** — fixed by T-4051
+(commit 80499503b, 2026-10-11, "doctor compares on-PATH claude-fw router to
+bin/claude-fw-router, not bin/claude-fw"). No code change in this task.
+
+Evidence:
+- `cmp ~/.local/bin/claude-fw bin/claude-fw-router` → identical (the on-PATH file is the router)
+- `bin/fw doctor | grep "Installed claude-fw"` → `OK  Installed claude-fw matches repo source (2 copies on PATH, all current)`
+- bin/fw:3492-3500 now detects a router by its header (`claude-fw-router`) and compares it to
+  `bin/claude-fw-router`; only a fixed copy is compared to `bin/claude-fw`, and its WARN notes
+  that install.sh now installs the router (so the advice no longer regresses T-2854).
+- `bats tests/unit/t4051_doctor_claude_fw_router.bats` → 5/5 ok, including
+  "(a) router identical to repo router: no WARN, no cp of bin/claude-fw".
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect re-checked at HEAD: an on-PATH claude-fw byte-identical to bin/claude-fw-router is not reported as drift by `fw doctor`
+- [x] Fixing task/commit identified and a regression test covering the router-vs-wrapper comparison exists and passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -189,8 +200,25 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t4051_doctor_claude_fw_router.bats 2>&1); echo "$out" | grep -q '^ok 2 ' && ! echo "$out" | grep -q '^not ok'
+grep -q 'claude-fw-router' bin/fw
 
 ## RCA
+
+**Symptom:** `fw doctor` reported on-PATH claude-fw drift on a correct install and advised
+`rm` + `cp bin/claude-fw`, which would reinstate the fixed-copy design T-2854 removed.
+
+**Root cause:** the T-2501 drift check (then bin/fw:~2035) compared every on-PATH claude-fw
+against `$FRAMEWORK_ROOT/bin/claude-fw` (the wrapper), but since T-2854 / D-377 install.sh puts
+`bin/claude-fw-router` on PATH — the comparison reference was the wrong file.
+
+**Why structurally allowed:** T-2854 changed what install.sh installs without updating the
+doctor check that verifies the installed artefact; the check's tests only exercised the
+fixed-copy shape.
+
+**Prevention:** fixed independently by T-4051 (80499503b): bin/fw:3492-3500 picks the reference
+by the file's header, and tests/unit/t4051_doctor_claude_fw_router.bats pins both shapes
+(router identical/drifted, fixed copy identical/drifted). This task is a duplicate filing.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -286,3 +314,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2997-fw-doctor-claude-fw-drift-compares-route.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:52:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
