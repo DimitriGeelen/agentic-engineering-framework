@@ -1,26 +1,18 @@
 ---
-id: T-4487
-name: "shell_write_scan boundary mode stays CLEAN on an unresolvable git --output
-  target ($o, ${O:-…}, $(…), loop variable): decide whether to fail closed"
+id: T-4493
+name: "runme job queue slice 3 (T-4470): ordered batches chosen by the operator, refused
+  up front if any job is unready, stopped at the first failure"
 description: >
-  ring20-dashboard (msg f5a021db) T-4485 field test: scan_boundary(cmd, cwd=project,
-  guarded=outside the project) with --output=/etc/x HITs on literal, quoted, escaped,
-  --output F, abbreviated and $'…'/brace forms, but is CLEAN on o=--output=/etc/x;
-  git diff $o, git diff ${O:---output=/etc/x}, git diff $(echo --output=/etc/x) and
-  the for-loop variable, identically on v1.8.13 and the tip. The new UNRESOLVED step
-  reaches _check_target, but an unresolved target only bites when ctx.mentions is
-  set, which boundary mode does not set. General scanner limit, now harmless for these
-  shapes because the read-only allowlist gates them (T-4485), so they reach the normal
-  task gate. Decide: should boundary mode fail closed on an unresolved write target
-  for git --output (and other write options)? Measure false-positive cost on the corpus
-  of real agent commands before changing.
+  After slice 2. 832 item: batches in the operator's order (picker or typed order),
+  up-front refusal, stop at first failure. Items 6-8 (parallel prompt-free jobs, resume
+  a stopped batch, batch events) stay deferred.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/runme_queue.py, tests/unit/t4491_runme_job_queue.bats, tests/unit/t4493_runme_batches.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,9 +40,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T15:21:45Z
-last_update: 2026-10-20T19:02:26Z
-date_finished:
+created: 2026-10-20T15:34:11Z
+last_update: 2026-10-20T20:18:49Z
+date_finished: 2026-10-20T20:18:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,7 +54,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-20T15:30:50Z'
+  - ts: '2026-10-20T15:45:29Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -72,7 +64,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T15:31:57Z'
+  - ts: '2026-10-20T15:46:16Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -91,7 +83,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4487: shell_write_scan boundary mode stays CLEAN on an unresolvable git --output target ($o, ${O:-…}, $(…), loop variable): decide whether to fail closed
+# T-4493: runme job queue slice 3 (T-4470): ordered batches chosen by the operator, refused up front if any job is unready, stopped at the first failure
 
 ## Context
 
@@ -101,11 +93,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] False-positive cost measured on the corpus of real agent Bash commands (~/.claude/projects/*/*.jsonl) for both candidate rules (fail closed on every unresolved git --output target vs. only when the command also names a write-guarded path); numbers and the chosen rule recorded in ## Decisions
-- [x] scan_boundary returns a hit for `o=--output=/etc/x; git diff $o`, `git diff ${O:---output=/etc/x}`, `git diff $(echo --output=/etc/x)` and `for o in --output=/etc/x; do git diff $o; done` with the project as cwd and guarded = outside the project
-- [x] scan_boundary stays clean for unresolved diff-family arguments that name no outside path (`git diff $BASE..HEAD`, `git log $(git merge-base HEAD master)..HEAD`, `git show $sha -- lib/x.py`) and for redirects to /tmp
-- [x] Regression bats test covers both directions and fails without the fix; t4485_git_output_quoting.bats, t4367_git_output_option.bats, t4499_sidecar_body_data.bats and check_project_boundary.bats stay green
-- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4487` clean)
+- [x] `fw runme queue` with 2+ pending jobs accepts a typed order (`3,1,2`) or `x` (all, menu order) and runs the chosen jobs in exactly that order
+- [x] A choice naming a duplicate, an out-of-range number or garbage runs nothing and says why
+- [x] Up-front refusal: if any chosen job is NOT REHEARSED, CHANGED, retired or done, the batch is refused naming each such job and NO job runs (no run log, no step)
+- [x] The batch stops at the first failing job; later chosen jobs are named as not run
+- [x] A queue 'y' is never an authorisation: each step still goes through the per-step confirm and check-tier0 (a Tier 0 step in a batch holds the batch)
+- [x] Tests for each refusal and for stop-at-first-failure pass (tests/unit/t4493_runme_batches.bats); slices 1-2 tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,21 +283,17 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4487_boundary_unresolved_git_output.bats > /tmp/.t4487.out 2>&1 && ! grep -q "^not ok" /tmp/.t4487.out
-test "$(grep -c '# skip' /tmp/.t4487.out)" -eq 0
-timeout 600 bats tests/unit/t4485_git_output_quoting.bats tests/unit/t4367_git_output_option.bats tests/unit/t4499_sidecar_body_data.bats tests/unit/check_project_boundary.bats > /tmp/.t4487b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4487b.out
-python3 tools/bats-dead-negation-lint.py tests/unit/t4487_boundary_unresolved_git_output.bats > /tmp/.t4487l.out 2>&1 && grep -q clean /tmp/.t4487l.out
-bin/fw vendor self --check --task T-4487
+out=$(timeout 900 bats tests/unit/t4493_runme_batches.bats tests/unit/t4491_runme_job_queue.bats tests/unit/t4492_runme_sha_manifest.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'
+python3 tools/bats-dead-negation-lint.py tests/ | grep -q clean
+bin/fw vendor self --check --task T-4493
 
 ## RCA
 
-**Symptom:** ring20-dashboard's T-4485 field test: `scan_boundary` (the project-boundary hook's write scanner) HITs `git diff --output=/etc/x` in every literal/quoted/escaped form but is CLEAN on `o=--output=/etc/x; git diff $o`, `git diff ${O:---output=/etc/x}`, `git diff $(echo --output=/etc/x)` and a for-loop variable — so the boundary hook lets a write to /etc/x through (the read-only allowlist refuses them, but a task-holding session passes that gate).
-
-**Root cause:** `lib/shell_write_scan.py:_check_target` (≈line 649) refuses an unresolved target only under `elif ctx.mentions:`; `scan_boundary` builds its context with `mentions=False` (≈line 1380), so the T-4485 UNRESOLVED step in the git branch (≈line 966, "an expanded argument may be --output") was a no-op in boundary mode. The same held for a literal `--ou=$o`, whose `$o` value `_resolve` cannot resolve.
-
-**Why structurally allowed:** boundary mode was documented as "a target only known at run time is not judged — no mention gate applies here" (T-4149), and the boundary hook has no equivalent of the task-file mention gate. T-4485's tests exercised the read-only allowlist (`is_bash_safe_command`) and the mention-gated scan, not `scan_boundary`, so the gap had no test.
-
-**Prevention:** `tests/unit/t4487_boundary_unresolved_git_output.bats` pins both directions against `scan_boundary` directly (5 refusal shapes, 3 controls). Boundary mode now records a git diff-family word that may expand to `--output` (`ctx.pending_output`) and refuses it once the whole command is read if the command names a write-guarded path (`_names_guarded`) — the boundary analogue of the mention gate. Residual, stated in the docstring: a value that comes only from a file or the environment (`git diff $(cat f)`, f holding `--output=/etc/x`) still names no outside path and stays clean.
+Not a bug fix: feature slice 3 of the T-4470 GO (docs/reports/T-4470-runme-job-queue.md §7.6).
+**Symptom:** the queue runs exactly one job per invocation (lib/runme_queue.py cmd_queue: single pick, run_job).
+**Root cause:** no batch selection or up-front readiness check exists; unready jobs only stop once run.
+**Why structurally allowed:** slices 1-2 deliberately deferred batches.
+**Prevention:** tests/unit/t4493_runme_batches.bats pins each refusal and stop-at-first-failure.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -375,11 +364,6 @@ bin/fw vendor self --check --task T-4487
 
 ## Decisions
 
-### 2026-10-20 — fail closed, but only on a possible --output word plus a named outside path
-- **Chose:** in boundary mode, refuse when a git diff|log|show|diff-tree|diff-index|whatchanged word containing `$`/backtick has a literal prefix that is a prefix of `--output` (or is `--ou…=`), AND some word of the command names a path the boundary guards (absolute, `~/`, or `../`, top-level directory existing).
-- **Why:** measured on 222,185 distinct Bash commands from all session transcripts (`~/.claude/projects/*/*.jsonl`, script `.context/working/t4487_measure.py`, guard = outside the command's cwd, which over-counts): unresolved git diff-family sites 893; failing closed on all of them = 893 refusals (0.40%), almost all `git show $sha` / `git diff $BASE..HEAD`. The chosen rule refuses 22 (0.01%), about half of them the project root itself named from a subdirectory cwd (not a hit in the real hook, which compares against the project root), the rest commands that really do name an outside path (`/usr/bin/time`, `/etc/machine-id`, another project).
-- **Rejected:** (a) fail closed on every unresolved word — 40x the false positives for no extra coverage of the reported shapes; (b) leave it as is — the boundary hook is the only gate a task-holding session meets for these commands; (c) resolve same-command assignments — a partial shell evaluator, and still blind to loops and substitutions.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -401,11 +385,33 @@ bin/fw vendor self --check --task T-4487
 
 ## Updates
 
-### 2026-10-20T15:21:45Z — task-created [task-create-agent]
+### 2026-10-20T15:34:11Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4487-shellwritescan-boundary-mode-stays-clean.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4493-runme-job-queue-slice-3-t-4470-ordered-b.md
 - **Context:** Initial task creation
 
-### 2026-10-20T19:02:26Z — status-update [task-update-agent]
+### 2026-10-20T19:24:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8f3426e7
+- **Timestamp:** 2026-10-20T20:21:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 137
+     - evidence: `python3 tools/bats-dead-negation-lint.py tests/ | grep -q clean`
+
+### 2026-10-20T20:18:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,19 +1,27 @@
 ---
-id: T-4505
-name: "corpus_spec: one test that every BPMN 2.0 node tag is either in TYPE_TO_TAG
-  or refused by name (sendTask, receiveTask, manualTask still hit parse_map unsupported
-  tag)"
+id: T-4456
+name: "fw reviewer judge: the antigravity seat can never produce a verdict — headless
+  mode auto-denies the command tool and the seat's settings allow nothing"
 description: >
-  From w4495: T-4374, T-4488, T-4495, T-4501 each added one tag after a field report.
-  Add the missing task tags and a table-driven test over the BPMN 2.0 flow-node list
-  so the next gap is caught before a peer hits it.
+  Field report from proxmox-ring20-management (T-2449, msg 6090c08e, rung-5 panel
+  on T-2255 AC#1): every antigravity dispatch exits 0 with no verdict; its log: 'jetski:
+  no output produced — a tool required the command permission that headless mode cannot
+  prompt for, so it was auto-denied. Add an allow-rule under permissions.allow in
+  settings.json'. Our launch (agents/termlink/termlink.sh ~1497: sudo -u <user> $WORKER_BIN
+  -p ... --mode plan --sandbox) passes no allow-rule, so a seat that must run read-only
+  shell reads can never answer. Effect: a rung-5 panel loses its internal spare and
+  a criterion falls to the operator or a paid seat. Fix: give the seat a per-run settings
+  file allowing exactly the read-only command tool inside the exported tree (no writes,
+  no network beyond the provider), signed like the claude seat's settings (T-3580);
+  and treat 'exit 0 with no verdict' as seat-unavailable with the log's reason, not
+  silence. Regression test with a fake antigravity binary that records its args/settings.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/t4456_antigravity_seat_test.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,9 +49,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T19:10:15Z
-last_update: 2026-10-20T20:12:55Z
-date_finished:
+created: 2026-10-20T11:08:56Z
+last_update: 2026-10-20T20:36:57Z
+date_finished: 2026-10-20T20:36:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,7 +63,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-20T19:15:43Z'
+  - ts: '2026-10-20T11:15:31Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -65,7 +73,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T19:16:33Z'
+  - ts: '2026-10-20T11:16:22Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -84,23 +92,21 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4505: corpus_spec: one test that every BPMN 2.0 node tag is either in TYPE_TO_TAG or refused by name (sendTask, receiveTask, manualTask still hit parse_map unsupported tag)
+# T-4456: fw reviewer judge: the antigravity seat can never produce a verdict — headless mode auto-denies the command tool and the seat's settings allow nothing
 
 ## Context
 
-`tools/corpus_spec.py` parse_map hard-errors on any identified process child outside
-TYPE_TO_TAG (T-2614). Each missing tag reached a peer first (T-4374, T-4488, T-4495,
-T-4501). This adds every remaining BPMN 2.0 process flow-node tag and pins the whole
-list in one table-driven test, so the next gap is caught here rather than in the field.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] TYPE_TO_TAG covers sendTask, receiveTask, manualTask, inclusiveGateway, complexGateway, eventBasedGateway, adHocSubProcess and transaction; each parses with 0 refusals and round trips losslessly (emit → parse → emit identical, canonical(out) == canonical(src))
-- [x] Unmodelled plain node attributes (messageRef, instantiate, implementation, eventGatewayType, ordering, method, …) survive the round trip instead of being dropped
-- [x] A table-driven test over the full BPMN 2.0 flow-node list asserts every tag is either in TYPE_TO_TAG or refused by name (choreography tags, implicitThrowEvent); the unknown-tag probe moved off complexGateway
-- [x] New activity types are valid boundary hosts and have lint occupancy entries; existing corpus_spec / corpus_lint tests stay green
+- [x] Diagnosis recorded (2026-10-20, AEF): our antigravity seat is NOT headless-denied — both of today's antigravity dispatches (T-4490 18:15Z, T-4475 19:31Z) read the exported tree and printed full reviews; the auto-denied case is ring20's install. No allow-rule settings file is added here (nothing to fix on our launch; see RCA)
+- [x] An antigravity seat that exits 0 but produced no verdict (output says the command tool was auto-denied) is reported unavailable with that reason, not as a bare "exit 0"
+- [x] A seat whose printed verdict the ledger REFUSED (row in refusals-interim.jsonl for that dispatch and criterion) is reported as `verdict-refused` with the ledger's reason, and is NOT marked unavailable (T-4490 antigravity case: was `unavailable: exit 0`)
+- [x] The opencode `Unexpected server error` is classified: OURS — the registry pins retired model `zai-coding-plan/glm-5.2` (probe: 5.2 fails with and without our flags, 5.3 answers). Filed T-4506; the green-degraded ledger hole a refused seat opens is filed as T-4507
+- [x] Regression test tests/unit/t4456_antigravity_seat_test.py passes; existing *judge*, *t3580*, *t3582* tests stay green; signed trust chain untouched
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,20 +288,21 @@ list in one table-driven test, so the next gap is caught here rather than in the
 # Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
 # web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
 #     bin/fw vendor self --check --task T-XXXX
+python3 -m pytest tests/unit/t4456_antigravity_seat_test.py -q > /tmp/.t4456.out 2>&1 && grep -q passed /tmp/.t4456.out
+python3 -m pytest tests/unit/t3852_unavailable_seat_test.py -q > /tmp/.t4456b.out 2>&1 && grep -q passed /tmp/.t4456b.out
+grep -q "REFUSALS" lib/reviewer/judge_cli.py
+bin/fw vendor self --check --task T-4456
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q > /tmp/.t4505 2>&1 && grep -q passed /tmp/.t4505
-python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k "every_bpmn_flow_node or new_flow_node" > /tmp/.t4505b 2>&1 && grep -q passed /tmp/.t4505b
-python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_spec as c; assert {'sendTask','receiveTask','manualTask','inclusiveGateway','complexGateway','eventBasedGateway','adHocSubProcess','transaction'} <= set(c.TAG_TO_TYPE)"
-bin/fw vendor self --check --task T-4505
 
 ## RCA
 
-**Symptom:** parse_map refused `<bpmn:sendTask>`, `<bpmn:receiveTask>` and `<bpmn:manualTask>` (as well as inclusive, complex and eventBased gateways, adHocSubProcess and transaction) with "unsupported BPMN element", one field report per tag.
-**Root cause:** `tools/corpus_spec.py:49` TYPE_TO_TAG grew one tag per field report (T-4374, T-4488, T-4495, T-4501) and was never checked against the BPMN 2.0 flow-node list. Parse (`tools/corpus_spec.py:466`) correctly hard-errors on the rest. Unmodelled plain node attributes were also dropped silently: parse carried only name/default/calledElement/attachedToRef/cancelActivity and namespaced attrs, so a `messageRef` or `eventGatewayType` would have vanished on round trip.
-**Why structurally allowed:** no test enumerated the specification's flow-node set; each test pinned only the tag just added.
-**Prevention:** `test_every_bpmn_flow_node_is_supported_or_refused_by_name` walks the full BPMN 2.0 flow-node list and fails for any tag that neither round-trips nor is refused with its name.
+**Symptom:** `fw reviewer judge` on T-4490 (and reportedly T-4475) showed the antigravity seat as `unavailable: exit 0` with no ledger row; ring20 saw the same with an "auto-denied" log.
+**Root cause (AEF):** the seat was not unavailable. `/tmp/tl-dispatch/judge-t-4490-r5-antigravity-4ff2e308e566/result.md` holds a full review; `record-for-worker` refused its verdict ("the screenshot of '/config' is not cited as evidence", class unseen-page) and wrote the refusal to `.context/reviews/refusals-interim.jsonl`, not `verdicts.jsonl`. `_collect` (lib/reviewer/judge_cli.py:886) looked only at verdict rows, so "no row" became `unavailable: <exit code>` and the refusal reason was lost. (T-4475's antigravity row V-20261020-741d682e exists and `_collect` reads it as not-evaluated today — no repro there.) Ring20's case (command tool auto-denied) is their install: the earlier half of this task already names it as `tool permission auto-denied (headless)`.
+**Opencode:** ours, not the provider's — `policy/review-backends.yaml:111` pins `zai-coding-plan/glm-5.2`, which `opencode models zai-coding-plan` no longer lists; a probe with our exact flags fails on 5.2 and answers on 5.3. Filed T-4506.
+**Why structurally allowed:** "no ledger row" was treated as one state, but it has two causes — the seat never judged, or it judged and the ledger refused the row — and only the first was modelled. The same conflation exists in the ledger's own `_unavailable_seat` (filed T-4507: a refused seat could count as provably unavailable for green-degraded).
+**Prevention:** `_collect` reads refusals for the dispatch; t4456_antigravity_seat_test.py pins `verdict-refused` with the reason and no `unavailable` key, plus a control where a seat with no refusal stays unavailable.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -366,11 +373,6 @@ bin/fw vendor self --check --task T-4505
 
 ## Decisions
 
-### 2026-10-20 — which unprefixed node attributes to carry
-- **Chose:** a per-tag whitelist of BPMN 2.0 schema attributes (`BPMN_SCHEMA_ATTRS`) carried verbatim in `attrs`; anything else unprefixed (e.g. `foo`, `default` on startEvent) stays dropped.
-- **Why:** lossless round trips for sendTask/receiveTask/eventBasedGateway need messageRef/instantiate/eventGatewayType. T-4399's RCA named the T-4389 blanket drop as a root cause. A scan of every tracked .bpmn found no node with such an attribute, so no existing map changes. T-4399's test now asserts gatewayDirection (tGateway schema) is carried, while `foo` and startEvent `default` are still dropped.
-- **Rejected:** carry every unprefixed attribute (would carry non-BPMN junk and invalid `default` placements T-4399 pinned as dropped); carry only for the new tags (inconsistent; the same loss on serviceTask `implementation`).
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -392,10 +394,27 @@ bin/fw vendor self --check --task T-4505
 
 ## Updates
 
-### 2026-10-20T19:10:15Z — task-created [task-create-agent]
+### 2026-10-20T11:08:56Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4505-corpusspec-one-test-that-every-bpmn-20-n.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4456-fw-reviewer-judge-the-antigravity-seat-c.md
 - **Context:** Initial task creation
 
-### 2026-10-20T20:12:55Z — status-update [task-update-agent]
+### 2026-10-20T11:18:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5a4e2859
+- **Timestamp:** 2026-10-20T20:37:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T20:36:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

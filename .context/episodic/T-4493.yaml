@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4493: runme job queue slice 3 (T-4470): ordered batches chosen by the operator, refused up front if any job is unready, stopped at the first failure
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T20:22:00Z
+# ============================================================================
+
+task_id: T-4493
+task_name: "runme job queue slice 3 (T-4470): ordered batches chosen by the operator, refused up front if any job is unready, stopped at the first failure"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T15:34:11Z
+completed: 2026-10-20T20:18:49Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T21:40:54+02:00
+last_commit: 2026-10-20T22:11:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  runme queue slice 3 — ordered batches (typed order or x), refused up front if any job not ready, stopped at first failure; tests. fabric cards for the T-4493 and T-4486 tests
+
+# Key outcomes
+outcomes:
+  - '`fw runme queue` with 2+ pending jobs accepts a typed order (`3,1,2`) or `x` (all, menu order) and runs the chosen jobs in exactly that order'
+  - 'A choice naming a duplicate, an out-of-range number or garbage runs nothing and says why'
+  - 'Up-front refusal: if any chosen job is NOT REHEARSED, CHANGED, retired or done, the batch is refused naming each such job and NO job runs (no run log, no step)'
+  - 'The batch stops at the first failing job; later chosen jobs are named as not run'
+  - 'A queue ''y'' is never an authorisation: each step still goes through the per-step confirm and check-tier0 (a Tier 0 step in a batch holds the batch)'
+  - 'Tests for each refusal and for stop-at-first-failure pass (tests/unit/t4493_runme_batches.bats); slices 1-2 tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/runme_queue.py'
+  - '.fabric/components/tests-unit-t4493_runme_batches.yaml'
+  - '.fabric/components/tests-unit-test_bvp_rank_no_signal.yaml'
+  - 'lib/runme_queue.py'
+  - '.tasks/active/T-4493-runme-job-queue-slice-3-t-4470-ordered-b.md'
+  - 'tests/unit/t4491_runme_job_queue.bats'
+  - 'tests/unit/t4493_runme_batches.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T21:40:54'
+    action: 'T-4493: runme queue slice 3 — ordered batches (typed order or x), refused up front if any job not ready, stopped at first failure; tests'
+  - time: '2026-10-20T22:11:12'
+    action: 'T-4493: fabric cards for the T-4493 and T-4486 tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 284 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 284
+  commits: 3
+  files_changed: 10
+  lines_added: 1742
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4493-runme-job-queue-slice-3-t-4470-ordered-b.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4505: corpus_spec: one test that every BPMN 2.0 node tag is either in TYPE_TO_TAG or refused by name (sendTask, receiveTask, manualTask still hit parse_map unsupported tag)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T20:39:26Z
+# ============================================================================
+
+task_id: T-4505
+task_name: "corpus_spec: one test that every BPMN 2.0 node tag is either in TYPE_TO_TAG or refused by name (sendTask, receiveTask, manualTask still hit parse_map unsupported tag)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-20T19:10:15Z
+completed: 2026-10-20T20:38:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T22:25:16+02:00
+last_commit: 2026-10-20T22:26:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  corpus_spec round-trips every remaining BPMN 2.0 process flow node (send/receive/manual task, inclusive/complex/eventBased gateway, adHocSubProcess, transaction) with schema-defined plain attributes carried verbatim; choreography nodes and implicitThrowEvent refused by name; table-driven test over the full flow-node list. tick Agent ACs, record attribute-carry decision
+
+# Key outcomes
+outcomes:
+  - 'TYPE_TO_TAG covers sendTask, receiveTask, manualTask, inclusiveGateway, complexGateway, eventBasedGateway, adHocSubProcess and transaction; each parses with 0 refusals and round trips losslessly (emit → parse → emit identical, canonical(out) == canonical(src))'
+  - 'Unmodelled plain node attributes (messageRef, instantiate, implementation, eventGatewayType, ordering, method, …) survive the round trip instead of being dropped'
+  - 'A table-driven test over the full BPMN 2.0 flow-node list asserts every tag is either in TYPE_TO_TAG or refused by name (choreography tags, implicitThrowEvent); the unknown-tag probe moved off complexGateway'
+  - 'New activity types are valid boundary hosts and have lint occupancy entries; existing corpus_spec / corpus_lint tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — which unprefixed node attributes to carry'
+    chose: 'a per-tag whitelist of BPMN 2.0 schema attributes (`BPMN_SCHEMA_ATTRS`) carried verbatim in `attrs`; anything else unprefixed (e.g. `foo`, `default` on startEvent) stays dropped.'
+    rationale: 'lossless round trips for sendTask/receiveTask/eventBasedGateway need messageRef/instantiate/eventGatewayType. T-4399''s RCA named the T-4389 blanket drop as a root cause. A scan of every tracked .bpmn found no node with such an attribute, so no existing map changes. T-4399''s test now asserts gatewayDirection (tGateway schema) is carried, while `foo` and startEvent `default` are still dropped.'
+    alternatives_rejected: ['carry every unprefixed attribute (would carry non-BPMN junk and invalid `default` placements T-4399 pinned as dropped); carry only for the new tags (inconsistent; the same loss on serviceTask `implementation`).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/corpus_lint.py'
+  - '.agentic-framework/tools/corpus_spec.py'
+  - '.tasks/active/T-4505-corpusspec-one-test-that-every-bpmn-20-n.md'
+  - 'tests/unit/test_corpus_spec_roundtrip.py'
+  - 'tools/corpus_lint.py'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:25:16'
+    action: 'T-4505: corpus_spec round-trips every remaining BPMN 2.0 process flow node (send/receive/manual task, inclusive/complex/eventBased gateway, adHocSubProcess, transaction) with schema-defined plain attributes carried verbatim; choreography nodes and implicitThrowEvent refused by name; table-driven test over the full flow-node list'
+  - time: '2026-10-20T22:26:05'
+    action: 'T-4505: tick Agent ACs, record attribute-carry decision'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 88 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 88
+  commits: 2
+  files_changed: 6
+  lines_added: 296
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4505-corpusspec-one-test-that-every-bpmn-20-n.md
+generated_by: context-agent-hybrid

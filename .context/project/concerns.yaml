@@ -5608,3 +5608,20 @@ concerns:
   what_remains: T-4509 (awk), T-4510 (sed e), T-4511 (process substitution), T-4512 (dequoting tokenizer for every
     option check), T-4513 (git grep pager). Close when all five land with tests, ring20-dashboard's probe classes every
     line as gated on a release, and a test enumerates the execution features of every command in the read-only list.
+- id: G-122
+  type: gap
+  title: fw git install-hooks comments out a consumer's own hook lines, silently disabling its gates (T-4403 regression, shipped in v1.8.14-be.3 and v1.8.15-be.1)
+  description: 'Reported by 832 (msg 0a8bbfa1, 2026-10-20). T-4403 made install-hooks keep lines it did not write, but
+    commented out with a note to uncomment them. On 832''s be.3 upgrade this disabled their re-vendor and boundary
+    pre-commit gates for about 5 hours; their check matched marker text that survives inside the comment, so it read
+    installed. Any consumer that adds its own hook lines is exposed, and nothing reports it.'
+  severity: high
+  status: open
+  detected_in: T-4515
+  observed: '2026-10-20'
+  reported_by: 832-Workflow-designer (peer)
+  blast_radius: every consumer with its own lines in a framework-managed git hook that upgraded to a be tag carrying T-4403
+  detection_gap: no test installs hooks over a consumer hook that carries an active gate line and asserts it still runs;
+    fw doctor does not look for commented-out project lines in managed hooks
+  what_remains: T-4515. Close when install-hooks never disables a foreign line (test), doctor flags commented-out project
+    gate lines, and the be-tag notice tells affected consumers to check their hooks.

@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4496: corpus generate crashes with AttributeError on a spec whose id is null (corpus_spec.py:593) instead of saying the map needs an id
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T20:12:43Z
+# ============================================================================
+
+task_id: T-4496
+task_name: "corpus generate crashes with AttributeError on a spec whose id is null (corpus_spec.py:593) instead of saying the map needs an id"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T15:50:00Z
+completed: 2026-10-20T20:11:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T21:05:08+02:00
+last_commit: 2026-10-20T21:13:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  corpus_spec generate refuses a spec with no id (null/missing/blank/non-string) naming top-level id:, instead of AttributeError; regression test. generate also refuses a spec file that is not a mapping (empty/list/scalar) instead of AttributeError on None.get; test
+
+# Key outcomes
+outcomes:
+  - '`emit_map` (and so `corpus_spec generate`) refuses a spec whose `id` is null, missing, empty or not a string with a SystemExit naming the missing `id` — no AttributeError/KeyError traceback'
+  - 'Regression test in tests/unit/test_corpus_spec_roundtrip.py covers null, missing and empty id via `main(["generate", …])`; fails without the fix, passes with it'
+  - 'A spec file that is not a mapping (empty file, list, scalar) refuses with "spec is not a mapping … needs at least `id:`" instead of `AttributeError: ''NoneType'' object has no attribute ''get''` (found while deriving 832''s kitchen-sink: a failed derive leaves an empty YAML); `test_generate_non_mapping_spec_refuses_naming_the_id`'
+  - 'Existing tests/unit/test_corpus_spec_roundtrip.py stays green'
+  - '`bin/fw vendor self --check --task T-4496` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'generate also refuses a spec file that is not a mapping (empty/list/scalar) instead of AttributeError on None.get; test'
+    source: git-mined
+  - description: 'corpus_spec generate refuses a spec with no id (null/missing/blank/non-string) naming top-level id:, instead of AttributeError; regression test'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/corpus_spec.py'
+  - '.tasks/active/T-4496-corpus-generate-crashes-with-attributeer.md'
+  - 'tests/unit/test_corpus_spec_roundtrip.py'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T21:05:08'
+    action: 'T-4496: corpus_spec generate refuses a spec with no id (null/missing/blank/non-string) naming top-level id:, instead of AttributeError; regression test'
+  - time: '2026-10-20T21:13:56'
+    action: 'T-4496: generate also refuses a spec file that is not a mapping (empty/list/scalar) instead of AttributeError on None.get; test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 261 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 261
+  commits: 2
+  files_changed: 4
+  lines_added: 100
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4496-corpus-generate-crashes-with-attributeer.md
+generated_by: context-agent-hybrid

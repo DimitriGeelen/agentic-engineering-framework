@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4487: shell_write_scan boundary mode stays CLEAN on an unresolvable git --output target ($o, ${O:-…}, $(…), loop variable): decide whether to fail closed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T20:18:40Z
+# ============================================================================
+
+task_id: T-4487
+task_name: "shell_write_scan boundary mode stays CLEAN on an unresolvable git --output target ($o, ${O:-…}, $(…), loop variable): decide whether to fail closed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-20T15:21:45Z
+completed: 2026-10-20T20:16:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T21:44:15+02:00
+last_commit: 2026-10-20T21:45:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary scanner refuses a git diff-family word that may expand to --output when the command names an outside path. tick vendor AC; fabric card for the regression test
+
+# Key outcomes
+outcomes:
+  - 'False-positive cost measured on the corpus of real agent Bash commands (~/.claude/projects/*/*.jsonl) for both candidate rules (fail closed on every unresolved git --output target vs. only when the command also names a write-guarded path); numbers and the chosen rule recorded in ## Decisions'
+  - 'scan_boundary returns a hit for `o=--output=/etc/x; git diff $o`, `git diff ${O:---output=/etc/x}`, `git diff $(echo --output=/etc/x)` and `for o in --output=/etc/x; do git diff $o; done` with the project as cwd and guarded = outside the project'
+  - 'scan_boundary stays clean for unresolved diff-family arguments that name no outside path (`git diff $BASE..HEAD`, `git log $(git merge-base HEAD master)..HEAD`, `git show $sha -- lib/x.py`) and for redirects to /tmp'
+  - 'Regression bats test covers both directions and fails without the fix; t4485_git_output_quoting.bats, t4367_git_output_option.bats, t4499_sidecar_body_data.bats and check_project_boundary.bats stay green'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4487` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — fail closed, but only on a possible --output word plus a named outside path'
+    chose: 'in boundary mode, refuse when a git diff|log|show|diff-tree|diff-index|whatchanged word containing `$`/backtick has a literal prefix that is a prefix of `--output` (or is `--ou…=`), AND some word of the command names a path the boundary guards (absolute, `~/`, or `../`, top-level directory existing).'
+    rationale: 'measured on 222,185 distinct Bash commands from all session transcripts (`~/.claude/projects/*/*.jsonl`, script `.context/working/t4487_measure.py`, guard = outside the command''s cwd, which over-counts): unresolved git diff-family sites 893; failing closed on all of them = 893 refusals (0.40%), almost all `git show $sha` / `git diff $BASE..HEAD`. The chosen rule refuses 22 (0.01%), about half of them the project root itself named from a subdirectory cwd (not a hit in the real hook, which compares against the project root), the rest commands that really do name an outside path (`/usr/bin/time`, `/etc/machine-id`, another project).'
+    alternatives_rejected: ['(a) fail closed on every unresolved word — 40x the false positives for no extra coverage of the reported shapes; (b) leave it as is — the boundary hook is the only gate a task-holding session meets for these commands; (c) resolve same-command assignments — a partial shell evaluator, and still blind to loops and substitutions.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.fabric/components/tests-unit-t4487_boundary_unresolved_git_output.yaml'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4487-shellwritescan-boundary-mode-stays-clean.md'
+  - 'tests/unit/t4487_boundary_unresolved_git_output.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T21:44:15'
+    action: 'T-4487: boundary scanner refuses a git diff-family word that may expand to --output when the command names an outside path'
+  - time: '2026-10-20T21:45:42'
+    action: 'T-4487: tick vendor AC; fabric card for the regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 295 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 295
+  commits: 2
+  files_changed: 5
+  lines_added: 258
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4487-shellwritescan-boundary-mode-stays-clean.md
+generated_by: context-agent-hybrid

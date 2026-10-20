@@ -1,20 +1,26 @@
 ---
-id: T-4501
-name: "corpus derive refuses bpmn:boundaryEvent (parse_map unsupported tag)"
+id: T-4487
+name: "shell_write_scan boundary mode stays CLEAN on an unresolvable git --output
+  target ($o, ${O:-…}, $(…), loop variable): decide whether to fail closed"
 description: >
-  832 designer-saved goldens (github mirror workflow-designer bleeding-edge 80eb425,
-  tests/goldens/third-party/): boundary-events and kitchen-sink both fail corpus derive
-  with 'unsupported BPMN element <bpmn:boundaryEvent>'. Same class as T-4374/T-4488/T-4495:
-  add a lossless round trip for boundaryEvent (attachedToRef, cancelActivity, event
-  definitions) in tools/corpus_spec.py with a regression test. Same file as T-4495/T-4496:
-  after those land.
+  ring20-dashboard (msg f5a021db) T-4485 field test: scan_boundary(cmd, cwd=project,
+  guarded=outside the project) with --output=/etc/x HITs on literal, quoted, escaped,
+  --output F, abbreviated and $'…'/brace forms, but is CLEAN on o=--output=/etc/x;
+  git diff $o, git diff ${O:---output=/etc/x}, git diff $(echo --output=/etc/x) and
+  the for-loop variable, identically on v1.8.13 and the tip. The new UNRESOLVED step
+  reaches _check_target, but an unresolved target only bites when ctx.mentions is
+  set, which boundary mode does not set. General scanner limit, now harmless for these
+  shapes because the read-only allowlist gates them (T-4485), so they reach the normal
+  task gate. Decide: should boundary mode fail closed on an unresolved write target
+  for git --output (and other write options)? Measure false-positive cost on the corpus
+  of real agent commands before changing.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/shell_write_scan.py, tests/unit/t4487_boundary_unresolved_git_output.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,9 +48,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T18:30:22Z
-last_update: 2026-10-20T19:05:40Z
-date_finished:
+created: 2026-10-20T15:21:45Z
+last_update: 2026-10-20T20:16:58Z
+date_finished: 2026-10-20T20:16:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,7 +62,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-20T18:45:37Z'
+  - ts: '2026-10-20T15:30:50Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -66,7 +72,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T18:46:32Z'
+  - ts: '2026-10-20T15:31:57Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -85,7 +91,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4501: corpus derive refuses bpmn:boundaryEvent (parse_map unsupported tag)
+# T-4487: shell_write_scan boundary mode stays CLEAN on an unresolvable git --output target ($o, ${O:-…}, $(…), loop variable): decide whether to fail closed
 
 ## Context
 
@@ -95,11 +101,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `parse_map` accepts `bpmn:boundaryEvent` (type `boundary`): `attachedToRef` → `attached_to`, `cancelActivity` → `cancel_activity` (as authored, only when present), event definitions kept verbatim as raw_children; `emit_map` re-emits all three
-- [x] A boundaryEvent with no `attachedToRef`, or one naming no activity node in the map, is a hard error at parse and at emit (never emitted dangling)
-- [x] Regression tests: fixture tests/fixtures/corpus-832-goldens/boundary-events.bpmn (copied from 832's designer-saved golden) derives with 0 refusals and round trips with the same boundaryEvent count, attachedToRef/cancelActivity values, canonical identity and a stable second pass; an inline map with a timerEventDefinition and cancelActivity="false" round trips; dangling/missing attachedToRef refuse. Fail without the fix (7 failed on stashed source)
-- [x] tests/unit/test_corpus_spec_roundtrip.py green, plus the neighbours that key on the type table: corpus_lint NODE_OCCUPANCY gains `boundary` (test_every_spec_type_has_an_occupancy_entry) and test_importer_fidelity's "unsupported identified process child" probe moves from boundaryEvent to complexGateway (still unsupported)
-- [x] `bin/fw vendor self --check --task T-4501` clean
+- [x] False-positive cost measured on the corpus of real agent Bash commands (~/.claude/projects/*/*.jsonl) for both candidate rules (fail closed on every unresolved git --output target vs. only when the command also names a write-guarded path); numbers and the chosen rule recorded in ## Decisions
+- [x] scan_boundary returns a hit for `o=--output=/etc/x; git diff $o`, `git diff ${O:---output=/etc/x}`, `git diff $(echo --output=/etc/x)` and `for o in --output=/etc/x; do git diff $o; done` with the project as cwd and guarded = outside the project
+- [x] scan_boundary stays clean for unresolved diff-family arguments that name no outside path (`git diff $BASE..HEAD`, `git log $(git merge-base HEAD master)..HEAD`, `git show $sha -- lib/x.py`) and for redirects to /tmp
+- [x] Regression bats test covers both directions and fails without the fix; t4485_git_output_quoting.bats, t4367_git_output_option.bats, t4499_sidecar_body_data.bats and check_project_boundary.bats stay green
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4487` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -284,12 +290,21 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 tools/corpus_spec.py derive tests/fixtures/corpus-832-goldens/boundary-events.bpmn > /tmp/.t4501.yaml 2>&1 && grep -q "attached_to: lan_1_subprocess" /tmp/.t4501.yaml
-python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k boundary > /tmp/.t4501p.out 2>&1 && grep -q passed /tmp/.t4501p.out
-python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q > /tmp/.t4501a.out 2>&1 && grep -q passed /tmp/.t4501a.out
-bin/fw vendor self --check --task T-4501
+timeout 300 bats tests/unit/t4487_boundary_unresolved_git_output.bats > /tmp/.t4487.out 2>&1 && ! grep -q "^not ok" /tmp/.t4487.out
+test "$(grep -c '# skip' /tmp/.t4487.out)" -eq 0
+timeout 600 bats tests/unit/t4485_git_output_quoting.bats tests/unit/t4367_git_output_option.bats tests/unit/t4499_sidecar_body_data.bats tests/unit/check_project_boundary.bats > /tmp/.t4487b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4487b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4487_boundary_unresolved_git_output.bats > /tmp/.t4487l.out 2>&1 && grep -q clean /tmp/.t4487l.out
+bin/fw vendor self --check --task T-4487
 
 ## RCA
+
+**Symptom:** ring20-dashboard's T-4485 field test: `scan_boundary` (the project-boundary hook's write scanner) HITs `git diff --output=/etc/x` in every literal/quoted/escaped form but is CLEAN on `o=--output=/etc/x; git diff $o`, `git diff ${O:---output=/etc/x}`, `git diff $(echo --output=/etc/x)` and a for-loop variable — so the boundary hook lets a write to /etc/x through (the read-only allowlist refuses them, but a task-holding session passes that gate).
+
+**Root cause:** `lib/shell_write_scan.py:_check_target` (≈line 649) refuses an unresolved target only under `elif ctx.mentions:`; `scan_boundary` builds its context with `mentions=False` (≈line 1380), so the T-4485 UNRESOLVED step in the git branch (≈line 966, "an expanded argument may be --output") was a no-op in boundary mode. The same held for a literal `--ou=$o`, whose `$o` value `_resolve` cannot resolve.
+
+**Why structurally allowed:** boundary mode was documented as "a target only known at run time is not judged — no mention gate applies here" (T-4149), and the boundary hook has no equivalent of the task-file mention gate. T-4485's tests exercised the read-only allowlist (`is_bash_safe_command`) and the mention-gated scan, not `scan_boundary`, so the gap had no test.
+
+**Prevention:** `tests/unit/t4487_boundary_unresolved_git_output.bats` pins both directions against `scan_boundary` directly (5 refusal shapes, 3 controls). Boundary mode now records a git diff-family word that may expand to `--output` (`ctx.pending_output`) and refuses it once the whole command is read if the command names a write-guarded path (`_names_guarded`) — the boundary analogue of the mention gate. Residual, stated in the docstring: a value that comes only from a file or the environment (`git diff $(cat f)`, f holding `--output=/etc/x`) still names no outside path and stays clean.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -304,14 +319,6 @@ bin/fw vendor self --check --task T-4501
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `corpus_spec derive` on 832's designer-saved goldens boundary-events and kitchen-sink refused with `parse: unsupported BPMN element <bpmn:boundaryEvent …>`.
-
-**Root cause:** tools/corpus_spec.py TYPE_TO_TAG (:49) had no entry for boundaryEvent, so parse_map's T-2614 guard (the `raise SystemExit("parse: unsupported BPMN element …")` branch at the end of the process loop) refused it. Supporting the tag also needed its two unprefixed attributes: parse_map keeps only namespace-qualified attrs (T-4389) plus `default` (T-4399), so attachedToRef/cancelActivity would otherwise have been dropped silently on round trip.
-
-**Why structurally allowed:** the type table grows one tag at a time, as each real third-party map is tried (T-4374 callActivity, T-4488 task, T-4495 businessRuleTask). The refusal is the designed behaviour, and it worked: it was loud, not lossy. No corpus map so far used boundary events.
-
-**Prevention:** the tag is supported with an explicit host check (`_check_boundary_hosts`, at parse and emit), so a boundary event can never be emitted pointing at a missing or non-activity host. Regression tests: the 832 golden fixture round-trips with canonical identity, and inline maps cover an event definition, non-interrupting, absent cancelActivity and dangling hosts. The next gap on kitchen-sink (`bpmn:manualTask`) still refuses loudly; it is not dropped.
 
 ## Evolution
 
@@ -368,6 +375,11 @@ bin/fw vendor self --check --task T-4501
 
 ## Decisions
 
+### 2026-10-20 — fail closed, but only on a possible --output word plus a named outside path
+- **Chose:** in boundary mode, refuse when a git diff|log|show|diff-tree|diff-index|whatchanged word containing `$`/backtick has a literal prefix that is a prefix of `--output` (or is `--ou…=`), AND some word of the command names a path the boundary guards (absolute, `~/`, or `../`, top-level directory existing).
+- **Why:** measured on 222,185 distinct Bash commands from all session transcripts (`~/.claude/projects/*/*.jsonl`, script `.context/working/t4487_measure.py`, guard = outside the command's cwd, which over-counts): unresolved git diff-family sites 893; failing closed on all of them = 893 refusals (0.40%), almost all `git show $sha` / `git diff $BASE..HEAD`. The chosen rule refuses 22 (0.01%), about half of them the project root itself named from a subdirectory cwd (not a hit in the real hook, which compares against the project root), the rest commands that really do name an outside path (`/usr/bin/time`, `/etc/machine-id`, another project).
+- **Rejected:** (a) fail closed on every unresolved word — 40x the false positives for no extra coverage of the reported shapes; (b) leave it as is — the boundary hook is the only gate a task-holding session meets for these commands; (c) resolve same-command assignments — a partial shell evaluator, and still blind to loops and substitutions.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -389,10 +401,28 @@ bin/fw vendor self --check --task T-4501
 
 ## Updates
 
-### 2026-10-20T18:30:22Z — task-created [task-create-agent]
+### 2026-10-20T15:21:45Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4501-corpus-derive-refuses-bpmnboundaryevent-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4487-shellwritescan-boundary-mode-stays-clean.md
 - **Context:** Initial task creation
 
-### 2026-10-20T19:05:40Z — status-update [task-update-agent]
+### 2026-10-20T19:02:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-324fe04b
+- **Timestamp:** 2026-10-20T20:18:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T20:16:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

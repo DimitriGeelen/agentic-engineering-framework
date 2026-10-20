@@ -1,18 +1,19 @@
 ---
-id: T-4496
-name: "corpus generate crashes with AttributeError on a spec whose id is null (corpus_spec.py:593)
-  instead of saying the map needs an id"
+id: T-4505
+name: "corpus_spec: one test that every BPMN 2.0 node tag is either in TYPE_TO_TAG
+  or refused by name (sendTask, receiveTask, manualTask still hit parse_map unsupported
+  tag)"
 description: >
-  832 (msg dbd05180): corpus generate on a spec with 'id: null' crashes (AttributeError,
-  tools/corpus_spec.py:593). Should refuse with a clear message naming the missing
-  id. Regression test. Same files as T-4488/T-4495: after T-4488 lands.
+  From w4495: T-4374, T-4488, T-4495, T-4501 each added one tag after a field report.
+  Add the missing task tags and a table-driven test over the BPMN 2.0 flow-node list
+  so the next gap is caught before a peer hits it.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tools/corpus_lint.py, tools/corpus_spec.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,9 +41,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T15:50:00Z
-last_update: 2026-10-20T19:12:56Z
-date_finished:
+created: 2026-10-20T19:10:15Z
+last_update: 2026-10-20T20:38:34Z
+date_finished: 2026-10-20T20:38:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,7 +55,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-20T16:00:38Z'
+  - ts: '2026-10-20T19:15:43Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -64,7 +65,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T16:01:32Z'
+  - ts: '2026-10-20T19:16:33Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -83,21 +84,23 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4496: corpus generate crashes with AttributeError on a spec whose id is null (corpus_spec.py:593) instead of saying the map needs an id
+# T-4505: corpus_spec: one test that every BPMN 2.0 node tag is either in TYPE_TO_TAG or refused by name (sendTask, receiveTask, manualTask still hit parse_map unsupported tag)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`tools/corpus_spec.py` parse_map hard-errors on any identified process child outside
+TYPE_TO_TAG (T-2614). Each missing tag reached a peer first (T-4374, T-4488, T-4495,
+T-4501). This adds every remaining BPMN 2.0 process flow-node tag and pins the whole
+list in one table-driven test, so the next gap is caught here rather than in the field.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `emit_map` (and so `corpus_spec generate`) refuses a spec whose `id` is null, missing, empty or not a string with a SystemExit naming the missing `id` — no AttributeError/KeyError traceback
-- [x] Regression test in tests/unit/test_corpus_spec_roundtrip.py covers null, missing and empty id via `main(["generate", …])`; fails without the fix, passes with it
-- [x] A spec file that is not a mapping (empty file, list, scalar) refuses with "spec is not a mapping … needs at least `id:`" instead of `AttributeError: 'NoneType' object has no attribute 'get'` (found while deriving 832's kitchen-sink: a failed derive leaves an empty YAML); `test_generate_non_mapping_spec_refuses_naming_the_id`
-- [x] Existing tests/unit/test_corpus_spec_roundtrip.py stays green
-- [x] `bin/fw vendor self --check --task T-4496` clean
+- [x] TYPE_TO_TAG covers sendTask, receiveTask, manualTask, inclusiveGateway, complexGateway, eventBasedGateway, adHocSubProcess and transaction; each parses with 0 refusals and round trips losslessly (emit → parse → emit identical, canonical(out) == canonical(src))
+- [x] Unmodelled plain node attributes (messageRef, instantiate, implementation, eventGatewayType, ordering, method, …) survive the round trip instead of being dropped
+- [x] A table-driven test over the full BPMN 2.0 flow-node list asserts every tag is either in TYPE_TO_TAG or refused by name (choreography tags, implicitThrowEvent); the unknown-tag probe moved off complexGateway
+- [x] New activity types are valid boundary hosts and have lint occupancy entries; existing corpus_spec / corpus_lint tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,12 +285,17 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-printf 'id: null\ntitle: x\nlanes: []\nnodes: []\nflows: []\n' > /tmp/.t4496.yaml; python3 tools/corpus_spec.py generate /tmp/.t4496.yaml > /tmp/.t4496.out 2>&1; grep -q "needs an id" /tmp/.t4496.out && ! grep -q Traceback /tmp/.t4496.out
-python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k missing_id > /tmp/.t4496p.out 2>&1 && grep -q passed /tmp/.t4496p.out
-python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q > /tmp/.t4496a.out 2>&1 && grep -q passed /tmp/.t4496a.out
-bin/fw vendor self --check --task T-4496
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q > /tmp/.t4505 2>&1 && grep -q passed /tmp/.t4505
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k "every_bpmn_flow_node or new_flow_node" > /tmp/.t4505b 2>&1 && grep -q passed /tmp/.t4505b
+python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_spec as c; assert {'sendTask','receiveTask','manualTask','inclusiveGateway','complexGateway','eventBasedGateway','adHocSubProcess','transaction'} <= set(c.TAG_TO_TYPE)"
+bin/fw vendor self --check --task T-4505
 
 ## RCA
+
+**Symptom:** parse_map refused `<bpmn:sendTask>`, `<bpmn:receiveTask>` and `<bpmn:manualTask>` (as well as inclusive, complex and eventBased gateways, adHocSubProcess and transaction) with "unsupported BPMN element", one field report per tag.
+**Root cause:** `tools/corpus_spec.py:49` TYPE_TO_TAG grew one tag per field report (T-4374, T-4488, T-4495, T-4501) and was never checked against the BPMN 2.0 flow-node list. Parse (`tools/corpus_spec.py:466`) correctly hard-errors on the rest. Unmodelled plain node attributes were also dropped silently: parse carried only name/default/calledElement/attachedToRef/cancelActivity and namespaced attrs, so a `messageRef` or `eventGatewayType` would have vanished on round trip.
+**Why structurally allowed:** no test enumerated the specification's flow-node set; each test pinned only the tag just added.
+**Prevention:** `test_every_bpmn_flow_node_is_supported_or_refused_by_name` walks the full BPMN 2.0 flow-node list and fails for any tag that neither round-trips nor is refused with its name.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -302,14 +310,6 @@ bin/fw vendor self --check --task T-4496
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `corpus_spec generate` on a spec with `id: null` (what `derive` produces for third-party BPMN with no `aef:workflowMeta`, e.g. 832's goldens) died with `AttributeError: 'NoneType' object has no attribute 'replace'` (tools/corpus_spec.py, the `Pool_{mid.replace(...)}` participant line, then ~599).
-
-**Root cause:** `emit_map` (tools/corpus_spec.py:546) reads `mid = spec["id"]` and uses it as a string in every generated element id without ever checking it. `parse_map` sets `"id": wm.get("id")` (tools/corpus_spec.py ~302), i.e. None whenever the source has no workflowMeta, so derive → generate on any foreign map hits it.
-
-**Why structurally allowed:** every existing test spec was derived from an AEF-authored map (HEAD fixture carries workflowMeta id="m"), so the id was always present; the emitter validates call refs and default flows but had no precondition on the map id itself. Foreign-BPMN round trips are new (T-4488/T-4495 era).
-
-**Prevention:** `emit_map` now refuses up front with `generate: spec needs an id (top-level \`id:\` is None) …` for null, missing, empty/blank or non-string ids; pinned by `test_generate_missing_id_refuses_naming_the_id` (5 parametrised cases, all fail without the fix).
 
 ## Evolution
 
@@ -366,6 +366,11 @@ bin/fw vendor self --check --task T-4496
 
 ## Decisions
 
+### 2026-10-20 — which unprefixed node attributes to carry
+- **Chose:** a per-tag whitelist of BPMN 2.0 schema attributes (`BPMN_SCHEMA_ATTRS`) carried verbatim in `attrs`; anything else unprefixed (e.g. `foo`, `default` on startEvent) stays dropped.
+- **Why:** lossless round trips for sendTask/receiveTask/eventBasedGateway need messageRef/instantiate/eventGatewayType. T-4399's RCA named the T-4389 blanket drop as a root cause. A scan of every tracked .bpmn found no node with such an attribute, so no existing map changes. T-4399's test now asserts gatewayDirection (tGateway schema) is carried, while `foo` and startEvent `default` are still dropped.
+- **Rejected:** carry every unprefixed attribute (would carry non-BPMN junk and invalid `default` placements T-4399 pinned as dropped); carry only for the new tags (inconsistent; the same loss on serviceTask `implementation`).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -387,10 +392,27 @@ bin/fw vendor self --check --task T-4496
 
 ## Updates
 
-### 2026-10-20T15:50:00Z — task-created [task-create-agent]
+### 2026-10-20T19:10:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4496-corpus-generate-crashes-with-attributeer.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4505-corpusspec-one-test-that-every-bpmn-20-n.md
 - **Context:** Initial task creation
 
-### 2026-10-20T19:02:24Z — status-update [task-update-agent]
+### 2026-10-20T20:12:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0fe907ef
+- **Timestamp:** 2026-10-20T20:38:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T20:38:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

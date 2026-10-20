@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4456: fw reviewer judge: the antigravity seat can never produce a verdict — headless mode auto-denies the command tool and the seat's settings allow nothing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T20:38:31Z
+# ============================================================================
+
+task_id: T-4456
+task_name: "fw reviewer judge: the antigravity seat can never produce a verdict — headless mode auto-denies the command tool and the seat's settings allow nothing"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T11:08:56Z
+completed: 2026-10-20T20:36:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T13:22:51+02:00
+last_commit: 2026-10-20T22:14:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  an exit-0 harness seat whose command tool was auto-denied is reported unavailable with that reason (allow-rule half still open). a harness seat whose verdict the ledger refused is reported verdict-refused with the reason, not unavailable: exit 0; opencode error classified ours (T-4506), ledger hole filed (T-4507)
+
+# Key outcomes
+outcomes:
+  - 'Diagnosis recorded (2026-10-20, AEF): our antigravity seat is NOT headless-denied — both of today''s antigravity dispatches (T-4490 18:15Z, T-4475 19:31Z) read the exported tree and printed full reviews; the auto-denied case is ring20''s install. No allow-rule settings file is added here (nothing to fix on our launch; see RCA)'
+  - 'An antigravity seat that exits 0 but produced no verdict (output says the command tool was auto-denied) is reported unavailable with that reason, not as a bare "exit 0"'
+  - 'A seat whose printed verdict the ledger REFUSED (row in refusals-interim.jsonl for that dispatch and criterion) is reported as `verdict-refused` with the ledger''s reason, and is NOT marked unavailable (T-4490 antigravity case: was `unavailable: exit 0`)'
+  - 'The opencode `Unexpected server error` is classified: OURS — the registry pins retired model `zai-coding-plan/glm-5.2` (probe: 5.2 fails with and without our flags, 5.3 answers). Filed T-4506; the green-degraded ledger hole a refused seat opens is filed as T-4507'
+  - 'Regression test tests/unit/t4456_antigravity_seat_test.py passes; existing *judge*, *t3580*, *t3582* tests stay green; signed trust chain untouched'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'a harness seat whose verdict the ledger refused is reported verdict-refused with the reason, not unavailable: exit 0; opencode error classified ours (T-4506), ledger hole filed (T-4507)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - 'lib/reviewer/judge_cli.py'
+  - '.tasks/active/T-4456-fw-reviewer-judge-the-antigravity-seat-c.md'
+  - '.tasks/active/T-4506-opencode-judge-seat-pins-a-retired-model.md'
+  - '.tasks/active/T-4507-green-degraded-a-seat-whose-verdict-the-.md'
+  - 'tests/unit/t4456_antigravity_seat_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T13:22:51'
+    action: 'T-4456: an exit-0 harness seat whose command tool was auto-denied is reported unavailable with that reason (allow-rule half still open)'
+  - time: '2026-10-20T22:14:15'
+    action: 'T-4456: a harness seat whose verdict the ledger refused is reported verdict-refused with the reason, not unavailable: exit 0; opencode error classified ours (T-4506), ledger hole filed (T-4507)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 568 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 568
+  commits: 2
+  files_changed: 6
+  lines_added: 949
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4456-fw-reviewer-judge-the-antigravity-seat-c.md
+generated_by: context-agent-hybrid

@@ -1,22 +1,10 @@
 ---
-id: T-4456
-name: "fw reviewer judge: the antigravity seat can never produce a verdict — headless
-  mode auto-denies the command tool and the seat's settings allow nothing"
+id: T-4514
+name: "A later fw reviewer judge run deletes or moves an earlier run's committed evidence files, so the earlier verdict row stops verifying and the pre-push audit FAILs"
 description: >
-  Field report from proxmox-ring20-management (T-2449, msg 6090c08e, rung-5 panel
-  on T-2255 AC#1): every antigravity dispatch exits 0 with no verdict; its log: 'jetski:
-  no output produced — a tool required the command permission that headless mode cannot
-  prompt for, so it was auto-denied. Add an allow-rule under permissions.allow in
-  settings.json'. Our launch (agents/termlink/termlink.sh ~1497: sudo -u <user> $WORKER_BIN
-  -p ... --mode plan --sandbox) passes no allow-rule, so a seat that must run read-only
-  shell reads can never answer. Effect: a rung-5 panel loses its internal spare and
-  a criterion falls to the operator or a paid seat. Fix: give the seat a per-run settings
-  file allowing exactly the read-only command tool inside the exported tree (no writes,
-  no network beyond the provider), signed like the claude seat's settings (T-3580);
-  and treat 'exit 0 with no verdict' as seat-unavailable with the log's reason, not
-  silence. Regression test with a fake antigravity binary that records its args/settings.
+  2026-10-20, T-4475: V-20261020-d6f0e077 (first judge run, commit 2712a5c30) cites .context/reviews/evidence/T-4475/config@{1024,1440,1920}.png. After later judge runs (and an interrupted fw ux shots T-4475 run) those three committed files were deleted in the working tree (uncommitted), the ledger audit failed ('evidence path does not exist') and blocked every push. Restored with git checkout HEAD. Find which step removes or renames unsuffixed evidence (judge evidence capture copying to -<dispatch> names, or ux shots), make evidence of a recorded verdict immutable (never deleted or moved), and add a test.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -49,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T11:08:56Z
-last_update: 2026-10-20T19:45:25Z
-date_finished:
+created: 2026-10-20T20:36:59Z
+last_update: 2026-10-20T20:36:59Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-20T11:15:31Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-20T11:16:22Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4456: fw reviewer judge: the antigravity seat can never produce a verdict — headless mode auto-denies the command tool and the seat's settings allow nothing
+# T-4514: A later fw reviewer judge run deletes or moves an earlier run's committed evidence files, so the earlier verdict row stops verifying and the pre-push audit FAILs
 
 ## Context
 
@@ -102,11 +62,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Diagnosis recorded (2026-10-20, AEF): our antigravity seat is NOT headless-denied — both of today's antigravity dispatches (T-4490 18:15Z, T-4475 19:31Z) read the exported tree and printed full reviews; the auto-denied case is ring20's install. No allow-rule settings file is added here (nothing to fix on our launch; see RCA)
-- [x] An antigravity seat that exits 0 but produced no verdict (output says the command tool was auto-denied) is reported unavailable with that reason, not as a bare "exit 0"
-- [x] A seat whose printed verdict the ledger REFUSED (row in refusals-interim.jsonl for that dispatch and criterion) is reported as `verdict-refused` with the ledger's reason, and is NOT marked unavailable (T-4490 antigravity case: was `unavailable: exit 0`)
-- [x] The opencode `Unexpected server error` is classified: OURS — the registry pins retired model `zai-coding-plan/glm-5.2` (probe: 5.2 fails with and without our flags, 5.3 answers). Filed T-4506; the green-degraded ledger hole a refused seat opens is filed as T-4507
-- [x] Regression test tests/unit/t4456_antigravity_seat_test.py passes; existing *judge*, *t3580*, *t3582* tests stay green; signed trust chain untouched
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,21 +245,11 @@ bvp_scores_proposed:
 # Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
 # web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
 #     bin/fw vendor self --check --task T-XXXX
-python3 -m pytest tests/unit/t4456_antigravity_seat_test.py -q > /tmp/.t4456.out 2>&1 && grep -q passed /tmp/.t4456.out
-python3 -m pytest tests/unit/t3852_unavailable_seat_test.py -q > /tmp/.t4456b.out 2>&1 && grep -q passed /tmp/.t4456b.out
-grep -q "REFUSALS" lib/reviewer/judge_cli.py
-bin/fw vendor self --check --task T-4456
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
 ## RCA
-
-**Symptom:** `fw reviewer judge` on T-4490 (and reportedly T-4475) showed the antigravity seat as `unavailable: exit 0` with no ledger row; ring20 saw the same with an "auto-denied" log.
-**Root cause (AEF):** the seat was not unavailable. `/tmp/tl-dispatch/judge-t-4490-r5-antigravity-4ff2e308e566/result.md` holds a full review; `record-for-worker` refused its verdict ("the screenshot of '/config' is not cited as evidence", class unseen-page) and wrote the refusal to `.context/reviews/refusals-interim.jsonl`, not `verdicts.jsonl`. `_collect` (lib/reviewer/judge_cli.py:886) looked only at verdict rows, so "no row" became `unavailable: <exit code>` and the refusal reason was lost. (T-4475's antigravity row V-20261020-741d682e exists and `_collect` reads it as not-evaluated today — no repro there.) Ring20's case (command tool auto-denied) is their install: the earlier half of this task already names it as `tool permission auto-denied (headless)`.
-**Opencode:** ours, not the provider's — `policy/review-backends.yaml:111` pins `zai-coding-plan/glm-5.2`, which `opencode models zai-coding-plan` no longer lists; a probe with our exact flags fails on 5.2 and answers on 5.3. Filed T-4506.
-**Why structurally allowed:** "no ledger row" was treated as one state, but it has two causes — the seat never judged, or it judged and the ledger refused the row — and only the first was modelled. The same conflation exists in the ledger's own `_unavailable_seat` (filed T-4507: a refused seat could count as provably unavailable for green-degraded).
-**Prevention:** `_collect` reads refusals for the dispatch; t4456_antigravity_seat_test.py pins `verdict-refused` with the reason and no `unavailable` key, plus a control where a seat with no refusal stays unavailable.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -394,10 +341,7 @@ bin/fw vendor self --check --task T-4456
 
 ## Updates
 
-### 2026-10-20T11:08:56Z — task-created [task-create-agent]
+### 2026-10-20T20:36:59Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4456-fw-reviewer-judge-the-antigravity-seat-c.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4514-a-later-fw-reviewer-judge-run-deletes-or.md
 - **Context:** Initial task creation
-
-### 2026-10-20T11:18:59Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
