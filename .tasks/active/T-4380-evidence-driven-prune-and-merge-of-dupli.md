@@ -8,10 +8,10 @@ description: >
   the fault-detection-fidelity driver scores this. No pruning on taste. Arc test-suite-health
   (arc-026), anchor T-4376; build only after the inception GO.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T11:58:59Z
-last_update: '2026-10-19T12:01:46Z'
+last_update: 2026-10-20T11:37:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,14 +92,20 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Phase 1 only (evidence, no deletions, no test edits): `docs/reports/T-4380-prune-candidates.md`.
+Inputs: `docs/reports/T-4376-test-suite-refactor.md`, `docs/reports/T-4376-test-suite-measurement.md`.
+Mutations run only in scratch copies under `.context/scratch/t4380/`, never the working tree.
+Phase 2 (actual edits) needs the parent's go.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Report `docs/reports/T-4380-prune-candidates.md` exists with section (a) never-fail candidates, section (b) duplicate coverage, a ranking by file-seconds, and an "unproven" list
+- [x] Every (a) candidate marked CONFIRMED cites a mutation run in a scratch copy under `.context/scratch/t4380/` (what was broken, the test command, the green result)
+- [x] Every (b) group names the function+behaviour, the evidence, and which test keeps the red run on the origin bug (origin task cited)
+- [x] Every candidate carries file:test, class, evidence, proposed action and expected saving (median file-seconds over the 21 v2 suite reports, `LATEST.yaml` included)
+- [x] No file under `tests/`, `lib/`, `agents/` or `bin/` is changed by this task's commits (phase 1 is evidence only)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,7 +284,17 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+test -f docs/reports/T-4380-prune-candidates.md
+grep -q "^## (a)" docs/reports/T-4380-prune-candidates.md && grep -q "^## (b)" docs/reports/T-4380-prune-candidates.md && grep -qi "unproven" docs/reports/T-4380-prune-candidates.md
+grep -q "CONFIRMED" docs/reports/T-4380-prune-candidates.md && grep -q "\.context/scratch/t4380/" docs/reports/T-4380-prune-candidates.md
+out=$(git log --format= --name-only --grep '^T-4380' 2>&1); ! echo "$out" | grep -qE '^(tests|lib|agents|bin)/'
+
 ## RCA
+
+**Symptom:** the unit suite carries tests that cannot fail and groups of tests that pin the same behaviour; they cost file-seconds and detect nothing extra (T-4376 measurement).
+**Root cause:** nothing asks, when a test is added, whether it can go red. In bats `run` always succeeds, so a test that only calls `run`, or whose checks all end in `|| true`, passes against any code.
+**Why structurally allowed:** the dead-negation lint (T-4398, `tools/bats-dead-negation-lint.py`) covers one shape only; nothing measures mutation kill or duplicate coverage.
+**Prevention:** phase 1 produces the evidence list; phase 2 edits, and T-4379 (lint as membership gate) can take the confirmed shapes as lint rules.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -295,6 +311,11 @@ bvp_scores_proposed:
 -->
 
 ## Evolution
+
+### 2026-10-20 — phase 1 split
+- **What changed:** the parent scoped this run to evidence only (report, no test edits).
+- **Plan impact:** deletions and merges wait for the parent's go on the report.
+- **Triggered:** phase 2 under this same task after the go.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -374,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4380-evidence-driven-prune-and-merge-of-dupli.md
 - **Context:** Initial task creation
+
+### 2026-10-20T11:37:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
