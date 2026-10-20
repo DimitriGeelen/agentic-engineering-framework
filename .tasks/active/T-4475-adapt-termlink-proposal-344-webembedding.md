@@ -303,7 +303,7 @@ bin/fw vendor self --check --task T-4475
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
-| config | EMBED_WORKERS row | ok | ok | ok | new registry row; shots in .context/visual/T-4475/ |
+| config | EMBED_WORKERS row | ok | ok | ok | new registry row; shots in .context/visual/T-4475/. Judge amber V-20261020-46d0002b: at 1024 the unbreakable `(web/embeddings.py:_embed_batches;` widened .config-table to 967.5px in a 950px container, cutting every Description. Fixed with `overflow-wrap: anywhere` on `.config-table td`; re-measured table scrollWidth = container width at 1024 (950/950), 1440 (1200/1200) and 1920 (1450/1450), re-shot |
 
 ## RCA
 
