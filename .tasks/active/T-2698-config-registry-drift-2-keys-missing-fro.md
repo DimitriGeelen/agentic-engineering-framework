@@ -10,7 +10,7 @@ description: >
   assumption) or curated (CLAUDE.md says 'full reference: fw config list'), then make
   the test assert whichever is true.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-31T09:21:11Z
-last_update: '2026-08-17T12:36:09Z'
+last_update: 2026-10-20T21:52:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,14 +83,25 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Re-checked 2026-10-20 at HEAD c332f5b8d: the defect no longer reproduces. Both
+halves were fixed by later tasks; no code change made under this task.
+
+    $ bats tests/lint/config-registry-parity.bats
+    ok 1 lib/config.sh and web/blueprints/config.py have the same config keys
+    ok 2 CLAUDE.md references no config key that lib/config.sh does not define
+    ok 3 config registry key count matches across sources
+
+- Watchtower half: `web/blueprints/config.py:52-53` carry both keys — T-2838 (8b41090b4).
+- CLAUDE.md half: decided "curated" — CLAUDE.md §Configuration (T-2841 paragraph)
+  and the test inverted to "no phantom FW_ keys" — T-2841 (2c1b25466).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] ARC_COMPLETION_THRESHOLD and DISPATCH_MODEL_DEFAULT are present in web/blueprints/config.py SETTINGS (Watchtower /config) — fixed upstream by T-2838 (8b41090b4)
+- [x] The CLAUDE.md question is decided and the test asserts it: table is curated (CLAUDE.md §Configuration, T-2841 paragraph), test asserts only "CLAUDE.md names no FW_ key the registry lacks" — fixed upstream by T-2841 (2c1b25466)
+- [x] tests/lint/config-registry-parity.bats is green at HEAD
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -155,6 +166,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bats tests/lint/config-registry-parity.bats
+grep -q '"ARC_COMPLETION_THRESHOLD"' web/blueprints/config.py
+grep -q '"DISPATCH_MODEL_DEFAULT"' web/blueprints/config.py
 
 ## RCA
 
@@ -171,6 +185,23 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** tests/lint/config-registry-parity.bats red: 2 registry keys
+(ARC_COMPLETION_THRESHOLD, DISPATCH_MODEL_DEFAULT) absent from Watchtower /config,
+17 keys absent from the CLAUDE.md table.
+
+**Root cause:** two separate gaps. (1) `lib/config.sh:291-292` gained keys without
+the mirror `SETTINGS` list in `web/blueprints/config.py` being updated — two
+hand-maintained copies of one registry. (2) The test required CLAUDE.md to list
+every key, contradicting CLAUDE.md's own "curated subset" statement.
+
+**Why structurally allowed:** the lint suite was not run by any gate until T-2697,
+so the red test sat unseen.
+
+**Prevention (already in place, verified at HEAD):** T-2838 (8b41090b4) added the
+keys; test 1 of the parity bats fails on any future config.sh↔config.py drift.
+T-2841 (2c1b25466) made the CLAUDE.md test assert the true direction (no phantom
+keys) and wrote the curated-subset rationale into CLAUDE.md. No fix under T-2698.
 
 ## Evolution
 
@@ -223,3 +254,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2698-config-registry-drift-2-keys-missing-fro.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:52:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
