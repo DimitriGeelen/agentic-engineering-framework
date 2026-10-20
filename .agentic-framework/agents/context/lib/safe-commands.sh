@@ -575,8 +575,22 @@ _fw_git_has_output_opt() {
     for w in $2; do
         [[ "$w" =~ ^--ou(t(p(u(t)?)?)?)?(=.*)?$ ]] && return 0
     done
-    return 1
+    # T-4485: those were RAW words. git gets the word after bash's quote removal and
+    # expansion, so "--output=F", --out\put=F, $o and ${O:---output=F} all hid the
+    # option. Any quote, backslash, $, backtick, glob or brace sends the words to
+    # lib/shell_write_scan.py git_output_risk — the write scanner's tokenizer, so both
+    # gates read the same words. Only its exit 3 ("no risk") clears; a missing
+    # python3 or library, or any error, keeps the command gated.
+    local _special="[]\$\`'\"\\\\*?[{]"
+    [[ "$2" =~ $_special ]] || return 1
+    python3 -I -c 'import sys
+sys.path.insert(0, sys.argv[1])
+import shell_write_scan as s
+sys.exit(1 if s.git_output_risk(sys.argv[2]) else 3)' "$_FW_SAFE_COMMANDS_LIB" "$2" 2>/dev/null
+    [ $? -eq 3 ] && return 1
+    return 0
 }
+_FW_SAFE_COMMANDS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../lib" 2>/dev/null && pwd)"
 
 # Single (non-compound) command classification. This is the original
 # is_bash_safe_command body, unchanged apart from the name.
