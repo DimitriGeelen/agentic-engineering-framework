@@ -1,10 +1,13 @@
 ---
 id: T-4499
-name: "Human-AC tick guard blocks fw sidecar send when the body quotes a git output-option command"
+name: "Human-AC tick guard blocks fw sidecar send when the body quotes a git output-option
+  command"
 description: >
-  dimitri-mint-dev msg ae5a4e7f: the guard refused a sidecar send because the message BODY contained an example git command with a variable output option. A peer message body is data, not a command; the guard should not scan the --body argument as shell.
+  dimitri-mint-dev msg ae5a4e7f: the guard refused a sidecar send because the message
+  BODY contained an example git command with a variable output option. A peer message
+  body is data, not a command; the guard should not scan the --body argument as shell.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T17:49:03Z
-last_update: 2026-10-20T17:49:03Z
-date_finished: null
+last_update: '2026-10-20T18:00:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T17:54:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T18:00:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=315,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4499: Human-AC tick guard blocks fw sidecar send when the body quotes a git output-option command
@@ -62,8 +93,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw sidecar send ... --body '<text>'` whose body quotes a git command with a variable `--output` option (or names `.tasks/` paths) is NOT refused by `lib/shell_write_scan.py` scan()
+- [x] Real writes in the same command line are still caught: a redirect/sed -i/git --output aimed at `.tasks/` outside the `--body` value, or a `--body "$(…)"` command substitution, still refuse
+- [x] Regression test covers both directions; T-4485 and T-3695 shell-write tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +280,13 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4499_sidecar_body_data.bats > /tmp/.t4499 2>&1 && ! grep -q "^not ok" /tmp/.t4499
+test "$(grep -c '# skip' /tmp/.t4499)" -eq 0
+timeout 600 bats tests/unit/t3695_human_ac_tick_bash.bats > /tmp/.t4499b 2>&1 && ! grep -q "^not ok" /tmp/.t4499b
+timeout 300 bats tests/unit/t4485_git_output_quoting.bats > /tmp/.t4499c 2>&1 && ! grep -q "^not ok" /tmp/.t4499c
+timeout 300 bats tests/unit/t4367_git_output_option.bats > /tmp/.t4499d 2>&1 && ! grep -q "^not ok" /tmp/.t4499d
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4499e 2>&1 && grep -q clean /tmp/.t4499e
+bin/fw vendor self --check --task T-4499
 
 ## RCA
 
@@ -264,6 +303,16 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** dimitri-mint-dev (msg ae5a4e7f) had `bin/fw sidecar send ... --body '<text>'` refused by the Human-AC tick guard ("SHELL WRITE TO A TASK FILE BLOCKED"). The body quoted an example like `` `git log --output="$F"` `` and named a `.tasks/` path. The hook wrapper (`agents/context/check-human-ac-tick.py` check_bash) only relays what the scanner says, so the scanner is what fired.
+
+**Root cause:** `lib/shell_write_scan.py` reads text inside single quotes as shell in two places. (1) `_tokens` runs `.replace("`", "\n")` over the whole command (about line 448), quotes included, so a backtick inside the quoted body split it, and `git log --output=$F` ended up as its own segment in command position. (2) `scan()` also scans every `_substitutions()` body. That function regex-scans `$(...)`/backticks anywhere, single quotes included, which its own comment accepts as "errs toward refusing". The git branch of `_segment` (T-4367/T-4485) then reported an unresolved `--output` target ($F). Because the command named a guarded path, that became a hit.
+
+**Why structurally allowed:** the T-4485 hardening made any `$` in a git diff-family argument fail closed. That was correct for commands, but it now also applied to the over-reading of single-quoted text, which used to be harmless in practice. No test sent a message body (prose with markdown backticks) through the scanner. Peer messages are the one routine Bash call whose argument is free prose about shell commands.
+
+**Fix:** `_blank_data_args` (new, runs first in `scan()`) walks the top-level words with the lexer's own quote helpers (`_skip_squote`, `_dquote`, `_backtick`, `_dollar`). For a `fw sidecar send` in command position, it blanks the interior of a `--body` value that is exactly one single-quoted string, in either the `--body 'x'` or `--body='x'` form. Double-quoted bodies, quote-attached values, other verbs, and anything with a heredoc or unbalanced text are left as they were, so they are still scanned.
+
+**Prevention:** `tests/unit/t4499_sidecar_body_data.bats` runs both directions through the real hook. Two allowed tests fail on the pre-fix scanner. Four refused tests cover a redirect or `sed -i` after a body, a double-quoted `$(…)`/backtick body, a quote-attached body, another verb, a fake `'` inside double quotes, and the bare git `--output` vector. New data-argument verbs are added in `_DATA_ARGS`.
 
 ## Evolution
 
@@ -345,3 +394,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4499-human-ac-tick-guard-blocks-fw-sidecar-se.md
 - **Context:** Initial task creation
+
+### 2026-10-20T17:54:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

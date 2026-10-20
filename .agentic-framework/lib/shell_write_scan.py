@@ -1122,12 +1122,95 @@ def _script_form(verb: str, seg_text: str, ctx: _Ctx) -> None:
         ctx.hits.append(Hit(f"{verb} script is handed a guarded path (the script itself is not inspected)"))
 
 
+# T-4499: argument values that are a message, not shell. `_tokens` turns every backtick
+# into a command break and `_substitutions` reads `$(...)`/`` `...` `` even inside single
+# quotes, so a peer message quoting `git log --output="$F"` was scanned as a git command.
+# Only a SINGLE-quoted value is data: in double quotes bash runs the substitutions itself.
+_DATA_ARGS = {("sidecar", "send"): {"--body"}}
+_FW_VERB = re.compile(r"^(?:\S*/)?fw$")
+
+
+def _top_words(s: str) -> list[list[tuple[int, int, str]]]:
+    """Top-level words of `s` as (start, end, raw) grouped into simple commands, walked with
+    the lexer's own quoting rules. Raises ParseError on a heredoc or unbalanced text."""
+    segs, i, n, start = [[]], 0, len(s), None
+    while i < n:
+        c = s[i]
+        if c in " \t\r" or c in ";&|()\n<>":
+            if start is not None:
+                segs[-1].append((start, i, s[start:i]))
+                start = None
+            if c in ";&|()\n":
+                segs.append([])
+            elif c in "<>":
+                if s.startswith("<<", i) and not s.startswith("<<<", i):
+                    raise ParseError("heredoc")
+            i += 1
+            continue
+        if c == "#" and start is None:
+            j = s.find("\n", i)
+            i = n if j < 0 else j
+            continue
+        if start is None:
+            start = i
+        if c == "\\":
+            i += 2
+        elif c == "'":
+            i = _skip_squote(s, i + 1)
+        elif s.startswith("$'", i):
+            i = _skip_ansi(s, i + 2)
+        elif c == '"':
+            i = _dquote(s, i + 1, [], [])
+        elif c == "`":
+            i = _backtick(s, i + 1, [], [])
+        elif c == "$":
+            i = _dollar(s, i, [], [])
+        else:
+            i += 1
+    if start is not None:
+        segs[-1].append((start, n, s[start:n]))
+    return [seg for seg in segs if seg]
+
+
+def _blank_data_args(command: str) -> str:
+    """`command` with the interior of each single-quoted data argument (_DATA_ARGS) blanked."""
+    try:
+        segs = _top_words(command)
+    except ParseError:
+        return command
+    spans = []
+    for seg in segs:
+        k = 0
+        while k < len(seg) and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", seg[k][2]):
+            k += 1
+        raw = [w[2] for w in seg[k:]]
+        if len(raw) < 3 or not _FW_VERB.match(raw[0]):
+            continue
+        opts = _DATA_ARGS.get((raw[1], raw[2]))
+        if not opts:
+            continue
+        for j in range(k + 3, len(seg)):
+            a, b, w = seg[j]
+            name, eq, val = w.partition("=")
+            if eq and name in opts:
+                a, w = a + len(name) + 1, val
+            elif not (w in opts and j + 1 < len(seg)):
+                continue
+            else:
+                a, b, w = seg[j + 1]
+            # exactly one single-quoted string, nothing attached
+            if len(w) >= 2 and w[0] == "'" and w.find("'", 1) == len(w) - 1:
+                spans.append((a + 1, b - 1))
+    return _blank(command, spans)
+
+
 def scan(command: str, cwd: str | None = None, project_root: str | None = None) -> list[Hit]:
     """Every reason `command` writes (or may write) a guarded path. Empty list = no write seen.
 
     `project_root` (T-4336): when given, a `.tasks` target provably outside it is not a
     guarded write. Without it every `.tasks` target is guarded, as before.
     """
+    command = _blank_data_args(command)
     guarded = _guarded_within(os.path.realpath(project_root)) if project_root else None
     ctx = _Ctx(cwd=cwd, mentions=mentions_guarded(command), guarded=guarded)
     try:
