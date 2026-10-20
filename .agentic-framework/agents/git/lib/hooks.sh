@@ -1463,12 +1463,12 @@ else
 fi
 if [ -n "$_version" ]; then
     _version="${_version#v}"
-    if [[ "$_version" == *-*-* ]]; then
-        _base="${_version%%-*}"
-        _rest="${_version#*-}"
-        _commits="${_rest%%-*}"
-        _major_minor="${_base%.*}"
-        _stamped="${_major_minor}.${_commits}"
+    # T-2961: same grammar as bin/fw _derive_version (T-4055) — v1.8.9-92-gabc
+    # → 1.8.9+92.gabc. The old <major.minor>.<commits> form dropped the tag's
+    # patch, so the third field was a distance that reset at every tag and
+    # 1.8.92 read "newer" than 1.8.10 (T-2925).
+    if [[ "$_version" =~ ^([0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)-(g[0-9a-f]+)$ ]]; then
+        _stamped="${BASH_REMATCH[1]}+${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
     else
         _stamped="$_version"
     fi

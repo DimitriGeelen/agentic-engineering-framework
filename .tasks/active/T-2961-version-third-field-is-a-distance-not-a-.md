@@ -7,7 +7,7 @@ description: >
   is byte-identical to the diagnosis. Closed inception archived the gap. Build the
   fix: stamp a comparable version or stop presenting the third field as a patch number.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T23:12:00Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: 2026-10-20T21:57:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,8 +86,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect re-checked at HEAD: the pre-push VERSION stamp (`agents/git/lib/hooks.sh:1470-1471`, untracked-VERSION branch) still composed `<major>.<minor>.<distance>` from `git describe`, discarding the tag's patch
+- [x] The stamp writes the same grammar as `bin/fw _derive_version` (T-4055): `vX.Y.Z-N-gSHA` → `X.Y.Z+N.gSHA`; an exact tag stays `X.Y.Z`
+- [x] Regression bats `tests/unit/t2961_prepush_version_stamp.bats` runs the shipped stamp block in a temp repo with an untracked VERSION and asserts the stamped value keeps the patch (3 of 4 tests fail against HEAD's hooks.sh; all 4 pass with the fix); the T-3821 control test that pinned the old `1.0.4` form now expects `1.0.0+4.g<sha>`
+- [x] `bin/fw vendor self --check --task T-2961` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -186,6 +188,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t2961_prepush_version_stamp.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+! grep -q '_major_minor=' agents/git/lib/hooks.sh
+python3 tools/bats-dead-negation-lint.py tests/unit/t2961_prepush_version_stamp.bats
+bash -n agents/git/lib/hooks.sh
+bin/fw vendor self --check --task T-2961
 
 ## RCA
 
@@ -202,6 +209,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** A project whose VERSION is untracked (generated) gets VERSION stamped on every push as `<major>.<minor>.<commits-since-tag>`, e.g. `v1.8.9-92-gabc` → `1.8.92`. The third field is a distance that resets at each tag, so `1.8.92` sorts "newer" than `1.8.10` and two stamped strings are not comparable (832's `1.6.354` vs `1.6.9`, T-2925).
+
+**Root cause:** `agents/git/lib/hooks.sh:1470-1471` (pre-push VERSION stamp): `_major_minor="${_base%.*}"; _stamped="${_major_minor}.${_commits}"` drops the base tag's patch and puts the distance in its place.
+
+**Why structurally allowed:** T-2925 closed as an inception with GO, and the GO archived the gap: no build slice was filed and nothing tracks an inception's GO through to a build. Later, T-4055 fixed the same derivation in `bin/fw _derive_version` (`X.Y.Z+N.gSHA`), but the pre-push stamp is a second copy of that logic and was not part of that fix. T-3821 then made the framework repo's own tracked VERSION skip the stamp, so this repo's VERSION stopped showing the symptom while consumer projects with an untracked VERSION still had it. No test drove the stamp.
+
+**Prevention:** The stamp now uses T-4055's grammar, and `tests/unit/t2961_prepush_version_stamp.bats` runs the real pre-push hook against a temp repo with an untracked VERSION and pins the stamped value. A source-level assertion also pins that the stamp and `_derive_version` use the same `X.Y.Z+N.gSHA` regex, so the two copies cannot drift apart again without a red test.
 
 ## Evolution
 
@@ -283,3 +298,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2961-version-third-field-is-a-distance-not-a-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:57:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

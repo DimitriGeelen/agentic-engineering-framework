@@ -123,6 +123,8 @@ _run_stamp_block() {
     git -C "$REPO" rm -q --cached VERSION; git -C "$REPO" commit -qm "untrack VERSION"
     _run_stamp_block
     [ "$status" -eq 0 ]
-    [[ "$output" =~ "VERSION stamped: 1.0.4" ]]
-    [ "$(cat "$REPO/VERSION")" = "1.0.4" ]
+    # T-2961: X.Y.Z+N.gSHA (T-4055 grammar), not the old 1.0.<distance>
+    sha=$(git -C "$REPO" rev-parse --short HEAD)
+    [[ "$output" =~ "VERSION stamped: 1.0.0+4.g$sha" ]]
+    [ "$(cat "$REPO/VERSION")" = "1.0.0+4.g$sha" ]
 }
