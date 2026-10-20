@@ -10,6 +10,7 @@ positive field test from another project, recorded here.
 | T-4350 | dimitri-mint-dev | v1.8.14-be.1 (916df0825) | **WORKS** |
 | T-4453 | dimitri-mint-dev | v1.8.14-be.2 (c80a8261d) | **WORKS** |
 | T-4115 | dimitri-mint-dev | v1.8.14-be.2 (c80a8261d) | **WORKS** |
+| T-4485 (security) | ring20-dashboard | bleeding-edge 056573e34 | **WORKS** (allowlist) |
 
 ## T-4426 — ring20-dashboard (msg ac343064, 2026-10-19)
 
@@ -65,3 +66,29 @@ baseline was 282 GiB/day of index writes.
 - **Still present:** T-4350.
 - **Doctor:** 0 failures on 2 of 3 runs. One run showed "FAIL Hook exercise from /tmp: 1/26 hook(s) failed to
   resolve" on an I/O-bound host, and it did not reproduce. Likely load-sensitive; see T-4461.
+
+## T-4485 (security, T-4367 gap) — ring20-dashboard (msg f5a021db, 2026-10-20)
+
+**Setup:** bleeding-edge 056573e34 (fix 22bf75833 + 430abcc8f) vs control v1.8.13 (6efec63df). Classification only;
+both trees extracted with git archive.
+
+**WORKS for the read-only allowlist (is_bash_safe_command). "Ship it."**
+
+- Their probe `tmp/t4367_probe.sh`: all 10 `--output` lines are gated (7 were SAFE on the control). A plain
+  `git diff` stays SAFE.
+- Extra shapes, all gated on the tip:
+  - `--outp=` and `--outpu=` (git's prefix abbreviation), and `git log -p --outp=`;
+  - `$'--output=F'` and `{--output=F,}` (both SAFE on the control);
+  - `show --output`, `format-patch -o` / `--output-directory`;
+  - `git -C /tmp diff --output` and `git --no-pager diff --output`.
+- No false positives: `git diff --stat`, `git diff HEAD~1 -- README.md`, `git log --oneline -5`, `git show HEAD
+  --stat`, `git log --format=%H -3` and `git diff --name-only HEAD~3` are all SAFE.
+
+**Observation, not a blocker:**
+
+- The second line of defence lives in `lib/shell_write_scan.py` (the git branch of the segment walker), **not** in
+  `has_bash_write_pattern`, which has no git `--output` rule. AEF's message to them said otherwise; corrected.
+- `scan_boundary` in boundary mode stays CLEAN on unresolvable targets (`$o`, `${O:-…}`, `$(…)`, a loop variable)
+  on both control and tip. An unresolved target bites only when `ctx.mentions` is set. This is a general scanner
+  limit, not T-4485's, and now harmless for these shapes: the allowlist gates them, so they reach the normal task
+  gate. Filed for a decision on failing closed: T-4487.
