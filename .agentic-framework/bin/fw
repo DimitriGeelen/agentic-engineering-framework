@@ -3291,6 +3291,12 @@ PY
                     . "$FRAMEWORK_ROOT/lib/continuous-mode.sh"
                     if _crl_live=$(fw_continuous_cli status 2>/dev/null); then
                         echo -e "         turn driver: ARMED ($(printf '%s' "$_crl_live" | sed -n 's/^  Reason (live): //p'))"
+                    elif [[ "$_crl_live" == *"Reason (live): state-unreadable-or-empty"* \
+                         || "$_crl_live" == *"Reason (live): .continuous-mode.yaml: enabled="*"(not armed)"* ]]; then
+                        # T-4358 (GH #101): never armed, or deliberately disarmed.
+                        # The wrapper logs `start` for every interactive session, so
+                        # this is the ordinary case, not the T-3225 lapsed-arm failure.
+                        echo -e "         turn driver: not armed (interactive session; arm with: bin/fw continuous arm --hours N --iterations N)"
                     else
                         echo -e "  ${YELLOW}WARN${NC}  ...but the TURN DRIVER is not armed — the loop takes no turns"
                         printf '%s\n' "$_crl_live" | sed -n 's/^  Reason (live): /         reason: /p'
