@@ -286,7 +286,54 @@ _rung_label = review_policy.rung_label
 # ── evidence: screenshots of the pages the task touched ──────────────────────
 
 _ROUTE_RE = re.compile(r"""@\w+\.route\(\s*["'](/[^"'<>]*)["']""")
-_URL_TOKEN_RE = re.compile(r"`(/[a-z][\w/.-]*)`")
+# T-4455: a criterion names pages as a backticked path with a query (`/search?q=a b`) or as
+# a full URL on this project's Watchtower, backticked or bare (http://<host>:3000/cron).
+_BACKTICK_RE = re.compile(r"`([^`\n]+)`")
+_PATH_QUERY_RE = re.compile(r"/[a-z][\w/.-]*(?:\?.*)?")
+_FULL_URL_RE = re.compile(r"https?://(?:<watchtower>|[\w.-]+)(?::\d+)?(?:/[^\s`<>()\[\]'\"]*)?")
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "<watchtower>"}
+
+
+def _page_of(path: str, query: str) -> str:
+    from urllib.parse import quote
+    page = path or "/"
+    if query:
+        page += "?" + quote(query.strip(), safe="=&+%/:,;@!$'*~-._")
+    return page
+
+
+def _own_page(url: str, own_netloc: str, own_port: str) -> str | None:
+    """Path+query of `url` when its origin is this project's Watchtower, else None (never foreign)."""
+    m = re.match(r"https?://((?:<watchtower>|[\w.-]+))(?::(\d+))?(/[^?#]*)?(?:\?([^#]*))?", url.strip())
+    if not m:
+        return None
+    host, port, path, query = m.group(1), m.group(2) or "", m.group(3) or "/", m.group(4) or ""
+    netloc = f"{host}:{port}" if port else host
+    if not (netloc == own_netloc or (host in _LOCAL_HOSTS and port == own_port)):
+        return None
+    return _page_of(path, query)
+
+
+def _criterion_pages(root: Path, body: str) -> list[str]:
+    from urllib.parse import urlsplit
+    own = urlsplit(_watchtower_url(root))
+    own_netloc = own.netloc
+    own_port = str(own.port) if own.port else review_policy.config_value(root, "PORT", "3000")
+    pages: list[str] = []
+    for span in _BACKTICK_RE.findall(body):
+        span = span.strip()
+        if _PATH_QUERY_RE.fullmatch(span):
+            path, _, query = span.partition("?")
+            pages.append(_page_of(path, query))
+        elif re.match(r"https?://", span):
+            p = _own_page(span, own_netloc, own_port)
+            if p:
+                pages.append(p)
+    for url in _FULL_URL_RE.findall(_BACKTICK_RE.sub(" ", body)):
+        p = _own_page(url.rstrip(".,;:!?"), own_netloc, own_port)
+        if p:
+            pages.append(p)
+    return pages
 
 
 def _changed_web_files(root: Path, task_id: str, text: str) -> list[str]:
@@ -305,7 +352,7 @@ def _pages_for(root: Path, task_id: str, task_text: str, criteria: list[dict]) -
     changed blueprints and of the blueprints rendering the changed templates."""
     pages: list[str] = []
     for c in criteria:
-        pages += _URL_TOKEN_RE.findall(c["body"])
+        pages += _criterion_pages(root, c["body"])
     changed = _changed_web_files(root, task_id, task_text)
     bp_dir = root / "web" / "blueprints"
     if bp_dir.is_dir():
