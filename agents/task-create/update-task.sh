@@ -72,11 +72,30 @@ _t2864_reconcile_index() {
 # the invariant (rename staged in index; episodic added separately below and
 # untracked). Opt out with FW_QUIET_NEXT_HINT=1 for scripted callers that
 # parse stdout.
+#
+# T-4094: printed once, from the end-of-script staging postcondition, with the
+# exact pathspec that was staged — not at the move site, where the episodic did
+# not exist yet and the "rename staged" claim was false for a never-committed
+# task (plain `mv`, nothing staged). Args: tid, then the paths to commit.
 _print_move_next_hint() {
     [ "${FW_QUIET_NEXT_HINT:-0}" = "1" ] && return 0
-    local tid="${1:-$TASK_ID}"
-    printf '  \xe2\x86\xb3 rename staged in index; episodic added below (untracked)\n'
-    printf "  \xe2\x86\xb3 next: git add .context/episodic/%s.yaml && git commit -m '%s: close ...' && git push\n" "$tid" "$tid"
+    local tid="$1"; shift
+    printf '  \xe2\x86\xb3 close staged in index: %s\n' "$*"
+    printf "  \xe2\x86\xb3 next: git commit -m '%s: close ...' -- %s && git push\n" "$tid" "$*"
+}
+
+# T-4094: remember what the archive move started from, so the postcondition
+# knows whether the old active/ path belongs in the commit pathspec. Only a path
+# present at HEAD does: a never-committed file has no deletion to record, and
+# naming it makes `git commit -- <path>` fail with "pathspec did not match".
+_t4094_note_move_source() {
+    _T4094_SRC="$1"
+    _T4094_SRC_AT_HEAD=0
+    local rel="${1#"$PROJECT_ROOT"/}"
+    if [ -n "$(git -C "$PROJECT_ROOT" ls-tree --name-only HEAD -- "$rel" 2>/dev/null)" ]; then
+        _T4094_SRC_AT_HEAD=1
+    fi
+    return 0
 }
 
 # Bypass policy (T-3586). Runs at the moment a --skip-* flag is CONSUMED — i.e. a gate
@@ -2041,6 +2060,7 @@ if [ -n "$NEW_STATUS" ]; then
                 # as an unstaged working-tree change that pollutes subsequent
                 # commits and requires a cleanup follow-up.
                 _t1863_orig="$TASK_FILE"
+                _t4094_note_move_source "$TASK_FILE"
                 if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
                     git -C "$PROJECT_ROOT" mv "$TASK_FILE" "$DEST" 2>/dev/null \
                         || mv "$TASK_FILE" "$DEST"
@@ -2073,7 +2093,7 @@ if [ -n "$NEW_STATUS" ]; then
                     exit 1
                 fi
                 echo -e "${GREEN}Moved to completed/${NC}"
-                _print_move_next_hint "$TASK_ID"
+                # T-4094: next-step hint is printed by the staging postcondition at the end.
 
                 # T-2345: clean orphan review marker — marker exists to unblock
                 # fw inception decide (T-973), moot once task is in completed/.
@@ -2716,6 +2736,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         if [ "$(dirname "$TASK_FILE")" != "$TASKS_DIR/completed" ]; then
             # T-1523: git mv when tracked so both rename sides stage atomically
             _t1863_orig="$TASK_FILE"
+            _t4094_note_move_source "$TASK_FILE"
             if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
                 git -C "$PROJECT_ROOT" mv "$TASK_FILE" "$DEST" 2>/dev/null \
                     || mv "$TASK_FILE" "$DEST"
@@ -2738,7 +2759,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 exit 1
             fi
             echo -e "${GREEN}Moved to completed/${NC}"
-            _print_move_next_hint "$TASK_ID"
+            # T-4094: next-step hint is printed by the staging postcondition at the end.
             # T-2345: clean orphan review marker — marker exists to unblock
             # fw inception decide (T-973), moot once task is in completed/.
             # Idempotent; sibling cleanup at lib/inception.sh:731.
@@ -3073,6 +3094,39 @@ fi
 if [ -n "${TASK_FILE:-}" ] && [ -f "$TASK_FILE" ] \
    && [ "$(dirname "$TASK_FILE")" = "$TASKS_DIR/completed" ]; then
     _sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"
+fi
+
+# === CLOSE-STAGING POSTCONDITION (T-4094, peer dimitri-mint-dev G-012) ===
+#
+# A task this run moved into completed/ leaves the run STAGED: the completed
+# file and its episodic are in the index, whatever their state before. Every
+# earlier close guard (T-1523 git mv, T-2864 reconcile, T-1863 orphan check)
+# starts from "is the source tracked?", so a task created and closed between
+# two commits — plain `mv`, nothing staged — fell through all of them and its
+# files stayed untracked for weeks: invisible to dup-task-scan (reads the
+# index) and to the handover commit (pathspec-scoped, T-3090).
+#
+# Staged, not committed: this script runs inside Watchtower's decide window
+# and beside other workers sharing one index. The hint names the exact
+# pathspec, so `git commit -- <paths>` takes these files and nothing else.
+if [ -n "${_T4094_SRC:-}" ] && [ -n "${TASK_FILE:-}" ] && [ -f "$TASK_FILE" ] \
+   && [ "$(dirname "$TASK_FILE")" = "$TASKS_DIR/completed" ] \
+   && git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+    _t4094_paths=()
+    for _t4094_p in "$TASK_FILE" "$CONTEXT_DIR/episodic/$TASK_ID.yaml"; do
+        [ -f "$_t4094_p" ] || continue
+        _t4094_rel="${_t4094_p#"$PROJECT_ROOT"/}"
+        git -C "$PROJECT_ROOT" add -- "$_t4094_rel" >/dev/null 2>&1 || true
+        if git -C "$PROJECT_ROOT" ls-files --error-unmatch -- "$_t4094_rel" >/dev/null 2>&1; then
+            _t4094_paths+=("$_t4094_rel")
+        else
+            echo -e "${YELLOW}WARNING: could not stage $_t4094_rel (ignored or index locked) — commit it by hand (T-4094)${NC}" >&2
+        fi
+    done
+    if [ "${_T4094_SRC_AT_HEAD:-0}" = 1 ]; then
+        _t4094_paths+=("${_T4094_SRC#"$PROJECT_ROOT"/}")
+    fi
+    [ "${#_t4094_paths[@]}" -gt 0 ] && _print_move_next_hint "$TASK_ID" "${_t4094_paths[@]}"
 fi
 
 echo ""

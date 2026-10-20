@@ -14,10 +14,10 @@ description: >
   closed tasks. Note: in this repo the same class showed up as the 'staged: N' surprises
   during 2026-10-12 closes.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, tasks, audit]
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "G-012"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T11:37:31Z
-last_update: '2026-10-12T11:46:08Z'
+last_update: 2026-10-20T11:42:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,14 +95,18 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Scope here: the update-task.sh close path (suggestion 2, staging half). The audit/doctor
+WARN on untracked .tasks/ / .context/episodic/ files (suggestion 1) lives outside
+agents/task-create and stays open for a follow-up.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Closing a task whose active/ file was never committed leaves `.tasks/completed/<file>` staged in the git index, not untracked
+- [x] The generated `.context/episodic/T-XXX.yaml` is staged in the same close
+- [x] The next-step hint names a pathspec-scoped commit covering the completed file and the episodic, plus the old active/ path only when that path was tracked
+- [x] Regression test `tests/unit/t4094_close_stages_untracked.bats` fails without the fix and passes with it; neighbouring update-task bats stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -136,6 +140,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+timeout 600 bats tests/unit/t4094_close_stages_untracked.bats > /tmp/.t4094.out 2>&1 && ! grep -q "^not ok" /tmp/.t4094.out
+test "$(grep -c '# skip' /tmp/.t4094.out)" -eq 0
+timeout 900 bats tests/unit/update_task_horizon_null_on_close.bats tests/unit/update_task_orphan_guard.bats > /tmp/.t4094n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4094n.out
+bash -n agents/task-create/update-task.sh
+python3 tools/bats-dead-negation-lint.py tests/unit/t4094_close_stages_untracked.bats > /tmp/.t4094l.out 2>&1 && grep -q clean /tmp/.t4094l.out
+bin/fw vendor self --check --task T-4094
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -268,6 +278,30 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** dimitri-mint-dev (1.8.9): 11 completed tasks + 3 episodics stayed untracked
+for 18-25 days. A task created and closed between two commits never reached history.
+
+**Root cause:** `agents/task-create/update-task.sh` moves the task with `git mv` only when
+the file is already tracked (the two archive sites, ~line 2039 and ~2717); for an untracked
+file it falls back to plain `mv`, and nothing afterwards stages the destination. The
+episodic written by `generate-episodic` (~2089 / ~2975) is never staged either.
+`_print_move_next_hint` (line 75) then says "rename staged in index" — false here — and its
+suggested `git add <episodic> && git commit` omits the completed task file. The handover
+commit is pathspec-scoped to its own files (T-3090), so no later step sweeps them up.
+
+**Why structurally allowed:** every existing close guard (T-1523 git mv, T-2864 index
+reconcile, T-1863 orphan check) is keyed on the file being TRACKED — each starts from
+`git ls-files --error-unmatch`. The never-committed population fails that predicate and
+falls through every guard silently; untracked files are invisible to `dup-task-scan`
+(reads `--cached`) and to the pathspec-scoped handover commit.
+
+**Prevention:** a location-keyed postcondition at the end of update-task.sh (beside the
+ARCHIVED-HORIZON INVARIANT): whenever the task ends in completed/, stage that file and its
+episodic whatever their prior tracking state, and print a commit hint whose pathspec names
+exactly those paths. Pinned by `tests/unit/t4094_close_stages_untracked.bats` (untracked case
++ tracked control). Residual: staging is not committing; the audit/doctor rail for untracked
+task/episodic files (suggestion 1) is still unbuilt.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -337,6 +371,11 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-20 — stage, do not commit
+- **Chose:** the close stages the completed file + episodic and prints a pathspec-scoped commit hint.
+- **Why:** update-task.sh runs inside Watchtower's 30 s decide window and under concurrent workers sharing one index; committing there would run every pre-commit hook mid-close, and the dispatch protocol has the parent commit the close.
+- **Rejected:** auto-commit inside work-completed (hooks, timing, shared index); staging in handover (outside this area; handover is pathspec-scoped by design, T-3090).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -362,3 +401,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4094-a-task-created-and-closed-between-two-co.md
 - **Context:** Initial task creation
+
+### 2026-10-20T11:42:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
