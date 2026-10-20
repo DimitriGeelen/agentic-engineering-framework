@@ -1,10 +1,16 @@
 ---
 id: T-4446
-name: "test_corpus_conformance_registry.py: registered test map now SKIPs (no state-carrier nodes) instead of PASS/DIVERGENT"
+name: "test_corpus_conformance_registry.py: registered test map now SKIPs (no state-carrier
+  nodes) instead of PASS/DIVERGENT"
 description: >
-  3 tests (test_registered_map_pass / _divergent / test_all_iterates_entries_and_reports_worst): conformance prints 'SKIP — test-map has no state-carrier nodes (aef:meta state=)'. The fixture map lost its state annotations or the rail changed what it judges. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or expectation drift from a deliberate change (update the test, say why).
+  3 tests (test_registered_map_pass / _divergent / test_all_iterates_entries_and_reports_worst):
+  conformance prints 'SKIP — test-map has no state-carrier nodes (aef:meta state=)'.
+  The fixture map lost its state annotations or the rail changed what it judges. Found
+  by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push (ratchet).
+  Still red at HEAD 2026-10-20. Decide: product regression (fix code) or expectation
+  drift from a deliberate change (update the test, say why).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T08:08:13Z
-last_update: 2026-10-20T08:08:13Z
-date_finished: null
+last_update: 2026-10-20T08:15:46Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T08:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T08:15:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4446: test_corpus_conformance_registry.py: registered test map now SKIPs (no state-carrier nodes) instead of PASS/DIVERGENT
@@ -62,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of the SKIP is localised to a file:line, and the RCA says whether it is a product regression or expectation drift
+- [x] test_registered_map_pass, test_registered_map_divergent and test_all_iterates_entries_and_reports_worst pass, and none of their PASS/DIVERGENT assertions is weakened
+- [x] A regression test pins the root cause (it fails without the fix)
+- [x] tests/unit/test_corpus_conformance_registry.py and the corpus_spec round-trip tests are green; vendor self --check --task T-4446 is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +284,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_corpus_conformance_registry.py -q > /tmp/.t4446.out 2>&1 && grep -q passed /tmp/.t4446.out
+bin/fw vendor self --check --task T-4446
+! grep -q 'xmlns:aef="https://aef.dev' tests/unit/test_corpus_conformance_registry.py
+python3 -m pytest tests/unit/test_corpus_conformance_registry.py -q -k "aef_namespace or foreign_namespace" > /tmp/.t4446b.out 2>&1 && grep -q "2 passed" /tmp/.t4446b.out
 
 ## RCA
 
@@ -264,6 +304,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** 3 tests in test_corpus_conformance_registry.py red in the 2026-10-20T01:03Z nightly: the rail printed `SKIP — test-map has no state-carrier nodes (aef:meta state=)` where they expected PASS/DIVERGENT.
+
+**Root cause:** expectation drift in a test fixture, not a product regression. The fixtures `_MINIMAL_BPMN` and `_GATEWAY_BPMN` (tests/unit/test_corpus_conformance_registry.py:28, :47) declared `xmlns:aef="https://aef.dev/schema/bpmn/1.0"`. The AEF namespace is `http://anchorpoint.framework/aef/extensions` (tools/corpus_spec.py:46), and every one of the 49 corpus maps declares it. The fixtures still worked because corpus_spec matched extension children by local name only. T-4387 (02b22dacb) deliberately keys them by namespace AND local name, so foreign children pass through `ext_raw`. After that change the fixture's `aef:meta` was foreign, `parse_map` gave `meta=None`, and `carrier_count` (tools/corpus_conformance.py:155) returned 0, which produced the SKIP. Real maps are unaffected.
+
+**Why structurally allowed:** T-4387 ran test_corpus_spec_roundtrip.py but not the conformance suite that consumes `parse_map`. Nothing tied the test fixtures to `corpus_spec.AEF_NS`, so the wrong namespace looked harmless until the parser got strict.
+
+**Prevention:** the fixtures now declare the real namespace, and two new tests cover the gap. `test_fixtures_declare_the_aef_namespace` fails if a fixture drifts from `corpus_spec.AEF_NS`. `test_state_meta_on_a_foreign_namespace_is_not_a_carrier` pins the T-4387 behaviour from the rail's side.
 
 ## Evolution
 
@@ -345,3 +392,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4446-testcorpusconformanceregistrypy-register.md
 - **Context:** Initial task creation
+
+### 2026-10-20T08:15:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

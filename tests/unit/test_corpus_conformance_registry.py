@@ -21,11 +21,18 @@ TOOL = FRAMEWORK_ROOT / "tools" / "corpus_conformance.py"
 
 sys.path.insert(0, str(FRAMEWORK_ROOT / "tools"))
 import corpus_conformance as cc  # noqa: E402
+import corpus_spec  # noqa: E402
+
+# T-4446: the fixtures declared xmlns:aef="https://aef.dev/schema/bpmn/1.0", which is
+# not the AEF namespace. That passed while corpus_spec matched extension children by
+# local name only; T-4387 keys them by namespace AND local name, so the fixture's
+# aef:meta became a foreign child and every map here read as "no state-carrier nodes".
+# They now declare corpus_spec.AEF_NS (pinned by test_fixtures_declare_the_aef_namespace).
 
 
 _MINIMAL_BPMN = """<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
-                  xmlns:aef="https://aef.dev/schema/bpmn/1.0"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
                   id="defs_test" targetNamespace="https://aef.dev/test">
   <bpmn:process id="proc_test" isExecutable="false">
     <bpmn:startEvent id="n_start" name="start">
@@ -44,7 +51,7 @@ _MINIMAL_BPMN = """<?xml version="1.0" encoding="UTF-8"?>
 # outgoing branches whose labels jointly cover {alpha, beta, gamma}.
 _GATEWAY_BPMN = """<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
-                  xmlns:aef="https://aef.dev/schema/bpmn/1.0"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
                   id="defs_gw" targetNamespace="https://aef.dev/test">
   <bpmn:process id="proc_gw" isExecutable="false">
     <bpmn:startEvent id="g_start" name="start"/>
@@ -321,3 +328,20 @@ def test_default_map_arg_preserved():
     proc = _run(FRAMEWORK_ROOT)
     assert proc.returncode == 0, proc.stderr
     assert "aef-task-lifecycle" in proc.stdout
+
+
+# ── T-4446: the fixtures must speak the real AEF namespace ──────────────────
+
+def test_fixtures_declare_the_aef_namespace():
+    """A fixture on the wrong namespace makes every carrier vanish and the rail SKIP,
+    which reads as a rail problem rather than a fixture problem."""
+    for xml in (_MINIMAL_BPMN, _GATEWAY_BPMN):
+        assert f'xmlns:aef="{corpus_spec.AEF_NS}"' in xml
+
+
+def test_state_meta_on_a_foreign_namespace_is_not_a_carrier():
+    """T-4387 behaviour, pinned from the rail's side: aef:meta state= only counts in
+    the AEF namespace. A foreign-namespace one is passed through, not judged."""
+    foreign = _MINIMAL_BPMN.replace(corpus_spec.AEF_NS, "https://example.invalid/not-aef")
+    assert cc.carrier_count(corpus_spec.parse_map(foreign)) == 0
+    assert cc.carrier_count(corpus_spec.parse_map(_MINIMAL_BPMN)) == 2
