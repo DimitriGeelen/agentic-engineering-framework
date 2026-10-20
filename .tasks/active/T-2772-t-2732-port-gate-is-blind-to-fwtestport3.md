@@ -102,7 +102,7 @@ bvp_scores_proposed:
 - [x] Discriminator kept: a line that resolves the port (`fw watchtower url|port`, `fw config get PORT`, `$WT_PORT`…) still passes; `PORT=30001`, `PORT=4000` and `$PORT == 3000` comparisons are not flagged
 - [ ] Regression tests in tests/unit/verification_port_hardcode.bats carry the T-1960/T-1961 corpus line, fail without the fix, pass with it; whole file green (new tests green; test 8 red until T-1963/T-2082 lines are rewritten — see RCA sweep)
 - [x] Corpus swept for the env-var shape; every live carrier in an active task's `## Verification` named in this task (with disposition)
-- [ ] `bin/fw vendor self --check --task T-2772` clean
+- [x] `bin/fw vendor self --check --task T-2772` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
