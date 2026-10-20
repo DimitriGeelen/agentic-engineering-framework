@@ -2,9 +2,14 @@
 id: T-4501
 name: "corpus derive refuses bpmn:boundaryEvent (parse_map unsupported tag)"
 description: >
-  832 designer-saved goldens (github mirror workflow-designer bleeding-edge 80eb425, tests/goldens/third-party/): boundary-events and kitchen-sink both fail corpus derive with 'unsupported BPMN element <bpmn:boundaryEvent>'. Same class as T-4374/T-4488/T-4495: add a lossless round trip for boundaryEvent (attachedToRef, cancelActivity, event definitions) in tools/corpus_spec.py with a regression test. Same file as T-4495/T-4496: after those land.
+  832 designer-saved goldens (github mirror workflow-designer bleeding-edge 80eb425,
+  tests/goldens/third-party/): boundary-events and kitchen-sink both fail corpus derive
+  with 'unsupported BPMN element <bpmn:boundaryEvent>'. Same class as T-4374/T-4488/T-4495:
+  add a lossless round trip for boundaryEvent (attachedToRef, cancelActivity, event
+  definitions) in tools/corpus_spec.py with a regression test. Same file as T-4495/T-4496:
+  after those land.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T18:30:22Z
-last_update: 2026-10-20T18:30:22Z
-date_finished: null
+last_update: 2026-10-20T19:05:40Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T18:45:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T18:46:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4501: corpus derive refuses bpmn:boundaryEvent (parse_map unsupported tag)
@@ -62,8 +95,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `parse_map` accepts `bpmn:boundaryEvent` (type `boundary`): `attachedToRef` → `attached_to`, `cancelActivity` → `cancel_activity` (as authored, only when present), event definitions kept verbatim as raw_children; `emit_map` re-emits all three
+- [x] A boundaryEvent with no `attachedToRef`, or one naming no activity node in the map, is a hard error at parse and at emit (never emitted dangling)
+- [x] Regression tests: fixture tests/fixtures/corpus-832-goldens/boundary-events.bpmn (copied from 832's designer-saved golden) derives with 0 refusals and round trips with the same boundaryEvent count, attachedToRef/cancelActivity values, canonical identity and a stable second pass; an inline map with a timerEventDefinition and cancelActivity="false" round trips; dangling/missing attachedToRef refuse. Fail without the fix (7 failed on stashed source)
+- [x] tests/unit/test_corpus_spec_roundtrip.py green, plus the neighbours that key on the type table: corpus_lint NODE_OCCUPANCY gains `boundary` (test_every_spec_type_has_an_occupancy_entry) and test_importer_fidelity's "unsupported identified process child" probe moves from boundaryEvent to complexGateway (still unsupported)
+- [x] `bin/fw vendor self --check --task T-4501` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +284,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 tools/corpus_spec.py derive tests/fixtures/corpus-832-goldens/boundary-events.bpmn > /tmp/.t4501.yaml 2>&1 && grep -q "attached_to: lan_1_subprocess" /tmp/.t4501.yaml
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k boundary > /tmp/.t4501p.out 2>&1 && grep -q passed /tmp/.t4501p.out
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q > /tmp/.t4501a.out 2>&1 && grep -q passed /tmp/.t4501a.out
+bin/fw vendor self --check --task T-4501
 
 ## RCA
 
@@ -264,6 +304,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `corpus_spec derive` on 832's designer-saved goldens boundary-events and kitchen-sink refused with `parse: unsupported BPMN element <bpmn:boundaryEvent …>`.
+
+**Root cause:** tools/corpus_spec.py TYPE_TO_TAG (:49) had no entry for boundaryEvent, so parse_map's T-2614 guard (the `raise SystemExit("parse: unsupported BPMN element …")` branch at the end of the process loop) refused it. Supporting the tag also needed its two unprefixed attributes: parse_map keeps only namespace-qualified attrs (T-4389) plus `default` (T-4399), so attachedToRef/cancelActivity would otherwise have been dropped silently on round trip.
+
+**Why structurally allowed:** the type table grows one tag at a time, as each real third-party map is tried (T-4374 callActivity, T-4488 task, T-4495 businessRuleTask). The refusal is the designed behaviour, and it worked: it was loud, not lossy. No corpus map so far used boundary events.
+
+**Prevention:** the tag is supported with an explicit host check (`_check_boundary_hosts`, at parse and emit), so a boundary event can never be emitted pointing at a missing or non-activity host. Regression tests: the 832 golden fixture round-trips with canonical identity, and inline maps cover an event definition, non-interrupting, absent cancelActivity and dangling hosts. The next gap on kitchen-sink (`bpmn:manualTask`) still refuses loudly; it is not dropped.
 
 ## Evolution
 
@@ -345,3 +393,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4501-corpus-derive-refuses-bpmnboundaryevent-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T19:05:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -462,6 +462,7 @@ NODE_OCCUPANCY = {
     "call": 64,                                        # T-4445: callActivity (T-4374) is an activity box
     "task": 64,                                        # T-4488: plain bpmn:task is an activity box too
     "business-rule": 64,                               # T-4495: businessRuleTask, same activity box
+    "boundary": 36 + 18,                               # T-4501: boundaryEvent, event circle, name below
 }
 
 # 832: LANE_FIT_MARGIN = 12, applied at BOTH edges, so the height at which a lane is

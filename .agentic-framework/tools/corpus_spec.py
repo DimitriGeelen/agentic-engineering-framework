@@ -72,6 +72,10 @@ TYPE_TO_TAG = {
     # T-4495: decision-table activity (832 kitchen-sink.bpmn), round-trip only —
     # AEF evaluates no DMN; re-emitted as authored, like the plain task above.
     "business-rule": "businessRuleTask",
+    # T-4501: event attached to an activity's boundary (832 boundary-events /
+    # kitchen-sink goldens), round-trip only. attachedToRef + cancelActivity
+    # are carried as fields; event definitions ride raw_children verbatim.
+    "boundary": "boundaryEvent",
 }
 TAG_TO_TYPE = {v: k for k, v in TYPE_TO_TAG.items()}
 
@@ -344,6 +348,10 @@ def parse_map(xml_text: str) -> dict:
             }
             if local in DEFAULT_FLOW_TAGS and el.get("default"):
                 n["default"] = el.get("default")
+            if local == "boundaryEvent":
+                n["attached_to"] = el.get("attachedToRef")
+                if el.get("cancelActivity") is not None:
+                    n["cancel_activity"] = el.get("cancelActivity")
             # T-4389: namespace-qualified attributes (camunda:asyncBefore, …)
             # with the source prefix and the declaration they need.
             for key, val in el.attrib.items():
@@ -435,6 +443,7 @@ def parse_map(xml_text: str) -> dict:
     spec["nodes"] = nodes
     spec["flows"] = flows
     _check_default_flows(spec, "parse")
+    _check_boundary_hosts(spec, "parse")
     return spec
 
 
@@ -455,6 +464,27 @@ def _check_default_flows(spec: dict, where: str) -> None:
                        f"not \"{n['id']}\"")
     if bad:
         raise SystemExit(f"{where}: " + "; ".join(bad))
+
+
+#: Node types a boundaryEvent may attach to (BPMN tActivity subclasses).
+_ACTIVITY_TYPES = {"service", "user", "script", "subprocess", "call", "task",
+                   "business-rule"}
+
+
+def _check_boundary_hosts(spec: dict, where: str) -> None:
+    """T-4501: attachedToRef is required and must name an activity in this map;
+    a boundary event emitted against a missing host is a dangling reference."""
+    types = {n["id"]: n["type"] for n in spec.get("nodes", [])}
+    for n in spec.get("nodes", []):
+        if n["type"] != "boundary":
+            continue
+        host = n.get("attached_to")
+        if not host:
+            raise SystemExit(f"{where}: boundaryEvent {n['id']} has no attachedToRef")
+        if types.get(host) not in _ACTIVITY_TYPES:
+            raise SystemExit(
+                f"{where}: boundaryEvent {n['id']} attachedToRef={host!r} names "
+                f"no activity in this map (found: {types.get(host) or 'nothing'})")
 
 
 def _dim(v: str):
@@ -563,6 +593,7 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         raise SystemExit("generate: " + "; ".join(
             f"{f['node']}: {f['message']}" for f in errors))
     _check_default_flows(spec, "generate")
+    _check_boundary_hosts(spec, "generate")
     mid = spec["id"]
     L = []
     a = L.append
@@ -647,6 +678,10 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
             name_attr += f" calledElement={quoteattr(n['called_element'])}"
         if n.get("default"):
             name_attr += f" default={quoteattr(n['default'])}"
+        if n["type"] == "boundary":
+            name_attr += f" attachedToRef={quoteattr(n['attached_to'])}"
+            if n.get("cancel_activity") is not None:
+                name_attr += f" cancelActivity={quoteattr(n['cancel_activity'])}"
         name_attr += "".join(f" xmlns:{p}={quoteattr(u)}"
                              for p, u in n.get("xmlns", {}).items())
         name_attr += "".join(f" {k}={quoteattr(v)}"

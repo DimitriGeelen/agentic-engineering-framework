@@ -561,3 +561,74 @@ def test_generate_missing_id_refuses_naming_the_id(tmp_path, id_line):
         corpus_spec.main(["generate", str(p)])
     msg = str(e.value)
     assert "needs an id" in msg and "`id:`" in msg
+
+
+# ── T-4501: bpmn:boundaryEvent (832 boundary-events / kitchen-sink goldens) ──
+
+GOLDENS = REPO_ROOT / "tests" / "fixtures" / "corpus-832-goldens"
+
+
+def test_boundary_events_golden_derives_and_round_trips():
+    src = (GOLDENS / "boundary-events.bpmn").read_text()
+    spec = corpus_spec.parse_map(src)  # was: SystemExit "unsupported BPMN element"
+    b = {n["id"]: n for n in spec["nodes"] if n["type"] == "boundary"}
+    assert sorted(b) == ["lan_link_batman", "lan_link_superman", "lan_link_wonder"]
+    assert b["lan_link_batman"]["attached_to"] == "lan_1_subprocess"
+    assert b["lan_link_superman"]["attached_to"] == "lan_3_task"
+    assert all(n["cancel_activity"] == "true" for n in b.values())
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert out.count("<bpmn:boundaryEvent ") == src.count("<bpmn:boundaryEvent ") == 3
+    assert 'attachedToRef="lan_3_task" cancelActivity="true"' in out
+    assert corpus_spec.canonical(out) == corpus_spec.canonical(src)
+    spec2 = corpus_spec.parse_map(out)
+    assert corpus_spec.emit_map(spec2, version=1, compat_alias=False) == out
+
+
+def _boundary_xml(attrs='attachedToRef="t1" cancelActivity="false"'):
+    return HEAD + (
+        '<bpmn:startEvent id="s1"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>'
+        '<bpmn:task id="t1"><bpmn:incoming>f1</bpmn:incoming></bpmn:task>'
+        f'<bpmn:boundaryEvent id="b1" name="timeout" {attrs}>'
+        '<bpmn:outgoing>f2</bpmn:outgoing>'
+        '<bpmn:timerEventDefinition id="TED_1">'
+        '<bpmn:timeDuration>PT5M</bpmn:timeDuration></bpmn:timerEventDefinition>'
+        '</bpmn:boundaryEvent>'
+        '<bpmn:endEvent id="e1"><bpmn:incoming>f2</bpmn:incoming></bpmn:endEvent>'
+        '<bpmn:sequenceFlow id="f1" sourceRef="s1" targetRef="t1"/>'
+        '<bpmn:sequenceFlow id="f2" sourceRef="b1" targetRef="e1"/>'
+    ) + TAIL
+
+
+def test_boundary_event_definition_and_non_interrupting_round_trip():
+    src = _boundary_xml()
+    spec = corpus_spec.parse_map(src)
+    b = next(n for n in spec["nodes"] if n["id"] == "b1")
+    assert b["cancel_activity"] == "false"
+    assert len(b["raw_children"]) == 1 and "timerEventDefinition" in b["raw_children"][0]
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert 'attachedToRef="t1" cancelActivity="false"' in out
+    assert "PT5M" in out and "<bpmn:outgoing>f2</bpmn:outgoing>" in out
+    spec2 = corpus_spec.parse_map(out)
+    assert spec2["nodes"] == spec["nodes"] and spec2["flows"] == spec["flows"]
+
+
+def test_boundary_event_cancel_activity_absent_stays_absent():
+    spec = corpus_spec.parse_map(_boundary_xml('attachedToRef="t1"'))
+    b = next(n for n in spec["nodes"] if n["id"] == "b1")
+    assert "cancel_activity" not in b
+    assert "cancelActivity" not in corpus_spec.emit_map(spec, version=1, compat_alias=False)
+
+
+@pytest.mark.parametrize("attrs", ['', 'attachedToRef="nope"', 'attachedToRef="s1"'])
+def test_boundary_event_without_activity_host_is_a_hard_error(attrs):
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.parse_map(_boundary_xml(attrs))
+    assert "b1" in str(e.value) and "attachedToRef" in str(e.value)
+
+
+def test_boundary_event_dangling_host_is_checked_at_emit_too():
+    spec = corpus_spec.parse_map(_boundary_xml())
+    next(n for n in spec["nodes"] if n["id"] == "b1")["attached_to"] = "gone"
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert "generate" in str(e.value) and "gone" in str(e.value)
