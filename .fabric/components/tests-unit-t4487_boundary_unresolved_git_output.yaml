@@ -1,0 +1,21 @@
+id: tests/unit/t4487_boundary_unresolved_git_output.bats
+name: t4487_boundary_unresolved_git_output
+type: script
+subsystem: tests
+location: tests/unit/t4487_boundary_unresolved_git_output.bats
+tags: []
+
+purpose: "T-4487: scan_boundary (the project-boundary hook's write scanner) stayed CLEAN on a git diff-family --output target it cannot resolve from the text — `$o` set earlier in the same command, `${O:---output=/etc/x}`, `$(echo --output=/etc/x)`…"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

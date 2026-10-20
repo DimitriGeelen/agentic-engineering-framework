@@ -105,7 +105,7 @@ bvp_scores_proposed:
 - [x] scan_boundary returns a hit for `o=--output=/etc/x; git diff $o`, `git diff ${O:---output=/etc/x}`, `git diff $(echo --output=/etc/x)` and `for o in --output=/etc/x; do git diff $o; done` with the project as cwd and guarded = outside the project
 - [x] scan_boundary stays clean for unresolved diff-family arguments that name no outside path (`git diff $BASE..HEAD`, `git log $(git merge-base HEAD master)..HEAD`, `git show $sha -- lib/x.py`) and for redirects to /tmp
 - [x] Regression bats test covers both directions and fails without the fix; t4485_git_output_quoting.bats, t4367_git_output_option.bats, t4499_sidecar_body_data.bats and check_project_boundary.bats stay green
-- [ ] Vendored copy synced (`bin/fw vendor self --check --task T-4487` clean)
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4487` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
