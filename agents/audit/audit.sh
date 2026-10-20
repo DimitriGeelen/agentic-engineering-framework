@@ -6135,6 +6135,7 @@ echo "=== RESEARCH PERSISTENCE OE CHECKS ==="
 # The two populations are counted and reported separately so widening the set does
 # not silently inflate a number the operator has learned to read one way.
 c001_missing=0
+c001_unreferenced=0
 if [ -n "$ACTIVE_SCAN" ]; then
     while IFS='|' read -r task_id issue_type issue_reason artifact_name; do
         [ -z "$task_id" ] && continue
@@ -6152,6 +6153,7 @@ if [ -n "$ACTIVE_SCAN" ]; then
             warn "C-001: Inception $task_id ($issue_reason) has artifact but task doesn't reference it" \
                  "$artifact_name exists but not linked in task Updates" \
                  "Add artifact reference to ## Updates section of $task_id"
+            c001_unreferenced=$((c001_unreferenced + 1))
         fi
     done < <(echo "$ACTIVE_SCAN" | python3 -c "
 import sys, json
@@ -6172,7 +6174,9 @@ print('%d|%d|%d|%d' % (
 " 2>/dev/null || echo "0|0|0|0")
 IFS='|' read -r _c001_n_started _c001_miss_started _c001_n_rec _c001_miss_rec <<< "$_c001_counts"
 
-if [ "$c001_missing" -eq 0 ]; then
+# T-3143: the PASS needs no C-001 issue of either kind — an unreferenced artefact
+# WARNs above, and a PASS beside it contradicts that WARN.
+if [ "$c001_missing" -eq 0 ] && [ "$c001_unreferenced" -eq 0 ]; then
     if [ $((_c001_n_started + _c001_n_rec)) -gt 0 ]; then
         pass "C-001: All inceptions have research artifacts — $_c001_n_started started-work, $_c001_n_rec awaiting decision"
     else

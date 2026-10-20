@@ -7,7 +7,7 @@ description: >
   the counter at zero and the PASS line fires in the same run. Found by T-3138 reviving
   a dead assertion in tests/unit/t3073_c001_recommendation_bearing_inceptions.bats:329.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T20:30:30Z
-last_update: '2026-08-25T20:45:13Z'
+last_update: 2026-10-20T21:52:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -71,14 +71,19 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reproduced at HEAD 2026-10-20: the oe-research section of `agents/audit/audit.sh`
+counts only `issue_type=missing` into `c001_missing`, so a corpus whose only C-001
+issue is "has artifact but task doesn't reference it" prints that WARN and then
+`[PASS] C-001: All inceptions have research artifacts` in the same run.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] C-001 PASS line is emitted only when the scan reports no C-001 issue at all (missing OR unreferenced)
+- [x] Regression bats test: unreferenced-only fixture prints the WARN and does NOT print the PASS line (fails before the fix)
+- [x] Existing t3073 C-001 bats suite still green
+- [x] `bin/fw vendor self --check --task T-3143` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -171,6 +176,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t3143_c001_no_pass_beside_warn.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t3073_c001_recommendation_bearing_inceptions.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check --task T-3143
 
 ## RCA
 
@@ -187,6 +195,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw audit --section oe-research` printed `[WARN] C-001: Inception T-X (...) has artifact but task doesn't reference it` and, in the same run, `[PASS] C-001: All inceptions have research artifacts`.
+
+**Root cause:** `agents/audit/audit.sh` (oe-research section, `if [ "$c001_missing" -eq 0 ]`, ~line 6175) gated the PASS on `c001_missing` alone; the `unreferenced` branch of the issue loop warned but incremented no counter, so a corpus whose only C-001 issues were unreferenced artefacts reached the PASS branch.
+
+**Why structurally allowed:** the PASS predicate and the WARN emissions were derived from different things — PASS from one counter, WARN from each issue row. The only test that could have seen it (t3073 "clean corpus passes", ~line 329) carried an inert negated assertion until T-3138 revived it, and that revival fixed the fixture rather than the audit.
+
+**Prevention:** the PASS now requires both `c001_missing` and a new `c001_unreferenced` counter to be zero; `tests/unit/t3143_c001_no_pass_beside_warn.bats` pins "C-001 WARN present ⇒ C-001 PASS absent" for an unreferenced-only corpus, with a positive control (referenced artefact ⇒ PASS, no WARN).
 
 ## Evolution
 
@@ -268,3 +284,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3143-audit-c-001-emits-pass-all-inceptions-ha.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:52:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
