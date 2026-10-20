@@ -228,6 +228,19 @@ def ever_in_source_history(source, includes):
     return {l for l in out.splitlines() if l}
 
 
+def source_commit(source):
+    """Full sha of the source checkout's HEAD, or None (T-3136)."""
+    if not os.path.exists(os.path.join(source, ".git")):
+        return None
+    try:
+        out = subprocess.run(["git", "-C", source, "rev-parse", "--verify", "HEAD"],
+                             capture_output=True, text=True, timeout=30, check=True).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+    out = out.strip()
+    return out if len(out) in (40, 64) and all(c in "0123456789abcdef" for c in out) else None
+
+
 def read_lines(path):
     with open(path, encoding="utf-8") as fh:
         return [l.rstrip("\n") for l in fh if l.strip() and not l.lstrip().startswith("#")]
@@ -418,11 +431,18 @@ def cmd_post(a):
         p = os.path.join(dest, extra)
         if os.path.isfile(p) and extra not in files:
             files[extra] = digest(p)
+    stamp = {"schema": 1, "source": "fw vendor (T-3850)",
+             "written_at": datetime.datetime.now(datetime.timezone.utc)
+             .strftime("%Y-%m-%dT%H:%M:%SZ"),
+             "files": files}
+    # T-3136: the base commit this copy was vendored from, so a consumer can
+    # diff its copy against pristine (`git diff <source_commit>`) instead of
+    # re-deriving the base. Absent when the source is not a git checkout.
+    commit = source_commit(a.source)
+    if commit:
+        stamp["source_commit"] = commit
     with open(os.path.join(dest, STAMP), "w", encoding="utf-8") as fh:
-        json.dump({"schema": 1, "source": "fw vendor (T-3850)",
-                   "written_at": datetime.datetime.now(datetime.timezone.utc)
-                   .strftime("%Y-%m-%dT%H:%M:%SZ"),
-                   "files": files}, fh, indent=0, sort_keys=True)
+        json.dump(stamp, fh, indent=0, sort_keys=True)
         fh.write("\n")
     print(f"  ✓ {STAMP} ({len(files)} files)")
     return rc

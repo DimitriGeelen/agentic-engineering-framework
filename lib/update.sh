@@ -131,6 +131,13 @@ _do_update_vendored() {
 
     local old_version
     old_version=$(cat "$vendored_dir/VERSION" 2>/dev/null || echo "unknown")
+    # T-3136: the upstream commit this copy was vendored from (vendor stamp,
+    # lib/vendor_preserve.py). Empty for copies vendored before it was recorded.
+    local old_base=""
+    if [ -f "$vendored_dir/.fw-vendor-stamp.json" ]; then
+        old_base=$(grep -o '"source_commit": *"[0-9a-f]*"' "$vendored_dir/.fw-vendor-stamp.json" 2>/dev/null \
+            | head -1 | sed 's/.*"\([0-9a-f]*\)"$/\1/' || true)
+    fi
 
     # Get upstream URL from .framework.yaml
     local upstream_url=""
@@ -165,6 +172,11 @@ _do_update_vendored() {
     echo "  Project:   $project_root"
     echo "  Vendored:  $vendored_dir"
     echo "  Current:   v${old_version}"
+    if [ -n "$old_base" ]; then
+        echo "  Base:      ${old_base:0:12} (upstream commit this copy was vendored from)"
+    else
+        echo "  Base:      not recorded (vendored before T-3136; the next vendor records it)"
+    fi
     echo "  Upstream:  $clone_url"
     echo "  Branch:    $target_branch"
     echo ""

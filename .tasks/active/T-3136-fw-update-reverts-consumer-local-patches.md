@@ -11,7 +11,7 @@ description: >
   001-CashWeb (their T-111), who lost a carried bin/fw patch and found it only because
   a gate happened to cover it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -29,7 +29,7 @@ related_tasks: [T-3135]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T08:59:35Z
-last_update: '2026-08-25T09:00:20Z'
+last_update: 2026-10-20T21:23:43Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,14 +75,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Rechecked at HEAD 2026-10-20. Most of this was fixed by T-3850 (`lib/vendor_preserve.py`, commit 3698a44c1), which `fw update` reaches through `do_vendor`. Every vendor now writes `.agentic-framework/.fw-vendor-stamp.json`, which holds the sha256 of every file it wrote. The next vendor compares against those hashes. A locally edited file such as a carried `bin/fw` patch is named ("edited locally — would be OVERWRITTEN") and the vendor refuses (exit 3) unless the file is listed in `.fwvendor-preserve.yaml` or `--allow-delete-locals` is given. Copies go to timestamped `.context/working/vendor-backup/<ts>/` dirs, which are never rm -rf'd by the next update. Still open: the stamp records file hashes but not the upstream commit the copy came from. `new_hash` is still only displayed, so "diff vs pristine" means re-deriving the base by hand.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Evidence at HEAD: a local `bin/fw` patch makes a re-vendor refuse and stay unwritten (covered by T-3850; pinned by a new test here)
+- [x] The vendor stamp records `source_commit` (the full sha of the vendored source HEAD) when the source is a git checkout, and omits it otherwise
+- [x] `fw update` shows the vendored base commit next to the current version, read from the stamp
+- [x] Regression test `tests/unit/t3136_vendor_base_commit.bats` fails without the fix and passes with it; t3850 + lib_update suites still green; `bin/fw vendor self --check --task T-3136` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -175,6 +177,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t3136_vendor_base_commit.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t3850_vendor_preserve_locals.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/lib_update.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 -m py_compile lib/vendor_preserve.py
+bash -n lib/update.sh
+bin/fw vendor self --check --task T-3136
 
 ## RCA
 
@@ -191,6 +199,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** consumer 001-CashWeb (their T-111) ran `fw update` and lost a carried `bin/fw` patch with no warning. They found out only because a gate happened to cover the patched behaviour. Nothing recorded which upstream commit the copy was based on, so they could not diff against pristine.
+
+**Root cause:** two parts. (1) `do_vendor` mirrored the include dirs wholesale with no record of what it had written, so a local edit could not be told apart from an upstream change. T-3850 fixed this (3698a44c1, `lib/vendor_preserve.py`): the sha256 stamp, the refusal (exit 3) and the timestamped `.context/working/vendor-backup/` copies. The bin/fw case is now pinned by test 4 here. (2) The stamp written in `cmd_post` (`lib/vendor_preserve.py`, the json.dump block) recorded file hashes but not the source commit. `lib/update.sh` computes `new_hash` but only prints it. So the copy carried no base commit.
+
+**Why structurally allowed:** vendoring was treated as a copy operation, not a versioned deployment. No artefact carried "this copy = upstream commit X", and no test asserted provenance. VERSION alone cannot serve as the base: between releases it names many commits.
+
+**Prevention:** the stamp now carries `source_commit` (full sha, from `git rev-parse --verify HEAD` on the source), and `fw update` prints it as `Base:` (or "not recorded" for older copies). `tests/unit/t3136_vendor_base_commit.bats` asserts this. 4 of its 6 tests fail on the pre-fix libs; the T-3850 pin and the non-git case pass on both.
 
 ## Evolution
 
@@ -272,3 +288,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3136-fw-update-reverts-consumer-local-patches.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:23:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
