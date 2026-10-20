@@ -1,13 +1,22 @@
 ---
 id: T-4465
-name: "A partial-complete task's re-close does not apply a green reviewer verdict: 'fw reviewer verdict apply' must be run by hand first"
+name: "A partial-complete task's re-close does not apply a green reviewer verdict:
+  'fw reviewer verdict apply' must be run by hand first"
 description: >
-  2026-10-20, T-4347: fw reviewer judge recorded a green verdict (V-20261020-731df74c, committed by the reviewer identity in 262a7eeb5). 'fw task update T-4347 --status work-completed' on the already partial-complete task printed 'Re-checking partial-complete status... Still 1/5 ACs unchecked' and did not tick it. 'bin/fw reviewer verdict apply T-4347' then ticked AC1 and handed ownership over, and the close passed. CLAUDE.md (§Human Task Completion Rule, T-3579) says update-task.sh --status work-completed reads the ledger; the partial-complete re-check path in agents/task-create/update-task.sh skips it. Fix: run the same apply step on the re-check path; regression test with a recorded green verdict on a partial-complete fixture task.
+  2026-10-20, T-4347: fw reviewer judge recorded a green verdict (V-20261020-731df74c,
+  committed by the reviewer identity in 262a7eeb5). 'fw task update T-4347 --status
+  work-completed' on the already partial-complete task printed 'Re-checking partial-complete
+  status... Still 1/5 ACs unchecked' and did not tick it. 'bin/fw reviewer verdict
+  apply T-4347' then ticked AC1 and handed ownership over, and the close passed. CLAUDE.md
+  (§Human Task Completion Rule, T-3579) says update-task.sh --status work-completed
+  reads the ledger; the partial-complete re-check path in agents/task-create/update-task.sh
+  skips it. Fix: run the same apply step on the re-check path; regression test with
+  a recorded green verdict on a partial-complete fixture task.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T12:06:38Z
-last_update: 2026-10-20T12:06:38Z
-date_finished: null
+last_update: 2026-10-20T18:05:32Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +59,50 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T12:15:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T12:16:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4465: A partial-complete task's re-close does not apply a green reviewer verdict: 'fw reviewer verdict apply' must be run by hand first
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The partial-complete re-check branch of `agents/task-create/update-task.sh` (OLD_STATUS == NEW_STATUS == work-completed, task still in active/) counts checkboxes without first running `apply_reviewer_verdicts`, so a recorded green verdict is ignored until `fw reviewer verdict apply` is run by hand.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The partial-complete re-check branch in `agents/task-create/update-task.sh` calls `apply_reviewer_verdicts` before counting unchecked ACs (same apply + revalidation as the first close)
+- [ ] Regression test in `tests/unit/t3579_verdict_close_path.bats`: a task already in partial-complete (status work-completed, in active/) with a recorded green verdict closes on `update-task.sh --status work-completed` with no manual `verdict apply`; it fails without the fix
+- [ ] Existing `tests/unit/t3579_verdict_close_path.bats` suite stays green and the bats dead-negation lint is clean
+- [ ] Vendored copy synced (`bin/fw vendor self --check --task T-4465` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +287,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n agents/task-create/update-task.sh
+timeout 900 bats tests/unit/t3579_verdict_close_path.bats > /tmp/.t4465.out 2>&1 && ! grep -q "^not ok" /tmp/.t4465.out && grep -q "^ok .*T-4465" /tmp/.t4465.out
+test "$(grep -c '# skip' /tmp/.t4465.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/t3579_verdict_close_path.bats > /tmp/.t4465.lint 2>&1 && grep -q clean /tmp/.t4465.lint
+bin/fw vendor self --check --task T-4465
 
 ## RCA
 
@@ -264,6 +308,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** T-4347 (2026-10-20): a green verdict was recorded and committed, but `fw task update T-4347 --status work-completed` on the already partial-complete task printed "Re-checking partial-complete status... Still 1/5 ACs unchecked" and did not tick the criterion. Only a manual `bin/fw reviewer verdict apply T-4347` ticked it.
+
+**Root cause:** `agents/task-create/update-task.sh` has two close paths. The first close (OLD_STATUS != work-completed) calls `apply_reviewer_verdicts` before the sovereignty and AC gates (~line 2326). The partial-complete re-run branch (`if [ "$OLD_STATUS" = "$NEW_STATUS" ]` → `work-completed` in active/, ~line 2033) counts `[x]` boxes straight away and never calls it. A green verdict recorded after the task went partial-complete, which is the usual order since the reviewer judges what partial-complete hands over, was never read on that path.
+
+**Why structurally allowed:** T-3579 wired the ledger into the first-close path only, and its suite (`t3579_verdict_close_path.bats`) only built fixtures in `started-work`. The re-check branch is a separate early branch that never reaches the main gate sequence. No test covered "partial-complete, then verdict, then re-close", and the manual `verdict apply` workaround hid the gap.
+
+**Prevention:** the re-check branch now calls the same `apply_reviewer_verdicts`, so it also gets the T-3581 revalidation and withdrawal. A new regression test in `t3579_verdict_close_path.bats` puts the fixture in partial-complete, records a green verdict and re-closes with no manual apply. That test fails without the fix.
 
 ## Evolution
 
@@ -345,3 +397,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4465-a-partial-complete-tasks-re-close-does-n.md
 - **Context:** Initial task creation
+
+### 2026-10-20T18:05:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

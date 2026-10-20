@@ -362,3 +362,20 @@ PY
     awk '/verdict_ledger.py" \]; then/{f=1} f&&/^else/{e=1} f&&e&&/fail "Reviewer-verdict ledger: lib\/verdict_ledger.py is missing/{ok=1} END{exit !ok}' \
         "$BATS_TEST_DIRNAME/../../agents/audit/audit.sh"
 }
+
+@test "T-4465: a partial-complete task's re-close applies a green verdict with no manual 'verdict apply'" {
+    local f; f="$(_make_render_task)"
+    # Already partial-complete: status work-completed, still in active/, Human criterion open.
+    sed -i 's/^status: started-work/status: work-completed/' "$f"
+    run _record green --evidence evidence.md
+    [ "$status" -eq 0 ]
+
+    run "$UPDATE_TASK" T-9200 --status work-completed
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "Re-checking partial-complete status"
+    echo "$output" | grep -q "Reviewer verdict applied"
+    ! echo "$output" | grep -q "Still .* ACs unchecked" || false
+    [ "$(ls "$PROJECT_ROOT/.tasks/completed" | grep -c '^T-9200-')" -eq 1 ]
+    [ "$(ls "$PROJECT_ROOT/.tasks/active" | grep -c '^T-9200-')" -eq 0 ]
+    grep -q "Reviewer verdict:\*\* green V-" "$PROJECT_ROOT/.tasks/completed/"T-9200-*.md
+}

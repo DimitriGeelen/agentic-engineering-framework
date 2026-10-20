@@ -2033,6 +2033,10 @@ if [ -n "$NEW_STATUS" ]; then
         if [ "$OLD_STATUS" = "work-completed" ] && [ "$(dirname "$TASK_FILE")" = "$TASKS_DIR/active" ]; then
             # T-193: Partial-complete re-run — check if human ACs now satisfied
             echo -e "${CYAN}Re-checking partial-complete status...${NC}"
+            # T-4465: read the verdict ledger here too, as the first close does (T-3579) —
+            # a green recorded after partial-complete ticks its criterion, and a tick whose
+            # verdict no longer validates is withdrawn (T-3581) before the count below.
+            apply_reviewer_verdicts
             # T-3148: anchored, FIRST-WINS extraction (lib/section-extract.sh).
             AC_SECTION=$(extract_ac_section "$TASK_FILE")
             # Strip HTML comments — template examples contain checkbox patterns.
