@@ -530,6 +530,41 @@ def _tokens(command: str, strip_heredocs: bool = True, masks: list | None = None
     return out
 
 
+# T-4367: git's diff-family verbs take --output[=FILE] (any unambiguous prefix of the
+# long option), which WRITES FILE although the verb is a read.
+GIT_OUTPUT_VERBS = frozenset({"diff", "log", "show", "diff-tree", "diff-index", "whatchanged"})
+_GIT_OUTPUT_RE = re.compile(r"^--ou(?:t(?:p(?:u(?:t)?)?)?)?(?:=(.*))?$")
+
+
+def git_output_risk(command: str) -> str | None:
+    """Why `git <verb> args...` (global options already skipped) may write a file via
+    --output, or None. T-4485: the read-only allowlist (agents/context/lib/safe-commands.sh)
+    matched raw words, so quotes, a backslash, $var or ${p:-default} hid the option. This
+    judges the words bash hands git: dequoted, ANSI-C decoded, brace-expanded. An expansion
+    whose result the text does not fix ($, a backtick, an unquoted glob) fails closed."""
+    if "`" in command:
+        return "backtick substitution"
+    masks: list[str] = []
+    toks = _tokens(command, masks=masks)
+    if toks is None:
+        return "does not tokenise"
+    words = [(t, m) for t, m in zip(toks, masks) if t not in _OPSET]
+    if len(words) < 2 or words[0][0] != "git" or words[1][0] not in GIT_OUTPUT_VERBS:
+        return None
+    for w, m in words[2:]:
+        if "$" in w:
+            return "an argument is expanded by the shell ($)"
+        for e, em in _brace_expand(w, m):
+            if any(c in "*?[" and em[k] == "u" for k, c in enumerate(e)):
+                return "an unquoted glob"
+            u = "".join(c for k, c in enumerate(e) if em[k] == "u")
+            if "{" in u and ("," in u or ".." in u):
+                return "a brace expression not expanded from the text"
+            if _GIT_OUTPUT_RE.match(e.lstrip("\x00")):
+                return "--output writes a file"
+    return None
+
+
 def _decode_ansi_c_quoted(text: str) -> str:
     """Like _decode_ansi_c, but re-quote the decoded text so it stays ONE word."""
     def dec(m):
@@ -898,9 +933,24 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
                 rest.pop(0)
         sub = rest[0] if rest else ""
         # T-4367: --output[=FILE] (any unambiguous long-option prefix) writes FILE
-        if sub in ("diff", "log", "show", "diff-tree", "diff-index", "whatchanged"):
+        if sub in GIT_OUTPUT_VERBS:
+            # T-4485: judge the words bash hands git. Braces are expanded (quoted ones
+            # too: over-expanding only adds candidates); a $ or backtick means the word
+            # is not known from the text; a glob is matched against the cwd.
+            words = []
+            for a in rest[1:]:
+                if "$" in a or "`" in a:
+                    _check_target(UNRESOLVED, ctx, f"git {sub} (an expanded argument may be --output)")
+                for e, _m in _brace_expand(a, "u" * len(a)):
+                    if re.search(r"[*?\[]", e):
+                        if ctx.cwd is None:
+                            _check_target(UNRESOLVED, ctx, f"git {sub} (a glob may expand to --output)")
+                        else:
+                            words += [os.path.relpath(g, ctx.cwd) for g in glob.glob(os.path.join(ctx.cwd, e))]
+                    words.append(e)
+            rest = rest[:1] + words
             for k, a in enumerate(rest[1:], 1):
-                m = re.match(r"^--ou(?:t(?:p(?:u(?:t)?)?)?)?(?:=(.*))?$", a)
+                m = _GIT_OUTPUT_RE.match(a)
                 if m:
                     if m.group(1) is not None:
                         _check_target(m.group(1), ctx, f"git {sub} {a.split('=')[0]}")
