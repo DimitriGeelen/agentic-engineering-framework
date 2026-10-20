@@ -57,7 +57,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T07:57:08Z
-last_update: '2026-10-20T08:00:46Z'
+last_update: 2026-10-20T19:27:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -400,3 +400,6 @@ test "$(grep -cE '^### CC-[0-9]+' docs/specs/shared-worker-contract-transitions.
 
 ### 2026-10-20T07:58:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-20 — spec revised v0.1 → v0.2 [agent]
+- **Action:** docs/specs/shared-worker-contract-transitions.md bumped to v0.2 with changelog; folded TermLink v0.1 review + AEF v0.2 answers (state sweep + registry_epoch, T6b, lost-seen-alive, worker binding, caller-chosen id/id_taken, T7d hub-host CLI, fifth outcome paused, CC-08 reworded, CC-17..CC-21); open questions 1 and 5 closed.
