@@ -87,17 +87,26 @@ def termlink_env(base=None) -> dict:
     Like `fw rail post`, a configured path that does not exist yet is used as
     is: termlink creates the keypair there on first use. Only a CONFIGURED path
     is ever used — never a guessed one (lib/rail-identity.sh, "TWO THINGS THAT
-    WILL BITE")."""
+    WILL BITE").
+
+    T-4494: with the switch off, a configured key FILE THAT EXISTS is still
+    selected, exactly as claude-fw exports it (T-4454). Otherwise the key
+    depended on who (re)started the process: a receiver started from a claude-fw
+    session signed as the project, and the same receiver restarted by cron or the
+    supervisor after `fw upgrade` (clean env, parent pid 1) signed as the host.
+    That is no transition we caused, so no APPLIED_MARKER. A missing file is
+    never selected with the switch off, so nothing is minted."""
     env = dict(os.environ if base is None else base)
     if any(env.get(k) for k in IDENTITY_ENV):
-        return env
-    if not enabled(env):
         return env
     path = configured_path(env)
     if not path:
         return env
-    env["TERMLINK_IDENTITY_FILE"] = path
-    env[APPLIED_MARKER] = path
+    if enabled(env):
+        env["TERMLINK_IDENTITY_FILE"] = path
+        env[APPLIED_MARKER] = path
+    elif os.path.isfile(path):
+        env["TERMLINK_IDENTITY_FILE"] = path
     return env
 
 
@@ -117,12 +126,16 @@ def respawn_env(base=None, root: str | None = None, signing: bool = True) -> dic
     the project's signing identity from config (termlink_env, T-4311). The
     agent id is then the project's own (circuit.agent_name falls back to it).
     signing=False for a child in ANOTHER project (ensure --all): this process's
-    config would name the wrong key, and the child applies its own at entry."""
+    config would name the wrong key, and the child applies its own at entry —
+    so this process's identity selectors are dropped too (T-4494), or they would
+    win over the child's own config by precedence."""
     env = {k: v for k, v in (os.environ if base is None else base).items()
            if k not in SESSION_ENV and not k.startswith(SESSION_ENV_PREFIXES)}
     if root is not None:
         env["PROJECT_ROOT"] = str(root)
     if not signing:
+        for k in (*IDENTITY_ENV, APPLIED_MARKER):
+            env.pop(k, None)
         return env
     try:
         return termlink_env(env)
@@ -139,9 +152,10 @@ def apply(environ=None) -> str | None:
         env = termlink_env(environ)
     except Exception:
         return None
-    path = env.get(APPLIED_MARKER)
+    path = env.get("TERMLINK_IDENTITY_FILE")
     if not path or environ.get("TERMLINK_IDENTITY_FILE") == path:
         return None
     environ["TERMLINK_IDENTITY_FILE"] = path
-    environ[APPLIED_MARKER] = path
+    if env.get(APPLIED_MARKER):
+        environ[APPLIED_MARKER] = path
     return path

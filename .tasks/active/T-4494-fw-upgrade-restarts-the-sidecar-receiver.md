@@ -1,10 +1,22 @@
 ---
 id: T-4494
-name: "fw upgrade restarts the sidecar receiver with a clean environment (no TERMLINK_IDENTITY_FILE), so a project's mail goes out on the shared host key again"
+name: "fw upgrade restarts the sidecar receiver with a clean environment (no TERMLINK_IDENTITY_FILE),
+  so a project's mail goes out on the shared host key again"
 description: >
-  832 (msg dbd05180) on v1.8.14-be.3: fw upgrade restarted their sidecar receiver at 15:25:11Z with a clean env (parent pid 1, no TERMLINK_IDENTITY_FILE, no inherited vars); mail went out on the host key again (their T-1204 after v1.8.12, same class). The identity must not depend on the restarting process's environment: whoever (re)starts the receiver (upgrade, ensure, supervisor, cron) must resolve RAIL_IDENTITY_FILE from config (lib/rail-identity.sh, as T-4454 does for claude-fw) and export TERMLINK_IDENTITY_FILE only when the key file exists. Note T-4311's SIDECAR_RAIL_IDENTITY switch (off by default because turning it on changes which dm:* rails address the project): whether to DEFAULT it on when RAIL_IDENTITY_FILE is set is a coordination decision with peers, NOT part of this fix; record the question for the operator. Regression test: restart via the upgrade path with a clean env yields a receiver whose environment carries the project key when the file exists.
+  832 (msg dbd05180) on v1.8.14-be.3: fw upgrade restarted their sidecar receiver
+  at 15:25:11Z with a clean env (parent pid 1, no TERMLINK_IDENTITY_FILE, no inherited
+  vars); mail went out on the host key again (their T-1204 after v1.8.12, same class).
+  The identity must not depend on the restarting process's environment: whoever (re)starts
+  the receiver (upgrade, ensure, supervisor, cron) must resolve RAIL_IDENTITY_FILE
+  from config (lib/rail-identity.sh, as T-4454 does for claude-fw) and export TERMLINK_IDENTITY_FILE
+  only when the key file exists. Note T-4311's SIDECAR_RAIL_IDENTITY switch (off by
+  default because turning it on changes which dm:* rails address the project): whether
+  to DEFAULT it on when RAIL_IDENTITY_FILE is set is a coordination decision with
+  peers, NOT part of this fix; record the question for the operator. Regression test:
+  restart via the upgrade path with a clean env yields a receiver whose environment
+  carries the project key when the file exists.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T15:49:24Z
-last_update: 2026-10-20T15:49:24Z
-date_finished: null
+last_update: 2026-10-20T15:51:01Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T15:51:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4494: fw upgrade restarts the sidecar receiver with a clean environment (no TERMLINK_IDENTITY_FILE), so a project's mail goes out on the shared host key again
@@ -62,8 +92,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every path that (re)starts a project sidecar process (fw upgrade, sidecar ensure/start, the supervisor respawn, cron) builds the child env so that TERMLINK_IDENTITY_FILE is the project's RAIL_IDENTITY_FILE (resolved from config, as lib/rail-identity.sh does) whenever that key file exists, independent of the restarting process's inherited env
+- [x] A configured key path that does NOT exist is not exported unless SIDECAR_RAIL_IDENTITY=1 (no keypair minted by a restart); SIDECAR_RAIL_IDENTITY's default stays 0
+- [x] `fw sidecar ensure --all` (cron) never hands one project's inherited TERMLINK_IDENTITY_FILE/AGENT_ID/IDENTITY_DIR to another project's child (respawn_env signing=False strips the selectors)
+- [x] Regression test: restarting via the upgrade path under a clean env (`env -i`) yields a receiver env carrying the project key when the file exists, and none when it does not; fails without the fix
+- [x] The question "default SIDECAR_RAIL_IDENTITY on when RAIL_IDENTITY_FILE is set?" is recorded in ## Decisions for the operator, not decided here
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,22 +281,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+python3 -m pytest tests/unit/test_sidecar_restart_identity_t4494.py -q > /tmp/.t4494-a.out 2>&1 && grep -q passed /tmp/.t4494-a.out
+python3 -m pytest tests/unit/test_sidecar_rail_identity_t4311.py tests/unit/test_sidecar_worker_hijack_t4416.py tests/unit/test_sidecar_project_identity.py -q > /tmp/.t4494-b.out 2>&1 && grep -q passed /tmp/.t4494-b.out
+python3 -c "import sys; sys.path.insert(0,'.'); from lib.sidecar import identity; import inspect; assert 'isfile' in inspect.getsource(identity.termlink_env)"
+grep -q '"SIDECAR_RAIL_IDENTITY|0|' lib/config.sh
+bin/fw vendor self --check --task T-4494
 
 ## Evolution
 
@@ -288,6 +310,16 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** 832 (msg dbd05180, v1.8.14-be.3): after `fw upgrade`, their sidecar receiver came back at 15:25:11Z with parent pid 1 and a clean env, no TERMLINK_IDENTITY_FILE, and mail went out signed with the shared host key again. Same class as their T-1204 after v1.8.12.
+
+**Root cause:** `lib/sidecar/identity.py` `termlink_env()` (it backs `respawn_env()` and `apply()`, and every sidecar spawn goes through those: `sidecar_cli.py:860` receiver start, `watcher.py:859/876` supervisor respawn of the watcher and receiver, `watcher.py:1097` `ensure --all` from cron, plus `apply()` at each entry point) selected the project key only when `SIDECAR_RAIL_IDENTITY=1`, which is off by default. With the switch off, the receiver's key came from the env of whoever started it. A claude-fw session exports the key (T-4454), so receivers started from one were project-signed. A restart from cron or the supervisor after upgrade killed the processes (env -i style, parent pid 1) had no such env and fell back to the host key. Second leg: `respawn_env(signing=False)` (`ensure --all`) passed the caller's identity selectors into ANOTHER project's child, where precedence then kept the wrong project's key.
+
+**Why structurally allowed:** T-4454 fixed only one launcher, claude-fw, in shell. The python spawn helpers never matched it, so the identity depended on launch path. Every T-4311 test ran in-process with a hand-built env. None restarted a process under a clean env with an existing key file.
+
+**Prevention:** `tests/unit/test_sidecar_restart_identity_t4494.py` restarts through the real spawn helpers under `env -i` and asserts the child env carries the key when the file exists and none when it does not. It also asserts that `ensure --all` strips selectors across projects.
 
 ## Recommendation
 
@@ -329,6 +361,15 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-20 — where the restart identity is decided
+- **Chose:** fix it once in `lib/sidecar/identity.py` `termlink_env()`. Every sidecar spawn (receiver start, supervisor respawn, `ensure --all`) and every entry-point `apply()` already goes through it. With the switch off, a configured RAIL_IDENTITY_FILE that EXISTS is selected, the same rule as claude-fw (T-4454), with no APPLIED_MARKER (no host-DM transition implied). A missing file is selected only with SIDECAR_RAIL_IDENTITY=1, as before.
+- **Why:** `fw upgrade` does not itself start the receiver. What brings it back is the cron keep-alive or the supervisor, with a clean env, so patching any one shell launcher would leave the others on the host key. The key now depends on config, not on the launch path.
+- **Rejected:** exporting in `bin/fw sidecar` / the cron line in shell. That covers one door and leaves the python respawns uncovered, which is the T-4454 shape that produced this bug.
+- **Side effect to know:** a project that has the key file but whose receiver ran on the host key (started from plain `claude`, not claude-fw) now signs as the project key. That is the intent of RAIL_IDENTITY_FILE, but its dm:* address moves. Without APPLIED_MARKER the old host-key rails are not drained during that move.
+
+### OPEN for the operator — default SIDECAR_RAIL_IDENTITY on when RAIL_IDENTITY_FILE is set?
+- Not decided here (task scope). The switch default stays 0 (`lib/config.sh`). Turning it on would also mint a key at a configured-but-missing path and set the host-DM transition marker, which changes which dm:* rails address the project. That is a coordination decision with peers (832 et al.).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -345,3 +386,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4494-fw-upgrade-restarts-the-sidecar-receiver.md
 - **Context:** Initial task creation
+
+### 2026-10-20T15:51:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
