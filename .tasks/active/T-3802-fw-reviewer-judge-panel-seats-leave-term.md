@@ -6,7 +6,7 @@ name: "fw reviewer judge panel seats leave TermLink registrations and live proce
 description: >
   055 finding 3523f4f6, 2026-10-04.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T10:10:42Z
-last_update: '2026-10-04T10:15:54Z'
+last_update: 2026-10-20T22:06:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,8 +92,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction at HEAD checked: either the leak is shown to still occur (judge seat dispatch leaves its TermLink session registered / process alive after the verdict) or evidence that it no longer does is recorded under ## RCA — **does not reproduce** (evidence in ## RCA)
+- [x] If it reproduces: each judge seat's TermLink endpoint is torn down after `fw termlink wait` returns (finalised) — N/A: does not reproduce; the teardown already happens in the dispatcher every judge seat goes through (`agents/termlink/termlink.sh:1736-1741`, T-4152), so no judge-specific change is needed
+- [x] Regression test asserts the registration count before/after a seat dispatch — already exists: `tests/unit/t4152_dispatch_endpoint_leak.bats` tests 2 and 4 (test 4 is the `--task-type review` path judge seats use; test 3 is the control proving the leak without `exec`); 8/8 green at HEAD
+- [x] `bin/fw vendor self --check --task T-3802` clean — no source touched (task file only)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -253,8 +255,26 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q 'exec bash \$wdir/run.sh' agents/termlink/termlink.sh
+timeout 300 bats tests/unit/t4152_dispatch_endpoint_leak.bats > /tmp/.t3802.out 2>&1 && ! grep -q "^not ok" /tmp/.t3802.out
+test "$(grep -c '# skip' /tmp/.t3802.out)" -eq 0
+bin/fw vendor self --check --task T-3802
 
 ## RCA
+
+**Symptom:** (055, 2026-10-04) 12 `judge-t-163-r5-*` panel seats still registered in TermLink, with live shells, after their verdict rows were committed.
+
+**Root cause:** not judge-specific. `cmd_dispatch` typed `bash $wdir/run.sh …` into the spawned session's interactive shell, so the shell outlived run.sh at its prompt and the endpoint stayed `ready` forever — every dispatch kind leaked, judge seats (`lib/reviewer/judge_cli.py:_dispatch_real` → `fw termlink dispatch --task-type review`) included. Fixed generically by T-4152 (`3757b6917`, 2026-10-13, after this task was filed): `agents/termlink/termlink.sh:1741` now injects `exec bash $wdir/run.sh …`, so the session ends with run.sh, which writes `exit_code` and `finalised` before exiting; `fw termlink cleanup` also stops endpoints leaked by pre-fix workers.
+
+**Reproduction at HEAD (2026-10-21) — does not reproduce:**
+- `/tmp/tl-dispatch/` holds 81 `judge-*` worker dirs, including rung-5 four-seat panels (`judge-t-209-r5-*`, `judge-t-4475-r5-*`) and rung-3 seats (`judge-t-4407-r3-*`, `judge-t-4361-r3-*`) dispatched 2026-10-20, all with `exit_code` and `finalised`.
+- `termlink list --json`: 166 sessions registered, **0** named `judge-*`.
+- `ps`: no process with a `tl-dispatch/judge-` argument.
+- `bats tests/unit/t4152_dispatch_endpoint_leak.bats`: 8/8 ok (test 4: a review worker's session ends only after run.sh has finalised it; test 3: the no-exec control leaks).
+
+**Why structurally allowed:** the dispatcher had no assertion that a session ends with its worker; nothing counted registrations before/after a dispatch.
+
+**Prevention:** `tests/unit/t4152_dispatch_endpoint_leak.bats` pins the exec injection and the session-ends-with-worker property for both build and review kinds, with a control leg. No further change filed here.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -350,3 +370,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3802-fw-reviewer-judge-panel-seats-leave-term.md
 - **Context:** Initial task creation
+
+### 2026-10-20T22:06:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
