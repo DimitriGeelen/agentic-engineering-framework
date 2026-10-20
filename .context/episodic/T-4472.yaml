@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4472: Triage termlink's 10 upstream proposals (framework:pickup offsets 341-350, unified diffs against v1.8.13): one task per proposal, apply-check, risk, recommendation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T14:31:45Z
+# ============================================================================
+
+task_id: T-4472
+task_name: "Triage termlink's 10 upstream proposals (framework:pickup offsets 341-350, unified diffs against v1.8.13): one task per proposal, apply-check, risk, recommendation"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T14:04:11Z
+completed: 2026-10-20T14:31:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T16:10:04+02:00
+last_commit: 2026-10-20T16:10:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  triage of termlink's 10 pickup proposals (341-350): inputs, report, 8 follow-on build tasks T-4473..T-4480
+
+# Key outcomes
+outcomes:
+  - 'All 10 diffs (offsets 341-350) saved verbatim under docs/reports/T-4472-inputs/'
+  - 'Each diff has a git apply --check result recorded; none applied, no source edited'
+  - 'docs/reports/T-4472-termlink-proposals-triage.md has a per-proposal table (what/why, interactions, risk, apply/adapt/decline) and the item-16 re-check against T-4463 carry map'
+  - 'One build task filed per apply/adapt proposal (never one for several)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4472-inputs/341-lib_arc.sh.diff'
+  - 'docs/reports/T-4472-inputs/342-bin_claude-fw.diff'
+  - 'docs/reports/T-4472-inputs/343-web_blueprints_discovery.py.diff'
+  - 'docs/reports/T-4472-inputs/344-web_embeddings.py.diff'
+  - 'docs/reports/T-4472-inputs/345-agents_context_check-active-task.sh.diff'
+  - 'docs/reports/T-4472-inputs/346-agents_handover_handover.sh.diff'
+  - 'docs/reports/T-4472-inputs/347-agents_termlink_bvp-estimator_estimator.py.diff'
+  - 'docs/reports/T-4472-inputs/348-lib_bvp.sh.diff'
+  - 'docs/reports/T-4472-inputs/349-agents_context_lib_safe-commands.sh.diff'
+  - 'docs/reports/T-4472-inputs/350-lib_pickup.sh.diff'
+  - 'docs/reports/T-4472-termlink-proposals-triage.md'
+  - '.tasks/active/T-4472-triage-termlinks-10-upstream-proposals-f.md'
+  - '.tasks/active/T-4473-adapt-termlink-proposal-341-libarcsh-app.md'
+  - '.tasks/active/T-4474-adapt-termlink-proposal-342-claude-fw-te.md'
+  - '.tasks/active/T-4475-adapt-termlink-proposal-344-webembedding.md'
+  - '.tasks/active/T-4476-adapt-termlink-proposal-346-handoversh-e.md'
+  - '.tasks/active/T-4477-evaluate-termlink-proposal-347-estimator.md'
+  - '.tasks/active/T-4478-adapt-termlink-proposal-348-libbvpsh-con.md'
+  - '.tasks/active/T-4479-adapt-termlink-proposal-349-safe-command.md'
+  - '.tasks/active/T-4480-apply-termlink-proposal-350-libpickupsh-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T16:10:04'
+    action: 'T-4472: triage of termlink''s 10 pickup proposals (341-350): inputs, report, 8 follow-on build tasks T-4473..T-4480'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 27
+  commits: 1
+  files_changed: 20
+  lines_added: 4315
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4472-triage-termlinks-10-upstream-proposals-f.md
+generated_by: context-agent-hybrid

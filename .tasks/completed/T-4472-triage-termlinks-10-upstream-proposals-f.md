@@ -16,10 +16,10 @@ description: >
   map said not carried — re-check how T-4463 decided). Pickup rule G-020: proposals,
   not build instructions. This task triages only; NO diff is applied here.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -50,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T14:04:11Z
-last_update: 2026-10-20T14:04:43Z
-date_finished:
+last_update: 2026-10-20T14:31:22Z
+date_finished: 2026-10-20T14:31:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -80,6 +80,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T14:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4472: Triage termlink's 10 upstream proposals (framework:pickup offsets 341-350, unified diffs against v1.8.13): one task per proposal, apply-check, risk, recommendation
@@ -92,10 +102,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] All 10 diffs (offsets 341-350) saved verbatim under docs/reports/T-4472-inputs/
-- [ ] Each diff has a git apply --check result recorded; none applied, no source edited
-- [ ] docs/reports/T-4472-termlink-proposals-triage.md has a per-proposal table (what/why, interactions, risk, apply/adapt/decline) and the item-16 re-check against T-4463 carry map
-- [ ] One build task filed per apply/adapt proposal (never one for several)
+- [x] All 10 diffs (offsets 341-350) saved verbatim under docs/reports/T-4472-inputs/
+- [x] Each diff has a git apply --check result recorded; none applied, no source edited
+- [x] docs/reports/T-4472-termlink-proposals-triage.md has a per-proposal table (what/why, interactions, risk, apply/adapt/decline) and the item-16 re-check against T-4463 carry map
+- [x] One build task filed per apply/adapt proposal (never one for several)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,6 +290,10 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+test -s docs/reports/T-4472-termlink-proposals-triage.md
+test "$(ls docs/reports/T-4472-inputs/*.diff | wc -l)" -eq 10
+grep -q 'carry map' docs/reports/T-4472-termlink-proposals-triage.md
+test "$(ls .tasks/active/ .tasks/completed/ | grep -cE '^T-(447[3-9]|4480)-')" -eq 8
 
 ## RCA
 
@@ -380,3 +394,20 @@ bvp_scores_proposed:
 
 ### 2026-10-20T14:04:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8dabfd87
+- **Timestamp:** 2026-10-20T14:31:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T14:31:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
