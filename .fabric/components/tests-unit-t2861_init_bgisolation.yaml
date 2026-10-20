@@ -1,0 +1,21 @@
+id: tests/unit/t2861_init_bgisolation.bats
+name: t2861_init_bgisolation
+type: script
+subsystem: tests
+location: tests/unit/t2861_init_bgisolation.bats
+tags: []
+
+purpose: "T-2861: generate_claude_code_config (lib/init.sh) — the generator behind `fw init` and `fw upgrade` step 5 — must emit worktree.bgIsolation=none."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
