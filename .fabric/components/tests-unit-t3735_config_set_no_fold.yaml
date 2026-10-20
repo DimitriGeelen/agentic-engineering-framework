@@ -1,0 +1,21 @@
+id: tests/unit/t3735_config_set_no_fold.bats
+name: t3735_config_set_no_fold
+type: script
+subsystem: tests
+location: tests/unit/t3735_config_set_no_fold.bats
+tags: []
+
+purpose: "T-3735: `fw config set` dumped .framework.yaml at the YAML default width (80), so a long scalar (upstream_repo) was folded onto a continuation line."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

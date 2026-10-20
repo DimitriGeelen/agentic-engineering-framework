@@ -99,7 +99,7 @@ bvp_scores_proposed:
 - [x] Defect reproduced at HEAD before the fix: `fw config set` on a `.framework.yaml` holding a >80-char `upstream_repo` folds it onto a continuation line, and the `lib/update.sh` grep+sed reader returns ''
 - [x] `lib/config-file.sh` set-path dumps with a wide line width (ruamel `yaml.width` and PyYAML `width=`) so long scalars stay on one line
 - [x] Regression bats `tests/unit/t3735_config_set_no_fold.bats` sets a key on a yaml holding a >80-char value and asserts the value line is intact and readable by the update.sh-style reader; fails without the fix
-- [ ] `bin/fw vendor self --check --task T-3735` clean
+- [x] `bin/fw vendor self --check --task T-3735` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
