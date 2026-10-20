@@ -95,11 +95,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Defect reproduces at HEAD: `fw context status` prints `Learnings: 0` while learnings.yaml holds 700+ `id: L-` entries
-- [ ] `do_status` counts learnings, candidates, patterns and decisions by parsing the YAML (not by an indentation-sensitive grep), so both the flat `- application: …\n  id: L-NNN` and the indented `  - id: L-NNN` serialisations count
-- [ ] An unreadable/unparseable memory file prints `?` with a reason instead of a silent `0`
-- [ ] Regression test `tests/unit/t2906_context_status_counts.bats` covers flat form, indented form, and malformed file; fails against the old grep and passes with the fix
-- [ ] `bin/fw vendor self --check --task T-2906` clean
+- [x] Defect reproduces at HEAD: `fw context status` prints `Learnings: 0` while learnings.yaml holds 700+ `id: L-` entries
+- [x] `do_status` counts learnings, candidates, patterns and decisions by parsing the YAML (not by an indentation-sensitive grep), so both the flat `- application: …\n  id: L-NNN` and the indented `  - id: L-NNN` serialisations count
+- [x] An unreadable/unparseable memory file prints `?` with a reason instead of a silent `0`
+- [x] Regression test `tests/unit/t2906_context_status_counts.bats` covers flat form, indented form, and malformed file; fails against the old grep and passes with the fix
+- [x] `bin/fw vendor self --check --task T-2906` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
