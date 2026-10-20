@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4492: runme job queue slice 2 (T-4470): sha manifest over job + every helper, rechecked before each step; per-step confirm with typeahead drain
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T19:23:03Z
+# ============================================================================
+
+task_id: T-4492
+task_name: "runme job queue slice 2 (T-4470): sha manifest over job + every helper, rechecked before each step; per-step confirm with typeahead drain"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T15:33:41Z
+completed: 2026-10-20T19:21:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T20:14:02+02:00
+last_commit: 2026-10-20T20:14:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  runme queue slice 2 — per-step sha manifest over job.json and every file a step reaches (args, sh/helper words, resolved executables, declared scripts), rechecked before each probe and step; per-step y/N with typeahead drained, before check-tier0; 12 bats legs (finding 5 proven fixed). fabric card for the slice-2 sha-manifest test
+
+# Key outcomes
+outcomes:
+  - 'Dry-run records a sha manifest per step: job.json plus every file the step (or its probe, or a helper) calls — argv/sh/helper words that name an existing file, the resolved executable of an argv command, and the job''s declared `scripts` list (refused at dry-run if missing); the plan shows the covered files'
+  - 'The manifest is rechecked immediately before each probe and each step; a changed, removed or newly named file stops the job before that step, naming the file — and the menu shows CHANGED when any covered file differs'
+  - 'Finding 5 proven fixed: a script called by a step (`bash s.sh`) edited after dry-run is not run (test); a script edited by an earlier step of the same job stops the later step that calls it (test)'
+  - 'Per-step y/N: each step is confirmed on its own just before it runs, its resolved command shown again; `n` stops with later steps not run (test); typeahead typed before the prompt is discarded on a real pty (test)'
+  - 'A queue `y` is still not an authorisation: the per-step confirm comes before, not instead of, check-tier0 (P5 test still green)'
+  - 'Existing runme tests stay green (t4491, t3675, t3741, t3878, t4464)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'runme queue slice 2 — per-step sha manifest over job.json and every file a step reaches (args, sh/helper words, resolved executables, declared scripts), rechecked before each probe and step; per-step y/N with typeahead drained, before check-tier0; 12 bats legs (finding 5 proven fixed)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/runme_queue.py'
+  - '.fabric/components/tests-unit-t4492_runme_sha_manifest.yaml'
+  - 'lib/runme_queue.py'
+  - '.tasks/active/T-4492-runme-job-queue-slice-2-t-4470-sha-manif.md'
+  - 'tests/unit/t4491_runme_job_queue.bats'
+  - 'tests/unit/t4492_runme_sha_manifest.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T20:14:02'
+    action: 'T-4492: runme queue slice 2 — per-step sha manifest over job.json and every file a step reaches (args, sh/helper words, resolved executables, declared scripts), rechecked before each probe and step; per-step y/N with typeahead drained, before check-tier0; 12 bats legs (finding 5 proven fixed)'
+  - time: '2026-10-20T20:14:19'
+    action: 'T-4492: fabric card for the slice-2 sha-manifest test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 228 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 228
+  commits: 2
+  files_changed: 6
+  lines_added: 766
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4492-runme-job-queue-slice-2-t-4470-sha-manif.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4482: sidecar watcher inherits an unset TERMLINK_RUNTIME_DIR, so termlink discover returns no sessions while the hub registry dir has live ones; delivery between prompts silently never happens
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T19:29:20Z
+# ============================================================================
+
+task_id: T-4482
+task_name: "sidecar watcher inherits an unset TERMLINK_RUNTIME_DIR, so termlink discover returns no sessions while the hub registry dir has live ones; delivery between prompts silently never happens"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T14:18:50Z
+completed: 2026-10-20T19:26:48Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T16:31:12+02:00
+last_commit: 2026-10-20T20:30:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar resolves TermLink runtime dir like the hub (env, else /var/lib/termlink), logs it, warns on empty discover with sessions elsewhere. fix t3684 flake — per-test agent ids; start stops a stale supervisor before replacing the receiver; vendor sidecar runtime_dir. fabric card for lib/sidecar/runtime_dir.py
+
+# Key outcomes
+outcomes:
+  - 'lib/sidecar/runtime_dir.py resolves the runtime dir: TERMLINK_RUNTIME_DIR if set, else /var/lib/termlink when present, else None (termlink default), and reports the source'
+  - 'The watcher applies the resolved dir to its environment at startup and records a RUNTIME_DIR event naming dir and source'
+  - 'inject._discover runs `termlink discover` with the resolved dir and, when it returns 0 sessions while another known runtime dir has sessions, WARNs naming that dir (event RUNTIME_DIR_MISMATCH)'
+  - 'Regression test with two fake runtime dirs passes and fails without the fix (tests/unit/test_sidecar_runtime_dir_t4482.py)'
+  - 't3684 flake fixed (cause 1): each test in tests/unit/test_sidecar_watcher_t3684.py uses its own agent id, so two concurrent runs of the stale-code test both pass (before: one fails at read_triple_file() None)'
+  - 't3684 flake fixed (cause 2): `fw sidecar start` / `receiver start` (without --no-watcher) stop a stale supervisor/watcher BEFORE replacing the receiver; test_start_stops_a_stale_supervisor_before_replacing_the_receiver passes and fails 2/3 without the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix t3684 flake — per-test agent ids; start stops a stale supervisor before replacing the receiver; vendor sidecar runtime_dir'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/inject.py'
+  - '.agentic-framework/lib/sidecar/runtime_dir.py'
+  - '.agentic-framework/lib/sidecar/watcher.py'
+  - '.fabric/components/lib-sidecar-runtime_dir.yaml'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/inject.py'
+  - 'lib/sidecar/runtime_dir.py'
+  - 'lib/sidecar/watcher.py'
+  - '.tasks/active/T-4482-sidecar-watcher-inherits-an-unset-termli.md'
+  - 'tests/unit/test_sidecar_runtime_dir_t4482.py'
+  - 'tests/unit/test_sidecar_watcher_t3684.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T16:31:12'
+    action: 'T-4482: sidecar resolves TermLink runtime dir like the hub (env, else /var/lib/termlink), logs it, warns on empty discover with sessions elsewhere'
+  - time: '2026-10-20T20:30:42'
+    action: 'T-4482: fix t3684 flake — per-test agent ids; start stops a stale supervisor before replacing the receiver; vendor sidecar runtime_dir'
+  - time: '2026-10-20T20:30:58'
+    action: 'T-4482: fabric card for lib/sidecar/runtime_dir.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 307 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 307
+  commits: 3
+  files_changed: 12
+  lines_added: 787
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4482-sidecar-watcher-inherits-an-unset-termli.md
+generated_by: context-agent-hybrid

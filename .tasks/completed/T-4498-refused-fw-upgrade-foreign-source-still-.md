@@ -1,19 +1,18 @@
 ---
-id: T-4495
-name: "corpus derive refuses bpmn:businessRuleTask (parse_map unsupported tag)"
+id: T-4498
+name: "Refused fw upgrade (foreign-source) still ran Self-vendor sync first"
 description: >
-  832 (msg dbd05180): corpus derive refuses tests/fixtures/third-party/kitchen-sink.bpmn
-  at bpmn:businessRuleTask ('parse_map unsupported tag'). Same class as T-4374 (callActivity)
-  and T-4488 (plain task): add businessRuleTask to tools/corpus_spec.py TYPE_TO_TAG
-  with a lossless round trip and its NODE_OCCUPANCY entry. Coordinate with T-4488
-  (same files): do after T-4488 lands.
+  dimitri-mint-dev msg ae5a4e7f: a shallow tag clone was refused as foreign-source,
+  but 'Self-vendor: synced 3 file(s) to .agentic-framework/lib/' had already run.
+  A refused upgrade must be side-effect free (T-4278 rule): move the source-identity
+  check before any write.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade.sh, tests/unit/t4498_refused_upgrade_no_self_vendor.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,9 +40,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T15:49:42Z
-last_update: 2026-10-20T18:05:30Z
-date_finished:
+created: 2026-10-20T17:48:44Z
+last_update: 2026-10-20T19:02:51Z
+date_finished: 2026-10-20T19:02:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,18 +53,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-20T16:00:38Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T16:01:32Z'
+  - ts: '2026-10-20T17:53:57Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -82,23 +71,33 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T18:00:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=314,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4495: corpus derive refuses bpmn:businessRuleTask (parse_map unsupported tag)
+# T-4498: Refused fw upgrade (foreign-source) still ran Self-vendor sync first
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+A refused `fw upgrade` must be side-effect free (T-4278). Field report (dimitri-mint-dev msg ae5a4e7f): upgrade from a SHALLOW clone of a be tag refused as foreign-source, but `Self-vendor: synced 3 file(s) to .agentic-framework/lib/` had already run.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `tools/corpus_spec.py` TYPE_TO_TAG maps a node type to `businessRuleTask`, with a NODE_OCCUPANCY entry for it
-- [x] `parse_map` of a map containing `<bpmn:businessRuleTask>` no longer refuses; parse → emit → parse round trip is lossless (same type, name, flows)
-- [x] The 832 refusal shape (kitchen-sink.bpmn lives in 832's repo, not here) is reproduced by an inline businessRuleTask map in the test: `unsupported BPMN element <bpmn:businessRuleTask` before the fix, 0 refusals after
-- [x] `tools/corpus_lint.py` NODE_OCCUPANCY has a `business-rule` entry (activity box, 64) and DEFAULT_FLOW_TAGS carries `businessRuleTask` (tActivity defines `default`)
-- [x] Regression test added next to the T-4488 test; fails without the fix, passes with it; neighbouring corpus_spec tests still pass
+- [x] `do_upgrade` (lib/upgrade.sh) runs the self-vendor block only after every pre-write refusal check (T-1912 version precheck incl. foreign-source, T-4278 vendor precheck)
+- [x] Regression test `tests/unit/t4498_refused_upgrade_no_self_vendor.bats`: shallow-clone source refused as foreign-source => consumer tree AND source `.agentic-framework/` byte-identical before/after, no `Self-vendor: synced` line; fails on the pre-fix code
+- [x] Control: an accepted (non-refused) upgrade still self-vendors (T-1217 invariant kept)
+- [x] `upgrade_fresh_machine_simulation.bats`, `t4278_upgrade_refusal_atomic.bats`, `t2095_upgrade_self_vendor_extraction.bats` stay green
+- [x] `bin/fw vendor self --check --task T-4498` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,10 +282,12 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k business_rule > /tmp/.t4495 2>&1 && grep -q "1 passed" /tmp/.t4495 && ! grep -q failed /tmp/.t4495
-python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_lint_lane_overflow.py -q > /tmp/.t4495b 2>&1 && grep -q passed /tmp/.t4495b && ! grep -q failed /tmp/.t4495b
-python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_spec, corpus_lint; assert corpus_spec.TYPE_TO_TAG['business-rule']=='businessRuleTask'; assert corpus_lint.NODE_OCCUPANCY['business-rule']==64"
-bin/fw vendor self --check --task T-4495
+bash -n lib/upgrade.sh
+timeout 300 bats tests/unit/t4498_refused_upgrade_no_self_vendor.bats > /tmp/.t4498.out 2>&1 && ! grep -q "^not ok" /tmp/.t4498.out && test "$(grep -c '# skip' /tmp/.t4498.out)" -eq 0
+timeout 600 bats tests/unit/t4278_upgrade_refusal_atomic.bats tests/unit/t2095_upgrade_self_vendor_extraction.bats > /tmp/.t4498b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4498b.out
+timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4498c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4498c.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4498_refused_upgrade_no_self_vendor.bats > /tmp/.t4498d.out 2>&1 && grep -q clean /tmp/.t4498d.out
+bin/fw vendor self --check --task T-4498
 
 ## RCA
 
@@ -304,13 +305,13 @@ bin/fw vendor self --check --task T-4495
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** 832 (msg dbd05180) ran `corpus derive` on its third-party kitchen-sink.bpmn and got `parse: unsupported BPMN element <bpmn:businessRuleTask …> — parse_map cannot round-trip this tag`. Reproduced here with an inline map.
+**Symptom:** `fw upgrade` from a shallow clone of a be tag printed `Self-vendor: synced 3 file(s) to .agentic-framework/lib/`, then `REFUSED ... foreign-source`. A refused upgrade had already written.
 
-**Root cause:** `tools/corpus_spec.py:49` TYPE_TO_TAG is a closed allow-list of BPMN node tags; `parse_map` hard-errors on any tag not in it (`tools/corpus_spec.py:~424`, the T-2614 guard against silently dropping nodes). `businessRuleTask` was never added, so a valid BPMN 2.0 activity type is refused.
+**Root cause:** `do_upgrade` (lib/upgrade.sh, the T-1217/T-2095 inline self-vendor block, formerly lines 1561-1594) ran the eight `_self_vendor_*` helpers right after the bare-from-consumer handoff and BEFORE the T-1912 version precheck (foreign-source refusal, ~line 1660) and the T-4278 vendor precheck (~line 1712). The helpers write into `$FRAMEWORK_ROOT/.agentic-framework/` — the source checkout's own vendored copy — so whenever that copy lagged the source's `lib/` (a be tag's committed vendor tree can) the refused run had already mutated the source tree.
 
-**Why structurally allowed:** the allow-list grows only when a consumer hits a missing tag (T-4374 callActivity, T-4488 task, now this) — no test enumerates the BPMN 2.0 activity tags against TYPE_TO_TAG, and the refusal is deliberate (fail loud, not lose data), so each gap surfaces one at a time in the field.
+**Why structurally allowed:** T-4278 made "refuse before any write" the rule, but placed its check (and T-1912 placed its own) below a write that already existed, and T-4278's test hashes only the CONSUMER tree from a framework repo whose vendored copy is in sync, so self-vendor was a no-op there. The self-vendor write lands in the SOURCE tree, which no refusal test observed.
 
-**Prevention:** regression test `test_business_rule_task_is_accepted_and_round_trips` pins the tag. The remaining BPMN activity tags (sendTask, receiveTask, manualTask) are the same class and still refused; enumerating the full BPMN 2.0 flow-node set in one test would close the class rather than the instance — noted for the parent, not done here (scope).
+**Prevention:** self-vendor moved below every pre-write refusal; `tests/unit/t4498_refused_upgrade_no_self_vendor.bats` drives `do_upgrade` against a real shallow source whose vendored lib is stale and asserts both trees byte-identical on refusal (red on the pre-fix code), plus a control that an accepted upgrade still self-vendors.
 
 ## Evolution
 
@@ -388,10 +389,27 @@ bin/fw vendor self --check --task T-4495
 
 ## Updates
 
-### 2026-10-20T15:49:42Z — task-created [task-create-agent]
+### 2026-10-20T17:48:44Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4495-corpus-derive-refuses-bpmnbusinessruleta.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4498-refused-fw-upgrade-foreign-source-still-.md
 - **Context:** Initial task creation
 
-### 2026-10-20T18:05:30Z — status-update [task-update-agent]
+### 2026-10-20T17:53:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-69549308
+- **Timestamp:** 2026-10-20T19:19:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T19:02:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

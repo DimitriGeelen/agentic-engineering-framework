@@ -1,26 +1,17 @@
 ---
-id: T-4482
-name: "sidecar watcher inherits an unset TERMLINK_RUNTIME_DIR, so termlink discover
-  returns no sessions while the hub registry dir has live ones; delivery between prompts
-  silently never happens"
+id: T-4500
+name: "Pre-release notices: say upgrade from a non-shallow clone"
 description: >
-  proxmox-ring20-management (T-2450, msg 2764abb1): on their host the hub registry
-  is /var/lib/termlink; the sidecar watcher processes ran with TERMLINK_RUNTIME_DIR
-  unset, so 'termlink discover' used the default dir and returned NO sessions; the
-  watcher could never target a hub-registered session. Same on ring20-dashboard. Fix:
-  the watcher (and inject paths) resolve the runtime dir the way the hub does (honour
-  TERMLINK_RUNTIME_DIR; else /var/lib/termlink when present; else the default), and
-  log which dir was used; when discover returns 0 sessions while another known runtime
-  dir has sessions, WARN by name. Regression test with two fake runtime dirs. (TermLink
-  side: they suggest discover hint about the other dir; that is termlink's, forwarded
-  by ring20.)
+  dimitri-mint-dev msg ae5a4e7f: a shallow clone of a be tag cannot see the recorded
+  version_sha and is refused as foreign-source. The remedy line (fetch --unshallow)
+  is clear; the be-tag notice text should say non-shallow clone up front.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/release-tags.sh, tests/unit/t4500_be_notice_non_shallow.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,9 +39,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T14:18:50Z
-last_update: 2026-10-20T18:05:38Z
-date_finished:
+created: 2026-10-20T17:49:21Z
+last_update: 2026-10-20T19:20:57Z
+date_finished: 2026-10-20T19:20:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,7 +53,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T14:20:12Z'
+  - ts: '2026-10-20T17:54:12Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -80,33 +71,35 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-20T14:30:43Z'
+  - ts: '2026-10-20T18:00:44Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=306,acs=6)
+      (workflow:build); effort=8 (lines=317,acs=6)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4482: sidecar watcher inherits an unset TERMLINK_RUNTIME_DIR, so termlink discover returns no sessions while the hub registry dir has live ones; delivery between prompts silently never happens
+# T-4500: Pre-release notices: say upgrade from a non-shallow clone
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+A shallow clone of a `vX.Y.Z-be.N` tag cannot see the consumer's recorded `version_sha`,
+so `fw upgrade` from it is refused as foreign-source (`lib/version-relation.sh:133`). The
+two pre-release notice surfaces — `fw release be-tag` output and the `available-for-testing`
+issue comment — said nothing about clone depth. Both now say "non-shallow clone" up front
+and name the `git fetch --unshallow` remedy.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] lib/sidecar/runtime_dir.py resolves the runtime dir: TERMLINK_RUNTIME_DIR if set, else /var/lib/termlink when present, else None (termlink default), and reports the source
-- [x] The watcher applies the resolved dir to its environment at startup and records a RUNTIME_DIR event naming dir and source
-- [x] inject._discover runs `termlink discover` with the resolved dir and, when it returns 0 sessions while another known runtime dir has sessions, WARNs naming that dir (event RUNTIME_DIR_MISMATCH)
-- [x] Regression test with two fake runtime dirs passes and fails without the fix (tests/unit/test_sidecar_runtime_dir_t4482.py)
-- [x] t3684 flake fixed (cause 1): each test in tests/unit/test_sidecar_watcher_t3684.py uses its own agent id, so two concurrent runs of the stale-code test both pass (before: one fails at read_triple_file() None)
-- [x] t3684 flake fixed (cause 2): `fw sidecar start` / `receiver start` (without --no-watcher) stop a stale supervisor/watcher BEFORE replacing the receiver; test_start_stops_a_stale_supervisor_before_replacing_the_receiver passes and fails 2/3 without the fix
+- [x] `fw release be-tag` (after tagging, and when HEAD is already tagged) prints an upgrade notice that says to upgrade from a NON-SHALLOW clone (no `--depth`), says why (a shallow clone cannot see the recorded version_sha and is refused as foreign-source), and names `git -C <clone> fetch --unshallow`
+- [x] The `available-for-testing` issue comment for a `-be.N` version carries the same non-shallow wording and unshallow remedy; a plain `vX.Y.Z` version does not
+- [x] `tests/unit/t4500_be_notice_non_shallow.bats` pins both wordings (fails without the fix) and passes; the be-tag tests in `tests/unit/t4431_be_tags.bats` and the issues comment tests still pass (t4431 test 11 is red at HEAD independently: `lib/upgrade.sh` `describe --tags --exact-match` without the -be exclude — not this task)
+- [x] Vendored copy in sync (`bin/fw vendor self --check --task T-4500` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,24 +284,14 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_sidecar_runtime_dir_t4482.py -q > /tmp/.t4482.out 2>&1 && grep -q passed /tmp/.t4482.out
-bin/fw vendor self --check --task T-4482
-T="tests/unit/test_sidecar_watcher_t3684.py::test_start_replaces_a_receiver_and_watcher_running_stale_code"; (python3 -m pytest "$T" -q -p no:cacheprovider > /tmp/.t4482a.out 2>&1 & python3 -m pytest "$T" -q -p no:cacheprovider > /tmp/.t4482b.out 2>&1; wait); grep -q "1 passed" /tmp/.t4482a.out && grep -q "1 passed" /tmp/.t4482b.out
-python3 -m pytest tests/unit/test_sidecar_watcher_t3684.py tests/unit/test_sidecar_receipts_t3684.py -q -p no:cacheprovider > /tmp/.t4482c.out 2>&1 && grep -q passed /tmp/.t4482c.out
+timeout 300 bats tests/unit/t4500_be_notice_non_shallow.bats > /tmp/.t4500.out 2>&1 && ! grep -q "^not ok" /tmp/.t4500.out
+test "$(grep -c '# skip' /tmp/.t4500.out)" -eq 0
+timeout 300 bats -f "be-tag" tests/unit/t4431_be_tags.bats > /tmp/.t4500b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4500b.out
+python3 -m pytest tests/unit/t4077_issues_comment_test.py -q > /tmp/.t4500c.out 2>&1 && grep -q passed /tmp/.t4500c.out && ! grep -q failed /tmp/.t4500c.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4500_be_notice_non_shallow.bats > /tmp/.t4500d.out 2>&1 && grep -q clean /tmp/.t4500d.out
+bin/fw vendor self --check --task T-4500
 
 ## RCA
-
-**Symptom:** on ring20 hosts whose hub registry is /var/lib/termlink, the sidecar watcher never injected: `termlink discover` returned no sessions.
-**Root cause:** lib/sidecar/inject.py:58 `_discover` runs `termlink discover --json` with the inherited environment; the watcher (spawned by cron/supervisor via identity.respawn_env, lib/sidecar/watcher.py:859) had TERMLINK_RUNTIME_DIR unset, so termlink used its per-user default dir, not the hub's.
-**Why structurally allowed:** nothing resolved the dir the way the hub does, and an empty discover result was indistinguishable from "no session registered" (silent INJECT_BLOCKED at best).
-**Prevention:** runtime_dir.resolve() shared by watcher and injector, logged as an event; WARN naming the other dir when discover is empty but another known dir has sessions; regression test with two fake dirs.
-
-**t3684 flake (found while verifying; predates this task — nightly reds 2026-10-16/17/18):**
-- *Symptom:* `test_start_replaces_a_receiver_and_watcher_running_stale_code` failed intermittently: `read_triple_file()` None (10-16, 10-17) or no new supervisor (10-18). T-4220 had added waits; it still failed.
-- *Root cause:* every test in tests/unit/test_sidecar_watcher_t3684.py used the literal agent id `t3684` (fixture line 40 and each `--agent "t3684"`). `_start_receiver` (lib/sidecar_cli.py:820, :845) refuses to start a receiver while `lifecycle.live_receiver_pids(agent)` (lib/sidecar/lifecycle.py:318) finds a live receiver for that agent with another cwd: the T-4208 rival guard, which is host-wide by design. Any concurrent run (the nightly suite's parallel jobs, or another worker verifying the same file) has a `t3684` receiver in a different tmp dir, so the start is refused and the triple file stays cleared. Hypothesis confirmed by running the test twice at once: one run fails with the 10-16 signature every time; run alone, 6/6 full-file passes.
-- *Why nothing caught it:* the guard is correct product behaviour; the tests shared a host-global name while isolating everything else (tmp project, enabled/registry dirs). Retrying passes, so it read as timing.
-- *Fix / prevention:* the `proj` fixture now gives each test a unique agent id (`t3684-<pid>-<n>`), and the tests use it. The Verification line above runs the test twice at once.
-- *Second cause (the 10-18 signature, "no new supervisor"), a product race:* `cmd_start` (lib/sidecar_cli.py) replaced the stale receiver first (`_start_receiver` SIGTERMs it) while the stale supervisor was still alive. The supervisor checks the receiver every min(tick, 5) s, saw it gone and restarted it itself (RECEIVER_RESTARTED in events.jsonl). The two starts raced for the triple file, `cmd_start`'s receiver never appeared under its own pid, and it returned 2 before `_start_watcher`, so the stale supervisor was never replaced (no STALE_CODE_RESTART event). Load widens the window. Fix: `_stop_stale_watcher()` runs before `_start_receiver` in `cmd_start` and in `cmd_receiver_start` (not with --no-watcher, which is the supervisor's own restart call). Before: 2 concurrent runs under load, both failed with the 10-18 signature; after: 8/8 concurrent runs passed under 8 CPU burners.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -323,6 +306,14 @@ python3 -m pytest tests/unit/test_sidecar_watcher_t3684.py tests/unit/test_sidec
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** dimitri-mint-dev (msg ae5a4e7f) cloned the v1.8.15-be.1 tag shallow and `fw upgrade` refused it as foreign-source. The refusal's remedy line was clear, but nothing in the pre-release notice had said to clone non-shallow.
+
+**Root cause:** the pre-release notice surfaces carry no clone-depth guidance — `lib/release-tags.sh` `release_be_tag` (T-4431) printed only "Tagged … / Push when ready", and `lib/issues.py` `render()` `available-for-testing` branch printed only the caller's test command. The natural way to fetch one tag (`git clone --depth 1 --branch <tag>`) is exactly the source the origin guard (`lib/version-relation.sh:132-133`, T-3714) refuses.
+
+**Why structurally allowed:** the shallow-source refusal and the pre-release notice were built in separate tasks (T-3714/T-3886 vs T-4023/T-4431); the remedy lived only at the refusal site, reached after the field project had already cloned the wrong way. No test tied notice wording to the guard's precondition.
+
+**Prevention:** both notice surfaces now carry the non-shallow wording, pinned by `tests/unit/t4500_be_notice_non_shallow.bats`; removing the wording turns the test red.
 
 ## Evolution
 
@@ -400,10 +391,27 @@ python3 -m pytest tests/unit/test_sidecar_watcher_t3684.py tests/unit/test_sidec
 
 ## Updates
 
-### 2026-10-20T14:18:50Z — task-created [task-create-agent]
+### 2026-10-20T17:49:21Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4482-sidecar-watcher-inherits-an-unset-termli.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4500-pre-release-notices-say-upgrade-from-a-n.md
 - **Context:** Initial task creation
 
-### 2026-10-20T14:20:12Z — status-update [task-update-agent]
+### 2026-10-20T17:54:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0258ea9c
+- **Timestamp:** 2026-10-20T19:21:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T19:20:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

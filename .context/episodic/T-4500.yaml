@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4500: Pre-release notices: say upgrade from a non-shallow clone
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T19:21:38Z
+# ============================================================================
+
+task_id: T-4500
+task_name: "Pre-release notices: say upgrade from a non-shallow clone"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T17:49:21Z
+completed: 2026-10-20T19:20:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T19:59:21+02:00
+last_commit: 2026-10-20T20:00:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-release notices say upgrade from a non-shallow clone. tick vendor-sync AC
+
+# Key outcomes
+outcomes:
+  - '`fw release be-tag` (after tagging, and when HEAD is already tagged) prints an upgrade notice that says to upgrade from a NON-SHALLOW clone (no `--depth`), says why (a shallow clone cannot see the recorded version_sha and is refused as foreign-source), and names `git -C <clone> fetch --unshallow`'
+  - 'The `available-for-testing` issue comment for a `-be.N` version carries the same non-shallow wording and unshallow remedy; a plain `vX.Y.Z` version does not'
+  - '`tests/unit/t4500_be_notice_non_shallow.bats` pins both wordings (fails without the fix) and passes; the be-tag tests in `tests/unit/t4431_be_tags.bats` and the issues comment tests still pass (t4431 test 11 is red at HEAD independently: `lib/upgrade.sh` `describe --tags --exact-match` without the -be exclude — not this task)'
+  - 'Vendored copy in sync (`bin/fw vendor self --check --task T-4500` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - '.agentic-framework/lib/release-tags.sh'
+  - 'lib/issues.py'
+  - 'lib/release-tags.sh'
+  - '.tasks/active/T-4500-pre-release-notices-say-upgrade-from-a-n.md'
+  - 'tests/unit/t4500_be_notice_non_shallow.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T19:59:21'
+    action: 'T-4500: pre-release notices say upgrade from a non-shallow clone'
+  - time: '2026-10-20T20:00:18'
+    action: 'T-4500: tick vendor-sync AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 91 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 91
+  commits: 2
+  files_changed: 6
+  lines_added: 154
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4500-pre-release-notices-say-upgrade-from-a-n.md
+generated_by: context-agent-hybrid

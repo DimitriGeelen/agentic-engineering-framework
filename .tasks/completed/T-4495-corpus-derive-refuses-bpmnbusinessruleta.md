@@ -1,18 +1,19 @@
 ---
-id: T-4499
-name: "Human-AC tick guard blocks fw sidecar send when the body quotes a git output-option
-  command"
+id: T-4495
+name: "corpus derive refuses bpmn:businessRuleTask (parse_map unsupported tag)"
 description: >
-  dimitri-mint-dev msg ae5a4e7f: the guard refused a sidecar send because the message
-  BODY contained an example git command with a variable output option. A peer message
-  body is data, not a command; the guard should not scan the --body argument as shell.
+  832 (msg dbd05180): corpus derive refuses tests/fixtures/third-party/kitchen-sink.bpmn
+  at bpmn:businessRuleTask ('parse_map unsupported tag'). Same class as T-4374 (callActivity)
+  and T-4488 (plain task): add businessRuleTask to tools/corpus_spec.py TYPE_TO_TAG
+  with a lossless round trip and its NODE_OCCUPANCY entry. Coordinate with T-4488
+  (same files): do after T-4488 lands.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tools/corpus_lint.py, tools/corpus_spec.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,9 +41,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T17:49:03Z
-last_update: '2026-10-20T18:00:44Z'
-date_finished:
+created: 2026-10-20T15:49:42Z
+last_update: 2026-10-20T19:23:11Z
+date_finished: 2026-10-20T19:23:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -53,8 +54,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T16:00:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T17:54:01Z'
+  - ts: '2026-10-20T16:01:32Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -71,19 +82,9 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-20T18:00:44Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=315,acs=5)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4499: Human-AC tick guard blocks fw sidecar send when the body quotes a git output-option command
+# T-4495: corpus derive refuses bpmn:businessRuleTask (parse_map unsupported tag)
 
 ## Context
 
@@ -93,9 +94,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw sidecar send ... --body '<text>'` whose body quotes a git command with a variable `--output` option (or names `.tasks/` paths) is NOT refused by `lib/shell_write_scan.py` scan()
-- [x] Real writes in the same command line are still caught: a redirect/sed -i/git --output aimed at `.tasks/` outside the `--body` value, or a `--body "$(…)"` command substitution, still refuse
-- [x] Regression test covers both directions; T-4485 and T-3695 shell-write tests stay green
+- [x] `tools/corpus_spec.py` TYPE_TO_TAG maps a node type to `businessRuleTask`, with a NODE_OCCUPANCY entry for it
+- [x] `parse_map` of a map containing `<bpmn:businessRuleTask>` no longer refuses; parse → emit → parse round trip is lossless (same type, name, flows)
+- [x] The 832 refusal shape (kitchen-sink.bpmn lives in 832's repo, not here) is reproduced by an inline businessRuleTask map in the test: `unsupported BPMN element <bpmn:businessRuleTask` before the fix, 0 refusals after
+- [x] `tools/corpus_lint.py` NODE_OCCUPANCY has a `business-rule` entry (activity box, 64) and DEFAULT_FLOW_TAGS carries `businessRuleTask` (tActivity defines `default`)
+- [x] Regression test added next to the T-4488 test; fails without the fix, passes with it; neighbouring corpus_spec tests still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,13 +283,10 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4499_sidecar_body_data.bats > /tmp/.t4499 2>&1 && ! grep -q "^not ok" /tmp/.t4499
-test "$(grep -c '# skip' /tmp/.t4499)" -eq 0
-timeout 600 bats tests/unit/t3695_human_ac_tick_bash.bats > /tmp/.t4499b 2>&1 && ! grep -q "^not ok" /tmp/.t4499b
-timeout 300 bats tests/unit/t4485_git_output_quoting.bats > /tmp/.t4499c 2>&1 && ! grep -q "^not ok" /tmp/.t4499c
-timeout 300 bats tests/unit/t4367_git_output_option.bats > /tmp/.t4499d 2>&1 && ! grep -q "^not ok" /tmp/.t4499d
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4499e 2>&1 && grep -q clean /tmp/.t4499e
-bin/fw vendor self --check --task T-4499
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k business_rule > /tmp/.t4495 2>&1 && grep -q "1 passed" /tmp/.t4495 && ! grep -q failed /tmp/.t4495
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_lint_lane_overflow.py -q > /tmp/.t4495b 2>&1 && grep -q passed /tmp/.t4495b && ! grep -q failed /tmp/.t4495b
+python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_spec, corpus_lint; assert corpus_spec.TYPE_TO_TAG['business-rule']=='businessRuleTask'; assert corpus_lint.NODE_OCCUPANCY['business-rule']==64"
+bin/fw vendor self --check --task T-4495
 
 ## RCA
 
@@ -304,15 +304,13 @@ bin/fw vendor self --check --task T-4499
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** dimitri-mint-dev (msg ae5a4e7f) had `bin/fw sidecar send ... --body '<text>'` refused by the Human-AC tick guard ("SHELL WRITE TO A TASK FILE BLOCKED"). The body quoted an example like `` `git log --output="$F"` `` and named a `.tasks/` path. The hook wrapper (`agents/context/check-human-ac-tick.py` check_bash) only relays what the scanner says, so the scanner is what fired.
+**Symptom:** 832 (msg dbd05180) ran `corpus derive` on its third-party kitchen-sink.bpmn and got `parse: unsupported BPMN element <bpmn:businessRuleTask …> — parse_map cannot round-trip this tag`. Reproduced here with an inline map.
 
-**Root cause:** `lib/shell_write_scan.py` reads text inside single quotes as shell in two places. (1) `_tokens` runs `.replace("`", "\n")` over the whole command (about line 448), quotes included, so a backtick inside the quoted body split it, and `git log --output=$F` ended up as its own segment in command position. (2) `scan()` also scans every `_substitutions()` body. That function regex-scans `$(...)`/backticks anywhere, single quotes included, which its own comment accepts as "errs toward refusing". The git branch of `_segment` (T-4367/T-4485) then reported an unresolved `--output` target ($F). Because the command named a guarded path, that became a hit.
+**Root cause:** `tools/corpus_spec.py:49` TYPE_TO_TAG is a closed allow-list of BPMN node tags; `parse_map` hard-errors on any tag not in it (`tools/corpus_spec.py:~424`, the T-2614 guard against silently dropping nodes). `businessRuleTask` was never added, so a valid BPMN 2.0 activity type is refused.
 
-**Why structurally allowed:** the T-4485 hardening made any `$` in a git diff-family argument fail closed. That was correct for commands, but it now also applied to the over-reading of single-quoted text, which used to be harmless in practice. No test sent a message body (prose with markdown backticks) through the scanner. Peer messages are the one routine Bash call whose argument is free prose about shell commands.
+**Why structurally allowed:** the allow-list grows only when a consumer hits a missing tag (T-4374 callActivity, T-4488 task, now this) — no test enumerates the BPMN 2.0 activity tags against TYPE_TO_TAG, and the refusal is deliberate (fail loud, not lose data), so each gap surfaces one at a time in the field.
 
-**Fix:** `_blank_data_args` (new, runs first in `scan()`) walks the top-level words with the lexer's own quote helpers (`_skip_squote`, `_dquote`, `_backtick`, `_dollar`). For a `fw sidecar send` in command position, it blanks the interior of a `--body` value that is exactly one single-quoted string, in either the `--body 'x'` or `--body='x'` form. Double-quoted bodies, quote-attached values, other verbs, and anything with a heredoc or unbalanced text are left as they were, so they are still scanned.
-
-**Prevention:** `tests/unit/t4499_sidecar_body_data.bats` runs both directions through the real hook. Two allowed tests fail on the pre-fix scanner. Four refused tests cover a redirect or `sed -i` after a body, a double-quoted `$(…)`/backtick body, a quote-attached body, another verb, a fake `'` inside double quotes, and the bare git `--output` vector. New data-argument verbs are added in `_DATA_ARGS`.
+**Prevention:** regression test `test_business_rule_task_is_accepted_and_round_trips` pins the tag. The remaining BPMN activity tags (sendTask, receiveTask, manualTask) are the same class and still refused; enumerating the full BPMN 2.0 flow-node set in one test would close the class rather than the instance — noted for the parent, not done here (scope).
 
 ## Evolution
 
@@ -390,10 +388,31 @@ bin/fw vendor self --check --task T-4499
 
 ## Updates
 
-### 2026-10-20T17:49:03Z — task-created [task-create-agent]
+### 2026-10-20T15:49:42Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4499-human-ac-tick-guard-blocks-fw-sidecar-se.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4495-corpus-derive-refuses-bpmnbusinessruleta.md
 - **Context:** Initial task creation
 
-### 2026-10-20T17:54:00Z — status-update [task-update-agent]
+### 2026-10-20T18:05:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6e2985f7
+- **Timestamp:** 2026-10-20T19:23:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `tools/corpus_spec.py` TYPE_TO_TAG maps a node type to `businessRuleTask`, with a NODE_OCCUPANCY entry for it
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/corpus_spec.py in: `tools/corpus_spec.py` TYPE_TO_TAG maps a node type to `businessRuleTask`, with a NODE_OCCUPANCY entry for it`
+- **AC#4 (Agent)** — `tools/corpus_lint.py` NODE_OCCUPANCY has a `business-rule` entry (activity box, 64) and DEFAULT_FLOW_TAGS carries `businessRuleTask` (tActivity defines `default`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/corpus_lint.py in: `tools/corpus_lint.py` NODE_OCCUPANCY has a `business-rule` entry (activity box, 64) and DEFAULT_FLOW_TAGS carries `businessRuleTask` (tActivity defin`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T19:23:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

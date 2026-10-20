@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4495: corpus derive refuses bpmn:businessRuleTask (parse_map unsupported tag)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T19:23:47Z
+# ============================================================================
+
+task_id: T-4495
+task_name: "corpus derive refuses bpmn:businessRuleTask (parse_map unsupported tag)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T15:49:42Z
+completed: 2026-10-20T19:23:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T20:08:38+02:00
+last_commit: 2026-10-20T20:08:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  corpus_spec accepts bpmn:businessRuleTask (TYPE_TO_TAG 'business-rule', DEFAULT_FLOW_TAGS) and lane-overflow occupancy 64; regression test: inline businessRuleTask map parses with 0 refusals and round trips losslessly
+
+# Key outcomes
+outcomes:
+  - '`tools/corpus_spec.py` TYPE_TO_TAG maps a node type to `businessRuleTask`, with a NODE_OCCUPANCY entry for it'
+  - '`parse_map` of a map containing `<bpmn:businessRuleTask>` no longer refuses; parse → emit → parse round trip is lossless (same type, name, flows)'
+  - 'The 832 refusal shape (kitchen-sink.bpmn lives in 832''s repo, not here) is reproduced by an inline businessRuleTask map in the test: `unsupported BPMN element <bpmn:businessRuleTask` before the fix, 0 refusals after'
+  - '`tools/corpus_lint.py` NODE_OCCUPANCY has a `business-rule` entry (activity box, 64) and DEFAULT_FLOW_TAGS carries `businessRuleTask` (tActivity defines `default`)'
+  - 'Regression test added next to the T-4488 test; fails without the fix, passes with it; neighbouring corpus_spec tests still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/corpus_lint.py'
+  - '.agentic-framework/tools/corpus_spec.py'
+  - '.tasks/active/T-4495-corpus-derive-refuses-bpmnbusinessruleta.md'
+  - 'tests/unit/test_corpus_spec_roundtrip.py'
+  - 'tools/corpus_lint.py'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T20:08:38'
+    action: 'T-4495: corpus_spec accepts bpmn:businessRuleTask (TYPE_TO_TAG ''business-rule'', DEFAULT_FLOW_TAGS) and lane-overflow occupancy 64; regression test: inline businessRuleTask map parses with 0 refusals and round trips losslessly'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 213 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 213
+  commits: 1
+  files_changed: 6
+  lines_added: 85
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4495-corpus-derive-refuses-bpmnbusinessruleta.md
+generated_by: context-agent-hybrid

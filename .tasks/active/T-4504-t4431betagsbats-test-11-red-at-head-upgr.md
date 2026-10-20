@@ -1,18 +1,11 @@
 ---
-id: T-4437
-name: "External reviewer runs default to an outside-repo directory with tools off;
-  a review seat that read other seats' output is flagged non-independent"
+id: T-4504
+name: "t4431_be_tags.bats test 11 red at HEAD: upgrade.sh describe --tags --exact-match
+  HEAD has no -be exclude"
 description: >
-  T-4435: the opencode seat ran with file/shell tools on from .context/scratch/ (inside
-  the repo). It listed ~900 task filenames, read code beyond the redacted bundle,
-  and read the first 5 lines of the codex and claude reviews before writing its own:
-  not independent, and outside the bundle-only promise (no IP/hostname reached it,
-  checked). The isolated re-run (scratch dir outside the repo, OPENCODE_CONFIG with
-  every tool false, --pure, stdin closed) was clean. Make that the default for external
-  review runs (codex/opencode/claude -p): a run directory outside the repo, tools
-  disabled per backend (registry field in policy/review-backends.yaml), each seat
-  writing to its own path that other seats cannot read until all finish, and a post-run
-  check of the seat's tool log for file reads.
+  From w4500: lib/upgrade.sh ~1638 resolves the version with git describe --tags --exact-match
+  HEAD, which picks a v*-be.N tag. Exclude -be tags (or handle them) and make test
+  11 green.
 
 status: started-work
 workflow_type: build
@@ -47,8 +40,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T22:36:00Z
-last_update: 2026-10-20T18:05:47Z
+created: 2026-10-20T19:09:03Z
+last_update: 2026-10-20T19:26:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -61,7 +54,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-19T22:45:34Z'
+  - ts: '2026-10-20T19:15:43Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -71,7 +64,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T22:46:26Z'
+  - ts: '2026-10-20T19:16:33Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -90,7 +83,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4437: External reviewer runs default to an outside-repo directory with tools off; a review seat that read other seats' output is flagged non-independent
+# T-4504: t4431_be_tags.bats test 11 red at HEAD: upgrade.sh describe --tags --exact-match HEAD has no -be exclude
 
 ## Context
 
@@ -100,13 +93,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] A runner `lib/review_isolation.py` (CLI `bin/fw review isolated-run`) builds each external seat's command (codex, opencode, claude -p) with isolation ON by default: opencode gets `OPENCODE_CONFIG` with every tool false, `--pure`, stdin closed; claude -p gets no tools (`--tools ""`, `--strict-mcp-config`); codex gets `--sandbox read-only` in an empty dir.
-- [x] The runner refuses (exit 2, nothing launched) when the run directory resolves inside the project repo or any git work tree, symlinks included.
-- [x] Each seat runs in its own directory holding only the redacted bundle; seats run sequentially and every seat's output stays in a private holding dir until all seats finish, so no seat can see another's output.
-- [x] The bundle is refused when it contains an IPv4 address or a hostname-looking token from a denylist pattern (never sent out).
-- [x] Per-backend isolation settings live in `policy/review-backends.yaml` as an `isolation:` block, and the registry loader accepts it.
-- [x] A post-run check flags a seat whose transcript shows a tool call / file read as `non-independent`.
-- [x] Regression tests in `tests/unit/test_review_isolation.py` cover all of the above with a fake binary; no external model is called.
+- [ ] The git describe --tags --exact-match HEAD call in lib/upgrade.sh excludes -be tags (--exclude '*-be.*'), like every other describe --tags in lib/
+- [ ] tests/unit/t4431_be_tags.bats test 11 ("every describe --tags ... excludes -be tags") is green, no other test in that file regresses
+- [ ] bin/fw vendor self --check --task T-4504 clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,14 +280,16 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_review_isolation.py -q > /tmp/.t4437-out 2>&1 && grep -q passed /tmp/.t4437-out && ! grep -qE "[0-9]+ (failed|skipped)" /tmp/.t4437-out
-python3 -c "import sys; sys.path.insert(0,'lib'); import review_cost as c; b={x['id']:x for x in c.load_registry()}; assert all('isolation' in b[i] for i in ('claude-code','codex','opencode'))"
-out=$(bin/fw review isolated-run --help 2>&1); echo "$out" | grep -q -- "--run-dir"
-out=$(bin/fw review isolated-run --task T-4437 --backends opencode --prompt-file FRAMEWORK.md --bundle FRAMEWORK.md --run-dir .context/scratch/t4437-probe --dry-run 2>&1; echo "rc=$?"); echo "$out" | grep -q "inside the repo" && echo "$out" | grep -q "rc=2"
-bash -c 't3586=$(bats tests/unit/t3586_review_cost.bats 2>&1); echo "$t3586" | grep -q "^ok 1 " && ! echo "$t3586" | grep -q "^not ok"'
-bin/fw vendor self --check --task T-4437
+
+out=$(bats tests/unit/t4431_be_tags.bats 2>&1); echo "$out" | grep -q '^ok 8 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check --task T-4504
 
 ## RCA
+
+**Symptom:** t4431_be_tags.bats "every describe --tags ... excludes -be tags" red at HEAD.
+**Root cause:** T-4453 added `git describe --tags --exact-match HEAD` at lib/upgrade.sh:1605 (Commit: line) without the `--exclude '*-be.*'` the T-4431 invariant requires.
+**Why structurally allowed:** the lint-style test only runs in the unit suite; T-4453 landed without running it.
+**Prevention:** the fix adds the exclude; the existing test (grep over lib/bin/agents) guards every future describe call.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -313,14 +304,6 @@ bin/fw vendor self --check --task T-4437
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** T-4435's first opencode seat ran with file and shell tools on, from `.context/scratch/` inside the repo. It listed ~900 task filenames, read code beyond the redacted bundle, and read the first lines of the codex and claude reviews before writing its own: not independent, and outside the bundle-only promise.
-
-**Root cause:** there was no runner for external review seats. `fw review` (`lib/review_cost.py:551`) covers cost, proposals and credentials only, and the registry (`policy/review-backends.yaml`) records cost class, binary and model but no isolation profile. Every external seat (T-4435, T-4470) was launched by hand, so isolation depended on whoever typed the command remembering the flags (OPENCODE_CONFIG with tools off, `--pure`, stdin closed, a directory outside the repo), and each CLI's default is tools on in the current directory.
-
-**Why structurally allowed:** the review-strength machinery (T-3580) governs `fw termlink dispatch --task-type review` workers only; ad-hoc panels of codex/opencode/`claude -p` had no gate, no default and no check, so a contaminated seat looked exactly like a clean one until a human read its log.
-
-**Prevention:** `fw review isolated-run` (`lib/review_isolation.py`) is the one way to run an external panel: isolation is the default with no off switch, an in-repo or in-git-tree run dir is refused, each backend's tools-off profile is a registry `isolation:` block validated by the registry loader (a backend without one is refused), seats run sequentially with outputs held in memory until all finish, the bundle is refused if it holds an IP or internal hostname, and a seat whose transcript shows a tool call is labelled `non-independent`. Pinned by `tests/unit/test_review_isolation.py`.
 
 ## Evolution
 
@@ -398,11 +381,10 @@ bin/fw vendor self --check --task T-4437
 
 ## Updates
 
-### 2026-10-19T22:36:00Z — task-created [task-create-agent]
+### 2026-10-20T19:09:03Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4437-external-reviewer-runs-default-to-an-out.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4504-t4431betagsbats-test-11-red-at-head-upgr.md
 - **Context:** Initial task creation
 
-### 2026-10-20T18:05:47Z — status-update [task-update-agent]
+### 2026-10-20T19:26:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)

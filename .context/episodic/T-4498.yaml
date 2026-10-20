@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4498: Refused fw upgrade (foreign-source) still ran Self-vendor sync first
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T19:19:34Z
+# ============================================================================
+
+task_id: T-4498
+task_name: "Refused fw upgrade (foreign-source) still ran Self-vendor sync first"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T17:48:44Z
+completed: 2026-10-20T19:02:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T19:49:48+02:00
+last_commit: 2026-10-20T21:02:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file dimitri-mint-dev's v1.8.15-be.1 findings as T-4498/T-4499/T-4500. refused fw upgrade no longer self-vendors first — sync moved below every pre-write refusal. fabric cards for the T-4498 and T-4500 tests
+
+# Key outcomes
+outcomes:
+  - '`do_upgrade` (lib/upgrade.sh) runs the self-vendor block only after every pre-write refusal check (T-1912 version precheck incl. foreign-source, T-4278 vendor precheck)'
+  - 'Regression test `tests/unit/t4498_refused_upgrade_no_self_vendor.bats`: shallow-clone source refused as foreign-source => consumer tree AND source `.agentic-framework/` byte-identical before/after, no `Self-vendor: synced` line; fails on the pre-fix code'
+  - 'Control: an accepted (non-refused) upgrade still self-vendors (T-1217 invariant kept)'
+  - '`upgrade_fresh_machine_simulation.bats`, `t4278_upgrade_refusal_atomic.bats`, `t2095_upgrade_self_vendor_extraction.bats` stay green'
+  - '`bin/fw vendor self --check --task T-4498` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.fabric/components/tests-unit-t4498_refused_upgrade_no_self_vendor.yaml'
+  - '.fabric/components/tests-unit-t4500_be_notice_non_shallow.yaml'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4498-refused-fw-upgrade-foreign-source-still-.md'
+  - '.tasks/active/T-4499-human-ac-tick-guard-blocks-fw-sidecar-se.md'
+  - '.tasks/active/T-4500-pre-release-notices-say-upgrade-from-a-n.md'
+  - 'tests/unit/t4498_refused_upgrade_no_self_vendor.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T19:49:48'
+    action: 'T-4498: file dimitri-mint-dev''s v1.8.15-be.1 findings as T-4498/T-4499/T-4500'
+  - time: '2026-10-20T20:04:14'
+    action: 'T-4498: refused fw upgrade no longer self-vendors first — sync moved below every pre-write refusal'
+  - time: '2026-10-20T21:02:50'
+    action: 'T-4498: fabric cards for the T-4498 and T-4500 tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 74 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 74
+  commits: 3
+  files_changed: 8
+  lines_added: 1314
+  lines_removed: 73
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4498-refused-fw-upgrade-foreign-source-still-.md
+generated_by: context-agent-hybrid
