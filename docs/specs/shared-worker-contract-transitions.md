@@ -1,7 +1,20 @@
 # Shared dispatched-worker contract — transition table and conformance spec
 
-**Status:** DRAFT v0.2 for agreement by TermLink, ring20 and AEF. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
+**Status:** DRAFT v0.2.1 for agreement by TermLink, ring20 and AEF. TermLink: AGREE (v0.2 plus the v0.2.1 fixes). **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
 **Contract version field value:** `wc/0.2` (see §2). **Rule:** no implementation starts before this table is agreed.
+
+## Changelog v0.2 → v0.2.1
+
+Source: **[termlink v0.2 agree]** = TermLink's AGREE to v0.2 (msg b73b1cf3, 2026-10-20), three non-blocking fixes, no
+new round. The contract version field stays `wc/0.2`.
+
+1. **§3.4 gains the sweep row that produces T7c** (`unknown` → `lost`): seen alive at the current epoch, then absent
+   on two consecutive sweeps at that epoch, then reconciliation, `lost` only after `G`. Before, `unknown` could only
+   leave through T7a, T7b or T7d. [termlink v0.2 agree §1]
+2. **`deadline_dispatched` default:** spawn timeout + `G` (120 s), stated next to `deadline_running` (§2).
+   [termlink v0.2 agree §2]
+3. **Open question 3 closed:** ring20 has no reconciler of its own; its supervisor submits late evidence through T5.
+   [termlink v0.2 agree §3]
 
 ## Changelog v0.1 → v0.2
 
@@ -115,7 +128,7 @@ attempts:                         # append-only list, index = attempt number sta
     answers:                      # per-attempt section; the lifecycle ignores it (§5)
       - {cmd_id, question_id, body, deadline, state: stored|received|applied|undelivered|expired, ...}
     questions: [...]              # worker-appended, same fence (§5)
-    deadline_dispatched: <ts>     # after this with no T2 and no confirmable end -> unknown (§3 T6b)
+    deadline_dispatched: <ts>     # spawn timeout + G (120 s) by default [termlink v0.2 agree §2]; after this with no T2 and no confirmable end -> unknown (§3 T6b)
     deadline_running: <ts>        # worker timeout + 10 min by default [termlink v0.1 review §2]; no confirmable end -> unknown (§3 T6)
 ```
 
@@ -229,6 +242,7 @@ covers clean exits, which emit no event. The `session.exited` event is a hint an
 | Never seen, `deadline_dispatched` passed | T6b `unknown` |
 | Still alive after `deadline_running` | T6 `unknown` |
 | Alive again while `unknown` | T7a |
+| `unknown`, then seen alive at the current `registry_epoch`, then absent on two consecutive sweeps at that epoch | reconciliation requested; `lost` (T7c) only after `G` with no fenced `done` [termlink v0.2 agree §1] |
 | Alive again while `lost` | no transition; logged + operator notice |
 
 Requirements: the record's hub is the hub the worker registers with (hubs do not federate), and `worker_binding` is
@@ -558,9 +572,9 @@ Still open:
 
 2. **Per-backend agreement of the numbers.** `G`, `deadline_running`, `ANSWER_TTL` and retention are agreed with
    TermLink (hub backend); the local backend and ring20 still need to confirm them.
-3. **Who runs the reconciler on a hub host that has no AEF** (ring20 workers)? The contract assumes the supervisor
-   itself can submit late evidence (T5 allows supervisor as writer); whether ring20 needs its own reconciler is
-   ring20's to answer.
+3. ~~**Who runs the reconciler on a hub host that has no AEF** (ring20 workers)?~~ **Closed in v0.2.1:** ring20 has no
+   reconciler of its own; its supervisor submits late evidence through T5 (ring20 msg b193272e, relayed by TermLink).
+   [termlink v0.2 agree §3]
 4. **Authority transfer on prolonged hub outage** is out of scope (§6.4); if the operator wants local
    fallback *during* a hub outage it needs its own protocol.
 5. **Signed operator identity** for T7d: until it exists resolve is a hub-host CLI; the identity mechanism is not
