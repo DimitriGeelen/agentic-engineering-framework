@@ -1631,6 +1631,13 @@ do_upgrade() {
     echo ""
     echo "  Project:   $target_dir ($project_name)"
     echo "  Framework: $FRAMEWORK_ROOT (v${fw_version})"
+    # T-4453: VERSION is shared by master and a -be cut, so name the revision vendored.
+    local _src_sha _src_tag
+    _src_sha=$(git -C "$FRAMEWORK_ROOT" rev-parse --short=12 HEAD 2>/dev/null) || _src_sha=""
+    if [ -n "$_src_sha" ]; then
+        _src_tag=$(git -C "$FRAMEWORK_ROOT" describe --tags --exact-match HEAD 2>/dev/null) || _src_tag=""
+        echo "  Commit:    ${_src_sha}${_src_tag:+ ($_src_tag)}"
+    fi
     if [ -n "$project_version" ]; then
         fw_upgrade_render_pin_line "$project_version" "$fw_version" "$_rel" "$force_downgrade"
     else
