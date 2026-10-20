@@ -398,14 +398,14 @@ def search_ask():
     # events while the user waits (not before Response creation).
     def _chat_stream():
         from web.ask import stream_answer
-        from web.embeddings import rag_retrieve, _db, _db_built_at, DB_PATH, STALE_SECONDS
+        from web.embeddings import rag_retrieve, _db, _db_opened_at, DB_PATH, STALE_SECONDS
         import sqlite3
         import time
 
         # Phase 1: Check embedding index readiness
         # The index is ready if: in-memory DB has docs, OR on-disk DB has docs
         index_ready = False
-        if _db is not None and (time.time() - _db_built_at) < STALE_SECONDS:
+        if _db is not None and (time.time() - _db_opened_at) < STALE_SECONDS:
             index_ready = True
         elif DB_PATH.exists() and DB_PATH.stat().st_size > 4096:
             try:
