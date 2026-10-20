@@ -100,8 +100,8 @@ bad = [
     "git diff {--output=%s,HEAD}" % T,
 ]
 for c in bad:
-    assert s.scan(c, P, P), "no hit: " + c
-assert not s.scan("git diff HEAD", P, P)
+    assert s.scan(c, P), "no hit: " + c
+assert not s.scan("git diff HEAD", P)
 assert s.git_output_risk("git diff \"--output=/tmp/x\"")
 assert s.git_output_risk("git diff $o")
 assert not s.git_output_risk("git log --format=\"%h %s\" -3")
