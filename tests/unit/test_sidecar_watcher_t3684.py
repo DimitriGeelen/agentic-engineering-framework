@@ -11,6 +11,7 @@ tests/integration/t3684_sidecar_watcher_e2e_test.py.
 from __future__ import annotations
 
 import io
+import itertools
 import json
 import os
 import signal
@@ -30,14 +31,23 @@ from lib.sidecar import adapter, direct, hooks, inject, latency, lifecycle, rece
 CLI = [sys.executable, str(FW_ROOT / "lib" / "sidecar_cli.py")]
 NO_TERMLINK_PATH = "/usr/bin:/bin"   # termlink lives in /usr/local/bin and ~/.local/bin here
 
+# T-4482: the agent id is unique per test. The T-4208 rival guard looks for live
+# receivers by agent id across the whole host, so a fixed AGENT made a
+# concurrent run (parallel suite jobs, another worker on this file) a "rival"
+# and `start` refused, leaving no triple file. Set by `proj`.
+_AGENT_SEQ = itertools.count()
+AGENT = "t3684"
+
 
 @pytest.fixture
 def proj(tmp_path, monkeypatch):
-    root = tmp_path / "t3684"
+    global AGENT
+    AGENT = f"t3684-{os.getpid()}-{next(_AGENT_SEQ)}"
+    root = tmp_path / AGENT
     (root / ".context").mkdir(parents=True)
     (root / ".framework.yaml").write_text("project_name: t3684\n")
     monkeypatch.setenv("PROJECT_ROOT", str(root))
-    monkeypatch.setenv("FW_SIDECAR_AGENT_ID", "t3684")
+    monkeypatch.setenv("FW_SIDECAR_AGENT_ID", AGENT)
     monkeypatch.delenv("FW_SIDECAR_TICK", raising=False)
     monkeypatch.delenv("FW_REVIEW_WORKER", raising=False)
     monkeypatch.delenv("FW_DISPATCHED_WORKER", raising=False)   # T-4416: ensure skips workers
@@ -111,7 +121,7 @@ def test_sidecar_tick_is_a_registered_config_key():
 # ── one tick ────────────────────────────────────────────────────────────────
 
 def test_tick_injects_into_the_ready_session_and_writes_liveness(proj, monkeypatch):
-    assert _cli(proj, "receiver", "start", "--no-watcher", "--agent", "t3684").returncode == 0
+    assert _cli(proj, "receiver", "start", "--no-watcher", "--agent", AGENT).returncode == 0
     _stop_hook(monkeypatch, "sess-1", "tl-1")
     receiver.store_message("m1", {"client_msg_id": "m1", "from": "peer", "body": "x",
                                   "conversation_id": "c"})
@@ -119,7 +129,7 @@ def test_tick_injects_into_the_ready_session_and_writes_liveness(proj, monkeypat
     rep = watcher.run_tick(41, 30.0, runner=tl, hub_reader=lambda *a, **k: [])
     assert rep["deliver"]["injected"] == ["m1"] and tl.injects[0][3] == "tl-1"
     live = watcher.read_liveness()
-    assert live["seq"] == 41 and live["identity"] == "t3684"
+    assert live["seq"] == 41 and live["identity"] == AGENT
     assert live["last_probe_ok"] is True and live["last_probe_latency_ms"] > 0
     assert set(watcher._LIVENESS_KEYS) <= set(live)
     ev = [e for e in receiver.read_events("m1") if e["event"] == "INJECT_ATTEMPT"][0]
@@ -149,7 +159,7 @@ def test_urgent_injects_on_the_tick_while_busy(proj, monkeypatch):
 
 
 def test_probe_fails_without_a_receiver_and_verdict_is_not_live(proj):
-    watcher.enable("t3684", 30, True)
+    watcher.enable(AGENT, 30, True)
     rep = watcher.run_tick(1, 30.0, runner=Termlink([]), hub_reader=lambda *a, **k: [])
     assert rep["probe"]["ok"] is False and "receiver not running" in rep["probe"]["reason"]
     v = watcher.liveness_verdict()
@@ -158,10 +168,10 @@ def test_probe_fails_without_a_receiver_and_verdict_is_not_live(proj):
 
 def test_verdict_stalled_seq_absent_and_never_ticked(proj):
     assert watcher.liveness_verdict()["state"] == "absent"
-    watcher.enable("t3684", 2, True)
+    watcher.enable(AGENT, 2, True)
     v = watcher.liveness_verdict()
     assert v["state"] == "not-live" and "never" in v["reasons"][0]
-    watcher.write_liveness({"identity": "t3684", "seq": 5, "last_probe_ok": True,
+    watcher.write_liveness({"identity": AGENT, "seq": 5, "last_probe_ok": True,
                             "updated_at": datetime.now(timezone.utc).isoformat(), "tick_s": 2})
     assert watcher.liveness_verdict()["state"] == "live"
     later = datetime.now(timezone.utc) + timedelta(seconds=2 * 2 + watcher.STALL_GRACE_S + 1)
@@ -234,7 +244,7 @@ def test_legacy_sender_gets_a_handed_over_receipt_not_a_skip(proj, monkeypatch):
                                         "body": "b", "via": "hub-topic"})
     sent = []
     monkeypatch.setattr(receipts, "send", lambda env, st, by, **k: sent.append((env["client_msg_id"], st, by)))
-    hooks._confirm("legacy-2", receiver.read_message("legacy-2"), "t3684")
+    hooks._confirm("legacy-2", receiver.read_message("legacy-2"), AGENT)
     assert sent == [("legacy-2", "HANDED_OVER", "prompt-hook")]
 
 
@@ -257,7 +267,7 @@ def _alive(pid):
 
 
 def test_start_supervises_restarts_and_ensure_recovers(proj):
-    out = _cli(proj, "start", "--tick", "1", "--agent", "t3684", path=NO_TERMLINK_PATH)
+    out = _cli(proj, "start", "--tick", "1", "--agent", AGENT, path=NO_TERMLINK_PATH)
     assert out.returncode == 0, out.stdout + out.stderr
     assert "termlink=ABSENT" in out.stdout              # inert, and says so
     assert _wait(lambda: (watcher.read_liveness() or {}).get("seq", 0) >= 2)
@@ -312,7 +322,7 @@ def test_start_supervises_restarts_and_ensure_recovers(proj):
 
 
 def test_supervisor_restarts_a_dead_receiver(proj):
-    assert _cli(proj, "start", "--tick", "1", "--agent", "t3684",
+    assert _cli(proj, "start", "--tick", "1", "--agent", AGENT,
                 path=NO_TERMLINK_PATH).returncode == 0
     old = lifecycle.read_triple_file()["pid"]
     os.kill(old, signal.SIGKILL)
@@ -322,7 +332,7 @@ def test_supervisor_restarts_a_dead_receiver(proj):
 
 
 def test_receiver_start_starts_the_watcher_and_receiver_stop_stops_it(proj):
-    assert _cli(proj, "receiver", "start", "--tick", "1", "--agent", "t3684",
+    assert _cli(proj, "receiver", "start", "--tick", "1", "--agent", AGENT,
                 path=NO_TERMLINK_PATH).returncode == 0
     assert _wait(lambda: watcher.supervisor_alive())
     sup = _pid(proj, "supervisor")
@@ -403,7 +413,7 @@ def test_claude_fw_really_starts_the_sidecar(proj, tmp_path, args, expect):
     env = {"HOME": os.environ["HOME"], "PATH": f"{stub}:{NO_TERMLINK_PATH}",
            "FW_SIDECAR_ENABLED_DIR": os.environ["FW_SIDECAR_ENABLED_DIR"],
            "FW_SIDECAR_REGISTRY_DIR": os.environ["FW_SIDECAR_REGISTRY_DIR"],
-           "FW_SIDECAR_AGENT_ID": "t3684"}
+           "FW_SIDECAR_AGENT_ID": AGENT}
     out = subprocess.run([str(FW_ROOT / "bin" / "claude-fw"), *args, "--no-restart"],
                          cwd=proj, env=env, capture_output=True, text=True, timeout=180)
     text = out.stdout + out.stderr
@@ -448,7 +458,7 @@ def test_session_start_hook_respects_an_explicit_stop_and_review_workers(proj):
 
 
 def test_start_replaces_a_receiver_and_watcher_running_stale_code(proj, monkeypatch):
-    assert _cli(proj, "start", "--tick", "1", "--agent", "t3684", path=NO_TERMLINK_PATH).returncode == 0
+    assert _cli(proj, "start", "--tick", "1", "--agent", AGENT, path=NO_TERMLINK_PATH).returncode == 0
     assert _wait(lambda: watcher.supervisor_alive())
     old_recv = lifecycle.read_triple_file()["pid"]
     old_sup = watcher.read_pid("supervisor")
@@ -461,7 +471,7 @@ def test_start_replaces_a_receiver_and_watcher_running_stale_code(proj, monkeypa
     monkeypatch.setattr(watcher, "code_mtime", lambda: time.time() + 3600)   # code "changed"
     assert watcher.is_stale(old_recv) and watcher.is_stale(old_sup)
     from lib import sidecar_cli
-    args = type("A", (), {"agent": "t3684", "port": None, "tick": 1.0, "no_inject": False,
+    args = type("A", (), {"agent": AGENT, "port": None, "tick": 1.0, "no_inject": False,
                           "quiet": True, "json": False})()
     monkeypatch.setenv("PATH", NO_TERMLINK_PATH)
     sidecar_cli.cmd_start(args)
@@ -470,3 +480,25 @@ def test_start_replaces_a_receiver_and_watcher_running_stale_code(proj, monkeypa
     # suite load cmd_start returns before that (read_triple_file() was None once).
     assert _wait(lambda: (lifecycle.read_triple_file() or {}).get("pid") not in (None, old_recv))
     assert _wait(lambda: watcher.read_pid("supervisor") not in (None, old_sup) and watcher.supervisor_alive())
+
+
+@pytest.mark.parametrize("cmd,no_watcher,expect", [
+    ("cmd_start", False, ["stop_processes", "receiver"]),
+    ("cmd_receiver_start", False, ["stop_processes", "receiver"]),
+    # --no-watcher is the supervisor's own receiver restart: it must not stop itself.
+    ("cmd_receiver_start", True, ["receiver"]),
+])
+def test_start_stops_a_stale_supervisor_before_replacing_the_receiver(proj, monkeypatch, cmd, no_watcher, expect):
+    """T-4482: a live stale supervisor restarts the receiver `start` has just
+    stopped, the two starts race for the triple file, `start` returns 2 before
+    reaching the watcher, and the stale supervisor stays. Stop it first."""
+    from lib import sidecar_cli
+    calls = []
+    monkeypatch.setattr(watcher, "read_pid", lambda which: 4242)
+    monkeypatch.setattr(watcher, "is_stale", lambda pid: pid == 4242)
+    monkeypatch.setattr(watcher, "stop_processes", lambda *a, **k: calls.append("stop_processes") or {})
+    monkeypatch.setattr(sidecar_cli, "_start_receiver", lambda *a, **k: calls.append("receiver") or (2, None))
+    args = type("A", (), {"agent": AGENT, "port": None, "tick": 1.0, "no_inject": False, "quiet": True,
+                          "json": False, "force": True, "no_watcher": no_watcher})()
+    assert getattr(sidecar_cli, cmd)(args) == 2
+    assert calls == expect

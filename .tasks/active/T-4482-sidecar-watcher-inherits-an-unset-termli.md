@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T14:18:50Z
-last_update: '2026-10-20T14:30:43Z'
+last_update: 2026-10-20T18:05:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,10 +101,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/sidecar/runtime_dir.py resolves the runtime dir: TERMLINK_RUNTIME_DIR if set, else /var/lib/termlink when present, else None (termlink default), and reports the source
-- [ ] The watcher applies the resolved dir to its environment at startup and records a RUNTIME_DIR event naming dir and source
-- [ ] inject._discover runs `termlink discover` with the resolved dir and, when it returns 0 sessions while another known runtime dir has sessions, WARNs naming that dir (event RUNTIME_DIR_MISMATCH)
-- [ ] Regression test with two fake runtime dirs passes and fails without the fix (tests/unit/test_sidecar_runtime_dir_t4482.py)
+- [x] lib/sidecar/runtime_dir.py resolves the runtime dir: TERMLINK_RUNTIME_DIR if set, else /var/lib/termlink when present, else None (termlink default), and reports the source
+- [x] The watcher applies the resolved dir to its environment at startup and records a RUNTIME_DIR event naming dir and source
+- [x] inject._discover runs `termlink discover` with the resolved dir and, when it returns 0 sessions while another known runtime dir has sessions, WARNs naming that dir (event RUNTIME_DIR_MISMATCH)
+- [x] Regression test with two fake runtime dirs passes and fails without the fix (tests/unit/test_sidecar_runtime_dir_t4482.py)
+- [x] t3684 flake fixed (cause 1): each test in tests/unit/test_sidecar_watcher_t3684.py uses its own agent id, so two concurrent runs of the stale-code test both pass (before: one fails at read_triple_file() None)
+- [x] t3684 flake fixed (cause 2): `fw sidecar start` / `receiver start` (without --no-watcher) stop a stale supervisor/watcher BEFORE replacing the receiver; test_start_stops_a_stale_supervisor_before_replacing_the_receiver passes and fails 2/3 without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +293,8 @@ cost_estimate_proposed:
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 python3 -m pytest tests/unit/test_sidecar_runtime_dir_t4482.py -q > /tmp/.t4482.out 2>&1 && grep -q passed /tmp/.t4482.out
 bin/fw vendor self --check --task T-4482
+T="tests/unit/test_sidecar_watcher_t3684.py::test_start_replaces_a_receiver_and_watcher_running_stale_code"; (python3 -m pytest "$T" -q -p no:cacheprovider > /tmp/.t4482a.out 2>&1 & python3 -m pytest "$T" -q -p no:cacheprovider > /tmp/.t4482b.out 2>&1; wait); grep -q "1 passed" /tmp/.t4482a.out && grep -q "1 passed" /tmp/.t4482b.out
+python3 -m pytest tests/unit/test_sidecar_watcher_t3684.py tests/unit/test_sidecar_receipts_t3684.py -q -p no:cacheprovider > /tmp/.t4482c.out 2>&1 && grep -q passed /tmp/.t4482c.out
 
 ## RCA
 
@@ -298,6 +302,13 @@ bin/fw vendor self --check --task T-4482
 **Root cause:** lib/sidecar/inject.py:58 `_discover` runs `termlink discover --json` with the inherited environment; the watcher (spawned by cron/supervisor via identity.respawn_env, lib/sidecar/watcher.py:859) had TERMLINK_RUNTIME_DIR unset, so termlink used its per-user default dir, not the hub's.
 **Why structurally allowed:** nothing resolved the dir the way the hub does, and an empty discover result was indistinguishable from "no session registered" (silent INJECT_BLOCKED at best).
 **Prevention:** runtime_dir.resolve() shared by watcher and injector, logged as an event; WARN naming the other dir when discover is empty but another known dir has sessions; regression test with two fake dirs.
+
+**t3684 flake (found while verifying; predates this task — nightly reds 2026-10-16/17/18):**
+- *Symptom:* `test_start_replaces_a_receiver_and_watcher_running_stale_code` failed intermittently: `read_triple_file()` None (10-16, 10-17) or no new supervisor (10-18). T-4220 had added waits; it still failed.
+- *Root cause:* every test in tests/unit/test_sidecar_watcher_t3684.py used the literal agent id `t3684` (fixture line 40 and each `--agent "t3684"`). `_start_receiver` (lib/sidecar_cli.py:820, :845) refuses to start a receiver while `lifecycle.live_receiver_pids(agent)` (lib/sidecar/lifecycle.py:318) finds a live receiver for that agent with another cwd: the T-4208 rival guard, which is host-wide by design. Any concurrent run (the nightly suite's parallel jobs, or another worker verifying the same file) has a `t3684` receiver in a different tmp dir, so the start is refused and the triple file stays cleared. Hypothesis confirmed by running the test twice at once: one run fails with the 10-16 signature every time; run alone, 6/6 full-file passes.
+- *Why nothing caught it:* the guard is correct product behaviour; the tests shared a host-global name while isolating everything else (tmp project, enabled/registry dirs). Retrying passes, so it read as timing.
+- *Fix / prevention:* the `proj` fixture now gives each test a unique agent id (`t3684-<pid>-<n>`), and the tests use it. The Verification line above runs the test twice at once.
+- *Second cause (the 10-18 signature, "no new supervisor"), a product race:* `cmd_start` (lib/sidecar_cli.py) replaced the stale receiver first (`_start_receiver` SIGTERMs it) while the stale supervisor was still alive. The supervisor checks the receiver every min(tick, 5) s, saw it gone and restarted it itself (RECEIVER_RESTARTED in events.jsonl). The two starts raced for the triple file, `cmd_start`'s receiver never appeared under its own pid, and it returned 2 before `_start_watcher`, so the stale supervisor was never replaced (no STALE_CODE_RESTART event). Load widens the window. Fix: `_stop_stale_watcher()` runs before `_start_receiver` in `cmd_start` and in `cmd_receiver_start` (not with --no-watcher, which is the supervisor's own restart call). Before: 2 concurrent runs under load, both failed with the 10-18 signature; after: 8/8 concurrent runs passed under 8 CPU burners.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

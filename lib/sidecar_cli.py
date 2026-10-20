@@ -888,13 +888,23 @@ def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int
     return 0, info
 
 
+def _stop_stale_watcher() -> None:
+    """Stop a supervisor or watcher running stale code (T-3685).
+
+    T-4482: call this BEFORE replacing a stale receiver too. A live stale
+    supervisor restarts the receiver we just stopped (it checks every
+    min(tick, 5) s), the two starts race for the triple file, ours returns 2,
+    and the stale supervisor is never replaced."""
+    if watcher.is_stale(watcher.read_pid("supervisor")) or watcher.is_stale(watcher.read_pid("watcher")):
+        watcher.stop_processes()
+        watcher.record_event("STALE_CODE_RESTART")
+
+
 def _start_watcher(agent: str, tick, no_inject: bool, quiet: bool) -> dict:
     """Enable + start the supervised watcher (T-3684/T-3685). A supervisor or
     watcher running stale code is replaced."""
     watcher.enable(agent, tick, inject_on=not no_inject)
-    if watcher.is_stale(watcher.read_pid("supervisor")) or watcher.is_stale(watcher.read_pid("watcher")):
-        watcher.stop_processes()
-        watcher.record_event("STALE_CODE_RESTART")
+    _stop_stale_watcher()
     res = watcher.start_supervisor()
     if not quiet:
         tl = "present" if __import__("shutil").which("termlink") else \
@@ -962,6 +972,8 @@ def cmd_receiver_start(args) -> int:
         return 2
     if not args.no_watcher and _refuse_persist(agent, args):   # T-4423
         return 2
+    if not args.no_watcher:   # --no-watcher is the supervisor's own restart call
+        _stop_stale_watcher()   # T-4482: before the receiver, or the two race
     rc, _info = _start_receiver(agent, args.port, args.no_inject, args.quiet)
     if rc != 2:
         _ensure_inbox_topic(agent, args.quiet)
@@ -978,6 +990,7 @@ def cmd_start(args) -> int:
         return 2
     if _refuse_persist(agent, args):   # T-4423
         return 2
+    _stop_stale_watcher()   # T-4482: before the receiver, or the two race
     rc, info = _start_receiver(agent, args.port, args.no_inject, args.quiet)
     if rc == 2:
         return 2
