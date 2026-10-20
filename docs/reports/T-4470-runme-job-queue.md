@@ -77,3 +77,64 @@ push is blocked until AEF T-4469 lands.
 - **Operator:** "I think it's actually an excellent idea, so get some external consultation … it's not a path to get
   Tier 0 interaction and to get approval … this makes it less frictionless." → reviews are to be run; the operator's
   framing is recorded in §3 and is reviewer question 1.
+- **2026-10-20.** Three isolated reviews in. All dispute "without weakening any gate" for the code as written, while
+  agreeing the friction reduction is real. Recommendation: GO, adapt, with prerequisites (§7).
+
+## 6. Review synthesis (2026-10-20)
+
+Three isolated seats (outside the repo, tools off): codex, opencode and claude. Verbatim: `docs/reports/T-4470-reviews/`.
+
+- codex ran in a read-only sandbox in an empty directory rather than with its shell tool disabled.
+- opencode's glm-5.2 is no longer served, so glm-5.3 was used.
+- claude logged 0 tool-use events.
+
+| Seat | Verdict | Headline |
+|---|---|---|
+| codex | **adapt** | Friction falls, but "without weakening any gate" is false for this implementation |
+| claude | **adapt, do not adopt as is** | "Can a queued job carry a Tier 0 action or an approval past the operator? Yes, as written." |
+| opencode | adopt 1 and 5, adapt 2-4, defer 6-8 | No gate is weaker than AEF *today*: the current fw runme has no rehearsal and no per-step consent at all |
+
+**Where codex and claude converge independently:**
+
+1. **Jobs are shell loaded into the launcher, not data.** The launcher loads `job.sh` into its own shell. A job can
+   define `confirm() { return 0; }` (or `ask`, `fail`, `run_checks`) and silently replace the launcher's safeguards,
+   which defeats per-step consent.
+2. **The load-time probe catches accidents only.** An empty PATH stops external commands, not shell builtins: a
+   redirect writing a file, re-pointing the answers descriptor, loading another file, or testing PATH to evade the
+   probe all slip through. The probe also executes the file once.
+3. **The "dry run" runs arbitrary checks** under the agent's identity, so "nothing was run" is not accurate.
+4. **The operator does not have the plan in view.** They see an agent-written title and WHY, not the helper body or
+   the resolved arguments.
+5. **The sha binds `job.sh` only.** It does not cover helpers, external scripts, tool versions, environment or
+   expanded arguments.
+6. **The scripted-answer override for tests** applies whenever the jobs dir is not the canonical one, while steps
+   still run in the project.
+
+**opencode's counterpoint holds:** relative to today the queue only *adds* gates. The operator's claim is right
+in that relative sense and wrong in the absolute sense for this code.
+
+**Take** (all three): the fixed command; the menu with job states; the dry-run requirement; the per-step confirm with
+typeahead drain; the retired/done lifecycle; ordered batches with up-front refusal; the test discipline.
+
+## 7. Recommendation
+
+**GO: adapt, not port.** These prerequisites land before or with the first slice:
+
+1. **Jobs run out-of-process.** Never loaded into the launcher's shell. The launcher's confirm, ask, fail and check
+   functions must be unreachable from job code: the job runs in a child process that only receives the step list
+   from a declarative manifest.
+2. **What the operator confirms is what runs.** The dry run shows each step's resolved command, including helper
+   bodies and expanded arguments, not a title.
+3. **A sha manifest** covers `job.sh` plus every helper and script it calls, checked again immediately before each
+   step.
+4. **No scripted-answer path outside tests.** The override is keyed to an explicit test flag and refused when steps
+   would run in a real project.
+5. **The queue is never an authorisation.** Tier 0 actions and approvals stay enforced by their own gates; a "y" in
+   the queue does not satisfy them.
+6. **Port order:**
+   - slice 1: the fixed command, menu and lifecycle, on out-of-process jobs (prerequisites 1, 2, 4, 5);
+   - slice 2: the sha manifest (prerequisite 3) and per-step confirm;
+   - slice 3: ordered batches with up-front refusal.
+   - Items 6-8 are deferred.
+
+Findings against 832's own code (1-6 above) go back to 832 as one item each; they offered to fix on their side.

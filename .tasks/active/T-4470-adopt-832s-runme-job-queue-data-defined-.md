@@ -24,7 +24,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-20T13:47:07Z
-last_update: 2026-10-20T13:50:53Z
+last_update: '2026-10-20T14:00:36Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -50,6 +50,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T14:00:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=129,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -82,17 +92,17 @@ bvp_scores_proposed:
 -->
 
 - **IW-1: Does the job queue reduce operator friction without weakening any gate (no queued Tier 0 action or approval slips past the operator; the sha-bound dry run binds what runs to what was shown)?**
-  confidence: 1
-  disposition:
-  rationale: operator's framing 2026-10-20 (less friction, not a path around Tier 0); to be tested by three external reviews
+  confidence: 3
+  disposition: answered
+  rationale: Friction falls (all 3 seats). Not as written: jobs are loaded into the launcher's shell, so a job can redefine confirm() and defeat per-step consent; the dry run shows titles, not resolved commands; the sha covers job.sh only (codex, claude independently). Relative to today's fw runme nothing is weaker (opencode). Artefact §6
 - **IW-2: Which of 832's §10 items 1-5 should AEF port, in what order, and at what cost against fw runme (T-3675, T-4464)?**
-  confidence: 0
-  disposition:
-  rationale: write-up not yet received (project boundary; 832 push blocked by T-4469)
+  confidence: 2
+  disposition: answered
+  rationale: Take the fixed command, menu, lifecycle, dry-run requirement, per-step confirm with typeahead drain, ordered batches, tests; order slice 1 menu+lifecycle on out-of-process jobs, slice 2 sha manifest + confirm, slice 3 batches. Artefact §7
 - **IW-3: What are the risks (jobs as data: injection/quoting; typeahead discard; batch stop/resume; watcher waking the agent) and are items 6-8 now or later?**
-  confidence: 0
-  disposition:
-  rationale: reviews pending
+  confidence: 2
+  disposition: answered
+  rationale: Risks = job code sharing the launcher namespace, probe executing builtins, dry-run checks running real code, narrow sha, scripted-answer override reaching real projects; items 6-8 deferred. Artefact §6 items 1-6, §7
 
 ## Exploration Plan
 
@@ -154,9 +164,31 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO, adapt rather than port.
 
-**Rationale:** Evidence gap, not a confidence gap: the write-up and code are in 832's repo, outside our project boundary, and reach GitHub only once 832's push is unblocked (blocked by AEF T-4469). The decision needs §9's comparison against fw runme and the item-by-item cost of §10 1-5. Rewrite to GO/NO-GO once the write-up is read (expected within a day).
+**Rationale:** All three isolated reviewers agree that the friction reduction is real: one fixed command, a visible queue, ordered batches and per-step confirmation. They also agree, codex and claude independently, that "without weakening any gate" does not hold for 832's code as written:
+
+- jobs are loaded into the launcher's own shell, so a job can redefine `confirm()` and defeat per-step consent;
+- the load probe stops only external commands;
+- the dry run shows titles, not resolved commands;
+- the sha binds only `job.sh`.
+
+opencode's counterpoint stands: relative to today's fw runme, which has no consent at all, nothing is weaker.
+
+So adopt the design, with these prerequisites:
+
+1. Jobs run out-of-process from a declarative step manifest, and launcher functions are unreachable from job code.
+2. The confirmation shows the resolved command and helper bodies.
+3. A sha manifest covers the job and every helper, checked again before each step.
+4. No scripted-answer path outside tests.
+5. The queue is never an authorisation: Tier 0 and approvals stay at their own gates.
+
+Port in three slices (menu and lifecycle → sha manifest and confirm → batches); items 6-8 are deferred.
+
+**Evidence:**
+- docs/reports/T-4470-runme-job-queue.md §6 (synthesis) and §7 (recommendation).
+- Verbatim reviews: docs/reports/T-4470-reviews/{codex,opencode,claude}.md.
+- Inputs, sha-verified: docs/reports/T-4470-inputs/.
 
 ## Decisions
 
