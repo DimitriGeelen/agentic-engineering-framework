@@ -1265,10 +1265,14 @@ while true; do
         # `fw sidecar recover` passes) must arrive as ONE argument, and any
         # quote, $ or newline in it must stay data. %q of an empty array is
         # one '' — skipped so a bare relaunch stays `claude`.
+        # T-4462: `command claude` — the PTY shell is interactive and sources the
+        # user's rc, so a bare `claude` would run their claude() function or alias
+        # instead of the binary. `command` skips functions; an alias only expands
+        # in command position, which `claude` no longer holds.
         _tl_args=""
         [ "${#CLAUDE_ARGS[@]}" -gt 0 ] && _tl_args=$(printf ' %q' "${CLAUDE_ARGS[@]}")
         _tl_tok="r${restart_count}p$$e$(date +%s)"   # T-4249: this run's marker token
-        termlink_inject "claude${_tl_args}; printf '__CLAUDE_FW_EXIT_${_tl_tok}_%s__\n' \"\$?\""
+        termlink_inject "command claude${_tl_args}; printf '__CLAUDE_FW_EXIT_${_tl_tok}_%s__\n' \"\$?\""
         _TL_PING_FAILS=0 # T-3648: each run starts with a clean failure count
         # Wait for claude to exit by polling the PTY for shell prompt
         # We check if claude process is still running inside the session
