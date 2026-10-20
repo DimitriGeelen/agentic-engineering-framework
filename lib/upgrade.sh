@@ -1730,31 +1730,6 @@ do_upgrade() {
         _self_vendor_designer "$dry_run"
     fi
 
-    # ── 0. Directory skeleton (T-2758) ──
-    #
-    # Step 8 below has always created the .context/ subdirectories. It runs FIVE
-    # STEPS TOO LATE: step 3 copies seed files into .context/project/, and on a
-    # consumer that doesn't have that directory yet the cp fails, `fw upgrade`
-    # exits 1, and steps 4-10 — hooks, resume.md, shim, vendor — never run. The
-    # consumer is left half-upgraded, having already taken steps 1 and 2.
-    #
-    # The ordering was invisible because every consumer that reached step 3 had
-    # been through `fw init`, which creates the tree. The shape that breaks is a
-    # project holding .framework.yaml and little else — which is exactly what the
-    # tests construct, and why lib_upgrade.bats had three red tests attributed to
-    # resume.md drift when the run was dying long before resume.md.
-    #
-    # Creating the skeleton up front rather than adding a mkdir at the one line
-    # observed failing: the next step added below is written against a consumer
-    # that already has its directories, and would inherit the same bug.
-    if [ "$dry_run" != true ]; then
-        local _skel
-        for _skel in audits bus episodic handovers inbox project qa scans working; do
-            mkdir -p "$target_dir/.context/$_skel"
-        done
-        mkdir -p "$target_dir/.tasks/templates" "$target_dir/.claude/commands" "$target_dir/policy"
-    fi
-
     # ── 1. CLAUDE.md — preserve project sections, update governance ──
     # T-3884: did the enforcement baseline match BEFORE this upgrade touched
     # settings.json? Step 10 refreshes it only then — never launders a drift.
@@ -1958,6 +1933,34 @@ $project_owned"
         echo -e "  ${YELLOW}SKIP${NC}  Template not found at $template_file"
         skipped=$((skipped + 1))
     fi
+
+    # ── 0. Directory skeleton (T-2758; placed after step 1's refusals, T-4503) ──
+    #
+    # Step 8 below has always created the .context/ subdirectories. It runs FIVE
+    # STEPS TOO LATE: step 3 copies seed files into .context/project/, and on a
+    # consumer that doesn't have that directory yet the cp fails, `fw upgrade`
+    # exits 1, and steps 4-10 — hooks, resume.md, shim, vendor — never run. The
+    # consumer is left half-upgraded, having already taken steps 1 and 2.
+    #
+    # The ordering was invisible because every consumer that reached step 3 had
+    # been through `fw init`, which creates the tree. The shape that breaks is a
+    # project holding .framework.yaml and little else — which is exactly what the
+    # tests construct, and why lib_upgrade.bats had three red tests attributed to
+    # resume.md drift when the run was dying long before resume.md.
+    #
+    # Creating the skeleton up front rather than adding a mkdir at the one line
+    # observed failing: the next step added below is written against a consumer
+    # that already has its directories, and would inherit the same bug.
+    if [ "$dry_run" != true ]; then
+        local _skel
+        for _skel in audits bus episodic handovers inbox project qa scans working; do
+            mkdir -p "$target_dir/.context/$_skel"
+        done
+        mkdir -p "$target_dir/.tasks/templates" "$target_dir/.claude/commands" "$target_dir/policy"
+    fi
+    # T-4503: this block used to run BEFORE step 1, so a CLAUDE.md refusal (T-3150
+    # marker, governance-deletion) had already created these dirs. Step 1 needs none
+    # of them; step 3 (first reader) comes after.
 
     # T-3955/T-3956: one decision per template-owned project file. Any difference from the
     # template used to mean "drift → replace (.bak)", which overwrote a consumer's customised
