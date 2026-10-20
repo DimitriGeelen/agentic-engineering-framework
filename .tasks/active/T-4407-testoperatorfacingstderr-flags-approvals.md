@@ -13,10 +13,10 @@ description: >
   whose text reaches a render raw. web/ change: restart Watchtower and prove currency.
   Test is red in 20/20 suite reports until both this and T-3605 land.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-3605, T-4385]
@@ -47,7 +47,7 @@ related_tasks: [T-3605, T-4385]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:48:33Z
-last_update: '2026-10-19T16:02:03Z'
+last_update: '2026-10-20T20:17:04Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,6 +87,23 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T20:17:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4407: test_operator_facing_stderr flags approvals.py:643 (sidecar waiting RuntimeError carries raw stderr; sanitized only in the except at :652)
@@ -99,8 +116,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_load_waiting_messages` (web/blueprints/approvals.py) sanitizes `proc.stderr` with `operator_facing_stderr` at the raise site, so the error text carries no raw stderr even before the handler's second pass
+- [x] The error is still shown to the operator: a failing sidecar CLI yields a non-empty `error` that includes the exit code and the sanitized stderr text
+- [x] `test_every_stderr_render_site_is_sanitized` no longer names approvals.py's sidecar-waiting site (the `:927` T-3605 offender is out of scope)
+- [x] Regression test in tests/unit/ fails without the fix and passes with it
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4407` clean); Watchtower restarted and `bin/fw watchtower current` passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,8 +298,22 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t4407_waiting_error_sanitized.py -q > /tmp/.t4407a 2>&1 && grep -q passed /tmp/.t4407a
+# the scan stays red on :927 until T-3605 lands; assert only that this task's site is gone
+python3 -m pytest tests/unit/test_operator_facing_stderr.py -q > /tmp/.t4407b 2>&1; grep -q "test_every_stderr_render_site_is_sanitized" /tmp/.t4407b && ! grep -q "raise RuntimeError(f\"exit {proc.returncode}" /tmp/.t4407b
+python3 -m pytest tests/unit/test_sidecar_waiting_t3782.py -q > /tmp/.t4407c 2>&1 && grep -q passed /tmp/.t4407c
+bin/fw vendor self --check --task T-4407
+bin/fw watchtower current
 
 ## RCA
+
+**Symptom:** `tests/unit/test_operator_facing_stderr.py::test_every_stderr_render_site_is_sanitized` red in 20/20 suite reports, naming `web/blueprints/approvals.py:643`.
+
+**Root cause:** `_load_waiting_messages` (web/blueprints/approvals.py:643, commit 566627c01, T-3782) built `RuntimeError(f"exit {rc}: {(proc.stderr or '').strip()[-300:]}")` from raw stderr and only sanitized in the `except` (`operator_facing_stderr(str(e))`, :652). That passed the operator-visible check by accident and was wrong in one real case: the 300-char tail was cut from *raw* stderr before sanitizing, so a stderr with the reason first and bypass-instruction lines after it kept only the instruction lines, the sanitizer dropped them all (the `exit N:` prefix shares the first line with a `--skip-…` line, so it was dropped too), and the card showed a bare `RuntimeError` with no reason.
+
+**Why structurally allowed:** the source-scan accepts a sanitizer named within ±2 lines; a sanitize-in-handler shape 9 lines away is outside it, which is correct for the scan (the raise text could reach other renders raw). Nothing tested the sidecar-waiting error path behaviourally, and T-3782's own tests cover the happy path only.
+
+**Prevention:** sanitize at the raise site (tail taken from the sanitized text), so the scan passes for the right reason; `tests/unit/test_t4407_waiting_error_sanitized.py` pins both the reason-survives-long-bypass-tail behaviour and that the error stays non-empty and visible.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -375,3 +409,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4407-testoperatorfacingstderr-flags-approvals.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:13:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

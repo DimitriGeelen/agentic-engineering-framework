@@ -640,7 +640,11 @@ def _load_waiting_messages() -> dict:
             capture_output=True, text=True, timeout=20, cwd=str(PROJECT_ROOT),
             env=_sidecar_cli_env())
         if proc.returncode != 0:
-            raise RuntimeError(f"exit {proc.returncode}: {(proc.stderr or '').strip()[-300:]}")
+            # T-4407: sanitize before the tail is cut, or a reason followed by
+            # bypass lines is cut away and the card shows a bare RuntimeError
+            from web.shared import operator_facing_stderr
+            raise RuntimeError(f"exit {proc.returncode}: "
+                               f"{operator_facing_stderr(proc.stderr or '')[-300:]}")
         data = json.loads(proc.stdout)
         items = []
         for it in data.get("items", []):
