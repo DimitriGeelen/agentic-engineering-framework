@@ -1,0 +1,21 @@
+id: tests/unit/t4493_runme_batches.bats
+name: t4493_runme_batches
+type: script
+subsystem: tests
+location: tests/unit/t4493_runme_batches.bats
+tags: []
+
+purpose: "T-4493: runme job queue slice 3 of the T-4470 GO — ordered batches chosen by the operator (typed order or x), refused up front if any chosen job is not ready, stopped at the first failing job. A queue 'y' stays consent, never authorisation."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

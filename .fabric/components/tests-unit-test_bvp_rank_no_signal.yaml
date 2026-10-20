@@ -1,0 +1,21 @@
+id: tests/unit/test_bvp_rank_no_signal.py
+name: test_bvp_rank_no_signal
+type: script
+subsystem: tests
+location: tests/unit/test_bvp_rank_no_signal.py
+tags: []
+
+purpose: "T-4486: `fw bvp rank --include-proposed` excludes all-no-signal proposals from the medians and quadrants and lists them in a NOTE block."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
