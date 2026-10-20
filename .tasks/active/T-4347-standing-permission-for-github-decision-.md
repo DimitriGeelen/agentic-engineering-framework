@@ -54,7 +54,7 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:54:00Z
-last_update: 2026-10-19T09:05:51Z
+last_update: '2026-10-19T23:15:29Z'
 date_finished: 2026-10-19T09:05:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,6 +93,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=302,acs=6)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-19T23:15:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=327,acs=7)
     rubric_sha: e4a00f38e801
 ---
 
@@ -299,6 +308,18 @@ bin/fw vendor self --check
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+## Visual Verification
+
+Captured 2026-10-20 with `bin/fw ux shots T-4347 "config=<watchtower url>/config"` (.context/visual/T-4347/config@{1024,1440,1920}.png); each width read at the FW_ISSUES_DECISIONS_STANDING_PERMISSION row.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | ISSUES_DECISIONS_STANDING_PERMISSION value (1) | ok | ok | ok | bold 1, FILE source badge |
+| config | ISSUES_DECISIONS_STANDING_PERMISSION default (0) | ok | ok | ok | |
+| config | ISSUES_DECISIONS_STANDING_PERMISSION description | ok | ok | ok | full text visible; names ruling 2026-10-19, T-4347, and "0 keeps the per-comment approval" |
+
+Observation outside the listed controls: at 1024 the key-name cell wraps to 3 characters per line (FW_ / ISS / UES …), as it does for every row on the page; the name is still readable and nothing is clipped.
 
 ## RCA
 
