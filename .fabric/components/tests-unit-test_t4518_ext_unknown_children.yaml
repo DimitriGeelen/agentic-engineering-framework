@@ -1,0 +1,21 @@
+id: tests/unit/test_t4518_ext_unknown_children.py
+name: test_t4518_ext_unknown_children
+type: script
+subsystem: tests
+location: tests/unit/test_t4518_ext_unknown_children.py
+tags: []
+
+purpose: "T-4518: unknown content inside / beside aef: extension elements is carried verbatim through derive (parse_map) → generate (emit_map), or refused naming the element — never dropped silently (the T-4502 rule)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
