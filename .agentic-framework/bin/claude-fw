@@ -3,7 +3,8 @@
 #
 # Runs claude normally, then checks for a restart signal file
 # written by checkpoint.sh when auto-handover fires at critical budget.
-# If found (and fresh), auto-restarts with `claude -c` to continue.
+# If found (and fresh), auto-restarts (fresh by default, T-3166). Any -c / --continue
+# is resolved to `--resume <this session's conversation>`, never a worker's (T-4497).
 #
 # Usage:
 #   claude-fw [claude-args...]          # Run with auto-restart enabled
@@ -1210,6 +1211,46 @@ _conversation_guard() {
     return 1
 }
 
+# T-4497: never hand claude a bare -c/--continue. It continues the NEWEST conversation
+# in the folder, which is often a `claude -p` worker's (fw termlink dispatch): refused
+# while the worker runs, its transcript resumed once it ends. Every -c — the operator's
+# `claude-fw -c` and both FW_RESTART_MODE=continue relaunches — becomes `--resume <id>`
+# for the conversation this wrapper recorded, else the newest interactive one; with
+# none, the session starts fresh. Without the lib, -c passes through with a warning.
+_resolve_continue() {
+    local lib a has=0
+    for a in ${CLAUDE_ARGS[@]+"${CLAUDE_ARGS[@]}"}; do
+        case "$a" in -c|--continue) has=1 ;; esac
+    done
+    [ "$has" = 1 ] || return 0
+    lib="$(_cfw_lib conversation-holder.sh)"
+    if [ -z "$lib" ]; then
+        echo "claude-fw: WARNING: cannot resolve -c to this project's conversation (no framework lib for $PWD) — claude -c may continue a worker's conversation (T-4497)" >&2
+        return 0
+    fi
+    # shellcheck source=/dev/null
+    . "$lib"
+    mapfile -d '' -t CLAUDE_ARGS < <(fw_conversation_rewrite_continue "$PWD" "${PROJECT_ROOT:-$PWD}" "${CLAUDE_ARGS[@]}")
+    case " ${CLAUDE_ARGS[*]+${CLAUDE_ARGS[*]}} " in
+        *" --resume "*) ;;
+        *) echo "claude-fw: no interactive conversation to continue here — starting a fresh session (T-4497)" >&2 ;;
+    esac
+    return 0
+}
+
+# T-4497: after a run, record the interactive conversation it wrote, so the next -c
+# continues THIS session's conversation rather than whatever is newest in the folder.
+_record_conversation() {
+    local lib launched=""
+    lib="$(_cfw_lib conversation-holder.sh)"
+    [ -n "$lib" ] || return 0
+    # shellcheck source=/dev/null
+    . "$lib"
+    launched=$(fw_conversation_target "$PWD" ${CLAUDE_ARGS[@]+"${CLAUDE_ARGS[@]}"} 2>/dev/null) || launched=""
+    fw_conversation_record "$PWD" "${PROJECT_ROOT:-$PWD}" "$run_start_epoch" "$launched" || true
+    return 0
+}
+
 # T-4118: at the restart boundary, run the wrapper that is on disk now rather than the
 # one in memory. Called only between two claude runs — the previous claude has exited
 # and its terminator has been reaped — so no turn is ever cut short by it. The new copy
@@ -1266,6 +1307,7 @@ while true; do
     # T-2373: record when this run started so the terminator only acts on a
     # signal written DURING the run (edge case a — not a leftover/stale signal).
     run_start_epoch=$(date +%s)
+    _resolve_continue    # T-4497 (before naming: an unresolvable -c leaves a fresh run)
     _name_fresh_relaunch # T-3629
     _conversation_guard || exit 3   # T-3890
     # Run claude with user's arguments
@@ -1386,6 +1428,7 @@ while true; do
         fi
     fi
     set -e
+    _record_conversation || true   # T-4497
 
     # Don't auto-restart if disabled
     if [ "$AUTO_RESTART" = false ]; then
@@ -1485,7 +1528,7 @@ while true; do
         # T-3166: name the mode, so which kind of restart fired is visible in the
         # operator's terminal without reading the source.
         if [ "${FW_RESTART_MODE:-fresh}" = "continue" ]; then
-            echo "  Restart mode: continue (claude -c — transcript restored, context NOT freed)"
+            echo "  Restart mode: continue (--resume of this session's recorded conversation — transcript restored, context NOT freed; T-4497)"
         else
             echo "  Restart mode: fresh (new session, seeded from the handover)"
         fi

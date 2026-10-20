@@ -1,6 +1,7 @@
 __pycache__/
 .context/runme/
 .context/working/.tool-counter
+.context/working/.claude-fw-conversation
 .context/working/.transcript-path
 .context/working/.prev-token-reading
 .context/working/.session-start-ts

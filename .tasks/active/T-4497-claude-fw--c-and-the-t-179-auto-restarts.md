@@ -1,10 +1,24 @@
 ---
 id: T-4497
-name: "claude-fw -c (and the T-179 auto-restart's claude -c) continues the NEWEST conversation in the folder, which is often a dispatched claude -p worker's"
+name: "claude-fw -c (and the T-179 auto-restart's claude -c) continues the NEWEST
+  conversation in the folder, which is often a dispatched claude -p worker's"
 description: >
-  055-agentic-fleet-cockpit (msg 7d6bc3cd, their T-586), measured in 1409-sprind 2026-10-20: 'claude-fw -c' -> 'REFUSED — conversation 03288f87 is already live in pid 1453418'; pid 1453418 was a fw termlink dispatch worker (claude -p, entrypoint sdk-cli, ~4 h busy); the project's own conversation (4bc84441) was free. Every dispatched worker writes a new conversation in the project folder, so -c picks a worker: refused while it runs, or, once it ends, RESUMES THE WORKER'S TRANSCRIPT as if it were the agent. AEF is exposed too: the T-179 auto-restart relaunches with 'claude -c' (CLAUDE.md §Auto-Restart), and this project runs up to 10 workers. Fix: claude-fw records the conversation id of the session it launched (per project, e.g. .context/working/) and continues THAT id (claude --resume <id>) instead of bare -c; when no record exists, choose the newest conversation whose entrypoint is not sdk-cli / not a -p worker (~/.claude/sessions/<pid>.json or the transcript header). Never resume a worker transcript. Regression test with fake session/transcript files (a newer sdk-cli worker conversation and an older interactive one: the interactive one is chosen).
+  055-agentic-fleet-cockpit (msg 7d6bc3cd, their T-586), measured in 1409-sprind 2026-10-20:
+  'claude-fw -c' -> 'REFUSED — conversation 03288f87 is already live in pid 1453418';
+  pid 1453418 was a fw termlink dispatch worker (claude -p, entrypoint sdk-cli, ~4
+  h busy); the project's own conversation (4bc84441) was free. Every dispatched worker
+  writes a new conversation in the project folder, so -c picks a worker: refused while
+  it runs, or, once it ends, RESUMES THE WORKER'S TRANSCRIPT as if it were the agent.
+  AEF is exposed too: the T-179 auto-restart relaunches with 'claude -c' (CLAUDE.md
+  §Auto-Restart), and this project runs up to 10 workers. Fix: claude-fw records the
+  conversation id of the session it launched (per project, e.g. .context/working/)
+  and continues THAT id (claude --resume <id>) instead of bare -c; when no record
+  exists, choose the newest conversation whose entrypoint is not sdk-cli / not a -p
+  worker (~/.claude/sessions/<pid>.json or the transcript header). Never resume a
+  worker transcript. Regression test with fake session/transcript files (a newer sdk-cli
+  worker conversation and an older interactive one: the interactive one is chosen).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +52,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T17:02:05Z
-last_update: 2026-10-20T17:02:05Z
-date_finished: null
+last_update: 2026-10-20T17:02:43Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +64,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T17:02:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4497: claude-fw -c (and the T-179 auto-restart's claude -c) continues the NEWEST conversation in the folder, which is often a dispatched claude -p worker's
@@ -62,8 +94,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/conversation-holder.sh` resolves a continue target that is never a `claude -p` worker conversation: the recorded id (`.context/working/claude-fw-conversation`) when its transcript exists and is interactive, else the newest transcript whose entrypoint is not `sdk-cli`/`sdk-*`
+- [x] `bin/claude-fw` rewrites every `-c`/`--continue` it would pass to claude (operator argv and both `FW_RESTART_MODE=continue` paths) into `--resume <id>`; with no interactive conversation it starts fresh instead of continuing a worker
+- [x] `bin/claude-fw` records the conversation id of the session it ran, per project, after each run
+- [x] Regression test (temp HOME, fake transcripts: newer sdk-cli worker + older cli conversation) proves the interactive one is chosen, the recorded id wins, and a recorded worker id is ignored; fails on the pre-fix code
+- [x] Existing claude-fw suites stay green (t4426, t4454, t4462, t4474, t3954, t3647, t3648, t4118) and the T-3890 guard suite
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +283,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n bin/claude-fw && bash -n lib/conversation-holder.sh
+timeout 600 bats tests/unit/t4497_claude_fw_continue_not_worker.bats > /tmp/.t4497.out 2>&1 && ! grep -q "^not ok" /tmp/.t4497.out && grep -q "^ok 8 " /tmp/.t4497.out
+test "$(grep -c '# skip' /tmp/.t4497.out)" -eq 0
+out=$(for f in t4426_claude_fw_tmux_redraw t4454_claude_fw_rail_identity t4462_claude_fw_inject_bypasses_function t4474_claude_fw_inject_sidecar_env t3954_claude_fw_installed_copy t3647_claude_fw_register_leak t3648_claude_fw_ping_tolerance t4118_claude_fw_reexec_on_change t3890_conversation_holder claude_fw_restart_mode; do timeout 600 bats tests/unit/$f.bats 2>&1; done); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4497.lint 2>&1 && grep -q clean /tmp/.t4497.lint
+bin/fw vendor self --check --task T-4497
 
 ## RCA
 
@@ -264,6 +305,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** `claude-fw -c` in 1409-sprind was REFUSED because "conversation 03288f87 is already live in pid 1453418" — a `fw termlink dispatch` worker (`claude -p`, entrypoint sdk-cli); the project's own conversation was free. Once a worker ends, the same `-c` resumes the worker's transcript as if it were the agent. Reproduced here: the newest transcript in this project folder was a sdk-cli worker, the interactive one older.
+
+**Root cause:** claude-fw passed bare `-c` to claude in three places — operator argv passed through unchanged, and `FW_RESTART_MODE=continue` set `CLAUDE_ARGS=("-c")` on the restart path (`bin/claude-fw:1554` pre-fix) and the re-arm path (`bin/claude-fw:1654` pre-fix). Claude Code's `-c` means "newest conversation in this folder", and every dispatched worker writes a newer one. claude-fw never recorded which conversation it ran, so it had nothing better to pass; the T-3890 guard mirrored the same newest-file rule (`lib/conversation-holder.sh` `fw_conversation_target`, `ls -t | head -1`), which is why it refused against a worker.
+
+**Why structurally allowed:** "newest in the folder = mine" held while one interactive session per folder was the only writer; worker dispatch (up to 10 here) broke the assumption silently. Tests built fake transcripts as empty files with no entrypoint, so no test could tell a worker from the agent.
+
+**Fix / Prevention:** `lib/conversation-holder.sh` now resolves a continue target that is never a worker (recorded id in `.context/working/.claude-fw-conversation` if its transcript is interactive, else the newest transcript whose entrypoint is not `sdk-*`), records the conversation after each run, and `bin/claude-fw` `_resolve_continue` rewrites every `-c`/`--continue` to `--resume <id>` before each launch (no interactive conversation → fresh session). `tests/unit/t4497_claude_fw_continue_not_worker.bats` (8 tests, all red on the pre-fix code) pins it with fake sdk-cli/cli transcripts under a temp HOME, end to end through the real wrapper for both `claude-fw -c` and the continue-mode restart.
 
 ## Evolution
 
@@ -345,3 +393,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4497-claude-fw--c-and-the-t-179-auto-restarts.md
 - **Context:** Initial task creation
+
+### 2026-10-20T17:02:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

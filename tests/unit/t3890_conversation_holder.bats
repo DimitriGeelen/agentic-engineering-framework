@@ -68,7 +68,7 @@ _live_claude() { bash -c 'exec -a claude sleep 60' & HOLDER=$!; sleep 0.2; }
     f="$FWROOT/bin/claude-fw"
     g=$(grep -n '_conversation_guard || exit 3' "$f" | cut -d: -f1)
     l=$(grep -n 'command claude "\${CLAUDE_ARGS\[@\]}"' "$f" | cut -d: -f1)
-    t=$(grep -n 'termlink_inject "claude\${_tl_args}' "$f" | cut -d: -f1)
+    t=$(grep -n 'termlink_inject ".*claude\${_tl_args}' "$f" | cut -d: -f1)   # T-4462: "command claude"
     [ -n "$g" ] && [ "$g" -lt "$l" ] && [ "$g" -lt "$t" ]
     # the guard function itself: refuse, then override
     eval "$(awk '/^_conversation_guard\(\) \{/{p=1} p{print} p&&/^\}/{exit}' "$f")"
