@@ -11,7 +11,7 @@ description: >
   top-level help or in a documented second tier, then make show_help and the test
   agree.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-31T09:21:57Z
-last_update: '2026-08-17T12:36:09Z'
+last_update: 2026-10-20T20:35:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,8 +90,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked at HEAD (a60c5031f) and recorded below: the defect no longer reproduces; already fixed by T-2836 (87d517b4a)
+- [x] Every top-level router command in `bin/fw` appears in `show_help` (no hidden allowlist needed: zero router commands are omitted)
+- [x] `bats tests/lint/help-router-parity.bats` (the regression test, from T-1185) is green at HEAD
+- [x] All 21 commands named in the description appear in the live `bin/fw help` output
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -156,6 +158,8 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bats tests/lint/help-router-parity.bats
+out=$(bin/fw help 2>&1 | sed 's/\x1b\[[0-9;]*m//g'); for c in arc bpmn bvp corpus designer gpu integrate mirror orchestrator outcome pause pending policy release resolver reviewer sync ux-review watchtower worktree write-set; do echo "$out" | grep -qE "^\s+$c(\s|$)" || { echo "missing: $c"; exit 1; }; done
 
 ## RCA
 
@@ -172,6 +176,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw help` did not list 21 dispatched router verbs (arc, corpus, designer, integrate, sync, …), so operators and agents could not find them from the CLI.
+
+**Root cause:** new verbs were added to the router `case "$cmd" in` block (bin/fw:6416) without a matching line in `show_help()` (bin/fw:1486). The two lists are maintained by hand, separately.
+
+**Why structurally allowed:** the invariant test `tests/lint/help-router-parity.bats` (T-1185) existed but was not being run until T-2697, so its red result went unseen while the drift built up.
+
+**Prevention / status:** T-2836 (87d517b4a) added the missing verbs to `show_help`. The parity test is now green and runs in the lint suite, so a new router verb without a help line turns it red. Re-verified at HEAD a60c5031f: does not reproduce. Nothing more to fix here.
 
 ## Evolution
 
@@ -196,6 +208,24 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-20 — reproduction check at HEAD a60c5031f: does NOT reproduce
+```
+$ bats tests/lint/help-router-parity.bats
+1..2
+ok 1 every top-level router command appears in show_help
+ok 2 show_help references only existing router commands
+
+$ out=$(bin/fw help | strip-ansi); for c in arc bpmn ... write-set; do grep "^\s+$c" ...; done
+missing:[]
+```
+Extraction sanity check: the router `case "$cmd" in` block (bin/fw:6416) has 108
+top-level entries matching the test's pattern; the only top-level patterns it
+skips are `""` and `*` (defaults, correctly not help entries). So the green
+result is not a regex false green.
+
+Fixed by T-2836 (87d517b4a, 2026-08-06, "fw help lists the 20 verbs that only the
+router knew about"); `watchtower` was already present. No source change made here.
 
 ## Decisions
 
@@ -224,3 +254,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2699-fw-help-omits-21-router-commands-includi.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:35:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
