@@ -267,7 +267,7 @@ while time.time() < deadline:
         if not chunk:
             break
         buf += chunk
-    if b"Which job?" in buf and "pick" not in sent:
+    if b"Which job(s)?" in buf and "pick" not in sent:
         time.sleep(0.3); os.write(fd, b"2\n"); sent.append("pick")
     if b"exactly as shown above" in buf and "go" not in sent:
         time.sleep(0.3); os.write(fd, b"y\n"); sent.append("go")

@@ -49,8 +49,10 @@ project root that is not a real framework project (finding 6). Same-user residua
 agent that drives a pty of its own can still answer; the queue does not claim otherwise.
 
 Each step is confirmed on its own (y/N, typeahead discarded) just before it runs, and
-the confirm comes before check-tier0, never instead of it. Slice 3 (ordered batches) is
-a separate task. Exit: 0 done / nothing to do, 1 stopped or refused, 2 usage.
+the confirm comes before check-tier0, never instead of it. Slice 3 (T-4493): the
+operator may pick several jobs in a typed order (3,1,2) or x for all; any job not ready
+refuses the whole batch up front, and the first job that does not finish stops it.
+Exit: 0 done / nothing to do, 1 stopped or refused, 2 usage.
 """
 import argparse
 import datetime
@@ -742,13 +744,61 @@ def cmd_queue(a):
         for i, d in enumerate(todo, 1):
             ln = f"  {i}. {job_line(d)}"
             print(ln if len(ln) <= w else ln[:w - 1] + "…")
-        r = ans.ask(f"Which job? [1-{len(todo)}; anything else = stop]")
-        if not r.isdigit() or not 1 <= int(r) <= len(todo):
-            print("STOPPED: no job chosen; nothing run")
+        r = ans.ask(f"Which job(s)? [1-{len(todo)}; several in the order to run, e.g. 3,1,2; "
+                    f"x = all; anything else = stop]")
+        picks = parse_choice(r, len(todo))
+        if picks is None:
+            print("STOPPED: no valid choice (a number, an order like 3,1,2, or x; no repeats); nothing run")
             return 1
-        chosen = todo[int(r) - 1]
+        if len(picks) > 1:
+            return run_batch([todo[i - 1] for i in picks], ans)
+        chosen = todo[picks[0] - 1]
     print(f"Chosen: {os.path.basename(chosen)}")
     return run_job(chosen, ans)
+
+
+def parse_choice(reply, n):
+    """1-based picks in the operator's order, or None. x = every pending job, menu order."""
+    r = reply.strip().lower()
+    if r == "x":
+        return list(range(1, n + 1))
+    parts = [p for p in re.split(r"[,\s]+", r) if p]
+    if not parts or not all(p.isdigit() for p in parts):
+        return None
+    picks = [int(p) for p in parts]
+    if len(set(picks)) != len(picks) or not all(1 <= p <= n for p in picks):
+        return None
+    return picks
+
+
+def run_batch(dirs, ans):
+    """Ordered batch (T-4493). Refused up front if any chosen job is not ready; stopped at
+    the first job that does not finish. Every job still goes through run_job, so per-step
+    confirm, the sha recheck and the Tier 0 gate apply to each step: the batch adds no
+    authorisation."""
+    bad = []
+    for d in dirs:
+        if os.path.exists(os.path.join(d, "retired")) or os.path.exists(os.path.join(d, "done")):
+            bad.append(f"{os.path.basename(d)}: retired or already done")
+        elif state(d) != "ready":
+            bad.append(f"{os.path.basename(d)}: {state(d)}")
+    if bad:
+        print("REFUSED: the batch holds job(s) that are not ready; nothing run.")
+        for b in bad:
+            print(f"  - {b}")
+        print("The agent runs: bin/fw runme job dry-run <name>   (or drop the job from the batch)")
+        return 1
+    names = [os.path.basename(d) for d in dirs]
+    print("Batch, in this order: " + " -> ".join(names))
+    for k, d in enumerate(dirs):
+        print(f"Chosen: {names[k]}   (job {k + 1}/{len(dirs)})")
+        if run_job(d, ans) != 0:
+            rest = names[k + 1:]
+            print(f"STOPPED: batch stopped at {names[k]}" +
+                  (f"; not run: {', '.join(rest)}" if rest else ""))
+            return 1
+    print(f"DONE: batch of {len(dirs)} job(s) completed in order")
+    return 0
 
 
 def main(argv=None):
