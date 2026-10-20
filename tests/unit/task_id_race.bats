@@ -93,13 +93,16 @@ teardown() {
     # Build a minimal fake framework root without lib/keylock.sh
     FAKE_ROOT="$TEST_TEMP_DIR/fake-fw"
     mkdir -p "$FAKE_ROOT/agents/task-create" "$FAKE_ROOT/lib"
-    # Copy create-task.sh + the libs paths.sh pulls in, but omit keylock.sh
+    # Copy create-task.sh + every lib EXCEPT keylock.sh
     cp "$FRAMEWORK_ROOT/agents/task-create/create-task.sh" "$FAKE_ROOT/agents/task-create/"
     # T-3624: paths.sh hard-sources worktree-identity.sh since T-3111 (6431393ae);
     # without it the run dies in paths.sh before it ever reaches keylock.
-    for f in paths.sh worktree-identity.sh enums.sh config.sh colors.sh errors.sh; do
-        [ -f "$FRAMEWORK_ROOT/lib/$f" ] && cp "$FRAMEWORK_ROOT/lib/$f" "$FAKE_ROOT/lib/"
+    # T-4442: same again for fs-root-guard.sh (T-4406, 94de6b05c). A hand-picked list
+    # goes stale on every new hard-sourced lib, so copy them all and omit only keylock.sh.
+    for f in "$FRAMEWORK_ROOT"/lib/*.sh; do
+        [ "$(basename "$f")" = keylock.sh ] || cp "$f" "$FAKE_ROOT/lib/"
     done
+    [ ! -e "$FAKE_ROOT/lib/keylock.sh" ]
 
     # Run create-task.sh against the fake root — must exit non-zero with a real error
     run bash "$FAKE_ROOT/agents/task-create/create-task.sh" \

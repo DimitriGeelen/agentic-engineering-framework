@@ -1,10 +1,16 @@
 ---
 id: T-4442
-name: "task_id_race.bats: create-task.sh no longer names keylock.sh/keylock_acquire when keylock.sh is missing"
+name: "task_id_race.bats: create-task.sh no longer names keylock.sh/keylock_acquire
+  when keylock.sh is missing"
 description: >
-  tests/unit/task_id_race.bats:108 expects the failure output to name keylock.sh or keylock_acquire. Find what create-task.sh now prints when keylock.sh is absent and whether it still fails loudly. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or expectation drift from a deliberate change (update the test, say why).
+  tests/unit/task_id_race.bats:108 expects the failure output to name keylock.sh or
+  keylock_acquire. Find what create-task.sh now prints when keylock.sh is absent and
+  whether it still fails loudly. Found by the 2026-10-20T01:03Z fast-tier nightly
+  as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product
+  regression (fix code) or expectation drift from a deliberate change (update the
+  test, say why).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T08:06:58Z
-last_update: 2026-10-20T08:06:58Z
-date_finished: null
+last_update: 2026-10-20T08:13:23Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T08:13:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4442: task_id_race.bats: create-task.sh no longer names keylock.sh/keylock_acquire when keylock.sh is missing
@@ -62,8 +86,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause localised: with keylock.sh absent, the fake root dies in lib/paths.sh sourcing a lib the fixture does not copy (fs-root-guard.sh, T-4406), before create-task.sh reaches its keylock check — product still fails loudly
+- [x] Fixture in tests/unit/task_id_race.bats copies every lib/*.sh except keylock.sh, so a future hard-sourced lib cannot mask the test again; the assertion (non-zero exit AND output names keylock.sh/keylock_acquire) is unchanged
+- [x] `bats tests/unit/task_id_race.bats` passes, no skips; dead-negation lint clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +273,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/task_id_race.bats > /tmp/.t4442.out 2>&1 && ! grep -q "^not ok" /tmp/.t4442.out
+test "$(grep -c '# skip' /tmp/.t4442.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/task_id_race.bats > /tmp/.t4442.lint 2>&1 && grep -q clean /tmp/.t4442.lint
 
 ## RCA
 
@@ -264,6 +292,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** task_id_race.bats test 4 ("fails loudly when keylock.sh is missing") red in the 2026-10-20T01:03Z fast-tier nightly at line 108: exit was non-zero but output did not name keylock.sh/keylock_acquire.
+
+**Root cause:** fixture drift, not a product regression. T-4406 (94de6b05c) made lib/paths.sh:422 hard-source `fs-root-guard.sh`. The test's fake root copied a hand-picked list of libs (tests/unit/task_id_race.bats:97) without it, so the run died in paths.sh (`fs-root-guard.sh: No such file or directory`) before create-task.sh:19 ever tried keylock.sh. With the full lib set present, create-task.sh still exits 1 naming keylock.sh — the guarded behaviour is intact.
+
+**Why structurally allowed:** the fixture enumerated paths.sh's dependencies by hand; every new hard-sourced lib breaks it silently until the nightly. Identical class already hit once (T-3624, worktree-identity.sh).
+
+**Prevention:** the fixture now copies every lib/*.sh except keylock.sh (and asserts keylock.sh is absent), so a new hard-sourced lib can no longer mask the check. Assertion unchanged. Residual weakness noted for the parent: bash's own "No such file" error also contains "keylock.sh", so assertion 4 passes even without create-task.sh's own message; test 5 (no silent-skip guard) is what actually protects the anti-pattern.
 
 ## Evolution
 
@@ -345,3 +381,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4442-taskidracebats-create-tasksh-no-longer-n.md
 - **Context:** Initial task creation
+
+### 2026-10-20T08:13:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
