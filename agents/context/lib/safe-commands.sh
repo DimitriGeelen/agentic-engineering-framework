@@ -1246,7 +1246,10 @@ _fw_single_command_is_safe() {
                         # T-2052: `create` is task-bootstrap (writes only to the
                         # exempt .tasks/ dir) — must be allowed with no active task,
                         # else the gate deadlocks its own "create a task" advice.
-                        list|verify|review|create)
+                        # T-4115: `stale` only reads .tasks/active/ (bin/fw `stale)`
+                        # arm, no writes, every form incl. --days N) — and fw doctor's
+                        # Task-debt WARN tells the agent to run it, often at null focus.
+                        list|verify|review|create|stale)
                             return 0
                             ;;
                     esac

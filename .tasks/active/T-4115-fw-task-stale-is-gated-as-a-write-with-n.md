@@ -8,10 +8,10 @@ description: >
   stale writes nothing, add it, test: null focus -> stale allowed, update still refused.
   Serialise after T-4108 round 2 (same file).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, gate]
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T13:59:39Z
-last_update: '2026-10-12T14:01:11Z'
+last_update: 2026-10-20T10:31:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw task stale` (and `fw task stale --days N`) is classified read-only by `is_bash_safe_command` in agents/context/lib/safe-commands.sh
+- [x] `fw task update T-X --status ...` is still NOT classified read-only (mutating sub-verbs still reach the task gate)
+- [x] Regression bats test under tests/unit/ fails without the fix and passes with it
+- [x] Vendored copy in sync (`bin/fw vendor self --check --task T-4115` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -258,6 +260,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4115_task_stale_readonly.bats > /tmp/.t4115.out 2>&1 && ! grep -q "^not ok" /tmp/.t4115.out
+test "$(grep -c '# skip' /tmp/.t4115.out)" -eq 0
+bash -c 'export PROJECT_ROOT=$PWD _FW_PAYLOAD_CWD=$PWD; source agents/context/lib/safe-commands.sh; is_bash_safe_command "bin/fw task stale --days 14"'
+bash -c 'export PROJECT_ROOT=$PWD _FW_PAYLOAD_CWD=$PWD; source agents/context/lib/safe-commands.sh; ! is_bash_safe_command "bin/fw task update T-1 --status work-completed"'
+bin/fw vendor self --check --task T-4115
 
 ## RCA
 
@@ -274,6 +281,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw doctor` WARNs "Task debt: N stale tasks — Run: fw task stale" (bin/fw:4136), and with focus null the Bash task gate then refuses `fw task stale` as an unproven write. dimitri-mint-dev carried a local patch (their G-003 marker).
+
+**Root cause:** the `fw task` sub-verb allowlist in `is_bash_safe_command` (agents/context/lib/safe-commands.sh:1249, `list|verify|review|create`) never listed `stale`, although the `stale)` arm in bin/fw (:5925) is a pure python read of `.tasks/active/` with no writes and no subprocess. Confirmed: `is_bash_safe_command "bin/fw task stale"` returned 1 before the fix, 0 after.
+
+**Why structurally allowed:** the allowlist is enumerated per sub-verb (T-3096 class), and nothing ties a remedy that one surface prints (doctor's "Run: fw task stale") to the gate that must admit it — the L-597 class ("a gate that names a remedy must be tested for that remedy").
+
+**Prevention:** tests/unit/t4115_task_stale_readonly.bats pins the classification (stale safe in every form, update still gated, redirects still a write pattern) AND the premise: it fails if the bin/fw `stale)` block ever gains a file write or subprocess, forcing a re-classification.
 
 ## Evolution
 
@@ -355,3 +370,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4115-fw-task-stale-is-gated-as-a-write-with-n.md
 - **Context:** Initial task creation
+
+### 2026-10-20T10:31:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
