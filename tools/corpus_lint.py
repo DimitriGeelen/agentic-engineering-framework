@@ -463,6 +463,9 @@ NODE_OCCUPANCY = {
     "task": 64,                                        # T-4488: plain bpmn:task is an activity box too
     "business-rule": 64,                               # T-4495: businessRuleTask, same activity box
     "boundary": 36 + 18,                               # T-4501: boundaryEvent, event circle, name below
+    # T-4505: remaining BPMN 2.0 flow nodes — activity boxes, and gateways whose name renders below
+    "send": 64, "receive": 64, "manual": 64, "adhoc-subprocess": 64, "transaction": 64,
+    "inclusive-gateway": 48 + 18, "complex-gateway": 48 + 18, "event-gateway": 48 + 18,
 }
 
 # 832: LANE_FIT_MARGIN = 12, applied at BOTH edges, so the height at which a lane is

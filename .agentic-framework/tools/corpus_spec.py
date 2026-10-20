@@ -76,16 +76,69 @@ TYPE_TO_TAG = {
     # kitchen-sink goldens), round-trip only. attachedToRef + cancelActivity
     # are carried as fields; event definitions ride raw_children verbatim.
     "boundary": "boundaryEvent",
+    # T-4505: the rest of the BPMN 2.0 process flow nodes, round-trip only —
+    # added together against the spec's list instead of one per field report.
+    # Their own attributes (messageRef, instantiate, eventGatewayType, ordering,
+    # method, …) ride n["attrs"]; children (loop/completion conditions, nested
+    # flow elements) ride raw_children verbatim, as subProcess's already do.
+    "send": "sendTask",
+    "receive": "receiveTask",
+    "manual": "manualTask",
+    "inclusive-gateway": "inclusiveGateway",
+    "complex-gateway": "complexGateway",
+    "event-gateway": "eventBasedGateway",
+    "adhoc-subprocess": "adHocSubProcess",
+    "transaction": "transaction",
 }
 TAG_TO_TYPE = {v: k for k, v in TYPE_TO_TAG.items()}
 
 # T-4399: tags whose BPMN schema type defines the unprefixed `default`
 # attribute (tExclusive/tInclusive/tComplexGateway, tActivity) — the flow taken
-# when no condition holds. inclusive/complex are not parsed yet (unknown tags
-# hard-error); they are listed so adding them to TYPE_TO_TAG carries `default`.
+# when no condition holds.
 DEFAULT_FLOW_TAGS = {"exclusiveGateway", "inclusiveGateway", "complexGateway",
                      "serviceTask", "userTask", "scriptTask", "subProcess",
-                     "callActivity", "task", "businessRuleTask"}
+                     "callActivity", "task", "businessRuleTask", "sendTask",
+                     "receiveTask", "manualTask", "adHocSubProcess", "transaction"}
+
+#: BPMN 2.0 flow nodes that are deliberately NOT round-tripped, with the reason
+#: the parse refusal names. Choreography nodes belong to a bpmn:choreography,
+#: not a process; implicitThrowEvent is the spec's choreography-only event.
+REFUSED_FLOW_TAGS = {
+    "choreographyTask": "choreography node, not valid in a bpmn:process",
+    "subChoreography": "choreography node, not valid in a bpmn:process",
+    "callChoreography": "choreography node, not valid in a bpmn:process",
+    "implicitThrowEvent": "choreography-only event, not valid in a bpmn:process",
+}
+
+#: T-4505: unprefixed attributes the BPMN 2.0 schema defines on each tag and
+#: parse_map does not model as a named field (id, name, default, calledElement,
+#: attachedToRef, cancelActivity are). These ride n["attrs"] verbatim; any other
+#: unprefixed attribute is not BPMN and stays dropped (T-4389, T-4399).
+_ACTIVITY_ATTRS = ("isForCompensation", "startQuantity", "completionQuantity")
+_SUBPROCESS_ATTRS = _ACTIVITY_ATTRS + ("triggeredByEvent",)
+BPMN_SCHEMA_ATTRS = {
+    "task": _ACTIVITY_ATTRS,
+    "sendTask": _ACTIVITY_ATTRS + ("implementation", "messageRef", "operationRef"),
+    "receiveTask": _ACTIVITY_ATTRS + ("implementation", "instantiate", "messageRef",
+                                      "operationRef"),
+    "serviceTask": _ACTIVITY_ATTRS + ("implementation", "operationRef"),
+    "userTask": _ACTIVITY_ATTRS + ("implementation",),
+    "manualTask": _ACTIVITY_ATTRS,
+    "scriptTask": _ACTIVITY_ATTRS + ("scriptFormat",),
+    "businessRuleTask": _ACTIVITY_ATTRS + ("implementation",),
+    "subProcess": _SUBPROCESS_ATTRS,
+    "adHocSubProcess": _SUBPROCESS_ATTRS + ("cancelRemainingInstances", "ordering"),
+    "transaction": _SUBPROCESS_ATTRS + ("method",),
+    "callActivity": _ACTIVITY_ATTRS,
+    "startEvent": ("parallelMultiple", "isInterrupting"),
+    "intermediateCatchEvent": ("parallelMultiple",),
+    "boundaryEvent": ("parallelMultiple",),
+    "exclusiveGateway": ("gatewayDirection",),
+    "inclusiveGateway": ("gatewayDirection",),
+    "complexGateway": ("gatewayDirection",),
+    "parallelGateway": ("gatewayDirection",),
+    "eventBasedGateway": ("gatewayDirection", "instantiate", "eventGatewayType"),
+}
 
 # Known structured aef:* ext children; everything else is preserved verbatim.
 _KNOWN_EXT = {"uid", "position", "eventDef", "link", "meta", "workflowMeta", "laneMeta",
@@ -388,8 +441,14 @@ def parse_map(xml_text: str) -> dict:
                     n["cancel_activity"] = el.get("cancelActivity")
             # T-4389: namespace-qualified attributes (camunda:asyncBefore, …)
             # with the source prefix and the declaration they need.
+            schema_attrs = BPMN_SCHEMA_ATTRS.get(local, ())
             for key, val in el.attrib.items():
-                if key.startswith("{"):
+                if not key.startswith("{"):
+                    # T-4505: schema-defined plain attributes (messageRef,
+                    # instantiate, eventGatewayType, …) verbatim.
+                    if key in schema_attrs:
+                        n.setdefault("attrs", {})[key] = val
+                else:
                     uri, local = key[1:].split("}", 1)
                     pfx = prefixes.get(uri, "")
                     n.setdefault("attrs", {})[f"{pfx}:{local}"] = val
@@ -467,6 +526,12 @@ def parse_map(xml_text: str) -> dict:
             # gone through recreate, flows left dangling, map rendered
             # disconnected). Any identified process child we cannot round-trip
             # is now a hard error — extend TYPE_TO_TAG deliberately instead.
+            if local in REFUSED_FLOW_TAGS:
+                raise SystemExit(
+                    f"parse: refused BPMN element <bpmn:{local} "
+                    f"id=\"{el.get('id')}\"> — {REFUSED_FLOW_TAGS[local]}; "
+                    f"parse_map does not round-trip it (T-4505)."
+                )
             raise SystemExit(
                 f"parse: unsupported BPMN element <bpmn:{local} "
                 f"id=\"{el.get('id')}\"> — parse_map cannot round-trip this "
@@ -502,7 +567,8 @@ def _check_default_flows(spec: dict, where: str) -> None:
 
 #: Node types a boundaryEvent may attach to (BPMN tActivity subclasses).
 _ACTIVITY_TYPES = {"service", "user", "script", "subprocess", "call", "task",
-                   "business-rule"}
+                   "business-rule", "send", "receive", "manual",
+                   "adhoc-subprocess", "transaction"}
 
 
 def _check_boundary_hosts(spec: dict, where: str) -> None:

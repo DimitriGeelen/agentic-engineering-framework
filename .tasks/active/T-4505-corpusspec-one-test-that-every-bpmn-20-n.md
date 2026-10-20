@@ -8,7 +8,7 @@ description: >
   Add the missing task tags and a table-driven test over the BPMN 2.0 flow-node list
   so the next gap is caught before a peer hits it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T19:10:15Z
-last_update: '2026-10-20T19:16:33Z'
+last_update: 2026-10-20T20:12:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,14 +88,19 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`tools/corpus_spec.py` parse_map hard-errors on any identified process child outside
+TYPE_TO_TAG (T-2614). Each missing tag reached a peer first (T-4374, T-4488, T-4495,
+T-4501). This adds every remaining BPMN 2.0 process flow-node tag and pins the whole
+list in one table-driven test, so the next gap is caught here rather than in the field.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] TYPE_TO_TAG covers sendTask, receiveTask, manualTask, inclusiveGateway, complexGateway, eventBasedGateway, adHocSubProcess and transaction; each parses with 0 refusals and round trips losslessly (emit → parse → emit identical, canonical(out) == canonical(src))
+- [ ] Unmodelled plain node attributes (messageRef, instantiate, implementation, eventGatewayType, ordering, method, …) survive the round trip instead of being dropped
+- [ ] A table-driven test over the full BPMN 2.0 flow-node list asserts every tag is either in TYPE_TO_TAG or refused by name (choreography tags, implicitThrowEvent); the unknown-tag probe moved off complexGateway
+- [ ] New activity types are valid boundary hosts and have lint occupancy entries; existing corpus_spec / corpus_lint tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,8 +285,17 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q > /tmp/.t4505 2>&1 && grep -q passed /tmp/.t4505
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k "every_bpmn_flow_node or new_flow_node" > /tmp/.t4505b 2>&1 && grep -q passed /tmp/.t4505b
+python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_spec as c; assert {'sendTask','receiveTask','manualTask','inclusiveGateway','complexGateway','eventBasedGateway','adHocSubProcess','transaction'} <= set(c.TAG_TO_TYPE)"
+bin/fw vendor self --check --task T-4505
 
 ## RCA
+
+**Symptom:** parse_map refused `<bpmn:sendTask>`, `<bpmn:receiveTask>` and `<bpmn:manualTask>` (as well as inclusive, complex and eventBased gateways, adHocSubProcess and transaction) with "unsupported BPMN element", one field report per tag.
+**Root cause:** `tools/corpus_spec.py:49` TYPE_TO_TAG grew one tag per field report (T-4374, T-4488, T-4495, T-4501) and was never checked against the BPMN 2.0 flow-node list. Parse (`tools/corpus_spec.py:466`) correctly hard-errors on the rest. Unmodelled plain node attributes were also dropped silently: parse carried only name/default/calledElement/attachedToRef/cancelActivity and namespaced attrs, so a `messageRef` or `eventGatewayType` would have vanished on round trip.
+**Why structurally allowed:** no test enumerated the specification's flow-node set; each test pinned only the tag just added.
+**Prevention:** `test_every_bpmn_flow_node_is_supported_or_refused_by_name` walks the full BPMN 2.0 flow-node list and fails for any tag that neither round-trips nor is refused with its name.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -377,3 +391,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4505-corpusspec-one-test-that-every-bpmn-20-n.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:12:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

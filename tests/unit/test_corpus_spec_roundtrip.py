@@ -31,13 +31,13 @@ TAIL = "</bpmn:process></bpmn:definitions>"
 
 
 def test_unknown_tag_is_a_hard_error_not_a_silent_drop():
-    # T-4374 made callActivity supported; the guarantee is pinned on a tag
-    # that is still outside TYPE_TO_TAG.
-    xml = HEAD + '<bpmn:complexGateway id="mystery_node"/>' + TAIL
+    # T-4505 made every BPMN 2.0 process flow node supported; the guarantee is
+    # pinned on a tag outside the BPMN vocabulary altogether.
+    xml = HEAD + '<bpmn:mysteryNode id="mystery_node"/>' + TAIL
     with pytest.raises(SystemExit) as e:
         corpus_spec.parse_map(xml)
     msg = str(e.value)
-    assert "complexGateway" in msg and "mystery_node" in msg
+    assert "mysteryNode" in msg and "mystery_node" in msg
 
 
 def test_subprocess_round_trips_with_rich_extension_content():
@@ -483,7 +483,7 @@ def test_default_flow_is_checked_at_emit_too():
     assert "n1" in str(e.value) and "f1x" in str(e.value)
 
 
-def test_default_flow_on_non_carrier_and_other_unprefixed_attrs_stay_dropped():
+def test_default_flow_on_non_carrier_and_non_bpmn_unprefixed_attrs_stay_dropped():
     xml = HEAD + (
         '<bpmn:startEvent id="s" default="f1" foo="bar"/>'
         '<bpmn:exclusiveGateway id="n1" default="f1" gatewayDirection="Diverging"/>'
@@ -494,9 +494,11 @@ def test_default_flow_on_non_carrier_and_other_unprefixed_attrs_stay_dropped():
     spec = corpus_spec.parse_map(xml)
     by_id = {n["id"]: n for n in spec["nodes"]}
     assert "default" not in by_id["s"] and "attrs" not in by_id["s"]
-    assert by_id["n1"]["default"] == "f1" and "attrs" not in by_id["n1"]
+    assert by_id["n1"]["default"] == "f1"
+    # T-4505: gatewayDirection is BPMN schema (tGateway), so it is carried
+    assert by_id["n1"]["attrs"] == {"gatewayDirection": "Diverging"}
     out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
-    assert "foo=" not in out and "gatewayDirection" not in out
+    assert "foo=" not in out and 'gatewayDirection="Diverging"' in out
     assert out.count(' default="') == 1  # not tier_default
 
 
@@ -686,3 +688,111 @@ def test_document_without_process_refuses():
 def test_single_process_map_is_unaffected(capsys):
     spec = corpus_spec.parse_map(_plain_task_xml())
     assert len(spec["nodes"]) == 4 and capsys.readouterr().err == ""
+
+
+# ── T-4505: every BPMN 2.0 flow node is supported or refused by name ──
+
+# BPMN 2.0 (formal/2011-01-03) §8.3.13 flow-node substitution group, all of it:
+# tActivity / tEvent / tGateway / tChoreographyActivity subclasses.
+BPMN_FLOW_NODES = [
+    "task", "sendTask", "receiveTask", "serviceTask", "userTask", "manualTask",
+    "scriptTask", "businessRuleTask", "subProcess", "adHocSubProcess",
+    "transaction", "callActivity",
+    "startEvent", "endEvent", "intermediateCatchEvent", "intermediateThrowEvent",
+    "boundaryEvent", "implicitThrowEvent",
+    "exclusiveGateway", "inclusiveGateway", "parallelGateway", "complexGateway",
+    "eventBasedGateway",
+    "choreographyTask", "subChoreography", "callChoreography",
+]
+
+
+def _single_node_xml(tag, attrs="", body=""):
+    # one task host so a boundaryEvent has a legal attachedToRef
+    host = '<bpmn:task id="host"/>' if tag == "boundaryEvent" else ""
+    if tag == "boundaryEvent":
+        attrs += ' attachedToRef="host"'
+    if tag == "callActivity":
+        attrs += ' calledElement="other-map"'
+    return HEAD + host + f'<bpmn:{tag} id="n1" name="N"{attrs}>{body}</bpmn:{tag}>' + TAIL
+
+
+@pytest.mark.parametrize("tag", BPMN_FLOW_NODES)
+def test_every_bpmn_flow_node_is_supported_or_refused_by_name(tag, monkeypatch):
+    monkeypatch.setattr(corpus_spec, "store_index", lambda store=None: _CALL_IDX)
+    src = _single_node_xml(tag)
+    if tag in corpus_spec.TAG_TO_TYPE:
+        assert tag not in corpus_spec.REFUSED_FLOW_TAGS
+        spec = corpus_spec.parse_map(src)
+        n = next(n for n in spec["nodes"] if n["id"] == "n1")
+        assert corpus_spec.TYPE_TO_TAG[n["type"]] == tag
+        out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+        assert out.count(f"<bpmn:{tag} ") == 1
+        assert corpus_spec.parse_map(out)["nodes"] == spec["nodes"]
+    else:
+        assert tag in corpus_spec.REFUSED_FLOW_TAGS, (
+            f"{tag} is neither in TYPE_TO_TAG nor in REFUSED_FLOW_TAGS")
+        with pytest.raises(SystemExit) as e:
+            corpus_spec.parse_map(src)
+        assert tag in str(e.value) and "n1" in str(e.value)
+
+
+def test_bpmn_flow_node_table_is_the_whole_vocabulary():
+    # a tag added to either table must also be on the spec list above
+    known = set(corpus_spec.TAG_TO_TYPE) | set(corpus_spec.REFUSED_FLOW_TAGS)
+    assert known == set(BPMN_FLOW_NODES)
+
+
+NEW_FLOW_NODES = [
+    # tag, type, plain attributes the parser does not model, verbatim children
+    ("sendTask", "send", ' implementation="##WebService" messageRef="Msg_1"', ""),
+    ("receiveTask", "receive", ' instantiate="true" messageRef="Msg_1"', ""),
+    ("manualTask", "manual", "", "<bpmn:documentation>by hand</bpmn:documentation>"),
+    ("inclusiveGateway", "inclusive-gateway", ' gatewayDirection="Diverging"', ""),
+    ("complexGateway", "complex-gateway", "",
+     '<bpmn:activationCondition xsi:type="bpmn:tFormalExpression">x</bpmn:activationCondition>'),
+    ("eventBasedGateway", "event-gateway", ' instantiate="false" eventGatewayType="Exclusive"', ""),
+    ("adHocSubProcess", "adhoc-subprocess", ' ordering="Sequential" cancelRemainingInstances="true"',
+     '<bpmn:task id="inner"/><bpmn:completionCondition>done</bpmn:completionCondition>'),
+    ("transaction", "transaction", ' method="##Compensate"', '<bpmn:task id="inner"/>'),
+]
+
+
+@pytest.mark.parametrize("tag,ntype,attrs,body", NEW_FLOW_NODES)
+def test_new_flow_node_round_trips_losslessly(tag, ntype, attrs, body):
+    src = HEAD.replace("<bpmn:definitions ",
+                       '<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ') + (
+        '<bpmn:startEvent id="s1"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>'
+        f'<bpmn:{tag} id="n1" name="N"{attrs}><bpmn:incoming>f1</bpmn:incoming>'
+        f'<bpmn:outgoing>f2</bpmn:outgoing>{body}</bpmn:{tag}>'
+        '<bpmn:endEvent id="e1"><bpmn:incoming>f2</bpmn:incoming></bpmn:endEvent>'
+        '<bpmn:sequenceFlow id="f1" sourceRef="s1" targetRef="n1"/>'
+        '<bpmn:sequenceFlow id="f2" sourceRef="n1" targetRef="e1"/>'
+    ) + TAIL
+    spec = corpus_spec.parse_map(src)  # was: SystemExit "unsupported BPMN element"
+    n = next(n for n in spec["nodes"] if n["id"] == "n1")
+    assert n["type"] == ntype and n["name"] == "N"
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert out.count(f"<bpmn:{tag} ") == 1
+    for attr in attrs.split():
+        assert attr in out, f"{attr} dropped on round trip"
+    for marker in ("by hand", "activationCondition", 'id="inner"', "completionCondition"):
+        if marker in body:
+            assert marker in out
+    spec2 = corpus_spec.parse_map(out)
+    assert spec2["nodes"] == spec["nodes"] and spec2["flows"] == spec["flows"]
+    assert corpus_spec.emit_map(spec2, version=1, compat_alias=False) == out
+
+
+@pytest.mark.parametrize("tag", ["sendTask", "receiveTask", "manualTask",
+                                 "adHocSubProcess", "transaction"])
+def test_new_activity_is_a_boundary_host(tag):
+    src = HEAD + (f'<bpmn:{tag} id="t1"/>'
+                  '<bpmn:boundaryEvent id="b1" attachedToRef="t1"/>') + TAIL
+    spec = corpus_spec.parse_map(src)
+    assert next(n for n in spec["nodes"] if n["id"] == "b1")["attached_to"] == "t1"
+
+
+def test_new_types_have_lint_occupancy():
+    import corpus_lint
+    missing = set(corpus_spec.TYPE_TO_TAG) - set(corpus_lint.NODE_OCCUPANCY)
+    assert not missing
