@@ -1,29 +1,27 @@
 ---
-id: T-4497
-name: "claude-fw -c (and the T-179 auto-restart's claude -c) continues the NEWEST
-  conversation in the folder, which is often a dispatched claude -p worker's"
+id: T-4494
+name: "fw upgrade restarts the sidecar receiver with a clean environment (no TERMLINK_IDENTITY_FILE),
+  so a project's mail goes out on the shared host key again"
 description: >
-  055-agentic-fleet-cockpit (msg 7d6bc3cd, their T-586), measured in 1409-sprind 2026-10-20:
-  'claude-fw -c' -> 'REFUSED — conversation 03288f87 is already live in pid 1453418';
-  pid 1453418 was a fw termlink dispatch worker (claude -p, entrypoint sdk-cli, ~4
-  h busy); the project's own conversation (4bc84441) was free. Every dispatched worker
-  writes a new conversation in the project folder, so -c picks a worker: refused while
-  it runs, or, once it ends, RESUMES THE WORKER'S TRANSCRIPT as if it were the agent.
-  AEF is exposed too: the T-179 auto-restart relaunches with 'claude -c' (CLAUDE.md
-  §Auto-Restart), and this project runs up to 10 workers. Fix: claude-fw records the
-  conversation id of the session it launched (per project, e.g. .context/working/)
-  and continues THAT id (claude --resume <id>) instead of bare -c; when no record
-  exists, choose the newest conversation whose entrypoint is not sdk-cli / not a -p
-  worker (~/.claude/sessions/<pid>.json or the transcript header). Never resume a
-  worker transcript. Regression test with fake session/transcript files (a newer sdk-cli
-  worker conversation and an older interactive one: the interactive one is chosen).
+  832 (msg dbd05180) on v1.8.14-be.3: fw upgrade restarted their sidecar receiver
+  at 15:25:11Z with a clean env (parent pid 1, no TERMLINK_IDENTITY_FILE, no inherited
+  vars); mail went out on the host key again (their T-1204 after v1.8.12, same class).
+  The identity must not depend on the restarting process's environment: whoever (re)starts
+  the receiver (upgrade, ensure, supervisor, cron) must resolve RAIL_IDENTITY_FILE
+  from config (lib/rail-identity.sh, as T-4454 does for claude-fw) and export TERMLINK_IDENTITY_FILE
+  only when the key file exists. Note T-4311's SIDECAR_RAIL_IDENTITY switch (off by
+  default because turning it on changes which dm:* rails address the project): whether
+  to DEFAULT it on when RAIL_IDENTITY_FILE is set is a coordination decision with
+  peers, NOT part of this fix; record the question for the operator. Regression test:
+  restart via the upgrade path with a clean env yields a receiver whose environment
+  carries the project key when the file exists.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/identity.py, tests/unit/test_sidecar_restart_identity_t4494.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -51,9 +49,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T17:02:05Z
-last_update: 2026-10-20T17:02:43Z
-date_finished:
+created: 2026-10-20T15:49:24Z
+last_update: 2026-10-20T17:47:28Z
+date_finished: 2026-10-20T17:47:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -65,7 +63,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T17:02:44Z'
+  - ts: '2026-10-20T15:51:02Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -82,9 +80,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T16:00:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=308,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4497: claude-fw -c (and the T-179 auto-restart's claude -c) continues the NEWEST conversation in the folder, which is often a dispatched claude -p worker's
+# T-4494: fw upgrade restarts the sidecar receiver with a clean environment (no TERMLINK_IDENTITY_FILE), so a project's mail goes out on the shared host key again
 
 ## Context
 
@@ -94,11 +102,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `lib/conversation-holder.sh` resolves a continue target that is never a `claude -p` worker conversation: the recorded id (`.context/working/claude-fw-conversation`) when its transcript exists and is interactive, else the newest transcript whose entrypoint is not `sdk-cli`/`sdk-*`
-- [x] `bin/claude-fw` rewrites every `-c`/`--continue` it would pass to claude (operator argv and both `FW_RESTART_MODE=continue` paths) into `--resume <id>`; with no interactive conversation it starts fresh instead of continuing a worker
-- [x] `bin/claude-fw` records the conversation id of the session it ran, per project, after each run
-- [x] Regression test (temp HOME, fake transcripts: newer sdk-cli worker + older cli conversation) proves the interactive one is chosen, the recorded id wins, and a recorded worker id is ignored; fails on the pre-fix code
-- [x] Existing claude-fw suites stay green (t4426, t4454, t4462, t4474, t3954, t3647, t3648, t4118) and the T-3890 guard suite
+- [x] Every path that (re)starts a project sidecar process (fw upgrade, sidecar ensure/start, the supervisor respawn, cron) builds the child env so that TERMLINK_IDENTITY_FILE is the project's RAIL_IDENTITY_FILE (resolved from config, as lib/rail-identity.sh does) whenever that key file exists, independent of the restarting process's inherited env
+- [x] A configured key path that does NOT exist is not exported unless SIDECAR_RAIL_IDENTITY=1 (no keypair minted by a restart); SIDECAR_RAIL_IDENTITY's default stays 0
+- [x] `fw sidecar ensure --all` (cron) never hands one project's inherited TERMLINK_IDENTITY_FILE/AGENT_ID/IDENTITY_DIR to another project's child (respawn_env signing=False strips the selectors)
+- [x] Regression test: restarting via the upgrade path under a clean env (`env -i`) yields a receiver env carrying the project key when the file exists, and none when it does not; fails without the fix
+- [x] The question "default SIDECAR_RAIL_IDENTITY on when RAIL_IDENTITY_FILE is set?" is recorded in ## Decisions for the operator, not decided here
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,35 +291,11 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-bash -n bin/claude-fw && bash -n lib/conversation-holder.sh
-timeout 600 bats tests/unit/t4497_claude_fw_continue_not_worker.bats > /tmp/.t4497.out 2>&1 && ! grep -q "^not ok" /tmp/.t4497.out && grep -q "^ok 8 " /tmp/.t4497.out
-test "$(grep -c '# skip' /tmp/.t4497.out)" -eq 0
-out=$(for f in t4426_claude_fw_tmux_redraw t4454_claude_fw_rail_identity t4462_claude_fw_inject_bypasses_function t4474_claude_fw_inject_sidecar_env t3954_claude_fw_installed_copy t3647_claude_fw_register_leak t3648_claude_fw_ping_tolerance t4118_claude_fw_reexec_on_change t3890_conversation_holder claude_fw_restart_mode; do timeout 600 bats tests/unit/$f.bats 2>&1; done); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4497.lint 2>&1 && grep -q clean /tmp/.t4497.lint
-bin/fw vendor self --check --task T-4497
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
-**Symptom:** `claude-fw -c` in 1409-sprind was REFUSED because "conversation 03288f87 is already live in pid 1453418" — a `fw termlink dispatch` worker (`claude -p`, entrypoint sdk-cli); the project's own conversation was free. Once a worker ends, the same `-c` resumes the worker's transcript as if it were the agent. Reproduced here: the newest transcript in this project folder was a sdk-cli worker, the interactive one older.
-
-**Root cause:** claude-fw passed bare `-c` to claude in three places — operator argv passed through unchanged, and `FW_RESTART_MODE=continue` set `CLAUDE_ARGS=("-c")` on the restart path (`bin/claude-fw:1554` pre-fix) and the re-arm path (`bin/claude-fw:1654` pre-fix). Claude Code's `-c` means "newest conversation in this folder", and every dispatched worker writes a newer one. claude-fw never recorded which conversation it ran, so it had nothing better to pass; the T-3890 guard mirrored the same newest-file rule (`lib/conversation-holder.sh` `fw_conversation_target`, `ls -t | head -1`), which is why it refused against a worker.
-
-**Why structurally allowed:** "newest in the folder = mine" held while one interactive session per folder was the only writer; worker dispatch (up to 10 here) broke the assumption silently. Tests built fake transcripts as empty files with no entrypoint, so no test could tell a worker from the agent.
-
-**Fix / Prevention:** `lib/conversation-holder.sh` now resolves a continue target that is never a worker (recorded id in `.context/working/.claude-fw-conversation` if its transcript is interactive, else the newest transcript whose entrypoint is not `sdk-*`), records the conversation after each run, and `bin/claude-fw` `_resolve_continue` rewrites every `-c`/`--continue` to `--resume <id>` before each launch (no interactive conversation → fresh session). `tests/unit/t4497_claude_fw_continue_not_worker.bats` (8 tests, all red on the pre-fix code) pins it with fake sdk-cli/cli transcripts under a temp HOME, end to end through the real wrapper for both `claude-fw -c` and the continue-mode restart.
+python3 -m pytest tests/unit/test_sidecar_restart_identity_t4494.py -q > /tmp/.t4494-a.out 2>&1 && grep -q passed /tmp/.t4494-a.out
+python3 -m pytest tests/unit/test_sidecar_rail_identity_t4311.py tests/unit/test_sidecar_worker_hijack_t4416.py tests/unit/test_sidecar_project_identity.py -q > /tmp/.t4494-b.out 2>&1 && grep -q passed /tmp/.t4494-b.out
+python3 -c "import sys; sys.path.insert(0,'.'); from lib.sidecar import identity; import inspect; assert 'isfile' in inspect.getsource(identity.termlink_env)"
+grep -q '"SIDECAR_RAIL_IDENTITY|0|' lib/config.sh
+bin/fw vendor self --check --task T-4494
 
 ## Evolution
 
@@ -336,6 +320,16 @@ bin/fw vendor self --check --task T-4497
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** 832 (msg dbd05180, v1.8.14-be.3): after `fw upgrade`, their sidecar receiver came back at 15:25:11Z with parent pid 1 and a clean env, no TERMLINK_IDENTITY_FILE, and mail went out signed with the shared host key again. Same class as their T-1204 after v1.8.12.
+
+**Root cause:** `lib/sidecar/identity.py` `termlink_env()` (it backs `respawn_env()` and `apply()`, and every sidecar spawn goes through those: `sidecar_cli.py:860` receiver start, `watcher.py:859/876` supervisor respawn of the watcher and receiver, `watcher.py:1097` `ensure --all` from cron, plus `apply()` at each entry point) selected the project key only when `SIDECAR_RAIL_IDENTITY=1`, which is off by default. With the switch off, the receiver's key came from the env of whoever started it. A claude-fw session exports the key (T-4454), so receivers started from one were project-signed. A restart from cron or the supervisor after upgrade killed the processes (env -i style, parent pid 1) had no such env and fell back to the host key. Second leg: `respawn_env(signing=False)` (`ensure --all`) passed the caller's identity selectors into ANOTHER project's child, where precedence then kept the wrong project's key.
+
+**Why structurally allowed:** T-4454 fixed only one launcher, claude-fw, in shell. The python spawn helpers never matched it, so the identity depended on launch path. Every T-4311 test ran in-process with a hand-built env. None restarted a process under a clean env with an existing key file.
+
+**Prevention:** `tests/unit/test_sidecar_restart_identity_t4494.py` restarts through the real spawn helpers under `env -i` and asserts the child env carries the key when the file exists and none when it does not. It also asserts that `ensure --all` strips selectors across projects.
 
 ## Recommendation
 
@@ -377,6 +371,15 @@ bin/fw vendor self --check --task T-4497
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-20 — where the restart identity is decided
+- **Chose:** fix it once in `lib/sidecar/identity.py` `termlink_env()`. Every sidecar spawn (receiver start, supervisor respawn, `ensure --all`) and every entry-point `apply()` already goes through it. With the switch off, a configured RAIL_IDENTITY_FILE that EXISTS is selected, the same rule as claude-fw (T-4454), with no APPLIED_MARKER (no host-DM transition implied). A missing file is selected only with SIDECAR_RAIL_IDENTITY=1, as before.
+- **Why:** `fw upgrade` does not itself start the receiver. What brings it back is the cron keep-alive or the supervisor, with a clean env, so patching any one shell launcher would leave the others on the host key. The key now depends on config, not on the launch path.
+- **Rejected:** exporting in `bin/fw sidecar` / the cron line in shell. That covers one door and leaves the python respawns uncovered, which is the T-4454 shape that produced this bug.
+- **Side effect to know:** a project that has the key file but whose receiver ran on the host key (started from plain `claude`, not claude-fw) now signs as the project key. That is the intent of RAIL_IDENTITY_FILE, but its dm:* address moves. Without APPLIED_MARKER the old host-key rails are not drained during that move.
+
+### OPEN for the operator — default SIDECAR_RAIL_IDENTITY on when RAIL_IDENTITY_FILE is set?
+- Not decided here (task scope). The switch default stays 0 (`lib/config.sh`). Turning it on would also mint a key at a configured-but-missing path and set the host-DM transition marker, which changes which dm:* rails address the project. That is a coordination decision with peers (832 et al.).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -389,10 +392,27 @@ bin/fw vendor self --check --task T-4497
 
 ## Updates
 
-### 2026-10-20T17:02:05Z — task-created [task-create-agent]
+### 2026-10-20T15:49:24Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4497-claude-fw--c-and-the-t-179-auto-restarts.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4494-fw-upgrade-restarts-the-sidecar-receiver.md
 - **Context:** Initial task creation
 
-### 2026-10-20T17:02:43Z — status-update [task-update-agent]
+### 2026-10-20T15:51:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7e0d585c
+- **Timestamp:** 2026-10-20T17:47:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T17:47:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

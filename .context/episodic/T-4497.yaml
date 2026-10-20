@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4497: claude-fw -c (and the T-179 auto-restart's claude -c) continues the NEWEST conversation in the folder, which is often a dispatched claude -p worker's
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T17:47:24Z
+# ============================================================================
+
+task_id: T-4497
+task_name: "claude-fw -c (and the T-179 auto-restart's claude -c) continues the NEWEST conversation in the folder, which is often a dispatched claude -p worker's"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T17:02:05Z
+completed: 2026-10-20T17:43:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T19:02:42+02:00
+last_commit: 2026-10-20T19:43:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file claude-fw -c resumes a worker's conversation (055); handover notes in-flight workers. claude-fw resolves -c/--continue to --resume <this session's conversation>, never a claude -p worker's. fabric cards for the T-4494 and T-4497 regression tests
+
+# Key outcomes
+outcomes:
+  - '`lib/conversation-holder.sh` resolves a continue target that is never a `claude -p` worker conversation: the recorded id (`.context/working/claude-fw-conversation`) when its transcript exists and is interactive, else the newest transcript whose entrypoint is not `sdk-cli`/`sdk-*`'
+  - '`bin/claude-fw` rewrites every `-c`/`--continue` it would pass to claude (operator argv and both `FW_RESTART_MODE=continue` paths) into `--resume <id>`; with no interactive conversation it starts fresh instead of continuing a worker'
+  - '`bin/claude-fw` records the conversation id of the session it ran, per project, after each run'
+  - 'Regression test (temp HOME, fake transcripts: newer sdk-cli worker + older cli conversation) proves the interactive one is chosen, the recorded id wins, and a recorded worker id is ignored; fails on the pre-fix code'
+  - 'Existing claude-fw suites stay green (t4426, t4454, t4462, t4474, t3954, t3647, t3648, t4118) and the T-3890 guard suite'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/lib/conversation-holder.sh'
+  - 'bin/claude-fw'
+  - '.context/handovers/S-2026-1020-1816.md'
+  - '.fabric/components/tests-unit-t4497_claude_fw_continue_not_worker.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_restart_identity_t4494.yaml'
+  - '.gitignore'
+  - 'lib/conversation-holder.sh'
+  - '.tasks/active/T-4497-claude-fw--c-and-the-t-179-auto-restarts.md'
+  - 'tests/unit/t3890_conversation_holder.bats'
+  - 'tests/unit/t4497_claude_fw_continue_not_worker.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T19:02:42'
+    action: 'T-4497: file claude-fw -c resumes a worker''s conversation (055); handover notes in-flight workers'
+  - time: '2026-10-20T19:15:24'
+    action: 'T-4497: claude-fw resolves -c/--continue to --resume <this session''s conversation>, never a claude -p worker''s'
+  - time: '2026-10-20T19:43:50'
+    action: 'T-4497: fabric cards for the T-4494 and T-4497 regression tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 41
+  commits: 3
+  files_changed: 11
+  lines_added: 910
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4497-claude-fw--c-and-the-t-179-auto-restarts.md
+generated_by: context-agent-hybrid

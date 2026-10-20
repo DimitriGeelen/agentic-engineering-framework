@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4494: fw upgrade restarts the sidecar receiver with a clean environment (no TERMLINK_IDENTITY_FILE), so a project's mail goes out on the shared host key again
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T17:47:57Z
+# ============================================================================
+
+task_id: T-4494
+task_name: "fw upgrade restarts the sidecar receiver with a clean environment (no TERMLINK_IDENTITY_FILE), so a project's mail goes out on the shared host key again"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-20T15:49:24Z
+completed: 2026-10-20T17:47:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T18:00:13+02:00
+last_commit: 2026-10-20T18:00:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a sidecar restarted with a clean env (cron/supervisor after fw upgrade) signs with the project key — termlink_env selects an existing RAIL_IDENTITY_FILE with the switch off (as claude-fw T-4454), never mints one; ensure --all strips the caller's identity selectors from other projects' children; regression pytest under env -i; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Every path that (re)starts a project sidecar process (fw upgrade, sidecar ensure/start, the supervisor respawn, cron) builds the child env so that TERMLINK_IDENTITY_FILE is the project''s RAIL_IDENTITY_FILE (resolved from config, as lib/rail-identity.sh does) whenever that key file exists, independent of the restarting process''s inherited env'
+  - 'A configured key path that does NOT exist is not exported unless SIDECAR_RAIL_IDENTITY=1 (no keypair minted by a restart); SIDECAR_RAIL_IDENTITY''s default stays 0'
+  - '`fw sidecar ensure --all` (cron) never hands one project''s inherited TERMLINK_IDENTITY_FILE/AGENT_ID/IDENTITY_DIR to another project''s child (respawn_env signing=False strips the selectors)'
+  - 'Regression test: restarting via the upgrade path under a clean env (`env -i`) yields a receiver env carrying the project key when the file exists, and none when it does not; fails without the fix'
+  - 'The question "default SIDECAR_RAIL_IDENTITY on when RAIL_IDENTITY_FILE is set?" is recorded in ## Decisions for the operator, not decided here'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — where the restart identity is decided'
+    chose: 'fix it once in `lib/sidecar/identity.py` `termlink_env()`. Every sidecar spawn (receiver start, supervisor respawn, `ensure --all`) and every entry-point `apply()` already goes through it. With the switch off, a configured RAIL_IDENTITY_FILE that EXISTS is selected, the same rule as claude-fw (T-4454), with no APPLIED_MARKER (no host-DM transition implied). A missing file is selected only with SIDECAR_RAIL_IDENTITY=1, as before.'
+    rationale: '`fw upgrade` does not itself start the receiver. What brings it back is the cron keep-alive or the supervisor, with a clean env, so patching any one shell launcher would leave the others on the host key. The key now depends on config, not on the launch path.'
+    alternatives_rejected: ['exporting in `bin/fw sidecar` / the cron line in shell. That covers one door and leaves the python respawns uncovered, which is the T-4454 shape that produced this bug. - **Side effect to know:** a project that has the key file but whose receiver ran on the host key (started from plain `claude`, not claude-fw) now signs as the project key. That is the intent of RAIL_IDENTITY_FILE, but its dm:* address moves. Without APPLIED_MARKER the old host-key rails are not drained during that move.']
+  - decision: 'OPEN for the operator — default SIDECAR_RAIL_IDENTITY on when RAIL_IDENTITY_FILE is set?'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/identity.py'
+  - 'lib/sidecar/identity.py'
+  - '.tasks/active/T-4494-fw-upgrade-restarts-the-sidecar-receiver.md'
+  - 'tests/unit/test_sidecar_restart_identity_t4494.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T18:00:13'
+    action: 'T-4494: a sidecar restarted with a clean env (cron/supervisor after fw upgrade) signs with the project key — termlink_env selects an existing RAIL_IDENTITY_FILE with the switch off (as claude-fw T-4454), never mints one; ensure --all strips the caller''s identity selectors from other projects'' children; regression pytest under env -i; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 118 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 118
+  commits: 1
+  files_changed: 4
+  lines_added: 260
+  lines_removed: 40
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4494-fw-upgrade-restarts-the-sidecar-receiver.md
+generated_by: context-agent-hybrid
