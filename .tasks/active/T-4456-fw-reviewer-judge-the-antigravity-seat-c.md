@@ -1,10 +1,22 @@
 ---
 id: T-4456
-name: "fw reviewer judge: the antigravity seat can never produce a verdict — headless mode auto-denies the command tool and the seat's settings allow nothing"
+name: "fw reviewer judge: the antigravity seat can never produce a verdict — headless
+  mode auto-denies the command tool and the seat's settings allow nothing"
 description: >
-  Field report from proxmox-ring20-management (T-2449, msg 6090c08e, rung-5 panel on T-2255 AC#1): every antigravity dispatch exits 0 with no verdict; its log: 'jetski: no output produced — a tool required the command permission that headless mode cannot prompt for, so it was auto-denied. Add an allow-rule under permissions.allow in settings.json'. Our launch (agents/termlink/termlink.sh ~1497: sudo -u <user> $WORKER_BIN -p ... --mode plan --sandbox) passes no allow-rule, so a seat that must run read-only shell reads can never answer. Effect: a rung-5 panel loses its internal spare and a criterion falls to the operator or a paid seat. Fix: give the seat a per-run settings file allowing exactly the read-only command tool inside the exported tree (no writes, no network beyond the provider), signed like the claude seat's settings (T-3580); and treat 'exit 0 with no verdict' as seat-unavailable with the log's reason, not silence. Regression test with a fake antigravity binary that records its args/settings.
+  Field report from proxmox-ring20-management (T-2449, msg 6090c08e, rung-5 panel
+  on T-2255 AC#1): every antigravity dispatch exits 0 with no verdict; its log: 'jetski:
+  no output produced — a tool required the command permission that headless mode cannot
+  prompt for, so it was auto-denied. Add an allow-rule under permissions.allow in
+  settings.json'. Our launch (agents/termlink/termlink.sh ~1497: sudo -u <user> $WORKER_BIN
+  -p ... --mode plan --sandbox) passes no allow-rule, so a seat that must run read-only
+  shell reads can never answer. Effect: a rung-5 panel loses its internal spare and
+  a criterion falls to the operator or a paid seat. Fix: give the seat a per-run settings
+  file allowing exactly the read-only command tool inside the exported tree (no writes,
+  no network beyond the provider), signed like the claude seat's settings (T-3580);
+  and treat 'exit 0 with no verdict' as seat-unavailable with the log's reason, not
+  silence. Regression test with a fake antigravity binary that records its args/settings.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T11:08:56Z
-last_update: 2026-10-20T11:08:56Z
-date_finished: null
+last_update: 2026-10-20T11:18:59Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T11:15:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T11:16:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4456: fw reviewer judge: the antigravity seat can never produce a verdict — headless mode auto-denies the command tool and the seat's settings allow nothing
@@ -62,8 +102,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] DEFERRED (needs agy flag/settings location; `agy --help` and its home are refused by the project-boundary gate here): the antigravity seat launch gives the seat a per-run settings file whose permissions.allow names only the read-only command tool
+- [x] An antigravity seat that exits 0 but produced no verdict (output says the command tool was auto-denied) is reported unavailable with that reason, not as a bare "exit 0"
+- [x] Regression test tests/unit/t4456_antigravity_seat_test.py passes; existing *judge*, *t3580*, *t3582* tests stay green; signed trust chain untouched
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -245,11 +286,18 @@ date_finished: null
 # Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
 # web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
 #     bin/fw vendor self --check --task T-XXXX
+python3 -m pytest tests/unit/t4456_antigravity_seat_test.py -q > /tmp/.t4456.out 2>&1 && grep -q passed /tmp/.t4456.out
+bin/fw vendor self --check --task T-4456
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
 ## RCA
+
+**Symptom:** every antigravity dispatch exits 0 with no verdict; log: "a tool required the command permission that headless mode cannot prompt for, so it was auto-denied".
+**Root cause:** (a) the seat is launched `-p ... --mode plan --sandbox` with no allow-rule for its command tool (termlink.sh antigravity branch), so any shell read is auto-denied; (b) `_unavailable_reason` (lib/reviewer/judge_cli.py:816) reported only "exit 0" and never read result.md, where antigravity prints its refusal.
+**Why structurally allowed:** exit 0 + no ledger row had no named cause; antigravity's flags/settings location were never verified (docs/harnesses.md: "Not checked").
+**Prevention:** (b) fixed and pinned by t4456_antigravity_seat_test.py. (a) OPEN: needs `agy --help` / its settings path, which the boundary gate refuses from this session; operator or a TermLink-dispatched probe must supply it before an allow-rule file can be added and signed.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +393,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4456-fw-reviewer-judge-the-antigravity-seat-c.md
 - **Context:** Initial task creation
+
+### 2026-10-20T11:18:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

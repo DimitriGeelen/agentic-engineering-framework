@@ -823,13 +823,17 @@ def _unavailable_reason(dispatch_id: str) -> str:
     except OSError:
         code = ""
     text = ""
-    for name in ("result.jsonl", "stderr.log"):
+    # result.md: antigravity prints its whole output (and its refusal) to stdout.
+    for name in ("result.jsonl", "stderr.log", "result.md"):
         try:
             text += (w / name).read_text(errors="replace").lower()
         except OSError:
             pass
+    # T-4456: a headless harness that needed a tool permission it cannot prompt for exits 0 with
+    # no verdict; say that, not a bare "exit 0".
     limit = ("usage limit" if "usage limit" in text else
-             "rate limit" if ("rate limit" in text or "429" in text) else "")
+             "rate limit" if ("rate limit" in text or "429" in text) else
+             "tool permission auto-denied (headless)" if "auto-denied" in text else "")
     if limit and code:
         return f"{limit} (exit {code})"
     if limit:
