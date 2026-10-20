@@ -1558,39 +1558,6 @@ do_upgrade() {
         return $_rc
     fi
 
-    # T-1217 / T-2095 (T-2078 V1-D, F2): self-vendor refresh.
-    # Inline call preserved by default for backward compat (T-1217 invariant).
-    # Operators who have wired `fw vendor self` into pre-push can opt out with
-    # --no-self-vendor to eliminate the per-upgrade redundancy. The helper
-    # itself is structurally consumer-safe: it early-returns when the framework
-    # vendored copy doesn't exist (consumer scenario).
-    if [ "$no_self_vendor" = true ]; then
-        echo -e "  ${YELLOW}Self-vendor skipped${NC} (--no-self-vendor)"
-    else
-        _self_vendor_libs "$dry_run"
-        # T-2241: sibling sync — templates drift class, same flag gates both
-        _self_vendor_templates "$dry_run"
-        # T-2263: sibling sync — BVP-policy drift class (arc-006 Slice 2C),
-        # same flag, same prefix → caught by T-2240 pre-push gate regex
-        _self_vendor_policy "$dry_run"
-        # T-2264: sibling sync — bin/fw shim drift class, same flag, same prefix
-        _self_vendor_shim "$dry_run"
-        # T-2266: sibling sync — agents/ drift class (5th class). Recursive over
-        # subdirs (audit/, context/, git/, ...) filtered to *.sh + *.py to mirror
-        # the audit drift scan's exact filter at agents/audit/audit.sh:1534.
-        _self_vendor_agents "$dry_run"
-        # T-2267: sibling sync — web/ drift class (6th and current-final class
-        # under the audit drift-scan shape). Same *.sh + *.py filter; templates
-        # and static assets stay untouched (out-of-scope per audit's filter).
-        _self_vendor_web "$dry_run"
-        # T-4392: sibling sync — tools/ (the tree do_vendor ships whole).
-        _self_vendor_tools "$dry_run"
-        # T-3064: sibling sync — pinned Workflow Designer build. Outside the
-        # audit drift-scan shape (that scans {bin,lib,agents,web} only), so this
-        # class is carried by `fw vendor self --check` and its own bats file.
-        _self_vendor_designer "$dry_run"
-    fi
-
     local project_name
     project_name=$(basename "$target_dir")
     local changes=0
@@ -1725,6 +1692,42 @@ do_upgrade() {
             echo -e "          Lose them: re-run with ${BOLD}--allow-delete-locals${NC} (logged Tier-2; copies kept)." >&2
             return 1
         fi
+    fi
+
+    # T-1217 / T-2095 (T-2078 V1-D, F2): self-vendor refresh.
+    # T-4498: it WRITES (into $FRAMEWORK_ROOT/.agentic-framework/), so it runs only
+    # after every refusal above. It used to run before the T-1912 precheck: a shallow
+    # source refused as foreign-source had already synced 3 files (dimitri-mint-dev).
+    # Inline call preserved by default for backward compat (T-1217 invariant).
+    # Operators who have wired `fw vendor self` into pre-push can opt out with
+    # --no-self-vendor to eliminate the per-upgrade redundancy. The helper
+    # itself is structurally consumer-safe: it early-returns when the framework
+    # vendored copy doesn't exist (consumer scenario).
+    if [ "$no_self_vendor" = true ]; then
+        echo -e "  ${YELLOW}Self-vendor skipped${NC} (--no-self-vendor)"
+    else
+        _self_vendor_libs "$dry_run"
+        # T-2241: sibling sync — templates drift class, same flag gates both
+        _self_vendor_templates "$dry_run"
+        # T-2263: sibling sync — BVP-policy drift class (arc-006 Slice 2C),
+        # same flag, same prefix → caught by T-2240 pre-push gate regex
+        _self_vendor_policy "$dry_run"
+        # T-2264: sibling sync — bin/fw shim drift class, same flag, same prefix
+        _self_vendor_shim "$dry_run"
+        # T-2266: sibling sync — agents/ drift class (5th class). Recursive over
+        # subdirs (audit/, context/, git/, ...) filtered to *.sh + *.py to mirror
+        # the audit drift scan's exact filter at agents/audit/audit.sh:1534.
+        _self_vendor_agents "$dry_run"
+        # T-2267: sibling sync — web/ drift class (6th and current-final class
+        # under the audit drift-scan shape). Same *.sh + *.py filter; templates
+        # and static assets stay untouched (out-of-scope per audit's filter).
+        _self_vendor_web "$dry_run"
+        # T-4392: sibling sync — tools/ (the tree do_vendor ships whole).
+        _self_vendor_tools "$dry_run"
+        # T-3064: sibling sync — pinned Workflow Designer build. Outside the
+        # audit drift-scan shape (that scans {bin,lib,agents,web} only), so this
+        # class is carried by `fw vendor self --check` and its own bats file.
+        _self_vendor_designer "$dry_run"
     fi
 
     # ── 0. Directory skeleton (T-2758) ──

@@ -2,9 +2,12 @@
 id: T-4498
 name: "Refused fw upgrade (foreign-source) still ran Self-vendor sync first"
 description: >
-  dimitri-mint-dev msg ae5a4e7f: a shallow tag clone was refused as foreign-source, but 'Self-vendor: synced 3 file(s) to .agentic-framework/lib/' had already run. A refused upgrade must be side-effect free (T-4278 rule): move the source-identity check before any write.
+  dimitri-mint-dev msg ae5a4e7f: a shallow tag clone was refused as foreign-source,
+  but 'Self-vendor: synced 3 file(s) to .agentic-framework/lib/' had already run.
+  A refused upgrade must be side-effect free (T-4278 rule): move the source-identity
+  check before any write.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T17:48:44Z
-last_update: 2026-10-20T17:48:44Z
-date_finished: null
+last_update: '2026-10-20T18:00:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +53,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T17:53:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T18:00:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=314,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4498: Refused fw upgrade (foreign-source) still ran Self-vendor sync first
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+A refused `fw upgrade` must be side-effect free (T-4278). Field report (dimitri-mint-dev msg ae5a4e7f): upgrade from a SHALLOW clone of a be tag refused as foreign-source, but `Self-vendor: synced 3 file(s) to .agentic-framework/lib/` had already run.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `do_upgrade` (lib/upgrade.sh) runs the self-vendor block only after every pre-write refusal check (T-1912 version precheck incl. foreign-source, T-4278 vendor precheck)
+- [x] Regression test `tests/unit/t4498_refused_upgrade_no_self_vendor.bats`: shallow-clone source refused as foreign-source => consumer tree AND source `.agentic-framework/` byte-identical before/after, no `Self-vendor: synced` line; fails on the pre-fix code
+- [x] Control: an accepted (non-refused) upgrade still self-vendors (T-1217 invariant kept)
+- [x] `upgrade_fresh_machine_simulation.bats`, `t4278_upgrade_refusal_atomic.bats`, `t2095_upgrade_self_vendor_extraction.bats` stay green
+- [x] `bin/fw vendor self --check --task T-4498` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +282,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n lib/upgrade.sh
+timeout 300 bats tests/unit/t4498_refused_upgrade_no_self_vendor.bats > /tmp/.t4498.out 2>&1 && ! grep -q "^not ok" /tmp/.t4498.out && test "$(grep -c '# skip' /tmp/.t4498.out)" -eq 0
+timeout 600 bats tests/unit/t4278_upgrade_refusal_atomic.bats tests/unit/t2095_upgrade_self_vendor_extraction.bats > /tmp/.t4498b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4498b.out
+timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4498c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4498c.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4498_refused_upgrade_no_self_vendor.bats > /tmp/.t4498d.out 2>&1 && grep -q clean /tmp/.t4498d.out
+bin/fw vendor self --check --task T-4498
 
 ## RCA
 
@@ -264,6 +304,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw upgrade` from a shallow clone of a be tag printed `Self-vendor: synced 3 file(s) to .agentic-framework/lib/`, then `REFUSED ... foreign-source`. A refused upgrade had already written.
+
+**Root cause:** `do_upgrade` (lib/upgrade.sh, the T-1217/T-2095 inline self-vendor block, formerly lines 1561-1594) ran the eight `_self_vendor_*` helpers right after the bare-from-consumer handoff and BEFORE the T-1912 version precheck (foreign-source refusal, ~line 1660) and the T-4278 vendor precheck (~line 1712). The helpers write into `$FRAMEWORK_ROOT/.agentic-framework/` — the source checkout's own vendored copy — so whenever that copy lagged the source's `lib/` (a be tag's committed vendor tree can) the refused run had already mutated the source tree.
+
+**Why structurally allowed:** T-4278 made "refuse before any write" the rule, but placed its check (and T-1912 placed its own) below a write that already existed, and T-4278's test hashes only the CONSUMER tree from a framework repo whose vendored copy is in sync, so self-vendor was a no-op there. The self-vendor write lands in the SOURCE tree, which no refusal test observed.
+
+**Prevention:** self-vendor moved below every pre-write refusal; `tests/unit/t4498_refused_upgrade_no_self_vendor.bats` drives `do_upgrade` against a real shallow source whose vendored lib is stale and asserts both trees byte-identical on refusal (red on the pre-fix code), plus a control that an accepted upgrade still self-vendors.
 
 ## Evolution
 
@@ -345,3 +393,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4498-refused-fw-upgrade-foreign-source-still-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T17:53:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
