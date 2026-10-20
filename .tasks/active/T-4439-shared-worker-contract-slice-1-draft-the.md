@@ -1,10 +1,29 @@
 ---
 id: T-4439
-name: "Shared worker contract slice 1: draft the transition table and conformance-suite spec (AEF proposal to TermLink and ring20)"
+name: "Shared worker contract slice 1: draft the transition table and conformance-suite
+  spec (AEF proposal to TermLink and ring20)"
 description: >
-  From inception T-4435 (GO recorded by the operator 2026-10-20). AEF owns the run.sh supervisor-writer, dispatcher recording, worker instruction, local-evidence reconciler and session<->dispatch binding at spawn, on condition that the FIRST deliverable is a jointly agreed transition table plus shared conformance suite — no implementation before that. Draft docs/specs/shared-worker-contract-transitions.md covering, per docs/reports/T-4435-shared-worker-contract.md §6: states (dispatched, running, done{outcome}, lost, unknown) and writer per transition; CAS from an expected prior state on every transition; precedence fenced done > lost with an idempotent lost->done upgrade from local evidence; bounded unknown/stale with a resolution verb; hub-allocated attempts + nonces, nonce checked atomically with the write; no overlapping attempts; outcome field on done (succeeded/failed/refused/handback-malformed); per-attempt answer entries with fenced read-marker ack, TTL <= attempt life then bounce to the dispatcher, never the retry ladder; local backend with identical CAS semantics chosen at dispatch time; completion authority only (evaluation ledger separate; shadow mode before switch-over); contract version field; retention needed by fencing; retry_of_dispatch_id preserved. Then the conformance cases (completion racing session end, supervisor crash before/after commit, duplicate finalisation, retry while an old worker survives, hub partition/restart, parent-session loss, answer delivery + ack to a running worker). Output: the spec doc, sent to termlink and ring20 for agreement.
+  From inception T-4435 (GO recorded by the operator 2026-10-20). AEF owns the run.sh
+  supervisor-writer, dispatcher recording, worker instruction, local-evidence reconciler
+  and session<->dispatch binding at spawn, on condition that the FIRST deliverable
+  is a jointly agreed transition table plus shared conformance suite — no implementation
+  before that. Draft docs/specs/shared-worker-contract-transitions.md covering, per
+  docs/reports/T-4435-shared-worker-contract.md §6: states (dispatched, running, done{outcome},
+  lost, unknown) and writer per transition; CAS from an expected prior state on every
+  transition; precedence fenced done > lost with an idempotent lost->done upgrade
+  from local evidence; bounded unknown/stale with a resolution verb; hub-allocated
+  attempts + nonces, nonce checked atomically with the write; no overlapping attempts;
+  outcome field on done (succeeded/failed/refused/handback-malformed); per-attempt
+  answer entries with fenced read-marker ack, TTL <= attempt life then bounce to the
+  dispatcher, never the retry ladder; local backend with identical CAS semantics chosen
+  at dispatch time; completion authority only (evaluation ledger separate; shadow
+  mode before switch-over); contract version field; retention needed by fencing; retry_of_dispatch_id
+  preserved. Then the conformance cases (completion racing session end, supervisor
+  crash before/after commit, duplicate finalisation, retry while an old worker survives,
+  hub partition/restart, parent-session loss, answer delivery + ack to a running worker).
+  Output: the spec doc, sent to termlink and ring20 for agreement.
 
-status: captured
+status: started-work
 workflow_type: specification
 owner: agent
 horizon: now
@@ -38,8 +57,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T07:57:08Z
-last_update: 2026-10-20T07:57:08Z
-date_finished: null
+last_update: '2026-10-20T08:00:46Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +69,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T07:58:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T08:00:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 4
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=4 
+      (workflow:specification); effort=8 (lines=302,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4439: Shared worker contract slice 1: draft the transition table and conformance-suite spec (AEF proposal to TermLink and ring20)
@@ -62,8 +109,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] docs/specs/shared-worker-contract-transitions.md exists with the 9 numbered sections (purpose/scope, record schema, transition table, attempt/nonce allocation, answer path, local backend, retention, migration, conformance cases)
+- [x] Transition table lists from-state, to-state, writer, required evidence, CAS expected-prior and precedence, including unknown + resolution verb, lost->done upgrade and fence_reject
+- [x] At least 11 numbered conformance cases in given/when/then form, covering every case named in the task
+- [x] Each section names its source (reviewer / condition)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -114,6 +163,9 @@ date_finished: null
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
+test -f docs/specs/shared-worker-contract-transitions.md
+test "$(grep -cE '^## [1-9]\. ' docs/specs/shared-worker-contract-transitions.md)" -eq 9
+test "$(grep -cE '^### CC-[0-9]+' docs/specs/shared-worker-contract-transitions.md)" -ge 11
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
@@ -345,3 +397,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4439-shared-worker-contract-slice-1-draft-the.md
 - **Context:** Initial task creation
+
+### 2026-10-20T07:58:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

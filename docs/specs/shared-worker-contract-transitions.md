@@ -1,0 +1,462 @@
+# Shared dispatched-worker contract — transition table and conformance spec
+
+**Status:** DRAFT v0.1 for agreement by TermLink, ring20 and AEF. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
+**Contract version field value:** `wc/0.1` (see §2). **Rule:** no implementation starts before this table is agreed.
+
+Source key used in every section: **[codex]**, **[claude]**, **[opencode]** = the three reviews in
+`docs/reports/T-4435-reviews/`; **[§6.x]** = the synthesis in `docs/reports/T-4435-shared-worker-contract.md`;
+**[C1..C6]** = the six conditions in §6.5 of that report; **[P]** = the 010-termlink proposal (§1 of that report);
+**[agent]** = a choice made by the drafter, not stated by any source, and open to challenge.
+
+---
+
+## 1. Purpose and scope
+
+*Sources: [C1], [C4], [§6.3 resolution], [claude Q1/Q5], [codex Q5].*
+
+**Purpose.** One durable record per dispatched agent worker that is the single authority for *whether the worker
+finished, and how*. Three implementations (TermLink hub, AEF local backend, ring20 supervisor) must give every
+transition the same meaning, proven by the conformance cases in §9.
+
+**In scope (completion authority only):**
+- lifecycle states and the transitions between them (§3);
+- attempt and nonce allocation, fencing (§4);
+- the per-attempt answer channel (§5);
+- local-file backend parity (§6), retention (§7), migration from `update_outcome_row` (§8).
+
+**Out of scope (stated so nobody assumes it):**
+- The **evaluation ledger** (`dispatch-outcomes.jsonl`, backprop at task close, the pass-rate table). It stays a
+  separate append-only fact keyed by (dispatch id, attempt, result hash). [claude Q3, §6.3]
+- Review verdict semantics, other than that a verdict names `(dispatch_id, attempt, result.value)`.
+- The sidecar notice layer (a later push *hint*; polling the record stays the source of truth). [opencode Q4]
+- Isolation of workspaces. Workers share the main checkout; the contract handles that by forbidding overlapping
+  attempts (§4.3), not by isolating them. [claude 1c, codex Q1]
+- Authentication/forgery resistance. The nonce defeats stale attempts, **not** forgery: it is visible in the worker's
+  prompt. Same stance as the review-dispatch HMAC: fail-closed against accidents, not forgery-resistant. [claude Q1]
+
+**Definitions.**
+- *Dispatch*: one logical unit of work, id `dispatch_id`. *Attempt*: one numbered execution of it.
+- *Supervisor*: the process that launched the agent child and outlives it by one step (AEF: `run.sh`; ring20: its
+  supervisor). It writes `done`.
+- *Hub*: the authoritative store for `backend: hub` records (TermLink). *Reconciler*: an AEF-side process that reads
+  the worker dir and submits local evidence. *Operator*: a human via `fw worker resolve`.
+- **"Worker stopped" means the agent child process exited**, not that the TermLink session ended. The supervisor
+  finalises between those two events. [codex Q1]
+- `done` means *stopped with evidence*, never *succeeded*. Success lives in `outcome`. [claude Q1, codex Q1, §6.2.7]
+
+---
+
+## 2. Record schema
+
+*Sources: [P.1], [C1], [C5 version/retention], [§6.4], [opencode Q2 hand-back schema is contract surface].*
+
+One record per `dispatch_id`, containing an ordered list of attempts. Shown as YAML; wire/serialisation is the
+backend's business, field names and semantics are the contract.
+
+```yaml
+contract_version: wc/0.1          # required; a reader refuses an unknown MAJOR
+dispatch_id: D-<ulid>             # hub/backend-allocated, immutable
+backend: hub | local              # chosen at dispatch creation, immutable (§6.4)
+task_id: T-XXXX                   # optional, audit
+retry_of_dispatch_id: D-<ulid>|null   # dispatch-level link, preserved verbatim (§8.4); NOT an attempt
+dispatcher:                       # recorded at spawn, immutable [C5, claude Q3 cond.1]
+  project_agent: <sidecar agent id>       # per project; routing doorbell only
+  session: claude-master-<PID>            # the durable TermLink PTY session; the routing identity
+  claude_session_id: <uuid>|null          # AUDIT ONLY: changes on `claude -c` and compaction
+created_at: <ts>
+attempts:                         # append-only list, index = attempt number starting at 1
+  - attempt: 1
+    nonce: <random>               # allocated with the attempt, never reused
+    state: dispatched|running|done|lost|unknown
+    outcome: succeeded|failed|refused|handback-malformed|null   # non-null iff state == done
+    worker_kind: claude|ollama|pi|...
+    session_binding:              # written at spawn, before the worker runs [claude 1b, §6.4]
+      session_name: tl-D-<ulid>-a1         # deterministic, NOT a random tl-<8>
+    supervisor_gen: 1             # increments on supervisor recovery (§3, T-RECLAIM)
+    exit_code: <int>|null         # the agent child's real exit code (run.sh itself exits 0)
+    result:                       # bound to THIS attempt [opencode Q1, §6.2.3]
+      kind: commit_range|handback_sha256|none
+      value: <sha or range or sha256>
+    handback:                     # schema is contract surface, validated by the backend [opencode Q2]
+      commission: <id>            # = dispatch_id
+      attempt: <n>                # must equal the attempt it is written under
+      nonce: <echo>               # must equal the attempt nonce
+      status: complete|blocked|paused|failed
+      summary: <text>
+      findings: [...]
+    evidence_digest: <sha256 of the evidence the terminal write cited>
+    history:                      # append-only transition log: (from, to, writer, ts, evidence_digest)
+      - {from: null, to: dispatched, writer: hub, ts: ...}
+    answers:                      # per-attempt section; the lifecycle ignores it (§5)
+      - {cmd_id, question_id, body, deadline, state: stored|received|applied|undelivered|expired, ...}
+    questions: [...]              # worker-appended, same fence (§5)
+    deadline_running: <ts>        # after this with no confirmable end -> unknown (§3 T6)
+```
+
+**Invariants (checked by the backend on every write):**
+- I1. `state` changes only through a transition in §3; every transition appends to `history`.
+- I2. `outcome != null` iff `state == done`.
+- I3. A write names `(dispatch_id, attempt, nonce)` and an **expected prior state**; the backend checks nonce and
+  prior state in the *same atomic step* as the write. [claude 1c, opencode Q1, codex Q1, §6.2.3]
+- I4. `done` and `lost` are never both the *final* state: `done` outranks `lost` (§3 precedence).
+- I5. `result` is written only together with `done` and is bound to its attempt.
+- I6. At most one attempt of a dispatch is non-terminal at any time (§4.3).
+
+---
+
+## 3. Transition table
+
+*Sources: [§6.2.1] done/lost precedence and upgrade (all three seats); [§6.2.2] bounded unknown (all three);
+[codex Q1] supervisor generation; [claude Q2] reconciler is AEF's; [claude Q1] outcome field; [agent] row numbering.*
+
+### 3.1 States
+
+| State | Meaning | Terminal? |
+|---|---|---|
+| `dispatched` | Attempt allocated, session binding written, worker not yet confirmed started | no |
+| `running` | Supervisor confirmed the agent child started | no |
+| `done{outcome}` | Agent child **stopped**, fenced evidence accepted. `outcome` ∈ succeeded, failed, refused, handback-malformed | yes (final; see T5/T8) |
+| `lost` | Hub confirmed the session ended with **no** completion evidence | terminal but **upgradable** to `done` (T5) |
+| `unknown` | Bounded silence and no way to confirm; operator-visible; never decays on its own | no (must be resolved) |
+
+Rank used for precedence: `done`(4) > `lost`(3) > `unknown`(2) > `running`(1) > `dispatched`(0). State is the
+highest-ranked *valid fenced* row, not the newest. [opencode Q1, direct.py HANDED_OVER > ESCALATED rule]
+
+### 3.2 Writers
+
+| Writer | Who | May write |
+|---|---|---|
+| `supervisor` | `run.sh` / ring20 supervisor holding the attempt nonce **and** current `supervisor_gen` | T2, T3, T3b, T-RECLAIM, T8 |
+| `hub` | the backend itself (TermLink hub; for `backend: local`, the local backend module) | T1, T4, T6, T7a, T7c |
+| `reconciler` | AEF reader of the worker dir; submits *local evidence*, never a verdict of its own | T5, T7b |
+| `operator` | human, `fw worker resolve` | T7d |
+
+The worker (the agent) **never writes lifecycle fields**. It may append `questions` and ack `answers` only (§5).
+[P.2, codex Q3 cond.2 field-level permissions]
+
+### 3.3 Transitions
+
+CAS = the write is applied only if the current state equals *expected prior* and the nonce matches; otherwise it is
+rejected (never merged). `fence_reject` is defined after the table.
+
+| # | From → To | Writer | Required evidence | CAS expected-prior | Precedence / notes |
+|---|---|---|---|---|---|
+| T1 | ∅ → `dispatched` | hub | dispatcher identity; prior attempt (if any) is terminal; backend allocates `attempt` and `nonce` atomically | no attempt exists, or last attempt state ∈ {done, lost, resolved-unknown} | allocation is the only place attempts are minted (§4) |
+| T2 | `dispatched` → `running` | supervisor | echo of `nonce`; session binding confirmed; `supervisor_gen` claimed | `dispatched` | sets `deadline_running` |
+| T3 | `running` → `done{outcome}` | supervisor | agent child exited; `exit_code` read **after** exit; hand-back parsed and hash computed; `evidence_digest` | `running` | the single normal completion path; `outcome` derived by rule below |
+| T3b | `dispatched` → `done{outcome}` | supervisor | as T3 (worker died/refused before T2 landed, e.g. run.sh `exit 3`) | `dispatched` | covers fast-fail without a spurious `lost` |
+| T-RECLAIM | `running` → `running` | supervisor | restarted supervisor presents nonce + local worker dir + `supervisor_gen = prev + 1` | `running` and `supervisor_gen == prev` | fences a stale supervisor: its later writes carry the old gen and are `fence_reject`ed [codex Q1] |
+| T4 | `running`/`dispatched` → `lost` | hub | **confirmed** session end event for the bound `session_name`, and no accepted `done` evidence | `running` or `dispatched` | never on a missed heartbeat. Hub first asks for reconciliation (grace window `G`, default 120 s) so local evidence can win [codex Q1] |
+| T5 | `lost` → `done{outcome}` | reconciler (or supervisor, late) | fenced local evidence: `exit_code` + signed completion + hand-back hash, matching `(dispatch_id, attempt, nonce)` | `lost` | **idempotent upgrade**; `done` outranks `lost`. Appends history, keeps the `lost` row for audit [§6.2.1] |
+| T6 | `running` → `unknown` | hub | `deadline_running` passed, session end neither confirmed nor refuted (hub restart lost registry, partition, zombie session) | `running` | operator-visible; raises one operator notice; **never** triggers a new attempt by itself [§6.2.2] |
+| T7a | `unknown` → `running` | hub | session confirmed alive again | `unknown` | heal path |
+| T7b | `unknown` → `done{outcome}` | reconciler | same evidence as T5 | `unknown` | `done` outranks |
+| T7c | `unknown` → `lost` | hub | confirmed session end, no evidence | `unknown` | |
+| T7d | `unknown` → `lost` \| `done{outcome}` | operator | explicit `fw worker resolve <id> <attempt> --as lost\|done --reason "…"`; `done` additionally needs evidence or an operator-attested `outcome` | `unknown` | the only way out of `unknown` without hub/reconciler evidence; logged |
+| T8 | `done` → `done` | supervisor/reconciler | identical `evidence_digest` re-submitted | `done` | **idempotent no-op**, returns the stored record (duplicate finalisation) |
+
+**Forbidden (all rejected):** `done → lost`, `done → running`, `lost → running`, `lost → unknown`, any write that
+changes `outcome`/`result` of a `done` attempt (a `done` with a *different* `evidence_digest` is rejected with
+`done_conflict`, logged, and surfaced to the operator — it is evidence of a bug or forgery, not a race).
+
+**`outcome` derivation (T3/T3b/T5/T7b/T7d), evaluated in order** [claude Q1, codex Q1, §6.2.7]:
+1. hand-back missing/unparseable/`attempt`≠, `nonce`≠, or hash cannot be bound → `handback-malformed`;
+2. run.sh refusal path (e.g. `exit 3`) → `refused`;
+3. `exit_code != 0` or hand-back `status: failed` → `failed`;
+4. otherwise → `succeeded`. (`status: paused` is an open question, see end of document.)
+
+**`fence_reject`.** Not a state. A response (and an appended `history` entry on the *current* attempt, outside the
+lifecycle) returned for any write where: the attempt is not the current attempt; the nonce does not match; the
+`supervisor_gen` is stale; or the expected prior state does not match. It carries `reason ∈ {stale_attempt,
+bad_nonce, stale_gen, cas_mismatch, forbidden_transition, done_conflict}`. A rejected write changes nothing. The
+rejected attempt's *effects in the world* (commits already in the repo) are not undone; their disposition is the
+dispatcher's decision and is recorded by naming `(attempt, result)` in any review verdict. [opencode Q1, claude 1c]
+
+**Precedence rule, stated once.** Fenced completion evidence outranks `lost`. A `lost` row is therefore *provisional*
+until the retention window closes (§7). Consumers (`worker wait`) must treat `lost` as "not done *yet*" only for
+the grace window `G` after T4; after `G` they return `lost` but remain upgradable. [§6.2.1, codex Q1]
+
+---
+
+## 4. Attempt and nonce allocation; no overlap
+
+*Sources: [§6.2.3] hub-allocated, atomic, no overlap; [claude Q2] TermLink is CAS owner; [opencode Q1] TOCTOU.*
+
+4.1 **Allocation is the backend's, atomically (T1).** A dispatcher asks `allocate(dispatch_id, dispatcher)`; the
+backend returns `(attempt, nonce)`. A client never numbers an attempt or mints a nonce. Two concurrent allocations
+for the same dispatch: exactly one succeeds, the other receives `cas_mismatch` (it is not given a second attempt).
+
+4.2 **Nonce checked atomically with the write (I3).** Validation and mutation happen under one lock/transaction.
+An echo check separated from the write is a TOCTOU and is non-conforming. [opencode Q1]
+
+4.3 **No overlapping attempts.** Attempt N+1 may be allocated only when attempt N is in `done`, `lost`, or an
+operator-resolved `unknown`. Rationale: all workers share the main checkout; a stale attempt's commits remain
+in the repo, so an overlapping retry makes the result ambiguous. `lost` is allowed as a predecessor because the
+hub confirmed the session ended. If attempt N later upgrades `lost → done` (T5) after N+1 started, N's `done` is
+recorded but N+1 proceeds; the dispatcher is notified of the double result. [claude Q1c, codex Q1]
+*Timeout alone never authorises a new attempt* (an `unknown` blocks T1 until resolved). [codex Q1]
+
+4.4 **Result binding.** `result` is written only with `done` (I5) and is keyed `(dispatch_id, attempt)`. A review
+verdict names `(dispatch_id, attempt, result.value)`. A multi-commit worker records a `commit_range`; a worker with
+no commits records `handback_sha256`; neither → `kind: none`. [claude Q1 "several commits or none", §6.2.3]
+
+4.5 **Session ↔ attempt binding at spawn.** AEF passes the deterministic `session_name`
+`tl-<dispatch_id>-a<attempt>` to the spawn; the backend persists it in the same step as T1. This is what lets the hub
+map a session end to exactly one `(dispatch, attempt)` for T4. [claude 1b, §6.4] *(Name format is [agent].)*
+
+4.6 **Dispatcher identity.** `dispatcher.session` is the TermLink PTY session (`claude-master-<PID>`), which persists
+across `claude -c`. It is the **routing** identity. `claude_session_id` is audit only. If the parent session
+disappears, dispatcher ownership transfers to the named successor recorded by `fw worker adopt <dispatch_id>
+--to <session>`; until adopted, questions and bounces surface in the project operator queue. [C5, claude Q3 cond.1,
+codex Q3 cond.1]
+
+---
+
+## 5. Answer path
+
+*Sources: [C2], [§6.2.4], [claude Q4], [codex Q4], [opencode Q4]. Constraints: T-4423 (no worker receiver),
+T-4418 (no orphan inbox), retry ladder (rungs outlive workers).*
+
+5.1 **The record is the channel in both directions.** No inbox topic, circuit or receiver is ever created for a
+worker. This excludes the orphan-inbox class (T-4418) and leaves T-4423 intact **by construction**. [opencode Q4]
+
+5.2 **Questions (worker → dispatcher).** The worker appends `question{question_id, body}` to its own attempt
+(fenced write; allowed field). A sidecar notice to `dispatcher.project_agent` carries **only** `dispatch_id` as a
+doorbell — no body, so nothing worth retrying. The dispatcher session (`dispatcher.session`) reads the record.
+[claude Q4]
+
+5.3 **Answers (dispatcher → worker).** The dispatcher CAS-appends `answer{cmd_id, question_id, body, deadline}` to
+the attempt's `answers`. Field permissions: dispatcher appends answers; worker acks; lifecycle fields are untouched
+by both. [codex Q3 cond.2]
+
+5.4 **Consumption and ack.** The worker obtains answers through a **blocking, bounded verb**
+(`fw worker ask --wait <dur>` and `fw worker poll`), which marks `received` on read and `applied` when the worker
+reports it acted on it — an ack **per `cmd_id`** written as a **read-marker under the same fence**. Stored,
+received and applied are separate states. Dedupe by `cmd_id` is built in. [claude Q4, codex Q4, opencode Q3 cond.2]
+
+5.5 **TTL and bounce — never the retry ladder.** An answer's `deadline` ≤ min(attempt remaining life,
+`ANSWER_TTL`, default 10 min). On expiry or when the attempt goes terminal with the answer un-acked:
+state → `undelivered`/`expired` and it **bounces** to the dispatcher (a circuit that is read) or dead-letters naming
+the dispatch id. It is never escalated and never re-posted past the worker's death. [opencode Q4, §6.2.4]
+Old-attempt answers are **never** replayed into a replacement attempt automatically. [codex Q4]
+
+5.6 **Default: pause-and-redispatch; in-run polling is the fast path.** A `claude -p` worker cannot reliably wait
+long mid-turn, and a prompt saying "poll" is not evidence a running agent consumes an answer. Until in-run consumption
+is **demonstrated against a real running worker** (conformance case CC-11), the supported path is: the bounded wait
+expires, the worker ends with hand-back `status: paused`, and the answer rides in attempt N+1's instruction (the T-1809
+pause mechanism). [claude Q4, codex Q4/Q5, §6.4]
+
+---
+
+## 6. Local backend semantics
+
+*Sources: [C3], [§6.2.5], [claude Q3 cond.3], [opencode Q3 cond.3], [codex Q3 cond.3].*
+
+6.1 **Same semantics, not just the same shape.** The local backend implements every row of §3 with identical CAS
+and fencing; the same conformance suite (§9) runs against both. A file without CAS reintroduces T-3960 finding 1c.
+
+6.2 **Mechanism.** One file per dispatch, `.context/dispatch-records/<dispatch_id>.json`.
+Every write: take an exclusive `flock` on `<dispatch_id>.lock` (taken by the writer, not delegated to a util),
+read, check nonce + `supervisor_gen` + expected prior state, apply, write to a temp file, `fsync`, `rename`
+over the record, `fsync` the directory, release. Crash-atomic **and** concurrency-safe (the T-3042 lesson: atomic
+rename alone is not concurrency-safe; the lock is part of the contract). The lock times out (default 10 s) and
+the write fails closed (`cas_mismatch`-class refusal), never proceeds unlocked.
+
+6.3 **Local `lost` source.** With no hub there is no confirmed-session-end event. The local backend module (the
+"hub" writer for `backend: local`) derives `lost` from a local liveness probe of the supervisor/worker process
+(`_runtime_alive`-style: pid + start-time identity, not pid alone) **plus** absence of completion evidence in the
+worker dir, evaluated by a sweep and after grace `G`. A probe that cannot decide yields `unknown` (T6), never `lost`.
+pi and ollama workers, which never touch the hub, use this backend so the ledger does not fork by worker kind.
+[claude Q3, §6.4]
+
+6.4 **Backend is chosen at dispatch creation and never switched mid-flight.** It is recorded in the record and in
+`dispatches.jsonl`. A hub outage during a `backend: hub` dispatch does **not** redirect writes to local files: the
+supervisor keeps the durable local worker-dir evidence (already written before exit, T-4152), and the reconciler
+submits it (T5/T7b) when the hub returns. Switching authority mid-flight would be split-brain and would need an
+explicit authority-transfer protocol that is **not** part of v0.1. [codex Q3 cond.3, §6.2.5]
+
+6.5 **Durable local evidence, both backends.** Before any terminal write the supervisor persists
+`exit_code`, the hand-back and a signed completion in the worker dir. This is the evidence the reconciler reads;
+it is why T5 is possible and why `_worker_done()`'s existing finalisation checks must be preserved.
+[codex Q5, claude Q2]
+
+---
+
+## 7. Retention
+
+*Sources: [§6.4] "retention is not optional"; [claude Q1 smaller gaps]; [P] left it open.*
+
+7.1 **Fencing needs history.** Rejecting an old attempt requires knowing it existed. Attempts are therefore never
+deleted while the dispatch has any non-terminal attempt, and `unknown` attempts are never garbage-collected.
+
+7.2 **Tombstone.** For every attempt ever allocated the backend retains at minimum `(dispatch_id, attempt,
+sha256(nonce), final state, outcome, result, evidence_digest, history)` for **at least** the retention window
+below. The nonce itself may be dropped once terminal; its hash is kept so a late stale write is still
+recognised as `bad_nonce` rather than "unknown attempt".
+
+7.3 **Window.** `lost` stays upgradable (T5) for `RETENTION_LOST_UPGRADE` (proposal: 30 days) after T4; after that a
+reconciler submission is rejected as `forbidden_transition` and routed to the operator. Full records of terminal
+dispatches are retained `RETENTION_RECORD` (proposal: 180 days) then archived, never silently dropped.
+*Numbers are [agent] proposals; the principle (retain ≥ the longest time a late write can legitimately arrive) is
+sourced.*
+
+7.4 **Answer bodies** follow the attempt's retention. `result.value` hashes identify bytes but do not make them
+retrievable or prove success (a hash is a pointer); storage of the hashed artefact is the dispatcher's, recorded by
+`result.kind`. [codex Q3 missing conditions]
+
+---
+
+## 8. Migration
+
+*Sources: [C4], [§6.3] (resolution reconciling three positions), [claude Q5 shadow mode], [opencode Q3 cond.4],
+[codex Q3 cond.4]. Origin finding: T-3960 1c (`update_outcome_row`, lib/spawn.py:218-272, last-writer-wins by
+`dispatch_id` only).*
+
+8.1 **Authority.** The shared record becomes the single **completion authority**. The evaluation ledger
+(`dispatch-outcomes.jsonl`) is untouched and stays append-only. `dispatches.jsonl.outcome` becomes a **derived
+projection**, then is removed.
+
+8.2 **Phase A — shadow.** `update_outcome_row` keeps deciding. In parallel the supervisor/dispatcher also drive
+the record (T1–T3). A comparator writes one line per dispatch to `.context/working/shadow-diff.jsonl` comparing
+the record's `{state, outcome, exit_code}` with the legacy row. Nothing reads the record to make a decision.
+
+8.3 **Phase B — switch.** Criterion (proposal, [agent]): ≥ 50 real dispatches across ≥ 7 days, covering at least one
+each of `refused`, `failed`, a `lost → done` upgrade, and a retry, with **zero unexplained disagreements** (every
+diff is attributed to a known legacy bug). On switch: `update_outcome_row` is rewritten to project from the record;
+`fw termlink wait/status` read the record; the `record-outcome` route learning
+(termlink.sh:1677-1685) and every `dispatch-outcomes.jsonl` reader that decides anything move to the record.
+Consumers enumerated and checked off in the build task. [opencode Q3 cond.4]
+
+8.4 **`retry_of_dispatch_id` is preserved.** It stays a **dispatch-level** field (a re-dispatch after a pause
+*resolves* the paused dispatch in the pause queue; T-3960 2a). An `attempt` is a retry *within* a dispatch.
+Conflating the two would silently deflate the pause queue. [claude Q3, opencode Q3]
+
+8.5 **ring20.** ring20 does not become a third free implementation: it conforms by running the §9 vectors, and maps
+its T-2281 deliverables against this contract **before** T-2281 is declared absorbed. [claude Q2, codex Q2, C6]
+
+8.6 **Back-out.** During Phase A, disabling the record write leaves legacy behaviour unchanged. After Phase B,
+back-out is re-enabling the legacy writer as primary; the record continues as shadow.
+
+---
+
+## 9. Conformance cases
+
+*Sources: the seven cases named by [codex Q5] and [task T-4439], plus those implied by [§6.2], [claude Q1], [opencode Q1].*
+
+Every case runs against **both** backends (`hub` and `local`) and against any ring20 supervisor claiming
+conformance. Notation: `A1` = attempt 1. Time is injected, not slept. A case passes only if the final record
+**and** the `history` match exactly.
+
+### CC-01 Completion racing session end
+- **Given** A1 `running`; run.sh has written local `exit_code=0` + hand-back and is about to submit T3.
+- **When** the session end is confirmed and the hub processes T4 *before* T3 arrives.
+- **Then** after grace `G` the state is `lost`; the later fenced T3 (or the reconciler's T5) upgrades it to
+  `done{succeeded}`; `history` shows `running→lost→done`; no write is lost or reordered into `lost` over `done`.
+
+### CC-02 Same race, opposite order
+- **Given** as CC-01.
+- **When** T3 lands first, then the hub receives the session-end event.
+- **Then** the state is `done`; the T4 attempt is rejected `forbidden_transition` (`done → lost`); final state `done`.
+
+### CC-03 Supervisor crash before commit
+- **Given** A1 `running`; supervisor dies after the agent child exits but before any T3 write.
+- **When** the session end is confirmed (T4) and the reconciler later finds `exit_code` + hand-back in the worker dir.
+- **Then** `lost` then upgraded to `done{outcome}` via T5; if no evidence exists the record stays `lost`.
+
+### CC-04 Supervisor crash after commit
+- **Given** T3 committed (`done{succeeded}`), supervisor dies before reporting back to its caller.
+- **When** a restarted supervisor/reconciler re-submits the same evidence.
+- **Then** T8 returns the stored record unchanged; history length is unchanged; no second `done`.
+
+### CC-05 Duplicate finalisation
+- **Given** A1 `done` with `evidence_digest = X`.
+- **When** (a) the same evidence X is submitted again; (b) different evidence Y is submitted.
+- **Then** (a) idempotent success, no history entry; (b) rejected `done_conflict`, record unchanged, operator
+  notified.
+
+### CC-06 Retry while the old worker survives
+- **Given** A1 `running`, session still alive.
+- **When** a dispatcher requests attempt 2.
+- **Then** T1 is refused (`cas_mismatch`, "attempt 1 not terminal"); no A2 exists. After A1 is `lost`, T1 yields
+  A2 with a fresh nonce; a late write from A1 carrying the A1 nonce is `fence_reject(stale_attempt)` and does not
+  alter A2.
+
+### CC-07 Stale-attempt write rejected
+- **Given** A1 `lost`, A2 `running` (nonce n2).
+- **When** a zombie A1 supervisor submits T3 with nonce n1 as a *new completion of A2*, then with nonce n1 for A1.
+- **Then** the first is `fence_reject(bad_nonce)`; the second is accepted only as the T5 upgrade of A1 (if its
+  evidence is valid) and never touches A2's fields.
+
+### CC-08 Hub restart
+- **Given** A1 `running`, hub registry in memory is lost on restart.
+- **When** the hub restarts and `deadline_running` passes with no confirmation.
+- **Then** state `running → unknown` (T6) — **not** `lost`; an operator notice is raised once; `worker wait`
+  returns `unknown` after the bound, never hangs. If the session is later confirmed alive: `unknown → running` (T7a).
+
+### CC-09 Partition
+- **Given** A1 `running` on a worker host partitioned from the hub; the worker finishes and writes local evidence.
+- **When** the partition heals and the reconciler submits.
+- **Then** if state was `unknown`: `unknown → done` (T7b); if `lost`: `lost → done` (T5). A write made *during*
+  the partition on any other path (e.g. to a different backend) is refused by §6.4 — no split brain.
+
+### CC-10 Parent-session loss
+- **Given** A1 `running`; `dispatcher.session` disappears.
+- **When** the worker appends a question and later finishes.
+- **Then** the question surfaces in the project operator queue (not an orphan inbox); the lifecycle is unaffected
+  (`done` by the supervisor); `fw worker adopt` re-points the dispatcher and the answer path resumes. No topic is
+  created for the worker at any point.
+
+### CC-11 Answer delivered and acked
+- **Given** A1 `running`, a real running worker blocked in `fw worker ask --wait 10m`.
+- **When** the dispatcher appends `answer{cmd_id=c1}`.
+- **Then** the worker's blocking call returns it; `state` goes `stored → received → applied` via per-`cmd_id`
+  read-markers under the fence; a second read does not re-deliver c1. **This case must run against a real
+  `claude -p` worker, not a mock, before in-run polling may be declared supported.** [codex Q4/Q5]
+
+### CC-12 Answer TTL expiry bounces
+- **Given** A1 `running`, answer `c2` with deadline now+10 min, worker never acks.
+- **When** the deadline passes, and separately when A1 goes terminal with `c2` un-acked.
+- **Then** `c2` → `expired`/`undelivered`, surfaced to `dispatcher.session`; **no** retry-ladder entry exists for it;
+  it is not replayed into A2.
+
+### CC-13 Local backend parity
+- **Given** the full suite CC-01..CC-12 plus the concurrency case: 8 concurrent writers racing T3 on one
+  attempt.
+- **When** run on `backend: local` (flock+CAS) and on `backend: hub`.
+- **Then** both produce identical final records and identical `history` (modulo timestamps); exactly one writer
+  wins, the others receive `cas_mismatch` or idempotent T8; the lock-timeout path fails closed.
+
+### CC-14 Stale supervisor generation
+- **Given** A1 `running`, `supervisor_gen=1`; supervisor restarts and claims T-RECLAIM → `supervisor_gen=2`.
+- **When** the old supervisor (gen 1) submits T3.
+- **Then** `fence_reject(stale_gen)`; the gen-2 supervisor's T3 is accepted.
+
+### CC-15 Unknown resolution by operator
+- **Given** A1 `unknown`, no evidence, no confirmation.
+- **When** `fw worker resolve D A1 --as lost --reason "host reimaged"`.
+- **Then** `unknown → lost` (T7d), logged with actor; only then may T1 allocate A2.
+
+### CC-16 Outcome derivation
+- **Given** five fixtures: clean exit + valid hand-back; exit 1; run.sh `exit 3`; valid exit but hand-back with
+  wrong nonce; valid exit, hand-back absent.
+- **When** each is finalised through T3.
+- **Then** outcomes are respectively `succeeded`, `failed`, `refused`, `handback-malformed`, `handback-malformed`;
+  `done` in every case; `exit_code` stored as the child's real code even though run.sh itself exits 0.
+
+---
+
+## Open questions (not settled by the sources)
+
+1. **`paused` as an outcome vs a hand-back status.** The task names four outcomes (succeeded/failed/refused/
+   handback-malformed); claude Q4 wants `status: paused` for pause-and-redispatch. This draft keeps `paused` as a
+   hand-back status mapped to `succeeded` in §3.3 rule 4 and leaves the dispatch-level pause to the T-1809 queue.
+   TermLink/ring20 may prefer a fifth outcome.
+2. **Grace window `G`, `deadline_running`, `ANSWER_TTL`, retention numbers** are [agent] proposals with no source
+   figure; they need agreement per backend.
+3. **Who runs the reconciler on a hub host that has no AEF** (ring20 workers)? The contract assumes the supervisor
+   itself can submit late evidence (T5 allows supervisor as writer); whether ring20 needs its own reconciler is
+   ring20's to answer.
+4. **Authority transfer on prolonged hub outage** is out of scope for v0.1 (§6.4); if the operator wants local
+   fallback *during* a hub outage it needs its own protocol.
+5. **Deterministic session name** `tl-<dispatch_id>-a<attempt>` requires TermLink to accept caller-chosen session
+   names at spawn (T-3960 1b shows today's names are random); TermLink to confirm.
