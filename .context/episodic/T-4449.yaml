@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4449: Editing .tasks/templates/*.md without regenerating lib/upgrade_template_shipped.py is caught only by the nightly — third occurrence (T-4035, T-4213, T-4441)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T10:09:23Z
+# ============================================================================
+
+task_id: T-4449
+task_name: "Editing .tasks/templates/*.md without regenerating lib/upgrade_template_shipped.py is caught only by the nightly — third occurrence (T-4035, T-4213, T-4441)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T08:46:10Z
+completed: 2026-10-20T10:08:49Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T10:55:49+02:00
+last_commit: 2026-10-20T10:55:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-commit leg refuses a commit staging .tasks/templates/*.md while the staged lib/upgrade_template_shipped.py differs from generate_known() (pre-commit 1.7 / hook 1.19), naming the regenerate command; regression bats in a fixture repo; OBS-642 registers the class (T-4035, T-4213, T-4441); task_id_race test 4 matches create-task.sh's own keylock refusal
+
+# Key outcomes
+outcomes:
+  - 'Pre-commit hook (agents/git/lib/hooks.sh) gains a leg that, when the staged set touches `.tasks/templates/*.md`, refuses unless `lib/upgrade_template_shipped.py` is current (`generate_known` reused, not reimplemented), printing the regenerate command'
+  - 'Regression bats test in a fixture repo: stale shipped list + staged template edit is refused; regenerated list passes; commit not touching templates passes'
+  - 'Class registered in `.context/concerns.yaml` (third occurrence: T-4035, T-4213, T-4441)'
+  - '`tests/unit/task_id_race.bats` test 4 asserts create-task.sh''s own error text, not bash''s "No such file"'
+  - '`bin/fw vendor self --check --task T-4449` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'pre-commit leg refuses a commit staging .tasks/templates/*.md while the staged lib/upgrade_template_shipped.py differs from generate_known() (pre-commit 1.7 / hook 1.19), naming the regenerate command; regression bats in a fixture repo; OBS-642 registers the class (T-4035, T-4213, T-4441); task_id_race test 4 matches create-task.sh''s own keylock refusal'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - 'agents/git/lib/hooks.sh'
+  - '.context/concerns.yaml'
+  - '.tasks/active/T-4449-editing-taskstemplatesmd-without-regener.md'
+  - 'tests/unit/t4449_precommit_template_shipped.bats'
+  - 'tests/unit/task_id_race.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T10:55:49'
+    action: 'T-4449: pre-commit leg refuses a commit staging .tasks/templates/*.md while the staged lib/upgrade_template_shipped.py differs from generate_known() (pre-commit 1.7 / hook 1.19), naming the regenerate command; regression bats in a fixture repo; OBS-642 registers the class (T-4035, T-4213, T-4441); task_id_race test 4 matches create-task.sh''s own keylock refusal'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 82 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 82
+  commits: 1
+  files_changed: 6
+  lines_added: 231
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4449-editing-taskstemplatesmd-without-regener.md
+generated_by: context-agent-hybrid

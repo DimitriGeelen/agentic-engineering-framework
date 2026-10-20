@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4438: install.sh leaks its agentic-fw-fetch-* clone (350 MB-2 GB) on every failed or killed run: cleanup_fetch runs only at the end of the success path, no EXIT trap
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T10:08:45Z
+# ============================================================================
+
+task_id: T-4438
+task_name: "install.sh leaks its agentic-fw-fetch-* clone (350 MB-2 GB) on every failed or killed run: cleanup_fetch runs only at the end of the success path, no EXIT trap"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T22:47:03Z
+completed: 2026-10-20T09:58:12Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-20T11:09:45+02:00
+last_commit: 2026-10-20T11:09:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  install.sh removes its own agentic-fw-fetch-* clone on EXIT/INT/TERM (only when it created INSTALL_DIR; caller-supplied dir never removed; signal exit preserved) + regression bats
+
+# Key outcomes
+outcomes:
+  - 'install.sh registers a cleanup trap on EXIT, INT and TERM immediately after mktemp creates INSTALL_DIR (install.sh do_install)'
+  - 'A failure after the fetch (fatal in link_fw) leaves no agentic-fw-fetch-* dir under a private TMPDIR (tests/unit/t4438_install_fetch_cleanup.bats)'
+  - 'A TERM sent during the fetch leaves no agentic-fw-fetch-* dir and the process still dies by the signal (not exit 0)'
+  - 'A caller-supplied INSTALL_DIR survives a failed run and is never removed by cleanup_fetch'
+  - 'Exit codes unchanged: failing run exits 1 as before; the existing T-4248 tests stay green'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats and tests/unit/install_target_project.bats stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'install.sh'
+  - '.tasks/active/T-4438-installsh-leaks-its-agentic-fw-fetch--cl.md'
+  - 'tests/unit/t4438_install_fetch_cleanup.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T11:09:45'
+    action: 'T-4438: install.sh removes its own agentic-fw-fetch-* clone on EXIT/INT/TERM (only when it created INSTALL_DIR; caller-supplied dir never removed; signal exit preserved) + regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 671 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 671
+  commits: 1
+  files_changed: 3
+  lines_added: 528
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4438-installsh-leaks-its-agentic-fw-fetch--cl.md
+generated_by: context-agent-hybrid

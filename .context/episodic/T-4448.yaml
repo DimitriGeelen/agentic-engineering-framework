@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4448: Re-pin designer 0.23.0 -> 0.24.0 (832: aef:io extra attributes preserved, link events kept, unnamed start/end via aef:meta slug, E-GW-OUTGOING -> W-GW-OUTGOING)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T09:58:09Z
+# ============================================================================
+
+task_id: T-4448
+task_name: "Re-pin designer 0.23.0 -> 0.24.0 (832: aef:io extra attributes preserved, link events kept, unnamed start/end via aef:meta slug, E-GW-OUTGOING -> W-GW-OUTGOING)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T08:11:10Z
+completed: 2026-10-20T09:46:49Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T10:11:47+02:00
+last_commit: 2026-10-20T11:11:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file designer 0.24.0 re-pin (832 announce c859278f). re-pin designer 0.23.0 -> 0.24.0 (832 announce c859278f; one-way exclusive-gateway finding E->W, exit 2->1), sha256 verified; AEF grep for old ids/exit-2 expectation: none. tick designer-tests/doctor AC (42/42 designer bats green post-commit, doctor pin OK+current)
+
+# Key outcomes
+outcomes:
+  - 'Impact grep: no AEF file under lib/ agents/ tools/ tests/ policy/ web/ docs/designs/ references E-GW-OUTGOING / E-XML-GW-OUTGOING, and nothing expects a one-way exclusive gateway check to exit 2'
+  - 'policy/designer-pin.yaml pins 0.24.0 (version, sha256 a42f16b3…, bytes 1176028, source_artifact, source_tag, vendored_path) with a T-4448 history note'
+  - '`bin/fw designer sync --from-tag` succeeds: sha256 matches the MANIFEST at designer-v0.24.0 and the pin; vendor/designer/aef-workflow-designer-0.24.0.html exists with that sha256'
+  - 'Designer unit tests (tests/unit/*designer*.bats) green, and `bin/fw doctor` reports the designer pin current (no pin drift)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.24.0.html'
+  - 'policy/designer-pin.yaml'
+  - '.tasks/active/T-4448-re-pin-designer-0230---0240-832-aefio-ex.md'
+  - 'vendor/designer/aef-workflow-designer-0.24.0.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T10:11:47'
+    action: 'T-4448: file designer 0.24.0 re-pin (832 announce c859278f)'
+  - time: '2026-10-20T11:03:30'
+    action: 'T-4448: re-pin designer 0.23.0 -> 0.24.0 (832 announce c859278f; one-way exclusive-gateway finding E->W, exit 2->1), sha256 verified; AEF grep for old ids/exit-2 expectation: none'
+  - time: '2026-10-20T11:11:17'
+    action: 'T-4448: tick designer-tests/doctor AC (42/42 designer bats green post-commit, doctor pin OK+current)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 95 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 95
+  commits: 3
+  files_changed: 5
+  lines_added: 14466
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4448-re-pin-designer-0230---0240-832-aefio-ex.md
+generated_by: context-agent-hybrid

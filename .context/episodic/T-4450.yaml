@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4450: unit-suite.sh leaks its own control env (FW_UNIT_SUITE_TIER, ...) into the tests it runs; t4058's nested runner inherits tier=fast and fails 5/5 every nightly
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T09:45:55Z
+# ============================================================================
+
+task_id: T-4450
+task_name: "unit-suite.sh leaks its own control env (FW_UNIT_SUITE_TIER, ...) into the tests it runs; t4058's nested runner inherits tier=fast and fails 5/5 every nightly"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T09:08:57Z
+completed: 2026-10-20T09:43:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T11:35:27+02:00
+last_commit: 2026-10-20T11:35:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unit-suite.sh _run_one strips the runner's own FW_UNIT_SUITE_* control env from bats/pytest children (nested runners inherited tier=fast and refused a fixture corpus, t4058 red 5/5 every nightly); regression bats t4450 on a hermetic fixture suite
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/unit-suite.sh` `_run_one` removes every exported `FW_UNIT_SUITE_*` variable from the environment of the bats and pytest children it launches (the runner reads them into its own variables at startup, so nothing it needs is lost)'
+  - 'Regression bats test runs a hermetic fixture suite under `FW_UNIT_SUITE_TIER=fast` (plus another FW_UNIT_SUITE_* knob) whose bats and pytest tests print their env; both children show no `FW_UNIT_SUITE_*`; fails without the fix'
+  - 'Run as the nightly runs them — through `unit-suite.sh` with `FW_UNIT_SUITE_TIER=fast` (a temp suite dir holding only these files plus a tiers.yaml) — t4058, t3302, t3602, t3794, t3933, t4381, t4377 are all green; and green when run alone. (Plain `FW_UNIT_SUITE_TIER=fast bats <file>` bypasses the runner, so it still reproduces the leak by construction: it is not the nightly shape.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'unit-suite.sh _run_one strips the runner''s own FW_UNIT_SUITE_* control env from bats/pytest children (nested runners inherited tier=fast and refused a fixture corpus, t4058 red 5/5 every nightly); regression bats t4450 on a hermetic fixture suite'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - 'agents/audit/unit-suite.sh'
+  - '.tasks/active/T-4450-unit-suitesh-leaks-its-own-control-env-f.md'
+  - 'tests/unit/t4450_unit_suite_env_scrub.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T11:35:27'
+    action: 'T-4450: unit-suite.sh _run_one strips the runner''s own FW_UNIT_SUITE_* control env from bats/pytest children (nested runners inherited tier=fast and refused a fixture corpus, t4058 red 5/5 every nightly); regression bats t4450 on a hermetic fixture suite'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 34 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34
+  commits: 1
+  files_changed: 4
+  lines_added: 476
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4450-unit-suitesh-leaks-its-own-control-env-f.md
+generated_by: context-agent-hybrid

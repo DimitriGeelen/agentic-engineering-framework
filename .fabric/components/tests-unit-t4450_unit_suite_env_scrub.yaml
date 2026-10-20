@@ -1,0 +1,21 @@
+id: tests/unit/t4450_unit_suite_env_scrub.bats
+name: t4450_unit_suite_env_scrub
+type: script
+subsystem: tests
+location: tests/unit/t4450_unit_suite_env_scrub.bats
+tags: []
+
+purpose: "T-4450: the unit-suite runner must not hand its own control variables (FW_UNIT_SUITE_TIER, FW_UNIT_SUITE_DIR, ...) to the tests it runs."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

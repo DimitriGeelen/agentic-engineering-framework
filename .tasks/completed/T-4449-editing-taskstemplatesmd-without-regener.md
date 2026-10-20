@@ -1,25 +1,25 @@
 ---
-id: T-4451
-name: "Two fast-tier tests time out under suite load: watchtower F9 waits 5 s for
-  a stub port, t3559 gives the real inbox hook 20 s"
+id: T-4449
+name: "Editing .tasks/templates/*.md without regenerating lib/upgrade_template_shipped.py
+  is caught only by the nightly — third occurrence (T-4035, T-4213, T-4441)"
 description: >
-  NEW reds in the 08:54Z fast-tier run (pass alone, 0/N). tests/unit/watchtower_health_verdict_identity.bats
-  test 3 (F9) polls port.txt 25 x 0.2 s for a python3 HTTP stub; under host load 20+
-  python start-up exceeds that. tests/unit/t3559_sidecar_inbox_contract.bats test
-  1 runs the real producer + hook with SIDECAR_INBOX_TIMEOUT=20 and expects the consult
-  in the hook output; under load the producer times out and the hook prints nothing.
-  Class: waits tuned for an idle host. Fix each so it waits for a READINESS signal
-  with a generous ceiling (e.g. 30-60 s) instead of a short fixed budget, and so a
-  timeout fails with a message saying it timed out (not a bare assertion). Prove under
-  load: run each file 3x while a CPU load generator runs (e.g. 'stress-ng' if present,
-  else N parallel 'yes > /dev/null' killed afterwards), all green.
+  w4440 (T-4441): T-4419 edited .tasks/templates/default.md and nothing regenerated
+  the shipped-hash list (python3 lib/upgrade_template_sync.py --gen-known); test_upgrade_template_sync_t3955
+  caught it a day later in the fast-tier nightly, blocking pre-push. Same class as
+  T-4035 and T-4213. Add a commit-time check (pre-commit hook leg) that refuses a
+  commit touching .tasks/templates/*.md when lib/upgrade_template_shipped.py is not
+  current (generate_known(ROOT) != SHIPPED), naming the regenerate command; plus a
+  regression test. Register the class in concerns.yaml (third occurrence = systemic).
+  Also from w4440: task_id_race.bats test 4's assertion is weaker than it looks (bash's
+  own 'No such file' already contains 'keylock.sh'); tighten it to match create-task.sh's
+  own error text.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh, tests/unit/t4449_precommit_template_shipped.bats, tests/unit/task_id_race.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,9 +47,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T09:18:34Z
-last_update: 2026-10-20T09:19:09Z
-date_finished:
+created: 2026-10-20T08:46:10Z
+last_update: 2026-10-20T10:08:49Z
+date_finished: 2026-10-20T10:08:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,7 +61,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T09:19:09Z'
+  - ts: '2026-10-20T08:47:04Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -78,9 +78,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T09:00:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=305,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4451: Two fast-tier tests time out under suite load: watchtower F9 waits 5 s for a stub port, t3559 gives the real inbox hook 20 s
+# T-4449: Editing .tasks/templates/*.md without regenerating lib/upgrade_template_shipped.py is caught only by the nightly — third occurrence (T-4035, T-4213, T-4441)
 
 ## Context
 
@@ -90,10 +100,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] watchtower_health_verdict_identity.bats F9 waits for the stub's readiness (port file) with a >=30 s ceiling and fails with an explicit "timed out" message instead of a bare `[ -n "$port" ]`
-- [x] t3559_sidecar_inbox_contract.bats gives the real producer a >=60 s ceiling and, when the hook reports its own timeout, fails with a message saying it timed out (not a bare grep failure)
-- [x] Both files green 3x each while a CPU load generator runs (generator killed by trap) — 48× `yes` on 24 cores, load avg 34: F9 3/3 (2-4 s), t3559 3/3 (9-12 s). Note: the HEAD versions also passed once under this load, so CPU load alone does not reproduce the reds (F9's is a fork-scheduling race)
-- [x] `python3 tools/bats-dead-negation-lint.py tests/` clean
+- [x] Pre-commit hook (agents/git/lib/hooks.sh) gains a leg that, when the staged set touches `.tasks/templates/*.md`, refuses unless `lib/upgrade_template_shipped.py` is current (`generate_known` reused, not reimplemented), printing the regenerate command
+- [x] Regression bats test in a fixture repo: stale shipped list + staged template edit is refused; regenerated list passes; commit not touching templates passes
+- [x] Class registered in `.context/concerns.yaml` (third occurrence: T-4035, T-4213, T-4441)
+- [x] `tests/unit/task_id_race.bats` test 4 asserts create-task.sh's own error text, not bash's "No such file"
+- [x] `bin/fw vendor self --check --task T-4449` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,38 +289,16 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/watchtower_health_verdict_identity.bats > /tmp/.t4451-wt.out 2>&1 && ! grep -q "^not ok" /tmp/.t4451-wt.out
-test "$(grep -c '# skip' /tmp/.t4451-wt.out)" -eq 0
-timeout 600 bats tests/unit/t3559_sidecar_inbox_contract.bats > /tmp/.t4451-sc.out 2>&1 && ! grep -q "^not ok" /tmp/.t4451-sc.out
-grep -q ': > "$TEST_TEMP_DIR/port.txt"' tests/unit/watchtower_health_verdict_identity.bats && grep -q 'TIMED OUT: stub server' tests/unit/watchtower_health_verdict_identity.bats
-grep -q 'SIDECAR_INBOX_TIMEOUT=60' tests/unit/t3559_sidecar_inbox_contract.bats && grep -q 'TIMED OUT: the real producer' tests/unit/t3559_sidecar_inbox_contract.bats
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4451-lint.out 2>&1 && grep -q "clean" /tmp/.t4451-lint.out
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
-
-**Symptom:** 08:54Z fast-tier run: `watchtower_health_verdict_identity.bats` test 3 red at line 91 (`port="$(cat …port.txt 2>/dev/null)"' failed`); `t3559_sidecar_inbox_contract.bats` test 1 red at line 72 (`grep -q 'peer-agent'`), line 71 (`hookEventName`) having passed. Both pass alone.
-
-**Root cause:**
-- F9 (`tests/unit/watchtower_health_verdict_identity.bats:87-91`): this is a race, not a short budget. The `> port.txt` redirect runs inside the backgrounded child, so the parent's first `cat` can run before the file exists. Under bats `set -e`, `port="$(cat missing)"` returns cat's status 1 and ends the test on the first poll iteration. The failing line is the `cat`, not `[ -n "$port" ]`. The 25×0.2 s ceiling was a second, smaller exposure.
-- t3559 (`tests/unit/t3559_sidecar_inbox_contract.bats:59`): `SIDECAR_INBOX_TIMEOUT=20` bounds the real producer (`agents/context/sidecar-inbox.sh:58`). Under suite load it expired, and the hook printed its T-3681 "inbox check timed out" line. That explains why `hookEventName` matched and `peer-agent` did not. The tests treated a timeout like a contract break.
-
-**Why structurally allowed:** both waits were tuned on an idle host. Neither test told "timed out" apart from "wrong answer", and the race only bites when fork scheduling is delayed. Running a file on its own never shows it.
-
-**Prevention:** F9 creates the port file before the fork and polls to a 60 s deadline with `|| true`. It fails with an explicit "TIMED OUT" or "stub exited" message. t3559 uses a 60 s ceiling, and `_not_timed_out` fails with "TIMED OUT: the real producer …" whenever the hook reports its own timeout. Residual, not changed (product timeouts are out of scope): `lib/sidecar/inbox.py:208` `default_reader(timeout=15)` returns `[]` on a per-call timeout. A termlink call slower than 15 s therefore reads as an empty inbox, not as a timeout.
+bash -n agents/git/lib/hooks.sh
+grep -q "FW-HOOK-BLOCK: t4449-template-shipped" agents/git/lib/hooks.sh && grep -q "from upgrade_template_sync import generate_known" agents/git/lib/hooks.sh
+timeout 300 bats tests/unit/t4449_precommit_template_shipped.bats > /tmp/.t4449.out 2>&1 && ! grep -q "^not ok" /tmp/.t4449.out
+test "$(grep -c '# skip' /tmp/.t4449.out)" -eq 0
+timeout 300 bats tests/unit/hook_version_marker_parity.bats tests/unit/t4379_precommit_dead_negation.bats > /tmp/.t4449b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4449b.out
+timeout 300 bats tests/unit/task_id_race.bats > /tmp/.t4449c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4449c.out
+grep -q 'create-task.sh: failed to source lib/keylock.sh' tests/unit/task_id_race.bats
+python3 -c "import yaml; d=yaml.safe_load(open('.context/concerns.yaml')); assert any(c.get('id')=='OBS-642' and 'T-4449' in c.get('related',[]) for c in d)"
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4449d.out 2>&1 && grep -q clean /tmp/.t4449d.out
+bin/fw vendor self --check --task T-4449
 
 ## Evolution
 
@@ -334,6 +323,16 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4451-lint.out 2>&1 && g
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** T-4419 edited `.tasks/templates/default.md` without running `python3 lib/upgrade_template_sync.py --gen-known`; `tests/unit/test_upgrade_template_sync_t3955.py:99` (`generate_known(ROOT) == shipped.SHIPPED`) went red in the next nightly fast tier and blocked pre-push (T-4441). Same class as T-4035 and T-4213.
+
+**Root cause:** `lib/upgrade_template_shipped.py` is a derived file regenerated by hand (`lib/upgrade_template_sync.py:169`, `--gen-known`), and the pre-commit hook template (`agents/git/lib/hooks.sh`, pre-commit 1.6) had no leg comparing it with the staged templates.
+
+**Why structurally allowed:** The only check was a unit test in the nightly, a day after the commit; by then the author has moved on, and a later unrelated push pays for it.
+
+**Prevention:** Pre-commit leg `FW-HOOK-BLOCK: t4449-template-shipped` (pre-commit 1.7, hook 1.19): when `.tasks/templates/*.md` is staged, it refuses unless the STAGED `lib/upgrade_template_shipped.py` equals `generate_known()` (reused from the sync module), printing the regenerate command. Pinned by `tests/unit/t4449_precommit_template_shipped.bats` (3 of 5 tests fail without the leg). Registered as OBS-642. Residual: `--no-verify`, and clones whose installed pre-commit predates 1.7 until `fw git install-hooks` reruns.
 
 ## Recommendation
 
@@ -387,10 +386,28 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4451-lint.out 2>&1 && g
 
 ## Updates
 
-### 2026-10-20T09:18:34Z — task-created [task-create-agent]
+### 2026-10-20T08:46:10Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4451-two-fast-tier-tests-time-out-under-suite.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4449-editing-taskstemplatesmd-without-regener.md
 - **Context:** Initial task creation
 
-### 2026-10-20T09:19:09Z — status-update [task-update-agent]
+### 2026-10-20T08:47:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-35b56825
+- **Timestamp:** 2026-10-20T10:09:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T10:08:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

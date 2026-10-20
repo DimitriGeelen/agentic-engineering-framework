@@ -1,25 +1,26 @@
 ---
-id: T-4449
-name: "Editing .tasks/templates/*.md without regenerating lib/upgrade_template_shipped.py
-  is caught only by the nightly — third occurrence (T-4035, T-4213, T-4441)"
+id: T-4450
+name: "unit-suite.sh leaks its own control env (FW_UNIT_SUITE_TIER, ...) into the
+  tests it runs; t4058's nested runner inherits tier=fast and fails 5/5 every nightly"
 description: >
-  w4440 (T-4441): T-4419 edited .tasks/templates/default.md and nothing regenerated
-  the shipped-hash list (python3 lib/upgrade_template_sync.py --gen-known); test_upgrade_template_sync_t3955
-  caught it a day later in the fast-tier nightly, blocking pre-push. Same class as
-  T-4035 and T-4213. Add a commit-time check (pre-commit hook leg) that refuses a
-  commit touching .tasks/templates/*.md when lib/upgrade_template_shipped.py is not
-  current (generate_known(ROOT) != SHIPPED), naming the regenerate command; plus a
-  regression test. Register the class in concerns.yaml (third occurrence = systemic).
-  Also from w4440: task_id_race.bats test 4's assertion is weaker than it looks (bash's
-  own 'No such file' already contains 'keylock.sh'); tighten it to match create-task.sh's
-  own error text.
+  Since T-4377 the nightly runs agents/audit/unit-suite.sh with FW_UNIT_SUITE_TIER=fast.
+  Tests that start a nested runner (t4058_unit_suite_keeps_failures, t3302, t3602,
+  t3794, t3933, t4381; t4377 sets the tier explicitly) inherit it. Reproduced: FW_UNIT_SUITE_TIER=fast
+  bats tests/unit/t4058_unit_suite_keeps_failures.bats -> 5/5 not ok; without it 5/5
+  ok. t4058 is a NEW red in both today's runs (01:03Z, 08:54Z) and blocks pre-push.
+  Fix at the source: when unit-suite.sh launches test files (bats and pytest legs),
+  remove its own control variables (FW_UNIT_SUITE_TIER and the other FW_UNIT_SUITE_*
+  knobs that select what/where it runs) from the children's environment, so a test
+  sees the environment it would see when run alone. Regression test: running a fixture
+  suite whose test prints env under FW_UNIT_SUITE_TIER=fast shows the variable absent
+  in the child. Re-run t4058 with the tier set: green.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/unit-suite.sh, tests/unit/t4450_unit_suite_env_scrub.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,9 +48,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T08:46:10Z
-last_update: 2026-10-20T08:47:03Z
-date_finished:
+created: 2026-10-20T09:08:57Z
+last_update: 2026-10-20T09:43:11Z
+date_finished: 2026-10-20T09:43:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,7 +62,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T08:47:04Z'
+  - ts: '2026-10-20T09:09:36Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -78,9 +79,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T09:15:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=311,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4449: Editing .tasks/templates/*.md without regenerating lib/upgrade_template_shipped.py is caught only by the nightly — third occurrence (T-4035, T-4213, T-4441)
+# T-4450: unit-suite.sh leaks its own control env (FW_UNIT_SUITE_TIER, ...) into the tests it runs; t4058's nested runner inherits tier=fast and fails 5/5 every nightly
 
 ## Context
 
@@ -90,11 +101,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Pre-commit hook (agents/git/lib/hooks.sh) gains a leg that, when the staged set touches `.tasks/templates/*.md`, refuses unless `lib/upgrade_template_shipped.py` is current (`generate_known` reused, not reimplemented), printing the regenerate command
-- [x] Regression bats test in a fixture repo: stale shipped list + staged template edit is refused; regenerated list passes; commit not touching templates passes
-- [x] Class registered in `.context/concerns.yaml` (third occurrence: T-4035, T-4213, T-4441)
-- [x] `tests/unit/task_id_race.bats` test 4 asserts create-task.sh's own error text, not bash's "No such file"
-- [x] `bin/fw vendor self --check --task T-4449` clean
+- [x] `agents/audit/unit-suite.sh` `_run_one` removes every exported `FW_UNIT_SUITE_*` variable from the environment of the bats and pytest children it launches (the runner reads them into its own variables at startup, so nothing it needs is lost)
+- [x] Regression bats test runs a hermetic fixture suite under `FW_UNIT_SUITE_TIER=fast` (plus another FW_UNIT_SUITE_* knob) whose bats and pytest tests print their env; both children show no `FW_UNIT_SUITE_*`; fails without the fix
+- [x] Run as the nightly runs them — through `unit-suite.sh` with `FW_UNIT_SUITE_TIER=fast` (a temp suite dir holding only these files plus a tiers.yaml) — t4058, t3302, t3602, t3794, t3933, t4381, t4377 are all green; and green when run alone. (Plain `FW_UNIT_SUITE_TIER=fast bats <file>` bypasses the runner, so it still reproduces the leak by construction: it is not the nightly shape.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,16 +288,35 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-bash -n agents/git/lib/hooks.sh
-grep -q "FW-HOOK-BLOCK: t4449-template-shipped" agents/git/lib/hooks.sh && grep -q "from upgrade_template_sync import generate_known" agents/git/lib/hooks.sh
-timeout 300 bats tests/unit/t4449_precommit_template_shipped.bats > /tmp/.t4449.out 2>&1 && ! grep -q "^not ok" /tmp/.t4449.out
-test "$(grep -c '# skip' /tmp/.t4449.out)" -eq 0
-timeout 300 bats tests/unit/hook_version_marker_parity.bats tests/unit/t4379_precommit_dead_negation.bats > /tmp/.t4449b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4449b.out
-timeout 300 bats tests/unit/task_id_race.bats > /tmp/.t4449c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4449c.out
-grep -q 'create-task.sh: failed to source lib/keylock.sh' tests/unit/task_id_race.bats
-python3 -c "import yaml; d=yaml.safe_load(open('.context/concerns.yaml')); assert any(c.get('id')=='OBS-642' and 'T-4449' in c.get('related',[]) for c in d)"
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4449d.out 2>&1 && grep -q clean /tmp/.t4449d.out
-bin/fw vendor self --check --task T-4449
+timeout 300 bats tests/unit/t4450_unit_suite_env_scrub.bats > /tmp/.t4450-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4450-a.out
+test "$(grep -c '# skip' /tmp/.t4450-a.out)" -eq 0
+env -u FW_UNIT_SUITE_TIER timeout 1500 bats tests/unit/t4058_unit_suite_keeps_failures.bats tests/unit/t3302_unit_suite_schedule.bats tests/unit/t3602_unit_suite_partial_run.bats tests/unit/t3794_unit_suite_incomplete_prepush.bats tests/unit/t3933_doctor_smoke_skip.bats tests/unit/t4381_unit_suite_accounting.bats tests/unit/t4377_unit_tiers.bats > /tmp/.t4450-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4450-b.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4450-c.out 2>&1 && grep -q clean /tmp/.t4450-c.out
+bin/fw vendor self --check --task T-4450
+
+## RCA
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
+
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
+
+**Symptom:** t4058_unit_suite_keeps_failures.bats is red 5/5 in every nightly since T-4377 (both 2026-10-20 runs), green when run alone; it blocks pre-push as a new red.
+
+**Root cause:** the nightly exports `FW_UNIT_SUITE_TIER=fast` to `agents/audit/unit-suite.sh`, and `_run_one` (agents/audit/unit-suite.sh:211-231) launches `bats`/`pytest` with the runner's full environment. Tests that start a nested runner against a fixture suite (no `tiers.yaml`) inherit the tier, and the nested runner refuses (`FW_UNIT_SUITE_TIER=fast needs .../tiers.yaml`, unit-suite.sh:97-99, exit 2).
+
+**Why structurally allowed:** the runner's control knobs are plain env vars read at startup, but nothing separated "configure the runner" from "environment of the tests it runs". The runner's own tests always run it with an explicit env, never from inside a tiered run, so the leak was only visible in the nightly itself.
+
+**Prevention:** `_run_one` strips every `FW_UNIT_SUITE_*` from the children's environment (the runner has already copied them into its own variables); `tests/unit/t4450_unit_suite_env_scrub.bats` runs a fixture suite under the tier and asserts the bats and pytest children see none of them.
 
 ## Evolution
 
@@ -313,16 +341,6 @@ bin/fw vendor self --check --task T-4449
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
-
-## RCA
-
-**Symptom:** T-4419 edited `.tasks/templates/default.md` without running `python3 lib/upgrade_template_sync.py --gen-known`; `tests/unit/test_upgrade_template_sync_t3955.py:99` (`generate_known(ROOT) == shipped.SHIPPED`) went red in the next nightly fast tier and blocked pre-push (T-4441). Same class as T-4035 and T-4213.
-
-**Root cause:** `lib/upgrade_template_shipped.py` is a derived file regenerated by hand (`lib/upgrade_template_sync.py:169`, `--gen-known`), and the pre-commit hook template (`agents/git/lib/hooks.sh`, pre-commit 1.6) had no leg comparing it with the staged templates.
-
-**Why structurally allowed:** The only check was a unit test in the nightly, a day after the commit; by then the author has moved on, and a later unrelated push pays for it.
-
-**Prevention:** Pre-commit leg `FW-HOOK-BLOCK: t4449-template-shipped` (pre-commit 1.7, hook 1.19): when `.tasks/templates/*.md` is staged, it refuses unless the STAGED `lib/upgrade_template_shipped.py` equals `generate_known()` (reused from the sync module), printing the regenerate command. Pinned by `tests/unit/t4449_precommit_template_shipped.bats` (3 of 5 tests fail without the leg). Registered as OBS-642. Residual: `--no-verify`, and clones whose installed pre-commit predates 1.7 until `fw git install-hooks` reruns.
 
 ## Recommendation
 
@@ -376,11 +394,27 @@ bin/fw vendor self --check --task T-4449
 
 ## Updates
 
-### 2026-10-20T08:46:10Z — task-created [task-create-agent]
+### 2026-10-20T09:08:57Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4449-editing-taskstemplatesmd-without-regener.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4450-unit-suitesh-leaks-its-own-control-env-f.md
 - **Context:** Initial task creation
 
-### 2026-10-20T08:47:03Z — status-update [task-update-agent]
+### 2026-10-20T09:09:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f063e0b1
+- **Timestamp:** 2026-10-20T09:45:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T09:43:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

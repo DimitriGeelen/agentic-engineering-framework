@@ -1,25 +1,28 @@
 ---
-id: T-4438
-name: "install.sh leaks its agentic-fw-fetch-* clone (350 MB-2 GB) on every failed
-  or killed run: cleanup_fetch runs only at the end of the success path, no EXIT trap"
+id: T-4448
+name: "Re-pin designer 0.23.0 -> 0.24.0 (832: aef:io extra attributes preserved, link
+  events kept, unnamed start/end via aef:meta slug, E-GW-OUTGOING -> W-GW-OUTGOING)"
 description: >
-  Reported by dimitri-mint-dev (T-115, msg 59c2ab56): 7 /tmp/agentic-fw-fetch-* dirs,
-  5.5 GB, 10-17..10-19, plus our worker scratch /tmp/t4302fix. install.sh:195 mktemp's
-  INSTALL_DIR; cleanup_fetch (install.sh:214) is called only at :634, the end of the
-  success path; no trap. Any error()/set -e exit or kill (bats timeout) leaves the
-  shallow clone. Our own tests run install.sh many times incl. deliberate failure
-  cases (one leftover is at 'T-4248 fixture: forced init failure hook'). Fix: register
-  cleanup on EXIT (and INT/TERM) as soon as install.sh itself created INSTALL_DIR
-  — never remove a caller-supplied INSTALL_DIR. Regression test: a forced failure
-  after the fetch leaves no agentic-fw-fetch-* dir (use a private TMPDIR). Keep upgrade_fresh_machine_simulation.bats
-  green (consumer-facing command hygiene).
+  832 announce (msg c859278f, 2026-10-20): tag designer-v0.24.0, artifact dist/aef-workflow-designer-0.24.0.html,
+  sha256 a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f, 1176028
+  bytes; notes docs/releases/RELEASE-NOTES-0.24.0.md; 832 full suite 306/0. Procedure
+  as T-4310 (e936b5adf): update policy/designer-pin.yaml from the announce (version,
+  sha256, bytes, source_artifact, source_tag), then fw designer sync --from-tag (independent
+  sha256 must match the MANIFEST at the tag AND the pin). Impact checks: (1) finding-id
+  rename E-GW-OUTGOING/E-XML-GW-OUTGOING -> W-GW-OUTGOING/W-XML-GW-OUTGOING and FAIL->WARN
+  (exit 2 -> 1): grep AEF (lib, agents, tests, policy, docs/designs) for the old ids
+  and any exit-code expectation; (2) stored maps with unnamed start/end events gain
+  aef:meta slug on their next save (no element id changes): note, do not mass-resave;
+  (3) T-1220 extra aef:input/aef:output attributes are preserved — relevant to inception
+  T-4415 (mapping v1.1 traceable aef:io). Keep doctor_designer_pin_drift and the designer
+  tests green.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,9 +50,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T22:47:03Z
-last_update: 2026-10-20T08:45:55Z
-date_finished:
+created: 2026-10-20T08:11:10Z
+last_update: 2026-10-20T09:46:49Z
+date_finished: 2026-10-20T09:46:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,8 +63,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T08:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T22:47:48Z'
+  - ts: '2026-10-20T08:16:29Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -78,19 +91,9 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-19T23:00:38Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=326,acs=8)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4438: install.sh leaks its agentic-fw-fetch-* clone (350 MB-2 GB) on every failed or killed run: cleanup_fetch runs only at the end of the success path, no EXIT trap
+# T-4448: Re-pin designer 0.23.0 -> 0.24.0 (832: aef:io extra attributes preserved, link events kept, unnamed start/end via aef:meta slug, E-GW-OUTGOING -> W-GW-OUTGOING)
 
 ## Context
 
@@ -100,12 +103,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] install.sh registers a cleanup trap on EXIT, INT and TERM immediately after mktemp creates INSTALL_DIR (install.sh do_install)
-- [x] A failure after the fetch (fatal in link_fw) leaves no agentic-fw-fetch-* dir under a private TMPDIR (tests/unit/t4438_install_fetch_cleanup.bats)
-- [x] A TERM sent during the fetch leaves no agentic-fw-fetch-* dir and the process still dies by the signal (not exit 0)
-- [x] A caller-supplied INSTALL_DIR survives a failed run and is never removed by cleanup_fetch
-- [x] Exit codes unchanged: failing run exits 1 as before; the existing T-4248 tests stay green
-- [x] tests/unit/upgrade_fresh_machine_simulation.bats and tests/unit/install_target_project.bats stay green
+- [x] Impact grep: no AEF file under lib/ agents/ tools/ tests/ policy/ web/ docs/designs/ references E-GW-OUTGOING / E-XML-GW-OUTGOING, and nothing expects a one-way exclusive gateway check to exit 2
+- [x] policy/designer-pin.yaml pins 0.24.0 (version, sha256 a42f16b3…, bytes 1176028, source_artifact, source_tag, vendored_path) with a T-4448 history note
+- [x] `bin/fw designer sync --from-tag` succeeds: sha256 matches the MANIFEST at designer-v0.24.0 and the pin; vendor/designer/aef-workflow-designer-0.24.0.html exists with that sha256
+- [x] Designer unit tests (tests/unit/*designer*.bats) green, and `bin/fw doctor` reports the designer pin current (no pin drift)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -154,14 +155,6 @@ cost_estimate_proposed:
 -->
 
 ## Verification
-
-bash -n install.sh
-bats tests/unit/t4438_install_fetch_cleanup.bats > /tmp/.t4438-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4438-a.out
-test "$(grep -c '# skip' /tmp/.t4438-a.out)" -eq 0
-bats tests/unit/t4248_install_init_failure.bats > /tmp/.t4438-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4438-b.out
-bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4438-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4438-c.out
-bats tests/unit/install_target_project.bats > /tmp/.t4438-d.out 2>&1 && ! grep -q "^not ok" /tmp/.t4438-d.out
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4438-e.out 2>&1 && grep -q clean /tmp/.t4438-e.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -298,6 +291,12 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4438-e.out 2>&1 && grep
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+out=$(grep -rlE 'E-GW-OUTGOING|E-XML-GW-OUTGOING' lib/ agents/ tools/ tests/ policy/ web/ docs/; echo "rc=$?"); test "$out" = "rc=1"
+grep -q '^version: "0.24.0"' policy/designer-pin.yaml && grep -q '^sha256: "a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f"' policy/designer-pin.yaml
+test "$(sha256sum vendor/designer/aef-workflow-designer-0.24.0.html | cut -d' ' -f1)" = a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f
+timeout 600 bats tests/unit/designer_ghost_gate.bats tests/unit/designer_sync_from_tag.bats tests/unit/designer_sync_sha256.bats tests/unit/doctor_designer_pin_drift.bats tests/unit/t3064_designer_onboarding_install.bats tests/unit/t3119_designer_currency.bats tests/unit/t3158_designer_currency_check.bats > /tmp/.t4448-bats 2>&1 && ! grep -q "^not ok" /tmp/.t4448-bats
+bin/fw doctor > /tmp/.t4448-doc 2>&1; grep -q 'designer vendored build matches pin (a42f16b309ea' /tmp/.t4448-doc && grep -q 'designer pin current with origin' /tmp/.t4448-doc
+bin/fw vendor self --check --task T-4448
 
 ## RCA
 
@@ -314,23 +313,6 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4438-e.out 2>&1 && grep
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** every failed, killed or `set -e`-aborted `install.sh` run leaves its
-`/tmp/agentic-fw-fetch-*` clone behind (350 MB–2 GB each; 5.5 GB observed on one host).
-
-**Root cause:** `install.sh:195` creates INSTALL_DIR with `mktemp -d`, but the only removal is
-`cleanup_fetch` at `install.sh:634`, on the success path after `verify`. There is no EXIT/INT/TERM
-trap, so any exit before line 634 (`fatal` in `link_fw` at `install.sh:346`, `set -e` aborts,
-signals) skips it.
-
-**Why structurally allowed:** the T-2809 cleanup was written as a happy-path step. The
-failure-injection tests (T-4248) assert exit codes and output, not what the run left on disk, so
-no test counted the leaked directory.
-
-**Prevention:** the trap is registered at the moment this run creates the directory (ownership
-flag `FETCH_OWNED`, so a caller-supplied INSTALL_DIR is never removed). `tests/unit/t4438_install_fetch_cleanup.bats`
-asserts no `agentic-fw-fetch-*` survives a forced post-fetch failure and a TERM mid-fetch, under a
-private TMPDIR, and that a caller-supplied dir survives.
 
 ## Evolution
 
@@ -408,10 +390,27 @@ private TMPDIR, and that a caller-supplied dir survives.
 
 ## Updates
 
-### 2026-10-19T22:47:03Z — task-created [task-create-agent]
+### 2026-10-20T08:11:10Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4438-installsh-leaks-its-agentic-fw-fetch--cl.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4448-re-pin-designer-0230---0240-832-aefio-ex.md
 - **Context:** Initial task creation
 
-### 2026-10-19T22:47:48Z — status-update [task-update-agent]
+### 2026-10-20T08:45:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-93dee560
+- **Timestamp:** 2026-10-20T09:57:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T09:46:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

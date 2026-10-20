@@ -1,0 +1,21 @@
+id: tests/unit/t4438_install_fetch_cleanup.bats
+name: t4438_install_fetch_cleanup
+type: script
+subsystem: tests
+location: tests/unit/t4438_install_fetch_cleanup.bats
+tags: []
+
+purpose: "T-4438: install.sh must not leak its agentic-fw-fetch-* clone when a run fails or is killed."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

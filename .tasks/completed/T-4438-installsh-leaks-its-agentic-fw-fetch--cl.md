@@ -1,26 +1,25 @@
 ---
-id: T-4450
-name: "unit-suite.sh leaks its own control env (FW_UNIT_SUITE_TIER, ...) into the
-  tests it runs; t4058's nested runner inherits tier=fast and fails 5/5 every nightly"
+id: T-4438
+name: "install.sh leaks its agentic-fw-fetch-* clone (350 MB-2 GB) on every failed
+  or killed run: cleanup_fetch runs only at the end of the success path, no EXIT trap"
 description: >
-  Since T-4377 the nightly runs agents/audit/unit-suite.sh with FW_UNIT_SUITE_TIER=fast.
-  Tests that start a nested runner (t4058_unit_suite_keeps_failures, t3302, t3602,
-  t3794, t3933, t4381; t4377 sets the tier explicitly) inherit it. Reproduced: FW_UNIT_SUITE_TIER=fast
-  bats tests/unit/t4058_unit_suite_keeps_failures.bats -> 5/5 not ok; without it 5/5
-  ok. t4058 is a NEW red in both today's runs (01:03Z, 08:54Z) and blocks pre-push.
-  Fix at the source: when unit-suite.sh launches test files (bats and pytest legs),
-  remove its own control variables (FW_UNIT_SUITE_TIER and the other FW_UNIT_SUITE_*
-  knobs that select what/where it runs) from the children's environment, so a test
-  sees the environment it would see when run alone. Regression test: running a fixture
-  suite whose test prints env under FW_UNIT_SUITE_TIER=fast shows the variable absent
-  in the child. Re-run t4058 with the tier set: green.
+  Reported by dimitri-mint-dev (T-115, msg 59c2ab56): 7 /tmp/agentic-fw-fetch-* dirs,
+  5.5 GB, 10-17..10-19, plus our worker scratch /tmp/t4302fix. install.sh:195 mktemp's
+  INSTALL_DIR; cleanup_fetch (install.sh:214) is called only at :634, the end of the
+  success path; no trap. Any error()/set -e exit or kill (bats timeout) leaves the
+  shallow clone. Our own tests run install.sh many times incl. deliberate failure
+  cases (one leftover is at 'T-4248 fixture: forced init failure hook'). Fix: register
+  cleanup on EXIT (and INT/TERM) as soon as install.sh itself created INSTALL_DIR
+  — never remove a caller-supplied INSTALL_DIR. Regression test: a forced failure
+  after the fetch leaves no agentic-fw-fetch-* dir (use a private TMPDIR). Keep upgrade_fresh_machine_simulation.bats
+  green (consumer-facing command hygiene).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/t4438_install_fetch_cleanup.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,9 +47,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T09:08:57Z
-last_update: '2026-10-20T09:15:28Z'
-date_finished:
+created: 2026-10-19T22:47:03Z
+last_update: 2026-10-20T09:58:12Z
+date_finished: 2026-10-20T09:58:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,7 +61,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T09:09:36Z'
+  - ts: '2026-10-19T22:47:48Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -80,18 +79,18 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-20T09:15:28Z'
+  - ts: '2026-10-19T23:00:38Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=311,acs=5)
+      (workflow:build); effort=8 (lines=326,acs=8)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4450: unit-suite.sh leaks its own control env (FW_UNIT_SUITE_TIER, ...) into the tests it runs; t4058's nested runner inherits tier=fast and fails 5/5 every nightly
+# T-4438: install.sh leaks its agentic-fw-fetch-* clone (350 MB-2 GB) on every failed or killed run: cleanup_fetch runs only at the end of the success path, no EXIT trap
 
 ## Context
 
@@ -101,9 +100,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `agents/audit/unit-suite.sh` `_run_one` removes every exported `FW_UNIT_SUITE_*` variable from the environment of the bats and pytest children it launches (the runner reads them into its own variables at startup, so nothing it needs is lost)
-- [x] Regression bats test runs a hermetic fixture suite under `FW_UNIT_SUITE_TIER=fast` (plus another FW_UNIT_SUITE_* knob) whose bats and pytest tests print their env; both children show no `FW_UNIT_SUITE_*`; fails without the fix
-- [x] Run as the nightly runs them — through `unit-suite.sh` with `FW_UNIT_SUITE_TIER=fast` (a temp suite dir holding only these files plus a tiers.yaml) — t4058, t3302, t3602, t3794, t3933, t4381, t4377 are all green; and green when run alone. (Plain `FW_UNIT_SUITE_TIER=fast bats <file>` bypasses the runner, so it still reproduces the leak by construction: it is not the nightly shape.)
+- [x] install.sh registers a cleanup trap on EXIT, INT and TERM immediately after mktemp creates INSTALL_DIR (install.sh do_install)
+- [x] A failure after the fetch (fatal in link_fw) leaves no agentic-fw-fetch-* dir under a private TMPDIR (tests/unit/t4438_install_fetch_cleanup.bats)
+- [x] A TERM sent during the fetch leaves no agentic-fw-fetch-* dir and the process still dies by the signal (not exit 0)
+- [x] A caller-supplied INSTALL_DIR survives a failed run and is never removed by cleanup_fetch
+- [x] Exit codes unchanged: failing run exits 1 as before; the existing T-4248 tests stay green
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats and tests/unit/install_target_project.bats stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -152,6 +154,14 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+bash -n install.sh
+bats tests/unit/t4438_install_fetch_cleanup.bats > /tmp/.t4438-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4438-a.out
+test "$(grep -c '# skip' /tmp/.t4438-a.out)" -eq 0
+bats tests/unit/t4248_install_init_failure.bats > /tmp/.t4438-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4438-b.out
+bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4438-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4438-c.out
+bats tests/unit/install_target_project.bats > /tmp/.t4438-d.out 2>&1 && ! grep -q "^not ok" /tmp/.t4438-d.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4438-e.out 2>&1 && grep -q clean /tmp/.t4438-e.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -288,11 +298,6 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4450_unit_suite_env_scrub.bats > /tmp/.t4450-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4450-a.out
-test "$(grep -c '# skip' /tmp/.t4450-a.out)" -eq 0
-env -u FW_UNIT_SUITE_TIER timeout 1500 bats tests/unit/t4058_unit_suite_keeps_failures.bats tests/unit/t3302_unit_suite_schedule.bats tests/unit/t3602_unit_suite_partial_run.bats tests/unit/t3794_unit_suite_incomplete_prepush.bats tests/unit/t3933_doctor_smoke_skip.bats tests/unit/t4381_unit_suite_accounting.bats tests/unit/t4377_unit_tiers.bats > /tmp/.t4450-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4450-b.out
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4450-c.out 2>&1 && grep -q clean /tmp/.t4450-c.out
-bin/fw vendor self --check --task T-4450
 
 ## RCA
 
@@ -310,13 +315,22 @@ bin/fw vendor self --check --task T-4450
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** t4058_unit_suite_keeps_failures.bats is red 5/5 in every nightly since T-4377 (both 2026-10-20 runs), green when run alone; it blocks pre-push as a new red.
+**Symptom:** every failed, killed or `set -e`-aborted `install.sh` run leaves its
+`/tmp/agentic-fw-fetch-*` clone behind (350 MB–2 GB each; 5.5 GB observed on one host).
 
-**Root cause:** the nightly exports `FW_UNIT_SUITE_TIER=fast` to `agents/audit/unit-suite.sh`, and `_run_one` (agents/audit/unit-suite.sh:211-231) launches `bats`/`pytest` with the runner's full environment. Tests that start a nested runner against a fixture suite (no `tiers.yaml`) inherit the tier, and the nested runner refuses (`FW_UNIT_SUITE_TIER=fast needs .../tiers.yaml`, unit-suite.sh:97-99, exit 2).
+**Root cause:** `install.sh:195` creates INSTALL_DIR with `mktemp -d`, but the only removal is
+`cleanup_fetch` at `install.sh:634`, on the success path after `verify`. There is no EXIT/INT/TERM
+trap, so any exit before line 634 (`fatal` in `link_fw` at `install.sh:346`, `set -e` aborts,
+signals) skips it.
 
-**Why structurally allowed:** the runner's control knobs are plain env vars read at startup, but nothing separated "configure the runner" from "environment of the tests it runs". The runner's own tests always run it with an explicit env, never from inside a tiered run, so the leak was only visible in the nightly itself.
+**Why structurally allowed:** the T-2809 cleanup was written as a happy-path step. The
+failure-injection tests (T-4248) assert exit codes and output, not what the run left on disk, so
+no test counted the leaked directory.
 
-**Prevention:** `_run_one` strips every `FW_UNIT_SUITE_*` from the children's environment (the runner has already copied them into its own variables); `tests/unit/t4450_unit_suite_env_scrub.bats` runs a fixture suite under the tier and asserts the bats and pytest children see none of them.
+**Prevention:** the trap is registered at the moment this run creates the directory (ownership
+flag `FETCH_OWNED`, so a caller-supplied INSTALL_DIR is never removed). `tests/unit/t4438_install_fetch_cleanup.bats`
+asserts no `agentic-fw-fetch-*` survives a forced post-fetch failure and a TERM mid-fetch, under a
+private TMPDIR, and that a caller-supplied dir survives.
 
 ## Evolution
 
@@ -394,10 +408,27 @@ bin/fw vendor self --check --task T-4450
 
 ## Updates
 
-### 2026-10-20T09:08:57Z — task-created [task-create-agent]
+### 2026-10-19T22:47:03Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4450-unit-suitesh-leaks-its-own-control-env-f.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4438-installsh-leaks-its-agentic-fw-fetch--cl.md
 - **Context:** Initial task creation
 
-### 2026-10-20T09:09:35Z — status-update [task-update-agent]
+### 2026-10-19T22:47:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-45e5ef72
+- **Timestamp:** 2026-10-20T10:08:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T09:58:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4451: Two fast-tier tests time out under suite load: watchtower F9 waits 5 s for a stub port, t3559 gives the real inbox hook 20 s
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T09:46:43Z
+# ============================================================================
+
+task_id: T-4451
+task_name: "Two fast-tier tests time out under suite load: watchtower F9 waits 5 s for a stub port, t3559 gives the real inbox hook 20 s"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T09:18:34Z
+completed: 2026-10-20T09:46:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T11:23:14+02:00
+last_commit: 2026-10-20T11:23:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  F9 stub-port poll pre-creates port.txt (set -e race on cat of a not-yet-redirected file) with 60 s deadline + TIMED OUT message; t3559 real-producer ceiling 20->60 s and _not_timed_out names a hook timeout instead of a bare grep red
+
+# Key outcomes
+outcomes:
+  - 'watchtower_health_verdict_identity.bats F9 waits for the stub''s readiness (port file) with a >=30 s ceiling and fails with an explicit "timed out" message instead of a bare `[ -n "$port" ]`'
+  - 't3559_sidecar_inbox_contract.bats gives the real producer a >=60 s ceiling and, when the hook reports its own timeout, fails with a message saying it timed out (not a bare grep failure)'
+  - 'Both files green 3x each while a CPU load generator runs (generator killed by trap) — 48× `yes` on 24 cores, load avg 34: F9 3/3 (2-4 s), t3559 3/3 (9-12 s). Note: the HEAD versions also passed once under this load, so CPU load alone does not reproduce the reds (F9''s is a fork-scheduling race)'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4451-two-fast-tier-tests-time-out-under-suite.md'
+  - 'tests/unit/t3559_sidecar_inbox_contract.bats'
+  - 'tests/unit/watchtower_health_verdict_identity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T11:23:14'
+    action: 'T-4451: F9 stub-port poll pre-creates port.txt (set -e race on cat of a not-yet-redirected file) with 60 s deadline + TIMED OUT message; t3559 real-producer ceiling 20->60 s and _not_timed_out names a hook timeout instead of a bare grep red'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 27
+  commits: 1
+  files_changed: 3
+  lines_added: 427
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4451-two-fast-tier-tests-time-out-under-suite.md
+generated_by: context-agent-hybrid

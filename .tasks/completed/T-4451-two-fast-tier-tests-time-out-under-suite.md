@@ -1,28 +1,25 @@
 ---
-id: T-4448
-name: "Re-pin designer 0.23.0 -> 0.24.0 (832: aef:io extra attributes preserved, link
-  events kept, unnamed start/end via aef:meta slug, E-GW-OUTGOING -> W-GW-OUTGOING)"
+id: T-4451
+name: "Two fast-tier tests time out under suite load: watchtower F9 waits 5 s for
+  a stub port, t3559 gives the real inbox hook 20 s"
 description: >
-  832 announce (msg c859278f, 2026-10-20): tag designer-v0.24.0, artifact dist/aef-workflow-designer-0.24.0.html,
-  sha256 a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f, 1176028
-  bytes; notes docs/releases/RELEASE-NOTES-0.24.0.md; 832 full suite 306/0. Procedure
-  as T-4310 (e936b5adf): update policy/designer-pin.yaml from the announce (version,
-  sha256, bytes, source_artifact, source_tag), then fw designer sync --from-tag (independent
-  sha256 must match the MANIFEST at the tag AND the pin). Impact checks: (1) finding-id
-  rename E-GW-OUTGOING/E-XML-GW-OUTGOING -> W-GW-OUTGOING/W-XML-GW-OUTGOING and FAIL->WARN
-  (exit 2 -> 1): grep AEF (lib, agents, tests, policy, docs/designs) for the old ids
-  and any exit-code expectation; (2) stored maps with unnamed start/end events gain
-  aef:meta slug on their next save (no element id changes): note, do not mass-resave;
-  (3) T-1220 extra aef:input/aef:output attributes are preserved — relevant to inception
-  T-4415 (mapping v1.1 traceable aef:io). Keep doctor_designer_pin_drift and the designer
-  tests green.
+  NEW reds in the 08:54Z fast-tier run (pass alone, 0/N). tests/unit/watchtower_health_verdict_identity.bats
+  test 3 (F9) polls port.txt 25 x 0.2 s for a python3 HTTP stub; under host load 20+
+  python start-up exceeds that. tests/unit/t3559_sidecar_inbox_contract.bats test
+  1 runs the real producer + hook with SIDECAR_INBOX_TIMEOUT=20 and expects the consult
+  in the hook output; under load the producer times out and the hook prints nothing.
+  Class: waits tuned for an idle host. Fix each so it waits for a READINESS signal
+  with a generous ceiling (e.g. 30-60 s) instead of a short fixed budget, and so a
+  timeout fails with a message saying it timed out (not a bare assertion). Prove under
+  load: run each file 3x while a CPU load generator runs (e.g. 'stress-ng' if present,
+  else N parallel 'yes > /dev/null' killed afterwards), all green.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/watchtower_health_verdict_identity.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -50,9 +47,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T08:11:10Z
-last_update: 2026-10-20T08:45:55Z
-date_finished:
+created: 2026-10-20T09:18:34Z
+last_update: 2026-10-20T09:46:01Z
+date_finished: 2026-10-20T09:46:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -63,18 +60,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-20T08:15:35Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T08:16:29Z'
+  - ts: '2026-10-20T09:19:09Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -91,9 +78,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T09:30:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=315,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4448: Re-pin designer 0.23.0 -> 0.24.0 (832: aef:io extra attributes preserved, link events kept, unnamed start/end via aef:meta slug, E-GW-OUTGOING -> W-GW-OUTGOING)
+# T-4451: Two fast-tier tests time out under suite load: watchtower F9 waits 5 s for a stub port, t3559 gives the real inbox hook 20 s
 
 ## Context
 
@@ -103,10 +100,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Impact grep: no AEF file under lib/ agents/ tools/ tests/ policy/ web/ docs/designs/ references E-GW-OUTGOING / E-XML-GW-OUTGOING, and nothing expects a one-way exclusive gateway check to exit 2
-- [x] policy/designer-pin.yaml pins 0.24.0 (version, sha256 a42f16b3…, bytes 1176028, source_artifact, source_tag, vendored_path) with a T-4448 history note
-- [x] `bin/fw designer sync --from-tag` succeeds: sha256 matches the MANIFEST at designer-v0.24.0 and the pin; vendor/designer/aef-workflow-designer-0.24.0.html exists with that sha256
-- [x] Designer unit tests (tests/unit/*designer*.bats) green, and `bin/fw doctor` reports the designer pin current (no pin drift)
+- [x] watchtower_health_verdict_identity.bats F9 waits for the stub's readiness (port file) with a >=30 s ceiling and fails with an explicit "timed out" message instead of a bare `[ -n "$port" ]`
+- [x] t3559_sidecar_inbox_contract.bats gives the real producer a >=60 s ceiling and, when the hook reports its own timeout, fails with a message saying it timed out (not a bare grep failure)
+- [x] Both files green 3x each while a CPU load generator runs (generator killed by trap) — 48× `yes` on 24 cores, load avg 34: F9 3/3 (2-4 s), t3559 3/3 (9-12 s). Note: the HEAD versions also passed once under this load, so CPU load alone does not reproduce the reds (F9's is a fork-scheduling race)
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,12 +288,12 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-out=$(grep -rlE 'E-GW-OUTGOING|E-XML-GW-OUTGOING' lib/ agents/ tools/ tests/ policy/ web/ docs/; echo "rc=$?"); test "$out" = "rc=1"
-grep -q '^version: "0.24.0"' policy/designer-pin.yaml && grep -q '^sha256: "a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f"' policy/designer-pin.yaml
-test "$(sha256sum vendor/designer/aef-workflow-designer-0.24.0.html | cut -d' ' -f1)" = a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f
-timeout 600 bats tests/unit/designer_ghost_gate.bats tests/unit/designer_sync_from_tag.bats tests/unit/designer_sync_sha256.bats tests/unit/doctor_designer_pin_drift.bats tests/unit/t3064_designer_onboarding_install.bats tests/unit/t3119_designer_currency.bats tests/unit/t3158_designer_currency_check.bats > /tmp/.t4448-bats 2>&1 && ! grep -q "^not ok" /tmp/.t4448-bats
-bin/fw doctor > /tmp/.t4448-doc 2>&1; grep -q 'designer vendored build matches pin (a42f16b309ea' /tmp/.t4448-doc && grep -q 'designer pin current with origin' /tmp/.t4448-doc
-bin/fw vendor self --check --task T-4448
+timeout 300 bats tests/unit/watchtower_health_verdict_identity.bats > /tmp/.t4451-wt.out 2>&1 && ! grep -q "^not ok" /tmp/.t4451-wt.out
+test "$(grep -c '# skip' /tmp/.t4451-wt.out)" -eq 0
+timeout 600 bats tests/unit/t3559_sidecar_inbox_contract.bats > /tmp/.t4451-sc.out 2>&1 && ! grep -q "^not ok" /tmp/.t4451-sc.out
+grep -q ': > "$TEST_TEMP_DIR/port.txt"' tests/unit/watchtower_health_verdict_identity.bats && grep -q 'TIMED OUT: stub server' tests/unit/watchtower_health_verdict_identity.bats
+grep -q 'SIDECAR_INBOX_TIMEOUT=60' tests/unit/t3559_sidecar_inbox_contract.bats && grep -q 'TIMED OUT: the real producer' tests/unit/t3559_sidecar_inbox_contract.bats
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4451-lint.out 2>&1 && grep -q "clean" /tmp/.t4451-lint.out
 
 ## RCA
 
@@ -313,6 +310,16 @@ bin/fw vendor self --check --task T-4448
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 08:54Z fast-tier run: `watchtower_health_verdict_identity.bats` test 3 red at line 91 (`port="$(cat …port.txt 2>/dev/null)"' failed`); `t3559_sidecar_inbox_contract.bats` test 1 red at line 72 (`grep -q 'peer-agent'`), line 71 (`hookEventName`) having passed. Both pass alone.
+
+**Root cause:**
+- F9 (`tests/unit/watchtower_health_verdict_identity.bats:87-91`): this is a race, not a short budget. The `> port.txt` redirect runs inside the backgrounded child, so the parent's first `cat` can run before the file exists. Under bats `set -e`, `port="$(cat missing)"` returns cat's status 1 and ends the test on the first poll iteration. The failing line is the `cat`, not `[ -n "$port" ]`. The 25×0.2 s ceiling was a second, smaller exposure.
+- t3559 (`tests/unit/t3559_sidecar_inbox_contract.bats:59`): `SIDECAR_INBOX_TIMEOUT=20` bounds the real producer (`agents/context/sidecar-inbox.sh:58`). Under suite load it expired, and the hook printed its T-3681 "inbox check timed out" line. That explains why `hookEventName` matched and `peer-agent` did not. The tests treated a timeout like a contract break.
+
+**Why structurally allowed:** both waits were tuned on an idle host. Neither test told "timed out" apart from "wrong answer", and the race only bites when fork scheduling is delayed. Running a file on its own never shows it.
+
+**Prevention:** F9 creates the port file before the fork and polls to a 60 s deadline with `|| true`. It fails with an explicit "TIMED OUT" or "stub exited" message. t3559 uses a 60 s ceiling, and `_not_timed_out` fails with "TIMED OUT: the real producer …" whenever the hook reports its own timeout. Residual, not changed (product timeouts are out of scope): `lib/sidecar/inbox.py:208` `default_reader(timeout=15)` returns `[]` on a per-call timeout. A termlink call slower than 15 s therefore reads as an empty inbox, not as a timeout.
 
 ## Evolution
 
@@ -390,10 +397,27 @@ bin/fw vendor self --check --task T-4448
 
 ## Updates
 
-### 2026-10-20T08:11:10Z — task-created [task-create-agent]
+### 2026-10-20T09:18:34Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4448-re-pin-designer-0230---0240-832-aefio-ex.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4451-two-fast-tier-tests-time-out-under-suite.md
 - **Context:** Initial task creation
 
-### 2026-10-20T08:45:55Z — status-update [task-update-agent]
+### 2026-10-20T09:19:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-29bc4ce8
+- **Timestamp:** 2026-10-20T09:46:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T09:46:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
