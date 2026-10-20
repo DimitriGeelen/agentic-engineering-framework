@@ -6,16 +6,16 @@ description: >
   Inception: Corpus spec represents multiple BPMN processes (pools, message flows,
   a second process) instead of refusing them
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-20T20:44:21Z
-last_update: '2026-10-20T20:45:37Z'
-date_finished:
+last_update: 2026-10-20T20:49:26Z
+date_finished: 2026-10-20T20:49:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -33,6 +33,23 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=6 (lines=120,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T20:46:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -84,15 +101,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -149,9 +166,47 @@ cost_estimate_proposed:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 832 needs it for third-party collaboration diagrams (their T-1215 success clause is 8 of 8 with 0 refusals; it stands at 5/8, and 2 of the 3 remaining need more than one process). Their designer already round-trips these byte-for-byte. T-4502 made the gap visible by refusing instead of dropping silently. The open question is the spec shape (a list of processes plus collaboration: participants and message flows) and its effect on generate, canon, diff and the existing single-process maps, which stay valid.
+
+**Date**: 2026-10-20T20:49:23Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-20T20:49:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 832 needs it for third-party collaboration diagrams (their T-1215 success clause is 8 of 8 with 0 refusals; it stands at 5/8, and 2 of the 3 remaining need more than one process). Their designer already round-trips these byte-for-byte. T-4502 made the gap visible by refusing instead of dropping silently. The open question is the spec shape (a list of processes plus collaboration: participants and message flows) and its effect on generate, canon, diff and the existing single-process maps, which stay valid.
+
+### 2026-10-20T20:49:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fad73d74
+- **Timestamp:** 2026-10-20T20:49:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-71539d37
+- **Timestamp:** 2026-10-20T20:49:28Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-1215` | task | ✓ pass |
+| `T-4502` | task | ✓ pass |
+
+### 2026-10-20T20:49:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
