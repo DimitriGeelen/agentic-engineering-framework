@@ -1978,9 +1978,19 @@ do_doctor() {
     # A stray marker at / causes web._discover_project_root to silently resolve
     # PROJECT_ROOT=/ when no env var is set, breaking every Watchtower route
     # that reads project-relative content. Host-scope — handled at machine level.
-    if [ -f "/.framework.yaml" ]; then
-        _doctor_warn_host "Stray /.framework.yaml at filesystem root — remove it (causes silent PROJECT_ROOT=/ resolution)"
-        echo -e "         Run: sudo rm /.framework.yaml"
+    # T-2749: every resolver (find_project_root, lib/hook_paths.py, lib/paths.sh)
+    # accepts .framework.yaml OR .tasks/ as a project marker, so check both — the
+    # /.tasks half sat unchecked for 37 days with doctor green.
+    # FW_DOCTOR_STRAY_ROOT is a test seam only (default /).
+    local _stray_root="${FW_DOCTOR_STRAY_ROOT:-/}"
+    _stray_root="${_stray_root%/}"
+    if [ -f "$_stray_root/.framework.yaml" ]; then
+        _doctor_warn_host "Stray $_stray_root/.framework.yaml at filesystem root — remove it (causes silent PROJECT_ROOT=/ resolution)"
+        echo -e "         Run: sudo rm $_stray_root/.framework.yaml"
+    fi
+    if [ -d "$_stray_root/.tasks" ]; then
+        _doctor_warn_host "Stray $_stray_root/.tasks/ at filesystem root — inspect and remove it (any project-root walk that reaches / resolves PROJECT_ROOT=/)"
+        echo -e "         Inspect: ls -laR $_stray_root/.tasks"
     fi
 
     # Check 2b (T-1434): Vendored-source drift — framework repo only.

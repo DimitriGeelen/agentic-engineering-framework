@@ -6,7 +6,7 @@ description: >
   fw doctor stray-root-marker check misses /.tasks (G-069 covered only half the marker
   set). Filed by T-2744 triage; evidence and mechanism in docs/reports/T-2744-unit-suite-triage.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T00:10:28Z
-last_update: '2026-08-17T12:36:09Z'
+last_update: '2026-10-20T21:45:19Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -54,6 +54,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=7 (lines=179,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T21:45:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=184,acs=6)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-03T00:15:09Z'
@@ -85,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Doctor's stray-root-marker check (bin/fw Check 2c) covers the whole marker set the resolvers accept: `/.framework.yaml` AND `/.tasks/` each produce a `[host]` WARN naming the path
+- [x] With neither marker present at the root, no stray-marker WARN is printed (no false positive)
+- [x] Regression bats test drives the check against a temp root (test seam `FW_DOCTOR_STRAY_ROOT`) — `.tasks/` leg fails without the fix — and is green
+- [x] `bin/fw vendor self --check --task T-2749` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -185,8 +196,31 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t2749_doctor_stray_root_tasks.bats 2>&1); echo "$out" | grep -q '^ok 3 ' && ! echo "$out" | grep -q '^not ok'
+python3 -m pytest tests/unit/test_project_root_discovery.py -q > /tmp/.t2749.out 2>&1 && grep -q passed /tmp/.t2749.out
+bin/fw vendor self --check --task T-2749
 
 ## RCA
+
+**Symptom:** a stray root-owned `/.tasks/` (escaped `T-9999-test.md` fixture, T-2750) made
+`lib/hook_paths.py:reanchor_project_root` resolve PROJECT_ROOT=/ from any cwd outside a project
+(test_hook_paths.py::ReanchorProjectRoot red) for 37 days while `fw doctor` stayed green.
+
+**Root cause:** bin/fw Check 2c (T-1747, G-069) tested only `[ -f /.framework.yaml ]`. Every
+resolver (bin/fw find_project_root, lib/hook_paths.py, lib/paths.sh) accepts `.framework.yaml` OR
+`.tasks/` as a project marker; G-069 fixed one half of a two-element marker set.
+
+**Why structurally allowed:** the check was written from the one incident (a stray
+`/.framework.yaml`) rather than from the resolvers' marker set, and the hardcoded `/` made it
+untestable, so no test enumerated the marker set either.
+
+**Fix:** Check 2c now also WARNs `[host] Stray /.tasks/ at filesystem root` with an inspect hint;
+the root is read from a test seam `FW_DOCTOR_STRAY_ROOT` (default `/`). Not checked by the fix:
+the stray /.tasks on this host was already gone at HEAD (`ls /.tasks` → no such file); the leak
+source is T-2750.
+
+**Prevention:** tests/unit/t2749_doctor_stray_root_tasks.bats — `.tasks/` leg (failed with bin/fw
+at HEAD before the fix: `not ok 1`), `.framework.yaml` leg, and a no-marker control.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -253,3 +287,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2749-fw-doctor-stray-root-marker-check-misses.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:34:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
