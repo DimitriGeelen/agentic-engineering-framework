@@ -2,9 +2,11 @@
 id: T-4500
 name: "Pre-release notices: say upgrade from a non-shallow clone"
 description: >
-  dimitri-mint-dev msg ae5a4e7f: a shallow clone of a be tag cannot see the recorded version_sha and is refused as foreign-source. The remedy line (fetch --unshallow) is clear; the be-tag notice text should say non-shallow clone up front.
+  dimitri-mint-dev msg ae5a4e7f: a shallow clone of a be tag cannot see the recorded
+  version_sha and is refused as foreign-source. The remedy line (fetch --unshallow)
+  is clear; the be-tag notice text should say non-shallow clone up front.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T17:49:21Z
-last_update: 2026-10-20T17:49:21Z
-date_finished: null
+last_update: 2026-10-20T17:54:11Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +52,44 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T17:54:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4500: Pre-release notices: say upgrade from a non-shallow clone
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+A shallow clone of a `vX.Y.Z-be.N` tag cannot see the consumer's recorded `version_sha`,
+so `fw upgrade` from it is refused as foreign-source (`lib/version-relation.sh:133`). The
+two pre-release notice surfaces — `fw release be-tag` output and the `available-for-testing`
+issue comment — said nothing about clone depth. Both now say "non-shallow clone" up front
+and name the `git fetch --unshallow` remedy.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw release be-tag` (after tagging, and when HEAD is already tagged) prints an upgrade notice that says to upgrade from a NON-SHALLOW clone (no `--depth`), says why (a shallow clone cannot see the recorded version_sha and is refused as foreign-source), and names `git -C <clone> fetch --unshallow`
+- [x] The `available-for-testing` issue comment for a `-be.N` version carries the same non-shallow wording and unshallow remedy; a plain `vX.Y.Z` version does not
+- [x] `tests/unit/t4500_be_notice_non_shallow.bats` pins both wordings (fails without the fix) and passes; the be-tag tests in `tests/unit/t4431_be_tags.bats` and the issues comment tests still pass (t4431 test 11 is red at HEAD independently: `lib/upgrade.sh` `describe --tags --exact-match` without the -be exclude — not this task)
+- [ ] Vendored copy in sync (`bin/fw vendor self --check --task T-4500` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +274,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4500_be_notice_non_shallow.bats > /tmp/.t4500.out 2>&1 && ! grep -q "^not ok" /tmp/.t4500.out
+test "$(grep -c '# skip' /tmp/.t4500.out)" -eq 0
+timeout 300 bats -f "be-tag" tests/unit/t4431_be_tags.bats > /tmp/.t4500b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4500b.out
+python3 -m pytest tests/unit/t4077_issues_comment_test.py -q > /tmp/.t4500c.out 2>&1 && grep -q passed /tmp/.t4500c.out && ! grep -q failed /tmp/.t4500c.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4500_be_notice_non_shallow.bats > /tmp/.t4500d.out 2>&1 && grep -q clean /tmp/.t4500d.out
+bin/fw vendor self --check --task T-4500
 
 ## RCA
 
@@ -264,6 +296,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** dimitri-mint-dev (msg ae5a4e7f) cloned the v1.8.15-be.1 tag shallow and `fw upgrade` refused it as foreign-source. The refusal's remedy line was clear, but nothing in the pre-release notice had said to clone non-shallow.
+
+**Root cause:** the pre-release notice surfaces carry no clone-depth guidance — `lib/release-tags.sh` `release_be_tag` (T-4431) printed only "Tagged … / Push when ready", and `lib/issues.py` `render()` `available-for-testing` branch printed only the caller's test command. The natural way to fetch one tag (`git clone --depth 1 --branch <tag>`) is exactly the source the origin guard (`lib/version-relation.sh:132-133`, T-3714) refuses.
+
+**Why structurally allowed:** the shallow-source refusal and the pre-release notice were built in separate tasks (T-3714/T-3886 vs T-4023/T-4431); the remedy lived only at the refusal site, reached after the field project had already cloned the wrong way. No test tied notice wording to the guard's precondition.
+
+**Prevention:** both notice surfaces now carry the non-shallow wording, pinned by `tests/unit/t4500_be_notice_non_shallow.bats`; removing the wording turns the test red.
 
 ## Evolution
 
@@ -345,3 +385,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4500-pre-release-notices-say-upgrade-from-a-n.md
 - **Context:** Initial task creation
+
+### 2026-10-20T17:54:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

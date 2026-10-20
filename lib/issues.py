@@ -380,6 +380,11 @@ def render(a, date: str, intake: str = "") -> str:
         out.append(f"{t_md} is available for testing in **{a.version}**." + (f" {text}" if text else ""))
         if a.test_cmd:
             out += ["", f"**To try it:** `{a.test_cmd}`"]
+        if "-be." in a.version:  # T-4500: a shallow tag clone is refused by fw upgrade
+            out += ["", "Upgrade from a non-shallow clone of the tag (no `--depth`): a shallow clone "
+                        "cannot see your project's recorded version_sha, so `fw upgrade` refuses it as "
+                        "foreign-source. Already cloned shallow? Run `git -C <clone> fetch --unshallow`, "
+                        "then re-run `fw upgrade`."]
         out += ["", "Does this fix it for you? Your confirmation here is the strongest evidence "
                     "we can get. Next update here: released."]
     elif st == "released":

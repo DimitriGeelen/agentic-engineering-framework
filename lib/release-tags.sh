@@ -48,6 +48,18 @@ release_be_next_tag() {
     echo "v${ver}-be.$((max + 1))"
 }
 
+# release_be_upgrade_notice <tag>  — how a field project upgrades to a -be tag (T-4500).
+#   A shallow clone of the tag cannot see the consumer's recorded version_sha, so
+#   fw upgrade refuses it as foreign-source (lib/version-relation.sh, T-3714).
+#   Say so before anyone clones. Pinned by tests/unit/t4500_be_notice_non_shallow.bats.
+release_be_upgrade_notice() {
+    local tag="$1"
+    echo "Field projects: upgrade from a NON-SHALLOW clone of $tag (no --depth):"
+    echo "  git clone --branch $tag <framework repo URL> <dir> && <dir>/bin/fw upgrade /path/to/project"
+    echo "  A shallow clone cannot see the project's recorded version_sha, so fw upgrade refuses it as foreign-source."
+    echo "  Already cloned shallow? git -C <dir> fetch --unshallow, then re-run fw upgrade."
+}
+
 # release_be_tag [--version X.Y.Z] [--dry-run] [--push] — fw release be-tag
 #   Creates an ANNOTATED vX.Y.Z-be.N tag on HEAD of the dev branch
 #   (FW_DEV_BRANCH, default bleeding-edge). X.Y.Z defaults to the patch after
@@ -108,6 +120,7 @@ release_be_tag() {
     existing="$(git -C "$root" tag -l "v${ver}-be.*" --points-at "$head" | head -1)"
     if [ -n "$existing" ]; then
         echo "HEAD is already tagged $existing — nothing to do"
+        release_be_upgrade_notice "$existing"
         return 0
     fi
 
@@ -124,4 +137,5 @@ release_be_tag() {
     else
         echo "Push when ready: git -C $root push origin refs/tags/${tag}:refs/tags/${tag}"
     fi
+    release_be_upgrade_notice "$tag"
 }
