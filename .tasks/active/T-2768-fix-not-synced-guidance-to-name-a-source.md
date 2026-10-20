@@ -89,11 +89,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Defect reproduces at HEAD before the fix: `fw designer status` NOT SYNCED line (agents/designer/designer.sh:89) and the web placeholder (web/blueprints/designer.py `_placeholder`) name no source and no LAN precondition
-- [ ] `fw designer status` (not synced) names all three sources: `fw designer install` (vendored copy, offline), `fw designer sync --from-tag` with the pin's `source_origin` and the explicit statement that it must be reachable from this host (LAN), and `fw designer sync --from <file>` for an artifact delivered by 832
-- [ ] `fw designer path` error and the `/designer` placeholder page carry the same source + LAN-precondition guidance
-- [ ] Regression tests (bats for CLI, pytest for the placeholder) fail on the old message and pass on the new one; existing designer bats stay green
-- [ ] `bin/fw vendor self --check --task T-2768` clean
+- [x] Defect reproduces at HEAD before the fix: `fw designer status` NOT SYNCED line (agents/designer/designer.sh:89) and the web placeholder (web/blueprints/designer.py `_placeholder`) name no source and no LAN precondition
+- [x] `fw designer status` (not synced) names all three sources: `fw designer install` (vendored copy, offline), `fw designer sync --from-tag` with the pin's `source_origin` and the explicit statement that it must be reachable from this host (LAN), and `fw designer sync --from <file>` for an artifact delivered by 832
+- [x] `fw designer path` error and the `/designer` placeholder page carry the same source + LAN-precondition guidance
+- [x] Regression tests (bats for CLI, pytest for the placeholder) fail on the old message and pass on the new one; existing designer bats stay green
+- [x] `bin/fw vendor self --check --task T-2768` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -196,6 +196,7 @@ out=$(bats tests/unit/t2768_designer_not_synced_guidance.bats 2>&1); echo "$out"
 out=$(bats tests/unit/designer_sync_sha256.bats tests/unit/t3064_designer_onboarding_install.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 python3 -m pytest tests/unit/test_t2768_designer_placeholder.py -q > /tmp/.t2768.out 2>&1 && grep -q passed /tmp/.t2768.out
 bin/fw vendor self --check --task T-2768
+bin/fw watchtower current
 
 ## RCA
 
