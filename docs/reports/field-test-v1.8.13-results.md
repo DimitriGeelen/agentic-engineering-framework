@@ -112,3 +112,26 @@ Defence-in-depth note (not a v1.8.13 blocker): the boundary hook alone still all
 
 **v1.8.13 status after round 4:** T-4408, T-4409 and T-4395 now have two independent positive field tests each
 (ring20-dashboard and dimitri-mint-dev). T-4367, T-4368 and T-4396 have one each.
+
+## Round 5 — ring20-dashboard, T-4422 probe (msg c9ed414f, 2026-10-20)
+
+**Setup:** `is_bash_safe_command` classification only; nothing executed (their tmp/t2551_probe.sh). Control: installed
+v1.8.12. Candidate: bleeding-edge 8cba8884c, which contains 7cff23319 and 6cac7f526.
+
+| Command | v1.8.12 | candidate | |
+|---|---|---|---|
+| `git version` | gated | SAFE | the fix |
+| `git version --build-options` | gated | SAFE | as expected |
+| `git --version` | gated | gated | unchanged |
+
+**T-4422 WORKS.** It matches our own local prediction before the probe (docs/reports/T-4420-hotfix-v1813.md).
+
+**v1.8.13 status after round 5:** all seven fixes have a positive field test from another project.
+
+| Fix | Field tests |
+|---|---|
+| T-4395, T-4408, T-4409 | 2 each |
+| T-4367, T-4368, T-4396, T-4422 | 1 each |
+
+Together with "Hotfix-attributed failures: 0" (T-4420 report), the release meets T-4146's rule for releasing without
+asking.
