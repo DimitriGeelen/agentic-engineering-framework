@@ -27,6 +27,7 @@ set -euo pipefail
 
 # --- Configuration ---
 INSTALL_DIR="${INSTALL_DIR:-}"
+FETCH_OWNED=0
 TARGET_DIR=""
 PROVIDER="${PROVIDER:-generic}"
 REPO_URL="${REPO_URL:-https://github.com/DimitriGeelen/agentic-engineering-framework.git}"
@@ -193,6 +194,13 @@ check_prereqs() {
 do_install() {
     if [[ -z "$INSTALL_DIR" ]]; then
         INSTALL_DIR="$(mktemp -d -t agentic-fw-fetch-XXXXXX)"
+        # T-4438: this run created the dir, so this run removes it on every exit.
+        # EXIT covers error paths and set -e aborts. INT/TERM clean up, then
+        # re-raise the signal so the exit status stays the signal's, not 0.
+        FETCH_OWNED=1
+        trap cleanup_fetch EXIT
+        trap 'cleanup_fetch; trap - TERM; kill -TERM $$' TERM
+        trap 'cleanup_fetch; trap - INT; kill -INT $$' INT
     fi
 
     if [[ -n "$LOCAL_REPO" ]]; then
@@ -211,8 +219,10 @@ do_install() {
 }
 
 # --- Cleanup (T-2809) — the fetch dir never persists past this run ---
+# T-4438: a caller-supplied INSTALL_DIR (env or --install-dir) is never removed;
+# FETCH_OWNED is set only where do_install's mktemp created the directory.
 cleanup_fetch() {
-    if [[ -n "${INSTALL_DIR:-}" ]] && [[ -d "$INSTALL_DIR" ]]; then
+    if [[ "$FETCH_OWNED" == "1" ]] && [[ -n "${INSTALL_DIR:-}" ]] && [[ -d "$INSTALL_DIR" ]]; then
         rm -rf "$INSTALL_DIR"
     fi
 }
