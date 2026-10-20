@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T17:13:22Z
-last_update: 2026-10-20T21:52:22Z
+last_update: '2026-10-20T22:00:24Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -64,6 +64,15 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=7 (lines=179,acs=4)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T22:00:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=198,acs=6)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-07T20:30:12Z'
     estimator: bvp-estimator-v1-heuristic
@@ -82,6 +91,23 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T22:00:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2861: fw init does not set bgIsolation none, so Claude Code worktree isolation blocks the C-001 inception artifact
@@ -94,10 +120,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] AC1 — `generate_claude_code_config` (lib/init.sh, used by `fw init` and by `fw upgrade` step 5 regenerate) emits `"worktree": {"bgIsolation": "none"}` in `.claude/settings.json` for consumer and framework mode; `fw upgrade` step 5 (lib/upgrade.sh) also sets it on a hook-converged consumer that lacks the key (that consumer never takes the regenerate branch).
-- [ ] AC2 — A regenerate over an existing settings.json keeps an operator's explicit `worktree.*` values (previous value wins per sub-key; settings_merge.py), so the default never overrides a deliberate choice.
-- [ ] AC3 — Regression bats `tests/unit/t2861_init_bgisolation.bats` fails without the fix, passes with it; neighbouring settings tests (settings_regenerate_preserves_hooks, hook_absolute_paths, t3881_template_hook_parity) stay green.
-- [ ] AC4 — Framework repo's own `.claude/settings.json` unchanged (still `bgIsolation: none`); `bin/fw vendor self --check --task T-2861` clean.
+- [x] AC1 — `generate_claude_code_config` (lib/init.sh, used by `fw init` and by `fw upgrade` step 5 regenerate) emits `"worktree": {"bgIsolation": "none"}` in `.claude/settings.json` for consumer and framework mode; `fw upgrade` step 5 (lib/upgrade.sh) also sets it on a hook-converged consumer that lacks the key (that consumer never takes the regenerate branch).
+- [x] AC2 — A regenerate over an existing settings.json keeps an operator's explicit `worktree.*` values (previous value wins per sub-key; settings_merge.py), so the default never overrides a deliberate choice.
+- [x] AC3 — Regression bats `tests/unit/t2861_init_bgisolation.bats` fails without the fix, passes with it; neighbouring settings tests (settings_regenerate_preserves_hooks, hook_absolute_paths, t3881_template_hook_parity) stay green.
+- [x] AC4 — Framework repo's own `.claude/settings.json` unchanged (still `bgIsolation: none`); `bin/fw vendor self --check --task T-2861` clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
