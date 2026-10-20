@@ -12,7 +12,7 @@ description: >
   make an upgrade look like a downgrade or a no-op. Not a release-tag problem: v1.6.768
   is correct and points at the right commit.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -30,7 +30,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T08:46:12Z
-last_update: '2026-08-27T09:00:18Z'
+last_update: 2026-10-20T21:52:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,8 +82,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction check at HEAD recorded: root VERSION (working copy and HEAD), `.agentic-framework/VERSION`, and the latest release tag agree
+- [x] The pre-push stamp no longer writes a tracked VERSION (the writer that moved VERSION backward), evidenced by the fixing task/commit
+- [x] An existing regression test pins "tracked VERSION is not stamped" and passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -176,8 +177,33 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+test "$(cat VERSION)" = "$(git show HEAD:VERSION)"
+test "$(cat VERSION)" = "$(cat .agentic-framework/VERSION)"
+test "v$(cat VERSION)" = "$(git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude '*-be.*')"
+grep -q "VERSION is tracked — not stamped" agents/git/lib/hooks.sh
+out=$(bats tests/unit/t3821_version_single_writer.bats 2>&1); echo "$out" | grep -q '^ok 8 ' && ! echo "$out" | grep -q '^not ok'
 
 ## RCA
+
+**Status: does not reproduce at HEAD (2026-10-20, c332f5b8d). Fixed by T-3821 (fc5a2d74f, vendor sync 035a663b5); hook deployment by content compare T-3998 (d7c8baf94).**
+
+Reproduction check at HEAD:
+```
+VERSION (wc)                    1.8.14
+git show HEAD:VERSION           1.8.14
+.agentic-framework/VERSION      1.8.14  (HEAD: 1.8.14)
+latest release tag (non -be)    v1.8.14
+.git/hooks/pre-push             contains T-3821 skip (grep -c T-3821 → 2)
+bats tests/unit/t3821_version_single_writer.bats → 9/9 ok
+```
+
+**Symptom:** four VERSION values at once (HEAD 1.6.72, working copy 1.6.5, vendored 1.6.129, tag v1.6.768); committed VERSION went backward, and `fw vendor self` copied the downgrade into `.agentic-framework/`.
+
+**Root cause:** VERSION had two writers. The pre-push hook (`agents/git/lib/hooks.sh` stamp block, now :1449-1480) rewrote the tracked VERSION to `<major.minor>.<commits-since-last-tag>` on every push. That number resets after each tag, so it is not monotonic (1.6.768 → 1.6.5 a few commits after a new tag); the stamped tree then got committed, and `fw vendor self` faithfully mirrored root VERSION into the vendored tree. The vendor copy was a propagator, not a source.
+
+**Why structurally allowed:** nothing asserted single-writer ownership of a tracked file; a hook-written value looked like an authored one once committed. In addition (G-113) install-hooks compared a hand-bumped marker, so the fixed hook sat undeployed.
+
+**Prevention (already in place):** T-3821 — the hook skips a tracked VERSION (`hooks.sh:1458`), `fw release` is the only writer (tag-as-canonical, T-3242) and refuses a committed DECREASE (t3821 test 3); T-3998 deploys hooks by content compare. With one monotonic writer for root VERSION, `fw vendor self` copying it cannot propagate a downgrade, so no change to vendor self is needed.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -273,3 +299,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3196-version-is-incoherent-across-four-source.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:52:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
