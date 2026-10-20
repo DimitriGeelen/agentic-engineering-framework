@@ -2804,6 +2804,29 @@ MCPJSON
         fi
     fi
 
+    # T-3715: a server in .mcp.json that is not approved stops a restarted
+    # Claude Code on the "New MCP server found" prompt; an autonomous agent
+    # hangs there silently. Approve the framework's own servers in
+    # .claude/settings.local.json, and name any the operator has disabled.
+    local _mcp_appr _mcp_part
+    _mcp_appr=$(python3 "$FRAMEWORK_ROOT/lib/mcp_approve.py" "$target_dir" \
+        $([ "$dry_run" = true ] && echo --dry-run) 2>&1) || _mcp_appr="ERROR ${_mcp_appr:-helper failed}"
+    while IFS= read -r _mcp_part; do
+        case "$_mcp_part" in
+            APPROVED\ *)
+                changes=$((changes + 1))
+                if [ "$dry_run" = true ]; then
+                    echo -e "  ${CYAN}WOULD APPROVE${NC}  MCP servers in .claude/settings.local.json: ${_mcp_part#APPROVED }"
+                else
+                    echo -e "  ${GREEN}APPROVED${NC}  MCP servers in .claude/settings.local.json (enabledMcpjsonServers): ${_mcp_part#APPROVED }"
+                fi ;;
+            DISABLED\ *)
+                echo -e "  ${YELLOW}WARN${NC}  MCP servers disabled in .claude/settings.local.json: ${_mcp_part#DISABLED } — left off; their framework MCP tools will be absent" ;;
+            ERROR\ *)
+                echo -e "  ${YELLOW}WARN${NC}  could not pre-approve MCP servers (${_mcp_part#ERROR }) — a restarted Claude Code will ask \"New MCP server found\" and an unattended agent stalls there" ;;
+        esac
+    done <<< "${_mcp_appr//; /$'\n'}"
+
     # ── 7. .claude/commands/resume.md ──
     # T-1383 (closes G-056): compare consumer file against shared template and
     # refresh on drift. Prior behavior preserved existing file regardless of

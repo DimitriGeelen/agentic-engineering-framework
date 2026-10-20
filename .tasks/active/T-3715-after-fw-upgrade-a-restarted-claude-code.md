@@ -7,7 +7,7 @@ description: >
   Reported by 055-agentic-fleet-cockpit 2026-10-02 (inbox @64, from upgrading 055
   to 1.7.740, their T-413). Peer data: reproduce before fixing. 
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T11:22:31Z
-last_update: '2026-10-02T11:30:38Z'
+last_update: 2026-10-20T21:16:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced at HEAD: no code path in `lib/upgrade.sh` / `lib/init.sh` writes `enabledMcpjsonServers`, so a framework server added to `.mcp.json` is unapproved and Claude Code stops on "New MCP server found"
+- [x] `lib/mcp_approve.py` adds the framework servers (context7, playwright, termlink, fw) that are present in `.mcp.json` to `enabledMcpjsonServers` in `.claude/settings.local.json`, preserving every other key; never approves a server listed in `disabledMcpjsonServers`; a no-op when `enableAllProjectMcpServers` is true; never touches non-framework servers; dry-run writes nothing
+- [x] `fw upgrade` step 6 calls it and names the servers it approved (or WOULD APPROVE under --dry-run), and names any framework server the operator disabled so the stall is said out loud
+- [x] Regression test `tests/unit/test_t3715_mcp_approve.py` passes; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -254,6 +256,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t3715_mcp_approve.py -q > /tmp/.t3715.out 2>&1 && grep -q passed /tmp/.t3715.out && ! grep -q failed /tmp/.t3715.out
+grep -q "mcp_approve.py" lib/upgrade.sh
+bash -n lib/upgrade.sh
+bin/fw vendor self --check --task T-3715
 
 ## RCA
 
@@ -270,6 +276,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** after `fw upgrade` added the `fw` MCP server to a consumer's `.mcp.json` (055, upgrading to 1.7.740), a restarted Claude Code fleet agent sat on the interactive "New MCP server found (fw)" approval prompt. Autonomous agents have no one to answer it, so they hung with no error.
+
+**Root cause:** `lib/upgrade.sh` step 6 (the `.mcp.json` block, ~line 2655) and `lib/init.sh:1385` add servers to `.mcp.json` but never record approval. Claude Code only starts a project-scoped server without asking when its name is in `enabledMcpjsonServers` (or `enableAllProjectMcpServers` is true) in a settings file. Nothing in the repo wrote either key (`grep -rn enabledMcpjsonServers lib bin agents` returned nothing at HEAD).
+
+**Why structurally allowed:** the upgrade tests check that `.mcp.json` contains the servers. None of them checks that Claude Code would start those servers unattended. The approval lives in a second file the framework never modelled, so "server configured" and "server usable" looked identical. The upgrade output said "UPDATED Added missing MCP servers", which reads as done.
+
+**Prevention:** `lib/mcp_approve.py` is now called from upgrade step 6 and pinned by `tests/unit/test_t3715_mcp_approve.py`: approve-when-present, respect `disabledMcpjsonServers`, no-op under `enableAllProjectMcpServers`, preserve other keys, dry-run writes nothing. A framework server the operator disabled is named in the upgrade output, so the stall is reported instead of silent.
 
 ## Evolution
 
@@ -351,3 +364,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3715-after-fw-upgrade-a-restarted-claude-code.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:16:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
