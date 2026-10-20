@@ -1,13 +1,22 @@
 ---
 id: T-4479
-name: "Adapt termlink proposal 349: safe-commands.sh write scan — herestring greps, sed -i flag anchor, /dev/stdout|stderr strip"
+name: "Adapt termlink proposal 349: safe-commands.sh write scan — herestring greps,
+  sed -i flag anchor, /dev/stdout|stderr strip"
 description: >
-  010-termlink pickup offset 349 (their T-3178/T-3370). Security gate (Tier-1 write scanner). Applies at HEAD but HEAD already has T-3746 (2>/&> file redirects), T-3643 (/dev/null strip), T-4409/T-4396. Remaining value: (a) echo|grep -q under pipefail SIGPIPE fail-open, (b) sed -i anchored on a real flag (false positive on filenames containing -in-), (c) /dev/stdout|/dev/stderr join the strip. Take only hunks that survive a fresh red/green bats; verify each claimed bypass at HEAD first; fail-closed direction only. Analysis: docs/reports/T-4472-termlink-proposals-triage.md, diff docs/reports/T-4472-inputs/349-agents_context_lib_safe-commands.sh.diff. Triage only, not applied.
+  010-termlink pickup offset 349 (their T-3178/T-3370). Security gate (Tier-1 write
+  scanner). Applies at HEAD but HEAD already has T-3746 (2>/&> file redirects), T-3643
+  (/dev/null strip), T-4409/T-4396. Remaining value: (a) echo|grep -q under pipefail
+  SIGPIPE fail-open, (b) sed -i anchored on a real flag (false positive on filenames
+  containing -in-), (c) /dev/stdout|/dev/stderr join the strip. Take only hunks that
+  survive a fresh red/green bats; verify each claimed bypass at HEAD first; fail-closed
+  direction only. Analysis: docs/reports/T-4472-termlink-proposals-triage.md, diff
+  docs/reports/T-4472-inputs/349-agents_context_lib_safe-commands.sh.diff. Triage
+  only, not applied.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4472, T-4463]
@@ -39,8 +48,8 @@ origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T14:08:57Z
-last_update: 2026-10-20T14:08:57Z
-date_finished: null
+last_update: 2026-10-20T14:41:01Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T14:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T14:16:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4479: Adapt termlink proposal 349: safe-commands.sh write scan — herestring greps, sed -i flag anchor, /dev/stdout|stderr strip
@@ -63,8 +100,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Each of termlink's three claims is measured at HEAD (SIGPIPE fail-open, sed -i false positive, /dev/stdout|stderr) and the verdict recorded under ## Decisions
+- [x] `has_bash_write_pattern` scans with herestrings, not `echo | grep -q` (no fail-open on a >64KB command under pipefail); bats test red before, green after
+- [x] `sed -n p notes-in-x.md` classifies as a read, while `-i`, `-i.bak`, `-iE`, `-ni`, `--in-place`, `--in`, `"-i"` stay writes; bats red/green
+- [x] `>/dev/stdout` and `2>/dev/stderr` classify as reads; `/dev/stdoutx`, `/dev/stderr.bak` and any other redirect on the line stay writes; bats red/green
+- [x] Existing write-scanner suites (t3746, t3643) still green; vendor self --check clean for this task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -242,6 +282,11 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4479_write_scan_herestring.bats > /tmp/.t4479.out 2>&1 && ! grep -q "^not ok" /tmp/.t4479.out
+test "$(grep -c '# skip' /tmp/.t4479.out)" -eq 0
+timeout 300 bats tests/unit/t3746_write_pattern_fd_redirects.bats tests/unit/t3643_devnull_not_a_write.bats > /tmp/.t4479b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4479b.out
+! grep -nE 'echo "\$(cmd|_scan)" \| grep' agents/context/lib/safe-commands.sh
+bin/fw vendor self --check --task T-4479
 #
 # Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
 # web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
@@ -265,6 +310,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** under the hook's `set -uo pipefail` (check-active-task.sh:20), `has_bash_write_pattern` returned "no write" for `rm x` / `tee` / `> out` / `2>out` / `sed -i` when the command was multi-line and over 64KB (0/5 detected, measured at HEAD d98216e28). Separately, `sed -ni` and `sed -Ei` (clustered in-place) were never detected; `sed -n p notes-in-x.md` was refused as a write; `>/dev/stderr` counted as a file write.
+
+**Root cause:** agents/context/lib/safe-commands.sh:1431-1473 (pre-fix) used `echo "$cmd" | grep -qE`. grep -q exits on the first matching line, echo takes SIGPIPE once the pipe buffer is full, the pipeline returns 141, and a non-zero return on this predicate means "safe". The in-place rule `\bsed\b.*-i` (:1444) tested a substring: it matched `-in-` inside filenames and missed `-i` when it was not the first letter of a short cluster. The T-3643 strip (:1427) named only /dev/null.
+
+**Why structurally allowed:** no test fed the scanner a command larger than the pipe buffer, and none ran under pipefail, so the predicate's failure direction under SIGPIPE was never exercised. L-387 / T-2743 described the SIGPIPE class for verification lines, but nothing checked the security gate's own code for it. The sed corpus (t3746) had `-i` forms only, no clustered flags.
+
+**Prevention:** tests/unit/t4479_write_scan_herestring.bats runs 240KB commands under pipefail (red at HEAD, green now), and pins the clustered/long/quoted sed -i forms and the /dev/stdout|stderr negative corpus. The `## Verification` grep refuses any `echo "$cmd|$_scan" | grep` reappearing in the file.
 
 ## Evolution
 
@@ -330,6 +383,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-20 — which of termlink's 349 hunks to take
+- **Chose:** (a) herestrings — taken; claim reproduced at HEAD (needs a multi-line command >64KB; a single long line does not trigger it because grep reads the whole line first). Extended to the remaining `echo | grep` sites in the same function and the python/bash branches of `_fw_single_command_is_safe` (tighten-only; the python branch is not tested because the chain splitter is quadratic and a >64KB command does not reach it in useful time). (b) sed -i anchor — taken, re-implemented: `(^|[^[:alnum:]_.-])-(-i|[a-zA-Z]*i)`. (c) /dev/stdout|stderr strip — taken as written, with a negative corpus.
+- **Why:** each hunk is red at HEAD and green after (29 tests). (b) also closes a fail-open termlink did not report: `sed -ni` / `sed -Ei` were not writes at HEAD.
+- **Rejected:** termlink's sed regex as written: it misses `sed -iE` (in-place, suffix E) and `sed --in` (GNU long-option abbreviation), both verified. Termlink's redirect-rule rewrite `>>?($|[^&])`: HEAD's two-rule form (T-3746) already catches `2> out` and `&> out`; not needed.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -346,3 +404,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4479-adapt-termlink-proposal-349-safe-command.md
 - **Context:** Initial task creation
+
+### 2026-10-20T14:41:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

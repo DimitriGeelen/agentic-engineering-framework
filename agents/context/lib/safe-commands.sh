@@ -1342,9 +1342,9 @@ _fw_single_command_is_safe() {
         # Category 6: Validation
         python3|python)
             # Only safe if it's a parse/check command (no file writes)
-            if echo "$cmd" | grep -qE '^\s*(python3?)\s+-c\s'; then
+            if grep -qE '^\s*(python3?)\s+-c\s' <<< "$cmd"; then
                 # Check for write indicators in the inline script
-                if echo "$cmd" | grep -qE "(open\(.*, *['\"]w|\.write\(|shutil\.|os\.(rename|remove|unlink|makedirs|system))"; then
+                if grep -qE "(open\(.*, *['\"]w|\.write\(|shutil\.|os\.(rename|remove|unlink|makedirs|system))" <<< "$cmd"; then
                     return 1
                 fi
                 return 0
@@ -1352,7 +1352,7 @@ _fw_single_command_is_safe() {
             ;;
         bash|sh)
             # bash -n (syntax check only) is safe
-            if echo "$cmd" | grep -qE '^\s*(ba)?sh\s+-n\b'; then
+            if grep -qE '^\s*(ba)?sh\s+-n\b' <<< "$cmd"; then
                 return 0
             fi
             ;;
@@ -1421,14 +1421,23 @@ has_bash_write_pattern() {
     # and stay writes, and any OTHER redirect on the line still bites below.
     # (The T-3344 strip in is_bash_safe_command covers the allowlist side only;
     # check-active-task consults THIS scan first.)
+    # T-4479 (010-termlink T-3370): /dev/stdout and /dev/stderr join the strip;
+    # they are the command's own output streams, already visible to the caller.
+    # Same terminator rule, so `/dev/stdoutx` and `/dev/stderr.bak` stay writes.
+    #
+    # T-4479 (010-termlink T-3178): every rule below reads a HERESTRING, never
+    # an echo piped into `grep -qE`. The hook runs with pipefail; on a multi-line
+    # command over the 64KB pipe buffer, grep -q matches line 1 and exits, echo
+    # takes SIGPIPE, the pipeline returns 141, and a non-zero return here means
+    # "no write found": the gate failed OPEN on a match (measured 0/5 at HEAD).
     local _scan="$cmd" _sprev=""
     while [ "$_scan" != "$_sprev" ]; do
         _sprev="$_scan"
-        _scan=$(printf '%s' "$_scan" | sed -E 's#(^|[^>&0-9])([0-9]|&)?>>?[[:space:]]*/dev/null([[:space:];|&)]|$)#\1 \3#')
+        _scan=$(printf '%s' "$_scan" | sed -E 's#(^|[^>&0-9])([0-9]|&)?>>?[[:space:]]*/dev/(null|stdout|stderr)([[:space:];|&)]|$)#\1 \4#')
     done
 
     # Redirect operators (but not comparison operators like 2>&1)
-    if echo "$_scan" | grep -qE '[^2>&]>[^>&]|>>'; then
+    if grep -qE '[^2>&]>[^>&]|>>' <<< "$_scan"; then
         return 0
     fi
 
@@ -1436,12 +1445,18 @@ has_bash_write_pattern() {
     # but only the fd-duplication form (`2>&1`, `&>&2`) writes nothing. `2>err.log`
     # and `&>out.log` redirect to a FILE and must count. /dev/null targets were
     # already stripped from _scan, so `2>/dev/null` stays a read.
-    if echo "$_scan" | grep -qE '(2|&)>[^>&]'; then
+    if grep -qE '(2|&)>[^>&]' <<< "$_scan"; then
         return 0
     fi
 
-    # In-place sed
-    if echo "$cmd" | grep -qE '\bsed\b.*-i'; then
+    # In-place sed. T-4479: anchored on a FLAG token, not a bare `-i` substring,
+    # which refused `sed -n p notes-in-x.md` as a write. A flag is a `-` not
+    # preceded by a word character, `.` or `-`, then either a short cluster
+    # containing `i` (`-i`, `-i.bak`, `-iE`, `-ni`) or any long option opening
+    # `--i` (GNU accepts `--in`, `--in-pl` for `--in-place`). Quote-preceded
+    # `"-i"` still counts. termlink's version required a non-alphanumeric after
+    # the `i`, which let `-iE` (in-place, suffix E) and `--in` through.
+    if grep -qE '\bsed\b.*(^|[^[:alnum:]_.-])-(-i|[a-zA-Z]*i)' <<< "$cmd"; then
         return 0
     fi
 
@@ -1450,27 +1465,27 @@ has_bash_write_pattern() {
     # delimiter, quote, `;`, `$` or line number (optionally after s-flags) and
     # followed by a filename. Conservative: replacement text ending `/w x/`
     # also matches, which errs toward the task gate.
-    if echo "$cmd" | grep -qE "\\bsed\\b.*[/;'\"\$0-9][gpIiMme0-9]*[wW][[:space:]]+[^[:space:]]"; then
+    if grep -qE "\\bsed\\b.*[/;'\"\$0-9][gpIiMme0-9]*[wW][[:space:]]+[^[:space:]]" <<< "$cmd"; then
         return 0
     fi
 
     # T-3746: `sort -o FILE` / `sort --output[=]FILE` write the output file.
-    if echo "$cmd" | grep -qE '\bsort\b[^|;&]*[[:space:]](-[a-zA-Z]*o|--output)'; then
+    if grep -qE '\bsort\b[^|;&]*[[:space:]](-[a-zA-Z]*o|--output)' <<< "$cmd"; then
         return 0
     fi
 
     # Destructive file operations (already caught by Tier 0 but belt-and-suspenders)
-    if echo "$cmd" | grep -qE '\b(rm|rmdir)\b'; then
+    if grep -qE '\b(rm|rmdir)\b' <<< "$cmd"; then
         return 0
     fi
 
     # Heredoc
-    if echo "$cmd" | grep -qE '<<\s*['"'"'"]?EOF'; then
+    if grep -qE '<<\s*['"'"'"]?EOF' <<< "$cmd"; then
         return 0
     fi
 
     # tee (writes to file)
-    if echo "$cmd" | grep -qE '\btee\b'; then
+    if grep -qE '\btee\b' <<< "$cmd"; then
         return 0
     fi
 
