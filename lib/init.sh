@@ -1443,6 +1443,14 @@ MCPJSON
     else
         echo -e "  ${YELLOW}SKIP${NC}  .mcp.json already exists"
     fi
+    # T-3698: pin the live hub dir into the termlink server (add-only), so MCP
+    # channel posts reach the fleet hub even when Claude was launched without
+    # TERMLINK_RUNTIME_DIR.
+    if source "$(dirname "${BASH_SOURCE[0]}")/termlink-runtime.sh" 2>/dev/null; then
+        local _tl_pin
+        _tl_pin=$(fw_mcp_pin_termlink_runtime "$dir/.mcp.json" "$(fw_termlink_mcp_runtime_dir)" 2>/dev/null) || true
+        [ -n "$_tl_pin" ] && echo -e "  ${GREEN}OK${NC}  .mcp.json termlink server: TERMLINK_RUNTIME_DIR ${_tl_pin#pinned } (T-3698)"
+    fi
 
     # --- .claude/commands/resume.md (project-specific /resume) ---
     # T-1383 (closes G-056): prefer shared template at lib/templates/resume-md.md

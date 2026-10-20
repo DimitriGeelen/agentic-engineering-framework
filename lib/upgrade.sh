@@ -2827,6 +2827,20 @@ MCPJSON
         esac
     done <<< "${_mcp_appr//; /$'\n'}"
 
+    # T-3698: pin the live hub dir into the termlink server when it carries
+    # none (add-only; an existing value is never changed).
+    if source "$(dirname "${BASH_SOURCE[0]}")/termlink-runtime.sh" 2>/dev/null; then
+        local _tl_pin
+        _tl_pin=$(fw_mcp_pin_termlink_runtime "$mcp_file" "$(fw_termlink_mcp_runtime_dir)" \
+            "$([ "$dry_run" = true ] && echo 1)" 2>/dev/null) || true
+        case "$_tl_pin" in
+            would-pin\ *) changes=$((changes + 1))
+                echo -e "  ${CYAN}WOULD PIN${NC}  termlink TERMLINK_RUNTIME_DIR=${_tl_pin#would-pin } (T-3698)" ;;
+            pinned\ *) changes=$((changes + 1))
+                echo -e "  ${GREEN}UPDATED${NC}  termlink TERMLINK_RUNTIME_DIR=${_tl_pin#pinned } (T-3698)" ;;
+        esac
+    fi
+
     # ── 7. .claude/commands/resume.md ──
     # T-1383 (closes G-056): compare consumer file against shared template and
     # refresh on drift. Prior behavior preserved existing file regardless of

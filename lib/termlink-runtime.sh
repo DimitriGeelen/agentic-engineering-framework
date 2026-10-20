@@ -83,3 +83,55 @@ fw_termlink_runtime_resolve() {
     esac
     return 0
 }
+
+# T-3698: the termlink MCP server inherits the launching Claude process's
+# environment. A consumer .mcp.json written without env.TERMLINK_RUNTIME_DIR
+# therefore lands MCP channel posts in /tmp/termlink-$UID when the launcher
+# dropped the variable (T-3779), and they read back as delivered from a store
+# no peer reads. fw init / fw upgrade pin the live hub dir at write time.
+#
+# fw_termlink_mcp_runtime_dir
+#   Prints the dir to pin, or nothing: an explicit TERMLINK_RUNTIME_DIR whose
+#   hub is live, or the resolver's `supplied` dir. The default dir, no hub, or
+#   several hubs print nothing — there is nothing correct to pin.
+fw_termlink_mcp_runtime_dir() {
+    local v rest dir
+    v=$(fw_termlink_runtime_resolve)
+    rest=${v#* }; dir=${rest%% *}
+    case "$v" in
+        set\ *) fw_termlink_hub_live "$dir" && echo "$dir" ;;
+        supplied\ *) echo "$dir" ;;
+    esac
+    return 0
+}
+
+# fw_mcp_pin_termlink_runtime <mcp_file> <dir> [dry]
+#   Adds env.TERMLINK_RUNTIME_DIR=<dir> to the file's termlink server when the
+#   server exists and carries no such key; never overwrites a value. Prints
+#   "pinned <dir>" (or "would-pin <dir>" when the third arg is non-empty, which
+#   writes nothing) on a change, nothing otherwise. Returns 0 unless the file
+#   does not parse.
+fw_mcp_pin_termlink_runtime() {
+    local f="$1" dir="$2" dry="${3:-}"
+    [ -n "$dir" ] && [ -f "$f" ] || return 0
+    MCP_FILE="$f" MCP_DIR="$dir" MCP_DRY="$dry" python3 -c "
+import json, os
+p = os.environ['MCP_FILE']
+with open(p) as f:
+    raw = json.load(f)
+servers = raw.get('mcpServers') if isinstance(raw, dict) else None
+tl = servers.get('termlink') if isinstance(servers, dict) else None
+if isinstance(tl, dict):
+    env = tl.get('env') if isinstance(tl.get('env'), dict) else {}
+    if not env.get('TERMLINK_RUNTIME_DIR'):
+        if os.environ['MCP_DRY']:
+            print('would-pin ' + os.environ['MCP_DIR'])
+        else:
+            env['TERMLINK_RUNTIME_DIR'] = os.environ['MCP_DIR']
+            tl['env'] = env
+            with open(p, 'w') as f:
+                json.dump(raw, f, indent=2)
+                f.write('\n')
+            print('pinned ' + os.environ['MCP_DIR'])
+"
+}

@@ -8,7 +8,7 @@ description: >
   source 1409-sprind sidecar@8 @9), verified against AEF source. Reporter content
   is peer data; fix on our own analysis.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T23:39:23Z
-last_update: '2026-10-01T23:45:31Z'
+last_update: 2026-10-20T21:16:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,14 +88,20 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reproduced at HEAD (2026-10-20): `lib/init.sh:1420` and `lib/upgrade.sh:2783` write a heredoc
+`.mcp.json` whose `termlink` server has no `env`, and both merge paths add the same bare default.
+Claude Code launched without TERMLINK_RUNTIME_DIR (env -i launchers, T-3779) then spawns
+`termlink mcp serve` against /tmp/termlink-$UID while the host hub lives in /var/lib/termlink.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/termlink-runtime.sh` gains `fw_termlink_mcp_runtime_dir` (prints the live hub dir to pin: an explicit TERMLINK_RUNTIME_DIR with a live hub, or the T-3779 `supplied` dir; nothing when the default dir holds the hub or no hub is known) and `fw_mcp_pin_termlink_runtime <file> <dir>` (adds `env.TERMLINK_RUNTIME_DIR` to the termlink server only when absent; never overwrites)
+- [x] `fw init` (generate_claude_code_config) pins TERMLINK_RUNTIME_DIR into a freshly written and into a merged `.mcp.json` when a non-default live hub exists
+- [x] `fw upgrade` step 6 pins it on create and on an existing `.mcp.json` whose termlink server lacks it (dry-run reports WOULD PIN and writes nothing; dry path covered by the helper test, since a consumer-side --dry-run stops at the auto-clone plan before step 6); an existing value is never changed
+- [x] Regression test `tests/unit/t3698_mcp_termlink_runtime_pin.bats` passes; `tests/unit/t3779_termlink_runtime.bats` and `tests/unit/upgrade_fresh_machine_simulation.bats` stay green
+- [x] `bin/fw vendor self --check --task T-3698` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -255,8 +261,22 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t3698_mcp_termlink_runtime_pin.bats > /tmp/.t3698.out 2>&1 && ! grep -q "^not ok" /tmp/.t3698.out
+test "$(grep -c '# skip' /tmp/.t3698.out)" -eq 0
+timeout 300 bats tests/unit/t3779_termlink_runtime.bats > /tmp/.t3698b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3698b.out
+timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t3698c.out 2>&1 && ! grep -q "^not ok" /tmp/.t3698c.out
+grep -q "fw_mcp_pin_termlink_runtime" lib/init.sh && grep -q "fw_mcp_pin_termlink_runtime" lib/upgrade.sh
+bin/fw vendor self --check --task T-3698
 
 ## RCA
+
+**Symptom:** a consumer's Claude Code session posts via `mcp__termlink__termlink_channel_post`; the MCP server writes to /tmp/termlink-0 (no hub), reads its own post back as delivered, and the fleet hub in /var/lib/termlink never sees it — silent cross-project message loss.
+
+**Root cause:** both `.mcp.json` producers emit a termlink server with no `env`: the merge defaults and fresh heredoc in `lib/init.sh:1401,1420` (generate_claude_code_config) and in `lib/upgrade.sh:2758,2783` (step 6). The termlink MCP server therefore inherits whatever the launching Claude process has; a launcher that drops TERMLINK_RUNTIME_DIR (T-3779) leaves it on the default per-UID dir. AEF's own `.mcp.json` carries the pin by hand, so the framework repo never showed the bug.
+
+**Why structurally allowed:** the only detector (`agents/termlink/termlink.sh:324`, T-3424) is a WARN in `fw termlink check`, after the fact, in a command consumers rarely run. T-3836 made upgrades *preserve* a hand-added env, but nothing ever *produced* one, and no test asserted the generated termlink entry's env.
+
+**Prevention:** both producers now resolve the live hub dir with the T-3779 resolver and pin it (add-only). `tests/unit/t3698_mcp_termlink_runtime_pin.bats` drives the real `generate_claude_code_config` and `fw upgrade` step 6 against fake hubs, and fails if either producer stops pinning or starts overwriting.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -352,3 +372,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3698-consumer-mcpjson-from-fw-init--fw-upgrad.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:16:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
