@@ -23,8 +23,8 @@ sys.path.insert(0, str(FRAMEWORK_ROOT / "tools"))
 import corpus_conformance as cc  # noqa: E402
 import corpus_spec  # noqa: E402
 
-# T-4446: the fixtures declared xmlns:aef="https://aef.dev/schema/bpmn/1.0", which is
-# not the AEF namespace. That passed while corpus_spec matched extension children by
+# T-4446: the fixtures bound the aef prefix to https://aef.dev/schema/bpmn/1.0, which
+# is not the AEF namespace. That passed while corpus_spec matched extension children by
 # local name only; T-4387 keys them by namespace AND local name, so the fixture's
 # aef:meta became a foreign child and every map here read as "no state-carrier nodes".
 # They now declare corpus_spec.AEF_NS (pinned by test_fixtures_declare_the_aef_namespace).
