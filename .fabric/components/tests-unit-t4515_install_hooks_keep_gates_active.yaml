@@ -1,0 +1,21 @@
+id: tests/unit/t4515_install_hooks_keep_gates_active.bats
+name: t4515_install_hooks_keep_gates_active
+type: script
+subsystem: tests
+location: tests/unit/t4515_install_hooks_keep_gates_active.bats
+tags: []
+
+purpose: "T-4515 (G-122): T-4403 made install-hooks keep a consumer's lines from an old framework hook, but COMMENTED OUT."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

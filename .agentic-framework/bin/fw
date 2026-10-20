@@ -2092,6 +2092,23 @@ do_doctor() {
         warnings=$((warnings + 1))
     fi
 
+    # T-4515 (G-122): the T-4403 installer commented out the project lines of an
+    # old framework hook, so a consumer's own gates stopped running while their
+    # text stayed in the file. Count those lines under its header. install-hooks
+    # does not restore them itself: only the consumer knows which were theirs.
+    local _dis_hook _dis_n _dis_list=""
+    for _dis_hook in commit-msg pre-commit pre-merge-commit post-commit pre-push; do
+        [ -f "$hooks_dir/$_dis_hook" ] || continue
+        _dis_n=$(awk '/^# T-4403: kept from the previous .*\(commented out/ { on = 1; next }
+                      on && /^# / { n++ } END { print n + 0 }' "$hooks_dir/$_dis_hook" 2>/dev/null)
+        [ "${_dis_n:-0}" -gt 0 ] 2>/dev/null && _dis_list="$_dis_list $_dis_hook($_dis_n)"
+    done
+    if [ -n "$_dis_list" ]; then
+        echo -e "  ${YELLOW}WARN${NC}  Git hooks carry project lines commented out by install-hooks (T-4403):${_dis_list} — those gates do not run"
+        echo -e "        Fix: uncomment your own lines below the '# T-4403: kept from the previous' header in $hooks_dir/<hook> (G-122)"
+        warnings=$((warnings + 1))
+    fi
+
     # T-3317 (OBS-336): exec-bit drift — tracked *.sh / bin/fw whose git index
     # mode is 100755 but whose on-disk copy is not executable. A worker rewrite
     # of agents/audit/audit.sh dropped the x-bit and `fw audit` died exit 126:
@@ -4054,15 +4071,21 @@ sys.exit(0 if '$_tl_topic' in names else 1)
 
     # Check: ollama reachable (T-1700 v1 ollama dispatch substrate).
     # Skip-if-no-consumer: only fires when a workflow declares
-    # worker_kind: ollama-loop. Hard-codes the upstream URL the workflows
-    # currently target (192.168.10.107:11434). If a workflow points
-    # elsewhere, this check needs widening.
+    # worker_kind: ollama-loop. The host is resolved the way web/config.py
+    # resolves OLLAMA_HOST (env > .context/settings.yaml ollama_host >
+    # localhost) — never a hard-coded LAN address (T-4516).
     if [ -d "$_wf_dir" ] && \
        grep -lE "^worker_kind:\s*ollama(-thin)?-loop\b" "$_wf_dir"/*.yaml >/dev/null 2>&1; then
-        if curl -sf --max-time 2 http://192.168.10.107:11434/api/tags >/dev/null 2>&1; then
-            echo -e "  ${GREEN}OK${NC}  ollama reachable (http://192.168.10.107:11434)"
+        local _ollama_url="${OLLAMA_HOST:-}"
+        if [ -z "$_ollama_url" ] && [ -f "$PROJECT_ROOT/.context/settings.yaml" ]; then
+            _ollama_url=$(sed -n 's/^ollama_host:[[:space:]]*//p' "$PROJECT_ROOT/.context/settings.yaml" | head -1 | tr -d "\"'")
+        fi
+        _ollama_url="${_ollama_url:-http://localhost:11434}"
+        _ollama_url="${_ollama_url%/}"
+        if curl -sf --max-time 2 "$_ollama_url/api/tags" >/dev/null 2>&1; then
+            echo -e "  ${GREEN}OK${NC}  ollama reachable ($_ollama_url)"
         else
-            _doctor_warn_host "ollama not reachable on http://192.168.10.107:11434; ollama-loop workflows will fail"
+            _doctor_warn_host "ollama not reachable on $_ollama_url; ollama-loop workflows will fail"
         fi
     fi
 
@@ -7061,6 +7084,11 @@ for job in jobs:
         resolved += ' 2>&1 | logger -t agentic-cron'
     elif '2>/dev/null' in resolved:
         resolved = resolved.replace('2>/dev/null', '2>&1 | logger -t agentic-cron')
+    # T-3162: a pipeline exits with logger's status (always 0); hand cron the
+    # job's own. SHELL=/bin/bash -o pipefail is not an option: cron.d SHELL is
+    # a bare path. Mirrored in lib/cron_dry_run.py render_crontab.
+    if 'PIPESTATUS' not in resolved:
+        resolved += '; exit \${PIPESTATUS[0]}'
 
     lines.append(f'# {name}')
     if status == 'paused':

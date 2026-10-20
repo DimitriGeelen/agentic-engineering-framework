@@ -80,11 +80,10 @@ _install() {
     cp "$TEST_TMP/raw" "$HOOKS/pre-commit"
     run _install
     [ "$status" -eq 0 ]
-    # Kept, but commented out: an old hook's extra lines may be an OLDER
-    # template's, so none of them is allowed to run unseen.
-    grep -qx '# echo consumer-migrated-line' "$HOOKS/pre-commit"
-    ! grep -qx 'echo consumer-migrated-line' "$HOOKS/pre-commit" || false
-    [[ "$output" == *"uncomment the lines that are yours"* ]]
+    # Kept ACTIVE (T-4515, G-122): commenting them out disabled 832's gates.
+    grep -qx 'echo consumer-migrated-line' "$HOOKS/pre-commit"
+    ! grep -qx '# echo consumer-migrated-line' "$HOOKS/pre-commit" || false
+    [[ "$output" == *"still active"* ]]
     [ "$(grep -c "$BEGIN_RE" "$HOOKS/pre-commit")" -eq 1 ]
     [ -f "$HOOKS/pre-commit.pre-fw-block" ]
     bash -n "$HOOKS/pre-commit"

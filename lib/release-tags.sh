@@ -58,6 +58,8 @@ release_be_upgrade_notice() {
     echo "  git clone --branch $tag <framework repo URL> <dir> && <dir>/bin/fw upgrade /path/to/project"
     echo "  A shallow clone cannot see the project's recorded version_sha, so fw upgrade refuses it as foreign-source."
     echo "  Already cloned shallow? git -C <dir> fetch --unshallow, then re-run fw upgrade."
+    # T-4515 (G-122): v1.8.14-be.3 and v1.8.15-be.1 commented out project lines in git hooks.
+    echo "  Check your git hooks: be.3/be.1 commented out your own lines in .git/hooks (G-122); fw doctor names them — uncomment yours."
 }
 
 # release_be_tag [--version X.Y.Z] [--dry-run] [--push] — fw release be-tag

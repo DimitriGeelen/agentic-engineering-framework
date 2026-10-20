@@ -74,8 +74,13 @@ _fw_hook_installed_block() {
 #   - an old framework hook keeps only the lines the template does not contain,
 #     after the block — the template lines are never duplicated;
 #   - a consumer's own sh/bash hook keeps its whole body, after the block;
-#   - a hook in another language, or a merge that does not parse, gets the block
-#     alone and a WARN naming the backup.
+#   - a hook in another language, or a merge that does not parse, is REFUSED:
+#     the installed file is left as it is and the function returns 2.
+# T-4515 (G-122): no line is ever commented out and no consumer hook is ever
+# replaced by the block alone. T-4403 did both, and 832's two pre-commit gates
+# stopped running for five hours while their marker text, still inside the
+# comment, made their own check read "installed". A stale framework line that
+# runs is loud; a consumer gate that silently stops is not.
 _fw_hook_compose() {
     local installed="$1" block="$2" out="$3"
     if [ ! -s "$installed" ]; then
@@ -95,29 +100,34 @@ _fw_hook_compose() {
     if grep -qE 'Agentic Engineering Framework|agents/git/git\.sh install-hooks|^# [<>]{3} agentic-framework hook' "$installed"; then
         # An old framework hook: lines the current template lacks are either the
         # consumer's or an OLDER template's, and nothing tells them apart. Keep
-        # them all, commented out, so no stale framework line runs unseen.
+        # them all ACTIVE (T-4515): a consumer gate must keep running.
         tail -n +2 "$installed" | grep -vxF -f "$block" | grep -v '^[[:space:]]*$' \
-            | grep -v '^# [<>]\{3\} agentic-framework hook' | sed 's/^/# /' > "$kept" || true
-        note="commented out — uncomment the lines that are yours"
+            | grep -v '^# [<>]\{3\} agentic-framework hook' > "$kept" || true
+        note="still active — delete any that came from an older framework hook"
     elif [[ "$first" =~ ^#!(/usr)?/bin/(env[[:space:]]+)?(ba)?sh([[:space:]]|$) ]]; then
         tail -n +2 "$installed" > "$kept"
         note="unchanged — they now run after the framework checks pass"
     else
-        : > "$kept"
-        echo -e "${YELLOW}WARN: $name is not a shell script ($first) — it cannot be merged with the framework block; your previous hook is $backup${NC}" >&2
+        rm -f "$kept"
+        echo -e "${RED}REFUSED: $name is not a shell script ($first) — it cannot be merged with the framework block, and replacing it would disable it. Left unchanged.${NC}" >&2
+        echo "  Fix: call your hook from a shell $name, then re-run fw git install-hooks." >&2
+        return 2
     fi
-    [ -s "$kept" ] || [ -z "$note" ] && cp -p "$installed" "$backup" 2>/dev/null
     { echo '#!/bin/bash'; cat "$block"
       if [ -s "$kept" ]; then
-          echo "# T-4403: kept from the previous $name by fw git install-hooks ($note); original: $(basename "$backup")"
+          echo "# T-4515: project lines kept ACTIVE from the previous $name by fw git install-hooks ($note); original: $(basename "$backup")"
           cat "$kept"
       fi; } > "$out"
     if [ -s "$kept" ] && ! bash -n "$out" 2>/dev/null; then
-        { echo '#!/bin/bash'; cat "$block"; } > "$out"
-        echo -e "${YELLOW}WARN: your lines from $name do not parse after the framework block — installed the block alone; your previous hook is $backup${NC}" >&2
-    elif [ -s "$kept" ]; then
-        echo -e "${YELLOW}$name: kept $(wc -l < "$kept") line(s) of the previous hook below the framework block ($note); previous file: $backup${NC}" >&2
+        echo -e "${RED}REFUSED: the lines of $name outside the framework template do not parse after the framework block — installing would disable them. $name left unchanged (its checks still run).${NC}" >&2
+        echo "  Lines:" >&2
+        sed 's/^/    | /' "$kept" | head -20 >&2
+        echo "  Fix: delete the lines that came from an older framework hook (or make the rest parse on its own), then re-run fw git install-hooks." >&2
+        rm -f "$kept" "$out"
+        return 2
     fi
+    [ -s "$kept" ] || [ -z "$note" ] && cp -p "$installed" "$backup" 2>/dev/null
+    [ -s "$kept" ] && echo -e "${YELLOW}$name: kept $(wc -l < "$kept") line(s) of the previous hook below the framework block ($note); previous file: $backup${NC}" >&2
     rm -f "$kept"
     return 0
 }
@@ -1748,8 +1758,13 @@ HOOK_EOF
         # State the difference, not a direction (T-2852): nothing here compares ordering.
         [ "$force" = true ] || [ -z "$_changed" ] || echo -e "${YELLOW}Hook content differs:${_changed} (marker installed: ${existing_version:-none}, template: $COMMIT_MSG_HOOK_VERSION) — reinstalling${NC}"
         failed_hooks=()
+        local _refused="" _rc
         for _n in $_differ; do
-            if _fw_hook_compose "$hooks_dir/$_n" "$stage_dir/$_n.block" "$stage_dir/$_n.new" \
+            _rc=0
+            _fw_hook_compose "$hooks_dir/$_n" "$stage_dir/$_n.block" "$stage_dir/$_n.new" || _rc=$?
+            if [ "$_rc" -eq 2 ]; then
+                _refused="$_refused $_n"   # T-4515: left as it is, never disabled
+            elif [ "$_rc" -eq 0 ] \
                 && cp "$stage_dir/$_n.new" "$hooks_dir/$_n" 2>/dev/null && chmod +x "$hooks_dir/$_n" \
                 && _fw_hook_installed_block "$hooks_dir/$_n" | cmp -s "$stage_dir/$_n.block" -; then
                 :
@@ -1757,6 +1772,10 @@ HOOK_EOF
                 install_failed=true; failed_hooks+=("$hooks_dir/$_n")
             fi
         done
+        if [ -n "$_refused" ] && [ "$install_failed" = false ]; then
+            echo -e "${RED}ERROR: hook(s) not installed:${_refused} — merging would have disabled lines that are not the framework's (see REFUSED above). They were left unchanged.${NC}" >&2
+            exit 1
+        fi
     fi
     commit_msg_hook="$hooks_dir/commit-msg"; pre_commit_hook="$hooks_dir/pre-commit"
     post_commit_hook="$hooks_dir/post-commit"; pre_push_hook="$hooks_dir/pre-push"

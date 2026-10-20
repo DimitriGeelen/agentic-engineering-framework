@@ -1,10 +1,18 @@
 ---
 id: T-4515
-name: "fw git install-hooks comments out hook lines it did not write, silently disabling a consumer's own gates (T-4403 regression)"
+name: "fw git install-hooks comments out hook lines it did not write, silently disabling
+  a consumer's own gates (T-4403 regression)"
 description: >
-  832 msg 0a8bbfa1 (2026-10-20): since T-4403 (v1.8.14-be.3), install-hooks keeps foreign lines but COMMENTS THEM OUT ('uncomment the lines that are yours'). On 832's be.3 upgrade this disabled their two pre-commit gates (re-vendor, boundary) for about 5 hours; their installer check matched the marker text that survives in the comment, a false green. Every consumer that adds hook lines is exposed. Fix: keep project lines ACTIVE in a marked project section (or refuse and name them), never silently disable a gate; fw doctor flags commented-out project gate lines; regression test with a consumer hook carrying its own gate line.
+  832 msg 0a8bbfa1 (2026-10-20): since T-4403 (v1.8.14-be.3), install-hooks keeps
+  foreign lines but COMMENTS THEM OUT ('uncomment the lines that are yours'). On 832's
+  be.3 upgrade this disabled their two pre-commit gates (re-vendor, boundary) for
+  about 5 hours; their installer check matched the marker text that survives in the
+  comment, a false green. Every consumer that adds hook lines is exposed. Fix: keep
+  project lines ACTIVE in a marked project section (or refuse and name them), never
+  silently disable a gate; fw doctor flags commented-out project gate lines; regression
+  test with a consumer hook carrying its own gate line.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T20:39:53Z
-last_update: 2026-10-20T20:39:53Z
-date_finished: null
+last_update: 2026-10-20T20:54:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T20:45:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T20:46:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4515: fw git install-hooks comments out hook lines it did not write, silently disabling a consumer's own gates (T-4403 regression)
@@ -62,8 +98,13 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Migrating an unmarked old framework hook keeps the lines the template lacks ACTIVE, below the block, under a `# T-4515: project lines kept ACTIVE` marker; no line is ever prefixed with `# ` by install-hooks (`_fw_hook_compose`, agents/git/lib/hooks.sh)
+- [x] When the kept lines do not parse after the block (or the consumer hook is not a shell script), install-hooks REFUSES that hook: the installed file is left byte-identical (its gates keep running), the lines are named, and the run exits non-zero; it never installs the block alone over a consumer hook
+- [x] `fw doctor` WARNs on a framework-managed hook that carries project lines commented out by the T-4403 installer (the `kept ... (commented out` header), naming the hook and the line count
+- [x] Regression test (832 T-1240 shape): a consumer hook with its own active gate line, install-hooks run, the ACTIVE (uncommented) gate-line count is unchanged, and running the hook proves the gate still executes (a failing gate blocks)
+- [x] T-4403 tests stay green; only the assertion of the commenting-out is changed
+- [x] The next be-tag notice carries one line telling consumers to check their hooks
+- [ ] `bin/fw vendor self --check --task T-4515` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +289,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4515_install_hooks_keep_gates_active.bats > /tmp/.t4515.out 2>&1 && ! grep -q "^not ok" /tmp/.t4515.out
+test "$(grep -c '# skip' /tmp/.t4515.out)" -eq 0
+timeout 300 bats tests/unit/t4403_hook_block_preserve.bats tests/unit/t3998_install_hooks_content_compare.bats > /tmp/.t4403.out 2>&1 && ! grep -q "^not ok" /tmp/.t4403.out
+! grep -q 'uncomment the lines that are yours' agents/git/lib/hooks.sh
+python3 tools/bats-dead-negation-lint.py tests/unit/t4515_install_hooks_keep_gates_active.bats tests/unit/t4403_hook_block_preserve.bats > /tmp/.t4515.lint 2>&1 && grep -q clean /tmp/.t4515.lint
+bin/fw vendor self --check --task T-4515
 
 ## RCA
 
@@ -264,6 +311,30 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 832's be.3 upgrade (T-4403, v1.8.14-be.3) turned their two pre-commit
+gates (re-vendor, boundary) into comments for about 5 hours. Their installer check
+grepped for the gate's marker text, which survives inside a `# ` comment, so it read
+"installed" — a false green.
+
+**Root cause:** `_fw_hook_compose` (agents/git/lib/hooks.sh, the unmarked
+old-framework branch, ~line 94-101) could not tell a consumer's line from an older
+template's line, so it resolved the ambiguity by `sed 's/^/# /'` on every leftover
+line — choosing "no stale framework line runs" over "no consumer gate stops running".
+The same function's parse-failure fallback installed the block alone, which drops a
+consumer's lines outright. Both paths disable a gate silently except for one stderr
+line during `fw upgrade`.
+
+**Why structurally allowed:** the T-4403 test asserted the commenting-out as the
+intended behaviour (`grep -qx '# echo consumer-migrated-line'`), and every test
+checked line *presence*, not whether the line still *executes*. Doctor never looked at
+managed hooks for disabled project lines.
+
+**Prevention:** t4515 bats counts ACTIVE gate lines before/after install and runs the
+hook to prove a failing consumer gate still blocks; the ambiguous case now keeps lines
+active (loud if a stale line misbehaves, never silent) and an unparseable merge is
+refused with the installed hook untouched; `fw doctor` WARNs on hooks that already
+carry T-4403-commented project lines, which is how already-affected consumers find out.
 
 ## Evolution
 
@@ -345,3 +416,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4515-fw-git-install-hooks-comments-out-hook-l.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:54:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
