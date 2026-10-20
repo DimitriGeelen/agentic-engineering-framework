@@ -100,13 +100,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A runner `lib/review_isolation.py` (CLI `bin/fw review isolated-run`) builds each external seat's command (codex, opencode, claude -p) with isolation ON by default: opencode gets `OPENCODE_CONFIG` with every tool false, `--pure`, stdin closed; claude -p gets no tools (`--tools ""`, `--strict-mcp-config`); codex gets `--sandbox read-only` in an empty dir.
-- [ ] The runner refuses (exit 2, nothing launched) when the run directory resolves inside the project repo or any git work tree, symlinks included.
-- [ ] Each seat runs in its own directory holding only the redacted bundle; seats run sequentially and every seat's output stays in a private holding dir until all seats finish, so no seat can see another's output.
-- [ ] The bundle is refused when it contains an IPv4 address or a hostname-looking token from a denylist pattern (never sent out).
-- [ ] Per-backend isolation settings live in `policy/review-backends.yaml` as an `isolation:` block, and the registry loader accepts it.
-- [ ] A post-run check flags a seat whose transcript shows a tool call / file read as `non-independent`.
-- [ ] Regression tests in `tests/unit/test_review_isolation.py` cover all of the above with a fake binary; no external model is called.
+- [x] A runner `lib/review_isolation.py` (CLI `bin/fw review isolated-run`) builds each external seat's command (codex, opencode, claude -p) with isolation ON by default: opencode gets `OPENCODE_CONFIG` with every tool false, `--pure`, stdin closed; claude -p gets no tools (`--tools ""`, `--strict-mcp-config`); codex gets `--sandbox read-only` in an empty dir.
+- [x] The runner refuses (exit 2, nothing launched) when the run directory resolves inside the project repo or any git work tree, symlinks included.
+- [x] Each seat runs in its own directory holding only the redacted bundle; seats run sequentially and every seat's output stays in a private holding dir until all seats finish, so no seat can see another's output.
+- [x] The bundle is refused when it contains an IPv4 address or a hostname-looking token from a denylist pattern (never sent out).
+- [x] Per-backend isolation settings live in `policy/review-backends.yaml` as an `isolation:` block, and the registry loader accepts it.
+- [x] A post-run check flags a seat whose transcript shows a tool call / file read as `non-independent`.
+- [x] Regression tests in `tests/unit/test_review_isolation.py` cover all of the above with a fake binary; no external model is called.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
