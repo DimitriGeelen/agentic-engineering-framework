@@ -29,7 +29,7 @@ Required:
   --conversation-id <CID> thread id to filter on (metadata.conversation_id)
 
 Optional:
-  --hub <addr>            target hub (default: local; e.g. 192.168.10.122:9100)
+  --hub <addr>            target hub (default: local; e.g. hub.example.lan:9100)
   --limit <N>             max envelopes per scan (default: 200, max 1000)
   --json                  emit one JSON object (machine-readable) instead of text
 

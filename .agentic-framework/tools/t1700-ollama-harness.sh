@@ -24,7 +24,7 @@
 #
 # Requirements (checked at start, fails loud if missing):
 #   - litellm proxy on :4000 (health/liveliness)
-#   - ollama @ 192.168.10.107:11434 (api/tags)
+#   - ollama @ $OLLAMA_HOST, default http://localhost:11434 (api/tags)
 #   - .context/project/workflows/ollama-research.yaml exists
 #   - claude binary on PATH (ollama-loop worker_kind spawns `claude -p`)
 #
@@ -61,8 +61,8 @@ echo "[$(date -u +%H:%M:%S)] T-1700 harness v2 starting (N=$N, batch=$BATCH_ID, 
 curl -sf -m 3 http://localhost:4000/health/liveliness >/dev/null || {
   echo "FAIL: litellm proxy not responding on :4000" >&2; exit 1
 }
-curl -sf -m 5 http://192.168.10.107:11434/api/tags >/dev/null || {
-  echo "FAIL: ollama not reachable at 192.168.10.107:11434" >&2; exit 1
+curl -sf -m 5 "${OLLAMA_HOST:-http://localhost:11434}"/api/tags >/dev/null || {
+  echo "FAIL: ollama not reachable at ${OLLAMA_HOST:-http://localhost:11434}" >&2; exit 1
 }
 test -f .context/project/workflows/ollama-research.yaml || {
   echo "FAIL: ollama-research workflow missing" >&2; exit 1

@@ -47,10 +47,10 @@ Examples:
   fw pending register --command "cd /path && .agentic-framework/bin/fw upgrade" \
                       --reason "update propagation to consumer" \
                       --task T-1397 \
-                      --host 192.168.10.107
+                      --host <remote-host>
   fw pending list
   fw pending list --status all
-  fw pending resolve U-001 --note "human ran the command on .107"
+  fw pending resolve U-001 --note "human ran the command on the remote host"
 EOF
 }
 

@@ -151,7 +151,7 @@ UNKNOWN = "(unknown)"
 
 def addr_to_ip(addr: str) -> str:
     """T-1410: strip ephemeral source port from peer_addr.
-    IPv4: '192.168.1.5:42820' -> '192.168.1.5'
+    IPv4: '203.0.113.5:42820' -> '203.0.113.5'
     IPv6: '[::1]:9100'         -> '[::1]'
     rsplit(':', 1) handles both because IPv6 brackets keep the colons inside.
     """

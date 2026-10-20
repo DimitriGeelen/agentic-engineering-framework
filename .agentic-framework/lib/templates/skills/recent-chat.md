@@ -139,7 +139,7 @@ If `unique_speakers >= 2`, no follow-up needed — the arc is being used.
 **Drill into one hub:**
 
 ```
-/recent-chat --hub 192.168.10.122:9100 --since 24
+/recent-chat --hub hub.example.lan:9100 --since 24
 ```
 
 ## Related

@@ -537,7 +537,7 @@ patterns:
       - "Human AC Steps: 'Open each of these (Watchtower URL from `bin/fw watchtower url`): - /bvp - /approvals' (homework, 0 clickable URLs)"
       - "Human AC: 'base from `bin/fw watchtower url`' + bullets of bare paths"
     examples_negative:
-      - "Human AC Steps: 'Open http://192.168.10.107:3000/bvp' (full URL, clickable)"
+      - "Human AC Steps: 'Open http://watchtower.example.lan:3000/bvp' (full URL, clickable)"
       - "Agent AC referencing `/bvp` path (not a Human AC — out of scope)"
       - "`## Verification` block with `curl -sf \"$(bin/fw watchtower url)/bvp\"` (legitimate shell, not a human-readable Step)"
       - "Task body containing the literal pattern but with `<!-- review-link-homework-ok: this task documents the pattern -->` opt-out marker"

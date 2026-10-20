@@ -1,0 +1,21 @@
+id: tools/lan-address-lint.py
+name: lan-address-lint
+type: script
+subsystem: framework-core
+location: tools/lan-address-lint.py
+tags: []
+
+purpose: "T-4516: refuse RFC1918 (LAN) addresses in shipped framework paths."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

@@ -31,9 +31,9 @@ PROMPTS=("${PROMPTS[@]:0:$N}")
 
 curl -sf -m 3 http://localhost:4000/health/liveliness >/dev/null \
   || { echo "FAIL: litellm proxy down"; exit 1; }
-curl -sf -m 5 http://192.168.10.107:11434/api/tags >/dev/null \
+curl -sf -m 5 "${OLLAMA_HOST:-http://localhost:11434}"/api/tags >/dev/null \
   || { echo "FAIL: ollama unreachable"; exit 1; }
-curl -sf http://192.168.10.107:11434/api/tags | python3 -c "
+curl -sf "${OLLAMA_HOST:-http://localhost:11434}"/api/tags | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
 names=[m['name'] for m in d.get('models',[])]

@@ -35,7 +35,7 @@ declare -a CELLS=(
 
 # Pre-flight
 curl -sf -m 3 http://localhost:4000/health/liveliness >/dev/null || { echo "FAIL: litellm proxy down"; exit 1; }
-curl -sf -m 5 http://192.168.10.107:11434/api/tags >/dev/null || { echo "FAIL: ollama unreachable"; exit 1; }
+curl -sf -m 5 "${OLLAMA_HOST:-http://localhost:11434}"/api/tags >/dev/null || { echo "FAIL: ollama unreachable"; exit 1; }
 
 # --- Run the matrix ---
 declare -a CELL_NAMES TOOL_PCT_LIST EXIT_PCT_LIST MEDIAN_LIST DETAIL_LINES
