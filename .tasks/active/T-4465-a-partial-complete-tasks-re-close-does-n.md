@@ -99,10 +99,10 @@ The partial-complete re-check branch of `agents/task-create/update-task.sh` (OLD
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The partial-complete re-check branch in `agents/task-create/update-task.sh` calls `apply_reviewer_verdicts` before counting unchecked ACs (same apply + revalidation as the first close)
-- [ ] Regression test in `tests/unit/t3579_verdict_close_path.bats`: a task already in partial-complete (status work-completed, in active/) with a recorded green verdict closes on `update-task.sh --status work-completed` with no manual `verdict apply`; it fails without the fix
-- [ ] Existing `tests/unit/t3579_verdict_close_path.bats` suite stays green and the bats dead-negation lint is clean
-- [ ] Vendored copy synced (`bin/fw vendor self --check --task T-4465` clean)
+- [x] The partial-complete re-check branch in `agents/task-create/update-task.sh` calls `apply_reviewer_verdicts` before counting unchecked ACs (same apply + revalidation as the first close)
+- [x] Regression test in `tests/unit/t3579_verdict_close_path.bats`: a task already in partial-complete (status work-completed, in active/) with a recorded green verdict closes on `update-task.sh --status work-completed` with no manual `verdict apply`; it fails without the fix
+- [x] Existing `tests/unit/t3579_verdict_close_path.bats` suite stays green and the bats dead-negation lint is clean
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4465` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
