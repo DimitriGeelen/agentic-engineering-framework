@@ -1403,6 +1403,26 @@ if [ -n "${FRAMEWORK_ROOT:-}" ] && [ -f "$FW_BIN_DIR/../FRAMEWORK.md" ] && [ -d 
     && [ "$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd -P)" = "$(cd "$FW_BIN_DIR/.." && pwd -P)/.agentic-framework" ]; then
     FRAMEWORK_ROOT=""
 fi
+# T-4362 (GitHub #105): the same call made from a consumer's agent session inherits
+# FRAMEWORK_ROOT=<consumer>/.agentic-framework, which skipped the T-4453 rule below and
+# took bare-from-consumer again. For `upgrade` run by a framework git checkout outside
+# PROJECT_ROOT, an inherited FRAMEWORK_ROOT inside PROJECT_ROOT is the consumer's own
+# copy, not a choice of source: drop it. The T-2099 handoff is unaffected (it passes
+# FRAMEWORK_ROOT = the clone that runs, which is outside the project).
+if [ -n "${FRAMEWORK_ROOT:-}" ] && [ "${1:-}" = "upgrade" ] && [ -n "${PROJECT_ROOT:-}" ] \
+    && [ -f "$FW_BIN_DIR/../FRAMEWORK.md" ] && [ -d "$FW_BIN_DIR/../agents" ] \
+    && [ -e "$FW_BIN_DIR/../.git" ]; then
+    _t4362_cand="$(cd "$FW_BIN_DIR/.." && pwd -P)"
+    _t4362_proj="$(cd "$PROJECT_ROOT" 2>/dev/null && pwd -P)" || _t4362_proj=""
+    _t4362_fr="$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd -P)" || _t4362_fr=""
+    if [ -n "$_t4362_proj" ] && [ -n "$_t4362_fr" ] \
+        && [ "$_t4362_cand" != "$_t4362_proj" ] && [[ "$_t4362_cand" != "$_t4362_proj"/* ]] \
+        && [[ "$_t4362_fr" == "$_t4362_proj"/* ]]; then
+        echo "fw: inherited FRAMEWORK_ROOT=$FRAMEWORK_ROOT is the project's vendored copy; upgrading from $_t4362_cand (the fw you ran)" >&2
+        FRAMEWORK_ROOT=""
+    fi
+    unset _t4362_cand _t4362_proj _t4362_fr
+fi
 # T-4453: `fw upgrade` run by a framework checkout's own bin/fw vendors THAT checkout.
 # resolve_framework's T-498 rule picks <PROJECT_ROOT>/.agentic-framework when cwd is a
 # consumer, which made lib/upgrade.sh see bare-from-consumer and vendor upstream_repo
@@ -4624,7 +4644,13 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
     echo ""
     _doctor_phase "autonomous dispatch"  # T-3452
     echo -e "  ${BOLD}Autonomous Dispatch${NC}"
-    if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files resolver-loop.timer >/dev/null 2>&1; then
+    # T-4357 (GH #100): presence is the unit name in the listing, not the exit
+    # code — systemd 245 exits 0 from list-unit-files when nothing matches.
+    local _resolver_units=""
+    if command -v systemctl >/dev/null 2>&1; then
+        _resolver_units=$(systemctl list-unit-files --no-legend resolver-loop.timer 2>/dev/null || true)
+    fi
+    if [[ "$_resolver_units" == resolver-loop.timer* ]]; then
         if systemctl is-active --quiet resolver-loop.timer 2>/dev/null; then
             echo -e "  ${GREEN}LIVE${NC}  systemd resolver-loop.timer is active — dispatching unattended every 30m"
         else
