@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4470: Adopt 832's runme job queue (data-defined operator jobs, sha-bound dry run, y/N per step, ordered batches, signal library + watcher) into fw runme?
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:21:28Z
+# ============================================================================
+
+task_id: T-4470
+task_name: "Adopt 832's runme job queue (data-defined operator jobs, sha-bound dry run, y/N per step, ordered batches, signal library + watcher) into fw runme?"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T13:47:07Z
+completed: 2026-10-20T15:20:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T15:52:07+02:00
+last_commit: 2026-10-20T17:21:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  research artefact + Open Questions — 832 runme job queue proposal, AEF baseline, operator's view (less friction, not a path around Tier 0), reviewer questions. 832's runme job queue inputs (8 files, sha256-verified against 832's list; stored as .txt, not executable; host/credential scan clean). three isolated external reviews of the runme job queue. review synthesis — all three seats: adapt; per-step consent defeatable as written (job code shares the launcher shell); recommendation GO-adapt with five prerequisites, three slices. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/costs/reviews.jsonl'
+  - 'docs/reports/T-4470-inputs/runme-job-queue-for-aef.md.txt'
+  - 'docs/reports/T-4470-inputs/runme-launcher.sh.txt'
+  - 'docs/reports/T-4470-inputs/runme-new.sh.txt'
+  - 'docs/reports/T-4470-inputs/runme.sh.txt'
+  - 'docs/reports/T-4470-inputs/runme-signal.sh.txt'
+  - 'docs/reports/T-4470-inputs/runme-watch.sh.txt'
+  - 'docs/reports/T-4470-inputs/SHA256SUMS.txt'
+  - 'docs/reports/T-4470-inputs/test_t1003_runme_signal.sh.txt'
+  - 'docs/reports/T-4470-inputs/test_t1055_runme_launcher.py.txt'
+  - 'docs/reports/T-4470-reviews/claude.md'
+  - 'docs/reports/T-4470-reviews/codex.md'
+  - 'docs/reports/T-4470-reviews/opencode.md'
+  - 'docs/reports/T-4470-runme-job-queue.md'
+  - '.tasks/active/T-4470-adopt-832s-runme-job-queue-data-defined-.md'
+  - '.tasks/completed/T-4470-adopt-832s-runme-job-queue-data-defined-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T15:52:07'
+    action: 'T-4470: research artefact + Open Questions — 832 runme job queue proposal, AEF baseline, operator''s view (less friction, not a path around Tier 0), reviewer questions'
+  - time: '2026-10-20T16:16:12'
+    action: 'T-4470: 832''s runme job queue inputs (8 files, sha256-verified against 832''s list; stored as .txt, not executable; host/credential scan clean)'
+  - time: '2026-10-20T16:23:40'
+    action: 'T-4470: three isolated external reviews of the runme job queue'
+  - time: '2026-10-20T17:19:43'
+    action: 'T-4470: review synthesis — all three seats: adapt; per-step consent defeatable as written (job code shares the launcher shell); recommendation GO-adapt with five prerequisites, three slices'
+  - time: '2026-10-20T17:21:07'
+    action: 'T-4470: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 93 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 93
+  commits: 5
+  files_changed: 16
+  lines_added: 1978
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4470-adopt-832s-runme-job-queue-data-defined-.md
+generated_by: context-agent-hybrid
