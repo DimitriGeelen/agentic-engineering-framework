@@ -9,8 +9,8 @@ entries:
     reason: "Historical task reports (records). Not rewritten by policy (T-4516)."
   - path: "docs/research/*"
     reason: "Dated research logs and source manifests (records). Not rewritten (T-4516)."
+  # Matched by path alone: naming the address here would ship it a second time.
   - path: "policy/designer-pin.yaml"
-    address: "192.168.10.201"
     reason: >-
       source_origin is the live pull-at-tag origin `fw designer sync --from-tag`
       fetches from (agents/designer/designer.sh:211); a placeholder would break

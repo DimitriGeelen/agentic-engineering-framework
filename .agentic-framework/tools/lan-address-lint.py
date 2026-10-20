@@ -15,7 +15,7 @@ Allowlist: policy/lan-address-allowlist.yaml
     entries:
       - path: "docs/reports/**"          # fnmatch glob against the repo path
         reason: "historical records"     # required, non-empty
-        address: "10.0.0.1"              # optional: exempt only this address
+        address: "<the address>"         # optional: exempt only this address
 
 Usage:
     tools/lan-address-lint.py [--root DIR] [--allowlist FILE] [--json] [FILE ...]
