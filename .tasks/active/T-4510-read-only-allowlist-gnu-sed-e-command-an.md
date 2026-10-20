@@ -99,7 +99,7 @@ G-121 cause 2 of 5 (ring20-dashboard msg af2bbc85). Probe: `docs/reports/G-121-b
 - [x] Data that contains `e` stays SAFE: `sed 's/e/E/g' F`, `sed '/e/d' F`, `sed 'y/e/E/' F`, `sed '1a text with e' F`, `sed -n '/re/p' F`
 - [x] Controls stay SAFE: `sed -n 1p F`, `sed -E 's/(a)/\1/' F`, `sed -n '1,5p;$p' F`, `git grep pattern`, `awk '{print $1}' F`
 - [x] New bats test covers both directions; T-4509, T-4511, T-4512, T-4485, T-4367, T-4487, T-4499 and safe-commands suites stay green
-- [ ] `bin/fw vendor self --check --task T-4510` clean
+- [x] `bin/fw vendor self --check --task T-4510` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
