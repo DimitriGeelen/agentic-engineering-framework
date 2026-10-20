@@ -10,7 +10,7 @@ description: >
   test setting a key on a yaml holding a >80-char value. Reproduce before adopting.
   Related: T-3731 config-engine inception.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T16:38:47Z
-last_update: '2026-10-02T16:45:45Z'
+last_update: 2026-10-20T22:06:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect reproduced at HEAD before the fix: `fw config set` on a `.framework.yaml` holding a >80-char `upstream_repo` folds it onto a continuation line, and the `lib/update.sh` grep+sed reader returns ''
+- [x] `lib/config-file.sh` set-path dumps with a wide line width (ruamel `yaml.width` and PyYAML `width=`) so long scalars stay on one line
+- [x] Regression bats `tests/unit/t3735_config_set_no_fold.bats` sets a key on a yaml holding a >80-char value and asserts the value line is intact and readable by the update.sh-style reader; fails without the fix
+- [ ] `bin/fw vendor self --check --task T-3735` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,8 +259,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 120 bats tests/unit/t3735_config_set_no_fold.bats > /tmp/.t3735.out 2>&1 && ! grep -q "^not ok" /tmp/.t3735.out
+grep -q 'yaml.width = 4096' lib/config-file.sh && grep -q 'sort_keys=False, width=4096' lib/config-file.sh
+timeout 300 bats tests/unit/lib_config_file.bats tests/unit/t3924_config_key_case.bats tests/unit/test_fw_config_one_arg.bats > /tmp/.t3735n.out 2>&1 && ! grep -q "^not ok" /tmp/.t3735n.out
+bin/fw vendor self --check --task T-3735
 
 ## RCA
+
+**Symptom:** after `fw config set <KEY> <V>` on a consumer `.framework.yaml`, a long `upstream_repo:` value was moved to a continuation line (`upstream_repo:` followed by an indented URL). `lib/update.sh:160` reads it line-wise (`grep "^upstream_repo:" | sed`), got '', and `fw update --check` failed with "No upstream_repo". proxmox-ring20-management fell three releases behind (1.8.5 → 1.8.8) without noticing; ring20-dashboard T-2430 reported the same thing first.
+
+**Root cause:** `lib/config-file.sh` (the `_config_set` PYSET heredoc, `yaml = YAML()`) round-tripped the whole file through ruamel.yaml at its default `width` of 80. ruamel re-emits *every* key, not only the one being set, and folds any scalar that does not fit in 80 columns after its key. The URL has no spaces, so ruamel moves the whole value to the next line. The PyYAML fallback breaks only at spaces, so it never folded a URL, but it shared the same 80-column limit for values that contain spaces.
+
+**Why structurally allowed:** the file has two kinds of reader: YAML-aware ones (`fw_config`, `_config_get`) and line-wise shell readers (update.sh and other grep+sed readers). The writer met only the first kind's contract. No test wrote a long value and then read it back with a line-wise reader, and every existing config bats fixture used short values. The failure was silent because the only thing that ever read the value was an update check that consumers seldom run.
+
+**Prevention:** writer dumps at width 4096 on both the ruamel and PyYAML paths. `tests/unit/t3735_config_set_no_fold.bats` pins this: it writes a key beside a >80-char `upstream_repo` and reads that value back with the exact update.sh reader, on the ruamel path and on the forced-PyYAML path (ruamel shadowed). Without the fix the ruamel test fails (verified by reverting `lib/config-file.sh`). Not in this task's scope, still open: a YAML-aware read in update.sh, and an audit WARN when `--check` cannot resolve upstream (the second reporter's request); T-3731 (config-engine inception) is the place for those.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -357,3 +371,6 @@ bvp_scores_proposed:
 
 ### 2026-10-10 — second reporter, real consequence
 - proxmox-ring20-management (their T-2282, msg a5c751b1): `upstream_repo:` folded onto the next line in their .framework.yaml; lib/update.sh:110 reads it line-wise, gets '', and `fw update --check` failed "No upstream_repo" — they fell 3 releases (1.8.5 -> 1.8.8) behind unnoticed. Asks: write it single-line and/or parse with a YAML reader; audit WARN when `--check` cannot resolve upstream (the silent part is the G-019 question).
+
+### 2026-10-20T22:06:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

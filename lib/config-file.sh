@@ -179,6 +179,10 @@ try:
     from ruamel.yaml import YAML
     yaml = YAML()
     yaml.preserve_quotes = True
+    # T-3735: the default width (80) folds a long scalar onto a continuation
+    # line; line-wise shell readers (lib/update.sh grep+sed on upstream_repo)
+    # then read ''. Keep every scalar on its own key line.
+    yaml.width = 4096
 except ImportError:
     # Fallback to PyYAML (no comment preservation)
     import yaml as pyyaml
@@ -187,7 +191,7 @@ except ImportError:
         def load(self, f):
             return pyyaml.safe_load(f)
         def dump(self, data, f):
-            pyyaml.dump(data, f, default_flow_style=False, sort_keys=False)
+            pyyaml.dump(data, f, default_flow_style=False, sort_keys=False, width=4096)
 
     yaml = FallbackYAML()
     print("WARNING: ruamel.yaml not installed — comments may not be preserved", file=sys.stderr)
