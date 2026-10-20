@@ -57,7 +57,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T07:57:08Z
-last_update: 2026-10-20T19:27:39Z
+last_update: 2026-10-20T20:29:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -113,6 +113,8 @@ cost_estimate_proposed:
 - [x] Transition table lists from-state, to-state, writer, required evidence, CAS expected-prior and precedence, including unknown + resolution verb, lost->done upgrade and fence_reject
 - [x] At least 11 numbered conformance cases in given/when/then form, covering every case named in the task
 - [x] Each section names its source (reviewer / condition)
+- [x] docs/reports/T-4439-reviews/ring20-v0.2-answers.md answers each of ring20's 12 numbered points and the 4 part-2 security points with accept / accept-with-change / reject, reasoning and normative wording, and lists the changes that need TermLink's re-agreement
+- [x] Spec is at v0.3 with a "Changelog v0.2.1 -> v0.3" citing [ring20 v0.2 review §N]; points 4 (late T5 vs stale_attempt) and 5 (rank fold vs T7a) are resolved in §3 and CC-06/CC-07; new conformance cases added (CC-22 onwards)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -166,6 +168,11 @@ cost_estimate_proposed:
 test -f docs/specs/shared-worker-contract-transitions.md
 test "$(grep -cE '^## [1-9]\. ' docs/specs/shared-worker-contract-transitions.md)" -eq 9
 test "$(grep -cE '^### CC-[0-9]+' docs/specs/shared-worker-contract-transitions.md)" -ge 11
+test -f docs/reports/T-4439-reviews/ring20-v0.2-answers.md
+grep -q '^## Changelog v0.2.1 → v0.3' docs/specs/shared-worker-contract-transitions.md
+grep -q 'ring20 v0.2 review §5' docs/specs/shared-worker-contract-transitions.md
+test "$(grep -cE '^### CC-[0-9]+' docs/specs/shared-worker-contract-transitions.md)" -ge 25
+grep -q 'TermLink re-agreement' docs/reports/T-4439-reviews/ring20-v0.2-answers.md
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be

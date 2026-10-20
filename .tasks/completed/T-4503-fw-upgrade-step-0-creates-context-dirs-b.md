@@ -1,18 +1,18 @@
 ---
-id: T-4504
-name: "t4431_be_tags.bats test 11 red at HEAD: upgrade.sh describe --tags --exact-match
-  HEAD has no -be exclude"
+id: T-4503
+name: "fw upgrade step 0 creates .context dirs before the step-1 CLAUDE.md marker
+  refusal (T-3150), so that refusal is not side-effect free"
 description: >
-  From w4500: lib/upgrade.sh ~1638 resolves the version with git describe --tags --exact-match
-  HEAD, which picks a v*-be.N tag. Exclude -be tags (or handle them) and make test
-  11 green.
+  From w4498 (T-4498): same T-4278 rule broken in a second place. Move the directory
+  creation after every refusal check; regression test that a refused upgrade leaves
+  the consumer tree byte-identical.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade.sh, tests/unit/t4503_refused_upgrade_no_skeleton.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,9 +40,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T19:09:03Z
-last_update: 2026-10-20T19:26:44Z
-date_finished:
+created: 2026-10-20T19:08:11Z
+last_update: 2026-10-20T20:43:43Z
+date_finished: 2026-10-20T20:43:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -83,7 +83,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4504: t4431_be_tags.bats test 11 red at HEAD: upgrade.sh describe --tags --exact-match HEAD has no -be exclude
+# T-4503: fw upgrade step 0 creates .context dirs before the step-1 CLAUDE.md marker refusal (T-3150), so that refusal is not side-effect free
 
 ## Context
 
@@ -93,9 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The git describe --tags --exact-match HEAD call in lib/upgrade.sh excludes -be tags (--exclude '*-be.*'), like every other describe --tags in lib/
-- [ ] tests/unit/t4431_be_tags.bats test 11 ("every describe --tags ... excludes -be tags") is green, no other test in that file regresses
-- [ ] bin/fw vendor self --check --task T-4504 clean
+- [x] lib/upgrade.sh creates the step-0 directory skeleton only after the step-1 CLAUDE.md refusals (T-3150 marker check and governance-deletion check)
+- [x] A do_upgrade refused by an unmatched project-owned marker leaves the consumer tree byte-identical (regression test tests/unit/t4503_refused_upgrade_no_skeleton.bats)
+- [x] An accepted upgrade still creates the skeleton (control test) and upgrade_fresh_machine_simulation.bats stays green (16/16, run by the parent 2026-10-20)
+- [x] bin/fw vendor self --check --task T-4503 clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -274,22 +275,17 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 #
-# Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
-# web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
-#     bin/fw vendor self --check --task T-XXXX
-# (your own task id). It checks only the files your commits changed, so another
-# worker's uncommitted edit does not block your close; that drift is listed as
-# "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+# Vendored-path hint (T-3236, T-4419): see CLAUDE.md.
 
-out=$(bats tests/unit/t4431_be_tags.bats 2>&1); echo "$out" | grep -q '^ok 8 ' && ! echo "$out" | grep -q '^not ok'
-bin/fw vendor self --check --task T-4504
+out=$(bats tests/unit/t4503_refused_upgrade_no_skeleton.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check --task T-4503
 
 ## RCA
 
-**Symptom:** t4431_be_tags.bats "every describe --tags ... excludes -be tags" red at HEAD.
-**Root cause:** T-4453 added `git describe --tags --exact-match HEAD` at lib/upgrade.sh:1605 (Commit: line) without the `--exclude '*-be.*'` the T-4431 invariant requires.
-**Why structurally allowed:** the lint-style test only runs in the unit suite; T-4453 landed without running it.
-**Prevention:** the fix adds the exclude; the existing test (grep over lib/bin/agents) guards every future describe call.
+**Symptom:** a fw upgrade refused at step 1 (T-3150 unmatched project-owned marker; also the governance-deletion refusal) had already created .context/{audits,bus,...}, .tasks/templates, .claude/commands and policy in the consumer, despite printing "no other upgrade step ran".
+**Root cause:** lib/upgrade.sh step 0 (T-2758 directory skeleton, ~line 1747) runs before step 1's refusals (~1772, ~1890). Step 1 does not need the dirs; only step 3 does.
+**Why structurally allowed:** T-4278 hashed the tree only for the vendor/version refusals; no test exercised the step-1 refusal for byte-identity.
+**Prevention:** skeleton moved to after step 1; tests/unit/t4503_refused_upgrade_no_skeleton.bats hashes the consumer tree across a marker-refused upgrade.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -381,10 +377,27 @@ bin/fw vendor self --check --task T-4504
 
 ## Updates
 
-### 2026-10-20T19:09:03Z — task-created [task-create-agent]
+### 2026-10-20T19:08:11Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4504-t4431betagsbats-test-11-red-at-head-upgr.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4503-fw-upgrade-step-0-creates-context-dirs-b.md
 - **Context:** Initial task creation
 
-### 2026-10-20T19:26:44Z — status-update [task-update-agent]
+### 2026-10-20T19:24:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-44bc517c
+- **Timestamp:** 2026-10-20T20:44:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T20:43:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
