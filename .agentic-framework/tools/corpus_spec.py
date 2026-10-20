@@ -225,16 +225,84 @@ def _is_known_ext(c) -> bool:
     return isinstance(c.tag, str) and c.tag in {_q(k, AEF_NS) for k in _KNOWN_EXT}
 
 
-def _ext(el):
-    """aef:* extension children of a flow element's extensionElements block."""
+#: T-4518: the plain attributes each structured aef:* element is modelled with
+#: (None = any plain attribute, carried as one dict). Other plain attributes
+#: ride the owner's ext_attrs verbatim (the designer stamps aef:workflowMeta
+#: uuid=…); a child element, text or a namespaced attribute inside one has no
+#: slot in the spec and is refused.
+_EXT_ATTRS = {"uid": {"value"}, "position": {"x", "y"}, "eventDef": None,
+              "link": {"linkId", "workflowRef", "targetWorkflow", "name"},
+              "meta": None, "callRef": {"workflowRef"}, "ioMapping": set(),
+              "workflowMeta": {"id", "version", "schemaVersion", "title", "tier_default"},
+              "laneMeta": {"abbr", "authority", "height"}}
+
+#: T-4518: the structured aef:* elements each context actually reads. A known
+#: name anywhere else (aef:position on a flow) rides ext_raw verbatim.
+_NODE_EXT = {"uid", "position", "eventDef", "link", "meta"}
+_CALL_EXT = _NODE_EXT | {"callRef", "ioMapping"}
+_FLOW_EXT = {"uid"}
+_PROCESS_EXT = {"workflowMeta"}
+_LANE_EXT = {"laneMeta"}
+
+
+def _ext_owner(el) -> str:
+    local = el.tag.split("}")[-1]
+    return f"<bpmn:{local} id=\"{el.get('id')}\">"
+
+
+def _is_read(c, known) -> bool:
+    return isinstance(c.tag, str) and c.tag in {_q(k, AEF_NS) for k in known}
+
+
+def _ext(el, known=_NODE_EXT):
+    """Structured aef:* children of a flow element's extensionElements block.
+
+    T-4518: content a structured element carries beyond its modelled shape, and
+    a repeat of one, used to be dropped silently — refused here instead."""
     out = {}
     ee = el.find(_q("extensionElements"))
     if ee is None:
         return out
     for c in ee:
-        if _is_known_ext(c):
-            out[c.tag.split("}")[-1]] = dict(c.attrib)
+        if not _is_read(c, known):
+            continue
+        local = c.tag.split("}")[-1]
+        if local in out:
+            raise SystemExit(
+                f"parse: {_ext_owner(el)} carries aef:{local} more than once — the "
+                f"spec holds one, so the others would be dropped (T-4518)")
+        nsattr = sorted(k for k in c.attrib if k.startswith("{"))
+        inner = local != "ioMapping"  # ioMapping entries are checked by _io_mapping
+        if nsattr or (inner and (len(c) or (c.text or "").strip())):
+            what = ([f"attribute {k}" for k in nsattr]
+                    + ([f"child <{x.tag.split('}')[-1]}>" for x in c
+                        if isinstance(x.tag, str)] if inner else [])
+                    + (["text"] if inner and (c.text or "").strip() else [])
+                    or ["a comment or processing instruction"])
+            raise SystemExit(
+                f"parse: {_ext_owner(el)} aef:{local} carries {', '.join(what)} "
+                f"outside its modelled shape — refusing rather than dropping it "
+                f"(T-4518). Put extra content in its own aef: element, which "
+                f"round-trips verbatim.")
+        out[local] = dict(c.attrib)
     return out
+
+
+def _ext_attrs(ext: dict) -> dict:
+    """T-4518: {element: {attr: value}} — plain attributes of structured aef:*
+    elements outside their modelled set, carried verbatim instead of dropped."""
+    out = {}
+    for local, attrs in ext.items():
+        allowed = _EXT_ATTRS[local]
+        extra = {k: v for k, v in attrs.items()
+                 if allowed is not None and k not in allowed}
+        if extra:
+            out[local] = extra
+    return out
+
+
+def _attrs_xml(extra: dict | None) -> str:
+    return "".join(f" {k}={quoteattr(v)}" for k, v in (extra or {}).items())
 
 
 def _io_mapping(el) -> dict:
@@ -246,9 +314,14 @@ def _io_mapping(el) -> dict:
     if io is None:
         return None
     out = {"in": [], "out": []}
+    # T-4518: text and comments between entries were skipped silently.
+    if (io.text or "").strip() or any(not isinstance(c.tag, str) or (c.tail or "").strip()
+                                      for c in io):
+        raise SystemExit(
+            f"parse: <bpmn:callActivity id=\"{el.get('id')}\"> aef:ioMapping carries "
+            f"text or a comment between its entries, outside mapping v1 — refusing "
+            f"rather than dropping it (T-4518)")
     for c in io:
-        if not isinstance(c.tag, str):
-            continue
         local = c.tag.split("}")[-1]
         if (c.tag not in (_q("in", AEF_NS), _q("out", AEF_NS))
                 or set(c.attrib) != {"source", "target"} or len(c)
@@ -271,16 +344,17 @@ def _raw_xml(el) -> str:
     return ET.tostring(el, encoding="unicode").strip()
 
 
-def _ext_raw(el) -> list:
+def _ext_raw(el, known=_NODE_EXT) -> list:
     """Unrecognized ext children preserved verbatim (aef:constituents,
     aef:endpoint, aef:contextReads, …) — the parser dropping these silently
     is the T-2614 data-loss class. Foreign-namespace children land here too,
-    whatever their local name (T-4387)."""
+    whatever their local name (T-4387), and so does a structured name in a
+    context that does not read it (T-4518)."""
     ee = el.find(_q("extensionElements"))
     if ee is None:
         return []
     return [_raw_xml(c) for c in ee
-            if isinstance(c.tag, str) and not _is_known_ext(c)]
+            if isinstance(c.tag, str) and not _is_read(c, known)]
 
 
 #: The emitter's own trailer, present in every generated file. Never a map's doc —
@@ -387,7 +461,8 @@ def parse_map(xml_text: str) -> dict:
         break
 
     proc = _single_process(root)
-    wm = _ext(proc).get("workflowMeta", {})
+    proc_ext = _ext(proc, _PROCESS_EXT)
+    wm = proc_ext.get("workflowMeta", {})
     spec = {
         "spec_version": 1,
         "id": wm.get("id"),
@@ -395,6 +470,12 @@ def parse_map(xml_text: str) -> dict:
         "schema_version": int(wm.get("schemaVersion", "2")),
         "tier_default": int(wm.get("tier_default", "1")),
     }
+    # T-4518: unknown aef:/foreign siblings of aef:workflowMeta, verbatim.
+    proc_raw = _ext_raw(proc, _PROCESS_EXT)
+    if proc_raw:
+        spec["ext_raw"] = proc_raw
+    if _ext_attrs(proc_ext):
+        spec["ext_attrs"] = _ext_attrs(proc_ext)
     collab = root.find(_q("collaboration"))
     if collab is not None:
         part = collab.find(_q("participant"))
@@ -408,7 +489,8 @@ def parse_map(xml_text: str) -> dict:
     laneset = proc.find(_q("laneSet"))
     if laneset is not None:
         for lane in laneset.findall(_q("lane")):
-            lm = _ext(lane).get("laneMeta", {})
+            lane_ext = _ext(lane, _LANE_EXT)
+            lm = lane_ext.get("laneMeta", {})
             lanes.append({
                 "id": lane.get("id"),
                 "name": lane.get("name"),
@@ -416,6 +498,11 @@ def parse_map(xml_text: str) -> dict:
                 "authority": lm.get("authority"),
                 "height": _dim(lm["height"]) if lm.get("height") else None,
             })
+            lane_raw = _ext_raw(lane, _LANE_EXT)
+            if lane_raw:
+                lanes[-1]["ext_raw"] = lane_raw
+            if _ext_attrs(lane_ext):
+                lanes[-1]["ext_attrs"] = _ext_attrs(lane_ext)
             for ref in lane.findall(_q("flowNodeRef")):
                 node_lane[ref.text.strip()] = lane.get("id")
     spec["lanes"] = lanes
@@ -426,7 +513,8 @@ def parse_map(xml_text: str) -> dict:
     for el in proc:
         local = el.tag.split("}")[-1] if isinstance(el.tag, str) else None
         if local in TAG_TO_TYPE:
-            ext = _ext(el)
+            known = _CALL_EXT if local == "callActivity" else _NODE_EXT
+            ext = _ext(el, known)
             n = {
                 "id": el.get("id"),
                 "lane": node_lane.get(el.get("id")),
@@ -486,7 +574,9 @@ def parse_map(xml_text: str) -> dict:
                 io = _io_mapping(el)
                 if io is not None:
                     n["io_mapping"] = io
-            raw = _ext_raw(el)
+            if _ext_attrs(ext):
+                n["ext_attrs"] = _ext_attrs(ext)
+            raw = _ext_raw(el, known)
             if raw:
                 n["ext_raw"] = raw
             # T-4388: unmodelled node children (loop characteristics,
@@ -506,10 +596,12 @@ def parse_map(xml_text: str) -> dict:
             }
             if el.get("name"):
                 f["name"] = el.get("name")
-            ext = _ext(el)
+            ext = _ext(el, _FLOW_EXT)
             if "uid" in ext:
                 f["uid"] = ext["uid"].get("value")
-            ext_raw = _ext_raw(el)
+            if _ext_attrs(ext):
+                f["ext_attrs"] = _ext_attrs(ext)
+            ext_raw = _ext_raw(el, _FLOW_EXT)
             if ext_raw:
                 f["ext_raw"] = ext_raw
             # T-2614: preserve non-extension flow children verbatim
@@ -748,7 +840,10 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
     a(f'      <aef:workflowMeta id={quoteattr(mid)} version="{version}" '
       f'schemaVersion="{spec.get("schema_version", 2)}" '
       f'title={quoteattr(spec.get("title") or mid)} '
-      f'tier_default="{spec.get("tier_default", 1)}"/>')
+      f'tier_default="{spec.get("tier_default", 1)}"'
+      f'{_attrs_xml(spec.get("ext_attrs", {}).get("workflowMeta"))}/>')
+    for raw in spec.get("ext_raw", []):
+        a(f"      {raw}")
     a("    </bpmn:extensionElements>")
 
     abbr = "".join(w[0] for w in mid.replace("aef-", "").split("-"))[:2]
@@ -759,7 +854,10 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         attrs = f'abbr={quoteattr(lane["abbr"])} authority={quoteattr(lane["authority"])}'
         if lane.get("height") is not None:
             attrs += f' height="{lane["height"]}"'
+        attrs += _attrs_xml(lane.get("ext_attrs", {}).get("laneMeta"))
         a(f"          <aef:laneMeta {attrs}/>")
+        for raw in lane.get("ext_raw", []):
+            a(f"          {raw}")
         a("        </bpmn:extensionElements>")
         for n in spec["nodes"]:
             if n.get("lane") == lane["id"]:
@@ -799,10 +897,12 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         after = sorted((r for r in raws if _raw_local(r) != "documentation"),
                        key=_node_child_rank)
         a("      <bpmn:extensionElements>")
+        xa = n.get("ext_attrs", {})
         if n.get("uid"):
-            a(f'        <aef:uid value={quoteattr(n["uid"])}/>')
+            a(f'        <aef:uid value={quoteattr(n["uid"])}{_attrs_xml(xa.get("uid"))}/>')
         if n.get("pos"):
-            a(f'        <aef:position x="{_pos(n["pos"][0])}" y="{_pos(n["pos"][1])}"/>')
+            a(f'        <aef:position x="{_pos(n["pos"][0])}" y="{_pos(n["pos"][1])}"'
+              f'{_attrs_xml(xa.get("position"))}/>')
         if n.get("event"):
             attrs = " ".join(f"{k}={quoteattr(str(v))}" for k, v in n["event"].items())
             a(f"        <aef:eventDef {attrs}/>")
@@ -821,18 +921,20 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
             slug = idx["by_uuid"].get(wref) if compat_alias else None
             tw_part = f" targetWorkflow={quoteattr(slug)}" if slug else ""
             a(f'        <aef:link{tw_part} workflowRef={quoteattr(wref)}{name_part} '
-              f'linkId={quoteattr(h.get("link_id", ""))}/>')
+              f'linkId={quoteattr(h.get("link_id", ""))}{_attrs_xml(xa.get("link"))}/>')
         if n.get("meta"):
             attrs = " ".join(f"{k}={quoteattr(str(v))}" for k, v in n["meta"].items())
             a(f"        <aef:meta {attrs}/>")
         if n.get("call_ref"):
-            a(f'        <aef:callRef workflowRef={quoteattr(n["call_ref"])}/>')
+            a(f'        <aef:callRef workflowRef={quoteattr(n["call_ref"])}'
+              f'{_attrs_xml(xa.get("callRef"))}/>')
         if n.get("io_mapping") is not None:
             io = n["io_mapping"]
+            io_attrs = _attrs_xml(xa.get("ioMapping"))
             if not io["in"] and not io["out"]:
-                a("        <aef:ioMapping/>")
+                a(f"        <aef:ioMapping{io_attrs}/>")
             else:
-                a("        <aef:ioMapping>")
+                a(f"        <aef:ioMapping{io_attrs}>")
                 for kind in ("in", "out"):
                     for e in io[kind]:
                         a(f'          <aef:{kind} source={quoteattr(e["source"])} '
@@ -856,7 +958,8 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
           f'sourceRef={quoteattr(f["from"])} targetRef={quoteattr(f["to"])}>')
         uid = f.get("uid")
         ext_raw = "".join(f.get("ext_raw", []))
-        uid_part = f"<aef:uid value={quoteattr(uid)}/>" if uid else ""
+        uid_part = (f"<aef:uid value={quoteattr(uid)}"
+                    f"{_attrs_xml(f.get('ext_attrs', {}).get('uid'))}/>" if uid else "")
         if uid_part or ext_raw:
             a(f"      <bpmn:extensionElements>{uid_part}{ext_raw}"
               f"</bpmn:extensionElements>")

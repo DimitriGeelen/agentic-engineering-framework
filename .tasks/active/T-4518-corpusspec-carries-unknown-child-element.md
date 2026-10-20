@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T21:46:13Z
-last_update: 2026-10-20T21:47:10Z
+last_update: '2026-10-20T22:00:52Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,20 +74,63 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T22:00:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=350,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4518: corpus_spec carries unknown child elements of aef:io (and other aef: extension elements) verbatim through derive/generate, or refuses naming them
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+832 msg 19354f92 asks whether corpus_spec keeps unknown child elements inside aef:io
+through derive/generate, as their T-1243 now does. The T-4502 rule applies: preserve or
+refuse, never drop.
+
+**Observed before the fix** (fixture `.context/working/t4518/probe.py`, parse_map → emit_map):
+
+| Where the unknown content sits | Before |
+|---|---|
+| unknown aef: element on a node (`aef:io` with nested `aef:input/aef:nested` + text) | kept verbatim (ext_raw, T-2614) |
+| unknown child inside `aef:ioMapping` | refused, naming the entry (T-4374) |
+| child element / text inside a structured element (`aef:meta`, `aef:position`, `aef:callRef`, `aef:workflowMeta`, `aef:laneMeta`) | **dropped silently** |
+| unmodelled attribute on `aef:uid` / `aef:position` / `aef:link` / `aef:callRef` / `aef:workflowMeta` / `aef:laneMeta` | **dropped silently** |
+| unknown aef:/foreign sibling in the process's or a lane's extensionElements | **dropped silently** |
+| a structured name in a context that does not read it (`aef:position` on a flow, `aef:callRef` on a non-call node) | **dropped silently** |
+| a repeated structured element (two `aef:uid`) | **first one dropped silently** |
+| text or a comment between `aef:ioMapping` entries | **dropped silently** |
+
+**After the fix:** unknown elements, at any level and nested to any depth, round-trip verbatim
+(namespace, attributes, text, tails, child order). Unmodelled plain attributes on structured
+elements ride `ext_attrs`. A child element, text, namespaced attribute or repeat inside a
+structured element is refused, naming the element and the owner node. All 75 committed .bpmn that
+parsed before still parse; none trips a refusal. One limit remains: verbatim order holds *among*
+the unknown siblings, but their position relative to the structured elements is normalised to
+the emitter's order.
+
+## Decisions
+
+### 2026-10-20 — carry vs refuse for unmodelled attributes
+- **Chose:** carry plain attributes verbatim (`ext_attrs`); refuse children, text and namespaced attributes inside structured elements.
+- **Why:** a first cut refused every unmodelled attribute and broke 23 committed maps (designer `uuid=`), so carrying them is both possible and needed. Children inside a structured element have no slot that keeps the element's modelled fields editable.
+- **Rejected:** emitting the whole structured element from a raw copy (a later spec edit to e.g. `pos` would be silently overridden by the raw copy).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Observed behaviour of parse_map/emit_map today on unknown children (and unknown attributes/text) inside known aef: extension elements is written into ## Context from a fixture run
+- [x] Unknown content inside a structured aef: extension element (uid, position, eventDef, link, meta, workflowMeta, laneMeta, callRef) round-trips verbatim (namespace, attributes, text, order) through derive → generate, or parse refuses naming the element; nothing is dropped silently
+- [x] aef:ioMapping with an unknown child is refused naming the element (already true; pinned by a test), and a nested unknown child inside an unknown aef: extension element round-trips verbatim
+- [x] Regression test tests/unit/test_t4518_ext_unknown_children.py with a nested unknown child fails before the fix and passes after; neighbouring corpus_spec tests stay green
+- [x] `bin/fw vendor self --check --task T-4518` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -136,6 +179,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_t4518_ext_unknown_children.py -q > /tmp/.t4518a 2>&1 && grep -q "13 passed" /tmp/.t4518a
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_spec_doc_guard.py tests/unit/test_corpus_prove_guard.py tests/unit/test_corpus_lint.py tests/unit/test_corpus_conformance.py -q > /tmp/.t4518b 2>&1 && grep -q passed /tmp/.t4518b
+grep -q "T-4518" tools/corpus_spec.py
+bin/fw vendor self --check --task T-4518
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -275,6 +323,31 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** derive → generate silently lost aef: extension content in five positions (see the
+table in ## Context). Among them were the workflowMeta `uuid=` the designer stamps (21 committed maps)
+and `description=` (2 fixtures). 832's question about unknown children of aef:io turned out to be the one case that already
+round-tripped.
+
+**Root cause:** `tools/corpus_spec.py:_ext` (pre-fix line 228) reduced every structured aef:
+element to `dict(c.attrib)` keyed by local name. It ignored children and text, let a repeat
+overwrite the earlier one, and read only the attributes each caller later picked out (uid `value`,
+position `x/y`, workflowMeta's four, laneMeta's three, callRef `workflowRef`). `_ext_raw`
+(pre-fix line 274) excluded *every* `_KNOWN_EXT` name in every context, so a known name a context
+does not read (position on a flow, callRef on a non-call node) went nowhere. Process and lane
+extensionElements had no `_ext_raw` at all. `_io_mapping` skipped text and comments between entries.
+
+**Why structurally allowed:** the T-2614 verbatim rule was written for *unknown* siblings, and its
+tests (test_corpus_spec_roundtrip.py) only placed unknown content in that slot. Nothing exercised
+content inside a known element, or the process and lane levels. Round-trip identity checks pass
+both sides through the same lossy parse, so they cannot see the loss (the T-2614 blind spot again).
+
+**Prevention:** `_ext` now checks each structured element against `_EXT_ATTRS`. Unmodelled plain
+attributes ride `ext_attrs` verbatim. A child element, text, a namespaced attribute or a repeat is
+refused, naming the element. The elements each context reads are explicit (`_NODE_EXT`,
+`_CALL_EXT`, `_FLOW_EXT`, `_PROCESS_EXT`, `_LANE_EXT`), and anything else rides `ext_raw`
+verbatim, which process and lanes now have too. `tests/unit/test_t4518_ext_unknown_children.py`
+pins each position. 10 of its 13 cases fail on the pre-fix code.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -342,16 +415,6 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-## Decisions
-
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
 
 ## Decision
 
