@@ -152,6 +152,13 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] The sidecar-waiting error card on /approvals shows `exit N: <reason>` and no bypass-instruction lines
+  **Steps:**
+  1. Open the screenshot `/opt/999-Agentic-Engineering-Framework/.context/visual/T-4407/approvals-waiting-error@1440.png` (the error state cannot be produced on the live Watchtower without breaking the sidecar CLI; the shots come from a throwaway local instance where only the `sidecar_cli.py waiting --json` call was faked to exit 2 with a reason line followed by 20 `--skip-…` bypass lines)
+  2. Scroll to the "Nobody has taken these" section near the bottom
+  3. Optional live check: open `/approvals` on Watchtower (`cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` prints the base URL); with a healthy sidecar no error card shows, which is the expected normal state
+  **Expected:** an "[ERROR] The waiting list could not be read" card whose line reads `exit 2: sidecar receiver unreachable on 127.0.0.1:7811 (connection refused) — run fw sidecar waiting in this project.`; no `--skip-` or "re-run with" text anywhere on the card; the text sits inside the card at every width
+  **If not:** note what the card shows; the message is built in `_load_waiting_messages` (web/blueprints/approvals.py) and rendered by web/templates/_approvals_content.html (`waiting_error`)
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -305,6 +312,16 @@ python3 -m pytest tests/unit/test_sidecar_waiting_t3782.py -q > /tmp/.t4407c 2>&
 bin/fw vendor self --check --task T-4407
 bin/fw watchtower current
 
+## Visual Verification
+
+Shots: `bin/fw ux shots T-4407 "approvals-waiting-error=http://127.0.0.1:3947/approvals"`. The error state cannot be produced safely on the live Watchtower (it needs the sidecar CLI to fail), so the shots come from a throwaway local Watchtower on 127.0.0.1:3947, started from the working tree with only the `sidecar_cli.py waiting --json` subprocess faked to exit 2 with stderr = one reason line + 20 `re-run with --skip-receiver-gate-N (logged Tier-2)` lines; it was stopped afterwards. Measured with Playwright: document scrollWidth equals viewport width at each width, the card's scrollWidth equals its clientWidth (946/1196/1446 px), the message line is one 26 px line inside the card, and the rendered HTML contains no `skip-receiver` text.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| approvals-waiting-error | [ERROR] heading "The waiting list could not be read" | ok | ok | ok | |
+| approvals-waiting-error | error message line | ok | ok | ok | `exit 2: sidecar receiver unreachable on 127.0.0.1:7811 (connection refused) — run fw sidecar waiting in this project.`; no bypass lines |
+| approvals-waiting-error | "Nobody has taken these" header count | ok | ok | ok | "0 messages" header, as before the change |
+
 ## RCA
 
 **Symptom:** `tests/unit/test_operator_facing_stderr.py::test_every_stderr_render_site_is_sanitized` red in 20/20 suite reports, naming `web/blueprints/approvals.py:643`.
@@ -381,6 +398,17 @@ bin/fw watchtower current
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+
+**Rationale:** The sidecar-waiting error is now sanitized at the raise site, before the 300-char tail is cut, so a reason followed by bypass instructions keeps the reason and the card shows `exit N: <reason>` instead of a bare `RuntimeError`. All Agent ACs are ticked and every `## Verification` line passes. The rendered card was checked at 1024/1440/1920 on a local instance with the failure faked (the live server cannot show this state without breaking the sidecar); it fits and carries no bypass text. The open item is the [REVIEW] look at that card.
+
+**Evidence:**
+- a303395da: fix in web/blueprints/approvals.py (`_load_waiting_messages`) + tests/unit/test_t4407_waiting_error_sanitized.py; 14bfd5da5: fabric card
+- test_t4407_waiting_error_sanitized.py and test_sidecar_waiting_t3782.py pass
+- test_operator_facing_stderr.py::test_every_stderr_render_site_is_sanitized now names only approvals.py:931 (the T-3605 offender, out of scope); the sidecar-waiting site is no longer listed
+- `bin/fw vendor self --check --task T-4407` clean; `bin/fw watchtower current` passes
+- Screenshots .context/visual/T-4407/approvals-waiting-error@{1024,1440,1920}.png (see ## Visual Verification)
 
 ## Decisions
 

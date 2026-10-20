@@ -46,7 +46,7 @@ origin: {kind: "peer", source: "github#104"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T23:08:48Z
-last_update: 2026-10-20T19:45:21Z
+last_update: '2026-10-20T20:46:38Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,6 +83,23 @@ bvp_scores_proposed:
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T20:46:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
@@ -133,6 +150,12 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] The new BOUNDARY_EXTRA_READ_PATHS row on /config reads clearly next to its neighbours
+  **Steps:**
+  1. Open `/config` on Watchtower (`cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` prints the base URL)
+  2. Find the row FW_BOUNDARY_EXTRA_READ_PATHS (between FW_REVIEWER_JUDGE_WEEKLY_SPEND_CEILING and FW_REVIEW_GREEN_DEGRADED)
+  **Expected:** current value and default are empty and the source badge is DEFAULT, the same as the other empty-default rows (e.g. FW_DISPATCH_MODEL_DEFAULT); the description says it is colon-separated absolute paths for Bash reads only, that $HOME/.local and $HOME/.claude are already allowed, that writes are not widened and that relative entries and / are ignored; row spacing and wrapping match the rows around it
+  **If not:** note what is wrong; the row lives in web/blueprints/config.py right after REVIEWER_JUDGE_WEEKLY_SPEND_CEILING
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -288,6 +311,18 @@ timeout 300 bats tests/lint/config-registry-parity.bats > /tmp/.t4361p.out 2>&1 
 bin/fw watchtower current
 bin/fw vendor self --check --task T-4361
 
+## Visual Verification
+
+Shots: `bin/fw ux shots T-4361 "config=http://192.168.10.107:3000/config"` (live Watchtower, current per `bin/fw watchtower current`). Measured with Playwright at each width: document scrollWidth equals viewport width and the config table's scrollWidth equals its clientWidth (950/1200/1450 px), so nothing overflows horizontally; every cell's scrollWidth equals its clientWidth.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | FW_BOUNDARY_EXTRA_READ_PATHS current value | ok | ok | ok | empty, rendered like FW_DISPATCH_MODEL_DEFAULT (pre-existing empty-value layout) |
+| config | FW_BOUNDARY_EXTRA_READ_PATHS default | ok | ok | ok | empty code chip, same as other empty defaults |
+| config | FW_BOUNDARY_EXTRA_READ_PATHS source badge | ok | ok | ok | DEFAULT |
+| config | FW_BOUNDARY_EXTRA_READ_PATHS description | ok | ok | ok | full text visible; row height 137/113/89 px, same as the row above at 1440/1920 and shorter than the row below |
+| config | FW_BOUNDARY_EXTRA_READ_PATHS env var name | ok | ok | ok | wraps in the narrow Env Var column at every width, as every other row does (pre-existing layout) |
+
 ## RCA
 
 **Symptom:** On a non-root account (GitHub #104), the project-boundary PreToolUse gate refused Bash reads of the account's own `~/.local` (where the `fw` shim lives) and `~/.claude`, and Write/Edit to `~/.claude`. No setting could allow an extra path.
@@ -338,6 +373,11 @@ bin/fw vendor self --check --task T-4361
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-10-20 — "tested only as root" was the blind spot, and there was no escape hatch
+- **What changed:** GH #104 traced to literal `/root/.claude/` and `/root/.local/` in five allowlists in agents/context/check-project-boundary.sh, invisible on every host the tests ran on because `HOME=/root` there. The zones now derive from `$HOME` (root entries kept), and a new registry key BOUNDARY_EXTRA_READ_PATHS admits extra read-only paths (dec4a8888).
+- **Plan impact:** the fix grew a config key, which made it render-touching (a /config row in web/blueprints/config.py) and so needs a [REVIEW] Human AC and visual check; writes were deliberately not widened. A whitespace slip on the neighbouring REVIEW_GREEN_DEGRADED row was restored in 5a140c841.
+- **Triggered:** regression test tests/unit/t4361_boundary_home_paths.bats (runs the hook as HOME=/home/t4361user); fabric card (8fd6c3950). No new task.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -366,6 +406,16 @@ bin/fw vendor self --check --task T-4361
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+
+**Rationale:** The boundary gate now follows the running account's `$HOME`, so a non-root account can read its own `~/.local` and `~/.claude` and write `~/.claude` (GH #104); extra read paths are configurable without widening writes. All Agent ACs are ticked and every `## Verification` line passes. The only open item is the [REVIEW] check that the new /config row reads clearly; measured at 1024/1440/1920 it does not overflow and renders like the other empty-default rows.
+
+**Evidence:**
+- dec4a8888: hook + registry key + /config row; 5a140c841: neighbouring row spacing restored
+- tests/unit/t4361_boundary_home_paths.bats green, no skips; tests/unit/check_project_boundary.bats and tests/lint/config-registry-parity.bats green; dead-negation lint clean
+- `bin/fw vendor self --check --task T-4361` clean; `bin/fw watchtower current` passes (running server serves this row)
+- Screenshots .context/visual/T-4361/config@{1024,1440,1920}.png; table/cell scrollWidth equals clientWidth at all three widths (see ## Visual Verification)
 
 ## Decisions
 

@@ -335,6 +335,11 @@ bin/fw vendor self --check --task T-4358
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-10-20 — "not armed" is the normal interactive state, not a fault
+- **What changed:** GH #101 showed the T-3225 WARN firing on every interactive `claude-fw` session: the wrapper logs a `start` event on every launch, so doctor's Continuous-run branch was always reached, and it treated every non-ARMED verdict as a fault. Never-armed and deliberately disarmed states are now an informational line; the WARN is kept only for `enabled: true` that has stopped (84e43c95b).
+- **Plan impact:** none to the arc plan; T-3225's origin case (armed then lapsed) keeps its WARN and is pinned as a control in the new test.
+- **Triggered:** regression test tests/unit/t4358_doctor_turn_driver_interactive.bats; fabric card (8fd6c3950). No new task.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it

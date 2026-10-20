@@ -45,7 +45,7 @@ origin: {kind: "peer", source: "github#100"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T23:06:06Z
-last_update: 2026-10-20T20:12:55Z
+last_update: 2026-10-20T20:39:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -333,6 +333,11 @@ bin/fw vendor self --check --task T-4357
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-20 — presence test was version-dependent, not wrong logic
+- **What changed:** GH #100 was not a broken timer: `systemctl list-unit-files resolver-loop.timer` exits 0 on systemd 245 when nothing matches ("0 unit files listed."), so the exit-code presence test at `bin/fw:4627` always took the "installed" branch there. Presence is now read from the unit name in `--no-legend` output (aa2972838).
+- **Plan impact:** none to the arc plan; the fix stayed inside doctor's Autonomous Dispatch block. The test pins systemd 245 behaviour with a stub systemctl rather than relying on the host's version.
+- **Triggered:** regression test tests/unit/t4357_doctor_resolver_timer_presence.bats; fabric cards for it and the sibling arc-021 tests (8fd6c3950). No new task.
 
 ## Recommendation
 

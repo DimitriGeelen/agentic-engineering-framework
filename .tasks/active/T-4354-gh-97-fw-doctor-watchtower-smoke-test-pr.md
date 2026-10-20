@@ -333,6 +333,11 @@ bin/fw watchtower current
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-10-20 — the smoke test was a second, unaligned "where is Watchtower" resolver
+- **What changed:** GH #97 was not a Watchtower fault: T-4041 made doctor's shell side FW_HOST-aware, but `web/smoke_test.py` hard-coded `http://localhost:{port}` and doctor passed it only `--port`, so on a non-loopback bind the /health gate passed and every smoke probe failed. The smoke test now takes `--url`, and doctor passes the URL its health gate resolved (62aa295d0).
+- **Plan impact:** none to the arc plan; without `--url` the smoke test behaves as before, so other callers are unchanged. The t3453 doctor harness needed `_doctor_wt_url` defined to keep running the real block.
+- **Triggered:** regression test tests/unit/test_t4354_smoke_test_base_url.py; fabric card (8fd6c3950). No new task.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
