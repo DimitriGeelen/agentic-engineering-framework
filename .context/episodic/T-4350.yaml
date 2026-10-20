@@ -1,0 +1,127 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4350: Incremental vector reindex writes a full second copy of the index every run (11.7 GiB/h disk writes on .107): update in place
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T14:22:42Z
+# ============================================================================
+
+task_id: T-4350
+task_name: "Incremental vector reindex writes a full second copy of the index every run (11.7 GiB/h disk writes on .107): update in place"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-18T22:57:14Z
+completed: 2026-10-19T23:15:29Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-19T11:55:49+02:00
+last_commit: 2026-10-20T14:10:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  incremental reindex updates small deltas in place (no full-size scratch copy). reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). Visual Verification checklist for the [REVIEW] search criterion (hybrid results at 1024/1440/1920, no fallback notice)
+
+# Key outcomes
+outcomes:
+  - 'Reproduced on a temp index (not the live one): an incremental run with 1 changed file copies the whole database (copy2 to `.reindex.<pid>.tmp`) and the scratch is the same size as the index; recorded in the Updates section with before/after bytes'
+  - 'Regression test in `tests/unit/test_incremental_reindex.py` asserts an incremental run never creates a full-size scratch copy (no `.reindex.*.tmp` created, and no `shutil.copy2` of DB_PATH); it FAILS on the pre-fix code and PASSES after the fix (red run recorded in Updates)'
+  - '`reindex_incremental()` in `web/embeddings.py` updates the live database in place for a small delta (≤ `IN_PLACE_MAX_FILES` = 32 changed files, against an existing file_state baseline): changed/removed rows are deleted and re-inserted in ONE sqlite transaction on DB_PATH; the commit is the only point where the new state is visible. Journal mode stays the default rollback journal, not WAL (see Decisions)'
+  - 'Atomicity preserved: the existing ATOMIC tests (`test_a_run_killed_mid_way_does_not_advance_the_manifest`, `test_a_killed_run_leaves_the_previous_index_still_serving`) and the disk-guard tests in `tests/unit/test_t3860_reindex_disk_guard.py` still pass'
+  - 'Copy+swap is kept for the full-rebuild paths: `build_index()`, the bootstrap-baseline, large deltas (> 32 files) and the OBS-258 resume path still go through the scratch copy and `os.replace`'
+  - 'Disk before/after measured on a temp index for the incremental run: scratch copy 11,825,152 B → 0 B; process write_bytes 12,939,264 B → 544,768 B'
+  - '`bin/fw vendor self --check` is clean after the change (web/ is vendored)'
+  - '[REVIEW] Watchtower search results still look right after the reindex change'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-19 — in place for small deltas, copy kept for large ones'
+    chose: '`index_one` keeps its lock-skip behaviour. The in-place reindex holds the same lock, so its concurrency argument is unchanged.'
+    rationale: 'the copy-based tests pin OBS-258: a 120-file run must park and resume across kills. An in-place run that dies is rolled back, so for a large run the in-place mode would discard hours of work. Small runs (3-14 files in the reported fleet) lose nothing on a rollback.'
+    alternatives_rejected: ['always in place — breaks OBS-258 resume (`test_a_partial_run_parks_its_work_instead_of_discarding_it`). Keep the copy and only trim it — a copy is still a full index write. - **Chose rollback journal, not WAL:** with WAL a `copy2` of the live file misses frames still in `-wal`, and a swap would leave a stale `-wal` beside the new file, so WAL would have to be handled in the copy path too. Default journal keeps readers on the old snapshot until commit and sqlite rolls back a killed run. A 64 MB page cache (`PRAGMA cache_size`) keeps a normal run from spilling dirty pages into the live file, since a spill takes the exclusive lock readers wait on.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/embeddings.py'
+  - '.context/episodic/T-4180.yaml'
+  - '.context/episodic/T-4268.yaml'
+  - '.context/episodic/T-4347.yaml'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-4350/01-search-q-release-20decision-judge-t-4350-r3-b3466e6066d9.png'
+  - '.context/reviews/evidence/T-4350/01-search-q-release-20decision.png'
+  - '.context/reviews/evidence/T-4350/AC1-judge-t-4350-r3-0b51792e7bce.md'
+  - '.context/reviews/evidence/T-4350/AC1-judge-t-4350-r3-239ea851fc26.md'
+  - '.context/reviews/evidence/T-4350/AC1-judge-t-4350-r3-67092c3ff154.md'
+  - '.context/reviews/evidence/T-4350/AC1-judge-t-4350-r3-b3466e6066d9.md'
+  - '.context/reviews/evidence/T-4350/AC1-judge-t-4350-r3-d5f34f4ecab1-01-search-q-release-20decision.png'
+  - '.context/reviews/evidence/T-4350/AC1-judge-t-4350-r3-d5f34f4ecab1.md'
+  - '.context/reviews/evidence/T-4350/AC1-judge-t-4350-r3-e217b67b6a02.md'
+  - '.context/reviews/evidence/T-4350/AC1-judge-t-4350-r3-e2a0fd11f640.md'
+  - '.context/reviews/evidence/T-4350/search@1024.png'
+  - '.context/reviews/evidence/T-4350/search@1440.png'
+  - '.context/reviews/evidence/T-4350/search@1920.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4350-incremental-vector-reindex-writes-a-full.md'
+  - '.tasks/completed/T-4180-archive-eligible-sweeps-started-work-tas.md'
+  - '.tasks/completed/T-4268-fw-git-install-hooks-reports-content-dif.md'
+  - '.tasks/completed/T-4347-standing-permission-for-github-decision-.md'
+  - 'tests/unit/test_incremental_reindex.py'
+  - 'tests/unit/test_t3860_reindex_disk_guard.py'
+  - 'web/embeddings.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T11:55:49'
+    action: 'T-4350: incremental reindex updates small deltas in place (no full-size scratch copy)'
+  - time: '2026-10-20T12:54:13'
+    action: 'T-4350: reviewer verdict'
+  - time: '2026-10-20T12:55:07'
+    action: 'T-4350: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-10-20T13:11:58'
+    action: 'T-4350: reviewer verdict'
+  - time: '2026-10-20T13:13:08'
+    action: 'T-4350: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-10-20T13:14:54'
+    action: 'T-4350: reviewer verdict'
+  - time: '2026-10-20T13:16:10'
+    action: 'T-4350: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-10-20T14:08:48'
+    action: 'T-4350: Visual Verification checklist for the [REVIEW] search criterion (hybrid results at 1024/1440/1920, no fallback notice)'
+  - time: '2026-10-20T14:10:42'
+    action: 'T-4350: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 1458 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [index, performance, io]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1458
+  commits: 9
+  files_changed: 26
+  lines_added: 875
+  lines_removed: 110
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4350-incremental-vector-reindex-writes-a-full.md
+generated_by: context-agent-hybrid
