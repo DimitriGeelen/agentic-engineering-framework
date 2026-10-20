@@ -176,7 +176,8 @@ curl -sS "$(bin/fw watchtower url)/review/T-2079/acs" > /tmp/.t2082-completed 2>
 # After fix: completed task's /acs poll endpoint MUST NOT include the Complete Task button.
 ! grep -qF "Complete Task" /tmp/.t2082-completed
 # Playwright regression net is green.
-FW_TEST_PORT=3000 PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework python3 -m pytest tests/playwright/test_review_complete_render_race.py -q > /tmp/.pw-2082.log 2>&1
+# T-2772: was `FW_TEST_PORT=3000` — :3000 can be another project's Watchtower (T-2732 false green). Resolve the port.
+FW_TEST_PORT="$(bin/fw watchtower port)" PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework python3 -m pytest tests/playwright/test_review_complete_render_race.py -q > /tmp/.pw-2082.log 2>&1
 grep -q "passed" /tmp/.pw-2082.log
 
 ## RCA

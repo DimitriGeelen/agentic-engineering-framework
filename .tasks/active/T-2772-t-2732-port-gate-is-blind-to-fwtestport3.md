@@ -36,7 +36,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T17:21:06Z
-last_update: 2026-10-20T21:02:02Z
+last_update: 2026-10-20T21:57:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,6 +66,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=7 (lines=179,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T21:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=206,acs=8)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-03T17:30:10Z'
@@ -231,8 +240,8 @@ bin/fw vendor self --check --task T-2772
 **Prevention:** the predicate now also matches assignments to `PORT` / `*_PORT` with value 3000 (quoted or not), with the resolution discriminator unchanged. Six T-2772 tests in `tests/unit/verification_port_hardcode.bats` pin the corpus shapes (T-1960, T-2079, T-1632), the non-matches (`PORT=30001`, `:4000`, `[ "$PORT" = 3000 ]`, `SUPPORT=3000`), the same-line resolution pass, and the close-gate refusal; three of them fail on the old predicate (negative control run). The existing corpus scan (test 8) now covers the env-var shape too, and immediately found two live carriers (below).
 
 **Sweep (env-var shape, every `## Verification` block in .tasks/):**
-- `.tasks/active/T-1963-…` — `FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_arc_review_route.py -q` — LIVE carrier, not fixed here (another task's file); turns test 8 red until rewritten.
-- `.tasks/active/T-2082-…` — `FW_TEST_PORT=3000 PROJECT_ROOT=… python3 -m pytest tests/playwright/test_review_complete_render_race.py …` — LIVE carrier, same disposition.
+- `.tasks/active/T-1963-…` — `FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_arc_review_route.py -q` — LIVE carrier; rewritten under T-2772 follow-up to `FW_TEST_PORT="$(bin/fw watchtower port)"` (test 8 green again).
+- `.tasks/active/T-2082-…` — `FW_TEST_PORT=3000 PROJECT_ROOT=… python3 -m pytest tests/playwright/test_review_complete_render_race.py …` — LIVE carrier; rewritten the same way.
 - `.tasks/completed/T-1632-…`, `.tasks/completed/T-2079-…` — completed, never re-gated; historical.
 - `.tasks/completed/T-2771-…` — `! grep -q 'FW_TEST_PORT=3000' …` — a citation (grep for the text), would be a false positive; completed, so no effect. Same limitation the URL shape already has; bypass is `FW_ALLOW_HARDCODED_PORT=1`.
 - Suggested rewrite for T-1963/T-2082 (T-2771 precedent): `FW_TEST_PORT=$(bin/fw watchtower port) python3 -m pytest …`.

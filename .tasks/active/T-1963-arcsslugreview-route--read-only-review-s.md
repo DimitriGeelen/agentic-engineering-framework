@@ -196,7 +196,8 @@ T-1963 adds a thin GET-only `/arcs/<slug>/review` route that renders the anchor-
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"
-FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_arc_review_route.py -q
+# T-2772: was `FW_TEST_PORT=3000` — :3000 can be another project's Watchtower (T-2732 false green). Resolve the port.
+FW_TEST_PORT="$(bin/fw watchtower port)" python3 -m pytest tests/playwright/test_arc_review_route.py -q
 WT=$(bin/fw watchtower url); out=$(curl -s -o /dev/null -w "%{http_code}" "$WT/arcs/value-prioritisation/review"); [[ "$out" == "200" ]]
 WT=$(bin/fw watchtower url); out=$(curl -s -o /dev/null -w "%{http_code}" "$WT/arcs/dispatch-safety/review"); [[ "$out" == "200" ]]
 ## RCA
