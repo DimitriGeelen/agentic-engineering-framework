@@ -133,7 +133,7 @@ _watchtower_port_holder_is_ours() {
 
 # _watchtower_url [TASK_ID]
 #
-# Returns the base Watchtower URL (e.g., http://192.168.10.107:3000) on stdout.
+# Returns the base Watchtower URL (e.g., http://<host>:3000) on stdout.
 #
 # T-1284 / T-1290 3-layer discovery (replaces the port-probe fallback that
 # accidentally matched any service returning 200, e.g. Open WebUI on :8080):

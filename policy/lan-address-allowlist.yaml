@@ -1,0 +1,18 @@
+# T-4516: justified RFC1918 (LAN) addresses in shipped paths.
+# Read by tools/lan-address-lint.py. Every entry needs a reason; an optional
+# `address:` narrows the exemption to that one address.
+#
+# Records are exempt, not rewritten: a report or research log says what was
+# true when it was written, and editing it would falsify the record.
+entries:
+  - path: "docs/reports/*"
+    reason: "Historical task reports (records). Not rewritten by policy (T-4516)."
+  - path: "docs/research/*"
+    reason: "Dated research logs and source manifests (records). Not rewritten (T-4516)."
+  - path: "policy/designer-pin.yaml"
+    address: "192.168.10.201"
+    reason: >-
+      source_origin is the live pull-at-tag origin `fw designer sync --from-tag`
+      fetches from (agents/designer/designer.sh:211); a placeholder would break
+      the operator's sync. Where the private origin should live instead (DNS
+      name, local config) is an open operator decision recorded in T-4516.

@@ -327,7 +327,7 @@ def _auto_link_task_refs(text):
     return _walk_skipping_existing_links(text, replacer)
 
 
-# T-1575: bare URLs in AC steps (e.g. "Open http://192.168.10.107:3000/review/T-1565")
+# T-1575: bare URLs in AC steps (e.g. "Open http://<host>:3000/review/T-1565")
 # rendered as plain text — markdown2's default doesn't auto-link. Without this, the
 # human can't click the link the agent wrote into the Steps. Same _walk_skipping
 # scaffolding so we don't double-wrap already-linked URLs.

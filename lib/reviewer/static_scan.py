@@ -540,7 +540,7 @@ def detect_swallowed_errors(verification_section: str) -> list[Finding]:
 # ── T-2728: HTTP assertions that cannot fail, and literal host:port URLs ──────
 #
 # Origin OBS-127: two shipped verification lines read
-#   curl -s -o /dev/null -w "%{http_code}\n" http://192.168.10.107:3000/api/...
+#   curl -s -o /dev/null -w "%{http_code}\n" http://<lan-host>:3000/api/...
 # `-w` only PRINTS the code; curl exits 0 on any successful connection, so 403/404/
 # 500 all pass. And the literal :3000 is the per-project-port anti-pattern (T-1376)
 # — this project serves on 3001, so the request reached a DIFFERENT project's

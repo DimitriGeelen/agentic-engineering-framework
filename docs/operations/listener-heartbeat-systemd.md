@@ -52,7 +52,7 @@ TERMLINK_LH_LISTEN_TOPICS=dm:cohort-agent-ring20:peer-a,agent-chat-arc
 TERMLINK_LH_PTY_SESSION=cohort
 
 # Optional: pin to a non-local hub.
-# TERMLINK_LH_HUB=192.168.10.122:9100
+# TERMLINK_LH_HUB=<hub-host>:9100
 
 # Optional: extra args appended verbatim. Reserved for forward-compat.
 # TERMLINK_LH_EXTRA_ARGS=

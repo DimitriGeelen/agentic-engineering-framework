@@ -2,6 +2,9 @@
 
 ## Overview
 
+Host addresses are placeholders (T-4516): this file ships in a public mirror.
+Substitute your own `<LXC_HOST>`, `<OLLAMA_HOST>` and `<TRAEFIK_NODE_1|2>`.
+
 | Item | Value |
 |------|-------|
 | App | Watchtower (Agentic Engineering Framework dashboard) |
@@ -9,21 +12,21 @@
 | Dev FQDN | `https://watchtower-dev.docker.ring20.geelenandcompany.com` |
 | Port | 5050 (prod), 5051 (dev) |
 | Deployment model | LXC container on Proxmox (D-039, see T-279) |
-| LXC host | 192.168.10.170 (CT on proxmox2) |
-| Ollama host | `192.168.10.107:11434` |
-| Traefik nodes | .51 and .53 (sync both — L-TRF-02) |
+| LXC host | `<LXC_HOST>` (CT on proxmox2) |
+| Ollama host | `<OLLAMA_HOST>:11434` |
+| Traefik nodes | `<TRAEFIK_NODE_1>` and `<TRAEFIK_NODE_2>` (sync both — L-TRF-02) |
 | Git remote | OneDev (`onedev`) |
 
 ## Architecture
 
 ```
-Browser → Traefik HA (.51/.53, VIP .52)
+Browser → Traefik HA (two nodes + VIP)
               ↓
-    LXC Container (192.168.10.170)
+    LXC Container (<LXC_HOST>)
     ├── watchtower-dev  :5051  ← git checkout (master)
     └── watchtower      :5050  ← git checkout (tagged release)
               ↓
-         Ollama GPU (.107:11434)
+         Ollama GPU (<OLLAMA_HOST>:11434)
 ```
 
 - Single LXC with two systemd services (dev + prod)
@@ -84,10 +87,10 @@ Run `/deploy-check` or manually verify:
 fw audit --section deployment
 
 # Ollama reachable
-curl -sf http://192.168.10.107:11434/api/tags | head -5
+curl -sf http://<OLLAMA_HOST>:11434/api/tags | head -5
 
 # LXC reachable
-ssh root@192.168.10.170 'systemctl is-active watchtower-dev watchtower'
+ssh root@<LXC_HOST> 'systemctl is-active watchtower-dev watchtower'
 ```
 
 ## Manual Operations
@@ -95,7 +98,7 @@ ssh root@192.168.10.170 'systemctl is-active watchtower-dev watchtower'
 ### Update Dev
 
 ```bash
-ssh root@192.168.10.170 'cd /opt/watchtower-dev && git pull && systemctl restart watchtower-dev'
+ssh root@<LXC_HOST> 'cd /opt/watchtower-dev && git pull && systemctl restart watchtower-dev'
 ```
 
 ### Promote to Prod
@@ -106,25 +109,25 @@ git tag v1.X.X
 git push onedev --tags
 
 # Deploy on LXC
-ssh root@192.168.10.170 'cd /opt/watchtower-prod && git fetch --tags && git checkout v1.X.X && pip install -q -r web/requirements.txt && systemctl restart watchtower'
+ssh root@<LXC_HOST> 'cd /opt/watchtower-prod && git fetch --tags && git checkout v1.X.X && pip install -q -r web/requirements.txt && systemctl restart watchtower'
 ```
 
 ### Rollback Prod
 
 ```bash
 # Check previous tag
-ssh root@192.168.10.170 'cd /opt/watchtower-prod && git tag --sort=-v:refname | head -5'
+ssh root@<LXC_HOST> 'cd /opt/watchtower-prod && git tag --sort=-v:refname | head -5'
 
 # Rollback to previous version
-ssh root@192.168.10.170 'cd /opt/watchtower-prod && git checkout v1.X.Y && systemctl restart watchtower'
+ssh root@<LXC_HOST> 'cd /opt/watchtower-prod && git checkout v1.X.Y && systemctl restart watchtower'
 ```
 
 ## Verification
 
 ```bash
 # Health checks (direct)
-curl -sf http://192.168.10.170:5050/health   # prod
-curl -sf http://192.168.10.170:5051/health   # dev
+curl -sf http://<LXC_HOST>:5050/health   # prod
+curl -sf http://<LXC_HOST>:5051/health   # dev
 
 # Health checks (via Traefik FQDN)
 curl -sf https://watchtower.docker.ring20.geelenandcompany.com/health
@@ -134,7 +137,7 @@ curl -sf https://watchtower-dev.docker.ring20.geelenandcompany.com/health
 curl -sf https://watchtower.docker.ring20.geelenandcompany.com/ -o /dev/null -w "%{http_code}"
 
 # Service status on LXC
-ssh root@192.168.10.170 'systemctl status watchtower watchtower-dev'
+ssh root@<LXC_HOST> 'systemctl status watchtower watchtower-dev'
 ```
 
 ## Traefik Routes
@@ -143,15 +146,15 @@ Routes file: `deploy/traefik-routes.yml`
 
 Sync to both Traefik nodes (L-TRF-02):
 ```bash
-scp deploy/traefik-routes.yml root@192.168.10.51:/opt/traefik/config/watchtower.yml
-scp deploy/traefik-routes.yml root@192.168.10.53:/opt/traefik/config/watchtower.yml
+scp deploy/traefik-routes.yml root@<TRAEFIK_NODE_1>:/opt/traefik/config/watchtower.yml
+scp deploy/traefik-routes.yml root@<TRAEFIK_NODE_2>:/opt/traefik/config/watchtower.yml
 ```
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
-| Health returns 503 | Ollama unreachable | `curl http://192.168.10.107:11434/api/tags` |
+| Health returns 503 | Ollama unreachable | `curl http://<OLLAMA_HOST>:11434/api/tags` |
 | Search slow on first query | Vector DB rebuilding | Wait 2-3 min; Ollama embedding all files |
 | FQDN 404 | Traefik routes not synced | Re-scp to both .51 and .53 |
 | Service won't start | Python deps missing | `cd /opt/watchtower-* && pip install -r web/requirements.txt` |

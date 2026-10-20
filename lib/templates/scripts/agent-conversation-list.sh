@@ -28,7 +28,7 @@ Required:
   --topic <T>           channel topic to scan
 
 Optional:
-  --hub <addr>          target hub (default: local; e.g. 192.168.10.122:9100)
+  --hub <addr>          target hub (default: local; e.g. hub.example.lan:9100)
   --limit <N>           max envelopes per scan (default: 500, max 1000)
   --include-no-cid      include a sentinel row for envelopes without a cid
   --json                emit one JSON object instead of text

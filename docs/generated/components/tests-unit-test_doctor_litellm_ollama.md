@@ -12,7 +12,8 @@ Pins the skip-if-no-consumer pattern (mirror of T-1694 pi check):
 2. When a workflow declares ANTHROPIC_BASE_URL: http://localhost:4000,
 doctor probes :4000/health.
 3. When a workflow declares worker_kind: ollama-loop, doctor probes
-192.168.10.107:11434/api/tags.
+<ollama_host>/api/tags, the host resolved like web/config.py
+(OLLAMA_HOST > .context/settings.yaml ollama_host > localhost; T-4516).
 4. Both checks are host-scope (use _doctor_warn_host on failure).
 
 ## Dependencies (2)

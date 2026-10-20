@@ -1,10 +1,18 @@
 ---
 id: T-4516
-name: "Stop shipping and writing LAN addresses (192.168.x.y) in framework files and in what fw writes into consumer repos"
+name: "Stop shipping and writing LAN addresses (192.168.x.y) in framework files and
+  in what fw writes into consumer repos"
 description: >
-  832 msg 0a8bbfa1: 832's operator ruled to scrub LAN addresses from tracked files because their GitHub mirror is public (their T-1239). AEF's vendored tree carries them in about 134 files (docs mostly, some lib/web/tools/policy, e.g. policy/designer-pin.yaml source_origin), and handovers and task updates written into consumer repos contain Watchtower URLs with LAN addresses. Inventory the shipped files, replace addresses with placeholders or resolved-at-runtime values, make generated Watchtower URLs in consumer-written files host-neutral (or opt-in), and add a lint that refuses new RFC1918 addresses in shipped paths. The same applies to AEF's own public mirror.
+  832 msg 0a8bbfa1: 832's operator ruled to scrub LAN addresses from tracked files
+  because their GitHub mirror is public (their T-1239). AEF's vendored tree carries
+  them in about 134 files (docs mostly, some lib/web/tools/policy, e.g. policy/designer-pin.yaml
+  source_origin), and handovers and task updates written into consumer repos contain
+  Watchtower URLs with LAN addresses. Inventory the shipped files, replace addresses
+  with placeholders or resolved-at-runtime values, make generated Watchtower URLs
+  in consumer-written files host-neutral (or opt-in), and add a lint that refuses
+  new RFC1918 addresses in shipped paths. The same applies to AEF's own public mirror.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T20:40:28Z
-last_update: 2026-10-20T20:40:28Z
-date_finished: null
+last_update: 2026-10-20T20:54:50Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +58,57 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T20:45:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T20:46:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4516: Stop shipping and writing LAN addresses (192.168.x.y) in framework files and in what fw writes into consumer repos
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Inventory and dispositions: `docs/reports/T-4516-lan-address-inventory.md` (134 files /
+390 occurrences at HEAD 3b3fc30d5; 114 are records — docs/reports, docs/research — kept and
+allowlisted by path). Lint: `tools/lan-address-lint.py` + `policy/lan-address-allowlist.yaml`;
+enforced through the unit suite by `tests/unit/test_lan_address_lint.py::test_real_tree_is_clean`
+(not wired into `agents/audit/audit.sh` here: another worker had uncommitted edits in it).
+Step 3 (consumer-written Watchtower URLs) needs an operator decision — options under
+`## Recommendation`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Inventory written: `docs/reports/T-4516-lan-address-inventory.md` lists every tracked file in shipped paths (lib, agents, bin, web, policy, tools, docs, templates, .tasks/templates) holding an RFC1918 address, grouped by kind, with a count per path
+- [x] Shipped code/config/docs carry no RFC1918 address outside the allowlist (placeholders or runtime-resolved values); historical records (tasks, episodic, handovers, reports) untouched
+- [x] Lint `tools/lan-address-lint.py` exits 1 on a new RFC1918 address in a shipped path, 0 on a clean tree, and honours an allowlist file (`policy/lan-address-allowlist.yaml`) where every entry carries a reason
+- [x] Regression tests `tests/unit/test_lan_address_lint.py` cover: detection of 10/8, 172.16/12, 192.168/16; non-detection of public / out-of-range addresses (172.32.x, 192.169.x, version strings); allowlist suppression; scope limited to shipped paths
+- [x] Consumer-written Watchtower URLs (step 3): either made host-neutral, or the options written into `## Recommendation` for an operator decision if it changes what links look like
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +293,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 tools/lan-address-lint.py
+python3 -m pytest tests/unit/test_lan_address_lint.py -q > /tmp/.t4516-py.out 2>&1 && grep -q passed /tmp/.t4516-py.out
+test -s docs/reports/T-4516-lan-address-inventory.md && grep -q '^\*\*Total:\*\*' docs/reports/T-4516-lan-address-inventory.md
+! grep -qE '192\.168\.[0-9]+\.[0-9]+:11434' bin/fw tools/t1700-ollama-harness.sh tools/t1703-probe-matrix.sh tools/t1704-hermes3-probe.sh tools/t1706-tool-loop-probe.sh
+timeout 300 bats -f "ollama reachable check" tests/unit/test_doctor_litellm_ollama.bats > /tmp/.t4516-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4516-bats.out
+bin/fw vendor self --check --task T-4516
 
 ## RCA
 
@@ -264,6 +315,28 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the vendored tree and the public mirror carry the operator's LAN addresses
+(134 shipped files at HEAD 3b3fc30d5); consumer handovers carry LAN Watchtower URLs.
+832 flagged it after scrubbing their own (msg 0a8bbfa1, their T-1239).
+
+**Root cause:** host-specific values were written as literals where a runtime value or a
+placeholder belonged. Live code: `bin/fw` doctor Ollama probe hard-coded the GPU host
+(pre-fix bin/fw:4058-4065), as did the four `tools/t17xx` probes; examples and help text
+(lib/pending.sh:50, lib/templates/scripts/agent-conversation-*.sh, lib/templates/skills/*,
+web/templates/settings.html:33, web/static/ux-review/index.html:12, policy/anti-patterns.yaml:540,
+docs/deployment-runbook.md) copied real addresses instead of placeholders. Generated:
+`agents/handover/handover.sh:383,1012,1338` writes `$WT_URL/review/T-X`, and `WT_URL`
+resolves to the LAN Watchtower URL (handover.sh:43).
+
+**Why structurally allowed:** nothing scanned shipped paths for private addresses. Every
+existing URL rule (T-1376 port-3000 gate, `lib/verification-port.sh`) targets the *port*,
+inside task Verification blocks only; an address in code, docs or policy was invisible.
+
+**Prevention:** `tools/lan-address-lint.py` (RFC1918 matcher, shipped-path scope,
+reasoned allowlist) and `tests/unit/test_lan_address_lint.py::test_real_tree_is_clean`,
+which turns the unit suite — and hence the unit-suite audit (T-3621) — red on any new
+address. Records are exempt by explicit allowlist entry, not by silent scope.
 
 ## Evolution
 
@@ -318,6 +391,22 @@ date_finished: null
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO — steps 1, 2, 4 shipped; step 3 needs your choice (recommend option B).
+**Rationale:** Shipped code/config/docs are clean and a lint keeps them clean. Step 3 changes
+what handover links look like, so it is held for a decision. Two items stay open: the
+consumer-written URLs (below) and `policy/designer-pin.yaml` `source_origin` (allowlisted
+because `fw designer sync --from-tag` pulls from it; move it to a DNS name or local config
+if you want it out of the mirror).
+**Evidence:**
+- `python3 tools/lan-address-lint.py` → clean; with an empty allowlist the only hits are docs/reports, docs/research, designer-pin
+- `tests/unit/test_lan_address_lint.py` 17 passed; `test_doctor_litellm_ollama.bats` 6/6 ok (incl. full `fw doctor`)
+
+**Step 3 options — Watchtower URLs that `agents/handover/handover.sh` (lines 383, 1012, 1338) writes into `.context/handovers/*.md`:**
+1. **A — relative links** (`[T-X](/review/T-X)`). Host-neutral and zero config; links stop being clickable in a terminal, GitHub or an editor (they only resolve inside Watchtower's own file viewer).
+2. **B — public-base opt-in (recommended).** New config key (e.g. `WATCHTOWER_PUBLIC_URL`, `fw config set`); when set, handovers use it (a DNS name such as the Traefik FQDN); when unset, handovers write the plain bold ID plus one line "open with `fw task review T-X`". Chat output (`fw task review`, which is not written to a file) keeps the live LAN URL, so your clickable links in chat are unchanged.
+3. **C — keep absolute, scrub at commit.** Handovers keep LAN URLs locally; a pre-commit filter rewrites them to relative. Least visible change, but the file on disk and the committed file differ, which is a new class of surprise.
+4. **D — status quo + allowlist `.context/handovers`.** Accept the leak in consumer repos; document it. Not recommended: it is the leak 832 reported.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -345,3 +434,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4516-stop-shipping-and-writing-lan-addresses-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:54:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

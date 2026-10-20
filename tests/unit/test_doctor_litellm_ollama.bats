@@ -6,7 +6,8 @@
 #   2. When a workflow declares ANTHROPIC_BASE_URL: http://localhost:4000,
 #      doctor probes :4000/health.
 #   3. When a workflow declares worker_kind: ollama-loop, doctor probes
-#      192.168.10.107:11434/api/tags.
+#      <ollama_host>/api/tags, the host resolved like web/config.py
+#      (OLLAMA_HOST > .context/settings.yaml ollama_host > localhost; T-4516).
 #   4. Both checks are host-scope (use _doctor_warn_host on failure).
 
 load ../test_helper
@@ -27,7 +28,12 @@ setup() {
 
 @test "do_doctor body contains ollama reachable check" {
     grep -q "ollama reachable" "$FW_BIN"
-    grep -q "192.168.10.107:11434/api/tags" "$FW_BIN"
+    grep -qF '"$_ollama_url/api/tags"' "$FW_BIN"
+    # T-4516: the host is resolved at runtime, never a shipped LAN literal.
+    grep -qF '_ollama_url="${OLLAMA_HOST:-}"' "$FW_BIN"
+    grep -qF 's/^ollama_host:' "$FW_BIN"
+    grep -qF '_ollama_url="${_ollama_url:-http://localhost:11434}"' "$FW_BIN"
+    ! grep -qE '192\.168\.[0-9]+\.[0-9]+:11434' "$FW_BIN" || false
 }
 
 @test "litellm check is gated on ANTHROPIC_BASE_URL workflow marker" {

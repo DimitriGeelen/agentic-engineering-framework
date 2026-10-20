@@ -77,8 +77,8 @@ wrapper are bounded by `timeout 8` (PL-189) so a wedged hub cannot
 hang the broadcast. The wrapper writes one row per hub:
 
 ```
-  192.168.10.141:9100          offset=386
-  192.168.10.122:9100          offset=665
+  203.0.113.41:9100            offset=386
+  203.0.113.22:9100            offset=665
   ...
 chat-arc-broadcast: 5/5 delivered, 0 failed (sender=root-claude-mydev)
 ```
