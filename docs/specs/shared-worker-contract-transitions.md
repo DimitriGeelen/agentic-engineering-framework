@@ -1,7 +1,19 @@
 # Shared dispatched-worker contract — transition table and conformance spec
 
-**Status:** DRAFT v0.3.1 for agreement by TermLink, ring20 and AEF. TermLink agreed v0.2.1; the six changes marked "TermLink re-agreement" in `docs/reports/T-4439-reviews/ring20-v0.2-answers.md` need their sign-off. ring20: SIGN-WITH-NOTES on v0.3, signing conditions N1-N3 and notes N4-N6 worded in here; v0.3.1 is the version ring20 signs. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
+**Status:** DRAFT v0.3.2 for agreement by TermLink, ring20 and AEF. TermLink agreed v0.2.1; the six changes marked "TermLink re-agreement" in `docs/reports/T-4439-reviews/ring20-v0.2-answers.md` need their sign-off. ring20: SIGN-WITH-NOTES on v0.3, signing conditions N1-N3 and notes N4-N6 worded in here; v0.3.1 is the version ring20 signs; v0.3.2 is editorial only. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
 **Contract version field value:** `wc/0.3` (see §2; a patch revision does not change it). **Rule:** no implementation starts before this table is agreed.
+
+## Changelog v0.3.1 → v0.3.2
+
+Source: **[ring20 v0.3 check]** = the full per-point check of v0.3, saved at
+`docs/reports/T-4439-reviews/ring20-v0.3-full-check.txt`; these are its editorial nits that v0.3.1 did not cover.
+**Editorial only: no semantics change**, nothing TermLink agreed is altered, the version field stays `wc/0.3`.
+
+1. **T4 evidence and §3.4** are marked as the hub's two-sweep/epoch evidence, with a pointer to §3.2's hubless sweep
+   writer (independent probe such as unit state, evidence read before the write). [ring20 v0.3 check, point 2 nit]
+2. **§3.2 lists T8 for the reconciler**, which CC-04 already relies on. [ring20 v0.3 check, point 10 nit]
+3. **T4's "`G` at least 4 × the sweep interval"** is marked hub-only; other backends set `G` per §2.
+   [ring20 v0.3 check, point 11 nit]
 
 ## Changelog v0.3 → v0.3.1
 
@@ -254,7 +266,7 @@ ESCALATED rule] [ring20 v0.2 review §5]
 |---|---|---|
 | `supervisor` | `run.sh` / ring20 supervisor holding the attempt nonce, the supervisor credential **and** current `supervisor_gen` (an external backend: or the single-writer lease, see below) | T2, T3, T3b, T-RECLAIM, T8 |
 | `hub` (the *sweep writer*) | the backend's sweep module: the TermLink hub; for `backend: local`, the local backend module; for an external backend, its own sweep module. T4/T6/T6b/T7a/T7c are written from the state sweep (§3.4) | T1, T4, T6, T6b, T7a, T7c |
-| `reconciler` | AEF reader of the worker dir; submits *local evidence*, never a verdict of its own; a supervisor that died is replaced by it for the completion write | T3, T3b, T5, T7b |
+| `reconciler` | AEF reader of the worker dir; submits *local evidence*, never a verdict of its own; a supervisor that died is replaced by it for the completion write | T3, T3b, T5, T7b, T8 |
 | `operator` | human, `fw worker resolve`, a hub-host CLI until a signed operator identity exists | T7d |
 
 The worker (the agent) **never writes lifecycle fields**. It may append `questions` and ack `answers` only (§5).
@@ -300,7 +312,7 @@ rejected (never merged). `fence_reject` is defined after the table.
 | T3 | `running` → `done{outcome}` | supervisor, or reconciler when the supervisor is gone | agent child exited; `exit_code` read **after** exit; hand-back parsed and hash computed; `evidence_digest` | `running` | the single normal completion path; `outcome` derived by rule below. A reconciler submits the same fenced local evidence when the supervisor died, for instance inside `G`; so `running → done` is a valid history [ring20 v0.2 review §12] |
 | T3b | `dispatched` → `done{outcome}` | supervisor, or reconciler when the supervisor is gone | as T3 (worker died/refused before T2 landed, e.g. run.sh `exit 3`) | `dispatched` | covers fast-fail without a spurious `lost` |
 | T-RECLAIM | `running` → `running` | supervisor | restarted supervisor presents nonce + local worker dir + `supervisor_gen = prev + 1` | `running` and `supervisor_gen == prev` | fences a stale supervisor: its later writes carry the old gen and are `fence_reject`ed [codex Q1]. An external backend fencing by lease: lease takeover, expected-prior `running` and the lease held (§3.2) [ring20 v0.3 check N1] |
-| T4 | `running`/`dispatched` → `lost` | hub | session end **confirmed from state** (§3.4): the attempt was seen alive, then absent on two consecutive sweeps at the epoch of the sweep that last saw it alive; then reconciliation requested; and no fenced `done` evidence within `G` | `running` or `dispatched` | never on a missed heartbeat and never from an event. `G` (default 120 s, at least 4 × the sweep interval) lets local evidence win; earliest `lost` ≈ 60 s + `G` after the end [codex Q1] [termlink v0.1 review §1.1, §2.1] [AEF v0.2 answers §1.2]. A confirmed exit of the agent child (its real exit status is known) is completion evidence even with no hand-back: it ends through T3 as `handback-malformed`, not T4 [ring20 v0.3 check N5] |
+| T4 | `running`/`dispatched` → `lost` | hub | session end **confirmed from state** (§3.4). The hub's evidence: the attempt was seen alive, then absent on two consecutive sweeps at the epoch of the sweep that last saw it alive; then reconciliation requested; and no fenced `done` evidence within `G`. Without a hub, the sweep writer's evidence is §3.2's: an independent probe (unit state) confirms the end, and local evidence is read *before* the write [ring20 v0.3 check] | `running` or `dispatched` | never on a missed heartbeat and never from an event. `G` (hub: default 120 s, at least 4 × the sweep interval; other backends set their own `G` per §2) lets local evidence win; earliest `lost` ≈ 60 s + `G` after the end [codex Q1] [termlink v0.1 review §1.1, §2.1] [AEF v0.2 answers §1.2]. A confirmed exit of the agent child (its real exit status is known) is completion evidence even with no hand-back: it ends through T3 as `handback-malformed`, not T4 [ring20 v0.3 check N5] |
 | T5 | `lost` → `done{outcome}` | reconciler (or supervisor, late) | fenced local evidence: `exit_code` + signed completion + hand-back hash, or channel-bound evidence per §3.2 (external backends), matching `(dispatch_id, attempt, nonce)` [ring20 v0.3 check N3] | `lost` | **idempotent upgrade**; `done` outranks `lost`. Appends history, keeps the `lost` row for audit [§6.2.1]. Accepted only if the evidence's `persisted_at` is not later than the `lost` history entry (the evidence existed when the end was confirmed); otherwise `forbidden_transition`, logged, operator notice. A T3/T3b naming a `lost` attempt is processed as T5 [ring20 v0.2 review §4, §S4] |
 | T6 | `running` → `unknown` | hub | `deadline_running` passed, session end neither confirmed nor refuted: still alive past the deadline, absence seen only at another epoch (registry rebuilt or incomplete), partition, worker on another hub, reused pid | `running` | operator-visible; raises one operator notice; **never** triggers a new attempt by itself [§6.2.2] [AEF v0.2 answers §1] |
 | T6b | `dispatched` → `unknown` | hub | `deadline_dispatched` passed and the session was never seen alive (so no T2 and no T4 basis) | `dispatched` | same notice rule as T6; a worker that refused or died before T2 still ends through T3b from supervisor evidence [AEF v0.2 answers §1.3] |
@@ -363,6 +375,10 @@ the grace window `G` after T4; after `G` they return `lost` but remain upgradabl
 Every sweep interval (TermLink: 30 s) the hub checks each `dispatched` or `running` attempt for a live registration
 carrying its `worker_binding`. Registrations and records are both durable, so the sweep survives hub restarts and also
 covers clean exits, which emit no event. The `session.exited` event is a hint and is never an input to T4.
+
+This section is the **hub's** evidence (two sweeps, `registry_epoch`). A sweep writer without a hub (§3.2) confirms
+the end by an independent probe, such as the unit state (§6.3), and reads the local evidence *before* it writes; the
+epoch rows below do not apply to it. [ring20 v0.3 check]
 
 | Observation | Transition |
 |---|---|

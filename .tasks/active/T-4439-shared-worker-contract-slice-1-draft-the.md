@@ -57,7 +57,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T07:57:08Z
-last_update: 2026-10-20T21:05:12Z
+last_update: 2026-10-20T21:42:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -122,6 +122,10 @@ cost_estimate_proposed:
 - [x] N4: `handback.commission` equals the dispatch id modulo the `<backend>:` prefix (schema + outcome rule 1)
 - [x] N5: a stop with a confirmed child exit and no/malformed hand-back ends `done{handback-malformed}` (T3); `lost` only with no confirmed exit evidence; §3.3 stop paragraph and CC-25 agree with CC-16 and rule 1
 - [x] N6: T7d `--as done` with evidence requires the same bound evidence as T7b (signed completion or channel-bound), verified by the backend; anything else is attested
+- [x] Spec is at v0.3.2 with a "Changelog v0.3.1 → v0.3.2" citing [ring20 v0.3 check] and stating editorial only, no semantics change
+- [x] T4 row and §3.4 mark the two-sweep/epoch evidence as the hub's and point to §3.2's hubless sweep writer (independent probe / unit state, evidence read before the write)
+- [x] §3.2 lists T8 among the reconciler's writes (CC-04 relies on it)
+- [x] T4 row marks "`G` at least 4 × the sweep interval" as hub-only, other backends per §2
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -181,7 +185,13 @@ grep -q 'ring20 v0.2 review §5' docs/specs/shared-worker-contract-transitions.m
 test "$(grep -cE '^### CC-[0-9]+' docs/specs/shared-worker-contract-transitions.md)" -ge 25
 grep -q 'TermLink re-agreement' docs/reports/T-4439-reviews/ring20-v0.2-answers.md
 grep -q '^## Changelog v0.3 → v0.3.1' docs/specs/shared-worker-contract-transitions.md
-grep -q 'DRAFT v0.3.1' docs/specs/shared-worker-contract-transitions.md
+grep -q 'DRAFT v0.3.2' docs/specs/shared-worker-contract-transitions.md
+grep -q '^## Changelog v0.3.1 → v0.3.2' docs/specs/shared-worker-contract-transitions.md
+grep -q 'no semantics change' docs/specs/shared-worker-contract-transitions.md
+grep -qE '^\| `reconciler` .*\| T3, T3b, T5, T7b, T8 \|$' docs/specs/shared-worker-contract-transitions.md
+grep -q "| hub | session end .*The hub's evidence.*Without a hub, the sweep writer's evidence is §3.2's" docs/specs/shared-worker-contract-transitions.md
+grep -q 'hub: default 120 s, at least 4 × the sweep interval; other backends set their own `G` per §2' docs/specs/shared-worker-contract-transitions.md
+grep -q "This section is the \*\*hub's\*\* evidence" docs/specs/shared-worker-contract-transitions.md
 test "$(grep -oE 'ring20 v0.3 check N[1-6]' docs/specs/shared-worker-contract-transitions.md | sort -u | wc -l)" -eq 6
 grep -q 'single-writer lease' docs/specs/shared-worker-contract-transitions.md
 grep -q 'channel-bound evidence per §3.2' docs/specs/shared-worker-contract-transitions.md
@@ -338,6 +348,11 @@ grep -qE 'n/a.*never.*§3' docs/specs/shared-worker-contract-transitions.md
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom (v0.3.1 editorial nits, ring20 full check of v0.3):** the T4 row and §3.4 described only the hub's two-sweep/epoch evidence; §3.2 omitted T8 for the reconciler although CC-04 has the reconciler re-submit; the T4 row's "`G` at least 4 × the sweep interval" read as universal.
+**Root cause:** v0.3 added the hubless sweep writer (§3.2) and per-backend `G` (§2) without back-editing the hub-phrased T4 row (spec §3.3 T4) and §3.4; the reconciler's re-submission (CC-04) was never reflected in the §3.2 writer table.
+**Why structurally allowed:** spec revisions are folded point-by-point from reviews; nothing cross-checks the writer table against the conformance cases, or hub-only phrasing against §6.6.
+**Prevention:** the ## Verification lines pin each correction; ring20's per-point check against the text is the review step that caught these.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -413,6 +428,14 @@ grep -qE 'n/a.*never.*§3' docs/specs/shared-worker-contract-transitions.md
      legacy tasks lacking this section. -->
 
 ## Updates
+
+### 2026-10-20 — spec v0.3.1 → v0.3.2, editorial [agent]
+- **Action:** fixed ring20 v0.3 full-check nits (a) T4/§3.4 hub-evidence scope + pointer to §3.2 hubless sweep writer, (b) T8 in §3.2 reconciler row, (c) T4 `G` ≥ 4 × sweep marked hub-only. Changelog v0.3.1 → v0.3.2: editorial only, no semantics change.
+- **Still PARTLY/open in ring20's check, NOT resolved by v0.3.1; spec unchanged for these:**
+  - S1 (PARTLY): the "signed completion" (§6.5) is still undefined: no signer, key or format; hub carrier left to TermLink (open question 6).
+  - S1: the spec does not say how the reconciler, taking over the completion write when the supervisor is gone, holds a credential "the worker never sees" (§3.2).
+  - Point 3 remainder / N3: T3 needs the child's real `exit_code`; ring20 must start capturing it (ExecMainStatus), ring20's own gap.
+  - ring20 build duties v0.3 made explicit (not spec defects): accept late T5/T7b on non-current attempts (point 4, Sup:923–927); `_aef_terminal` treats `lost` as provisional (point 8); implement `unknown` (T6/T6b/T7a/T7c/T7d); malformed/absent hand-back → `done{handback-malformed}` (Sup:1344); `fence_reject` reason enum; refuse attested `done` in verify/review/count; stop immediate retry + workspace cleanup after `lost` (CC-07); declare a worker-unsettable `persisted_at` source (S4).
 
 ### 2026-10-20T07:57:08Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
