@@ -9,13 +9,13 @@ description: >
   it is one shared AC/markdown rendering path rather than one bad template. Fix where
   the escaping happens, not per-template.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-3369]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T20:38:23Z
-last_update: '2026-08-26T20:45:14Z'
+last_update: 2026-10-20T20:35:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,16 +73,44 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Re-checked at HEAD (6b0cd894d, 2026-10-20): **no longer reproduces.** The defect
+was fixed by T-3369 (commit b3cdcd274, 2026-09-15, "mark AC fields | safe across
+all six divergent sites"), filed later for the same symptom without linking back here.
+
+Evidence (live Watchtower pid 3140, `bin/fw watchtower current` → current):
+
+```
+$ U=$(bin/fw watchtower url)   # http://192.168.10.107:3000
+$ curl -sf "$U/tasks/T-1611" -o page.html   # Human AC Steps contain `cd /opt/... && bin/fw task review T-1611`
+/tasks/T-1611   http=0 code_tags=21  escaped_code=0
+/approvals      http=0 code_tags=667 escaped_code=0
+/review/T-1062  http=0 code=21 esc=0
+/review/T-1796  http=0 code=9  esc=0
+$ python3 -m pytest tests/unit/test_ac_field_render_safety.py -q
+16 passed in 0.77s
+```
+
+`escaped_code` counts `&lt;code&gt;` — the double-escape signature 001-CashWeb
+reported. Zero on every surface. The regression test T-3369 added
+(`tests/unit/test_ac_field_render_safety.py`) already pins the rendering path, so
+no new test or source change was made under this task.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction check at HEAD recorded: a Human AC whose Steps/Expected/If-not contain inline backticks renders as a real `<code>` element (not escaped `&lt;code&gt;` text) on /tasks/<id>, /approvals and /review/<id>
+- [x] If it still reproduces: the escaping is fixed in the shared rendering path (not per template) and a regression test pins it; if not, the evidence (command + output) and the fixing commit are named in this task
 
 ### Human
+- [ ] [REVIEW] Backticked commands in Human AC Steps render as code, not as visible `<code>` tags
+  **Steps:**
+  1. Open http://192.168.10.107:3000/tasks/T-1611 and expand a Human criterion
+  2. Open http://192.168.10.107:3000/approvals and expand a Human criterion with a backticked command
+  3. Open http://192.168.10.107:3000/review/T-1062
+  **Expected:** Commands written in backticks show in monospace code styling; no literal `<code>` or `&lt;code&gt;` text is visible anywhere in Steps, Expected or If-not
+  **If not:** Screenshot the criterion, note the URL, and reopen this task with the page and criterion text
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -173,6 +201,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_ac_field_render_safety.py -q > /tmp/.t3183-pytest 2>&1 && grep -q passed /tmp/.t3183-pytest
+bin/fw watchtower current
+U=$(bin/fw watchtower url); curl -sf "$U/tasks/T-1611" -o /tmp/.t3183-task.html && grep -q '<code>' /tmp/.t3183-task.html && ! grep -q '&lt;code&gt;' /tmp/.t3183-task.html
+U=$(bin/fw watchtower url); curl -sf "$U/approvals" -o /tmp/.t3183-appr.html && grep -q '<code>' /tmp/.t3183-appr.html && ! grep -q '&lt;code&gt;' /tmp/.t3183-appr.html
 
 ## RCA
 
@@ -189,6 +221,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Backticks in Human AC Steps showed as literal `<code>` text on /approvals and /tasks/<id> (001-CashWeb report, agent-chat-arc offset 556).
+
+**Root cause:** `web/blueprints/tasks.py:_parse_ac_body` (now lines 415-475) returns Markdown already rendered to HTML (T-1551), but `web/templates/task_detail.html` and `web/templates/_approvals_content.html` interpolated Steps/Expected/If-not as bare `{{ }}`, so Jinja autoescaped them a second time. `_review_acs.html` already had `| safe`, which is the /project-vs-/approvals discriminator the reporter saw. Fixed by T-3369 (b3cdcd274): `| safe` on all six sites, proven XSS-safe because markdown2 runs `safe_mode='escape'` before every linkifier.
+
+**Why structurally allowed:** the helper's output contract ("caller must mark safe") lived in a docstring, and six sibling templates consumed it with no shared partial and no test over the rendered pages. T-3369 was filed for the same symptom without finding this task, so the fix landed and this report stayed open.
+
+**Prevention:** `tests/unit/test_ac_field_render_safety.py` (T-3369, 16 tests) pins both the `| safe` sites and the escape safety. T-4046 moved inception criteria onto the shared `_ac_list.html` partial, cutting the number of divergent sites further.
 
 ## Evolution
 
@@ -243,6 +283,13 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The defect no longer reproduces at HEAD; T-3369 (b3cdcd274) fixed it at the template sites and added a regression test. The live Watchtower serves zero `&lt;code&gt;` occurrences on /tasks, /approvals and /review. No code change under this task.
+**Evidence:**
+- /tasks/T-1611: 21 `<code>`, 0 escaped; /approvals: 667 `<code>`, 0 escaped; /review/T-1062: 21, 0
+- `tests/unit/test_ac_field_render_safety.py`: 16 passed
+- `bin/fw watchtower current`: running process is newer than every file under web/
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -270,3 +317,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3183-human-ac-markdown-double-escapes-on-appr.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:35:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
