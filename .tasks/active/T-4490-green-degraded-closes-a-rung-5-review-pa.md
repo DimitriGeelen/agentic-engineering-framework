@@ -387,6 +387,13 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** All seven Agent criteria are met and tested (0e9e09eeb). A rung-5 panel now closes green-degraded only when every missing seat is provably UNAVAILABLE (a signed dispatch, start and completion, with no verdict) and at least two distinct vendors judged green with no dissent. It never applies to operator-only classes, and every degraded close is WARNed and counted per ISO week by `fw audit`. The only open criterion is how the new /config row reads. The row is live on the running Watchtower, which is current, and screenshots at 1024, 1440 and 1920 are in `.context/visual/T-4490/`.
+**Evidence:**
+- C1 to C7 ticked, with tests per refusal path; the T-3580, T-3986 and T-3852 suites stay green
+- `REVIEW_GREEN_DEGRADED` is in both `lib/config.sh` and `web/blueprints/config.py`; config-registry parity lint is green
+- `curl <watchtower>/config` contains the row; `bin/fw watchtower current` passes
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
