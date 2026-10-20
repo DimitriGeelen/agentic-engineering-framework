@@ -619,6 +619,36 @@ sys.exit(1 if s.git_output_risk(sys.argv[2]) else 3)' "$_FW_SAFE_COMMANDS_LIB" "
 }
 _FW_SAFE_COMMANDS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../lib" 2>/dev/null && pwd)"
 
+# T-4513: git grep -O[CMD] / --open-files-in-pager[=CMD] STARTS CMD (default: the
+# pager) on the matching files although the verb is a read. Judged on the dequoted
+# words (_fw_option_words): a short bundle with O before a letter that takes an
+# argument (-iO, -Ovim; not -eO, whose O is the pattern), any unambiguous prefix
+# of the long option (git accepts --op…), or a word that begins with an expansion.
+# Words after `--` are pathspecs but are refused as well (fail closed).
+# _fw_git_grep_opens_pager <normalised "git grep args...">; 0 = may open one.
+_fw_git_grep_opens_pager() {
+    local i j tok
+    _fw_option_words "$1" || return 0
+    for (( i=2; i<${#_FW_OW[@]}; i++ )); do
+        tok="${_FW_OW[i]}"
+        [ "${_FW_OWK[i]}" = E ] && return 0
+        case "$tok" in
+            --op*)
+                tok="${tok%%=*}"
+                case --open-files-in-pager in "$tok"*) return 0 ;; esac ;;
+            --*) ;;
+            -?*)
+                for (( j=1; j<${#tok}; j++ )); do
+                    case "${tok:j:1}" in
+                        O) return 0 ;;
+                        e|f|A|B|C|m|-) break ;;
+                    esac
+                done ;;
+        esac
+    done
+    return 1
+}
+
 # T-4512: THE word list every option check reads. The find and curl/wget checks
 # matched quote-stripped words and sed/sort matched raw text, so -'exec', "-o",
 # $'-i' and -{o,u} hid the option they look for (G-121; T-4485 fixed git alone).
@@ -1037,6 +1067,8 @@ _fw_single_command_is_safe() {
             git_sub=$(echo "$git_norm" | awk '{print $2}')
             # T-4367: --output[=FILE] on the diff-family verbs WRITES FILE.
             _fw_git_has_output_opt "$git_sub" "$git_norm" && return 1
+            # T-4513: git grep -O / --open-files-in-pager starts a program.
+            [ "$git_sub" = grep ] && _fw_git_grep_opens_pager "$git_norm" && return 1
             case "$git_sub" in
                 # T-2888 added the second line. The first had grown one verb per
                 # incident — T-2052, T-2054, T-2462 and T-2878 each patched this

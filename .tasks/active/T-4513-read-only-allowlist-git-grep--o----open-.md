@@ -1,10 +1,15 @@
 ---
 id: T-4513
-name: "Read-only allowlist: git grep -O / --open-files-in-pager=CMD starts a command but is classed SAFE"
+name: "Read-only allowlist: git grep -O / --open-files-in-pager=CMD starts a command
+  but is classed SAFE"
 description: >
-  git grep is allowed (~887) without checking -O / --open-files-in-pager (including abbreviations git accepts). Refuse them. Reported by ring20-dashboard msg af2bbc85 (found by their cloud review of the public repo); reproduced on bleeding-edge HEAD 2026-10-20 with a classification-only probe: has_bash_write_pattern = no write AND is_bash_safe_command = SAFE. Concern G-121.
+  git grep is allowed (~887) without checking -O / --open-files-in-pager (including
+  abbreviations git accepts). Refuse them. Reported by ring20-dashboard msg af2bbc85
+  (found by their cloud review of the public repo); reproduced on bleeding-edge HEAD
+  2026-10-20 with a classification-only probe: has_bash_write_pattern = no write AND
+  is_bash_safe_command = SAFE. Concern G-121.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T20:22:15Z
-last_update: 2026-10-20T20:22:15Z
-date_finished: null
+last_update: 2026-10-20T21:51:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +55,50 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T20:30:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T20:31:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4513: Read-only allowlist: git grep -O / --open-files-in-pager=CMD starts a command but is classed SAFE
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+G-121 (ring20-dashboard msg af2bbc85). Probe: `docs/reports/G-121-bypass-probe.sh` (classification only). Words come from T-4512's shared tokenizer (`_fw_option_words`).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `git grep -O pattern`, `git grep -Ovim pattern`, `git grep -iO pattern`, `git grep --open-files-in-pager=touch pattern`, `git grep --open-files-in-pager pattern`, `git grep --open-f pattern`, `git grep --op=x pattern`, `git grep -'O' pattern`, `git grep "--open-files-in-pager=x" pattern`, `git -C . grep -O pattern` and `git grep "$P" pattern` are gated by is_bash_safe_command
+- [x] Controls stay SAFE: `git grep pattern`, `git grep -n -e foo`, `git grep -C3 foo`, `git grep -i --or foo`, `git grep -e FOO`, `awk '{print $1}' F`, `sed -n 1p F`
+- [x] New bats test covers both directions; T-4510, T-4509, T-4511, T-4512, T-4485, T-4367, T-4487, T-4499 and safe-commands suites stay green
+- [ ] `bin/fw vendor self --check --task T-4513` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +283,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4513_git_grep_pager.bats > /tmp/.t4513.out 2>&1 && ! grep -q "^not ok" /tmp/.t4513.out
+test "$(grep -c '# skip' /tmp/.t4513.out)" -eq 0
+out=$(bash docs/reports/G-121-bypass-probe.sh 2>&1); test "$(echo "$out" | grep -cE '^nowrite +gated +git grep (-O|--open-files-in-pager=touch) pattern')" -eq 2 && echo "$out" | grep -qE '^nowrite +SAFE +git grep pattern$'
+bin/fw vendor self --check --task T-4513
 
 ## RCA
 
@@ -264,6 +303,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `git grep -O pattern` and `git grep --open-files-in-pager=touch pattern` classed SAFE by `is_bash_safe_command` (no write by `has_bash_write_pattern`), so an agent could start an arbitrary program (the pager command) with no active task (G-121, ring20-dashboard msg af2bbc85).
+
+**Root cause:** `agents/context/lib/safe-commands.sh` git arm admits `grep` as a read-only sub-verb by name; the only per-option check on that arm, `_fw_git_has_output_opt` (T-4367), covers `--output` on the diff family and never looks at `grep`. `-O[CMD]` / `--open-files-in-pager[=CMD]` runs CMD (default: the pager) on the matching files.
+
+**Why structurally allowed:** the git sub-verb list was derived as "verbs that do not write" (T-2888); a read verb that EXECUTES a program was never a category it measured, and the T-4367 option check was scoped to the one write option that had been reported.
+
+**Prevention:** `_fw_git_grep_opens_pager` judges the dequoted words (`_fw_option_words`, T-4512's shared tokenizer): any short bundle carrying `O` before an argument-taking letter, any unambiguous prefix of `--open-files-in-pager` (`--op…`), or a word that begins with an expansion is refused, and an untokenisable line fails closed. `tests/unit/t4513_git_grep_pager.bats` pins both directions and the G-121 probe line in `## Verification` keeps the reported strings gated.
 
 ## Evolution
 
@@ -345,3 +392,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4513-read-only-allowlist-git-grep--o----open-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:51:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
