@@ -1,0 +1,21 @@
+id: tests/unit/test_t4407_waiting_error_sanitized.py
+name: test_t4407_waiting_error_sanitized
+type: script
+subsystem: tests
+location: tests/unit/test_t4407_waiting_error_sanitized.py
+tags: []
+
+purpose: "T-4407 — the sidecar \"waiting\" card's error is sanitized at its source."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
