@@ -4,10 +4,10 @@ name: "Adapt termlink proposal 348 T-3185 hunk: fw bvp rank no-signal quadrant e
 description: >
   Deferred from T-4478.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T15:17:56Z
-last_update: 2026-10-20T15:17:56Z
-date_finished: null
+last_update: 2026-10-20T19:26:33Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +50,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T15:30:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T15:31:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4486: Adapt termlink proposal 348 T-3185 hunk: fw bvp rank no-signal quadrant exclusion
@@ -62,8 +90,10 @@ Deferred from T-4478 (see its Decisions). Hunks `_proposal_is_all_no_signal` plu
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] lib/bvp.sh defines `_proposal_is_all_no_signal(fm)`: True only when the latest proposal's rationale marks every scored driver `no-signal`; False when it cannot tell
+- [x] `fw bvp rank --include-proposed` excludes all-no-signal proposals from the BVP/cost medians and from quadrant assignment (quadrant `-`) and lists them in a NOTE block
+- [x] A proposal with any signal, and a corpus with no all-no-signal proposals, rank exactly as before (no NOTE, same medians)
+- [x] Regression test tests/unit/test_bvp_rank_no_signal.py passes; vendor self --check --task T-4486 clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,7 +279,16 @@ Deferred from T-4478 (see its Decisions). Hunks `_proposal_is_all_no_signal` plu
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+grep -q "_proposal_is_all_no_signal" lib/bvp.sh
+python3 -m pytest tests/unit/test_bvp_rank_no_signal.py tests/unit/test_bvp_cli_rank_proposed.py -q > /tmp/.t4486.out 2>&1 && grep -q passed /tmp/.t4486.out
+bin/fw vendor self --check --task T-4486
+
 ## RCA
+
+**Symptom:** `fw bvp rank --include-proposed` ranks tasks the estimator knew nothing about (every driver no-signal) as work and lets them drag the BVP/cost medians for everyone else.
+**Root cause:** lib/bvp.sh cmd_rank (medians at the `bvp_vals`/`cost_vals` lines, quadrant loop) takes every row; no notion of an unassessed proposal exists.
+**Why structurally allowed:** a no-signal score is a number like any other, so nothing distinguishes "measured low" from "unmeasured".
+**Prevention:** `_proposal_is_all_no_signal` + NOTE block disclosure + tests/unit/t4486_bvp_rank_no_signal.bats.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -320,6 +359,11 @@ Deferred from T-4478 (see its Decisions). Hunks `_proposal_is_all_no_signal` plu
 
 ## Decisions
 
+### 2026-10-20 — fw bvp rank: exclude all-no-signal proposals
+- **Chose:** Adopt the change: all-no-signal proposals are excluded from the medians and quadrants and listed in a separate NOTE block (operator decision 2026-10-20, verbatim answer '1').
+- **Why:** An unassessed task is not a low-value task; it must neither be ranked as work nor shift others' placement. Detection returns False when it cannot tell, so the failure direction is the old behaviour. Re-implemented from the T-4472 input hunks, not applied as a diff.
+- **Rejected:** Rescoring no-signal tasks (hides the unmeasured state).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -345,3 +389,7 @@ Deferred from T-4478 (see its Decisions). Hunks `_proposal_is_all_no_signal` plu
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4486-adapt-termlink-proposal-348-t-3185-hunk-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T19:26:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

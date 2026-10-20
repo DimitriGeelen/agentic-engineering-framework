@@ -352,6 +352,27 @@ def value_axis_degenerate(bvp_vals):
     return statistics.median(bvp_vals) == min(bvp_vals)
 
 
+def _proposal_is_all_no_signal(fm):
+    """T-4486: True when EVERY driver in the latest proposal was scored with no evidence
+    (`Dn=0 (no-signal)` in the rationale). Returns False when it cannot tell (no
+    proposal, no scores, absent/empty rationale): "could not measure" must not render
+    as "measured, and empty" (T-3105), and wrongly keeping a task only leaves the old
+    behaviour."""
+    proposed = (fm or {}).get('bvp_scores_proposed')
+    if not proposed:
+        return False
+    latest = proposed[-1] if isinstance(proposed, list) else proposed
+    if not isinstance(latest, dict):
+        return False
+    scores = latest.get('scores')
+    if not isinstance(scores, dict) or not scores:
+        return False
+    rationale = latest.get('rationale')
+    if not isinstance(rationale, str) or not rationale.strip():
+        return False
+    return len(re.findall(r'no-signal', rationale)) >= len(scores)
+
+
 def quadrant(bvp_norm, cost, bvp_median, cost_median, degenerate=False):
     """Return one of hv-lc / hv-hc / lv-lc / lv-hc, QUAD_VALUE_WITHHELD for a
     degenerate-median tie, or '-' if either axis is missing."""
@@ -423,6 +444,7 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
             'cost': cost,
             'cost_src': src,
             'source': source,
+            'all_no_signal': _proposal_is_all_no_signal(fm) if source == 'proposed' else False,
         })
 
     if not rows:
@@ -434,16 +456,23 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
             print("Or pass `--include-proposed` to see estimator-proposed scores (advisory).")
         return 0
 
-    bvp_vals = [r['bvp_norm'] for r in rows]
+    # T-4486: a fully unassessed proposal is excluded from the thresholds AND from
+    # quadrant assignment; its score is untouched, but a task the estimator knew nothing
+    # about must not be ranked as work nor drag the median for everyone else.
+    _ranked = [r for r in rows if not r.get('all_no_signal')]
+    bvp_vals = [r['bvp_norm'] for r in _ranked]
     # Medians are taken over KNOWN costs only — an unknown-cost task must not shift
     # the threshold that decides everyone else's quadrant (T-3068).
-    cost_vals = [r['cost'] for r in rows if r['cost'] is not None]
+    cost_vals = [r['cost'] for r in _ranked if r['cost'] is not None]
     bvp_median = statistics.median(bvp_vals) if bvp_vals else 0.5
     cost_median = statistics.median(cost_vals) if cost_vals else 4.0
     # T-3485: degeneracy is a property of the whole distribution, computed once
     # per rank rather than per-row — see value_axis_degenerate() docstring.
     _value_degenerate = value_axis_degenerate(bvp_vals)
     for r in rows:
+        if r.get('all_no_signal'):  # T-4486
+            r['quadrant'] = '-'
+            continue
         r['quadrant'] = quadrant(r['bvp_norm'], r['cost'], bvp_median, cost_median,
                                   degenerate=_value_degenerate)
 
@@ -456,13 +485,30 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
     # expected state, not an anomaly, and the operator needs to see its size to
     # know how much weight the quadrant split can carry.
     _n_total = len(rows)
+    # T-4486: disclose the exclusion before the table — these tasks are UNASSESSED,
+    # not low-value, and a silent filter reads as full coverage.
+    _nosignal_ids = [r['id'] for r in rows if r.get('all_no_signal')]
+    if _nosignal_ids:
+        _pct_ns = 100.0 * len(_nosignal_ids) / _n_total
+        print(f"NOTE: {len(_nosignal_ids)}/{_n_total} task(s) ({_pct_ns:.0f}%) scored every "
+              f"driver no-signal — the estimator had nothing to read.")
+        print("      They are UNASSESSED, not low-value. Excluded from the quadrant and "
+              "from the thresholds (QUAD shows '-').")
+        print("      Scores are unchanged; write a Context/AC body and re-run the "
+              "estimator (T-4486).")
+        print("      Unassessed: " + ", ".join(_nosignal_ids))
+        print()
+
     _n_unknown = sum(1 for r in rows if r['cost'] is None)
     if _n_unknown:
         _pct = 100.0 * _n_unknown / _n_total if _n_total else 0.0
         print(f"NOTE: {_n_unknown}/{_n_total} task(s) ({_pct:.0f}%) have no known cost "
               f"— blast_radius unmeasured, so no quadrant (COST/QUAD show '-').")
-        print(f"      Quadrant thresholds are computed over the {_n_total - _n_unknown} "
-              f"task(s) that do have one.")
+        # T-4486: report the ACTUAL threshold population; total-minus-unknown
+        # over-reports once all-no-signal tasks are excluded too.
+        print(f"      Quadrant thresholds are computed over the {len(cost_vals)} "
+              f"task(s) that do have one"
+              + (" and were not excluded above." if _nosignal_ids else "."))
         print("      Cost becomes measurable once `components:` is resolved; see T-3068.")
         print()
 
