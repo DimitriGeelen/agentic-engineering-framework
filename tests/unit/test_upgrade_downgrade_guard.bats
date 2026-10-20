@@ -12,8 +12,9 @@
 # only post-facto forensic trail in `upgraded_from` + audit YAML.
 #
 # These tests pin:
-#   - Source-level: --force-downgrade arg accepted; sort -V direction check
-#     present; REFUSED message names both versions + T-1828
+#   - Source-level: --force-downgrade arg accepted; shared direction comparator
+#     (fw_version_relation, T-2713; was sort -V) used; REFUSED message names both
+#     versions + T-1828
 #   - Behavioural: do_upgrade refuses when consumer > framework (--dry-run
 #     mode, so no real filesystem mutation); proceeds with --force-downgrade
 
@@ -47,8 +48,8 @@ teardown() {
     [[ "$output" == *"T-1839"* ]]
 }
 
-@test "T-1839: lib/upgrade.sh contains the sort -V direction check" {
-    run grep -q 'sort -V' "$FRAMEWORK_ROOT/lib/upgrade.sh"
+@test "T-1839: lib/upgrade.sh decides the direction with the shared fw_version_relation (T-2713)" {
+    run grep -q 'fw_version_relation' "$FRAMEWORK_ROOT/lib/upgrade.sh"
     [ "$status" -eq 0 ]
 }
 
@@ -72,20 +73,30 @@ teardown() {
     [ "$status" -eq 0 ]
 }
 
-# ── Behavioural pin: sort -V direction primitive ──
-
-@test "T-1839: sort -V resolves 1.6.260 ahead of 1.6.170" {
-    local cv="1.6.260"
-    local fv="1.6.170"
-    local top
-    top=$(printf '%s\n%s\n' "$cv" "$fv" | sort -V | tail -1)
-    [ "$top" = "$cv" ]
+# ── Behavioural pin: the direction comparator the guard uses ──
+# T-4380: a throwaway framework repo with two commits, OLD then NEW. The version
+# relation is decided by git ancestry (lib/version-relation.sh, T-2713), so the
+# fixture is real history rather than a version-string pair.
+_vr_fixture() {
+    VR_REPO="$TEST_TEMP_DIR/fwrepo"
+    mkdir -p "$VR_REPO"
+    git -C "$VR_REPO" init -q
+    git -C "$VR_REPO" -c user.email=t@t -c user.name=t commit -q --allow-empty -m old
+    VR_OLD="$(git -C "$VR_REPO" rev-parse HEAD)"
+    git -C "$VR_REPO" -c user.email=t@t -c user.name=t commit -q --allow-empty -m new
+    VR_NEW="$(git -C "$VR_REPO" rev-parse HEAD)"
+    source "$FRAMEWORK_ROOT/lib/version-relation.sh"
 }
 
-@test "T-1839: sort -V resolves 1.6.100 behind 1.6.170" {
-    local cv="1.6.100"
-    local fv="1.6.170"
-    local top
-    top=$(printf '%s\n%s\n' "$cv" "$fv" | sort -V | tail -1)
-    [ "$top" = "$fv" ]
+@test "T-1839: consumer holding newer code than framework HEAD resolves ahead (1.6.260 vs 1.6.170)" {
+    _vr_fixture
+    git -C "$VR_REPO" checkout -q "$VR_OLD"
+    fw_version_relation "1.6.260" "1.6.170" "$VR_NEW" "$VR_REPO" >/dev/null
+    [ "$FW_VERSION_RELATION" = "ahead" ]
+}
+
+@test "T-1839: consumer on code the framework contains resolves behind (1.6.100 vs 1.6.170)" {
+    _vr_fixture
+    fw_version_relation "1.6.100" "1.6.170" "$VR_OLD" "$VR_REPO" >/dev/null
+    [ "$FW_VERSION_RELATION" = "behind" ]
 }

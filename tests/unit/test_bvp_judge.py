@@ -310,14 +310,6 @@ def test_unknown_when_no_objective_anywhere(tmp_path):
     assert may_proceed(v) is False
 
 
-def test_unknown_is_never_falsely_favourable():
-    """`if verdict:` truthiness must not stand in for may_proceed()."""
-    from lib.judge_verdict import verdict as make_verdict
-    v = make_verdict(UNKNOWN, guidance="cannot tell")
-    assert bool(v) is True  # dict is truthy
-    assert may_proceed(v) is False  # but must not proceed
-
-
 def test_judgeable_task_does_not_come_back_unknown(tmp_path):
     """Control leg (explicitly required by the AC): a normal, well-formed task
     with real ACs and a normal score must NOT come back UNKNOWN — a judge that

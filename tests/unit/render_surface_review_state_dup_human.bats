@@ -11,27 +11,11 @@ setup() {
     cd "$FRAMEWORK_ROOT"
 }
 
-# Extract the python heredoc from update-task.sh and run it standalone.
-# Avoids needing the full update flow.
+# Run the SHIPPED classifier. T-4380: this used to copy a heredoc that no longer
+# exists in update-task.sh (the logic moved to lib/human_review_state.py in
+# T-3288), so it stayed green when the real classifier regressed.
 _run_review_state() {
-    local task_file="$1"
-    python3 - "$task_file" <<'PYREV'
-import sys, re
-try:
-    text = open(sys.argv[1]).read()
-except OSError:
-    print("error"); sys.exit(0)
-matches = list(re.finditer(r'^### Human\s*$(.*?)(?=^#{2,} |\Z)', text, re.MULTILINE | re.DOTALL))
-if not matches:
-    print("no_section"); sys.exit(0)
-human = "\n".join(m.group(1) for m in matches)
-human = re.sub(r'<!--.*?-->', '', human, flags=re.DOTALL)
-review_lines = [l for l in human.splitlines() if re.match(r'\s*-\s*\[[ x]\]\s*\[REVIEW\]', l)]
-if review_lines:
-    print("has_review"); sys.exit(0)
-ac_lines = [l for l in human.splitlines() if re.match(r'\s*-\s*\[[ x]\]', l)]
-print("only_other" if ac_lines else "empty")
-PYREV
+    python3 "$FRAMEWORK_ROOT/lib/human_review_state.py" "$1"
 }
 
 @test "T-1901: single ### Human with [REVIEW] → has_review (backward-compat)" {

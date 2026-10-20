@@ -31,13 +31,37 @@ load ../test_helper
 }
 
 # ---- Behavioural ----
+# T-4380: these run the SHIPPED Work-in-Progress block, cut out of handover.sh,
+# against fixture tasks. They used to run a Python copy of the loop, which stayed
+# green when the DEFER skip in handover.sh was disabled.
+
+# wip_block: print the Python source of the WIP renderer. It starts at the
+# heredoc that follows "# Add active tasks sorted by horizon" and stops before the
+# partial-complete footer (the later Deferred-Inceptions section lists DEFER'd
+# inceptions on purpose and is not under test).
+wip_block() {
+    awk '/^# Add active tasks sorted by horizon/{s=1; next}
+         s && !f && /python3 << .PYEOF./{f=1; next}
+         f && /^# T-2160: single bottom footer/{exit}
+         f' "$FRAMEWORK_ROOT/agents/handover/handover.sh"
+}
+
+# run_wip: render WIP for the fixture tasks in $TEST_TEMP_DIR/fixture/active and
+# print the task ids that appear under "### T-...:" headings, comma-joined.
+run_wip() {
+    wip_block > "$TEST_TEMP_DIR/wip.py"
+    [ -s "$TEST_TEMP_DIR/wip.py" ] || { echo "WIP block extraction empty - did it move?" >&2; return 1; }
+    grep -q "dec == 'DEFER'" "$TEST_TEMP_DIR/wip.py" || { echo "extraction lost the DEFER filter" >&2; return 1; }
+    TASKS_DIR_PY="$TEST_TEMP_DIR/fixture" WT_URL_PY="" PROJECT_ROOT_PY="$TEST_TEMP_DIR" \
+        HANDOVER_DIGEST=0 DIGEST_TOP_N=50 python3 "$TEST_TEMP_DIR/wip.py" \
+        | sed -n 's/^### \(T-[A-Z0-9]*\):.*/\1/p' | paste -sd, -
+}
 
 @test "DEFER'd inception is NOT printed in WIP (T-1619)" {
     # Fixture: one DEFER'd inception, one normal build task. WIP loop must
     # emit the build task and skip the DEFER'd inception.
-    cd "$TEST_TEMP_DIR"
-    mkdir -p tasks/active
-    cat > tasks/active/T-D01-deferred-inception.md <<'EOF'
+    mkdir -p "$TEST_TEMP_DIR/fixture/active"
+    cat > "$TEST_TEMP_DIR/fixture/active/T-D01-deferred-inception.md" <<'EOF'
 ---
 id: T-D01
 name: "Deferred inception"
@@ -57,7 +81,7 @@ horizon: now
 
 **Decision**: DEFER
 EOF
-    cat > tasks/active/T-B01-active-build.md <<'EOF'
+    cat > "$TEST_TEMP_DIR/fixture/active/T-B01-active-build.md" <<'EOF'
 ---
 id: T-B01
 name: "Active build"
@@ -70,35 +94,7 @@ horizon: now
 # T-B01
 EOF
 
-    run python3 - <<PYEOF
-import os, re, glob
-tasks_dir = "$TEST_TEMP_DIR/tasks/active"
-horizon_order = {'now': 0, 'next': 1, 'later': 2}
-tasks = []
-for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
-    with open(f) as fh:
-        content = fh.read()
-    tid = re.search(r'^id:\s*(.+)', content, re.M)
-    tname = re.search(r'^name:\s*(.+)', content, re.M)
-    tstatus = re.search(r'^status:\s*(.+)', content, re.M)
-    thoriz = re.search(r'^horizon:\s*(.+)', content, re.M)
-    twf = re.search(r'^workflow_type:\s*(.+)', content, re.M)
-    h = thoriz.group(1).strip() if thoriz else 'now'
-    wf = twf.group(1).strip() if twf else ''
-    dec_m = re.search(r'^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b', content, re.M)
-    dec = dec_m.group(1) if dec_m else ''
-    tasks.append((horizon_order.get(h, 0), tid.group(1).strip(),
-                  tname.group(1).strip() if tname else '',
-                  tstatus.group(1).strip() if tstatus else '',
-                  h, '', wf, dec))
-tasks.sort(key=lambda t: (t[0], t[1]))
-emitted = []
-for _, tid, tname, tstatus, h, verdict, wf, dec in tasks:
-    if wf == 'inception' and dec == 'DEFER':
-        continue
-    emitted.append(tid)
-print(','.join(emitted))
-PYEOF
+    run run_wip
     [ "$status" -eq 0 ]
     [ "$output" = "T-B01" ]
 }
@@ -106,9 +102,8 @@ PYEOF
 @test "DEFER'd build task IS printed (only inceptions filtered) (T-1619)" {
     # Edge: a regular build task with a DEFER recommendation (not a decision)
     # must still appear in WIP. The filter is workflow_type-aware on purpose.
-    cd "$TEST_TEMP_DIR"
-    mkdir -p tasks/active
-    cat > tasks/active/T-B02-deferred-build.md <<'EOF'
+    mkdir -p "$TEST_TEMP_DIR/fixture/active"
+    cat > "$TEST_TEMP_DIR/fixture/active/T-B02-deferred-build.md" <<'EOF'
 ---
 id: T-B02
 name: "Build with DEFER recommendation but no Decision"
@@ -123,23 +118,7 @@ horizon: now
 **Recommendation:** DEFER
 EOF
 
-    run python3 - <<PYEOF
-import os, re, glob
-tasks_dir = "$TEST_TEMP_DIR/tasks/active"
-emitted = []
-for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
-    with open(f) as fh:
-        content = fh.read()
-    tid_m = re.search(r'^id:\s*(.+)', content, re.M)
-    twf = re.search(r'^workflow_type:\s*(.+)', content, re.M)
-    wf = twf.group(1).strip() if twf else ''
-    dec_m = re.search(r'^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b', content, re.M)
-    dec = dec_m.group(1) if dec_m else ''
-    if wf == 'inception' and dec == 'DEFER':
-        continue
-    emitted.append(tid_m.group(1).strip())
-print(','.join(emitted))
-PYEOF
+    run run_wip
     [ "$status" -eq 0 ]
     [ "$output" = "T-B02" ]
 }
@@ -147,9 +126,8 @@ PYEOF
 @test "GO inception in flight IS still printed in WIP (T-1619)" {
     # Edge: an inception that has a GO decision but hasn't been swept to
     # completed/ yet is in-flight, NOT parked. Must still appear in WIP.
-    cd "$TEST_TEMP_DIR"
-    mkdir -p tasks/active
-    cat > tasks/active/T-G01-go-inception.md <<'EOF'
+    mkdir -p "$TEST_TEMP_DIR/fixture/active"
+    cat > "$TEST_TEMP_DIR/fixture/active/T-G01-go-inception.md" <<'EOF'
 ---
 id: T-G01
 name: "GO inception, not yet swept"
@@ -164,23 +142,7 @@ horizon: now
 **Decision**: GO
 EOF
 
-    run python3 - <<PYEOF
-import os, re, glob
-tasks_dir = "$TEST_TEMP_DIR/tasks/active"
-emitted = []
-for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
-    with open(f) as fh:
-        content = fh.read()
-    tid_m = re.search(r'^id:\s*(.+)', content, re.M)
-    twf = re.search(r'^workflow_type:\s*(.+)', content, re.M)
-    wf = twf.group(1).strip() if twf else ''
-    dec_m = re.search(r'^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b', content, re.M)
-    dec = dec_m.group(1) if dec_m else ''
-    if wf == 'inception' and dec == 'DEFER':
-        continue
-    emitted.append(tid_m.group(1).strip())
-print(','.join(emitted))
-PYEOF
+    run run_wip
     [ "$status" -eq 0 ]
     [ "$output" = "T-G01" ]
 }

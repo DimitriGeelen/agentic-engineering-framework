@@ -9,45 +9,44 @@ between the Decision block and EOF, so they were swallowed on the next
 decide call. Same shape as T-1519 (verdict regex). Fix: terminate at any
 H2-or-deeper heading.
 
-This test mirrors the python heredoc embedded in lib/inception.sh — keep
-it in sync if that heredoc evolves.
+T-4380: these tests run the SHIPPED python heredoc (PYDECIDE), cut out of
+lib/inception.sh and executed on a fixture task file. They used to run a mirror
+of it written out in the test, which stayed green when the shipped terminator was
+changed back to the pre-fix H2-only check.
 """
 
 from __future__ import annotations
 
 import re
+import subprocess
+from pathlib import Path
+
+INCEPTION_SH = Path(__file__).resolve().parents[2] / "lib" / "inception.sh"
 
 
-def _rewrite_decision(content: str, decision: str, rationale: str, timestamp: str) -> str:
-    """Mirror of lib/inception.sh:do_inception_decide PYDECIDE block."""
-    lines = content.split("\n")
-    new_lines: list[str] = []
-    in_decision = False
-    decision_written = False
-    for line in lines:
-        if line.strip() == "## Decision":
-            in_decision = True
-            if not decision_written:
-                new_lines.append(line)
-                new_lines.append("")
-                new_lines.append(f"**Decision**: {decision}")
-                new_lines.append("")
-                new_lines.append(f"**Rationale**: {rationale}")
-                new_lines.append("")
-                new_lines.append(f"**Date**: {timestamp}")
-                decision_written = True
-            continue
-        if in_decision:
-            if re.match(r"^#{2,} ", line):  # T-1526: H2 or deeper
-                in_decision = False
-                new_lines.append("")
-                new_lines.append(line)
-            continue
-        new_lines.append(line)
-    return "\n".join(new_lines)
+def _shipped_pydecide() -> str:
+    src = INCEPTION_SH.read_text()
+    m = re.search(r"<< 'PYDECIDE'\n(.*?)\nPYDECIDE\n", src, re.S)
+    assert m, "PYDECIDE heredoc not found in lib/inception.sh - did it move?"
+    code = m.group(1)
+    assert "## Decision" in code
+    return code
 
 
-def test_h3_below_decision_preserved_on_rewrite():
+def _rewrite_decision(tmp_path, content: str, decision: str, rationale: str, timestamp: str) -> str:
+    """Run lib/inception.sh's PYDECIDE block on a task file holding `content`."""
+    task = tmp_path / "T-9999-fixture.md"
+    task.write_text(content)
+    script = tmp_path / "pydecide.py"
+    script.write_text(_shipped_pydecide())
+    subprocess.run(
+        ["python3", str(script), str(task), decision, rationale, timestamp],
+        check=True, capture_output=True, text=True,
+    )
+    return task.read_text()
+
+
+def test_h3_below_decision_preserved_on_rewrite(tmp_path):
     """T-1526 core: an H3 entry below ## Decision must survive a re-decide."""
     body = (
         "## Recommendation\nGO\n\n"
@@ -55,7 +54,7 @@ def test_h3_below_decision_preserved_on_rewrite():
         "### 2026-04-26T00:00:00Z — task-update [agent]\n"
         "- **Action:** important update entry\n"
     )
-    out = _rewrite_decision(body, "GO", "new rationale", "2026-04-26T01:00:00Z")
+    out = _rewrite_decision(tmp_path, body, "GO", "new rationale", "2026-04-26T01:00:00Z")
     # New decision landed
     assert "**Decision**: GO" in out
     # Old decision collapsed
@@ -65,17 +64,17 @@ def test_h3_below_decision_preserved_on_rewrite():
     assert "important update entry" in out
 
 
-def test_duplicate_decision_blocks_still_collapse():
+def test_duplicate_decision_blocks_still_collapse(tmp_path):
     """Pre-existing T-1262 behavior: multiple ## Decision blocks collapse to one."""
     body = "## Decision\nold A\n\n## Decision\nold B\n\n## Updates\n- foo\n"
-    out = _rewrite_decision(body, "GO", "r", "t")
+    out = _rewrite_decision(tmp_path, body, "GO", "r", "t")
     assert out.count("## Decision") == 1
     assert "## Updates" in out and "- foo" in out
 
 
-def test_h2_termination_still_works():
+def test_h2_termination_still_works(tmp_path):
     """Existing H2 terminator path still preserves following H2 sections."""
     body = "## Decision\nold\n\n## Updates\n- entry\n"
-    out = _rewrite_decision(body, "NO-GO", "r", "t")
+    out = _rewrite_decision(tmp_path, body, "NO-GO", "r", "t")
     assert "## Updates" in out
     assert "- entry" in out

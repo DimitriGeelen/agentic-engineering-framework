@@ -43,7 +43,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T11:58:59Z
-last_update: 2026-10-20T11:37:55Z
+last_update: 2026-10-20T14:21:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -106,6 +106,12 @@ Phase 2 (actual edits) needs the parent's go.
 - [x] Every (b) group names the function+behaviour, the evidence, and which test keeps the red run on the origin bug (origin task cited)
 - [x] Every candidate carries file:test, class, evidence, proposed action and expected saving (median file-seconds over the 21 v2 suite reports, `LATEST.yaml` included)
 - [x] No file under `tests/`, `lib/`, `agents/` or `bin/` is changed by this task's commits (phase 1 is evidence only)
+
+#### Phase 2 (proven items only, parent go 2026-10-20)
+- [x] A1-A13 are rewritten to exercise the real production code (root derived from the test file's own location, no literal /opt path); none deleted
+- [x] Each of A1-A13 has a recorded red run under its report mutation (scratch copy, rewritten test red) and a green run on the unbroken code, in `docs/reports/T-4380-phase2-evidence.md`
+- [x] The three mutation-proven duplicate groups (B2 git_common get_task_name, B3 judge UNKNOWN copies, m21 worker_kinds_parity line 101) are deleted only after the keeper is shown red under the same mutation
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` is clean and the git-discovery fence lint passes; only `tests/` (plus the evidence report and this task file) is edited
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,7 +293,8 @@ Phase 2 (actual edits) needs the parent's go.
 test -f docs/reports/T-4380-prune-candidates.md
 grep -q "^## (a)" docs/reports/T-4380-prune-candidates.md && grep -q "^## (b)" docs/reports/T-4380-prune-candidates.md && grep -qi "unproven" docs/reports/T-4380-prune-candidates.md
 grep -q "CONFIRMED" docs/reports/T-4380-prune-candidates.md && grep -q "\.context/scratch/t4380/" docs/reports/T-4380-prune-candidates.md
-out=$(git log --format= --name-only --grep '^T-4380' 2>&1); ! echo "$out" | grep -qE '^(tests|lib|agents|bin)/'
+test -f docs/reports/T-4380-phase2-evidence.md
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4380-lint.out 2>&1 && grep -q clean /tmp/.t4380-lint.out
 
 ## RCA
 
@@ -316,6 +323,11 @@ out=$(git log --format= --name-only --grep '^T-4380' 2>&1); ! echo "$out" | grep
 - **What changed:** the parent scoped this run to evidence only (report, no test edits).
 - **Plan impact:** deletions and merges wait for the parent's go on the report.
 - **Triggered:** phase 2 under this same task after the go.
+
+### 2026-10-20 — phase 2 (proven items only)
+- **What changed:** A1–A13 now run the shipped code (blocks cut out of audit.sh/handover.sh/upgrade.sh/bin/fw/inception.sh, or the module called directly) and each goes red under its report mutation (13 of 13; evidence in `docs/reports/T-4380-phase2-evidence.md`). B2, B3 and m21 duplicates deleted after the keeper was shown red under the same mutation. A10 exposed a live bug: the python in `agents/context/checkpoint.sh` lost its indentation in T-3989 (SyntaxError, swallowed), so the restart signal has not carried the directive for ~12 days. The positive test is strict-xfail until it is fixed.
+- **Plan impact:** the A9 smoke deletion (~301 s) and A13's "delete" were not done (this phase forbade deleting A-file tests; A13 was rewritten instead). Real saving this phase is ~159 file-s (m21); the rest is fault detection, as the report predicted.
+- **Triggered:** the checkpoint.sh directive bug needs its own task (outside `tests/`, not fixed here).
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at

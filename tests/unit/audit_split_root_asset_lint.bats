@@ -10,9 +10,8 @@
 # legitimate PROJECT_ROOT reads.
 #
 # Strategy (same as audit_ctl_arc_tag_only_pattern.bats): exercise only the
-# check-block logic against a synthetic tree — full audit.sh per-test is
-# slow + flaky. A drift-tripwire test pins the inline replica's regex to the
-# string in agents/audit/audit.sh so the two cannot silently diverge.
+# check block, extracted from agents/audit/audit.sh, against a synthetic tree —
+# full audit.sh per-test is slow + flaky.
 
 setup() {
     SYNTH_ROOT="$(mktemp -d)"
@@ -26,33 +25,22 @@ teardown() {
     [ -n "${SYNTH_ROOT:-}" ] && [ -d "$SYNTH_ROOT" ] && rm -rf "$SYNTH_ROOT"
 }
 
-# Inline replica of the audit.sh check block (drift-pinned by the last test).
+# Run the SHIPPED check block against the synthetic tree. T-4380: the block is cut
+# out of agents/audit/audit.sh (from its first assignment to the next check's
+# header comment); this file used to carry an inline replica, which stayed green
+# when the shipped violation counter was disabled. A moved or renamed block fails
+# loudly instead of yielding an empty script that "passes".
 run_check() {
-    local PROJECT_ROOT="$SYNTH_ROOT"
-    local splitroot_violations=0
-    local splitroot_evidence=""
-    local splitroot_pattern='PROJECT_ROOT[[:space:]]*/[[:space:]]*["'\''](lib|agents|policy|bin|web)["'\'']'
-    local scan_dir hit
-    for scan_dir in web lib; do
-        [ -d "$PROJECT_ROOT/$scan_dir" ] || continue
-        while IFS= read -r hit; do
-            [ -z "$hit" ] && continue
-            case "$hit" in
-                *value-drivers.yaml*|*bvp-scoring-rubric.md*) continue ;;
-                *OBS-097-allow:*) continue ;;
-                *tests/*|*docs/*) continue ;;
-            esac
-            splitroot_violations=$((splitroot_violations + 1))
-            splitroot_evidence="$splitroot_evidence$hit"$'\n'
-        done < <(grep -RnE "$splitroot_pattern" --include='*.py' \
-                       "$PROJECT_ROOT/$scan_dir" 2>/dev/null || true)
-    done
-    if [ "$splitroot_violations" -eq 0 ]; then
-        echo "PASS"
-    else
-        echo "FAIL $splitroot_violations"
-        printf '%s' "$splitroot_evidence" | head -5
-    fi
+    local block="$SYNTH_ROOT/.splitroot-block.sh"
+    awk '/^splitroot_violations=0$/{f=1} /^# T-1975 \(L-417 prevention\)/{f=0} f' \
+        "$REPO_ROOT/agents/audit/audit.sh" > "$block"
+    [ -s "$block" ] || { echo "extraction empty - did the block move?" >&2; return 1; }
+    grep -q 'OBS-097-allow' "$block" || { echo "extraction lost the allowlist" >&2; return 1; }
+    PROJECT_ROOT="$SYNTH_ROOT" bash -c '
+        pass_over() { echo "PASS"; }
+        fail() { echo "FAIL $splitroot_violations"; printf "%b" "$2" | head -5; }
+        source "$1"
+    ' _ "$block"
 }
 
 @test "clean tree emits PASS" {
@@ -169,11 +157,11 @@ EOF
     fi
 }
 
-@test "drift tripwire: audit.sh carries the same pattern core as this replica" {
+@test "source pin: audit.sh carries the pattern core and the allowlist entries" {
     # The source file holds the shell-escaped form of the regex, so pin the
     # two invariant cores that define the check: the resolution prefix and
     # the framework-owned dir alternation. If either changes in audit.sh,
-    # update the replica in run_check above in the same commit.
+    # update the behavioural tests above in the same commit.
     grep -qF 'PROJECT_ROOT[[:space:]]*/[[:space:]]*' "$REPO_ROOT/agents/audit/audit.sh"
     grep -qF '(lib|agents|policy|bin|web)' "$REPO_ROOT/agents/audit/audit.sh"
     # And the semantic allowlist entries exist in the audit.sh check block.

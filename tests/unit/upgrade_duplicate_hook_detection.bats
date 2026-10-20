@@ -42,39 +42,19 @@ teardown() {
     bash -n "$FRAMEWORK_ROOT/lib/upgrade.sh"
 }
 
-# ---- Behavioural — exercise the embedded python directly ----
-# We extract the python block and feed synthetic settings files.
+# ---- Behavioural — exercise the SHIPPED python directly ----
+# T-4380: the helper below is cut out of lib/upgrade.sh (the dup_analysis python
+# block) and fed synthetic settings files. It used to be a copy of that block,
+# which stayed green when the shipped `out.add` was disabled.
 
 _run_dedup_py() {
     local user_file="$1" proj_file="$2"
-    USER_FILE="$user_file" PROJ_FILE="$proj_file" python3 -c "
-import json, os
-
-def fw_hooks(path):
-    out = set()
-    try:
-        with open(path) as f:
-            data = json.load(f)
-    except (json.JSONDecodeError, FileNotFoundError, OSError):
-        return out
-    for event, entries in data.get('hooks', {}).items():
-        for entry in entries:
-            for hook in entry.get('hooks', []):
-                cmd = hook.get('command', '')
-                if 'fw hook' in cmd:
-                    name = cmd.split('fw hook ')[-1].strip().split()[0]
-                elif '.agentic-framework' in cmd:
-                    name = cmd.strip().split('/')[-1]
-                else:
-                    continue
-                out.add((event, name))
-    return out
-
-user = fw_hooks(os.environ['USER_FILE'])
-proj = fw_hooks(os.environ['PROJ_FILE'])
-overlap = sorted(user & proj)
-print('|'.join(f'{e}:{n}' for e, n in overlap))
-"
+    local helper="$TEST_TEMP_DIR/dedup_helper.py"
+    awk '/dup_analysis=\$\(USER_FILE=.* python3 -c "$/{f=1; next} f && /^" 2>\/dev\/null/{exit} f' \
+        "$FRAMEWORK_ROOT/lib/upgrade.sh" > "$helper"
+    [ -s "$helper" ] || { echo "extraction empty - did the dup_analysis block move?" >&2; return 1; }
+    grep -q 'def fw_hooks' "$helper" || { echo "extraction lost fw_hooks" >&2; return 1; }
+    USER_FILE="$user_file" PROJ_FILE="$proj_file" python3 "$helper"
 }
 
 @test "behavioural: matched (event, hook_name) flagged as duplicate" {

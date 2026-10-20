@@ -47,7 +47,10 @@ teardown() {
     ! echo "$output" | grep -qE 'Traceback \(most recent call last\):'
 }
 
-# ---- Behavioural via the same python helper as T-1479 ----
+# ---- Behavioural via the SHIPPED python helper ----
+# T-4380: the helper is cut out of bin/fw (the dup_pairs python block); this test
+# used to run a copy of it, which stayed green when the shipped `out.add` was
+# disabled.
 
 @test "behavioural: doctor's helper reports overlap when both files have framework hooks" {
     cd "$TEST_TEMP_DIR"
@@ -57,31 +60,10 @@ EOF
     cat > proj.json <<'EOF'
 {"hooks":{"PreCompact":[{"matcher":"","hooks":[{"type":"command","command":"/opt/x/bin/fw hook pre-compact"}]}]}}
 EOF
-    out=$(USER_FILE=user.json PROJ_FILE=proj.json python3 -c "
-import json, os
-def fw_hooks(path):
-    out = set()
-    try:
-        with open(path) as f:
-            data = json.load(f)
-    except (json.JSONDecodeError, FileNotFoundError, OSError):
-        return out
-    for event, entries in data.get('hooks', {}).items():
-        for entry in entries:
-            for hook in entry.get('hooks', []):
-                cmd = hook.get('command', '')
-                if 'fw hook' in cmd:
-                    name = cmd.split('fw hook ')[-1].strip().split()[0]
-                elif '.agentic-framework' in cmd:
-                    name = cmd.strip().split('/')[-1]
-                else:
-                    continue
-                out.add((event, name))
-    return out
-user = fw_hooks(os.environ['USER_FILE'])
-proj = fw_hooks(os.environ['PROJ_FILE'])
-overlap = sorted(user & proj)
-print('|'.join(f'{e}:{n}' for e, n in overlap))
-")
+    awk '/dup_pairs=\$\(USER_FILE=.* python3 -c "$/{f=1; next} f && /^" 2>\/dev\/null/{exit} f' \
+        "$FRAMEWORK_ROOT/bin/fw" > helper.py
+    [ -s helper.py ]
+    grep -q 'def fw_hooks' helper.py
+    out=$(USER_FILE=user.json PROJ_FILE=proj.json python3 helper.py)
     [ "$out" = "PreCompact:pre-compact" ]
 }

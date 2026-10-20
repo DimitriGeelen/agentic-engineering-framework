@@ -43,37 +43,23 @@ teardown() {
 
 # ---- Behavioural detector tests ----
 #
-# We replicate the (post-fix) check_stale_paths inline. If the source
-# definition diverges from this replica, the source-marker tests above
-# fail first — pinning the contract from both sides.
+# T-4380: these run the SHIPPED check_stale_paths, cut out of lib/upgrade.sh (it
+# is the Python function inside the `fw upgrade` hook analysis), not a replica.
+# The old replica stayed green when the bare-relative branch in upgrade.sh was
+# disabled (the T-1627 bug itself).
 
 run_check_on() {
     local settings_file="$1"
-    SETTINGS_FILE="$settings_file" python3 -c "
+    local fn="$TEST_TEMP_DIR/check_stale_paths.py"
+    awk '/^def check_stale_paths\(path\):/{f=1} f{print} f && /^    return stale, non_framework/{exit}' \
+        "$FRAMEWORK_ROOT/lib/upgrade.sh" > "$fn"
+    [ -s "$fn" ] || { echo "extraction empty - did check_stale_paths move?" >&2; return 1; }
+    grep -q "startswith" "$fn" || { echo "extraction lost the bare-relative branch" >&2; return 1; }
+    SETTINGS_FILE="$settings_file" FN_FILE="$fn" python3 -c "
 import json, os
-
-def check_stale_paths(path):
-    stale = 0
-    non_framework = 0
-    try:
-        with open(path) as f:
-            data = json.load(f)
-        for event, entries in data.get('hooks', {}).items():
-            for entry in entries:
-                for hook in entry.get('hooks', []):
-                    cmd = hook.get('command', '')
-                    if '/agents/context/' in cmd or 'PROJECT_ROOT=' in cmd:
-                        stale += 1
-                    elif cmd and cmd.lstrip().startswith('.agentic-framework/'):
-                        # T-1627: bare-relative path — broken from any subdir
-                        stale += 1
-                    elif cmd and 'fw hook' not in cmd and '.agentic-framework' not in cmd:
-                        non_framework += 1
-    except (json.JSONDecodeError, FileNotFoundError):
-        pass
-    return stale + non_framework
-
-print(check_stale_paths(os.environ['SETTINGS_FILE']))
+exec(open(os.environ['FN_FILE']).read())
+stale, non_framework = check_stale_paths(os.environ['SETTINGS_FILE'])
+print(stale + non_framework)
 "
 }
 

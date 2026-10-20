@@ -98,8 +98,6 @@ print(','.join(sorted(VALID_WORKER_KINDS)))
     [ "$lint_set" = "$resolver_set" ]
 }
 
-@test "doctor parity check exits without crashing in fresh shell" {
-    run bash -c "cd $FRAMEWORK_ROOT && bin/fw doctor 2>&1 | grep 'Worker-kinds parity'"
-    [ "$status" -eq 0 ]
-    [ -n "$output" ]
-}
+# The "doctor prints a Worker-kinds parity line" check that lived here ran a second
+# full `fw doctor` and asserted nothing the first test does not: its OK-line grep
+# fails whenever the line is missing (T-4380, mutation m21).

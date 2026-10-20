@@ -8,12 +8,13 @@
 #   4. Allowlisted paths (tests/, docs/, audit.sh self) → exempt
 #   5. "once that slice ships" phrasing → WARN regardless of T-NNNN
 #
-# Strategy: isolated synthetic PROJECT_ROOT + check-block logic extracted
-# inline (same pattern as audit_ctl_arc_tag_only_pattern.bats).
+# Strategy: isolated synthetic PROJECT_ROOT + the check block extracted from
+# agents/audit/audit.sh (same pattern as audit_ctl_arc_tag_only_pattern.bats).
 
 load ../test_helper
 
 setup() {
+    REPO_ROOT="$FRAMEWORK_ROOT"
     PROJECT_ROOT="$(mktemp -d)"
     guard_project_root
     export PROJECT_ROOT
@@ -36,41 +37,22 @@ teardown() {
     [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT" ] && rm -rf "$PROJECT_ROOT"
 }
 
-# Helper: run JUST the check-block logic against the synthetic PROJECT_ROOT.
+# Helper: run the SHIPPED check block against the synthetic PROJECT_ROOT.
+# T-4380: the block is cut out of agents/audit/audit.sh (from its first
+# assignment to the next check's header comment); this file used to carry a copy
+# of it, which stayed green when the shipped counter was disabled. A moved or
+# renamed block fails loudly instead of yielding an empty script that "passes".
 run_check() {
+    local block="$PROJECT_ROOT/.stale-slice-block.sh"
+    awk '/^stale_slice_count=0$/{f=1} /^# T-2096 \(OBS-036, sibling to L-417/{f=0} f' \
+        "$REPO_ROOT/agents/audit/audit.sh" > "$block"
+    [ -s "$block" ] || { echo "extraction empty - did the block move?" >&2; return 1; }
+    grep -q 'once' "$block" || { echo "extraction lost the pattern" >&2; return 1; }
     bash -c '
-        PROJECT_ROOT="$1"
-        stale_slice_count=0
-        stale_slice_evidence=""
-        for scan_dir in web/templates web/blueprints lib; do
-            [ -d "$PROJECT_ROOT/$scan_dir" ] || continue
-            while IFS= read -r hit; do
-                [ -z "$hit" ] && continue
-                case "$hit" in
-                    *agents/audit/audit.sh:*) continue ;;
-                    *tests/*|*docs/*|*.fabric/*|*.context/*|*.tasks/*) continue ;;
-                esac
-                t_id=$(echo "$hit" | grep -oE "T-[0-9]{2,5}" | head -1)
-                if [ -n "$t_id" ]; then
-                    if ls "$PROJECT_ROOT/.tasks/completed/${t_id}-"*.md >/dev/null 2>&1; then
-                        stale_slice_count=$((stale_slice_count + 1))
-                        stale_slice_evidence="$stale_slice_evidence$hit"$'\''\n'\''
-                    fi
-                else
-                    stale_slice_count=$((stale_slice_count + 1))
-                    stale_slice_evidence="$stale_slice_evidence$hit"$'\''\n'\''
-                fi
-            done < <(grep -RniE "(\<ship\>|\<ships\>|\<shipping\>)[[:space:]]+in[[:space:]]+T-[0-9]{2,5}|once[[:space:]]+(that[[:space:]]+)?slice[[:space:]]+ships?" \
-                           --include="*.html" --include="*.py" --include="*.sh" \
-                           "$PROJECT_ROOT/$scan_dir" 2>/dev/null || true)
-        done
-        if [ "$stale_slice_count" -eq 0 ]; then
-            echo "PASS"
-        else
-            echo "WARN $stale_slice_count"
-            printf "%s" "$stale_slice_evidence" | head -5
-        fi
-    ' _ "$PROJECT_ROOT"
+        pass_over() { echo "PASS"; }
+        warn() { echo "WARN $stale_slice_count"; printf "%b" "$2" | head -5; }
+        source "$2"
+    ' _ "$PROJECT_ROOT" "$block"
 }
 
 @test "clean tree emits PASS" {

@@ -7,8 +7,8 @@
 #   3. Matches under tests/ and lib/arc.sh / lib/arc_membership.sh / lib/migrations/
 #      are exempt (allowlist works)
 #
-# Strategy: exercise only the check block — extract the AWK-pattern logic
-# directly. Running the full audit.sh per-test would be slow + flaky.
+# Strategy: exercise only the check block, extracted from audit.sh (T-4380).
+# Running the full audit.sh per-test would be slow + flaky.
 
 load ../test_helper
 
@@ -51,37 +51,22 @@ teardown() {
     [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT" ] && rm -rf "$PROJECT_ROOT"
 }
 
-# Helper: run JUST the check-block logic against the synthetic PROJECT_ROOT.
-# Extracts the check from agents/audit/audit.sh and evaluates it inline.
+# Helper: run JUST the check block, extracted from agents/audit/audit.sh, against
+# the synthetic PROJECT_ROOT. T-4380: this used to be a copy of the block written
+# out in the test, which stayed green when the shipped pattern was broken. The
+# block is cut between its own first assignment and the next check's header, so
+# a moved or renamed block fails loudly instead of yielding an empty script.
 run_check() {
+    local block="$PROJECT_ROOT/.ctl-arc-tag-only-block.sh"
+    awk '/^arc_tag_only_violations=0$/{f=1} /^# T-3516 \(OBS-546\): ctl-arc-membership-python-import/{f=0} f' \
+        "$REPO_ROOT/agents/audit/audit.sh" > "$block"
+    [ -s "$block" ] || { echo "extraction empty - did the block move?" >&2; return 1; }
     bash -c '
         PROJECT_ROOT="$1"
-        arc_tag_only_violations=0
-        arc_tag_only_evidence=""
-        arc_tag_only_pattern='\''grep[^|]*"\^?tags:.*arc:|grep[^|]*arc:[A-Za-z0-9_-]'\''
-        for scan_dir in lib web agents bin tools; do
-            [ -d "$PROJECT_ROOT/$scan_dir" ] || continue
-            while IFS= read -r hit; do
-                [ -z "$hit" ] && continue
-                case "$hit" in
-                    *lib/arc_membership.sh:*|*lib/arc_membership.py:*) continue ;;
-                    *lib/arc.sh:*) continue ;;
-                    *lib/migrations/*) continue ;;
-                    *tests/*|*docs/*|*.fabric/*|*.context/*) continue ;;
-                esac
-                arc_tag_only_violations=$((arc_tag_only_violations + 1))
-                arc_tag_only_evidence="$arc_tag_only_evidence$hit"$'\''\n'\''
-            done < <(grep -RnE "$arc_tag_only_pattern" \
-                           --include='\''*.sh'\'' --include='\''*.py'\'' --include='\''*.bash'\'' \
-                           "$PROJECT_ROOT/$scan_dir" 2>/dev/null || true)
-        done
-        if [ "$arc_tag_only_violations" -eq 0 ]; then
-            echo "PASS"
-        else
-            echo "FAIL $arc_tag_only_violations"
-            printf "%s" "$arc_tag_only_evidence" | head -5
-        fi
-    ' _ "$PROJECT_ROOT"
+        pass_over() { echo "PASS"; }
+        fail() { echo "FAIL $arc_tag_only_violations"; printf "%b" "$2" | head -5; }
+        source "$2"
+    ' _ "$PROJECT_ROOT" "$block"
 }
 
 @test "clean tree (allowlist-only) emits PASS" {

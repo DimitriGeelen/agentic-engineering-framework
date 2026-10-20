@@ -369,13 +369,6 @@ def test_already_approved_driver_is_judgeable_too(tmp_path):
 # ───────────────────────── UNKNOWN never green; judgeable != UNKNOWN ────────
 
 
-def test_unknown_is_never_falsely_favourable():
-    from lib.judge_verdict import verdict as make_verdict
-    v = make_verdict(UNKNOWN, guidance="cannot tell")
-    assert bool(v) is True
-    assert may_proceed(v) is False
-
-
 def test_judgeable_driver_does_not_come_back_unknown(tmp_path):
     """Control leg (explicitly required by the AC): a normal, well-formed
     driver on a normal arc must NOT come back UNKNOWN."""

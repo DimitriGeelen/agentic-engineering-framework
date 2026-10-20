@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 # Unit tests for agents/git/lib/common.sh
 #
-# Tests pure functions: extract_task_id, task_exists, get_task_name
+# Tests pure functions: extract_task_id, task_exists
 
 load ../test_helper
 
@@ -66,22 +66,5 @@ teardown() {
     ! task_exists "T-999"
 }
 
-# --- get_task_name ---
-
-@test "get_task_name: returns name from frontmatter" {
-    cat > "$PROJECT_ROOT/.tasks/active/T-042-fix-login.md" <<'EOF'
----
-id: T-042
-name: "Fix login bug"
-status: started-work
----
-EOF
-    # lib/tasks.sh get_task_name strips surrounding quotes
-    result=$(get_task_name "T-042")
-    [ "$result" = 'Fix login bug' ]
-}
-
-@test "get_task_name: returns empty for nonexistent task" {
-    run get_task_name "T-999"
-    [ -z "$output" ]
-}
+# get_task_name lives in lib/tasks.sh and is tested in lib_tasks.bats (T-764); the
+# two copies here were mutation-proven duplicates of it (T-4380).
