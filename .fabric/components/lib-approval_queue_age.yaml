@@ -1,0 +1,21 @@
+id: lib/approval_queue_age.py
+name: approval_queue_age
+type: script
+subsystem: framework-core
+location: lib/approval_queue_age.py
+tags: []
+
+purpose: "Age of pending Tier 0 approval cards (T-3079)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
