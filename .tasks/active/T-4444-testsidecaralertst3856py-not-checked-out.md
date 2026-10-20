@@ -1,10 +1,17 @@
 ---
 id: T-4444
-name: "test_sidecar_alerts_t3856.py: 'NOT CHECKED' output now carries an extra line (T-4418 orphan-inbox WARN)"
+name: "test_sidecar_alerts_t3856.py: 'NOT CHECKED' output now carries an extra line
+  (T-4418 orphan-inbox WARN)"
 description: >
-  test_cli_prints_not_checked_and_exits_3 expects the output to be exactly 'NOT CHECKED: hub down'; T-4418 added an orphan-inbox line to fw sidecar alerts. Decide whether the orphan line should print when the hub is down (probably not: nothing was checked) and fix code or test accordingly. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or expectation drift from a deliberate change (update the test, say why).
+  test_cli_prints_not_checked_and_exits_3 expects the output to be exactly 'NOT CHECKED:
+  hub down'; T-4418 added an orphan-inbox line to fw sidecar alerts. Decide whether
+  the orphan line should print when the hub is down (probably not: nothing was checked)
+  and fix code or test accordingly. Found by the 2026-10-20T01:03Z fast-tier nightly
+  as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product
+  regression (fix code) or expectation drift from a deliberate change (update the
+  test, say why).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T08:07:35Z
-last_update: 2026-10-20T08:07:35Z
-date_finished: null
+last_update: 2026-10-20T08:09:19Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T08:09:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4444: test_sidecar_alerts_t3856.py: 'NOT CHECKED' output now carries an extra line (T-4418 orphan-inbox WARN)
@@ -62,8 +87,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] test_sidecar_alerts_t3856.py is hermetic: the CLI tests stub `addressing.orphan_inboxes` instead of asking the live hub, and `test_cli_prints_not_checked_and_exits_3` passes with its exact-text assertion unchanged
+- [x] A new test pins the T-4418 behaviour on the NOT CHECKED path: when the orphan check cannot ask the hub, the second line `orphan inboxes: NOT CHECKED` still follows `NOT CHECKED: hub down` (exit 3)
+- [x] Whole file and test_sidecar_orphan_circuit_t4418.py green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +274,8 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_sidecar_alerts_t3856.py tests/unit/test_sidecar_orphan_circuit_t4418.py -q > /tmp/.t4444.out 2>&1 && grep -q passed /tmp/.t4444.out
+grep -q "orphan_inboxes" tests/unit/test_sidecar_alerts_t3856.py
 
 ## RCA
 
@@ -264,6 +292,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** `test_cli_prints_not_checked_and_exits_3` red in the 2026-10-20T01:03Z nightly: output was `NOT CHECKED: hub down` plus an extra orphan-inbox line.
+
+**Root cause:** expectation drift plus a non-hermetic test, not a product regression. T-4418 (206b5d62b) made `cmd_alerts` (lib/sidecar_cli.py:341, :350) run an independent orphan-inbox check and print its result on every path, the NOT CHECKED path included. That is deliberate: the orphan check reads the hub's topic list, a different route from mail collection, so a mail failure says nothing about it, and it reports `NOT CHECKED` for itself when it cannot ask (sidecar_cli.py:321). The T-3856 test stubbed `alerts.collect` but not `addressing.orphan_inboxes`, so on a host with `termlink` it asked the live hub with the fixture's fake hub id, got None, and printed `orphan inboxes: NOT CHECKED (...)`.
+
+**Why structurally allowed:** T-4418's own tests exercised the orphan path in a separate file; nobody re-ran the T-3856 file, whose exact-equality assertion was the only one that could see the new line. The test also depended on whether `termlink` is on PATH, so it would pass on a host without it.
+
+**Prevention:** the `proj` fixture now stubs `orphan_inboxes` (hermetic, host-independent), and a new test pins the two-line NOT CHECKED output so a future change to either line fails here.
 
 ## Evolution
 
@@ -345,3 +380,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4444-testsidecaralertst3856py-not-checked-out.md
 - **Context:** Initial task creation
+
+### 2026-10-20T08:09:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

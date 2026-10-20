@@ -37,6 +37,10 @@ def proj(tmp_path, monkeypatch):
     monkeypatch.setenv("FW_SIDECAR_HUB_ID", "cacc73ea32b121dd")
     monkeypatch.delenv("FW_REVIEW_WORKER", raising=False)
     monkeypatch.setattr(adapter, "_claude_ancestor_pid", lambda *a, **k: None)
+    # T-4444: T-4418 made cmd_alerts also run the orphan-inbox check, which asks
+    # the live hub when termlink is on PATH. Stub it so these tests stay hermetic;
+    # the orphan output is pinned by its own test below and in the T-4418 file.
+    monkeypatch.setattr(cli.addressing, "orphan_inboxes", lambda **_: [])
     return root
 
 
@@ -122,6 +126,23 @@ def test_cli_prints_not_checked_and_exits_3(proj, monkeypatch):
     with redirect_stdout(buf):
         rc = cli.cmd_alerts(SimpleNamespace(limit=10, json=False, mark_seen=False))
     assert rc == 3 and buf.getvalue().strip() == "NOT CHECKED: hub down"
+
+
+def test_cli_not_checked_still_reports_the_orphan_check(proj, monkeypatch):
+    """T-4444: the orphan-inbox check (T-4418) is a separate route from mail, so a
+    mail failure does not suppress it; when it cannot ask the hub it says so too."""
+    def boom(**_):
+        raise alerts.Unreadable("hub down")
+    monkeypatch.setattr(alerts, "collect", boom)
+    monkeypatch.setattr(cli.addressing, "orphan_inboxes", lambda **_: None)
+    monkeypatch.setattr("shutil.which", lambda *_: "/usr/bin/termlink")
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        rc = cli.cmd_alerts(SimpleNamespace(limit=10, json=False, mark_seen=False))
+    assert rc == 3
+    assert buf.getvalue().strip().splitlines() == [
+        "NOT CHECKED: hub down",
+        "orphan inboxes: NOT CHECKED (the hub could not be asked)"]
 
 
 def test_cli_says_nothing_unseen_explicitly(proj, monkeypatch):
