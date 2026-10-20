@@ -530,3 +530,22 @@ def test_plain_task_is_accepted_and_round_trips_with_its_count():
     spec2 = corpus_spec.parse_map(out)
     assert [n["type"] for n in spec2["nodes"]] == [n["type"] for n in spec["nodes"]]
     assert corpus_spec.emit_map(spec2, version=1, compat_alias=False) == out
+
+
+# ── T-4495: bpmn:businessRuleTask (832 kitchen-sink.bpmn), round-trip only ──
+
+def test_business_rule_task_is_accepted_and_round_trips():
+    src = (_plain_task_xml()
+           .replace("<bpmn:task ", "<bpmn:businessRuleTask ")
+           .replace("</bpmn:task>", "</bpmn:businessRuleTask>"))
+    spec = corpus_spec.parse_map(src)  # was: SystemExit "unsupported BPMN element"
+    rules = [n for n in spec["nodes"] if n["type"] == "business-rule"]
+    assert [n["id"] for n in rules] == ["t1", "t2"]
+    assert rules[0]["name"] == "Review draft"
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    assert out.count("<bpmn:businessRuleTask ") == 2
+    assert "<bpmn:task " not in out
+    spec2 = corpus_spec.parse_map(out)
+    assert [n["type"] for n in spec2["nodes"]] == [n["type"] for n in spec["nodes"]]
+    assert spec2["flows"] == spec["flows"]
+    assert corpus_spec.emit_map(spec2, version=1, compat_alias=False) == out

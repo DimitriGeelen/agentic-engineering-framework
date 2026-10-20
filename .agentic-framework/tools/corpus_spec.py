@@ -69,6 +69,9 @@ TYPE_TO_TAG = {
     # T-4488: plain untyped activity (832 T-1215), round-trip only — third-party
     # BPMN uses it widely; re-emitted as authored, never coerced to a typed task.
     "task": "task",
+    # T-4495: decision-table activity (832 kitchen-sink.bpmn), round-trip only —
+    # AEF evaluates no DMN; re-emitted as authored, like the plain task above.
+    "business-rule": "businessRuleTask",
 }
 TAG_TO_TYPE = {v: k for k, v in TYPE_TO_TAG.items()}
 
@@ -78,7 +81,7 @@ TAG_TO_TYPE = {v: k for k, v in TYPE_TO_TAG.items()}
 # hard-error); they are listed so adding them to TYPE_TO_TAG carries `default`.
 DEFAULT_FLOW_TAGS = {"exclusiveGateway", "inclusiveGateway", "complexGateway",
                      "serviceTask", "userTask", "scriptTask", "subProcess",
-                     "callActivity", "task"}
+                     "callActivity", "task", "businessRuleTask"}
 
 # Known structured aef:* ext children; everything else is preserved verbatim.
 _KNOWN_EXT = {"uid", "position", "eventDef", "link", "meta", "workflowMeta", "laneMeta",

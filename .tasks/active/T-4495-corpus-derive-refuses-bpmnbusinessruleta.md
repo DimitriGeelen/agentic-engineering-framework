@@ -2,9 +2,13 @@
 id: T-4495
 name: "corpus derive refuses bpmn:businessRuleTask (parse_map unsupported tag)"
 description: >
-  832 (msg dbd05180): corpus derive refuses tests/fixtures/third-party/kitchen-sink.bpmn at bpmn:businessRuleTask ('parse_map unsupported tag'). Same class as T-4374 (callActivity) and T-4488 (plain task): add businessRuleTask to tools/corpus_spec.py TYPE_TO_TAG with a lossless round trip and its NODE_OCCUPANCY entry. Coordinate with T-4488 (same files): do after T-4488 lands.
+  832 (msg dbd05180): corpus derive refuses tests/fixtures/third-party/kitchen-sink.bpmn
+  at bpmn:businessRuleTask ('parse_map unsupported tag'). Same class as T-4374 (callActivity)
+  and T-4488 (plain task): add businessRuleTask to tools/corpus_spec.py TYPE_TO_TAG
+  with a lossless round trip and its NODE_OCCUPANCY entry. Coordinate with T-4488
+  (same files): do after T-4488 lands.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T15:49:42Z
-last_update: 2026-10-20T15:49:42Z
-date_finished: null
+last_update: 2026-10-20T18:05:30Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T16:00:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T16:01:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4495: corpus derive refuses bpmn:businessRuleTask (parse_map unsupported tag)
@@ -62,8 +94,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `tools/corpus_spec.py` TYPE_TO_TAG maps a node type to `businessRuleTask`, with a NODE_OCCUPANCY entry for it
+- [x] `parse_map` of a map containing `<bpmn:businessRuleTask>` no longer refuses; parse → emit → parse round trip is lossless (same type, name, flows)
+- [x] The 832 refusal shape (kitchen-sink.bpmn lives in 832's repo, not here) is reproduced by an inline businessRuleTask map in the test: `unsupported BPMN element <bpmn:businessRuleTask` before the fix, 0 refusals after
+- [x] `tools/corpus_lint.py` NODE_OCCUPANCY has a `business-rule` entry (activity box, 64) and DEFAULT_FLOW_TAGS carries `businessRuleTask` (tActivity defines `default`)
+- [x] Regression test added next to the T-4488 test; fails without the fix, passes with it; neighbouring corpus_spec tests still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +283,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k business_rule > /tmp/.t4495 2>&1 && grep -q "1 passed" /tmp/.t4495 && ! grep -q failed /tmp/.t4495
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_lint_lane_overflow.py -q > /tmp/.t4495b 2>&1 && grep -q passed /tmp/.t4495b && ! grep -q failed /tmp/.t4495b
+python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_spec, corpus_lint; assert corpus_spec.TYPE_TO_TAG['business-rule']=='businessRuleTask'; assert corpus_lint.NODE_OCCUPANCY['business-rule']==64"
+bin/fw vendor self --check --task T-4495
 
 ## RCA
 
@@ -264,6 +303,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 832 (msg dbd05180) ran `corpus derive` on its third-party kitchen-sink.bpmn and got `parse: unsupported BPMN element <bpmn:businessRuleTask …> — parse_map cannot round-trip this tag`. Reproduced here with an inline map.
+
+**Root cause:** `tools/corpus_spec.py:49` TYPE_TO_TAG is a closed allow-list of BPMN node tags; `parse_map` hard-errors on any tag not in it (`tools/corpus_spec.py:~424`, the T-2614 guard against silently dropping nodes). `businessRuleTask` was never added, so a valid BPMN 2.0 activity type is refused.
+
+**Why structurally allowed:** the allow-list grows only when a consumer hits a missing tag (T-4374 callActivity, T-4488 task, now this) — no test enumerates the BPMN 2.0 activity tags against TYPE_TO_TAG, and the refusal is deliberate (fail loud, not lose data), so each gap surfaces one at a time in the field.
+
+**Prevention:** regression test `test_business_rule_task_is_accepted_and_round_trips` pins the tag. The remaining BPMN activity tags (sendTask, receiveTask, manualTask) are the same class and still refused; enumerating the full BPMN 2.0 flow-node set in one test would close the class rather than the instance — noted for the parent, not done here (scope).
 
 ## Evolution
 
@@ -345,3 +392,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4495-corpus-derive-refuses-bpmnbusinessruleta.md
 - **Context:** Initial task creation
+
+### 2026-10-20T18:05:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
