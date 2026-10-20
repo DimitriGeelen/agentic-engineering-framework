@@ -1,10 +1,25 @@
 ---
 id: T-4491
-name: "runme job queue slice 1 (T-4470 GO): fixed operator command, job menu and lifecycle, with jobs run OUT-OF-PROCESS from a declarative step manifest"
+name: "runme job queue slice 1 (T-4470 GO): fixed operator command, job menu and lifecycle,
+  with jobs run OUT-OF-PROCESS from a declarative step manifest"
 description: >
-  Operator GO on inception T-4470 (2026-10-20), adapt-not-port. Slice 1 delivers 832's fixed command + menu of job states + retired/done lifecycle on top of fw runme (T-3675), WITH the prerequisites from docs/reports/T-4470-runme-job-queue.md §7: (1) jobs never sourced into the launcher's shell: a job is a declarative step manifest the launcher reads as data, each step executed in a child process, so job code cannot reach confirm/ask/fail/check; (2) what the operator confirms is the resolved command (helper bodies and expanded arguments shown), not a title; (4) no scripted-answer path outside the test runner, refused when steps target a real project; (5) the queue is never an authorisation: Tier 0 and approvals stay at their own gates (test that a queued tier-0 command still hits check-tier0). Reference only: 832's code in docs/reports/T-4470-inputs/ (UNTRUSTED; re-implement, do not copy blindly) and the six review findings in §6, each of which must have a test proving it cannot happen in AEF's version. Slices 2 (sha manifest over job+helpers rechecked per step; per-step confirm with typeahead drain) and 3 (ordered batches with up-front refusal) are separate tasks.
+  Operator GO on inception T-4470 (2026-10-20), adapt-not-port. Slice 1 delivers 832's
+  fixed command + menu of job states + retired/done lifecycle on top of fw runme (T-3675),
+  WITH the prerequisites from docs/reports/T-4470-runme-job-queue.md §7: (1) jobs
+  never sourced into the launcher's shell: a job is a declarative step manifest the
+  launcher reads as data, each step executed in a child process, so job code cannot
+  reach confirm/ask/fail/check; (2) what the operator confirms is the resolved command
+  (helper bodies and expanded arguments shown), not a title; (4) no scripted-answer
+  path outside the test runner, refused when steps target a real project; (5) the
+  queue is never an authorisation: Tier 0 and approvals stay at their own gates (test
+  that a queued tier-0 command still hits check-tier0). Reference only: 832's code
+  in docs/reports/T-4470-inputs/ (UNTRUSTED; re-implement, do not copy blindly) and
+  the six review findings in §6, each of which must have a test proving it cannot
+  happen in AEF's version. Slices 2 (sha manifest over job+helpers rechecked per step;
+  per-step confirm with typeahead drain) and 3 (ordered batches with up-front refusal)
+  are separate tasks.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +53,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T15:33:12Z
-last_update: 2026-10-20T15:33:12Z
-date_finished: null
+last_update: '2026-10-20T15:45:29Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +65,58 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T15:35:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T15:45:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=312,acs=12)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4491: runme job queue slice 1 (T-4470 GO): fixed operator command, job menu and lifecycle, with jobs run OUT-OF-PROCESS from a declarative step manifest
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice 1 of T-4470 (docs/reports/T-4470-runme-job-queue.md §6-7). Jobs are `job.json`
+manifests under `.context/runme/jobs/<NNN>-<name>/`, read as data by `lib/runme_queue.py`;
+each step runs in a child process. Operator's fixed command: `bin/fw runme queue`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw runme job new|dry-run|list|retire` and `fw runme queue` exist; jobs are `job.json` manifests (title, task, why, helpers, steps of `argv` or `sh`), validated with unknown keys refused; a `job.sh` is never loaded
+- [x] Menu shows each pending job with its state (NOT REHEARSED / ready / CHANGED since dry-run) and last outcome; `done` and `retired` jobs are never offered or run
+- [x] F1: job code cannot reach the launcher's confirm/ask/fail — test: a job defining and exporting `confirm(){ return 0; }` with operator answer `n` runs nothing
+- [x] F2: loading/listing/dry-running a job executes nothing — test: `$(...)`, redirects and backticks in every field create no file
+- [x] F3: dry-run runs no checks — test: a manifest with a `preflight`/`checks` key is refused and a valid dry-run executes nothing
+- [x] F4: the operator confirms the resolved command — test: helper body and full argv appear in the plan shown before the prompt
+- [x] F5: what was rehearsed is what runs — test: editing a helper after dry-run makes the job CHANGED and refused (full per-step sha manifest is slice 2)
+- [x] F6: scripted answers only in tests — test: `FW_RUNME_TEST_ANSWERS` refused without `FW_RUNME_TEST=1` and refused on a real project root; queue refused under `CLAUDECODE=1` outside test mode
+- [x] Prereq 5: a queued Tier 0 step is passed through `check-tier0.sh` before it runs and is stopped there without its own approval — test
+- [x] Existing runme tests stay green (t3675, t3741, t3878, t4464)
+- [x] 832 addendum 1 (parent consult t4491-field-lessons): per-step read-only `probe` asked for, run and shown before confirm, failure stops the job; a job leaving staged index changes is named then and at the next run; menu lines cut to terminal width, verified on a real 80-column pty; choice shown by job name — tests 16-18 (arrow picker is slice 3, so the ESC O encoding leg lands there)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +301,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4491_runme_job_queue.bats > /tmp/.t4491.out 2>&1 && ! grep -q "^not ok" /tmp/.t4491.out
+test "$(grep -c '# skip' /tmp/.t4491.out)" -eq 0
+timeout 300 bats tests/unit/t3675_runme.bats tests/unit/t3741_runme_events.bats tests/unit/t3878_runme_pending.bats tests/unit/t4464_runme_watch_until.bats > /tmp/.t4491b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4491b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4491_runme_job_queue.bats > /tmp/.t4491c.out 2>&1 && grep -q clean /tmp/.t4491c.out
+bash -n lib/runme.sh && python3 -m py_compile lib/runme_queue.py
+bin/fw vendor self --check --task T-4491
 
 ## RCA
 
@@ -320,6 +379,11 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-20 — job format and where the launcher lives
+- **Chose:** `job.json` parsed by python (`lib/runme_queue.py`), steps as `argv` (no shell) or `sh` (bash -c in a child, helper bodies prepended and shown verbatim); one confirm per job in slice 1.
+- **Why:** a manifest that is only ever `json.loads`-ed cannot redefine the launcher (F1) nor run at load (F2); the shown text is generated from the same object that is executed (F4).
+- **Rejected:** a sourced `job.sh` with a load-time probe (832's design — findings 1-2); per-step confirm now (slice 2 owns it with the sha recheck).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -345,3 +409,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4491-runme-job-queue-slice-1-t-4470-go-fixed-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T15:35:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

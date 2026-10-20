@@ -13,6 +13,8 @@
 #       waits for START, then EXIT or STOPPED; --until start returns 0 at START so you can say "it began", then re-arm for exit)
 #   fw runme path <name>
 #   fw runme pending   (session start: WATCH LOST / RUN IN FLIGHT / RUN ENDED WITHOUT RECORD, T-3878)
+#   fw runme job new|dry-run|list|retire ...   the job queue (T-4491): jobs are job.json data, never sourced
+#   fw runme queue     the operator's ONE fixed command: menu of pending jobs, plan shown, y/N, run
 #
 # Exit codes: new 0 / 2 usage; watch = the script's exit code, 124 on timeout.
 
@@ -22,7 +24,7 @@ _runme_root() { echo "${PROJECT_ROOT:-$(pwd)}/.context/runme"; }
 # 30 min for a runme called "--help".
 _runme_valid_name() { [[ "$1" =~ ^[A-Za-z0-9._][A-Za-z0-9._-]*$ ]]; }
 
-_runme_usage() { sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+_runme_usage() { sed -n '2,19p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 runme_new() {
     local name="${1:-}"; shift || true
@@ -213,8 +215,11 @@ runme_main() {
         new) runme_new "$@" ;;
         watch) runme_watch "$@" ;;
         pending) runme_pending ;;
+        # T-4491: the queue lives in python so a job is parsed as data and each step runs in a
+        # child process; nothing a job says can reach the code that asks the operator.
+        job|queue) PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}" python3 "$(dirname "${BASH_SOURCE[0]}")/runme_queue.py" "$sub" "$@" ;;
         path) _runme_valid_name "${1:-}" && echo "$(_runme_root)/$1/runme.sh" ;;
         ""|-h|--help|help) _runme_usage ;;
-        *) echo "fw runme: unknown subcommand '$sub' (new|watch|pending|path)" >&2; return 2 ;;
+        *) echo "fw runme: unknown subcommand '$sub' (new|watch|pending|path|job|queue)" >&2; return 2 ;;
     esac
 }
