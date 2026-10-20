@@ -1592,6 +1592,21 @@ for sd in (d.get('scoped_drivers') or []):
         break
 PY
 )
+    # T-4473 (010-termlink T-3472): --scoring-file on an already-approved driver
+    # ATTACHES the spec in place instead of hitting the dedup refusal below, which
+    # left remove + re-approve (losing the approval record) as the only route.
+    # Attaching changes how a sovereign-approved driver scores, so it takes the
+    # operator path (--i-am-human / --from-watchtower) only.
+    if [ -n "$existing_ts" ] && [ -n "$scoring_file" ]; then
+        if [ "$i_am_human" = "false" ] && [ "$from_watchtower" = "false" ]; then
+            echo "Error: attaching a scoring spec to the approved driver '$name' needs the operator path." >&2
+            echo "  Re-run with --i-am-human (human typing) or from Watchtower." >&2
+            return 1
+        fi
+        _arc_persist_scoring "$f" "$name" "$scoring_file" "attach" "$weight" || return $?
+        echo "OK: attached scoring spec to approved driver '$name' on arc '$id' (approval record kept)."
+        return 0
+    fi
     if [ -n "$existing_ts" ]; then
         echo "Error: driver '$name' already in scoped_drivers (approved at $existing_ts)." >&2
         echo "  To re-approve with a different weight, first remove it:" >&2
@@ -1671,6 +1686,13 @@ PYREPORT
         echo "Reviewer PASS ($approved_by) — checks (a) scorable, (b) distinct, (c) distinguishes."
     fi
 
+    # T-4473: validate a --scoring-file BEFORE the entry exists, so an invalid spec
+    # never leaves an approved driver without one (the operator paths skip the
+    # reviewer, which was the only place it was checked).
+    if [ -n "$scoring_file" ]; then
+        _arc_persist_scoring "$f" "$name" "$scoring_file" "check" || return $?
+    fi
+
     # Append + flip-if-draft via python (preserves YAML structure).
     python3 - "$f" "$name" "$w" "$rationale" "$approved_by" "$reviewer_json" <<'PY'
 import os, sys, datetime
@@ -1736,6 +1758,11 @@ else:
     with open(tmp_fn, 'w') as fh: yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
 os.replace(tmp_fn, fn)
 PY
+
+    # T-4473: the spec the reviewer passed is now actually stored on the entry.
+    if [ -n "$scoring_file" ]; then
+        _arc_persist_scoring "$f" "$name" "$scoring_file" "new" || return $?
+    fi
 
     echo "OK: approved scoped driver '$name' (weight=$w) on arc '$id'."
     local new_status
@@ -2453,7 +2480,9 @@ _arc_approve_help() {
     echo "  On FAIL nothing is approved and the failed checks are named."
     echo "    Preview a verdict: fw arc review-driver <arc-id> \"<name>\" --dry-run"
     echo "    --scoring-file P   give an ad-hoc driver (one with no proposal behind it) the"
-    echo "                       scoring spec check (a) needs; schema in policy/value-drivers.yaml"
+    echo "                       scoring spec check (a) needs; schema in policy/value-drivers.yaml."
+    echo "                       Stored inline as scoring: on the entry. On an already-approved"
+    echo "                       driver it attaches the spec in place (operator path only, T-4473)"
     echo "    --all-reviewed     approve every proposed driver that passes, up to the cap"
     echo ""
     echo "  OVERRIDE PATH: --i-am-human / --from-watchtower approve WITHOUT the reviewer,"
@@ -2462,6 +2491,65 @@ _arc_approve_help() {
     echo "  --none --justification declares the arc has no scoped drivers worth tracking;"
     echo "  it stays §ACD-gated (a negative ruling is sovereign) and the justification is"
     echo "  logged to .context/audits/arc-scoped-driver-bypass.jsonl."
+}
+
+# T-4473 (010-termlink T-3472): persist a --scoring-file spec INLINE on a scoped
+# driver. arc_approve_driver used to hand the file to the reviewer only and write
+# an entry without `scoring:`; the estimator reads only an inline block
+# (estimator.py load_scoring_spec), so every spec approved this way scored
+# nothing. A relative path resolves against PROJECT_ROOT, as the reviewer's does.
+# Modes: check (validate only), new (entry just appended), attach (entry already
+# approved; approval fields untouched; --weight, if given, must match).
+# Exit: 0 ok, 2 invalid spec / weight mismatch / did not round-trip, 3 not found.
+_arc_persist_scoring() {
+    local f="$1" name="$2" scoring_file="$3" mode="$4" weight="${5:-}"
+    FW_ROOT_FOR_EST="${FRAMEWORK_ROOT:-$PROJECT_ROOT}" python3 - "$f" "$name" "$scoring_file" "$mode" "$weight" "$PROJECT_ROOT" <<'PY'
+import datetime, importlib.util, os, sys
+import yaml
+fn, name, sfile, mode, weight, root = sys.argv[1:7]
+est_path = os.path.join(os.environ["FW_ROOT_FOR_EST"], "agents/termlink/bvp-estimator/estimator.py")
+spec = importlib.util.spec_from_file_location("bvp_estimator_persist", est_path)
+est = importlib.util.module_from_spec(spec); spec.loader.exec_module(est)
+spath = sfile if os.path.isabs(sfile) else os.path.join(root, sfile)
+try:
+    loaded = yaml.safe_load(open(spath).read()) or {}
+except Exception as e:
+    print(f"Error: --scoring-file {sfile}: unreadable ({type(e).__name__}: {e})", file=sys.stderr); sys.exit(2)
+block = loaded.get("scoring") if isinstance(loaded, dict) and isinstance(loaded.get("scoring"), dict) else loaded
+errors = est.validate_scoring_spec(block) if isinstance(block, dict) and block else ["empty or non-mapping spec"]
+if errors:
+    print(f"Error: --scoring-file {sfile} does not validate: {errors[0]}", file=sys.stderr); sys.exit(2)
+if mode == "check":
+    sys.exit(0)
+try:
+    from ruamel.yaml import YAML
+    y = YAML(); y.preserve_quotes = True; y.indent(mapping=2, sequence=4, offset=2)
+    with open(fn) as fh: data = y.load(fh)
+except ImportError:
+    y = None; data = yaml.safe_load(open(fn).read())
+entry = next((sd for sd in (data.get("scoped_drivers") or []) if sd.get("name") == name), None)
+if entry is None:
+    print(f"Error: driver '{name}' not in scoped_drivers", file=sys.stderr); sys.exit(3)
+if mode == "attach" and weight and int(weight) != int(entry.get("weight", -1)):
+    print(f"Error: --weight {weight} differs from the approved weight {entry.get('weight')}; attaching a spec does not change weight", file=sys.stderr); sys.exit(2)
+ts = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+entry["scoring"] = block
+entry["scoring_source"] = sfile
+entry["scoring_attached_at"] = ts
+tmp = fn + ".tmp"
+with open(tmp, "w") as fh:
+    if y:
+        y.dump(data, fh)
+    else:
+        yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
+os.replace(tmp, fn)
+# Round-trip: what the estimator will read must be what was validated.
+reread = yaml.safe_load(open(fn).read()) or {}
+e2 = next((sd for sd in (reread.get("scoped_drivers") or []) if sd.get("name") == name), None)
+s2 = est.load_scoring_spec(e2)
+if s2 is None or est.validate_scoring_spec(s2):
+    print(f"Error: scoring spec for '{name}' did not survive the write", file=sys.stderr); sys.exit(2)
+PY
 }
 
 _arc_approve_driver_acd_gate() {

@@ -1,13 +1,21 @@
 ---
 id: T-4473
-name: "Adapt termlink proposal 341: lib/arc.sh approve-driver persists --scoring-file inline (+ attach to approved driver)"
+name: "Adapt termlink proposal 341: lib/arc.sh approve-driver persists --scoring-file
+  inline (+ attach to approved driver)"
 description: >
-  010-termlink pickup offset 341 (their T-3472). HEAD lib/arc.sh stores only scoring_file: path on the reviewer's inline entry and writes no scoring: block; estimator.load_scoring_spec reads only the inline scoring: dict, so a spec approved via --scoring-file scores nothing. Proposal adds _arc_persist_scoring (check/new/attach), validated before the entry exists and round-tripped after write; attach to an already-approved driver is operator-path only. Analysis and diff: docs/reports/T-4472-termlink-proposals-triage.md, docs/reports/T-4472-inputs/341-lib_arc.sh.diff (applies at HEAD and v1.8.13). Needs red/green bats; keep reviewer path unchanged. Triage only, not applied.
+  010-termlink pickup offset 341 (their T-3472). HEAD lib/arc.sh stores only scoring_file:
+  path on the reviewer's inline entry and writes no scoring: block; estimator.load_scoring_spec
+  reads only the inline scoring: dict, so a spec approved via --scoring-file scores
+  nothing. Proposal adds _arc_persist_scoring (check/new/attach), validated before
+  the entry exists and round-tripped after write; attach to an already-approved driver
+  is operator-path only. Analysis and diff: docs/reports/T-4472-termlink-proposals-triage.md,
+  docs/reports/T-4472-inputs/341-lib_arc.sh.diff (applies at HEAD and v1.8.13). Needs
+  red/green bats; keep reviewer path unchanged. Triage only, not applied.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4472, T-4463]
@@ -39,8 +47,8 @@ origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T14:07:07Z
-last_update: 2026-10-20T14:07:07Z
-date_finished: null
+last_update: 2026-10-20T14:40:54Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T14:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T14:16:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4473: Adapt termlink proposal 341: lib/arc.sh approve-driver persists --scoring-file inline (+ attach to approved driver)
@@ -63,8 +99,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw arc approve-driver <arc> <name> --scoring-file <spec>` (reviewer path and --i-am-human path) writes the validated spec as an inline `scoring:` block on the new `scoped_drivers` entry, and `estimator.load_scoring_spec` returns it
+- [x] An invalid `--scoring-file` on the --i-am-human path is refused before any entry is appended (arc YAML unchanged)
+- [x] `--scoring-file` on an already-approved driver attaches the spec in place under --i-am-human (approval fields kept), is refused without the operator path, and is refused on a --weight mismatch
+- [x] Reviewer path without --scoring-file is unchanged (no `scoring:` key written); regression bats `tests/unit/t4473_arc_scoring_file_persist.bats` red without the fix, green with it
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4473` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +288,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n lib/arc.sh
+timeout 300 bats tests/unit/t4473_arc_scoring_file_persist.bats > /tmp/.t4473.out 2>&1 && ! grep -q "^not ok" /tmp/.t4473.out
+test "$(grep -c '# skip' /tmp/.t4473.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/t4473_arc_scoring_file_persist.bats > /tmp/.t4473.lint 2>&1 && grep -q clean /tmp/.t4473.lint
+bin/fw vendor self --check --task T-4473
 
 ## RCA
 
@@ -265,6 +309,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a scoped driver approved with `fw arc approve-driver … --scoring-file spec.yaml` passes review ("scorable") but contributes nothing to any ranking (010-termlink T-3472, pickup offset 341).
+
+**Root cause:** `lib/arc.sh` `arc_approve_driver` hands `--scoring-file` only to the reviewer's inline entry (`e["scoring_file"]`, arc.sh:1639); the append heredoc (arc.sh:1676-1708) writes `{name, weight, approved_at, approved_by, rationale, reviewer}` and no `scoring:`. The estimator reads only an inline `scoring:` dict (`estimator.py:2320 load_scoring_spec`), so the spec the reviewer validated is discarded. The --i-am-human/--from-watchtower paths skip the reviewer, so a bad file was not even validated there. A second gap: once approved, the T-1979 dedup refused any later `--scoring-file`, leaving remove + re-approve (losing the approval record) as the only route.
+
+**Why structurally allowed:** the reviewer's check (a) and the writer are separate code; T-3429 tests asserted the review verdict and the entry's existence, never that the approved entry carries a spec the estimator can load. Nothing round-tripped writer → estimator.
+
+**Prevention:** `_arc_persist_scoring` validates before append and re-reads after write through `estimator.load_scoring_spec` + `validate_scoring_spec` (fails loudly if the stored spec is not what the estimator would score); `tests/unit/t4473_arc_scoring_file_persist.bats` pins writer → estimator round trip on both approval paths.
 
 ## Evolution
 
@@ -346,3 +398,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4473-adapt-termlink-proposal-341-libarcsh-app.md
 - **Context:** Initial task creation
+
+### 2026-10-20T14:40:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
