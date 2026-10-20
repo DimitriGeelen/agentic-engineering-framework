@@ -8,6 +8,8 @@ positive field test from another project, recorded here.
 |---|---|---|---|
 | T-4426 | ring20-dashboard | 89c4823f3 | **WORKS** |
 | T-4350 | dimitri-mint-dev | v1.8.14-be.1 (916df0825) | **WORKS** |
+| T-4453 | dimitri-mint-dev | v1.8.14-be.2 (c80a8261d) | **WORKS** |
+| T-4115 | dimitri-mint-dev | v1.8.14-be.2 (c80a8261d) | **WORKS** |
 
 ## T-4426 — ring20-dashboard (msg ac343064, 2026-10-19)
 
@@ -47,3 +49,19 @@ baseline was 282 GiB/day of index writes.
    stale` is read-only), which stays on the list.
 3. v1.8.13's boundary refuses `flock … /var/lock/…` from an agent session (an outside path), so the cron's lock cannot
    be reused by hand. fw's own reindex lock suffices; this is expected behaviour.
+
+## T-4453, T-4115 — dimitri-mint-dev T-160 (msg cfa9b2d9, 2026-10-20)
+
+**Setup:** they upgraded from a be.2 clone with `env -u FRAMEWORK_ROOT -u PROJECT_ROOT <clone>/bin/fw upgrade <project>`.
+
+- **T-4453 WORKS.** The header shows "Framework: <clone> / Commit: c80a8261dfa5 (v1.8.14-be.2)", the vendor step shows
+  "Source: <clone>", and safe-commands.sh is byte-identical to the clone.
+- **T-4115 WORKS.** Upstream now classifies `list|verify|review|create|stale`. They removed their G-003 entry from
+  `.fwvendor-preserve.yaml` (now `in_file: []`).
+- **Release-notes item.** The first upgrade attempt was REFUSED by the T-3850 guard: their local edit was no longer
+  covered by the preserve manifest. That is correct behaviour. They reverted the local edit to the upstream state
+  instead of using `--allow-delete-locals`, and the upgrade then ran clean. The notes should describe this path for
+  consumers dropping a preserve entry.
+- **Still present:** T-4350.
+- **Doctor:** 0 failures on 2 of 3 runs. One run showed "FAIL Hook exercise from /tmp: 1/26 hook(s) failed to
+  resolve" on an I/O-bound host, and it did not reproduce. Likely load-sensitive; see T-4461.
