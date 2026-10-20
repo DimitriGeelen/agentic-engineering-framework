@@ -87,10 +87,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/upgrade_template_shipped.py regenerated via `python3 lib/upgrade_template_sync.py --gen-known`; the diff only ADDS hashes (no shipped version dropped)
-- [ ] `test_shipped_hash_module_is_current_t3965` and the rest of tests/unit/test_upgrade_template_sync_t3955.py pass
-- [ ] Vendored copy synced: `bin/fw vendor self --check --task T-4441` clean
-- [ ] RCA names why the template-edit path did not regenerate it (3rd recurrence: T-4035, T-4213, T-4419) and the prevention gap
+- [x] lib/upgrade_template_shipped.py regenerated via `python3 lib/upgrade_template_sync.py --gen-known`; the diff only ADDS hashes (no shipped version dropped)
+- [x] `test_shipped_hash_module_is_current_t3965` and the rest of tests/unit/test_upgrade_template_sync_t3955.py pass
+- [x] Vendored copy synced: `bin/fw vendor self --check --task T-4441` clean
+- [x] RCA names why the template-edit path did not regenerate it (3rd recurrence: T-4035, T-4213, T-4419) and the prevention gap
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
