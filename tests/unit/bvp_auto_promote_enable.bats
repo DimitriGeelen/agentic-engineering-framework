@@ -11,7 +11,7 @@
 #   - cron entry registered + matches "in sync" check
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     [ -f "$FRAMEWORK_ROOT/bin/fw" ] || skip "bin/fw not found"
     cd "$FRAMEWORK_ROOT"
 

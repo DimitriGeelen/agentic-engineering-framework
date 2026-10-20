@@ -11,7 +11,7 @@
 #      exit 0. Unknown arc → "Error: arc '...' not found", exit 1.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     [ -f "$FRAMEWORK_ROOT/lib/arc.sh" ] || skip "lib/arc.sh not found"
     [ -f "$FRAMEWORK_ROOT/lib/arc_membership.sh" ] || skip "lib/arc_membership.sh not found"
 

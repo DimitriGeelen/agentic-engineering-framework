@@ -16,7 +16,7 @@
 # cannot silently become a detector nobody calls (the T-3302 failure class).
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     LIB="$FRAMEWORK_ROOT/lib/audit-anchor-task.sh"
     AUDIT="$FRAMEWORK_ROOT/agents/audit/audit.sh"
     [ -f "$LIB" ] || skip "lib/audit-anchor-task.sh not found"

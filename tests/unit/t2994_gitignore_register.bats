@@ -9,7 +9,7 @@
 # — which is precisely how T-2990's first detector shipped green and useless.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     LIB="$FRAMEWORK_ROOT/lib/gitignore-register.sh"
     [ -f "$LIB" ] || skip "lib/gitignore-register.sh not found"
     source "$LIB"

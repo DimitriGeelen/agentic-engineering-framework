@@ -24,7 +24,7 @@
 # the root is a redirect that did nothing, and it LOOKS like it worked.
 
 setup() {
-    _FW_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    _FW_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     [ -f "$_FW_ROOT/bin/fw" ] || skip "fw not found"
 
     TEST_ROOT="$(mktemp -d)"

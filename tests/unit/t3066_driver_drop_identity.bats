@@ -18,10 +18,11 @@
 # pointed at a scratch register, so nothing here touches policy/value-drivers.yaml
 # or the live proposals queue.
 
-FW=/opt/999-Agentic-Engineering-Framework/bin/fw
+FW_REPO="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
+FW="$FW_REPO/bin/fw"
 
 setup() {
-    cd /opt/999-Agentic-Engineering-Framework
+    cd "$FW_REPO"
     SCRATCH="$(mktemp -d)"
     mkdir -p "$SCRATCH/policy" "$SCRATCH/.context" "$SCRATCH/.tasks/active"
     touch "$SCRATCH/.framework.yaml"

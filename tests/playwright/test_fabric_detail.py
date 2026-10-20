@@ -5,6 +5,8 @@ Route: web/blueprints/fabric.py:144
 """
 import os
 
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 class TestFabricComponentDetail:
     """Tests for GET /fabric/component/<name>."""
@@ -12,7 +14,7 @@ class TestFabricComponentDetail:
     def _real_component_name(self):
         """Get a real component name from .fabric/components/."""
         cards_dir = os.path.join(
-            os.environ.get("PROJECT_ROOT", "/opt/999-Agentic-Engineering-Framework"),
+            os.environ.get("PROJECT_ROOT", _REPO_ROOT),
             ".fabric", "components",
         )
         if os.path.isdir(cards_dir):

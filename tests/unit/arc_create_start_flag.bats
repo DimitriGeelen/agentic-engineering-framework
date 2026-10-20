@@ -5,7 +5,7 @@
 # while keeping the draft state reachable as the default.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     [ -f "$FRAMEWORK_ROOT/bin/fw" ] || skip "bin/fw not found"
     cd "$FRAMEWORK_ROOT"
     ARC_DEFAULT="t1852-default-$$"

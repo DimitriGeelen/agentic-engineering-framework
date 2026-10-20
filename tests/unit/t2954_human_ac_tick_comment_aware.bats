@@ -27,7 +27,7 @@
 # they are the no-regression side.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     HOOK_SH="$FRAMEWORK_ROOT/agents/context/check-human-ac-tick.sh"
     [ -f "$HOOK_SH" ] || skip "hook wrapper not found"
 

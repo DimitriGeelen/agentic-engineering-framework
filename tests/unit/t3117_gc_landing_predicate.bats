@@ -28,7 +28,7 @@
 # which *ref* is consulted; a single-repo fixture cannot express the difference.
 
 setup() {
-    _FW_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    _FW_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     LIB="$_FW_ROOT/lib/worktree.sh"
     [ -f "$LIB" ] || skip "lib not found: $LIB"
 

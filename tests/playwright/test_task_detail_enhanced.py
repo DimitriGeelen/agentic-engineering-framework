@@ -6,6 +6,8 @@ using real active tasks from the .tasks/active/ directory.
 import os
 import re
 
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 class TestTaskDetailEnhanced:
     """Enhanced task detail page tests using real tasks."""
@@ -13,7 +15,7 @@ class TestTaskDetailEnhanced:
     def _find_active_task_id(self):
         """Find a real active task ID."""
         tasks_dir = os.path.join(
-            os.environ.get("PROJECT_ROOT", "/opt/999-Agentic-Engineering-Framework"),
+            os.environ.get("PROJECT_ROOT", _REPO_ROOT),
             ".tasks", "active",
         )
         for f in os.listdir(tasks_dir):

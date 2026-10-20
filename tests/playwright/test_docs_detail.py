@@ -8,7 +8,10 @@ import os
 from playwright.sync_api import Page
 
 from tests.playwright.target import TEST_URL
-DOCS_DIR = "/opt/999-Agentic-Engineering-Framework/docs/generated/components"
+DOCS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "docs", "generated", "components",
+)
 
 
 def _url(path: str) -> str:

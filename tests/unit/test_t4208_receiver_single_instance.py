@@ -137,7 +137,7 @@ def test_ensure_all_drops_the_aef_tree_from_the_child_environment(host, monkeypa
     probe.write_text("#!/bin/sh\necho \"FW=${FRAMEWORK_ROOT:-unset}\" > \"$PWD/env.txt\"\n"
                      "echo '{\"action\": \"ok\"}'\n", encoding="utf-8")
     probe.chmod(0o755)
-    monkeypatch.setenv("FRAMEWORK_ROOT", "/opt/999-Agentic-Engineering-Framework")
+    monkeypatch.setenv("FRAMEWORK_ROOT", str(FW_ROOT))
     watcher.ensure_all()
     assert (root / "env.txt").read_text(encoding="utf-8").strip() == "FW=unset"
 

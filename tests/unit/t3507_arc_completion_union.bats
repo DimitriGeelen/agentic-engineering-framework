@@ -32,7 +32,7 @@
 # test and it does not drag the framework's own invariant suites in.
 
 setup_file() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     AUDIT="$FRAMEWORK_ROOT/agents/audit/audit.sh"
     [ -f "$AUDIT" ] || return 0
     command -v git >/dev/null 2>&1 || return 0
@@ -116,7 +116,7 @@ teardown_file() {
 }
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     [ -f "$FRAMEWORK_ROOT/agents/audit/audit.sh" ] || skip "audit.sh not found"
     command -v git >/dev/null 2>&1 || skip "git not on PATH"
     command -v python3 >/dev/null 2>&1 || skip "python3 not on PATH"

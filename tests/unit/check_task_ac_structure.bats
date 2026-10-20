@@ -18,7 +18,7 @@
 #   - non-matching tool (e.g. Bash) → pass-through
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     HOOK_SH="$FRAMEWORK_ROOT/agents/context/check-task-ac-structure.sh"
     HOOK_PY="$FRAMEWORK_ROOT/agents/context/check-task-ac-structure.py"
     [ -f "$HOOK_SH" ] || skip "hook .sh wrapper not found"

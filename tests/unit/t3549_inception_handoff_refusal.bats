@@ -24,7 +24,7 @@
 # assertion below is satisfied by a build that refuses everything.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     [ -f "$FRAMEWORK_ROOT/lib/review.sh" ] || { echo "missing lib/review.sh" >&2; return 1; }
     P="$(mktemp -d)"
     mkdir -p "$P/.tasks/active" "$P/.context/working"

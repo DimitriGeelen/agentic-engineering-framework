@@ -22,8 +22,6 @@ set -eu
 # PROJECT_ROOT resolution: framework first, consumer fallback
 if [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT/.context" ]; then
     log_dir="$PROJECT_ROOT/.context/working"
-elif [ -d "/opt/999-Agentic-Engineering-Framework/.context" ]; then
-    log_dir="/opt/999-Agentic-Engineering-Framework/.context/working"
 else
     # Last resort — walk up from script location
     here="$(cd "$(dirname "$0")" && pwd)"

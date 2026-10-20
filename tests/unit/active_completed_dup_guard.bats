@@ -8,7 +8,7 @@
 # never reaches the hook at all (it moves the file via a Bash subprocess).
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     HOOK_SH="$FRAMEWORK_ROOT/agents/context/check-active-completed-dup.sh"
     HOOK_PY="$FRAMEWORK_ROOT/agents/context/check-active-completed-dup.py"
     [ -f "$HOOK_SH" ] || skip "hook .sh wrapper not found"

@@ -24,7 +24,7 @@ load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo
 # silently, for everyone. It is written first on purpose.
 
 setup() {
-    _FW_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    _FW_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     GUARD="$_FW_ROOT/agents/git/lib/worktree-corpus-guard.sh"
     GIT_AGENT="$_FW_ROOT/agents/git/git.sh"
     [ -f "$GUARD" ] || skip "guard not found: $GUARD"

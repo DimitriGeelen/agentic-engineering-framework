@@ -13,7 +13,7 @@
 # working, the test fails on evidence rather than on an assertion about wording.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     LIB="$FRAMEWORK_ROOT/lib/verification-port.sh"
     [ -f "$LIB" ] || skip "lib/verification-port.sh not found"
     source "$LIB"

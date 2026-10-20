@@ -22,7 +22,7 @@ load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo
 # clean" are indistinguishable to a reader and only one of them is true.
 
 setup() {
-    _FW_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    _FW_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     LIB="$_FW_ROOT/lib/hook-parity.sh"
     [ -f "$LIB" ] || skip "lib not found: $LIB"
     # shellcheck source=/dev/null

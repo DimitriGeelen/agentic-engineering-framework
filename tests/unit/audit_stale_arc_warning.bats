@@ -8,7 +8,7 @@
 # ≤ 1). Symmetric to T-1856 anchor existence check.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     AUDIT="$FRAMEWORK_ROOT/agents/audit/audit.sh"
     [ -f "$AUDIT" ] || skip "audit.sh not found"
     command -v git >/dev/null 2>&1 || skip "git not on PATH"

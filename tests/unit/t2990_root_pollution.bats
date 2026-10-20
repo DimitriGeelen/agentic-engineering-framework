@@ -7,7 +7,7 @@
 # planted-junk case below carries as much weight as the clean-root one.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     LIB="$FRAMEWORK_ROOT/lib/root-pollution.sh"
     [ -f "$LIB" ] || skip "lib/root-pollution.sh not found"
     source "$LIB"

@@ -15,7 +15,7 @@
 #   bypass env set            → allowed AND logged
 
 setup() {
-    _FW_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    _FW_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     HOOK="$_FW_ROOT/agents/context/check-worktree-governance-write.sh"
     [ -f "$HOOK" ] || skip "hook not found: $HOOK"
 

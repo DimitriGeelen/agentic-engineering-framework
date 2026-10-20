@@ -30,7 +30,7 @@
 # Asserting rc would have produced a suite that is green for the wrong reason.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     # T3232_LIB_OVERRIDE lets the mutation harness point the function-level tests
     # at a sandboxed copy, so mutating a leg never edits the live gate library.
     LIB="${T3232_LIB_OVERRIDE:-$FRAMEWORK_ROOT/lib/verification-port.sh}"

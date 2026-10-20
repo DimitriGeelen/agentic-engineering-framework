@@ -7,7 +7,7 @@
 # the runtime witness; these tests pin its detection contract.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     [ -f "$FRAMEWORK_ROOT/bin/fw" ] || skip "bin/fw not found"
     [ -f "$FRAMEWORK_ROOT/lib/resolver.py" ] || skip "lib/resolver.py not found"
 }

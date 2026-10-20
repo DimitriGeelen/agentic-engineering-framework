@@ -23,7 +23,7 @@
 # That is the case the regex got wrong, and the only one that catches it.
 
 setup() {
-    _FW_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    _FW_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     SCRIPT="$_FW_ROOT/bin/migrate-horizon-null-completed.sh"
     [ -x "$SCRIPT" ] || skip "migration script not found: $SCRIPT"
 

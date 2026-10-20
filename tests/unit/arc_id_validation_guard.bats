@@ -8,7 +8,7 @@
 # Predicated on T-1848 D-Immutability — valid refs stay valid forever.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     HOOK_SH="$FRAMEWORK_ROOT/agents/context/check-arc-id.sh"
     HOOK_PY="$FRAMEWORK_ROOT/agents/context/check-arc-id.py"
     [ -f "$HOOK_SH" ] || skip "hook .sh wrapper not found"

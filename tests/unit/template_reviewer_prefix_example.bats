@@ -11,7 +11,7 @@
 # `human-ac-mechanical-signal`) will fire when this author-time nudge is missed.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     [ -f "$FRAMEWORK_ROOT/.tasks/templates/default.md" ] || skip "template not found"
     [ -f "$FRAMEWORK_ROOT/CLAUDE.md" ] || skip "CLAUDE.md not found"
 }

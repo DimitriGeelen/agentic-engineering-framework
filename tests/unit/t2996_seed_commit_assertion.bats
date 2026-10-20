@@ -12,7 +12,7 @@
 # The text tests above them exist only to catch a regression to the old shape.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     GF="$FRAMEWORK_ROOT/lib/seeds/tasks/greenfield/T-003-first-governed-commit.md"
     EP="$FRAMEWORK_ROOT/lib/seeds/tasks/existing-project/T-002-first-governed-commit.md"
     [ -f "$GF" ] && [ -f "$EP" ] || skip "seed files not found"

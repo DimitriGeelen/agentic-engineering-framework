@@ -9,7 +9,7 @@
 # polluting the real project.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     HOOK="$FRAMEWORK_ROOT/agents/context/check-active-task.sh"
     [ -f "$HOOK" ] || skip "hook script not found"
 

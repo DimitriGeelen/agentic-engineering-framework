@@ -14,7 +14,7 @@
 # honest answer here, which is exactly the shape in which a broken check hides.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     P="$(mktemp -d)"
     mkdir -p "$P/.context/arcs" "$P/docs"
 }

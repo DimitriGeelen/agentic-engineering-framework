@@ -19,7 +19,7 @@
 # the developer's actual store and pass for the wrong reason.
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     AUDIT="$FRAMEWORK_ROOT/agents/audit/audit.sh"
     [ -f "$AUDIT" ] || skip "audit.sh not found"
     [ -f "$FRAMEWORK_ROOT/tools/corpus_lint.py" ] || skip "corpus_lint.py not found"

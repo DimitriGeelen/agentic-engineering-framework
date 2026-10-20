@@ -21,7 +21,7 @@ load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo
 # behaviour change with no failing test unless one is written for it.
 
 setup() {
-    _FW_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    _FW_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     [ -f "$_FW_ROOT/lib/upgrade.sh" ] || skip "lib/upgrade.sh not found"
     [ -f "$_FW_ROOT/lib/hook_parity.py" ] || skip "lib/hook_parity.py not found"
 
