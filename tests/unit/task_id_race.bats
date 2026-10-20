@@ -108,7 +108,10 @@ teardown() {
     run bash "$FAKE_ROOT/agents/task-create/create-task.sh" \
         --name "should-fail" --description "x" --type build --owner agent
     [ "$status" -ne 0 ]
-    [[ "$output" == *"keylock.sh"* ]] || [[ "$output" == *"keylock_acquire"* ]]
+    # T-4449: bash's own "keylock.sh: No such file or directory" also contains
+    # "keylock.sh", so match create-task.sh's OWN refusal — the line that proves
+    # the run reached the keylock guard rather than dying earlier.
+    [[ "$output" == *"create-task.sh: failed to source lib/keylock.sh"* ]]
 }
 
 @test "task-id race (T-1424): no silent-skip guard remains in create-task.sh" {

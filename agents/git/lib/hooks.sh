@@ -24,7 +24,7 @@
 # PL-078 still applies: when you change the CONTENT of any hook template below,
 # bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
 # together, so consumers' next install-hooks redeploys all four.
-COMMIT_MSG_HOOK_VERSION="1.18"
+COMMIT_MSG_HOOK_VERSION="1.19"
 
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
@@ -184,7 +184,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.18
+# VERSION=1.19
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -422,9 +422,10 @@ HOOK_EOF
 # pre-commit hook - Master-merge-only guard (T-2396) + task-corpus guard (T-3110)
 #                   + stale-index guard (T-4167) + Secret Scan (T-1844)
 #                   + bats dead-negation lint on staged tests (T-4379)
+#                   + task-template shipped-hash currency (T-4449)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.6
+# VERSION=1.7
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -655,6 +656,45 @@ if [ -f "$DN_LINT" ] && command -v python3 >/dev/null 2>&1; then
             echo "Origin: T-4379 / T-4398." >&2
             exit 1
         fi
+    fi
+fi
+
+# FW-HOOK-BLOCK: t4449-template-shipped
+# T-4449: an edit to .tasks/templates/*.md must regenerate the shipped-hash list
+# lib/upgrade_template_shipped.py (fw upgrade's KEPT/UPDATED decision reads it).
+# Only test_upgrade_template_sync_t3955 noticed, in the nightly, a day later:
+# T-4035, T-4213, T-4441. This compares generate_known() — reused, not reimplemented
+# — against the STAGED list, only in a repo that carries both files (the framework
+# repo) and only when a template is staged, so every other commit pays one stat.
+TS_SYNC="$PROJECT_ROOT/lib/upgrade_template_sync.py"
+if [ -f "$TS_SYNC" ] && [ -f "$PROJECT_ROOT/lib/upgrade_template_shipped.py" ] \
+    && command -v python3 >/dev/null 2>&1 \
+    && [ -n "$(git diff --cached --name-only -- '.tasks/templates/*.md' 2>/dev/null)" ]; then
+    _ts_rc=0
+    _ts_out=$(git show :lib/upgrade_template_shipped.py 2>/dev/null | python3 -c '
+import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1] + "/lib")
+from upgrade_template_sync import generate_known
+ns = {}
+exec(sys.stdin.read(), ns)
+shipped, known = ns.get("SHIPPED", {}), generate_known(Path(sys.argv[1]))
+stale = sorted(k for k in set(shipped) | set(known) if shipped.get(k) != known.get(k))
+print("\n".join(stale))
+sys.exit(1 if stale else 0)
+' "$PROJECT_ROOT" 2>&1) || _ts_rc=$?
+    if [ "$_ts_rc" -ne 0 ]; then
+        echo "" >&2
+        echo "ERROR: Commit blocked — lib/upgrade_template_shipped.py is not current" >&2
+        echo "for the staged task templates:" >&2
+        echo "" >&2
+        echo "$_ts_out" | sed 's/^/  /' >&2
+        echo "" >&2
+        echo "Regenerate and stage it:" >&2
+        echo "  python3 lib/upgrade_template_sync.py --gen-known && git add lib/upgrade_template_shipped.py" >&2
+        echo "Bypass: git commit --no-verify   (Tier 0, logged)" >&2
+        echo "Origin: T-4449 (T-4035, T-4213, T-4441)." >&2
+        exit 1
     fi
 fi
 
