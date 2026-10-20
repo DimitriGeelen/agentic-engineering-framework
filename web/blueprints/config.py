@@ -14,6 +14,7 @@ bp = Blueprint("config", __name__)
 SETTINGS = [
     ("CONTEXT_WINDOW", "800000", "Context window size for budget enforcement (tokens)"),
     ("PORT", "3000", "Watchtower web UI listen port"),
+    ("WATCHTOWER_START_TIMEOUT", "60", "Seconds watchtower start waits for the launched server to answer /api/_identity as this project's Watchtower. On expiry the start stops that server, clears the pid/port/url triple and exits 1, so no server runs without a url file (T-4460)"),
     ("UX_SHOT_WIDTHS", "1024,1440,1920", "Comma-separated viewport widths for fw ux shots (agents/ux-review/ux_shots.py). At least 3 entries, each 320-7680, no duplicates. T-4212"),
     ("HOST", "0.0.0.0", "Watchtower bind address (env FW_HOST, read by web/config.py). A specific address makes the shell side probe and advertise that address instead of localhost; 0.0.0.0 or :: means all interfaces (T-4041, GitHub #88)"),
     ("WATCHTOWER_OPEN_FIREWALL", "0", "1 = Watchtower start may add a UFW allow rule for its port when UFW is active and the bind is not loopback. 0 (default) never changes the firewall; it prints the exact ufw command instead. A loopback bind never touches UFW (T-4297)"),
