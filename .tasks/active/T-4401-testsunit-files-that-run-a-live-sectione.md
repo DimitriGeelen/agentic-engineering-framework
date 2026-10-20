@@ -18,10 +18,10 @@ description: >
   on 2026-10-19 showed non-audit children (python3, shellcheck, cat, timeout) holding
   fd 200, so the lock lives as long as any child audit.sh spawned.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4382, T-4383, T-4377]
@@ -53,7 +53,7 @@ origin: {kind: "agent", source: "T-4382"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:26:30Z
-last_update: '2026-10-19T15:32:01Z'
+last_update: 2026-10-20T20:13:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,8 +105,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every tests/unit file that ran a live sectioned audit (`audit.sh --section …` / `fw audit --section …`) against the real repo now runs it against an isolated fixture PROJECT_ROOT (private `.context/locks/audit.lock`) or the lockless `--check` path, so it can no longer skip on exit 75 — audit.bats (8 calls → fixture), t3443 control (→ `--check invariant-suite,dead-negation-lint`); the one exception, t3062 (measures this repo's own pre-push cost), is marked `# live-audit-ok:` with its reason
+- [x] A lint (`tools/audit-live-repo-lint.py`) flags any bats/pytest test under tests/unit that runs a sectioned audit with the real repo as PROJECT_ROOT; it reports clean on the fixed corpus (and flags all 9 calls in the pre-fix audit.bats + t3443)
+- [x] A regression test proves the lint fires on a synthetic offender and stays quiet on a fixture-rooted call
+- [x] Each converted test file passes with zero exit-75 skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -284,8 +286,24 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 tools/audit-live-repo-lint.py tests/unit > /tmp/.t4401-lint.out 2>&1 && grep -q clean /tmp/.t4401-lint.out
+timeout 600 bats tests/unit/t4401_audit_live_repo_lint.bats > /tmp/.t4401-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4401-a.out
+test "$(grep -c '# skip' /tmp/.t4401-a.out)" -eq 0
+timeout 600 bats tests/unit/audit.bats > /tmp/.t4401-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4401-b.out
+test "$(grep -c '# skip' /tmp/.t4401-b.out)" -eq 0
+timeout 900 bats tests/unit/t3443_audit_structure_framework_scope.bats > /tmp/.t4401-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4401-c.out
+test "$(grep -c '# skip' /tmp/.t4401-c.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/audit.bats tests/unit/t4401_audit_live_repo_lint.bats tests/unit/t3443_audit_structure_framework_scope.bats > /tmp/.t4401-dn.out 2>&1 && grep -q clean /tmp/.t4401-dn.out
 
 ## RCA
+
+**Symptom:** tests/unit/audit.bats ran 8 live tests in 20 s with 8 skips ("audit lock contention (exit 75)") — reported ok, measured nothing — or, when it won the lock, paid the whole live structure section (336–690 s) per test and timed out the file. t3443's control leg and t3062 have the same shape (both in the 2026-10-20 unit-suite `files_timed_out`).
+
+**Root cause:** `agents/audit/audit.sh:614-631` takes a repo-wide `flock -n` on `$CONTEXT_DIR/locks/audit.lock` for every sectioned run and exits 75 when it is held. The lock path derives from PROJECT_ROOT (`audit.sh:409-411`), so a test that runs `audit.sh --section …` without pointing PROJECT_ROOT at a fixture shares the lock with every cron audit, pre-push gate and sibling worker in this checkout. The tests (`tests/unit/audit.bats:63-106,188-217`, `tests/unit/t3443_audit_structure_framework_scope.bats:69`) then turn 75 into `skip` (T-3328), which is correct as a verdict but makes the test's coverage a lottery.
+
+**Why structurally allowed:** a bats skip is `ok … # skip`, so the suite and close gates read green (T-3217 class). Nothing checked *where* a test points its audit; the T-3328 helper made the skip honest but not the coverage. T-4382 fixed one file (fabric_coverage) by hand, with no rail for the rest.
+
+**Prevention:** `tools/audit-live-repo-lint.py` flags any tests/unit statement that runs a sectioned audit without a fixture PROJECT_ROOT (statement-level or file-level), allowing only a line-above `# live-audit-ok: <reason>` marker; `tests/unit/t4401_audit_live_repo_lint.bats` runs it over tests/unit (fails on a new offender) and pins its positive/negative controls.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -381,3 +399,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4401-testsunit-files-that-run-a-live-sectione.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:13:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

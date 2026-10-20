@@ -34,6 +34,7 @@ setup() {
     # nothing about the duration, which is the only thing this test measures.
     # The verdict is deliberately not asserted; other checks own that.
     rc=0
+    # live-audit-ok: the subject is the pre-push cost of THIS repo's structure section; a fixture or a clone measures something else (T-4401: a shared clone ran 316 s and lacks the deployed-cron state the assertions below read)
     timeout $(( BUDGET_S * 3 )) "$FW_ROOT/agents/audit/audit.sh" --section structure \
         > "$out_file" 2>&1 || rc=$?
     elapsed=$(( $(date +%s) - start ))

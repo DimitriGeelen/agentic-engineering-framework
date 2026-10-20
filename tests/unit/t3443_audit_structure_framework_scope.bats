@@ -66,8 +66,13 @@ _t3443_require_audit_ran() {
 
 @test "T-3443: framework-root audit (control, PROJECT_ROOT == FRAMEWORK_ROOT) still emits both verdicts" {
     local out
-    out="$(cd "$FRAMEWORK_ROOT" && timeout 600 env PROJECT_ROOT="$FRAMEWORK_ROOT" bash agents/audit/audit.sh --sections structure 2>&1 || true)"
+    # T-4401: the lockless single-check path (T-4209), not --sections structure.
+    # The whole section takes the repo audit lock, so this leg either skipped
+    # (lock held by a cron audit or another worker) or ran ~340 s of unrelated
+    # checks; the next test pins that --check still speaks for the section.
+    out="$(cd "$FRAMEWORK_ROOT" && timeout 600 env PROJECT_ROOT="$FRAMEWORK_ROOT" bash agents/audit/audit.sh --check invariant-suite,dead-negation-lint 2>&1 || true)"
     _t3443_require_audit_ran "$out"
+    echo "$out" | grep -q "=== END AUDIT ==="
 
     echo "$out" | grep -qE "Invariant suite \(tests/lint\)"
     echo "$out" | grep -qE "Dead-negation lint \(tests/\)"
@@ -75,4 +80,24 @@ _t3443_require_audit_ran() {
     # The skip lines must be absent on the control — the guard must not
     # over-fire on the very repo it exists to keep checking.
     [ "$(echo "$out" | grep -c "skipped — framework-repo property")" -eq 0 ]
+}
+
+@test "T-4401: the control leg reads the same functions the structure section runs" {
+    # The control uses `--check invariant-suite,dead-negation-lint`, which runs
+    # those two functions alone and takes no lock. That speaks for the structure
+    # section only while the section still calls both, and only while the live
+    # control never falls back to the whole section in the real repo (lock
+    # lottery: skip, or ~340 s).
+    local a="$FRAMEWORK_ROOT/agents/audit/audit.sh" fn
+    for fn in check_invariant_suite check_dead_negation_lint; do
+        run awk -v fn="$fn" '/^section_mark "structure"/{s=1; next} s && /^section_mark "/{exit}
+                 s && $0 == fn {found=1} END{exit !found}' "$a"
+        [ "$status" -eq 0 ]
+    done
+    # Pattern assembled from pieces so this line does not match itself.
+    local live='env PROJECT_ROOT="$FRAMEWORK_ROOT" bash agents/audit/'"audit.sh"
+    run grep -cF "$live --section" "$BATS_TEST_FILENAME"
+    [ "$output" -eq 0 ]
+    run grep -cF "$live --check invariant-suite,dead-negation-lint" "$BATS_TEST_FILENAME"
+    [ "$output" -eq 1 ]
 }

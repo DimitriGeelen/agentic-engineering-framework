@@ -52,57 +52,107 @@ _assert_audit_ran() {
     [[ "$output" == *"--quiet"* ]]
 }
 
-# --- Section filtering ---
+# --- Section filtering: a fixture project with a private lock (T-4401) ---
+# These tests used to run audit.sh against the LIVE repo. audit.sh takes the
+# repo-wide flock $CONTEXT_DIR/locks/audit.lock for every sectioned run
+# (audit.sh:614-631) and exits 75 when it is held, so under any cron audit,
+# pre-push gate or sibling worker they skipped (ok, nothing measured: 8/8 on
+# 2026-10-19), and when they won the lock they paid the whole live structure
+# section (336-690 s) each. A fixture PROJECT_ROOT gets its own lock, timing
+# ledger and dated YAML under the fixture root, so these always run, in seconds.
+# tools/audit-live-repo-lint.py keeps new tests from going back to the live repo.
 
-# "audit runs structure section" was merged into "the live structure section
-# completes with a full report" below (T-4385): both ran the identical live
-# `--section structure` (~690 s on 2026-10-19), so the file paid for it twice
-# and hit the suite's 900 s per-file cap. Its STRUCTURE-header assertion moved
-# with it, so no assertion was lost.
+_section_project() {
+    local root="$1"
+    mkdir -p "$root/.context" "$root/.tasks/active" "$root/.tasks/completed"
+    git -C "$root" init -q
+    printf 'hello\n' > "$root/README.md"
+    git -C "$root" add README.md
+    git -C "$root" -c user.email=t@example.invalid -c user.name=t commit -qm "T-001: init"
+}
+
+# Runs audit.sh on a fixture root; same env hygiene as _audit_synthetic below.
+_audit_fixture() {
+    local root="$1"; shift
+    env -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY \
+        NTFY_ENABLED=false PROJECT_ROOT="$root" "$AUDIT" "$@"
+}
+
+# A fixture audit has nothing to contend with, so 75 is a fault here, not a
+# skip; and its corpus is fixed, so 0/1 (pass or warnings) is the only verdict.
+_assert_fixture_ran() {
+    if [ "$status" -eq 75 ]; then
+        echo "exit 75 on a fixture project: its lock is not private"
+        return 1
+    fi
+    if [ "$status" -gt 1 ]; then
+        echo "audit exited $status on the fixture project. Output:"
+        echo "$output"
+        return 1
+    fi
+}
+
+# One structure run serves the structure and YAML tests below (the section
+# costs ~15 s even on a fixture; running it per test would only repeat it).
+setup_file() {
+    local root="$BATS_FILE_TMPDIR/section-project"
+    _section_project "$root"
+    mkdir -p "$BATS_FILE_TMPDIR/yaml-out"
+    local st=0
+    _audit_fixture "$root" --section structure --output "$BATS_FILE_TMPDIR/yaml-out" \
+        > "$BATS_FILE_TMPDIR/structure.out" 2>&1 || st=$?
+    echo "$st" > "$BATS_FILE_TMPDIR/structure.status"
+}
+
+_structure_result() {
+    status=$(cat "$BATS_FILE_TMPDIR/structure.status")
+    output=$(cat "$BATS_FILE_TMPDIR/structure.out")
+}
 
 @test "audit runs compliance section" {
-    run "$AUDIT" --section compliance
-    _assert_audit_ran
+    _section_project "$BATS_TEST_TMPDIR/p"
+    run _audit_fixture "$BATS_TEST_TMPDIR/p" --section compliance
+    _assert_fixture_ran
     [[ "$output" == *"COMPLIANCE"* ]] || [[ "$output" == *"TASK"* ]]
 }
 
 @test "audit runs traceability section" {
-    run "$AUDIT" --section traceability
-    _assert_audit_ran
+    _section_project "$BATS_TEST_TMPDIR/p"
+    run _audit_fixture "$BATS_TEST_TMPDIR/p" --section traceability
+    _assert_fixture_ran
     [[ "$output" == *"TRACEABILITY"* ]] || [[ "$output" == *"GIT"* ]]
 }
 
 # --- Output format ---
 
 @test "audit output contains PASS/WARN/FAIL markers" {
-    run "$AUDIT" --section structure
-    _assert_audit_ran
-    # Should have at least one PASS
-    [[ "$output" == *"PASS"* ]]
+    _structure_result
+    _assert_fixture_ran
+    [[ "$output" == *"[PASS]"* ]]
 }
 
 @test "audit output contains AUDIT REPORT header" {
-    run "$AUDIT" --section structure
-    _assert_audit_ran
+    _structure_result
+    _assert_fixture_ran
     [[ "$output" == *"AUDIT REPORT"* ]]
 }
 
 @test "audit output contains timestamp" {
-    run "$AUDIT" --section structure
-    _assert_audit_ran
+    _structure_result
+    _assert_fixture_ran
     [[ "$output" == *"Timestamp"* ]]
 }
 
-# --- Live smoke (T-4372 rule) ---
-
-@test "the live structure section completes with a full report" {
-    # A smoke, not a contract: the live corpus decides the verdict, so exit 2
-    # with a complete report counts as "ran" (T-4372). The exit-code contract
-    # is asserted against the synthetic project below, where it is known.
-    run "$AUDIT" --section structure
-    _assert_audit_ran
+@test "the structure section completes with a full report" {
+    _structure_result
+    _assert_fixture_ran
     [[ "$output" == *"STRUCTURE"* ]]
     [[ "$output" == *"=== END AUDIT ==="* ]]
+}
+
+@test "the fixture audit took its lock under the fixture, not the repo" {
+    # The property the conversion rests on: PROJECT_ROOT moves the lock.
+    [ -f "$BATS_FILE_TMPDIR/section-project/.context/locks/audit.lock" ]
 }
 
 # --- Exit-code and --quiet contracts: a synthetic project (T-4383) ---
@@ -186,34 +236,23 @@ _audit_synthetic() {
 # --- YAML output ---
 
 @test "audit --output writes YAML report" {
-    local tmpdir
-    tmpdir=$(mktemp -d)
-    run "$AUDIT" --section structure --output "$tmpdir"
-    _assert_audit_ran
-    # Should create a YAML file in the output dir
+    _structure_result
+    _assert_fixture_ran
     local yaml_count
-    yaml_count=$(ls "$tmpdir"/*.yaml 2>/dev/null | wc -l)
+    yaml_count=$(ls "$BATS_FILE_TMPDIR/yaml-out"/*.yaml 2>/dev/null | wc -l)
     [ "$yaml_count" -ge 1 ]
-    rm -rf "$tmpdir"
 }
 
 @test "audit YAML report is valid" {
-    local tmpdir
-    tmpdir=$(mktemp -d)
-    # T-3315: run + -le 1 — a bare call made the audit's legitimate exit 1
-    # (warnings on a live repo) fail the test before its actual subject, the
-    # YAML assertion, ever ran.
-    run "$AUDIT" --section structure --output "$tmpdir"
-    [ "$status" -eq 75 ] && skip "audit lock contention (T-2930/T-3297) — no verdict, not a failure"
-    _assert_audit_ran
+    _structure_result
+    _assert_fixture_ran
     local yaml_file
-    yaml_file=$(ls "$tmpdir"/*.yaml 2>/dev/null | head -1)
-    # T-3315: assert the report exists — the old `if -n` guard turned a
-    # missing report into a silent pass.
+    yaml_file=$(ls "$BATS_FILE_TMPDIR/yaml-out"/*.yaml 2>/dev/null | head -1)
+    # T-3315: assert the report exists — an `if -n` guard turned a missing
+    # report into a silent pass.
     [ -n "$yaml_file" ]
-    run python3 -c "import yaml; yaml.safe_load(open('$yaml_file'))"
+    run python3 -c "import yaml, sys; yaml.safe_load(open(sys.argv[1]))" "$yaml_file"
     [ "$status" -eq 0 ]
-    rm -rf "$tmpdir"
 }
 
 # --- T-3328 control leg: helper discrimination, hermetic ---
