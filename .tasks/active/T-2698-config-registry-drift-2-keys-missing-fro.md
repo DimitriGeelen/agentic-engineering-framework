@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-31T09:21:11Z
-last_update: 2026-10-20T21:52:19Z
+last_update: 2026-10-20T23:47:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -58,6 +58,15 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=6 (lines=145,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T22:00:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=179,acs=5)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-07-31T09:30:12Z'
@@ -101,7 +110,9 @@ halves were fixed by later tasks; no code change made under this task.
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] ARC_COMPLETION_THRESHOLD and DISPATCH_MODEL_DEFAULT are present in web/blueprints/config.py SETTINGS (Watchtower /config) — fixed upstream by T-2838 (8b41090b4)
 - [x] The CLAUDE.md question is decided and the test asserts it: table is curated (CLAUDE.md §Configuration, T-2841 paragraph), test asserts only "CLAUDE.md names no FW_ key the registry lacks" — fixed upstream by T-2841 (2c1b25466)
-- [x] tests/lint/config-registry-parity.bats is green at HEAD
+- [x] APPROVAL_PENDING_WARN_HOURS (added to lib/config.sh by T-3079, 0688ba4f1, without a Watchtower row) is present in web/blueprints/config.py SETTINGS
+- [x] tests/lint/config-registry-parity.bats is green at HEAD (re-run 2026-10-21: it was red again, 67 vs 66 keys)
+- [x] Vendored copy in sync: `bin/fw vendor self --check --task T-2698` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -169,6 +180,8 @@ halves were fixed by later tasks; no code change made under this task.
 bats tests/lint/config-registry-parity.bats
 grep -q '"ARC_COMPLETION_THRESHOLD"' web/blueprints/config.py
 grep -q '"DISPATCH_MODEL_DEFAULT"' web/blueprints/config.py
+grep -q '"APPROVAL_PENDING_WARN_HOURS"' web/blueprints/config.py
+bin/fw vendor self --check --task T-2698
 
 ## RCA
 
@@ -201,7 +214,17 @@ so the red test sat unseen.
 **Prevention (already in place, verified at HEAD):** T-2838 (8b41090b4) added the
 keys; test 1 of the parity bats fails on any future config.sh↔config.py drift.
 T-2841 (2c1b25466) made the CLAUDE.md test assert the true direction (no phantom
-keys) and wrote the curated-subset rationale into CLAUDE.md. No fix under T-2698.
+keys) and wrote the curated-subset rationale into CLAUDE.md.
+
+**Recurrence, 2026-10-21 (close-gate re-run):** the parity bats went red again —
+`lib/config.sh:365` `APPROVAL_PENDING_WARN_HOURS` (T-3079, 0688ba4f1) shipped with no
+row in `web/blueprints/config.py` SETTINGS. Same root cause as (1): two hand-maintained
+copies. Why it slipped: the parity bats lives under `tests/lint/` and T-3079's own
+Verification ran only its t3079 bats; nothing at T-3079's close ran the lint. Fix: add
+the row after TIER0_APPROVAL_TTL (its sibling). Prevention: the existing parity test
+(test 1 + test 3) is the detector and caught it here; the structural gap — a registry
+edit's close not running the lint — is the same as T-2697's and stays covered by the
+lint suite in the nightly/pre-push path.
 
 ## Evolution
 
