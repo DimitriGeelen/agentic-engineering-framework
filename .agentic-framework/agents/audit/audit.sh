@@ -6906,7 +6906,7 @@ if should_run_section "compliance" || should_run_section "oe-daily"; then
             [ -z "$task_id" ] && continue
             warn "CTL-029: $task_id has all Agent ACs ticked but status='$task_status' — completable, not closed" \
                  "Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)" \
-                 "Run: bin/fw task update $task_id --status work-completed"
+                 "Run: bin/fw task update $task_id --status work-completed (or sweep all: bin/fw task archive-eligible)"
             completable_warn=$((completable_warn + 1))
         done < <(python3 - "$PROJECT_ROOT/.tasks/active" <<'PYEOF' 2>/dev/null
 import os, re, sys
