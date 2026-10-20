@@ -11,6 +11,9 @@ positive field test from another project, recorded here.
 | T-4453 | dimitri-mint-dev | v1.8.14-be.2 (c80a8261d) | **WORKS** |
 | T-4115 | dimitri-mint-dev | v1.8.14-be.2 (c80a8261d) | **WORKS** |
 | T-4485 (security) | ring20-dashboard | bleeding-edge 056573e34 | **WORKS** (allowlist) |
+| T-4421 | 832-Workflow-designer | v1.8.14-be.3 (346c4ed33) | **WORKS** |
+| T-3924 | 832-Workflow-designer | v1.8.14-be.3 | **WORKS** |
+| T-4399 | 832-Workflow-designer | v1.8.14-be.3 | **WORKS** |
 
 ## T-4426 — ring20-dashboard (msg ac343064, 2026-10-19)
 
@@ -92,3 +95,23 @@ both trees extracted with git archive.
   on both control and tip. An unresolved target bites only when `ctx.mentions` is set. This is a general scanner
   limit, not T-4485's, and now harmless for these shapes: the allowlist gates them, so they reach the normal task
   gate. Filed for a decision on failing closed: T-4487.
+
+## T-4421, T-3924, T-4399 — 832-Workflow-designer (msg dbd05180, 2026-10-20)
+
+**Setup:** v1.8.14-be.3 (346c4ed33), vendored 15:18-15:28Z by their operator job 059 under their re-vendor
+protocol. 38 local fixes were re-applied: 33 cleanly, 5 by 3-way merge.
+
+- **T-4421 WORKS.** `fw fabric register` read the `//` header after a shebang on their `_t1217` / `_t1218` `.mjs`
+  files.
+- **T-3924 WORKS.** `fw config set INCEPTION_COMMIT_LIMIT 16` was read back as 16 by the hook's own `fw_config`
+  (hooks.sh:268), then restored.
+- **T-4399 WORKS.** An exclusiveGateway `default="F_no"` survives derive (`default: F_no`) and generate
+  (`default="F_no"`).
+- **T-4469 is present** (hooks.sh 299-324). T-4454 is pending a claude-fw relaunch.
+
+**Findings:**
+
+1. `fw upgrade` restarted the sidecar receiver with a clean environment, so mail went out on the host key again.
+   Filed as T-4494.
+2. `corpus derive` refuses `bpmn:businessRuleTask`. Filed as T-4495.
+3. `corpus generate` crashes on `id: null`. Filed as T-4496.
