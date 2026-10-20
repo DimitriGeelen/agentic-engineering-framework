@@ -9,7 +9,7 @@ description: >
   doctor OK, git 0 insertions 0 deletions). The verdict names a set it does not run
   over.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -27,7 +27,7 @@ related_tasks: [T-3149, T-3148]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T09:48:37Z
-last_update: '2026-08-26T10:00:19Z'
+last_update: 2026-10-20T21:22:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -79,8 +79,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Doctor's agent-executable check (bin/fw Check 7) enumerates the agent scripts from disk instead of a hardcoded 7-item list, and its OK line states how many scripts it checked
+- [x] A non-executable agent script outside the old list (e.g. agents/designer/designer.sh at mode 644) makes doctor print `FAIL  Agent not executable: designer/designer.sh` (live proof: first run after the fix printed `FAIL  Agent not executable: govd/govd.sh`)
+- [x] Regression bats test pins both legs (non-listed script at 644 → FAIL; all executable → OK with count) and is green; neighbouring doctor tests still green
+- [x] `bin/fw vendor self --check --task T-3154` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -173,8 +175,35 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t3154_doctor_agent_entry_scripts.bats 2>&1); echo "$out" | grep -q '^ok 4 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw doctor --quick > /tmp/.t3154.out 2>&1 || true; grep -q "agent entry scripts executable" /tmp/.t3154.out && ! grep -q "Agent not executable" /tmp/.t3154.out
+test -x agents/govd/govd.sh
+bin/fw vendor self --check --task T-3154
 
 ## RCA
+
+**Symptom:** `fw doctor` printed `OK  All agent scripts executable` in the same run where
+agents/designer/designer.sh was at mode 644 (measured by consumer 001-CashWeb).
+
+**Root cause:** bin/fw Check 7 (`for agent in audit/audit.sh … task-create/create-task.sh`)
+iterated a hardcoded seven-item list written before designer, fabric, bpmn, observe, termlink and
+govd existed, then printed a verdict about *all* agent scripts. The verdict named a set the
+predicate never ran over (verdict-without-predicate).
+
+**Why structurally allowed:** a fixed list has no failure mode when the population grows — it
+stays green. Nothing compared the list to the agents on disk, and no test pinned the check. T-3317
+later added git-index exec-bit parity (WARN), which would catch a drifted tracked file, but did not
+touch Check 7's false "All".
+
+**Fix:** `agent_entry_scripts` in lib/exec-bit-drift.sh enumerates every `<name>/<name>.sh` on
+disk plus `task-create/create-task.sh`; Check 7 loops over it, FAILs on zero found, and its OK line
+states the count (`All 13 agent entry scripts executable`). The first live run surfaced a real
+instance: agents/govd/govd.sh was 644 although its usage text invokes it directly. Set to 755
+(source and self-vendored copy; consumers get the mode via `rsync -a` on vendor).
+
+**Prevention:** tests/unit/t3154_doctor_agent_entry_scripts.bats — enumerator includes agents
+outside the old list, excludes libs/helpers (mutation control), a 644 entry script is caught, and
+a wiring leg asserts doctor's count equals the enumerator's and that the old literal list is gone.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -254,6 +283,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-20 — which set doctor checks
+- **Chose:** agent entry scripts, `<name>/<name>.sh` plus task-create/create-task.sh, enumerated from disk.
+- **Why:** these are the scripts fw executes directly; 8 other agents/*/*.sh are deliberately 644 (sourced or `bash`-invoked), so "every .sh" would FAIL on correct files.
+- **Rejected:** every agents/*/*.sh (false FAILs); git index mode 100755 (already covered by T-3317's parity WARN, and unavailable where the vendored dir is not a git work tree).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -270,3 +304,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3154-fw-doctor-reports-all-agent-scripts-exec.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:22:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

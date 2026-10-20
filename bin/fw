@@ -2429,16 +2429,24 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
     fi
 
     # Check 7: Agent scripts executable
-    local agents_ok=true
-    for agent in audit/audit.sh context/context.sh git/git.sh handover/handover.sh healing/healing.sh resume/resume.sh task-create/create-task.sh; do
+    # T-3154: enumerate the entry scripts from disk (lib/exec-bit-drift.sh) and
+    # state the count. The old hardcoded seven-item list printed "All agent
+    # scripts executable" over a set it never ran over (designer.sh at 644, OK).
+    local agents_ok=true agents_n=0 agent
+    while IFS= read -r agent; do
+        [ -n "$agent" ] || continue
+        agents_n=$((agents_n + 1))
         if [ ! -x "$AGENTS_DIR/$agent" ]; then
             echo -e "  ${RED}FAIL${NC}  Agent not executable: $agent"
             agents_ok=false
             issues=$((issues + 1))
         fi
-    done
-    if [ "$agents_ok" = true ]; then
-        echo -e "  ${GREEN}OK${NC}  All agent scripts executable"
+    done < <(agent_entry_scripts "$AGENTS_DIR")
+    if [ "$agents_n" -eq 0 ]; then
+        echo -e "  ${RED}FAIL${NC}  No agent entry scripts found under $AGENTS_DIR"
+        issues=$((issues + 1))
+    elif [ "$agents_ok" = true ]; then
+        echo -e "  ${GREEN}OK${NC}  All $agents_n agent entry scripts executable"
     fi
 
     _doctor_phase "plugin task-awareness"  # T-3452

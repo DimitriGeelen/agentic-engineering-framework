@@ -52,3 +52,22 @@ exec_bit_drifted_files() {
     done < <(exec_bit_candidates "$repo")
     return "$found"
 }
+
+# agent_entry_scripts [agents_dir]
+#   T-3154: prints the agent entry scripts (relative to agents_dir, one per
+#   line) that fw doctor's "Agent scripts executable" check runs over:
+#   every <name>/<name>.sh present on disk, plus task-create/create-task.sh
+#   (the one entry script that predates the naming convention). Enumerated
+#   from disk so the verdict covers the set it names — the old hardcoded
+#   seven-item list printed "All agent scripts executable" while
+#   designer/designer.sh sat at mode 644 (001-CashWeb).
+agent_entry_scripts() {
+    local dir="${1:-${AGENTS_DIR:-$PWD/agents}}"
+    local d n
+    for d in "$dir"/*/; do
+        n=$(basename "$d")
+        [ -f "$dir/$n/$n.sh" ] && printf '%s\n' "$n/$n.sh"
+    done
+    [ -f "$dir/task-create/create-task.sh" ] && printf '%s\n' "task-create/create-task.sh"
+    return 0
+}
