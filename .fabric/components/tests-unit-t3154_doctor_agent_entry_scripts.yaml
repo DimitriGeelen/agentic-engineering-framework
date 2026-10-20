@@ -1,0 +1,21 @@
+id: tests/unit/t3154_doctor_agent_entry_scripts.bats
+name: t3154_doctor_agent_entry_scripts
+type: script
+subsystem: tests
+location: tests/unit/t3154_doctor_agent_entry_scripts.bats
+tags: []
+
+purpose: "T-3154 — fw doctor's \"Agent scripts executable\" check iterated a hardcoded seven-item list and then printed \"All agent scripts executable\"."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

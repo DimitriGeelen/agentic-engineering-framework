@@ -1,0 +1,21 @@
+id: tests/unit/t3720_dispatch_empty_prompt.bats
+name: t3720_dispatch_empty_prompt
+type: script
+subsystem: tests
+location: tests/unit/t3720_dispatch_empty_prompt.bats
+tags: []
+
+purpose: "T-3720 — a failed prompt write left empty prompt files, and `fw termlink dispatch` spawned workers whose whole prompt was the sidecar consult stanza. Dispatch must refuse an empty or whitespace-only prompt before any worker exists."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

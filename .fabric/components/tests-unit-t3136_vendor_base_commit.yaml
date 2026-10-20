@@ -1,0 +1,21 @@
+id: tests/unit/t3136_vendor_base_commit.bats
+name: t3136_vendor_base_commit
+type: script
+subsystem: tests
+location: tests/unit/t3136_vendor_base_commit.bats
+tags: []
+
+purpose: "T-3136 — `fw update` re-vendors wholesale. Consumer 001-CashWeb (their T-111) lost a carried bin/fw patch and only found out because a gate happened to cover it, and no record of the vendored base commit existed to diff against."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

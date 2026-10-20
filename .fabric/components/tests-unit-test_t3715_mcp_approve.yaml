@@ -1,0 +1,21 @@
+id: tests/unit/test_t3715_mcp_approve.py
+name: test_t3715_mcp_approve
+type: script
+subsystem: tests
+location: tests/unit/test_t3715_mcp_approve.py
+tags: []
+
+purpose: "T-3715: fw upgrade pre-approves the framework's MCP servers so a restarted Claude Code does not stop on the \"New MCP server found\" prompt."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

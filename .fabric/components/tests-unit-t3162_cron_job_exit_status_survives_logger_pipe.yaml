@@ -1,0 +1,21 @@
+id: tests/unit/t3162_cron_job_exit_status_survives_logger_pipe.bats
+name: t3162_cron_job_exit_status_survives_logger_pipe
+type: script
+subsystem: tests
+location: tests/unit/t3162_cron_job_exit_status_survives_logger_pipe.bats
+tags: []
+
+purpose: "T-3162 — Regression: generated cron lines ended '<cmd> 2>&1 | logger -t agentic-cron', so the pipeline's status was logger's (always 0) and a crashed job looked successful to cron (G-089 / 001-CashWeb field report)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
