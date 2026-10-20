@@ -15,7 +15,7 @@ description: >
   green on its own merits, which is the only acceptable way for it to go green. Do
   NOT touch T-1971's verification line as part of this.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T17:21:55Z
-last_update: '2026-08-17T12:36:09Z'
+last_update: '2026-10-20T22:00:21Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -63,6 +63,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=7 (lines=179,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T22:00:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=184,acs=5)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-03T17:30:10Z'
@@ -94,8 +103,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked at HEAD: rendered /bvp inspected for both strings, source of the stale string located (or its absence recorded with evidence)
+- [x] Rendered /bvp contains "Drag a slider below to preview re-ranking" and does NOT contain "Read-only — live weight sliders ship in T-1929" (page 1, the URL T-1971's line fetches; see RCA for why this holds only because of pagination)
+- [x] If a fix was needed: regression test pins the absence of the stale string; otherwise the fixing task/commit is recorded (no UI fix needed: 33d35d5d4 / T-1971 removed the copy from web/ on 2026-05-21; remaining occurrences are task-title data — see RCA)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -194,6 +204,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+! grep -rq "live weight sliders ship" web/templates web/blueprints
+bin/fw watchtower current
+curl -sf "$(bin/fw watchtower url)/bvp" -o /tmp/.t2773-bvp && grep -q "Drag a slider below to preview re-ranking" /tmp/.t2773-bvp && ! grep -q "Read-only — live weight sliders ship in T-1929" /tmp/.t2773-bvp
 
 ## RCA
 
@@ -210,6 +223,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** T-1971's verification line was red: /bvp contained "Read-only — live weight sliders ship in T-1929" twice.
+
+**Root cause:** not stale UI copy. 33d35d5d4 (T-1971, 2026-05-21) fully removed the copy from `web/templates/bvp.html`. The two occurrences were the `name` frontmatter of T-1971 and T-2773, both of which quote the string. They render as task rows through `web/blueprints/bvp.py:451` (`"name": (fm.get("name") or "")[:80]`) because both tasks have proposed BVP scores. Before T-2780 paginated /bvp, every scored task was on the one page.
+
+**Why structurally allowed:** T-1971's verification greps the whole rendered page for a literal that also lives in task data that same page renders. The check cannot tell UI copy from a data row, so it was red for the task that fixed it. The red came from the check, not from the UI.
+
+**Prevention:** this task's Verification adds a source-level check (`web/templates`, `web/blueprints`) that cannot match task data. T-1971's own line is still data-sensitive; see "Operator decision needed" (option 2). No code fix or regression test was added, because there is no defect in `web/`.
 
 ## Evolution
 
@@ -234,6 +255,41 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## Re-check at HEAD (2026-10-21)
+
+Commands and output (Watchtower `bin/fw watchtower current` → current, pid 3426005):
+
+```
+curl -sf "$(bin/fw watchtower url)/bvp" -o /tmp/.bvp2773
+grep -c "Drag a slider below to preview re-ranking"      → 1
+grep -c "live weight sliders ship"                        → 0
+grep -rn "live weight sliders ship" web/                   → (none)
+git log --oneline -S"live weight sliders ship" -- web      → 33d35d5d4 T-1971 (removal), e87d6f99f T-1928 (origin)
+for p in 1..12: curl /bvp?page=$p | grep -c "live weight sliders ship in T-1929"
+  page 9: 3   <td>Remove stale 'Read-only — live weight sliders ship in T-1929' text on /bvp …   (T-1971's own title: table cell + scatter JSON)
+  page 11: 3  <td>stale 'Read-only — live weight sliders ship in T-1929' copy still ren…          (T-2773's own title)
+```
+
+Page 1 is green. The string survives only as the **titles of T-1971 and T-2773**, which
+render as data rows because both tasks carry `bvp_scores_proposed`.
+
+## Operator decision needed — T-1971's line is green by ranking, not by construction
+
+T-1971's line greps the whole /bvp page. A title that quotes the string makes the page
+contain it whenever that task's row lands on page 1. The line is green today only because
+pagination (T-2780, `_BVP_TASKS_PER_PAGE = 250`, sorted by bvp_norm) puts both tasks on
+pages 9 and 11. A re-score that lifts either task into the top 250 turns it red again,
+with no UI regression behind it.
+
+1. **Accept as-is** — close T-2773 with this evidence and let T-1971's line go green on
+   page 1. No edits. Risk: a latent false-red that comes back after a re-score.
+2. **Re-scope T-1971's verification line** (recommended) — check the header copy, not
+   data rows (e.g. `! grep -rq "live weight sliders ship" web/templates web/blueprints`
+   plus the "Drag a slider" page grep). This brief forbids touching that line, so it
+   needs your go-ahead or a separate task.
+3. **Rename the two titles** so they paraphrase the string instead of quoting it. This
+   edits other tasks' frontmatter and loses the literal for search; not recommended.
 
 ## Decisions
 
@@ -262,3 +318,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2773-stale-read-only--live-weight-sliders-shi.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:57:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
