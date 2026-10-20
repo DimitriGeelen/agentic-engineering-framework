@@ -549,6 +549,14 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
     # uuid workflowRefs). Tests pass an explicit bool for hermeticity.
     if compat_alias is None:
         compat_alias = not _pin_resolves_workflow_ref()
+    # T-4496: the id names the map in every generated element id, so a spec
+    # without one (`id: null`, e.g. derived from a map with no aef:workflowMeta)
+    # used to die as an AttributeError deep in the emitter. Refuse up front.
+    if not isinstance(spec.get("id"), str) or not spec["id"].strip():
+        raise SystemExit(
+            f"generate: spec needs an id (top-level `id:` is {spec.get('id')!r}) "
+            f"— set it to the map's corpus id, e.g. `id: aef-my-map`; a map "
+            f"derived from BPMN without aef:workflowMeta carries none")
     idx = store_index()
     errors = [f for f in call_findings(spec, idx) if f["level"] == "error"]
     if errors:

@@ -549,3 +549,15 @@ def test_business_rule_task_is_accepted_and_round_trips():
     assert [n["type"] for n in spec2["nodes"]] == [n["type"] for n in spec["nodes"]]
     assert spec2["flows"] == spec["flows"]
     assert corpus_spec.emit_map(spec2, version=1, compat_alias=False) == out
+
+
+# ── T-4496: a spec with no id refuses with a message, not an AttributeError ──
+
+@pytest.mark.parametrize("id_line", ["id: null\n", "", "id: ''\n", "id: '  '\n", "id: 7\n"])
+def test_generate_missing_id_refuses_naming_the_id(tmp_path, id_line):
+    p = tmp_path / "spec.yaml"
+    p.write_text(id_line + "title: x\nlanes: []\nnodes: []\nflows: []\n")
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.main(["generate", str(p)])
+    msg = str(e.value)
+    assert "needs an id" in msg and "`id:`" in msg

@@ -1,10 +1,13 @@
 ---
 id: T-4496
-name: "corpus generate crashes with AttributeError on a spec whose id is null (corpus_spec.py:593) instead of saying the map needs an id"
+name: "corpus generate crashes with AttributeError on a spec whose id is null (corpus_spec.py:593)
+  instead of saying the map needs an id"
 description: >
-  832 (msg dbd05180): corpus generate on a spec with 'id: null' crashes (AttributeError, tools/corpus_spec.py:593). Should refuse with a clear message naming the missing id. Regression test. Same files as T-4488/T-4495: after T-4488 lands.
+  832 (msg dbd05180): corpus generate on a spec with 'id: null' crashes (AttributeError,
+  tools/corpus_spec.py:593). Should refuse with a clear message naming the missing
+  id. Regression test. Same files as T-4488/T-4495: after T-4488 lands.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T15:50:00Z
-last_update: 2026-10-20T15:50:00Z
-date_finished: null
+last_update: 2026-10-20T19:02:24Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T16:00:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T16:01:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4496: corpus generate crashes with AttributeError on a spec whose id is null (corpus_spec.py:593) instead of saying the map needs an id
@@ -62,8 +93,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `emit_map` (and so `corpus_spec generate`) refuses a spec whose `id` is null, missing, empty or not a string with a SystemExit naming the missing `id` — no AttributeError/KeyError traceback
+- [x] Regression test in tests/unit/test_corpus_spec_roundtrip.py covers null, missing and empty id via `main(["generate", …])`; fails without the fix, passes with it
+- [x] Existing tests/unit/test_corpus_spec_roundtrip.py stays green
+- [x] `bin/fw vendor self --check --task T-4496` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +281,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+printf 'id: null\ntitle: x\nlanes: []\nnodes: []\nflows: []\n' > /tmp/.t4496.yaml; python3 tools/corpus_spec.py generate /tmp/.t4496.yaml > /tmp/.t4496.out 2>&1; grep -q "needs an id" /tmp/.t4496.out && ! grep -q Traceback /tmp/.t4496.out
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k missing_id > /tmp/.t4496p.out 2>&1 && grep -q passed /tmp/.t4496p.out
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q > /tmp/.t4496a.out 2>&1 && grep -q passed /tmp/.t4496a.out
+bin/fw vendor self --check --task T-4496
 
 ## RCA
 
@@ -264,6 +301,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `corpus_spec generate` on a spec with `id: null` (what `derive` produces for third-party BPMN with no `aef:workflowMeta`, e.g. 832's goldens) died with `AttributeError: 'NoneType' object has no attribute 'replace'` (tools/corpus_spec.py, the `Pool_{mid.replace(...)}` participant line, then ~599).
+
+**Root cause:** `emit_map` (tools/corpus_spec.py:546) reads `mid = spec["id"]` and uses it as a string in every generated element id without ever checking it. `parse_map` sets `"id": wm.get("id")` (tools/corpus_spec.py ~302), i.e. None whenever the source has no workflowMeta, so derive → generate on any foreign map hits it.
+
+**Why structurally allowed:** every existing test spec was derived from an AEF-authored map (HEAD fixture carries workflowMeta id="m"), so the id was always present; the emitter validates call refs and default flows but had no precondition on the map id itself. Foreign-BPMN round trips are new (T-4488/T-4495 era).
+
+**Prevention:** `emit_map` now refuses up front with `generate: spec needs an id (top-level \`id:\` is None) …` for null, missing, empty/blank or non-string ids; pinned by `test_generate_missing_id_refuses_naming_the_id` (5 parametrised cases, all fail without the fix).
 
 ## Evolution
 
@@ -345,3 +390,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4496-corpus-generate-crashes-with-attributeer.md
 - **Context:** Initial task creation
+
+### 2026-10-20T19:02:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
