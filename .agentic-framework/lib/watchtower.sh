@@ -382,3 +382,21 @@ watchtower_rotate_log() {
     done
     mv -f "$log" "$log.1"
 }
+
+# T-4459: is the running server writing its output into a deleted file? The server
+# holds watchtower.log open from start; anything that replaces the file (git once
+# rewrote it on every merge, while it was tracked) leaves the process writing to an
+# unlinked inode, so its tracebacks are readable nowhere. Prints "fd N -> target"
+# for each of stdout/stderr that points at a deleted file.
+# Exit: 0 = at least one deleted, 1 = none, 2 = cannot tell (no /proc entry).
+watchtower_log_fd_deleted() {
+    local pid="$1" fd target found=1
+    [ -n "$pid" ] && [ -d "/proc/$pid/fd" ] || return 2
+    for fd in 1 2; do
+        target=$(readlink "/proc/$pid/fd/$fd" 2>/dev/null) || continue
+        case "$target" in
+            *" (deleted)") echo "fd $fd -> $target"; found=0 ;;
+        esac
+    done
+    return "$found"
+}

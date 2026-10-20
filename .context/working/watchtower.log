@@ -1,6 +1,6 @@
 FW_SECRET_KEY not set — using file key at PROJECT_ROOT/.context/working/.fw-secret-key. Set FW_SECRET_KEY for production deployment.
 Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
-Watchtower running at http://0.0.0.0:3002
+Watchtower running at http://0.0.0.0:3000
   Project root: /opt/999-Agentic-Engineering-Framework
   Framework:    /opt/999-Agentic-Engineering-Framework
 
@@ -8,46 +8,14 @@ Watchtower running at http://0.0.0.0:3002
  * Debug mode: off
 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
  * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:3002
- * Running on http://192.168.10.107:3002
+ * Running on http://127.0.0.1:3000
+ * Running on http://192.168.10.107:3000
 Press CTRL+C to quit
-127.0.0.1 - - [28/Sep/2026 20:28:23] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [28/Sep/2026 20:28:23] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:28:46] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:28:46] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:28:49] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:28:49] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:28:52] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:28:52] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:28:55] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:28:55] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:28:58] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:28:58] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:29:02] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:30:02] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:30:16] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:30:16] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:30:19] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:30:19] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:30:23] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:30:23] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:30:27] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:30:27] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:30:30] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:30:30] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:01] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:35] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:35] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:38] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:38] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:41] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:41] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:44] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:44] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:47] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:47] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:53] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:53] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:54] "GET /inception/T-3535 HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:31:54] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [28/Sep/2026 20:32:01] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [20/Oct/2026 13:41:02] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [20/Oct/2026 13:42:02] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [20/Oct/2026 13:42:15] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [20/Oct/2026 13:43:03] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [20/Oct/2026 13:43:09] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [20/Oct/2026 13:43:09] "GET /api/_identity HTTP/1.1" 200 -
+Vector search exceeded 10s, showing keyword results
+192.168.10.107 - - [20/Oct/2026 13:44:02] "GET /api/_identity HTTP/1.1" 200 -

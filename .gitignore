@@ -154,6 +154,9 @@ docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
 
 # T-3627: rotated Watchtower logs (watchtower_rotate_log) are local evidence, not history
 .context/working/watchtower.log.*
+# T-4459: the live log itself. While tracked, every git merge/stash/checkout rewrote
+# it as a new inode and the running server kept writing to the deleted one.
+.context/working/watchtower.log
 # T-3749: Watchtower decide runs (logs, status, locks) — host detail, never committed
 .context/working/decide/
 

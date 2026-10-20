@@ -1,10 +1,17 @@
 ---
 id: T-4459
-name: "Running Watchtower writes stdout/stderr to a deleted log file: its errors are invisible"
+name: "Running Watchtower writes stdout/stderr to a deleted log file: its errors are
+  invisible"
 description: >
-  Found 2026-10-20: /proc/<watchtower pid>/fd/1 and fd/2 point to '(deleted)', so tracebacks from the running process (e.g. the /search 500 in the sibling task) are written nowhere readable; .context/working/watchtower.log no longer receives them. Something rotates or deletes the log while the process keeps the old fd (watchtower restart / ensure / log rotation). Fix: whoever rotates must reopen (signal or restart) or use copytruncate-safe logging; doctor should WARN when the live process's log fd is deleted. Regression test.
+  Found 2026-10-20: /proc/<watchtower pid>/fd/1 and fd/2 point to '(deleted)', so
+  tracebacks from the running process (e.g. the /search 500 in the sibling task) are
+  written nowhere readable; .context/working/watchtower.log no longer receives them.
+  Something rotates or deletes the log while the process keeps the old fd (watchtower
+  restart / ensure / log rotation). Fix: whoever rotates must reopen (signal or restart)
+  or use copytruncate-safe logging; doctor should WARN when the live process's log
+  fd is deleted. Regression test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T11:24:43Z
-last_update: 2026-10-20T11:24:43Z
-date_finished: null
+last_update: 2026-10-20T11:32:25Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T11:30:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T11:31:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4459: Running Watchtower writes stdout/stderr to a deleted log file: its errors are invisible
@@ -62,8 +97,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `.context/working/watchtower.log` is untracked and gitignored, so git checkout/merge/stash can no longer replace the live log's inode (`git ls-files --error-unmatch` fails, `git check-ignore` succeeds)
+- [x] `lib/watchtower.sh` has `watchtower_log_fd_deleted <pid>`: exit 0 + names the fd when the process's stdout/stderr points to a deleted file, exit 1 when not
+- [x] `fw doctor` emits a WARN naming `bin/fw watchtower restart` when the running Watchtower's stdout/stderr fd points to a deleted file
+- [x] Regression test `tests/unit/t4459_watchtower_log_fd_deleted.bats` passes (helper true/false legs + untracked/ignored invariant)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +285,24 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+! git ls-files --error-unmatch .context/working/watchtower.log >/dev/null 2>&1
+git check-ignore -q .context/working/watchtower.log
+grep -q 'watchtower_log_fd_deleted()' lib/watchtower.sh
+grep -q 'watchtower_log_fd_deleted' bin/fw
+timeout 120 bats tests/unit/t4459_watchtower_log_fd_deleted.bats > /tmp/.t4459.out 2>&1 && ! grep -q "^not ok" /tmp/.t4459.out
+test "$(grep -c '# skip' /tmp/.t4459.out)" -eq 0
+bash -n bin/fw && bash -n lib/watchtower.sh
+bin/fw vendor self --check --task T-4459
 
 ## RCA
+
+**Symptom:** `/proc/<watchtower pid>/fd/{1,2}` → `.context/working/watchtower.log (deleted)`; the on-disk `watchtower.log` (different inode) stopped at 11:57:30 while the process kept logging, so tracebacks (e.g. the /search 500) were unreadable.
+
+**Root cause:** `.context/working/watchtower.log` was TRACKED in git (added by a broad `git add` in T-012, recommitted by T-3465/T-3514/T-3539/T-3540), while `.gitignore:156` ignored only `watchtower.log.*`. Git writes a tracked file by unlink+create, so any operation that rewrites it replaces the inode. Confirmed: reflog shows `merge origin/master` at 2026-10-20 11:57:46/11:57:57 +0200 — the autostash/reset/pop cycle rewrote the file, last line 11:57:30. Not the rotation in `lib/watchtower.sh:376` (that only runs at start, before the new process opens the log).
+
+**Why structurally allowed:** `fw doctor`'s Watchtower check (bin/fw ~3058) asks liveness, identity and source currency — never whether the process's output still lands anywhere. A deleted-fd log looks identical to a quiet one. `lib/integrate.py:96` even classified the file as a session transient, but nothing kept it out of the index.
+
+**Prevention:** the log is untracked + gitignored (git can no longer touch it); `watchtower_log_fd_deleted` + a doctor WARN catch any other cause (manual rm, other tools) with the fix named (`bin/fw watchtower restart`); regression test `tests/unit/t4459_watchtower_log_fd_deleted.bats` pins both.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +398,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4459-running-watchtower-writes-stdoutstderr-t.md
 - **Context:** Initial task creation
+
+### 2026-10-20T11:32:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

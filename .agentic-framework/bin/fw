@@ -3094,6 +3094,20 @@ PY
                         warnings=$((warnings + 1))
                     fi
                 fi
+                # T-4459: alive and current, but is its output landing anywhere?
+                # A replaced watchtower.log leaves the server writing to a deleted
+                # inode — every traceback it emits is unreadable.
+                if [ -f "$FRAMEWORK_ROOT/lib/watchtower.sh" ]; then
+                    # shellcheck source=/dev/null
+                    . "$FRAMEWORK_ROOT/lib/watchtower.sh"
+                    local _wt_fd_del
+                    if _wt_fd_del=$(watchtower_log_fd_deleted "$_wt_pid"); then
+                        echo -e "  ${YELLOW}WARN${NC}  Watchtower (pid $_wt_pid) writes its log to a deleted file — its errors are readable nowhere"
+                        printf '%s\n' "$_wt_fd_del" | sed 's|^|         - |'
+                        echo -e "         Run: bin/fw watchtower restart"
+                        warnings=$((warnings + 1))
+                    fi
+                fi
             else
                 echo -e "  ${YELLOW}WARN${NC}  Watchtower triple present but identity mismatch or endpoint down"
                 echo -e "         Run: bin/watchtower.sh restart"
