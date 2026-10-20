@@ -1,10 +1,20 @@
 ---
 id: T-4457
-name: "fw reviewer judge: the opencode seat exits 1 ('UnknownError: Unexpected server error') — likely no model pinned for the seat"
+name: "fw reviewer judge: the opencode seat exits 1 ('UnknownError: Unexpected server
+  error') — likely no model pinned for the seat"
 description: >
-  Two independent occurrences on 2026-10-20: proxmox-ring20-management's rung-5 panel (T-2255; result.jsonl only {type:error,name:UnknownError,'Unexpected server error'}) and AEF's own T-4350 judge run (seat opencode: exit 1). During T-4435's external reviews opencode hung or failed until run with an explicit '-m zai-coding-plan/glm-5.2' and stdin closed. The seat launch (agents/termlink/termlink.sh ~1492) passes ${MODEL:+-m "$MODEL"}; with no model pinned in policy/review-backends.yaml for opencode it falls back to opencode's default. Localise: reproduce a seat launch with and without -m; check stdin handling. Fix: pin the model for the opencode kind in the registry (signed per T-3580) and close stdin; surface the provider error text in the seat's unavailable reason.
+  Two independent occurrences on 2026-10-20: proxmox-ring20-management's rung-5 panel
+  (T-2255; result.jsonl only {type:error,name:UnknownError,'Unexpected server error'})
+  and AEF's own T-4350 judge run (seat opencode: exit 1). During T-4435's external
+  reviews opencode hung or failed until run with an explicit '-m zai-coding-plan/glm-5.2'
+  and stdin closed. The seat launch (agents/termlink/termlink.sh ~1492) passes ${MODEL:+-m
+  "$MODEL"}; with no model pinned in policy/review-backends.yaml for opencode it falls
+  back to opencode's default. Localise: reproduce a seat launch with and without -m;
+  check stdin handling. Fix: pin the model for the opencode kind in the registry (signed
+  per T-3580) and close stdin; surface the provider error text in the seat's unavailable
+  reason.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T11:09:14Z
-last_update: 2026-10-20T11:09:14Z
-date_finished: null
+last_update: '2026-10-20T11:15:31Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T11:10:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T11:15:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=300,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4457: fw reviewer judge: the opencode seat exits 1 ('UnknownError: Unexpected server error') — likely no model pinned for the seat
@@ -62,8 +100,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A regression test asserts the opencode launch line passes `-m "$MODEL"` (registry-pinned) and closes stdin, and that the registry pins an opencode model (tests/unit/t4457_opencode_seat_test.py)
+- [x] When the opencode seat exits non-zero, the provider error from result.jsonl is surfaced in the seat's unavailable reason (not just "exit 1"), capped at 100 chars
+- [x] Existing judge/dispatch tests (tests/unit/*judge*, *t3580*, *t3582*) stay green and the signed registry/settings trust chain is untouched
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +287,15 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/t4457_opencode_seat_test.py tests/unit/t3852_unavailable_seat_test.py -q > /tmp/.t4457.out 2>&1 && grep -q passed /tmp/.t4457.out
+bin/fw vendor self --check --task T-4457
 
 ## RCA
+
+**Symptom:** opencode seat in `fw reviewer judge` exits 1; the operator sees only `unavailable: exit 1`. Raw stream: `{"type":"error","error":{"name":"UnknownError","data":{"message":"Unexpected server error..."}}}` (AEF /tmp/tl-dispatch/judge-t-4350-r3-*; ring20 T-2255).
+**Root cause:** the task's hypothesis (no model pinned) is false for AEF: `policy/review-backends.yaml` pins `zai-coding-plan/glm-5.2` since T-3582, `kind-model` returns it, and termlink.sh:1492 passes `-m "$MODEL"` with `< /dev/null`. The failure is a provider-side server error; the real defect is `_unavailable_reason` (lib/reviewer/judge_cli.py:816) dropping the provider's error text, so the operator cannot tell a provider outage from a launch bug. (A consumer on a pre-T-3582 vendored registry may genuinely lack the pin — that is fixed by `fw upgrade`, not code.)
+**Why structurally allowed:** the reason extractor only knew usage/rate-limit phrases and the bare exit code.
+**Prevention:** tests/unit/t4457_opencode_seat_test.py pins the launch line (model + closed stdin), the registry pin, and the error-naming reason.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +391,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4457-fw-reviewer-judge-the-opencode-seat-exit.md
 - **Context:** Initial task creation
+
+### 2026-10-20T11:10:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -835,8 +835,30 @@ def _unavailable_reason(dispatch_id: str) -> str:
     if limit:
         return limit
     if code:
-        return f"exit {code}"
+        # T-4457: a harness that fails with a provider error prints it as {"type":"error",
+        # "error":{"name":..,"data":{"message":..}}}; name it rather than a bare "exit 1".
+        err = _stream_error(w / "result.jsonl")
+        return f"exit {code}: {err}" if err else f"exit {code}"
     return "no completion"
+
+
+def _stream_error(path: Path) -> str:
+    """The provider error a worker's JSON event stream carries (opencode shape), capped at 100
+    characters; '' when there is none."""
+    try:
+        lines = path.read_text(errors="replace").splitlines()
+    except OSError:
+        return ""
+    for line in reversed(lines):
+        try:
+            ev = json.loads(line)
+        except ValueError:
+            continue
+        err = ev.get("error") if isinstance(ev, dict) and ev.get("type") == "error" else None
+        if isinstance(err, dict):
+            msg = str(((err.get("data") or {}).get("message")) or err.get("name") or "")
+            return " ".join(msg.split())[:100]
+    return ""
 
 
 def _collect(root: Path, task_id: str, dispatch_id: str, criteria: list[dict],
