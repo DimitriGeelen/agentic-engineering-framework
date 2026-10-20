@@ -9,7 +9,8 @@
 #
 #   fw runme new <name> [--desc "..."] -- <command> [<command> ...]
 #       each <command> is one shell line; a single '-' reads lines from stdin
-#   fw runme watch <name> [--timeout SECS]   (default 86400 / FW_RUNME_WATCH_TIMEOUT; waits for START, then EXIT or STOPPED)
+#   fw runme watch <name> [--timeout SECS] [--until start|exit]   (default 86400 / FW_RUNME_WATCH_TIMEOUT;
+#       waits for START, then EXIT or STOPPED; --until start returns 0 at START so you can say "it began", then re-arm for exit)
 #   fw runme path <name>
 #   fw runme pending   (session start: WATCH LOST / RUN IN FLIGHT / RUN ENDED WITHOUT RECORD, T-3878)
 #
@@ -21,7 +22,7 @@ _runme_root() { echo "${PROJECT_ROOT:-$(pwd)}/.context/runme"; }
 # 30 min for a runme called "--help".
 _runme_valid_name() { [[ "$1" =~ ^[A-Za-z0-9._][A-Za-z0-9._-]*$ ]]; }
 
-_runme_usage() { sed -n '2,16p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+_runme_usage() { sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 runme_new() {
     local name="${1:-}"; shift || true
@@ -110,9 +111,17 @@ runme_watch() {
     # T-3741: 1800 s lost two watches on 2026-10-06 — the operator ran the line later than
     # that, and the run then reached nobody. A watch now outlives a normal working day.
     local timeout="${FW_RUNME_WATCH_TIMEOUT:-86400}"
+    # T-4464: --until start returns at the START marker, so an agent can report "it began"
+    # without the operator saying so, then arm a second watch for exit.
+    local stop_at=exit
     while [ $# -gt 0 ]; do
-        case "$1" in --timeout) timeout="$2"; shift 2 ;; *) echo "runme watch: unexpected '$1'" >&2; return 2 ;; esac
+        case "$1" in
+            --timeout) timeout="$2"; shift 2 ;;
+            --until) stop_at="${2:-}"; shift 2 || shift ;;
+            *) echo "runme watch: unexpected '$1'" >&2; return 2 ;;
+        esac
     done
+    case "$stop_at" in start|exit) ;; *) echo "runme watch: --until takes start or exit" >&2; return 2 ;; esac
     _runme_valid_name "$name" || { echo "runme watch: bad name" >&2; return 2; }
     local log; log="$(_runme_root)/$name/run.log"
     # T-3878: record WHO armed this watch. A watch dies with the session that
@@ -128,6 +137,11 @@ runme_watch() {
         sleep 2; waited=$((waited + 2))
     done
     echo "runme watch: $name started"
+    if [ "$stop_at" = start ]; then
+        # watch.json stays: the run is not reported yet, and the exit watch re-arms it.
+        grep "RUNME START" "$log" | tail -1
+        return 0
+    fi
     until grep -q "RUNME EXIT" "$log" 2>/dev/null; do
         [ "$waited" -ge "$timeout" ] && { echo "runme watch: still running after ${timeout}s"; tail -n 20 "$log"; return 124; }
         sleep 2; waited=$((waited + 2))
