@@ -86,5 +86,15 @@ def main() -> int:
     return 0
 
 
+def test_tool_set_validates(capsys):
+    # T-4447: since T-4381 the unit runner collects every test_*.py and grades
+    # "no tests collected" (pytest exit 5) as red; this script-mode validator
+    # had no test function. Run the same checks under pytest — script mode
+    # (T-2258's Verification) is unchanged.
+    assert main() == 0
+    out = capsys.readouterr().out.strip()
+    assert out == "OK", out
+
+
 if __name__ == "__main__":
     sys.exit(main())
