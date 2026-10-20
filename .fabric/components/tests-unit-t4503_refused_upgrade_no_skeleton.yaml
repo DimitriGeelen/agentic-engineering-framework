@@ -1,0 +1,21 @@
+id: tests/unit/t4503_refused_upgrade_no_skeleton.bats
+name: t4503_refused_upgrade_no_skeleton
+type: script
+subsystem: tests
+location: tests/unit/t4503_refused_upgrade_no_skeleton.bats
+tags: []
+
+purpose: "T-4503: a fw upgrade refused at step 1 (T-3150 unmatched project-owned marker) must leave the consumer byte-identical — the step-0 directory skeleton used to be created before that refusal."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

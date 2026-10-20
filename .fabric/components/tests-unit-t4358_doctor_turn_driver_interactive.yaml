@@ -1,0 +1,21 @@
+id: tests/unit/t4358_doctor_turn_driver_interactive.bats
+name: t4358_doctor_turn_driver_interactive
+type: script
+subsystem: tests
+location: tests/unit/t4358_doctor_turn_driver_interactive.bats
+tags: []
+
+purpose: "T-4358 (GH #101) — doctor must not WARN \"TURN DRIVER is not armed\" for an ordinary interactive claude-fw session."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

@@ -1,0 +1,21 @@
+id: tools/audit-live-repo-lint.py
+name: audit-live-repo-lint
+type: script
+subsystem: framework-core
+location: tools/audit-live-repo-lint.py
+tags: []
+
+purpose: "T-4401: flag unit tests that run a sectioned audit against the real repo."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

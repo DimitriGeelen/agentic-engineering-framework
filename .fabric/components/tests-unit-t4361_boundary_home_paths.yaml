@@ -1,0 +1,21 @@
+id: tests/unit/t4361_boundary_home_paths.bats
+name: t4361_boundary_home_paths
+type: script
+subsystem: tests
+location: tests/unit/t4361_boundary_home_paths.bats
+tags: []
+
+purpose: "T-4361 (GitHub #104): the project-boundary gate hard-coded /root/.local/ and /root/.claude/, so a non-root account was refused reads of its own ~/.local and writes to its own ~/.claude, with no setting to allow a path."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
