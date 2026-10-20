@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4489: Security hotfix after v1.8.13: v1.8.13 + T-4485 (git --output quoted/escaped/variable bypass) via the hotfix lane
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T16:57:43Z
+# ============================================================================
+
+task_id: T-4489
+task_name: "Security hotfix after v1.8.13: v1.8.13 + T-4485 (git --output quoted/escaped/variable bypass) via the hotfix lane"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T15:24:23Z
+completed: 2026-10-20T16:57:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T17:29:32+02:00
+last_commit: 2026-10-20T18:53:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.8.13 security hotfix follow-up — carry T-4485 (git --output quoted/escaped/variable/parameter-default/loop-variable forms judged as bash expands them; from bleeding-edge 22bf75833): code, tests, vendored copies; no task files. hotfix t4485 test calls scan(cmd, cwd) — the project_root argument is T-4336 (bleeding-edge only, not on v1.8.13); tests only. hotfix lane for T-4485 on v1.8.13 — branch hotfix/pending-T-4489 (4ce3b23ec, plumbing-built), targeted comparison 27 files, version question for the parent (tooling is X.Y.Z only; recommend v1.8.14, broad release to v1.8.15); Hotfix-attributed failures: 0. v1.8.14 release notes (security hotfix T-4485; broad release renamed to v1.8.15). merge v1.8.14 (master 2328ae76b) back into bleeding-edge — keep bleeding-edge's t4485 test (T-4336 scan signature). close — v1.8.14 security hotfix shipped (master 2328ae76b, tag, GitHub release, merged back, announced); handover updated
+
+# Key outcomes
+outcomes:
+  - 'Version number resolved against lib/release*.sh / lib/version.sh: either a version the release tooling accepts, or the question stated in the report for the parent''s decision'
+  - 'Branch `refs/heads/hotfix/<version>` exists in the main repo (named `hotfix/pending-T-4489` while the version is the parent''s open decision; rename on decision), built with plumbing (private index, commit-tree, update-ref), parent = v1.8.13 (6efec63df), carrying only the T-4485 code/tests/vendored copies (no task files)'
+  - 'Targeted comparison (safe-commands, shell_write_scan, boundary suites + t4485/t4367/t4396/t4408/t4409) run alone, clean env, on hotfix and v1.8.13; reds repeated 3x and every hotfix-only red attributed'
+  - 'docs/reports/T-4489-hotfix.md written, ends with `Hotfix-attributed failures: N`'
+  - 'Nothing pushed, no tag, VERSION unchanged, master untouched'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'close — v1.8.14 security hotfix shipped (master 2328ae76b, tag, GitHub release, merged back, announced); handover updated'
+    source: git-mined
+  - description: 'v1.8.14 release notes (security hotfix T-4485; broad release renamed to v1.8.15)'
+    source: git-mined
+  - description: 'hotfix lane for T-4485 on v1.8.13 — branch hotfix/pending-T-4489 (4ce3b23ec, plumbing-built), targeted comparison 27 files, version question for the parent (tooling is X.Y.Z only; recommend v1.8.14, broad release to v1.8.15); Hotfix-attributed failures: 0'
+    source: git-mined
+  - description: 'hotfix t4485 test calls scan(cmd, cwd) — the project_root argument is T-4336 (bleeding-edge only, not on v1.8.13); tests only'
+    source: git-mined
+  - description: 'v1.8.13 security hotfix follow-up — carry T-4485 (git --output quoted/escaped/variable/parameter-default/loop-variable forms judged as bash expands them; from bleeding-edge 22bf75833): code, tests, vendored copies; no task files'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'docs/releases/v1.8.14-notes.md'
+  - 'docs/reports/T-4489-hotfix.md'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4489-security-hotfix-after-v1813-v1813--t-448.md'
+  - 'tests/unit/t4485_git_output_quoting.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T17:29:32'
+    action: 'T-4489: v1.8.13 security hotfix follow-up — carry T-4485 (git --output quoted/escaped/variable/parameter-default/loop-variable forms judged as bash expands them; from bleeding-edge 22bf75833): code, tests, vendored copies; no task files'
+  - time: '2026-10-20T17:43:37'
+    action: 'T-4489: hotfix t4485 test calls scan(cmd, cwd) — the project_root argument is T-4336 (bleeding-edge only, not on v1.8.13); tests only'
+  - time: '2026-10-20T17:44:55'
+    action: 'T-4489: hotfix lane for T-4485 on v1.8.13 — branch hotfix/pending-T-4489 (4ce3b23ec, plumbing-built), targeted comparison 27 files, version question for the parent (tooling is X.Y.Z only; recommend v1.8.14, broad release to v1.8.15); Hotfix-attributed failures: 0'
+  - time: '2026-10-20T18:49:18'
+    action: 'T-4489: v1.8.14 release notes (security hotfix T-4485; broad release renamed to v1.8.15)'
+  - time: '2026-10-20T18:49:47'
+    action: 'T-4489: merge v1.8.14 (master 2328ae76b) back into bleeding-edge — keep bleeding-edge''s t4485 test (T-4336 scan signature)'
+  - time: '2026-10-20T18:53:42'
+    action: 'T-4489: close — v1.8.14 security hotfix shipped (master 2328ae76b, tag, GitHub release, merged back, announced); handover updated'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 93 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 93
+  commits: 6
+  files_changed: 8
+  lines_added: 814
+  lines_removed: 412
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4489-security-hotfix-after-v1813-v1813--t-448.md
+generated_by: context-agent-hybrid
