@@ -1,10 +1,18 @@
 ---
 id: T-4514
-name: "A later fw reviewer judge run deletes or moves an earlier run's committed evidence files, so the earlier verdict row stops verifying and the pre-push audit FAILs"
+name: "A later fw reviewer judge run deletes or moves an earlier run's committed evidence
+  files, so the earlier verdict row stops verifying and the pre-push audit FAILs"
 description: >
-  2026-10-20, T-4475: V-20261020-d6f0e077 (first judge run, commit 2712a5c30) cites .context/reviews/evidence/T-4475/config@{1024,1440,1920}.png. After later judge runs (and an interrupted fw ux shots T-4475 run) those three committed files were deleted in the working tree (uncommitted), the ledger audit failed ('evidence path does not exist') and blocked every push. Restored with git checkout HEAD. Find which step removes or renames unsuffixed evidence (judge evidence capture copying to -<dispatch> names, or ux shots), make evidence of a recorded verdict immutable (never deleted or moved), and add a test.
+  2026-10-20, T-4475: V-20261020-d6f0e077 (first judge run, commit 2712a5c30) cites
+  .context/reviews/evidence/T-4475/config@{1024,1440,1920}.png. After later judge
+  runs (and an interrupted fw ux shots T-4475 run) those three committed files were
+  deleted in the working tree (uncommitted), the ledger audit failed ('evidence path
+  does not exist') and blocked every push. Restored with git checkout HEAD. Find which
+  step removes or renames unsuffixed evidence (judge evidence capture copying to -<dispatch>
+  names, or ux shots), make evidence of a recorded verdict immutable (never deleted
+  or moved), and add a test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T20:36:59Z
-last_update: 2026-10-20T20:36:59Z
-date_finished: null
+last_update: 2026-10-20T20:54:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +58,52 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T20:45:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T20:46:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4514: A later fw reviewer judge run deletes or moves an earlier run's committed evidence files, so the earlier verdict row stops verifying and the pre-push audit FAILs
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+A judge worker copied run 1's committed screenshots to dispatch-suffixed names by moving them,
+deleting `.context/reviews/evidence/T-4475/config@{1024,1440,1920}.png` that V-20261020-d6f0e077
+cites; the ledger audit then FAILed every push. Evidence of a recorded verdict must be immutable.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_commit_rows` (lib/verdict_ledger.py) restores, from HEAD, every committed file under `.context/reviews/evidence/` that is deleted or modified in the working tree before it commits a verdict row, so a later run's commit can never leave an earlier run's cited evidence missing or changed
+- [x] The judge brief (lib/reviewer/judge_cli.py) tells the worker to copy screenshots under a `-$FW_SIDECAR_AGENT_ID`-suffixed name and never move, rename, overwrite or delete a file already in the evidence directory
+- [x] Regression test `tests/unit/test_t4514_evidence_immutable.py`: run 1 commits a row citing `config@1024.png`; run 2 copies-then-moves it to a suffixed name (the T-4475 sequence) and commits its own row; run 1's file is intact on disk and unchanged at HEAD, run 2's suffixed copy is committed; fails without the fix
+- [x] Neighbouring tests (T-4008 commit test) still pass; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +288,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_t4514_evidence_immutable.py tests/unit/test_t4008_verdict_commit_ignored_evidence.py -q > /tmp/.t4514 2>&1 && grep -q passed /tmp/.t4514
+grep -q "never move, rename, overwrite or delete" lib/reviewer/judge_cli.py
+bin/fw vendor self --check --task T-4514
 
 ## RCA
 
@@ -264,6 +307,32 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after later `fw reviewer judge` runs on T-4475, the three PNGs that the first run's
+row V-20261020-d6f0e077 (commit 2712a5c30) cites were deleted in the working tree; the ledger
+audit reported "evidence path does not exist" and blocked every push.
+
+**Root cause:** not the judge capture or `fw ux shots` code. Neither writes under
+`.context/reviews/evidence/`: `ux_shots.capture` writes `.context/visual/` and unlinks only its
+own run's files, and judge capture goes to `.context/working/judge-evidence/`. The deletion came
+from a review worker following the brief at `lib/reviewer/judge_cli.py:699-701`: "Copy any
+screenshot you cite into the same directory and cite that copy". It named no per-dispatch
+filename and did not forbid moving. Run 1's worker copied to bare names (`config@1024.png`).
+Run 2's worker (judge-t-4475-r5-claude-code-9e576f7ad315, commit 044912ac7, byte-identical
+sizes) placed its copies under the same bare names, then renamed them to `-<dispatch>` names,
+which removed run 1's committed files. `_commit_rows` (`lib/verdict_ledger.py:240`) commits only
+the paths it is given, so the deletion stayed uncommitted in the shared checkout until audit.
+
+**Why structurally allowed:** the evidence directory is shared across runs and written by model
+workers, yet nothing treated a committed evidence file as immutable. The only check was the
+audit's after-the-fact "path does not exist" at pre-push, long after the causing worker exited.
+
+**Prevention:** `_commit_rows` is the single commit path for every verdict row (worker
+`record --commit` and the runtime's recorded verdicts). Under the ledger lock and before staging, it
+now restores from HEAD every tracked file under `.context/reviews/evidence/` that is deleted or
+modified. A worker's move becomes a copy, and the next verdict commit undoes any damage. The
+brief now requires dispatch-suffixed copy names and forbids moving, renaming, overwriting or
+deleting existing files. The regression test `tests/unit/test_t4514_evidence_immutable.py` pins this behaviour.
 
 ## Evolution
 
@@ -345,3 +414,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4514-a-later-fw-reviewer-judge-run-deletes-or.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:54:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

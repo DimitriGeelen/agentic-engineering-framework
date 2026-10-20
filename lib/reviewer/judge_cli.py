@@ -697,8 +697,9 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         *[f"- Criterion {c['index']} → `--ac {c['ac_index']}`" for c in criteria],
         "",
         f"1. Write your evidence report to `{REPORT_DIR}/{task_id}/AC<N>-$FW_SIDECAR_AGENT_ID.md` "
-        "(what you checked and found). Copy any screenshot you cite into the same directory and "
-        "cite that copy.",
+        "(what you checked and found). Copy (`cp`) any screenshot you cite into the same directory "
+        "as `<name>-$FW_SIDECAR_AGENT_ID.png` and cite that copy. Files already in that directory "
+        "are other runs' recorded evidence: never move, rename, overwrite or delete them (T-4514).",
         f"2. Compute the digest you read: `bin/fw reviewer verdict digest {task_id} --ac <N>`",
         "3. Record it (replace <N>, <OUTCOME>, <DIGEST>, <REPORT>; run it exactly as written, so "
         "the shell expands `$FW_SIDECAR_AGENT_ID`):",

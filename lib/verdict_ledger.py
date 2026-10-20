@@ -237,6 +237,22 @@ def _ledger_paths(root: Path, extra: list[str] | None = None) -> list[str]:
     return paths + [str(r) for r in (VERDICTS, RECORDED, REFUSALS, APPLIED) if (root / r).exists()]
 
 
+def _restore_committed_evidence(root: Path, env: dict) -> list[str]:
+    """T-4514: evidence a recorded verdict cites is immutable. Restore from HEAD every committed
+    file under REPORT_DIR that is deleted or modified in the working tree, so a later worker that
+    moved or overwrote an earlier run's copy (T-4475: `config@1024.png` renamed to a `-<dispatch>`
+    name) cannot leave the earlier row citing a missing file. Untracked files are not touched."""
+    out = subprocess.run(["git", "diff", "--name-only", "--diff-filter=DM", "HEAD", "--", REPORT_DIR],
+                         cwd=str(root), env=env, capture_output=True, text=True)
+    damaged = [p for p in out.stdout.splitlines() if p] if out.returncode == 0 else []
+    if damaged:
+        subprocess.run(["git", "checkout", "HEAD", "--", *damaged], cwd=str(root), env=env,
+                       capture_output=True, text=True)
+        print(f"verdict ledger: restored {len(damaged)} committed evidence file(s) another run had "
+              f"moved, deleted or changed: {', '.join(damaged[:5])}", file=sys.stderr)
+    return damaged
+
+
 def _commit_rows(root: Path, paths: list[str], identity: str, message: str,
                  email: str = "") -> tuple[str, str]:
     """Stage and commit exactly `paths` as `identity`. Returns (head_sha, error). Call only under
@@ -246,6 +262,7 @@ def _commit_rows(root: Path, paths: list[str], identity: str, message: str,
     env = {**os.environ, "GIT_AUTHOR_NAME": identity, "GIT_COMMITTER_NAME": identity,
            "GIT_AUTHOR_EMAIL": email, "GIT_COMMITTER_EMAIL": email}
     env.pop(_WORKER_ENV, None)
+    _restore_committed_evidence(root, env)
     err = ""
     for attempt in range(5):        # another git process may hold .git/index.lock briefly
         # T-4008: -f — every path here is named explicitly by the ledger. Without it a cited
