@@ -288,7 +288,7 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-grep -q 'termlink_inject "command claude${_tl_args}' bin/claude-fw
+grep -qF 'termlink_inject "command claude${_tl_args}' bin/claude-fw
 timeout 120 bats tests/unit/t4462_claude_fw_inject_bypasses_function.bats > /tmp/.t4462 2>&1 && ! grep -q "^not ok" /tmp/.t4462 && ! grep -q '# skip' /tmp/.t4462
 timeout 600 bats tests/unit/t4426_claude_fw_tmux_redraw.bats tests/unit/t4454_claude_fw_rail_identity.bats tests/unit/t3954_claude_fw_installed_copy.bats tests/unit/t3647_claude_fw_register_leak.bats tests/unit/t3648_claude_fw_ping_tolerance.bats tests/unit/t4118_claude_fw_reexec_on_change.bats tests/unit/t3358_claude_fw_exit_detection.bats > /tmp/.t4462b 2>&1 && ! grep -q "^not ok" /tmp/.t4462b
 bin/fw vendor self --check --task T-4462
