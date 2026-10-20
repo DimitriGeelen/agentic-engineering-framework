@@ -1,0 +1,21 @@
+id: tests/unit/t4499_sidecar_body_data.bats
+name: t4499_sidecar_body_data
+type: script
+subsystem: tests
+location: tests/unit/t4499_sidecar_body_data.bats
+tags: []
+
+purpose: "T-4499: the Human-AC tick guard (check-human-ac-tick, Bash leg) refused `fw sidecar send ..."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
