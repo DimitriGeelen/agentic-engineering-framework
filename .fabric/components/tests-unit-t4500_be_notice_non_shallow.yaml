@@ -1,0 +1,21 @@
+id: tests/unit/t4500_be_notice_non_shallow.bats
+name: t4500_be_notice_non_shallow
+type: script
+subsystem: tests
+location: tests/unit/t4500_be_notice_non_shallow.bats
+tags: []
+
+purpose: "T-4500: pre-release notices say \"upgrade from a NON-SHALLOW clone\". A shallow clone of a -be tag cannot see the consumer's recorded version_sha, so fw upgrade refuses it as foreign-source (lib/version-relation.sh, T-3714)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

@@ -1,0 +1,21 @@
+id: tests/unit/t4498_refused_upgrade_no_self_vendor.bats
+name: t4498_refused_upgrade_no_self_vendor
+type: script
+subsystem: tests
+location: tests/unit/t4498_refused_upgrade_no_self_vendor.bats
+tags: []
+
+purpose: "T-4498: a refused fw upgrade must be side-effect free (T-4278 rule) — the inline self-vendor sync included."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
