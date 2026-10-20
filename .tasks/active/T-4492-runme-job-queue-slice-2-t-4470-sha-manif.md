@@ -1,13 +1,16 @@
 ---
 id: T-4492
-name: "runme job queue slice 2 (T-4470): sha manifest over job + every helper, rechecked before each step; per-step confirm with typeahead drain"
+name: "runme job queue slice 2 (T-4470): sha manifest over job + every helper, rechecked
+  before each step; per-step confirm with typeahead drain"
 description: >
-  After slice 1. Prerequisite 3 of docs/reports/T-4470-runme-job-queue.md §7 plus the per-step confirm. Review findings 5 (sha binds job.sh only) must be proven fixed by a test.
+  After slice 1. Prerequisite 3 of docs/reports/T-4470-runme-job-queue.md §7 plus
+  the per-step confirm. Review findings 5 (sha binds job.sh only) must be proven fixed
+  by a test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T15:33:41Z
-last_update: 2026-10-20T15:33:41Z
-date_finished: null
+last_update: 2026-10-20T18:05:31Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +53,53 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T15:45:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T15:46:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4492: runme job queue slice 2 (T-4470): sha manifest over job + every helper, rechecked before each step; per-step confirm with typeahead drain
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice 2 of the T-4470 GO (docs/reports/T-4470-runme-job-queue.md §7 prerequisite 3 and
+the per-step confirm), on top of slice 1 (T-4491, `lib/runme_queue.py`). Review finding 5:
+the rehearsal sha bound the job file only, not the scripts its steps call.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Dry-run records a sha manifest per step: job.json plus every file the step (or its probe, or a helper) calls — argv/sh/helper words that name an existing file, the resolved executable of an argv command, and the job's declared `scripts` list (refused at dry-run if missing); the plan shows the covered files
+- [x] The manifest is rechecked immediately before each probe and each step; a changed, removed or newly named file stops the job before that step, naming the file — and the menu shows CHANGED when any covered file differs
+- [x] Finding 5 proven fixed: a script called by a step (`bash s.sh`) edited after dry-run is not run (test); a script edited by an earlier step of the same job stops the later step that calls it (test)
+- [x] Per-step y/N: each step is confirmed on its own just before it runs, its resolved command shown again; `n` stops with later steps not run (test); typeahead typed before the prompt is discarded on a real pty (test)
+- [x] A queue `y` is still not an authorisation: the per-step confirm comes before, not instead of, check-tier0 (P5 test still green)
+- [x] Existing runme tests stay green (t4491, t3675, t3741, t3878, t4464)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +284,31 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4492_runme_sha_manifest.bats > /tmp/.t4492.out 2>&1 && ! grep -q "^not ok" /tmp/.t4492.out
+test "$(grep -c '# skip' /tmp/.t4492.out)" -eq 0
+timeout 300 bats tests/unit/t4491_runme_job_queue.bats tests/unit/t3675_runme.bats tests/unit/t3741_runme_events.bats tests/unit/t3878_runme_pending.bats tests/unit/t4464_runme_watch_until.bats > /tmp/.t4492b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4492b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4492_runme_sha_manifest.bats tests/unit/t4491_runme_job_queue.bats > /tmp/.t4492c.out 2>&1 && grep -q clean /tmp/.t4492c.out
+python3 -m py_compile lib/runme_queue.py
+bin/fw vendor self --check --task T-4492
 
 ## RCA
+
+**Symptom:** a job rehearsed with `fw runme job dry-run` whose step runs `bash s.sh`
+still ran after `s.sh` was edited — the operator confirmed one program and another ran.
+
+**Root cause:** `lib/runme_queue.py:148` (`load`) and `:218` (`state`) hash `job.json`
+bytes only. Inline helpers are inside job.json so they were bound, but any file a step
+*calls* (a script, a repo tool, the resolved executable) was outside the hash, and
+`run_job` (`:474-481`) checked the sha once, before a single "run all" confirm, never
+again before each step.
+
+**Why structurally allowed:** slice 1 deliberately deferred the manifest (T-4491 AC F5
+says "full per-step sha manifest is slice 2"); its F5 test only edited job.json, so the
+missing coverage had no red test.
+
+**Prevention:** `tests/unit/t4492_runme_sha_manifest.bats` — a called script edited
+after dry-run, and a script edited by an earlier step, must both stop the job; the plan
+must list covered files.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +404,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4492-runme-job-queue-slice-2-t-4470-sha-manif.md
 - **Context:** Initial task creation
+
+### 2026-10-20T18:05:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

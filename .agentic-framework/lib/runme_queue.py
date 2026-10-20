@@ -11,6 +11,7 @@ nothing else. It is never sourced, so job text cannot reach the launcher's promp
     {"title": "Upgrade AEF to 1.8.2", "task": "T-1049",
      "why": "one or more lines the operator reads first",
      "helpers": {"commit_closed": "git commit -m \\"$1\\" -- .tasks"},
+     "scripts": ["tools/upgrade-helper.sh"],
      "steps": [{"title": "Readiness", "argv": ["bin/fw", "task", "review", "T-1"],
                 "probe": ["bin/fw", "task", "review", "T-1"]},
                {"title": "Commit", "sh": "commit_closed 'T-1: close'"}]}
@@ -20,7 +21,19 @@ nothing else. It is never sourced, so job text cannot reach the launcher's promp
   probe a read-only readiness check (the target command's own, where one exists —
         832 addendum §3). Never run by dry-run (finding 3); the operator is asked
         before probes run and sees their result before the job is confirmed.
+  scripts files the steps reach that no step names (a file a script sources); bound
+        like the rest. Missing at dry-run is refused.
 Unknown keys are refused, so a "preflight"/"checks" block cannot creep back in.
+
+THE SHA MANIFEST (T-4492, slice 2; review finding 5). Dry-run records, per step, the
+sha of every file that step reaches: each argv / sh / helper / probe word that names an
+existing file, the resolved executable of each command word, and the declared scripts.
+job.json's own sha is kept beside it. The whole manifest decides the menu state, and the
+job's sha plus the step's files are checked again immediately before each probe and each
+step: a changed, removed or newly named file stops the job there. A step that edits a
+file a later step calls therefore stops that later step (re-rehearse). Not covered: a
+file named only at run time (computed paths, $VAR), the environment, and same-user
+edits to the manifest itself (same residual as slice 1).
 
   fw runme job new <name> (--manifest FILE | --title T [--task T-X] [--why W] -- <sh> ...)
   fw runme job dry-run <name>   validate + show the resolved plan + record its sha. Runs nothing.
@@ -35,8 +48,9 @@ Answers come from /dev/tty only; FW_RUNME_TEST_ANSWERS needs FW_RUNME_TEST=1 and
 project root that is not a real framework project (finding 6). Same-user residual: an
 agent that drives a pty of its own can still answer; the queue does not claim otherwise.
 
-Slice 2 (sha manifest rechecked per step, per-step confirm) and slice 3 (ordered
-batches) are separate tasks. Exit: 0 done / nothing to do, 1 stopped or refused, 2 usage.
+Each step is confirmed on its own (y/N, typeahead discarded) just before it runs, and
+the confirm comes before check-tier0, never instead of it. Slice 3 (ordered batches) is
+a separate task. Exit: 0 done / nothing to do, 1 stopped or refused, 2 usage.
 """
 import argparse
 import datetime
@@ -50,7 +64,7 @@ import subprocess
 import sys
 
 FRAMEWORK_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TOP_KEYS = {"title", "task", "why", "helpers", "steps"}
+TOP_KEYS = {"title", "task", "why", "helpers", "scripts", "steps"}
 STEP_KEYS = {"title", "argv", "sh", "probe"}
 NAME_RE = re.compile(r"^[A-Za-z0-9._][A-Za-z0-9._-]*$")
 HELPER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -113,6 +127,11 @@ def validate(m):
         if not HELPER_RE.match(k):
             raise Refused(f"helper name {k!r} is not a shell identifier")
         _text(body, f"helper {k}", multiline=True)
+    scripts = m.get("scripts", [])
+    if not isinstance(scripts, list):
+        raise Refused("scripts must be a list of file paths")
+    for x in scripts:
+        _text(x, "scripts entry")
     steps = m.get("steps")
     if not isinstance(steps, list) or not steps:
         raise Refused("steps must be a non-empty list")
@@ -157,6 +176,148 @@ def script_for(m, s):
     return ["bash", "--norc", "--noprofile", "-c", text], text
 
 
+# ---------------------------------------------------------------- sha manifest (T-4492)
+CMD_SEP = {";", "&&", "||", "|", "&", "(", ")", "{", "}", "!", "then", "do", "else", "elif",
+           "if", "while", "until", "time", "exec", "command", "xargs", "env", "sudo", "nohup"}
+REDIR_OUT = {">", ">>", ">|", "&>", "&>>"}
+_BUILTINS = None
+
+
+def builtins():
+    """bash builtins and keywords (a fixed command; no job text runs)."""
+    global _BUILTINS
+    if _BUILTINS is None:
+        p = subprocess.run(["bash", "--norc", "--noprofile", "-c", "compgen -bk"],
+                           capture_output=True, text=True)
+        _BUILTINS = set(p.stdout.split())
+    return _BUILTINS
+
+
+def sh_words(text):
+    """(command words, other words) of a bash text, read statically. Never executed."""
+    cmds, words = [], []
+    for line in text.splitlines():
+        lx = shlex.shlex(line, posix=True, punctuation_chars=True)
+        lx.whitespace_split = True
+        lx.commenters = "#"
+        try:
+            toks = list(lx)
+        except ValueError:
+            toks = line.split()
+        at_cmd, after_redir = True, False
+        for t in toks:
+            if after_redir:                      # an output target is written, not called
+                after_redir = False
+                continue
+            if t in REDIR_OUT:
+                after_redir = True
+                continue
+            if t in CMD_SEP or set(t) <= set(";&|()<>"):
+                at_cmd = True
+                continue
+            if at_cmd and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", t):
+                continue
+            (cmds if at_cmd else words).append(t)
+            at_cmd = False
+    return cmds, words
+
+
+def _resolve(word, as_cmd, skip):
+    if not word or word in skip:
+        return None
+    if "/" not in word and as_cmd:
+        if word in builtins():
+            return None
+        hit = shutil.which(word, path=child_env().get("PATH", os.defpath))
+        return os.path.realpath(hit) if hit else None
+    path = word if os.path.isabs(word) else os.path.join(root(), word)
+    return os.path.realpath(path) if os.path.isfile(path) else None
+
+
+def file_sha(path):
+    h = hashlib.sha256()
+    try:
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                h.update(chunk)
+    except OSError:
+        return "UNREADABLE"
+    return h.hexdigest()
+
+
+def step_files(m, s):
+    """{realpath: sha} of every file step s (command, probe, helpers, declared scripts) reaches."""
+    helpers = m.get("helpers") or {}
+    pairs = []                                   # (word, is a command word)
+    for argv in (s.get("argv"), s.get("probe")):
+        if argv:
+            pairs += [(argv[0], True)] + [(w, False) for w in argv[1:]]
+    if "sh" in s:
+        for text in [s["sh"]] + list(helpers.values()):
+            c, w = sh_words(text)
+            pairs += [(x, True) for x in c] + [(x, False) for x in w]
+    out = {}
+    for word, as_cmd in pairs:
+        p = _resolve(word, as_cmd, helpers)
+        if p:
+            out[p] = file_sha(p)
+    for x in m.get("scripts", []):
+        p = os.path.realpath(x if os.path.isabs(x) else os.path.join(root(), x))
+        out[p] = file_sha(p) if os.path.isfile(p) else "MISSING"
+    return out
+
+
+def manifest_of(m, sha):
+    return {"job": sha, "steps": [step_files(m, s) for s in m["steps"]]}
+
+
+def show_path(p):
+    r = os.path.realpath(root())
+    return os.path.relpath(p, r) if p.startswith(r + os.sep) else p
+
+
+def drift(recorded, current):
+    """What differs between two {path: sha} maps, readably; [] when equal."""
+    out = []
+    for p in sorted(set(recorded) | set(current)):
+        a, b = recorded.get(p), current.get(p)
+        if a != b:
+            out.append(f"{show_path(p)} " + ("is newly named" if a is None
+                                           else "is gone" if b in (None, "MISSING") else "changed"))
+    return out
+
+
+def recorded_manifest(d):
+    """The manifest dry-run wrote, or None when absent or not the one dryrun.ok names."""
+    try:
+        raw = open(os.path.join(d, "dryrun.manifest.json"), "rb").read()
+    except OSError:
+        return None
+    if kv(os.path.join(d, "dryrun.ok")).get("manifest") != hashlib.sha256(raw).hexdigest():
+        return None
+    try:
+        return json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return None
+
+
+def recheck(d, m, i):
+    """Just before probe/step i (1-based): are job.json and the step's files as rehearsed? [] = yes."""
+    rec = recorded_manifest(d)
+    if rec is None:
+        return ["the dry-run manifest is missing or altered"]
+    try:
+        raw = open(os.path.join(d, "job.json"), "rb").read()
+    except OSError:
+        return ["job.json is gone"]
+    if hashlib.sha256(raw).hexdigest() != rec.get("job"):
+        return ["job.json changed"]
+    steps = rec.get("steps") or []
+    if len(steps) != len(m["steps"]):
+        return ["the step list changed"]
+    return drift(steps[i - 1], step_files(m, m["steps"][i - 1]))
+
+
 def plan_text(name, m):
     out = [f"Job:   {name}" + (f"   ({m['task']})" if m.get("task") else ""), f"What:  {m['title']}"]
     if m.get("why"):
@@ -170,6 +331,10 @@ def plan_text(name, m):
         out += ["       | " + ln for ln in text.splitlines()]
         if "probe" in s:
             out.append(f"     readiness probe (read-only, asked before it runs): {shlex.join(s['probe'])}")
+        files = step_files(m, s)
+        if files:
+            out.append("     sha-bound files (rechecked just before this step): "
+                       + ", ".join(show_path(p) for p in sorted(files)))
     return "\n".join(out)
 
 
@@ -215,7 +380,31 @@ def state(d):
         raw = open(os.path.join(d, "job.json"), "rb").read()
     except OSError:
         return "NO job.json"
-    return "ready" if kv(ok).get("sha") == hashlib.sha256(raw).hexdigest() else "CHANGED since dry-run"
+    if kv(ok).get("sha") != hashlib.sha256(raw).hexdigest():
+        return "CHANGED since dry-run"
+    rec = recorded_manifest(d)
+    if rec is None:
+        return "NOT REHEARSED (no file manifest)"
+    try:
+        m = validate(json.loads(raw.decode("utf-8")))
+    except (Refused, UnicodeDecodeError, ValueError):
+        return "CHANGED since dry-run"
+    return "ready" if rec == manifest_of(m, rec.get("job")) else "CHANGED since dry-run"
+
+
+def changed_files(d):
+    """Which files make a CHANGED job changed (named in the operator's stop message)."""
+    rec = recorded_manifest(d)
+    try:
+        m, _ = load(d)
+    except Refused:
+        return []
+    if rec is None or len(rec.get("steps") or []) != len(m["steps"]):
+        return []
+    out = []
+    for i, s in enumerate(m["steps"]):
+        out += [x for x in drift(rec["steps"][i], step_files(m, s)) if x not in out]
+    return out
 
 
 def last_outcome(d):
@@ -289,12 +478,25 @@ def cmd_dry_run(a):
     d = find(a.name)
     name = os.path.basename(d)
     m, sha = load(d)
+    man = manifest_of(m, sha)
+    missing = sorted({show_path(p) for st in man["steps"] for p, h in st.items() if h == "MISSING"})
+    if missing:
+        raise Refused(f"declared script(s) not found: {', '.join(missing)}")
     print(f"== DRY RUN {name}")
     print(plan_text(name, m))
+    raw = json.dumps(man, sort_keys=True, indent=1).encode("utf-8")
+    mpath = os.path.join(d, "dryrun.manifest.json")
+    if os.path.exists(mpath):
+        os.chmod(mpath, 0o644)
+    with open(mpath, "wb") as f:
+        f.write(raw)
+    os.chmod(mpath, 0o444)
     with open(os.path.join(d, "dryrun.ok"), "w", encoding="utf-8") as f:
-        f.write(f"sha={sha}\nat={now()}\n")
+        f.write(f"sha={sha}\nmanifest={hashlib.sha256(raw).hexdigest()}\nat={now()}\n")
     os.chmod(os.path.join(d, "job.json"), 0o444)
-    print(f"dry-run recorded: job.json sha {sha[:12]}, now read-only. Nothing was executed "
+    nfiles = len({p for st in man["steps"] for p in st})
+    print(f"dry-run recorded: job.json sha {sha[:12]} (now read-only) and a manifest of {nfiles} "
+          "file(s) the steps reach, rechecked before each step. Nothing was executed "
           "(no step, no probe); the operator sees this same plan before confirming.")
     return 0
 
@@ -447,6 +649,9 @@ def run_job(d, ans):
 
     st = state(d)
     if st != "ready":
+        what = changed_files(d) if st.startswith("CHANGED") else []
+        if what:
+            log.say("changed since dry-run: " + "; ".join(what))
         return stop(f"{name} is {st}; nothing run. The agent runs: bin/fw runme job dry-run {name}")
     m, sha = load(d)
     if kv(os.path.join(d, "dryrun.ok")).get("sha") != sha:
@@ -462,6 +667,9 @@ def run_job(d, ans):
             return stop("probes not confirmed; nothing run")
         bad = 0
         for i, s in probes:
+            moved = recheck(d, m, i)
+            if moved:
+                return stop(f"before the probe for step {i}: {'; '.join(moved)} since dry-run; nothing run")
             log.say(f"probe for step {i}: {shlex.join(s['probe'])}")
             rc = run_child(s["probe"], log)
             log.say(f"{'ok  ' if rc == 0 else 'FAIL'}  probe for step {i} (rc={rc})")
@@ -469,11 +677,26 @@ def run_job(d, ans):
         if bad:
             return stop("a readiness probe failed; the target command would refuse. Nothing run")
     n = len(m["steps"])
-    if not ans.confirm(f"Run all {n} step(s) of {name} exactly as shown above?"):
-        return stop(f"not confirmed; nothing run")
     for i, s in enumerate(m["steps"], 1):
         argv, text = script_for(m, s)
+        later = "nothing run" if i == 1 else "later steps not run"
+        moved = recheck(d, m, i)
+        if moved:
+            return stop(f"step {i}/{n}: {'; '.join(moved)} since dry-run; this step and {later}. "
+                        f"The agent runs: bin/fw runme job dry-run {name}")
         log.say(f"Step {i}/{n}: {s['title']}")
+        log.say("  runs:")
+        for ln in text.splitlines():
+            log.say("    | " + ln)
+        # Per-step consent (T-4492): asked just before the step, typeahead discarded.
+        # It is consent, not authorisation: check-tier0 still runs after it.
+        if not ans.confirm(f"Run step {i}/{n} of {name} exactly as shown above?"):
+            return stop("not confirmed; nothing run" if i == 1
+                        else f"step {i}/{n} not confirmed; later steps not run")
+        log.say(f"operator confirmed step {i}/{n}")
+        moved = recheck(d, m, i)                 # the operator may have paused at the prompt
+        if moved:
+            return stop(f"step {i}/{n}: {'; '.join(moved)} while waiting for the confirm; {later}")
         if not tier0_gate(name, i, text, log):
             return stop(f"step {i}/{n} is held by the Tier 0 gate; a queue 'y' is not an approval. "
                         f"Approve it at its own gate, then run the queue again")

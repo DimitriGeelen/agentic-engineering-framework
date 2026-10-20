@@ -95,7 +95,7 @@ answers() { printf '%s\n' "$@" > "$ANS"; }
     echo "$plan" | grep -q "HELPER-BODY-MARKER"
     echo "$plan" | grep -qF "printf '%s\\n' 'arg with space'"
     echo "$plan" | grep -q "say_it() {"
-    echo "$output" | grep -q "Run all 2 step(s) of 001-f4 exactly as shown above"
+    echo "$output" | grep -q "Run step 1/2 of 001-f4 exactly as shown above"
 }
 
 @test "F4: a control character (screen escape) in any shown field is refused" {
@@ -159,7 +159,7 @@ answers() { printf '%s\n' "$@" > "$ANS"; }
     manifest t0 '{"title":"force","steps":[{"title":"ok first","argv":["touch","'"$TMPP"'/t0-first"]},
       {"title":"push","sh":"touch '"$TMPP"'/t0-ran; git push --force origin master"}]}'
     "$FW" runme job dry-run t0
-    answers y
+    answers y y
     run "$FW" runme queue
     [ "$status" -eq 1 ]
     [ -e "$TMPP/t0-first" ]
