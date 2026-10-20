@@ -1,0 +1,83 @@
+--- a/lib/pickup.sh
++++ b/lib/pickup.sh
+@@ -107,11 +107,29 @@
+ pickup_dedup_hash() {
+     local file="$1"
+ 
++    # T-2687: the three greps below swallow every failure (`2>/dev/null || true`),
++    # so an absent/unreadable envelope used to extract three empty strings and hash
++    # to the CONSTANT digest sha256("||") =
++    # 565d240f5343e625ae579a4d45a770f1f02c6368b5ed4d06da4fbe6f47c28866. That constant
++    # collides across unrelated envelopes: once it lands in the dedup ledger, every
++    # later envelope that also fails to extract matches it and is silently dropped as
++    # a "duplicate". A fail-open detection path degrading into silent data loss.
++    # Refuse to produce a hash we cannot stand behind — callers handle non-zero.
++    if [ ! -r "$file" ]; then
++        echo "pickup_dedup_hash: envelope not readable: $file" >&2
++        return 1
++    fi
++
+     local pickup_type source_project summary
+     pickup_type=$({ grep "^type:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+     source_project=$({ grep "^  project:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
+     summary=$({ grep "^  summary:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  summary:[[:space:]]*//' | tr -d '"' | tr -d "'")
+ 
++    if [ -z "$pickup_type" ] && [ -z "$summary" ] && [ -z "$source_project" ]; then
++        echo "pickup_dedup_hash: all dedup fields (type, payload.summary, source.project) extracted empty from $file — refusing to emit the constant sha256(\"||\") digest" >&2
++        return 1
++    fi
++
+     # Normalize: lowercase, collapse whitespace
+     local normalized
+     normalized=$(echo "${pickup_type}|${summary}|${source_project}" | tr '[:upper:]' '[:lower:]' | tr -s ' ')
+@@ -149,7 +167,12 @@
+ pickup_record_dedup() {
+     local file="$1"
+     local hash
+-    hash=$(pickup_dedup_hash "$file")
++    # T-2687: never append a row we cannot compute — that is exactly how the
++    # constant sha256("||") poison entries got into the ledger.
++    if ! hash=$(pickup_dedup_hash "$file"); then
++        echo "pickup_record_dedup: refusing to record an uncomputable dedup hash for $file — ledger left unchanged" >&2
++        return 1
++    fi
+     local ts
+     ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+     echo "${ts}|${hash}|$(basename "$file")" >> "$PICKUP_DEDUP_LOG"
+@@ -378,6 +401,21 @@
+     summary=$({ grep "^  summary:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  summary:[[:space:]]*//' | tr -d '"' | tr -d "'")
+     source_task=$({ grep "^  task_id:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  task_id:[[:space:]]*//' | tr -d '"' | tr -d "'")
+ 
++    # T-2687: refuse rather than mint a content-free task. Without this guard an
++    # extraction failure produced tasks literally named "Pickup:  (from )" with
++    # description "Source: . Type: ." — four of them reached the operator's register
++    # (T-2683..T-2686) and, being unscored-but-inception, ranked BVP 70 / hv-hc,
++    # displacing real work at the top of `fw bvp --quadrant hv-hc`.
++    if [ -z "$summary" ] || [ -z "$source_project" ]; then
++        local missing_fields=""
++        [ -z "$summary" ] && missing_fields="payload.summary"
++        [ -z "$source_project" ] && missing_fields="${missing_fields:+$missing_fields, }source.project"
++        echo "pickup_create_inception: refusing to create a task from $(basename "$file") — empty field(s): ${missing_fields}" >&2
++        echo "  The envelope passed key-presence validation but the value(s) extracted empty." >&2
++        echo "  Inspect the envelope and re-run \`fw pickup process\` once the field(s) carry a value." >&2
++        return 1
++    fi
++
+     local task_name="Pickup: ${summary} (from ${source_project})"
+ 
+     # T-1465 (T-1455 GO, constrained Option A): bug-reports describe a known fix —
+@@ -503,7 +541,13 @@
+     echo -e "${GREEN}PROCESS${NC} $basename_f — $summary"
+ 
+     # Create inception task
+-    pickup_create_inception "$file"
++    # T-2687: a refused creation must stop the pipeline here. Continuing would record
++    # a dedup row and mv the envelope to processed/, burying an envelope that produced
++    # nothing — the envelope stays in the inbox instead, inspectable and re-runnable.
++    if ! pickup_create_inception "$file"; then
++        echo -e "${RED}REFUSE${NC}  $basename_f — task creation refused; envelope left in inbox for inspection" >&2
++        return 1
++    fi
+ 
+     # Notify human
+     if type fw_notify >/dev/null 2>&1; then

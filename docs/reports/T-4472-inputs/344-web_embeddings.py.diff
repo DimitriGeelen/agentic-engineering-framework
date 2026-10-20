@@ -1,0 +1,26 @@
+--- a/web/embeddings.py
++++ b/web/embeddings.py
+@@ -1200,8 +1200,21 @@
+             """Embed `texts`, insert their rows, and commit as one durable step."""
+             nonlocal embedded_chunks
+             vecs: list[bytes] = []
+-            for j in range(0, len(texts), BATCH_SIZE):
+-                vecs.extend(_embed(texts[j:j + BATCH_SIZE], host=bulk_host))
++            # T-3336 (010-termlink): send batches CONCURRENTLY. Serial batches left
++            # the GPU ~11% busy; measured on this host (RTX 5060 Ti, Ollama
++            # NUM_PARALLEL=3): 1 worker 70 chunks/s, 2 = 98, 3 = 107, 4 = 104.
++            # `map` preserves order, so vectors stay aligned with meta_rows.
++            # FW_EMBED_WORKERS overrides; match it to the server's OLLAMA_NUM_PARALLEL.
++            _batches = [texts[j:j + BATCH_SIZE] for j in range(0, len(texts), BATCH_SIZE)]
++            _workers = max(1, int(os.environ.get("FW_EMBED_WORKERS", "3")))
++            if _workers == 1 or len(_batches) <= 1:
++                for _b in _batches:
++                    vecs.extend(_embed(_b, host=bulk_host))
++            else:
++                from concurrent.futures import ThreadPoolExecutor
++                with ThreadPoolExecutor(max_workers=_workers) as _ex:
++                    for _v in _ex.map(lambda b: _embed(b, host=bulk_host), _batches):
++                        vecs.extend(_v)
+             stamp = time.time()
+             done: set[str] = set()
+             for meta, emb in zip(meta_rows, vecs):

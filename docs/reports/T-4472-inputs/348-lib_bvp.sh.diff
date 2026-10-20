@@ -1,0 +1,373 @@
+--- a/lib/bvp.sh
++++ b/lib/bvp.sh
+@@ -35,6 +35,7 @@
+ import sys
+ import re
+ import glob
++import json
+ import statistics
+ from pathlib import Path
+ 
+@@ -86,15 +87,96 @@
+     return yaml.load(text, Loader=_L)
+ 
+ 
++# ------------------------------------------- T-3176 confirmation telemetry (LOCAL DIVERGENCE)
++# T-3176 (LOCAL DIVERGENCE, re-applied after the 1.8.3 re-vendor, T-3370). Upstream has no
++# equivalent ledger: it records provenance (confirmed_via) on the task, not what the
++# estimator guessed vs what was confirmed. The override env var exists BEFORE any test
++# suite does, deliberately: the ledger is append-only, so a fixture run that wrote into
++# the real one could never be cleaned up.
++def _bvp_telemetry_path():
++    override = os.environ.get('FW_BVP_TELEMETRY_PATH')
++    if override:
++        return Path(override)
++    return PROJECT_ROOT / '.context' / 'telemetry' / 'bvp-confirmations.ndjson'
++
++
++def _count_no_signal(proposal_entry, confirmed_keys):
++    """T-3176 (LOCAL DIVERGENCE, T-3370): how many drivers in this proposal were scored
++    with NO evidence. The estimator renders no-signal as 2, so an all-no-signal proposal
++    promotes unchanged and would log as `proposer_exact` — the estimator agreeing with
++    itself, recorded as accuracy. Read from the rationale string (the only place the
++    distinction survives). Returns (count, driver_count); count is None when the
++    rationale is unreadable — "did not measure" must not render as "measured, none"."""
++    driver_count = len(confirmed_keys)
++    if not isinstance(proposal_entry, dict):
++        return None, driver_count
++    rationale = proposal_entry.get('rationale')
++    if not isinstance(rationale, str) or not rationale.strip():
++        return None, driver_count
++    return len(re.findall(r'no-signal', rationale)), driver_count
++
++
++def _append_confirmation_row(row):
++    """T-3176 (LOCAL DIVERGENCE, T-3370): one NDJSON line per confirmation. Never
++    raises; returns (ok, error_text). A confirmation missing from the ledger must not
++    be silent (G-063 aimed at our own telemetry)."""
++    path = _bvp_telemetry_path()
++    try:
++        path.parent.mkdir(parents=True, exist_ok=True)
++        with open(path, 'a') as fh:
++            fh.write(json.dumps(row, sort_keys=True) + "\n")
++        return True, None
++    except (OSError, TypeError, ValueError) as exc:
++        return False, str(exc)
++
++
+ # ----------------------------------------------------------- §ACD agent gate
++_HUMAN_APPROVAL_KEY = 'BVP_HUMAN_APPROVAL'
++_TRUTHY = {'1', 'true', 'yes', 'on'}
++
++
++def _bvp_human_approval_required(verb=""):
++    """T-3184 (LOCAL DIVERGENCE, re-applied after the 1.8.3 re-vendor, T-3370).
++
++    Operator ruling 2026-09-27: setting BVP scores, weights and drivers, and enabling
++    auto-promote, needs NO human approval. Human authority lives in the sticky override
++    (upstream T-3523, bvp_sticky.py), not in a refusal (measured: 449 proposed scores,
++    0 ever confirmed while the gate stood). The gate is re-armed only when a human sets
++    BVP_HUMAN_APPROVAL (env, then .framework.yaml) to a truthy value, or — for `confirm`
++    only — sets upstream's own FW_REQUIRE_BVP_CONFIRM_APPROVAL=1.
++
++    Polarity: an unknown or unreadable value resolves to NOT required, deliberately —
++    a gate that silently re-arms on a config it could not read is the invisible
++    zero-data failure the ruling removed.
++    """
++    if verb == 'confirm' and os.environ.get('FW_REQUIRE_BVP_CONFIRM_APPROVAL') == '1':
++        return True
++    env = os.environ.get(_HUMAN_APPROVAL_KEY)
++    if env is not None:
++        return env.strip().lower() in _TRUTHY
++    try:
++        root = Path(os.environ.get('PROJECT_ROOT') or os.getcwd())
++        for line in (root / '.framework.yaml').read_text(encoding='utf-8').splitlines():
++            if line.startswith(_HUMAN_APPROVAL_KEY + ':'):
++                return line.split(':', 1)[1].strip().strip('"\'').lower() in _TRUTHY
++    except OSError:
++        pass
++    return False
++
++
+ def acd_gate(verb, args, refusal_hint=""):
+     """T-1671 §ACD shape: refuse under $CLAUDECODE=1 unless --i-am-human or
+     --from-watchtower. Returns True if allowed, False if refused (and prints
+-    error). Used by all mutating verbs."""
++    error). Used by all mutating verbs.
++
++    T-3184 (local, T-3370): open for agents unless a human re-armed approval —
++    see _bvp_human_approval_required()."""
+     if os.environ.get('CLAUDECODE') != '1':
+         return True
+     if '--i-am-human' in args or '--from-watchtower' in args:
+         return True
++    if not _bvp_human_approval_required(verb):
++        return True
+     print(f"Error: agents must not invoke 'fw bvp {verb}' directly (§ACD, M6).", file=sys.stderr)
+     print("", file=sys.stderr)
+     print("  You appear to be running inside Claude Code ($CLAUDECODE=1).", file=sys.stderr)
+@@ -110,20 +192,31 @@
+     return False
+ 
+ 
+-def require_rationale(args, min_chars=30):
+-    """Pulls --rationale value out of args, validates min length. Returns
+-    (rationale_text, ok). Prints error on failure."""
++def require_rationale(args, min_chars=0, first_set=False):
++    """Pulls --rationale out of args. Returns (rationale_text, ok).
++
++    T-3184 (LOCAL DIVERGENCE, re-applied after the 1.8.3 re-vendor, T-3370). Operator
++    ruling: --rationale STAYS MANDATORY, but (1) the 30-character floor is removed (it
++    measures typing, not thought) and (2) it is NOT required on a FIRST set
++    (`first_set=True` — establishing a baseline), only when changing an established
++    value. A whitespace-only rationale is a missing one wearing a flag: still refused."""
+     if '--rationale' not in args:
+-        print("Error: --rationale is required.", file=sys.stderr)
+-        print(f"  Provide ≥{min_chars} chars explaining why (R6 mitigation — thin", file=sys.stderr)
+-        print("  rationales make weight-history audit useless).", file=sys.stderr)
++        if first_set:
++            return '', True
++        print("Error: --rationale is required when changing an established value.", file=sys.stderr)
++        print("  Say why it changed — the weight-history audit reconstructs decisions", file=sys.stderr)
++        print("  from these, and 'updated' reconstructs nothing (R6).", file=sys.stderr)
++        print("  Not required for a first-time set (T-3184).", file=sys.stderr)
+         return None, False
+     idx = args.index('--rationale')
+     if idx + 1 >= len(args):
+         print("Error: --rationale needs a value.", file=sys.stderr)
+         return None, False
+     rationale = args[idx + 1]
+-    if len(rationale) < min_chars:
++    if not rationale.strip():
++        print("Error: --rationale was given but is empty.", file=sys.stderr)
++        return None, False
++    if min_chars and len(rationale) < min_chars:
+         print(f"Error: --rationale must be ≥{min_chars} characters (got {len(rationale)}).", file=sys.stderr)
+         print(f"  Provided: {rationale!r}", file=sys.stderr)
+         return None, False
+@@ -154,6 +247,28 @@
+     _atomic_write_text(HISTORY_PATH, yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
+ 
+ 
++def _weight_has_history(driver_id):
++    """T-3184 (LOCAL DIVERGENCE, re-applied after the 1.8.3 re-vendor, T-3370): True when
++    this driver already has an entry in the weight history, i.e. `weight --set` CHANGES
++    an established value and needs a rationale; False = first set, exempt.
++    FAIL-SAFE toward requiring a rationale: an unreadable history returns True."""
++    try:
++        text = HISTORY_PATH.read_text()
++    except OSError:
++        return False
++    try:
++        data = yaml.safe_load(text)
++    except Exception:
++        return True
++    entries = data.get('entries') if isinstance(data, dict) else data
++    if entries is None:
++        return False
++    if not isinstance(entries, list):
++        return True
++    return any(isinstance(e, dict) and str(e.get('driver') or '') == str(driver_id)
++               for e in entries)
++
++
+ # ---------------------------------------------------------------- policy load
+ def load_policy():
+     policy_path = PROJECT_ROOT / 'policy' / 'value-drivers.yaml'
+@@ -296,6 +411,28 @@
+     return statistics.median(bvp_vals) == min(bvp_vals)
+ 
+ 
++def _proposal_is_all_no_signal(fm):
++    """T-3185 (LOCAL DIVERGENCE, re-applied after the 1.8.3 re-vendor, T-3370): True when
++    EVERY driver in the latest proposal was scored with no evidence (`Dn=2 (no-signal)`).
++    RETURNS FALSE WHEN IT CANNOT TELL (absent/empty/unparseable rationale, no scores):
++    "could not measure" must not render as "measured, and empty" (T-3105), and wrongly
++    excluding a real task hides work while wrongly keeping an unassessed one only leaves
++    the old behaviour."""
++    proposed = (fm or {}).get('bvp_scores_proposed')
++    if not proposed:
++        return False
++    latest = proposed[-1] if isinstance(proposed, list) else proposed
++    if not isinstance(latest, dict):
++        return False
++    scores = latest.get('scores')
++    if not isinstance(scores, dict) or not scores:
++        return False
++    rationale = latest.get('rationale')
++    if not isinstance(rationale, str) or not rationale.strip():
++        return False
++    return len(re.findall(r'no-signal', rationale)) >= len(scores)
++
++
+ def quadrant(bvp_norm, cost, bvp_median, cost_median, degenerate=False):
+     """Return one of hv-lc / hv-hc / lv-lc / lv-hc, QUAD_VALUE_WITHHELD for a
+     degenerate-median tie, or '-' if either axis is missing."""
+@@ -367,6 +504,8 @@
+             'cost': cost,
+             'cost_src': src,
+             'source': source,
++            # T-3185 (LOCAL DIVERGENCE, T-3370): was every driver scored with no evidence?
++            'all_no_signal': _proposal_is_all_no_signal(fm) if source == 'proposed' else False,
+         })
+ 
+     if not rows:
+@@ -378,16 +517,24 @@
+             print("Or pass `--include-proposed` to see estimator-proposed scores (advisory).")
+         return 0
+ 
+-    bvp_vals = [r['bvp_norm'] for r in rows]
++    # T-3185 (LOCAL DIVERGENCE, re-applied after the 1.8.3 re-vendor, T-3370): a fully
++    # unassessed proposal is excluded from the thresholds AND from quadrant assignment.
++    # Its score is untouched (option (d) rescores nothing) but a task the estimator knew
++    # nothing about must not be ranked as work nor drag the median for everyone else.
++    _ranked = [r for r in rows if not r.get('all_no_signal')]
++    bvp_vals = [r['bvp_norm'] for r in _ranked]
+     # Medians are taken over KNOWN costs only — an unknown-cost task must not shift
+     # the threshold that decides everyone else's quadrant (T-3068).
+-    cost_vals = [r['cost'] for r in rows if r['cost'] is not None]
++    cost_vals = [r['cost'] for r in _ranked if r['cost'] is not None]
+     bvp_median = statistics.median(bvp_vals) if bvp_vals else 0.5
+     cost_median = statistics.median(cost_vals) if cost_vals else 4.0
+     # T-3485: degeneracy is a property of the whole distribution, computed once
+     # per rank rather than per-row — see value_axis_degenerate() docstring.
+     _value_degenerate = value_axis_degenerate(bvp_vals)
+     for r in rows:
++        if r.get('all_no_signal'):  # T-3185 (LOCAL DIVERGENCE, T-3370)
++            r['quadrant'] = '-'
++            continue
+         r['quadrant'] = quadrant(r['bvp_norm'], r['cost'], bvp_median, cost_median,
+                                   degenerate=_value_degenerate)
+ 
+@@ -400,13 +547,30 @@
+     # expected state, not an anomaly, and the operator needs to see its size to
+     # know how much weight the quadrant split can carry.
+     _n_total = len(rows)
++    # T-3185 (LOCAL DIVERGENCE, T-3370): disclose the exclusion before the table — these
++    # tasks are UNASSESSED, not low-value, and a silent filter reads as full coverage.
++    _n_nosignal = sum(1 for r in rows if r.get('all_no_signal'))
++    if _n_nosignal:
++        _pct_ns = 100.0 * _n_nosignal / _n_total if _n_total else 0.0
++        print(f"NOTE: {_n_nosignal}/{_n_total} task(s) ({_pct_ns:.0f}%) scored every driver "
++              f"no-signal — the estimator had nothing to read.")
++        print("      They are UNASSESSED, not low-value. Excluded from the quadrant and "
++              "from the")
++        print("      thresholds, so they neither top the ranking nor move anyone else's "
++              "placement.")
++        print("      Scores are unchanged; write a Context/AC body and re-run the "
++              "estimator (T-3185).")
++        print()
++
+     _n_unknown = sum(1 for r in rows if r['cost'] is None)
+     if _n_unknown:
+         _pct = 100.0 * _n_unknown / _n_total if _n_total else 0.0
+         print(f"NOTE: {_n_unknown}/{_n_total} task(s) ({_pct:.0f}%) have no known cost "
+               f"— blast_radius unmeasured, so no quadrant (COST/QUAD show '-').")
+-        print(f"      Quadrant thresholds are computed over the {_n_total - _n_unknown} "
+-              f"task(s) that do have one.")
++        # T-3185 (LOCAL DIVERGENCE, T-3370): report the ACTUAL threshold population;
++        # total-minus-unknown over-reports once all-no-signal tasks are excluded too.
++        print(f"      Quadrant thresholds are computed over the {len(cost_vals)} "
++              f"task(s) with a cost that were not excluded above.")
+         print("      Cost becomes measurable once `components:` is resolved; see T-3068.")
+         print()
+ 
+@@ -790,7 +954,8 @@
+         print(f"Error: weight {new_weight} out of range (0-9)", file=sys.stderr)
+         return 2
+ 
+-    rationale, ok = require_rationale(args)
++    # T-3184 (LOCAL DIVERGENCE, T-3370): first-ever weight for a driver is exempt.
++    rationale, ok = require_rationale(args, first_set=not _weight_has_history(driver_id))
+     if not ok:
+         return 2
+ 
+@@ -1024,7 +1189,11 @@
+     # gate — confirm proceeds under $CLAUDECODE=1 with no --i-am-human/--from-watchtower.
+     # acd_gate() itself is untouched; its other 4 call sites (weight, driver --add,
+     # driver --remove, auto-promote --enable) are unaffected by this switch.
+-    if os.environ.get('FW_REQUIRE_BVP_CONFIRM_APPROVAL') == '1':
++    #
++    # T-3184 (LOCAL DIVERGENCE, re-applied after the 1.8.3 re-vendor, T-3370): the gate is
++    # ALSO re-armed by BVP_HUMAN_APPROVAL (reversibility on all five verbs). acd_gate()
++    # decides via _bvp_human_approval_required('confirm'), which honours both switches.
++    if os.environ.get('FW_REQUIRE_BVP_CONFIRM_APPROVAL') == '1' or _bvp_human_approval_required('confirm'):
+         if not acd_gate('confirm', args,
+                         refusal_hint="Correct flow: human reviews proposed scores in Watchtower or runs `fw bvp confirm T-<id> --i-am-human`"):
+             return 1
+@@ -1066,6 +1235,7 @@
+     # Build the confirmed map. Proposed is a list of timestamped entries
+     # (per T-1918 schema); take the newest entry's scores dict.
+     confirmed = {}
++    latest = None
+     if proposed:
+         latest = proposed[-1] if isinstance(proposed, list) else proposed
+         # latest is expected to have a 'scores' key per M3, or be the scores dict directly.
+@@ -1074,6 +1244,8 @@
+                 confirmed.update({k: int(v) for k, v in (latest.get('scores') or {}).items()})
+             else:
+                 confirmed.update({k: int(v) for k, v in latest.items() if isinstance(v, (int, float)) and not isinstance(v, bool)})
++    # T-3176 (LOCAL DIVERGENCE, T-3370): snapshot the proposal BEFORE overrides land.
++    proposed_scores = dict(confirmed)
+     confirmed.update(overrides)
+ 
+     if not confirmed:
+@@ -1169,6 +1341,40 @@
+         print(f"  Overrides applied: {overrides}")
+     print(f"  Confirmed by: {fm['confirmed_by']}  at: {fm['confirmed_at']}  via: {fm['confirmed_via']}")
+     print(f"  bvp_scores_proposed: cleared (M3 — estimator may re-propose if next pass diverges by ≥2)")
++
++    # T-3176 (LOCAL DIVERGENCE, re-applied after the 1.8.3 re-vendor, T-3370): record the
++    # confirmation. Human confirmations are recorded too — a ledger of only agent rows
++    # cannot answer "is the estimator better or worse than the operator". `path` is
++    # derived from upstream's confirmed_via provenance.
++    delta = {k: [proposed_scores.get(k), v] for k, v in confirmed.items()
++             if proposed_scores.get(k) != v}
++    no_signal, driver_count = _count_no_signal(latest, confirmed.keys())
++    row = {
++        'ts': fm['confirmed_at'],
++        'task': task_id,
++        'path': 'auto' if confirmed_via == 'agent' else 'human',
++        'confirmed_via': confirmed_via,
++        'confirmed_by': fm['confirmed_by'],
++        'proposal_existed': bool(proposed_scores),
++        'proposed': proposed_scores,
++        'confirmed': confirmed,
++        'overrides': overrides,
++        'delta_vs_proposed': delta,
++        'proposer_exact': bool(proposed_scores) and not delta and not overrides,
++        'no_signal_count': no_signal,
++        'driver_count': driver_count,
++        'all_no_signal': (None if no_signal is None
++                          else bool(driver_count) and no_signal >= driver_count),
++        'estimator': latest.get('estimator') if isinstance(latest, dict) else None,
++        'rubric_sha': latest.get('rubric_sha') if isinstance(latest, dict) else None,
++    }
++    ok, err = _append_confirmation_row(row)
++    if not ok:
++        print(f"ERROR: scores were confirmed but the telemetry row could NOT be written: {err}",
++              file=sys.stderr)
++        print(f"  Ledger: {_bvp_telemetry_path()}", file=sys.stderr)
++        print(f"  {task_id} is confirmed on disk; the ledger is now incomplete.", file=sys.stderr)
++        return 1
+     return 0
+ 
+ 
+@@ -1424,7 +1630,7 @@
+     if not 0 <= weight <= 9:
+         print(f"Error: weight {weight} out of range (0-9)", file=sys.stderr)
+         return 2
+-    rationale, ok = require_rationale(args)
++    rationale, ok = require_rationale(args, first_set=True)  # T-3184 (LOCAL DIVERGENCE, T-3370): new driver = baseline
+     if not ok:
+         return 2
+ 
+@@ -1674,7 +1880,7 @@
+         print(f"Error: weight {weight} out of range (0-9)", file=sys.stderr)
+         return 2
+ 
+-    rationale, ok = require_rationale(args)
++    rationale, ok = require_rationale(args, first_set=True)  # T-3184 (LOCAL DIVERGENCE, T-3370): new driver = baseline
+     if not ok:
+         return 2
+ 

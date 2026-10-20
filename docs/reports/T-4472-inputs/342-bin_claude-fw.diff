@@ -1,0 +1,19 @@
+--- a/bin/claude-fw
++++ b/bin/claude-fw
+@@ -1231,8 +1231,15 @@
+         # one '' — skipped so a bare relaunch stays `claude`.
+         _tl_args=""
+         [ "${#CLAUDE_ARGS[@]}" -gt 0 ] && _tl_args=$(printf ' %q' "${CLAUDE_ARGS[@]}")
++        # 010-termlink T-3464 (local, filed upstream): the arc-011 sidecar sockets are
++        # launch-scoped. termlink >= 0.12.665 (T-3463) no longer forwards them into a
++        # spawned PTY, so hand them to THIS claude explicitly, per command, as
++        # tl-claude.sh does. Unset here = nothing added.
++        _tl_env=""
++        [ -n "${TERMLINK_SIDECAR_SOCKET:-}" ] && _tl_env="TERMLINK_SIDECAR_SOCKET=$(printf '%q' "$TERMLINK_SIDECAR_SOCKET") "
++        [ -n "${TERMLINK_SIDECAR_STATUS_SOCKET:-}" ] && _tl_env="${_tl_env}TERMLINK_SIDECAR_STATUS_SOCKET=$(printf '%q' "$TERMLINK_SIDECAR_STATUS_SOCKET") "
+         _tl_tok="r${restart_count}p$$e$(date +%s)"   # T-4249: this run's marker token
+-        termlink_inject "claude${_tl_args}; printf '__CLAUDE_FW_EXIT_${_tl_tok}_%s__\n' \"\$?\""
++        termlink_inject "${_tl_env}claude${_tl_args}; printf '__CLAUDE_FW_EXIT_${_tl_tok}_%s__\n' \"\$?\""
+         _TL_PING_FAILS=0 # T-3648: each run starts with a clean failure count
+         # Wait for claude to exit by polling the PTY for shell prompt
+         # We check if claude process is still running inside the session

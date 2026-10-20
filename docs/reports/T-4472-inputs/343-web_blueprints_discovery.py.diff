@@ -1,0 +1,59 @@
+--- a/web/blueprints/discovery.py
++++ b/web/blueprints/discovery.py
+@@ -24,21 +24,13 @@
+ 
+ 
+ def _trigger_async_index_build():
+-    """Start background thread to build embedding index for next request."""
+-    import threading
+-    global _index_build_thread
+-    if _index_build_thread and _index_build_thread.is_alive():
+-        return  # Already building
+-    def _build():
+-        try:
+-            from web.embeddings import build_index
+-            log.info("Background index build started")
+-            build_index()
+-            log.info("Background index build completed")
+-        except Exception as e:
+-            log.warning("Background index build failed: %s", e)
+-    _index_build_thread = threading.Thread(target=_build, daemon=True)
+-    _index_build_thread.start()
++    """T-3337 (LOCAL DIVERGENCE, re-applied after the 1.8.3 re-vendor, T-3370):
++    never build the vector index from a web request. A background index build
++    here deleted the live index and rebuilt it for hours (AEF lost 2.5 GB -> 45 KB
++    on 2026-10-03). In 1.8.3 nothing calls this function (upstream T-3786), but it
++    still contained the build; keeping it inert means a future caller cannot bring
++    the defect back. Rebuilding is the job of `fw index reindex`."""
++    log.warning("vector index not ready — run `fw index reindex` (never built from a page view, T-3337)")
+ 
+ 
+ @bp.route("/decisions")
+@@ -337,14 +329,16 @@
+     # events while the user waits (not before Response creation).
+     def _chat_stream():
+         from web.ask import stream_answer
+-        from web.embeddings import rag_retrieve, _db, _db_built_at, DB_PATH, STALE_SECONDS
++        # T-3370 (local fix, filed upstream): embeddings renamed _db_built_at to
++        # _db_opened_at (AEF T-3012); importing the old name raised ImportError here.
++        from web.embeddings import rag_retrieve, _db, _db_opened_at, DB_PATH, STALE_SECONDS
+         import sqlite3
+         import time
+ 
+         # Phase 1: Check embedding index readiness
+         # The index is ready if: in-memory DB has docs, OR on-disk DB has docs
+         index_ready = False
+-        if _db is not None and (time.time() - _db_built_at) < STALE_SECONDS:
++        if _db is not None and (time.time() - _db_opened_at) < STALE_SECONDS:
+             index_ready = True
+         elif DB_PATH.exists() and DB_PATH.stat().st_size > 4096:
+             try:
+@@ -356,7 +350,7 @@
+                 pass
+ 
+         if not index_ready:
+-            # T-3786: never build from a page view — a background build_index() here
++            # T-3786: never build from a page view — a background index build here
+             # unlinked the live index on any transient read failure. Say so instead.
+             yield sse_event("status", phase="index", message="Knowledge index is unavailable (missing, empty or unreadable). It is never rebuilt from this page; rebuild with: fw index reindex")
+             yield sse_event("error", message="The embedding index is unavailable. Rebuild it with: fw index reindex")

@@ -1,0 +1,23 @@
+--- a/agents/context/check-active-task.sh
++++ b/agents/context/check-active-task.sh
+@@ -722,6 +722,20 @@
+     return 1
+ }
+ 
++# --- Named exception: the pending-commit helper (T-3270, operator ruling SQ-23 opt 2) ---
++# scripts/commit-pending.sh commits files that UNATTENDED jobs wrote, under the task id the
++# WRITER recorded next to them (T-3269, SQ-22 option C). That is deliberately "a different task
++# than focus". The drift check below reads only the literal command, which names no task, so
++# the helper would pass by being invisible. The operator ruled that an exception to a safety
++# gate belongs IN the gate, where it can be seen: exactly the helper's `commit` verb, alone on
++# the line, is recognised and announced. Anything chained onto it (; & |) is NOT covered, so a
++# chained `git commit -m "T-X: ..."` still reaches the drift check below and is still blocked.
++if [ "$TOOL_NAME" = "Bash" ] && [ -n "${BASH_CMD:-}" ] \
++   && [[ "$BASH_CMD" =~ ^[[:space:]]*(bash[[:space:]]+)?(\./)?scripts/commit-pending\.sh[[:space:]]+commit([[:space:]]|$) ]] \
++   && [[ ! "$BASH_CMD" =~ [\;\&\|] ]]; then
++    echo "NOTE: focus-drift — named exception: scripts/commit-pending.sh commit (T-3270, SQ-23). It commits unattended writes under the task id each WRITER recorded (T-3269), not under focus ${CURRENT_TASK:-<none>}." >&2
++fi
++
+ # --- Focus-target drift detection (T-1730, closes G3 from T-1729 meta-RCA) ---
+ # When a Bash command targets a specific task that differs from the focused task,
+ # block under agent control with --switch-focus override (logged).

@@ -1,0 +1,80 @@
+--- a/agents/handover/handover.sh
++++ b/agents/handover/handover.sh
+@@ -396,6 +396,7 @@
+ ---
+ session_id: $SESSION_ID
+ timestamp: $TIMESTAMP
++enrichment_status: pending
+ type: checkpoint
+ tasks_active: [$ACTIVE_TASKS]
+ tasks_parked: [$PARKED_TASKS]
+@@ -824,6 +825,7 @@
+ ---
+ session_id: $SESSION_ID
+ timestamp: $TIMESTAMP
++enrichment_status: pending
+ predecessor: $PREDECESSOR
+ tasks_active: [$ACTIVE_TASKS]
+ tasks_parked: [$PARKED_TASKS]
+@@ -1518,7 +1520,7 @@
+ 
+ ## Gotchas / Warnings for Next Session
+ 
+-See gaps register above.
++[TODO: traps the next session should know about. The gaps register above is a starting point, not an answer — T-2882.]
+ 
+ ## Suggested First Action
+ 
+@@ -1593,7 +1595,9 @@
+ # T-1719 — a task in no other section except a bare id in tasks_active.
+ focus_id = ''
+ try:
+-    with open(os.path.join('$CONTEXT_DIR', 'working', 'focus.yaml')) as fh:
++    # T-2882/T-3370 (local): fall back to PROJECT_ROOT/.context when CONTEXT_DIR is
++    # unset, so the focus lookup never silently reads '/working/focus.yaml'.
++    with open(os.path.join('${CONTEXT_DIR:-$PROJECT_ROOT/.context}', 'working', 'focus.yaml')) as fh:
+         m = re.search(r'^current_task:\s*(\S+)', fh.read(), re.M)
+         if m:
+             focus_id = m.group(1).strip().strip(chr(39) + chr(34))
+@@ -1608,12 +1612,21 @@
+ candidates.sort(key=lambda c: c[2], reverse=True)
+ candidates.sort(key=lambda c: (c[0], c[1]))
+ focused = [c for c in candidates if c[3] == focus_id] if focus_id else []
++_why = ''
+ if focused:
+     _, _, _, tid, tname = focused[0]
+-    print(f'Continue {tid}: {tname}')
++    _why = 'current focus'
+ elif candidates:
+     _, _, _, tid, tname = candidates[0]
++    _why = 'owner, horizon and last update'
++if _why:
+     print(f'Continue {tid}: {tname}')
++    print()
++    # T-2882 (LOCAL DIVERGENCE, re-applied after the 1.8.3 re-vendor, T-3370):
++    # a constant presented as advice reads as a recommendation; say what it is.
++    print(f'_Mechanical fallback, ranked by {_why} — not a reasoned recommendation.'
++          ' This handover is \`enrichment_status: pending\`; the sections above are'
++          ' unfilled. Confirm against the task before acting on it._')
+ else:
+     print('See active tasks')
+ " 2>/dev/null || echo "See active tasks")
+@@ -1694,6 +1707,18 @@
+     fi
+ 
+     if [ -n "$GIT_AGENT" ]; then
++        # Pending unattended writes first (termlink T-3269, SQ-22 option C — LOCAL
++        # DIVERGENCE, registered in .vendor-divergence.yaml, filed upstream). Files an
++        # unattended job wrote (canary ledger refresh, WARN filer) are recorded in a
++        # manifest and committed by the next session BY NAME: the helper runs
++        # `git commit -- <exactly those paths>` per recorded task id, so it cannot
++        # sweep the index (T-3090) and needs no focus switch. Never fatal here — a
++        # refused/failed entry stays in the manifest and /resume names it.
++        if [ -x "$PROJECT_ROOT/scripts/commit-pending.sh" ]; then
++            (cd "$PROJECT_ROOT" && ./scripts/commit-pending.sh commit) \
++                || echo "handover: some pending unattended writes were not committed — see 'scripts/commit-pending.sh list'" >&2
++        fi
++
+         # Stage handover files
+         git -C "$PROJECT_ROOT" add "$HANDOVER_FILE" "$HANDOVER_DIR/LATEST.md"
+ 
