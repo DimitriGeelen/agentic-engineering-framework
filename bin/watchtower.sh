@@ -427,9 +427,13 @@ do_start() {
     local new_pid=$!
     echo "$new_pid" > "$PID_FILE"
 
-    # Health check — wait up to 5 seconds
-    local check=0
-    while [ "$check" -lt 5 ]; do
+    # Health check — T-4460: poll the cheap /api/_identity, not GET / (the home
+    # page took 68 s under load), for up to WATCHTOWER_START_TIMEOUT seconds.
+    local deadline
+    deadline=$(fw_config "WATCHTOWER_START_TIMEOUT" "60" 2>/dev/null || echo 60)
+    [[ "$deadline" =~ ^[0-9]+$ ]] && [ "$deadline" -ge 1 ] || deadline=60
+    local check=0 _state
+    while [ "$check" -lt "$deadline" ]; do
         sleep 1
         check=$((check + 1))
 
@@ -441,13 +445,13 @@ do_start() {
             exit 1
         fi
 
-        # Check HTTP response
-        if curl -sf "http://${_probe}:${port}/" > /dev/null 2>&1; then
-            # T-1803: triple self-validation — the 200 must come from OUR instance,
-            # not a foreign service that grabbed the port in a race. Only then is
-            # the watchtower.{port,url} triple trustworthy. On mismatch, refuse to
-            # write a triple pointing at a neighbor; kill our process and abort.
-            if ! _watchtower_port_holder_is_ours "$port"; then
+        # T-1803: triple self-validation — the answer must come from OUR instance,
+        # not a foreign service that grabbed the port in a race. Only then is the
+        # watchtower.{port,url} triple trustworthy. On mismatch, refuse to write a
+        # triple pointing at a neighbor; kill our process and abort.
+        _state=$(_watchtower_identity_state "http://${_probe}:${port}")
+        if [ "$_state" != "none" ]; then
+            if [ "$_state" != "ours" ]; then
                 log_error "Port $port responds but identifies as a FOREIGN service, not this project's Watchtower."
                 log_error "  Refusing to write a triple pointing at it. Aborting."
                 kill -KILL "$new_pid" 2>/dev/null || true
@@ -489,10 +493,18 @@ do_start() {
         fi
     done
 
-    # Process running but not responding
-    log_warn "Watchtower started (PID $new_pid) but health check failed after 5s."
-    log_warn "It may still be initializing. Check: curl http://${_probe}:${port}/"
-    log_warn "Log: $LOG_FILE"
+    # T-4460: running but never identified itself. Do not leave a server behind
+    # with a half-written triple (pid/port but no url): every URL reader would
+    # then report "no running Watchtower" while one holds the port. Stop it.
+    log_error "Watchtower (PID $new_pid) did not answer /api/_identity within ${deadline}s; stopping it."
+    log_error "  Raise the deadline under load: bin/fw config set WATCHTOWER_START_TIMEOUT <seconds>"
+    log_error "  Last 10 lines of $LOG_FILE:"
+    tail -10 "$LOG_FILE" >&2 || true
+    kill -TERM "$new_pid" 2>/dev/null || true
+    sleep 1
+    kill -KILL "$new_pid" 2>/dev/null || true
+    rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
+    exit 1
 }
 
 # ---------------------------------------------------------------------------

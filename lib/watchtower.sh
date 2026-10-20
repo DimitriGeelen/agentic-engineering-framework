@@ -70,6 +70,28 @@ _watchtower_identity_matches() {
     [ "$_svc" = "watchtower" ] && [ -n "$_our_root" ] && [ "$_proot" = "$_our_root" ]
 }
 
+# _watchtower_identity_state URL
+#
+# T-4460: one /api/_identity probe, three answers on stdout: "ours" (service is
+# watchtower and project_root is ours), "foreign" (something answered the
+# endpoint with 200 but is not us), "none" (no answer yet). The start loop polls
+# this instead of GET /, which renders the whole home page (68 s under load).
+_watchtower_identity_state() {
+    local _u="$1" _json _svc _proot _our_root
+    if ! _json=$(curl -sf --max-time 2 "${_u}/api/_identity" 2>/dev/null); then
+        printf 'none'
+        return 0
+    fi
+    _our_root=$(_watchtower_our_root) || _our_root=""
+    _svc=$(printf '%s' "$_json" | grep -oE '"service"[[:space:]]*:[[:space:]]*"[^"]*"' | sed -E 's/.*"([^"]*)"$/\1/') || _svc=""
+    _proot=$(printf '%s' "$_json" | grep -oE '"project_root"[[:space:]]*:[[:space:]]*"[^"]*"' | sed -E 's/.*"([^"]*)"$/\1/') || _proot=""
+    if [ "$_svc" = "watchtower" ] && [ -n "$_our_root" ] && [ "$_proot" = "$_our_root" ]; then
+        printf 'ours'
+    else
+        printf 'foreign'
+    fi
+}
+
 # _watchtower_bound_host
 #
 # T-4041 (GitHub #88): the address Watchtower was told to bind (FW_HOST — read by
