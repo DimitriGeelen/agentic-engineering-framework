@@ -693,6 +693,65 @@ sys.exit(1 if any(s.awk_program_risk(p) for p in sys.argv[2:]) else 3)' "$_FW_SA
     return 0
 }
 
+# T-4510: can this sed clause run a command? GNU sed runs one with the `e` command
+# and the `e` flag of `s`. The scripts (-e/--expression, joined by newlines as sed
+# joins them, or the first operand when none is given) are judged by
+# lib/shell_write_scan.py sed_script_risk. Options are a whitelist: -f/--file loads
+# a script the text does not show, and anything unknown or ambiguous fails closed,
+# as do a word that begins with an expansion and a missing python3 or library.
+_fw_sed_runs_command() {
+    local i j tok n opt script_seen=0 script=""
+    local -a longs=(--expression= --file= --line-length= --quiet --silent --regexp-extended \
+        --separate --unbuffered --null-data --posix --debug --sandbox --binary \
+        --follow-symlinks --version --help --in-place)
+    _fw_option_words "$1" || return 0
+    n=${#_FW_OW[@]}
+    for (( i=1; i<n; i++ )); do
+        tok="${_FW_OW[i]}"
+        [ "${_FW_OWK[i]}" = E ] && return 0
+        case "$tok" in
+            --) i=$((i + 1)); break ;;
+            --?*)
+                opt=""
+                for j in "${longs[@]}"; do
+                    case "${j%=}" in "${tok%%=*}"*) [ -n "$opt" ] && return 0; opt="$j" ;; esac
+                done
+                case "$opt" in
+                    '') return 0 ;;
+                    --file=|--in-place=) return 0 ;;
+                    --expression=|--line-length=)
+                        if [ "${tok#*=}" != "$tok" ]; then j="${tok#*=}"
+                        else i=$((i + 1)); j="${_FW_OW[i]:-}"; [ "${_FW_OWK[i]:-}" = E ] && return 0; fi
+                        [ "$opt" = --expression= ] && { script+="${j}"$'\n'; script_seen=1; } ;;
+                esac ;;
+            -?*)
+                for (( j=1; j<${#tok}; j++ )); do
+                    case "${tok:j:1}" in
+                        n|E|r|s|u|z|b) ;;
+                        e|l)
+                            opt="${tok:j+1}"
+                            if [ -z "$opt" ]; then i=$((i + 1)); opt="${_FW_OW[i]:-}"; [ "${_FW_OWK[i]:-}" = E ] && return 0; fi
+                            [ "${tok:j:1}" = e ] && { script+="${opt}"$'\n'; script_seen=1; }
+                            break ;;
+                        *) return 0 ;;
+                    esac
+                done ;;
+            *) break ;;
+        esac
+    done
+    if [ "$script_seen" -eq 0 ]; then
+        [ "$i" -lt "$n" ] || return 1
+        [ "${_FW_OWK[i]}" = E ] && return 0
+        script="${_FW_OW[i]}"
+    fi
+    python3 -I -c 'import sys
+sys.path.insert(0, sys.argv[1])
+import shell_write_scan as s
+sys.exit(1 if s.sed_script_risk(sys.argv[2]) else 3)' "$_FW_SAFE_COMMANDS_LIB" "$script" 2>/dev/null
+    [ $? -eq 3 ] && return 1
+    return 0
+}
+
 # T-4512: does this sed/sort clause name its in-place / output option? The outer
 # has_bash_write_pattern regexes read the raw line, so a quoted or brace-built
 # `-i` / `-o` passed them. Judged on _fw_option_words; a word that cannot be
@@ -1113,6 +1172,8 @@ _fw_single_command_is_safe() {
             case "$base" in sed|sort) _fw_filter_option_writes "$base" "$cmd" && return 1 ;; esac
             # T-4509: awk runs commands with system(), | getline, print | and |&.
             [ "$base" = awk ] && _fw_awk_runs_command "$cmd" && return 1
+            # T-4510: GNU sed runs commands with the e command and the e flag of s.
+            [ "$base" = sed ] && _fw_sed_runs_command "$cmd" && return 1
             return 0
             ;;
 

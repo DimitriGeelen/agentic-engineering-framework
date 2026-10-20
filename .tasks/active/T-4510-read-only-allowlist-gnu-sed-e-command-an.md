@@ -1,10 +1,15 @@
 ---
 id: T-4510
-name: "Read-only allowlist: GNU sed e command and s///e flag execute commands but are classed SAFE"
+name: "Read-only allowlist: GNU sed e command and s///e flag execute commands but
+  are classed SAFE"
 description: >
-  The write scan knows only sed -i (~1454) and w FILE (~1463). Refuse the e command (e CMD, Ne CMD) and the e flag of s, including -E/-n/-f script-file variants. Reported by ring20-dashboard msg af2bbc85 (found by their cloud review of the public repo); reproduced on bleeding-edge HEAD 2026-10-20 with a classification-only probe: has_bash_write_pattern = no write AND is_bash_safe_command = SAFE. Concern G-121.
+  The write scan knows only sed -i (~1454) and w FILE (~1463). Refuse the e command
+  (e CMD, Ne CMD) and the e flag of s, including -E/-n/-f script-file variants. Reported
+  by ring20-dashboard msg af2bbc85 (found by their cloud review of the public repo);
+  reproduced on bleeding-edge HEAD 2026-10-20 with a classification-only probe: has_bash_write_pattern
+  = no write AND is_bash_safe_command = SAFE. Concern G-121.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T20:19:23Z
-last_update: 2026-10-20T20:19:23Z
-date_finished: null
+last_update: 2026-10-20T21:40:56Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +55,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T20:30:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T20:31:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4510: Read-only allowlist: GNU sed e command and s///e flag execute commands but are classed SAFE
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+G-121 cause 2 of 5 (ring20-dashboard msg af2bbc85). Probe: `docs/reports/G-121-bypass-probe.sh` (classification only). Script words come from T-4512's shared tokenizer (`_fw_option_words`).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `sed 'e touch pwned' F`, `sed '1e touch pwned' F`, `sed 's/a/b/e' F`, `sed -n 's/a/b/ge' F`, `sed -E 's/a/b/e' F`, `sed -e 's/a/b/e' F`, `sed --expression='1e x' F`, `sed '/x/e' F`, `sed '1!e x' F`, `sed 's|a|b|e' F`, `sed -e '1{e x' -e '}' F` (several -e scripts are joined by newlines, as GNU sed does), `sed -ne 's/a/b/e' F`, `sed --expr='1e x' F` (long-option abbreviation) and `sed -f P F` / `sed --file=P F` (script not visible) are gated by is_bash_safe_command
+- [x] Data that contains `e` stays SAFE: `sed 's/e/E/g' F`, `sed '/e/d' F`, `sed 'y/e/E/' F`, `sed '1a text with e' F`, `sed -n '/re/p' F`
+- [x] Controls stay SAFE: `sed -n 1p F`, `sed -E 's/(a)/\1/' F`, `sed -n '1,5p;$p' F`, `git grep pattern`, `awk '{print $1}' F`
+- [x] New bats test covers both directions; T-4509, T-4511, T-4512, T-4485, T-4367, T-4487, T-4499 and safe-commands suites stay green
+- [ ] `bin/fw vendor self --check --task T-4510` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +284,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4510_sed_exec.bats > /tmp/.t4510.out 2>&1 && ! grep -q "^not ok" /tmp/.t4510.out
+test "$(grep -c '# skip' /tmp/.t4510.out)" -eq 0
+out=$(bash docs/reports/G-121-bypass-probe.sh 2>&1); test "$(echo "$out" | grep -cE "^nowrite +gated +sed '(1?e|s/a/b/e)")" -eq 3 && echo "$out" | grep -qE '^nowrite +SAFE +sed -n 1p F'
+bin/fw vendor self --check --task T-4510
 
 ## RCA
 
@@ -264,6 +304,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `sed 'e touch pwned' F`, `sed '1e …' F` and `sed 's/a/b/e' F` classed SAFE by `is_bash_safe_command` (and no write by `has_bash_write_pattern`), so an agent could run an arbitrary command with no active task (G-121, reported by ring20-dashboard msg af2bbc85).
+
+**Root cause:** `agents/context/lib/safe-commands.sh` (filter arm, `sed|awk|sort|…)` ~:1110) admitted `sed` on the argument that its only write routes are `-i` and `w FILE`, both caught by the outer raw-text rules. GNU sed's `e` command and the `e` flag of `s` EXECUTE commands; nothing in the arm looked at the sed script at all.
+
+**Why structurally allowed:** the arm's safety argument ("its only write route is gated one layer up") was about WRITING, and was verified for writing only; execution was never a category the filter arm considered (same class as awk system(), T-4509). The tests covered `sed -i` and `sed -n Np`, never a script with `e`.
+
+**Prevention:** `_fw_sed_runs_command` (safe-commands.sh) whitelists sed options (`-f`/`--file`, unknown options and expansion-led words fail closed) and hands every script to `lib/shell_write_scan.py:sed_script_risk`, a command-by-command sed parser that refuses `e`, the `e`/`w` flags of `s`, `w`/`W` and anything it does not recognise. `tests/unit/t4510_sed_exec.bats` pins both directions, and the G-121 probe line in `## Verification` keeps the reported strings gated.
 
 ## Evolution
 
@@ -288,6 +336,11 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-20 — AC example corrected
+- **What changed:** the filed AC example `sed '1{e x' -e '}' F` is not an exec: when any `-e` is given GNU sed treats every non-option word as an input FILE, so `'1{e x'` is a filename. The intended shape is `sed -e '1{e x' -e '}' F`.
+- **Plan impact:** AC rewritten to the multi-`-e` form; added `-ne`, `--expr=` (abbreviation) and `--file=` cases.
+- **Triggered:** none.
 
 ## Recommendation
 
@@ -345,3 +398,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4510-read-only-allowlist-gnu-sed-e-command-an.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:57:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -695,6 +695,159 @@ def awk_program_risk(prog: str) -> str | None:
     return None
 
 
+def _sed_delimited(s: str, i: int, d: str, regex: bool = False) -> int:
+    """Index just past the closing delimiter `d` of a sed regex (regex=True) or
+    replacement starting at i, -1 when unterminated. Backslash escapes; in a regex a
+    bracket expression holds a literal `d` (GNU sed: `s/[/]/X/` replaces a slash), and
+    a `[:alpha:]`-style class inside it holds a literal `]`. Reading the delimiter
+    there as the end would desync the parse: `s/[/]/;b/e` hides its e flag."""
+    n = len(s)
+    while i < n:
+        if s[i] == "\\":
+            i += 2
+            continue
+        if s[i] == "\n" and d != "\n":
+            return -1
+        if regex and d != "[" and s[i] == "[":
+            j = i + 1
+            if j < n and s[j] == "^":
+                j += 1
+            if j < n and s[j] == "]":
+                j += 1
+            while j < n and s[j] != "]":
+                if s[j] == "[" and j + 1 < n and s[j + 1] in ":.=":
+                    k = s.find(s[j + 1] + "]", j + 2)
+                    if k < 0:
+                        return -1
+                    j = k + 2
+                    continue
+                if s[j] == "\n":
+                    return -1
+                j += 1
+            if j >= n:
+                return -1
+            i = j + 1
+            continue
+        if s[i] == d:
+            return i + 1
+        i += 1
+    return -1
+
+
+# commands that take no argument / a label / a filename / a text / a number
+_SED_PLAIN = set("=dDgGhHlnNpPxzF")
+_SED_LABEL = set(":btT")
+_SED_FILE = set("rRwW")
+_SED_TEXT = set("aic")
+_SED_NUM = set("qQlL")
+
+
+def _sed_address(s: str, i: int, first: bool) -> int:
+    """Index past one sed address at i (none is fine), -1 when unterminated:
+    N, $, first~step, /re/ or \\cREc with I/M flags, and (second address) +N, ~N."""
+    n = len(s)
+    if i < n and (s[i].isdigit() or s[i] == "$"):
+        i += 1
+        while i < n and (s[i].isdigit() or s[i] == "~"):
+            i += 1
+    elif i < n and s[i] in "/\\":
+        d = "/"
+        if s[i] == "\\":
+            if i + 1 >= n:
+                return -1
+            d, i = s[i + 1], i + 1
+        i = _sed_delimited(s, i + 1, d, regex=True)
+        if i < 0:
+            return -1
+        while i < n and s[i] in "IM":
+            i += 1
+    elif not first and i < n and s[i] in "+~":
+        i += 1
+        while i < n and s[i].isdigit():
+            i += 1
+    return i
+
+
+def sed_script_risk(script: str) -> str | None:
+    """T-4510: why a sed script may run a command or write a file, or None. GNU sed
+    runs commands with the `e` command (`e CMD`, `1e CMD`) and the `e` flag of `s`;
+    `w`/`W` and the `w` flag write a file. The script is parsed command by command
+    (addresses, `!`, `{}`, `s`/`y` with any delimiter, labels, text and file
+    arguments), so an `e` in a regex, a replacement or `a` text is data. Anything the
+    parser does not recognise is refused."""
+    s, i, n = script, 0, len(script)
+    while i < n:
+        c = s[i]
+        if c in " \t\n;}":
+            i += 1
+            continue
+        i = _sed_address(s, i, first=True)
+        if i >= 0 and i < n and s[i] == ",":
+            i += 1
+            while i < n and s[i] in " \t":
+                i += 1
+            i = _sed_address(s, i, first=False)
+        if i < 0:
+            return "unterminated address"
+        while i < n and s[i] in " \t!":
+            i += 1
+        if i >= n:
+            return None          # an address with no command: sed refuses to run
+        c = s[i]
+        i += 1
+        if c in "{}":
+            continue
+        if c == "e":
+            return "the e command runs a shell command"
+        if c in "sy":
+            if i >= n or s[i] in "\n\\":
+                return "unterminated s/y"
+            d = s[i]
+            i = _sed_delimited(s, i + 1, d, regex=(c == "s"))
+            if i < 0:
+                return "unterminated s/y"
+            i = _sed_delimited(s, i, d)
+            if i < 0:
+                return "unterminated s/y"
+            if c == "s":
+                j = i
+                while j < n and s[j] not in ";\n}":
+                    if s[j] == "e":
+                        return "the e flag of s runs the pattern space as a command"
+                    if s[j] in "wW":
+                        return "the w flag of s writes a file"
+                    j += 1
+                i = j
+            continue
+        if c in _SED_FILE:
+            if c in "wW":
+                return "w writes a file"
+            while i < n and s[i] != "\n":
+                i += 1
+            continue
+        if c in _SED_TEXT:
+            # GNU one-liner `a text` / classic `a\` + text: both run to end of line,
+            # and a trailing backslash continues the text onto the next line
+            while i < n and s[i] != "\n":
+                i += 2 if s[i] == "\\" else 1
+            continue
+        if c in _SED_LABEL:
+            while i < n and s[i] not in ";\n":
+                i += 1
+            continue
+        if c in _SED_NUM:
+            while i < n and (s[i].isdigit() or s[i] in " \t"):
+                i += 1
+            continue
+        if c in _SED_PLAIN or c == "#":
+            if c == "#":
+                while i < n and s[i] != "\n":
+                    i += 1
+            continue
+        return f"unrecognised sed command {c!r}"
+    return None
+
+
 def _decode_ansi_c_quoted(text: str) -> str:
     """Like _decode_ansi_c, but re-quote the decoded text so it stays ONE word."""
     def dec(m):
