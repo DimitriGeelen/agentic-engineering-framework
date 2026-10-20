@@ -30,9 +30,20 @@ _FW_VERIFICATION_PORT_LOADED=1
 # Fixed on 3000 by design. Resolving "the port that happens to be live" and
 # flagging that instead would make the verdict depend on host state at run time —
 # the same defect class the gate exists to catch.
+#
+# T-2772: a URL is not the only way to reach for 3000. A test harness is pointed
+# at a server by an env-var ASSIGNMENT — `FW_TEST_PORT=3000 python3 -m pytest
+# tests/playwright/...` — and T-1960/T-1961 closed clean through this gate with
+# exactly that line while driving another project's Watchtower. So the hit side
+# also matches any assignment to a name ending in PORT (`PORT=3000`,
+# `FW_PORT='3000'`, `export FW_TEST_PORT=3000`). The name must start at a word
+# boundary not preceded by `$`, so `$PORT=3000`-style text and comparisons
+# (`[ "$PORT" = 3000 ]`) are not assignments; `3000` must end the number, so
+# `PORT=30001` is not 3000. The resolution discriminator below is unchanged and
+# applies to both shapes.
 find_port_literals() {
     printf '%s\n' "$1" \
-        | grep -E 'https?://(localhost|127\.0\.0\.1|0\.0\.0\.0):3000' \
+        | grep -E 'https?://(localhost|127\.0\.0\.1|0\.0\.0\.0):3000|(^|[^A-Za-z0-9_$])([A-Za-z_][A-Za-z0-9_]*_)?PORT=["'"'"']?3000([^0-9]|$)' \
         | grep -vE 'fw[[:space:]]+watchtower[[:space:]]+(url|port)|watchtower\.(url|port)|fw[[:space:]]+config[[:space:]]+get[[:space:]]+PORT|\$\{?(WT_URL|WURL|WT_PORT)' \
         || true
 }

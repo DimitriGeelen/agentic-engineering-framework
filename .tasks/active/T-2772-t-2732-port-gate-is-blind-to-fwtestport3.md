@@ -18,7 +18,7 @@ description: >
   the env-var shape. The sweep matters as much as the predicate — T-2764 and T-2771
   both found that a sweep is only as wide as the pattern that generated it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -36,7 +36,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T17:21:06Z
-last_update: '2026-08-17T12:36:09Z'
+last_update: 2026-10-20T21:02:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect reproduces at HEAD: `find_port_literals 'FW_TEST_PORT=3000 python3 -m pytest …'` prints nothing before the fix
+- [x] `find_port_literals` (lib/verification-port.sh) flags port-3000 env-var assignments (`FW_TEST_PORT=3000`, `PORT=3000`, `FW_PORT=3000`, quoted values, after `env`/`export`) with no port resolution on the line
+- [x] Discriminator kept: a line that resolves the port (`fw watchtower url|port`, `fw config get PORT`, `$WT_PORT`…) still passes; `PORT=30001`, `PORT=4000` and `$PORT == 3000` comparisons are not flagged
+- [ ] Regression tests in tests/unit/verification_port_hardcode.bats carry the T-1960/T-1961 corpus line, fail without the fix, pass with it; whole file green (new tests green; test 8 red until T-1963/T-2082 lines are rewritten — see RCA sweep)
+- [x] Corpus swept for the env-var shape; every live carrier in an active task's `## Verification` named in this task (with disposition)
+- [ ] `bin/fw vendor self --check --task T-2772` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -197,6 +201,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bash -c 'source lib/verification-port.sh; find_port_literals "FW_TEST_PORT=""3000 python3 -m pytest tests/playwright/test_x.py -q"'); [ -n "$out" ]
+out=$(bash -c 'source lib/verification-port.sh; find_port_literals "P=\$(bin/fw watchtower port); FW_TEST_PORT=\${P:-3000} pytest x"'); [ -z "$out" ]
+bats tests/unit/verification_port_hardcode.bats > /tmp/.t2772-bats.out 2>&1 && grep -q '^ok ' /tmp/.t2772-bats.out
+bin/fw vendor self --check --task T-2772
 
 ## RCA
 
@@ -213,6 +221,22 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** T-1960/T-1961 closed through P-011 with `FW_TEST_PORT=3000 python3 -m pytest tests/playwright/…` in `## Verification`; the run drove another project's Watchtower on :3000 and passed (false green, the T-2732 class). Reproduced at HEAD 3bcb79bd9: `find_port_literals 'FW_TEST_PORT=3000 python3 -m pytest …'` printed nothing.
+
+**Root cause:** `lib/verification-port.sh:35` (`find_port_literals`) matched only the URL shape `https?://(localhost|127.0.0.1|0.0.0.0):3000`. The port handed to a test harness as an env-var assignment never contains a URL, so the hit side of the predicate could not see it.
+
+**Why structurally allowed:** T-2732 built the predicate from the instances that had announced themselves (371 curl-URL lines); the regression suite only exercised that shape, and its corpus scan used the same predicate, so it could not find what the predicate could not see (L-543: a sweep is only as wide as its pattern).
+
+**Prevention:** the predicate now also matches assignments to `PORT` / `*_PORT` with value 3000 (quoted or not), with the resolution discriminator unchanged. Six T-2772 tests in `tests/unit/verification_port_hardcode.bats` pin the corpus shapes (T-1960, T-2079, T-1632), the non-matches (`PORT=30001`, `:4000`, `[ "$PORT" = 3000 ]`, `SUPPORT=3000`), the same-line resolution pass, and the close-gate refusal; three of them fail on the old predicate (negative control run). The existing corpus scan (test 8) now covers the env-var shape too, and immediately found two live carriers (below).
+
+**Sweep (env-var shape, every `## Verification` block in .tasks/):**
+- `.tasks/active/T-1963-…` — `FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_arc_review_route.py -q` — LIVE carrier, not fixed here (another task's file); turns test 8 red until rewritten.
+- `.tasks/active/T-2082-…` — `FW_TEST_PORT=3000 PROJECT_ROOT=… python3 -m pytest tests/playwright/test_review_complete_render_race.py …` — LIVE carrier, same disposition.
+- `.tasks/completed/T-1632-…`, `.tasks/completed/T-2079-…` — completed, never re-gated; historical.
+- `.tasks/completed/T-2771-…` — `! grep -q 'FW_TEST_PORT=3000' …` — a citation (grep for the text), would be a false positive; completed, so no effect. Same limitation the URL shape already has; bypass is `FW_ALLOW_HARDCODED_PORT=1`.
+- Suggested rewrite for T-1963/T-2082 (T-2771 precedent): `FW_TEST_PORT=$(bin/fw watchtower port) python3 -m pytest …`.
+- Not covered: `tools/port3000_hygiene.py` HIT_RE (the set-level ratchet) is still URL-only; it is a separate scanner over the whole repo and widening it changes its baseline — left for a follow-up.
 
 ## Evolution
 
@@ -265,3 +289,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2772-t-2732-port-gate-is-blind-to-fwtestport3.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:02:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

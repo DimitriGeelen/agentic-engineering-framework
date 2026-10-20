@@ -186,3 +186,52 @@ EOF
     "
     [ -z "$output" ]
 }
+
+# ── T-2772: the port as an env-var assignment, not a URL ──────────────────────
+#
+# T-1960 and T-1961 stored `FW_TEST_PORT=3000 python3 -m pytest tests/playwright/…`
+# and closed clean through this gate, then drove another project's Watchtower
+# (port 3000 on the origin host; ours was 3001), which answered 200. The URL-only
+# predicate could not see it. These lines are the corpus shapes, verbatim.
+
+@test "T-2772: the T-1960 corpus line (FW_TEST_PORT=3000 pytest) is flagged" {
+    run find_port_literals 'FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_arc_recommendation.py -q'
+    [ -n "$output" ]
+}
+
+@test "T-2772: the T-2079 corpus shape (assignment among other assignments) is flagged" {
+    run find_port_literals 'FW_TEST_PORT=3000 PROJECT_ROOT=/opt/x python3 -m pytest tests/playwright/t.py -q > /tmp/.o 2>&1'
+    [ -n "$output" ]
+    run find_port_literals 'PYTHONDONTWRITEBYTECODE=1 FW_TEST_PORT=3000 python3 -m pytest tests/playwright/t.py -q'
+    [ -n "$output" ]
+}
+
+@test "T-2772: PORT, FW_PORT, quoted values, export and env forms are flagged" {
+    local l
+    for l in 'PORT=3000 bin/fw serve' "export FW_PORT='3000'" 'env FW_TEST_PORT="3000" pytest x'; do
+        run find_port_literals "$l"
+        [ -n "$output" ] || { echo "not flagged: $l" >&2; false; }
+    done
+}
+
+@test "T-2772: other ports, longer numbers, comparisons and non-PORT names are NOT flagged" {
+    local l
+    for l in 'PORT=30001 x' 'FW_TEST_PORT=4000 pytest x' '[ "$PORT" = 3000 ]' 'SUPPORT=3000 x' 'FW_TEST_PORT=$(bin/fw watchtower port) pytest x'; do
+        run find_port_literals "$l"
+        [ -z "$output" ] || { echo "false positive: $l" >&2; false; }
+    done
+}
+
+@test "T-2772: an assignment that resolves the port first on the same line still passes" {
+    run find_port_literals 'WT_PORT=$(bin/fw watchtower port); [ -n "$WT_PORT" ] || WT_PORT=3000; FW_TEST_PORT=$WT_PORT pytest x'
+    [ -z "$output" ]
+}
+
+@test "T-2772: the close gate refuses the env-var shape for the stated reason" {
+    PROJECT="$(create_test_project)"
+    make_task "$PROJECT" 'FW_TEST_PORT=3000 true' >/dev/null
+    PROJECT_ROOT="$PROJECT" run "$U" T-995 --status work-completed
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"hard-coded Watchtower port"* ]]
+    [[ "$output" == *"FW_TEST_PORT=3000 true"* ]]
+}
