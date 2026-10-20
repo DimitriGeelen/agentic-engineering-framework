@@ -7023,6 +7023,9 @@ slug = os.path.basename(project_root).lower()
 slug = re.sub(r'[^a-z0-9_-]', '-', slug)
 cron_source = os.path.join(project_root, '.context', 'cron', 'agentic-audit.crontab')
 cron_install = f'/etc/cron.d/agentic-audit-{slug}'
+# T-3160: 'fw cron install --dry-run' renders into a scratch file so the
+# git-tracked source is never written; the header still names the real source.
+cron_out = os.environ.get('FW_CRON_GENERATE_OUT') or cron_source
 
 lines = [
     f'# Agentic Engineering Framework — Scheduled Jobs (managed by cron-registry.yaml)',
@@ -7068,11 +7071,11 @@ for job in jobs:
         active += 1
     lines.append('')
 
-os.makedirs(os.path.dirname(cron_source), exist_ok=True)
-with open(cron_source, 'w') as f:
+os.makedirs(os.path.dirname(cron_out), exist_ok=True)
+with open(cron_out, 'w') as f:
     f.write('\n'.join(lines))
 
-print(f'Generated {cron_source}')
+print(f'Generated {cron_out}')
 print(f'  {active} active, {paused} paused ({len(jobs)} total)')
 print(f'  Install with: fw cron install')
 "
@@ -7304,17 +7307,25 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
                 fi
 
                 # Step 1: regenerate crontab from registry (re-using fw cron generate logic)
-                if ! "$0" cron generate >/dev/null; then
+                # T-3160: --dry-run renders into a scratch file and diffs that, so the
+                # git-tracked source is left byte- and mtime-identical. Same generator,
+                # same validation, same fw path as the real run — only the write target moves.
+                _cron_rendered="$_cron_source"
+                if $_install_dry_run; then
+                    _cron_rendered=$(mktemp "${TMPDIR:-/tmp}/fw-cron-dry-run.XXXXXX")
+                    trap 'rm -f "$_cron_rendered"' EXIT
+                fi
+                if ! FW_CRON_GENERATE_OUT="$_cron_rendered" "$0" cron generate >/dev/null; then
                     echo -e "${RED}ERROR:${NC} fw cron generate failed" >&2
                     exit 1
                 fi
-                if [ ! -f "$_cron_source" ]; then
-                    echo -e "${RED}ERROR:${NC} Expected $_cron_source after generate" >&2
+                if [ ! -s "$_cron_rendered" ]; then
+                    echo -e "${RED}ERROR:${NC} Expected $_cron_rendered after generate" >&2
                     exit 1
                 fi
 
                 # Step 2: compute diff vs currently installed
-                if [ -f "$_cron_target" ] && diff -q "$_cron_source" "$_cron_target" >/dev/null 2>&1; then
+                if [ -f "$_cron_target" ] && diff -q "$_cron_rendered" "$_cron_target" >/dev/null 2>&1; then
                     echo "Cron in sync: $_cron_target"
                     echo "  Source: $_cron_source"
                     exit 0
@@ -7322,10 +7333,10 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
 
                 echo "Pending cron changes:"
                 if [ -f "$_cron_target" ]; then
-                    diff -u "$_cron_target" "$_cron_source" | sed 's/^/  /' || true
+                    diff -u "$_cron_target" "$_cron_rendered" | sed 's/^/  /' || true
                 else
                     echo "  (new install — $_cron_target does not exist)"
-                    sed -n '1,20p' "$_cron_source" | sed 's/^/  /'
+                    sed -n '1,20p' "$_cron_rendered" | sed 's/^/  /'
                     echo "  ..."
                 fi
 

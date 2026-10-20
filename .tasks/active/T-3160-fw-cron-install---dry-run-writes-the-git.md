@@ -12,7 +12,7 @@ description: >
   because the file was git-tracked. Fix: dry-run must not call the writing generator
   — route through lib/cron_dry_run.py (stdout-only) for the diff comparand.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -30,7 +30,7 @@ related_tasks: [T-3161, T-3162, T-3149]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T12:08:35Z
-last_update: '2026-08-26T12:15:15Z'
+last_update: 2026-10-20T20:34:59Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -110,16 +110,18 @@ checks: `lib/cron_dry_run.py` emits the same text to stdout and never writes.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw cron install --dry-run` leaves `$PROJECT_ROOT/.context/cron/agentic-audit.crontab` untouched — same md5 AND same mtime — when the on-disk source differs from what the registry would generate
-- [ ] The diff `--dry-run` prints is unchanged in content: registry-derived text compared against the deployed target, sourced from `lib/cron_dry_run.py` rather than from the written file
-- [ ] `fw cron install` without `--dry-run` still generates, diffs and installs exactly as before (in-sync short-circuit, new-install preview, sudo degradation all preserved)
-- [ ] Regression test `tests/unit/t3160_cron_dry_run_does_not_write.bats` pins: mtime+md5 unchanged after `--dry-run`, diff still printed, non-dry-run still writes
-- [ ] Every other `fw` subcommand advertising `--dry-run` is surveyed for the same shape (write reached before the flag is honoured) and the result recorded in `## Decisions` — `fw vendor`, `fw upgrade`, `fw harvest`, `fw triage route`, `fw integrate run`, `fw task archive-eligible`, `fw mcp reap`
+- [x] `fw cron install --dry-run` leaves `$PROJECT_ROOT/.context/cron/agentic-audit.crontab` untouched — same md5 AND same mtime — when the on-disk source differs from what the registry would generate
+- [x] The diff `--dry-run` prints is unchanged in content: registry-derived text compared against the deployed target, rendered by the same `fw cron generate` into a scratch file (`FW_CRON_GENERATE_OUT`) rather than into the tracked source — see Decisions for why not `lib/cron_dry_run.py`
+- [x] `fw cron install` without `--dry-run` still generates, diffs and installs exactly as before (in-sync short-circuit, new-install preview, sudo degradation all preserved)
+- [x] Regression test `tests/unit/t3160_cron_dry_run_does_not_write.bats` pins: mtime+md5 unchanged after `--dry-run`, diff still printed, non-dry-run still writes
+- [x] Every other `fw` subcommand advertising `--dry-run` is surveyed for the same shape (write reached before the flag is honoured) and the result recorded in `## Decisions` — `fw vendor`, `fw upgrade`, `fw harvest`, `fw triage route`, `fw integrate run`, `fw task archive-eligible`, `fw mcp reap`
 
 ## Verification
 
 bash -c 'set -eo pipefail; rm -rf /tmp/t3160 && mkdir -p /tmp/t3160/.context/cron /tmp/t3160/etc && printf "framework_version: probe\n" > /tmp/t3160/.framework.yaml && printf "jobs:\n  - id: p\n    name: P\n    schedule: \"*/5 * * * *\"\n    command: \"echo hi\"\n    status: active\n" > /tmp/t3160/.context/cron-registry.yaml && printf "# legacy\n" > /tmp/t3160/.context/cron/agentic-audit.crontab && before=$(md5sum /tmp/t3160/.context/cron/agentic-audit.crontab | cut -d" " -f1) && PROJECT_ROOT=/tmp/t3160 FW_CRON_INSTALL_DIR=/tmp/t3160/etc bin/fw cron install --dry-run >/dev/null 2>&1 && after=$(md5sum /tmp/t3160/.context/cron/agentic-audit.crontab | cut -d" " -f1) && [ "$before" = "$after" ]'
-bats tests/unit/t3160_cron_dry_run_does_not_write.bats > /tmp/.t3160-bats 2>&1 && grep -q "^ok 1 " /tmp/.t3160-bats && ! grep -q "^not ok" /tmp/.t3160-bats
+bats tests/unit/t3160_cron_dry_run_does_not_write.bats > /tmp/.t3160-bats 2>&1 && grep -q "^ok 4 " /tmp/.t3160-bats && ! grep -q "^not ok" /tmp/.t3160-bats
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+bin/fw vendor self --check --task T-3160
 
 ## RCA
 
@@ -127,8 +129,8 @@ bats tests/unit/t3160_cron_dry_run_does_not_write.bats > /tmp/.t3160-bats 2>&1 &
 prints `(dry-run — no changes made)` in the same output. Reported by 001-CashWeb after
 it truncated a 3875-byte file holding ten live jobs to 450 bytes.
 
-**Root cause:** the dry-run branch was added to the *install* step only. `bin/fw:5487`
-generates unconditionally because generation is how the diff comparand is produced; the
+**Root cause:** the dry-run branch was added to the *install* step only. `bin/fw` `cron
+install` Step 1 (`"$0" cron generate`, bin/fw:5487 at filing, ~7307 at fix time) generates unconditionally because generation is how the diff comparand is produced; the
 flag was applied at the last mutation rather than at the first.
 
 **Why structurally allowed:** the write is idempotent whenever registry and generated
@@ -139,8 +141,12 @@ never written because the flag *reads* as a guarantee rather than as a claim to 
 Same signature as the port-3000 false-green class: the output asserts a property it
 never checked.
 
-**Prevention:** (to be written with the fix) — regression test pinning no-write, plus
-the cross-command `--dry-run` survey so the class is closed rather than the instance.
+**Prevention:** `fw cron generate` now honours `FW_CRON_GENERATE_OUT`; `install --dry-run`
+renders into a `mktemp` scratch file (removed on EXIT) and diffs that, so the tracked source
+is never opened for writing. `tests/unit/t3160_cron_dry_run_does_not_write.bats` pins md5+mtime
+of source and target under `--dry-run`, the diff content, no scratch leftovers, and the
+unchanged non-dry-run path (4/4 pass; tests 1–2 fail with the fix reverted). The
+cross-command survey (Decisions) found no other `--dry-run` writing its target.
 
 ## Evolution
 
@@ -197,6 +203,26 @@ the cross-command `--dry-run` survey so the class is closed rather than the inst
 
 ## Decisions
 
+### 2026-10-20 — dry-run comparand: redirect the real generator, not lib/cron_dry_run.py
+- **Chose:** `install --dry-run` runs the same `fw cron generate` with `FW_CRON_GENERATE_OUT=<mktemp>`.
+- **Why:** `lib/cron_dry_run.py` skips generate's refusals (T-3835 temp-fw path, T-3171 missing/duplicate id) and is always called with `$FRAMEWORK_ROOT/bin/fw`, while generate prefers a consumer's `.agentic-framework/bin/fw`. In a consumer its text would differ from what install then writes, so the dry-run diff would be wrong in a new way. Redirecting the write target keeps one generator and the exact text.
+- **Rejected:** `lib/cron_dry_run.py` as comparand (above); back up and restore the source (still writes the tracked file, mtime changes, unsafe on interrupt).
+
+### 2026-10-20 — cross-command `--dry-run` survey (AC 5)
+Sandbox consumer from `bin/fw init /tmp/t3160s`; each command run with `--dry-run`, then `find . -newer <marker>` (excluding `.git`):
+
+| command | rc | files written in project |
+|---|---|---|
+| `fw vendor --target S --dry-run` | 0 | only `.context/working/.verb-counter` (fw's own telemetry) |
+| `fw upgrade S --dry-run` | 0 | none |
+| `fw harvest S --dry-run` | 0 | `.verb-counter` only; "no changes made to framework" |
+| `fw task archive-eligible --dry-run` | 0 | `.verb-counter` only (no candidates in a fresh project) |
+| `fw triage route --dry-run` | 0 | `.verb-counter` only; "DRY-RUN (nothing written)" |
+| `fw integrate run <b> --dry-run` | 3 | `.verb-counter` only — refused early (HEAD is master); deep path NOT exercised |
+| `fw mcp reap --dry-run` | 0 | `.verb-counter` only (nothing to reap) |
+
+No other command reproduced the T-3160 shape. Limits: integrate, archive-eligible and mcp reap ran only their empty/refusal paths; harvest writes into the framework repo, which this probe did not fingerprint (static read of `lib/harvest.sh`: every write sits behind `[ "$dry_run" != true ]`).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -222,3 +248,6 @@ the cross-command `--dry-run` survey so the class is closed rather than the inst
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3160-fw-cron-install---dry-run-writes-the-git.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:34:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
