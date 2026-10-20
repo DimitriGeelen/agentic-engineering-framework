@@ -160,6 +160,9 @@ def validate(backends: object) -> list[str]:
         if "credential" in b:
             errs += _credential_mod().validate_credential(str(bid), b["credential"],
                                                           b.get("approval_required") is True)
+        # T-4437: the tools-off profile `fw review isolated-run` launches this backend with.
+        if "isolation" in b:
+            errs += _isolation_mod().validate_isolation(str(bid), b["isolation"])
     kv: dict = {}
     for b in backends:
         if isinstance(b, dict) and b.get("worker_kind") and b.get("vendor"):
@@ -180,6 +183,12 @@ def _credential_mod():
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import review_credential
     return review_credential
+
+
+def _isolation_mod():
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import review_isolation
+    return review_isolation
 
 
 def load_registry(path: Path | None = None) -> list[dict]:
@@ -552,6 +561,8 @@ def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     if argv[:1] == ["credential"]:  # T-3766: own parser (--exec takes a raw command tail)
         return _credential_mod().main(argv[1:])
+    if argv[:1] == ["isolated-run"]:  # T-4437: external review seats, isolated by default
+        return _isolation_mod().main(argv[1:])
     ap = argparse.ArgumentParser(prog="fw review", description="Review/dispatch cost (T-3583, T-3586)")
     sub = ap.add_subparsers(dest="cmd")
 
@@ -589,6 +600,7 @@ def main(argv: list[str] | None = None) -> int:
     st.add_argument("--approval-required", type=_bool); st.add_argument("--i-am-human", action="store_true")
 
     sub.add_parser("credential", help="resolve a backend's credential (T-3766): <backend> [--check] [--exec -- cmd...]")
+    sub.add_parser("isolated-run", help="run external review seats outside the repo, tools off, one at a time (T-4437)")
     sub.add_parser("audit")
     hk = sub.add_parser("check-command"); hk.add_argument("--task", default="")
 

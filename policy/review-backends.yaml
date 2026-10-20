@@ -42,6 +42,12 @@
 # when the CLI authenticates itself. Resolve with `bin/fw review credential <id> --check`
 # (masked) or `--exec -- <cmd>`. The resolver reads the credential blocks as COMMITTED at HEAD.
 # Never ask the operator for a credential this registry names.
+#
+# isolation (T-4437): how `fw review isolated-run` launches the backend as an external review
+# seat — argv template ({binary} {model} {seat_dir} {prompt}; a {model} with no pinned model is
+# dropped with its flag), stdin closed, an optional tools_off_config (written into the run dir and
+# named by `env:`; every tool must be false) and tool_markers (regexes; a seat whose transcript
+# matches one is labelled non-independent). A backend without this block is refused by the runner.
 
 backends:
   - id: claude-code
@@ -59,6 +65,11 @@ backends:
     match:
       - '\bclaude\s+(-p|--print)\b'
       - '--worker-kind[= ]claude\b'
+    isolation:   # T-4437: fw review isolated-run — no tools, no MCP, no session file
+      argv: ["{binary}", "-p", "--tools", "", "--strict-mcp-config", "--no-session-persistence", "--model", "{model}", "{prompt}"]
+      stdin: closed
+      tool_markers:
+      - '"type"\s*:\s*"tool_use"'
 
   - id: codex
     name: "OpenAI Codex (GPT-4 turbo with code interpreter)"
@@ -77,6 +88,13 @@ backends:
     match:
       - '(^|[;&|]\s*|/)codex\s'
       - '--worker-kind[= ]codex\b'
+    isolation:   # T-4437: read-only sandbox in the seat's empty dir; any exec is flagged
+      argv: ["{binary}", "exec", "--sandbox", "read-only", "--skip-git-repo-check", "--ephemeral", "-C", "{seat_dir}", "-m", "{model}", "{prompt}"]
+      stdin: closed
+      tool_markers:
+      - '^(\[[^\]]*\]\s*)?exec\b'
+      - '\bapply_patch\b'
+      - '"type"\s*:\s*"tool_use"'
 
   - id: opencode
     name: "Z.ai Coding Plan (opencode)"
@@ -95,6 +113,17 @@ backends:
     match:
       - '(^|[;&|]\s*|/)opencode\s'
       - '--worker-kind[= ]opencode\b'
+    isolation:   # T-4437: --pure, every tool false via OPENCODE_CONFIG, stdin closed (the T-4435 re-run)
+      argv: ["{binary}", "run", "--pure", "--dir", "{seat_dir}", "-m", "{model}", "{prompt}"]
+      stdin: closed
+      tools_off_config:
+        env: OPENCODE_CONFIG
+        content:
+          $schema: "https://opencode.ai/config.json"
+          tools: {"*": false, bash: false, edit: false, write: false, read: false, grep: false, glob: false, list: false, patch: false, todowrite: false, todoread: false, webfetch: false, websearch: false, task: false, skill: false, lsp: false}
+      tool_markers:
+      - '^\s*[|│]\s+(Read|Glob|Grep|List|Bash|Edit|Write|Patch|WebFetch|Webfetch|Task|Skill|Todo\w*)\b'
+      - '"type"\s*:\s*"tool_use"'
 
   - id: local-gpu
     name: "Local GPU (operator's machine)"
