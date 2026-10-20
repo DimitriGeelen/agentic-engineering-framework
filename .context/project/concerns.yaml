@@ -5588,3 +5588,23 @@ concerns:
     unattended run with no release decision recorded
   what_remains: T-4364. Close when fw release refuses an unattended run without a recorded release decision (test),
     and the operator has ruled on whether any scheduled release may exist.
+- id: G-121
+  type: gap
+  title: The read-only Bash allowlist classes command-executing forms of awk, sed, process substitution, quoted find/curl options and git grep pagers as SAFE
+  description: 'ring20-dashboard (msg af2bbc85, from a cloud review of the public repo) listed 13 command lines that pass
+    both has_bash_write_pattern (no write) and is_bash_safe_command (SAFE) on v1.8.14, so they run with no active task
+    and are allowed by the budget gate at Stop, while executing a command or writing a file. Reproduced on bleeding-edge
+    HEAD 2026-10-20 with a classification-only probe. Five independent causes: awk execution (system, getline, print
+    to a pipe); GNU sed e command and e flag; process substitution; option checks on raw words (quoted -exec, -o); git
+    grep -O / --open-files-in-pager.'
+  severity: high
+  status: open
+  detected_in: T-4509
+  observed: '2026-10-20'
+  reported_by: ring20-dashboard (peer), reproduced by agent
+  blast_radius: every project on v1.8.14 or earlier; the task gate (Tier 1) and the budget gate's read-only allowance
+  detection_gap: the allowlist is a denylist of write forms over a list of commands assumed read-only; nothing tests
+    the execution features of each allowed command, and option checks were only made quote-aware for git (T-4485)
+  what_remains: T-4509 (awk), T-4510 (sed e), T-4511 (process substitution), T-4512 (dequoting tokenizer for every
+    option check), T-4513 (git grep pager). Close when all five land with tests, ring20-dashboard's probe classes every
+    line as gated on a release, and a test enumerates the execution features of every command in the read-only list.
