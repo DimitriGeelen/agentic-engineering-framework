@@ -1,7 +1,35 @@
 # Shared dispatched-worker contract — transition table and conformance spec
 
-**Status:** DRAFT v0.3 for agreement by TermLink, ring20 and AEF. TermLink agreed v0.2.1; the six changes marked "TermLink re-agreement" in `docs/reports/T-4439-reviews/ring20-v0.2-answers.md` need their sign-off. ring20: AGREE-WITH-COMMENTS on v0.2, comments folded here. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
-**Contract version field value:** `wc/0.3` (see §2). **Rule:** no implementation starts before this table is agreed.
+**Status:** DRAFT v0.3.1 for agreement by TermLink, ring20 and AEF. TermLink agreed v0.2.1; the six changes marked "TermLink re-agreement" in `docs/reports/T-4439-reviews/ring20-v0.2-answers.md` need their sign-off. ring20: SIGN-WITH-NOTES on v0.3, signing conditions N1-N3 and notes N4-N6 worded in here; v0.3.1 is the version ring20 signs. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
+**Contract version field value:** `wc/0.3` (see §2; a patch revision does not change it). **Rule:** no implementation starts before this table is agreed.
+
+## Changelog v0.3 → v0.3.1
+
+Source: **[ring20 v0.3 check N#]** = ring20's check of v0.3 against the text (SIGN-WITH-NOTES, saved at
+`docs/reports/T-4439-reviews/ring20-v0.3-check.txt`): N1-N3 are its signing conditions, N4-N6 its notes. The version
+field stays `wc/0.3`. **Effect on what TermLink agreed:** N1 and N3 add alternatives **for external backends only**
+(§6.6); the `hub` and `local` rows, writers and evidence are unchanged, so neither needs TermLink's re-agreement.
+N2 adds a reporting duty for external backends only. N4, N5 and N6 make explicit what v0.3 already required (the §2
+schema, outcome rule 1 and CC-16, the T7b evidence) and change no `hub` or `local` behaviour; they are listed so
+TermLink can see them, not for re-agreement.
+
+1. **Lease instead of `supervisor_gen`** (§3.2, I3, T-RECLAIM, §6.6, CC-13, CC-14): an external backend may replace
+   `supervisor_gen` and the per-write lock with an exclusive single-writer lease declared in its mapping; CC-13/CC-14
+   then test the lease. External backends only. [ring20 v0.3 check N1]
+2. **Per-case applicability** (§6.6, §9 intro): the mapping table declares every conformance case `pass` or `n/a`
+   with a reason; `n/a` only for a capability the backend does not offer, never for a case whose subject is a §3
+   transition row. External backends only. [ring20 v0.3 check N2]
+3. **Channel-bound evidence** (§3.2, T5, T7b, §6.5): T5/T7b evidence and §6.5 accept "or channel-bound evidence per
+   §3.2" as an alternative to `exit_code` file + signed completion, for an external backend that authenticates by
+   channel. `persisted_at` still binds it (S4). External backends only. T3's need for the child's real exit status is
+   unchanged (ring20 to capture it, its own gap). [ring20 v0.3 check N3]
+4. **`handback.commission`** equals the dispatch id, for an external backend modulo the `<backend>:` prefix; outcome
+   rule 1 names the commission check. Clarification of the §2 schema. [ring20 v0.3 check N4]
+5. **Stop with no hand-back** (§3.3 stop paragraph, T4 note, CC-25): a confirmed child exit with a missing or malformed
+   hand-back is `done{handback-malformed}` through T3; `lost` only when there is no confirmed exit evidence. CC-25(b) now
+   agrees with CC-16 and rule 1. Clarification. [ring20 v0.3 check N5]
+6. **T7d evidence** (§3.3 T7d, CC-22): `--as done` with evidence requires the same bound evidence as T7b, verified by
+   the backend; anything else is an attestation. Clarification. [ring20 v0.3 check N6]
 
 ## Changelog v0.2.1 → v0.3
 
@@ -152,14 +180,14 @@ attempts:                         # append-only list, index = attempt number sta
     attempt_dispatch_ref: <id>|null  # OPTIONAL: the per-attempt row in the AEF dispatch ledger, if the backend writes one (§8.4); not an attempt
     attested: true|false          # true only for a T7d `done` with no evidence (§3.3)
     attested_by: <actor>|null
-    supervisor_gen: 1             # increments on supervisor recovery (§3, T-RECLAIM)
+    supervisor_gen: 1             # increments on supervisor recovery (§3, T-RECLAIM); OPTIONAL for an external backend fencing by lease (§6.6) [ring20 v0.3 check N1]
     exit_code: <int>|null         # the agent child's real exit code (run.sh itself exits 0)
     result:                       # bound to THIS attempt [opencode Q1, §6.2.3]
       kind: commit_range|handback_sha256|none
       value: <sha or range or sha256>
       persisted_at: <ts>|null     # when the supervisor persisted the signed completion (§6.5); null for attested done
     handback:                     # schema is contract surface, validated by the backend [opencode Q2]
-      commission: <id>            # = dispatch_id
+      commission: <id>            # = dispatch_id; for an external backend, equal modulo the `<backend>:` prefix (§4.1) [ring20 v0.3 check N4]
       attempt: <n>                # must equal the attempt it is written under
       nonce: <echo>               # must equal the attempt nonce
       status: complete|blocked|paused|failed   # paused + exit 0 derives outcome paused (§3.3)
@@ -187,7 +215,8 @@ it writes `lost` (ring20) may use `G = 0`; ring20's `deadline_running` is its wo
 - I3. A write names `(dispatch_id, attempt, nonce)` and an **expected prior state**; the backend checks nonce and
   prior state in the *same atomic step* as the write. A lifecycle write (T2, T3, T3b, T-RECLAIM, T5, T7b, and T8) also
   presents the writer's credential or arrives on a channel the worker cannot write (§3.2), checked in the same step.
-  [claude 1c, opencode Q1, codex Q1, §6.2.3] [ring20 v0.2 review §3]
+  For an external backend fencing by lease (§6.6), "the same step" means while holding the lease.
+  [claude 1c, opencode Q1, codex Q1, §6.2.3] [ring20 v0.2 review §3] [ring20 v0.3 check N1]
 - I4. `done` and `lost` are never both the *final* state: `done` outranks `lost` (§3 precedence).
 - I5. `result` is written only together with `done` and is bound to its attempt.
 - I6. At most one attempt of a dispatch is non-terminal at any time (§4.3).
@@ -223,7 +252,7 @@ ESCALATED rule] [ring20 v0.2 review §5]
 
 | Writer | Who | May write |
 |---|---|---|
-| `supervisor` | `run.sh` / ring20 supervisor holding the attempt nonce, the supervisor credential **and** current `supervisor_gen` | T2, T3, T3b, T-RECLAIM, T8 |
+| `supervisor` | `run.sh` / ring20 supervisor holding the attempt nonce, the supervisor credential **and** current `supervisor_gen` (an external backend: or the single-writer lease, see below) | T2, T3, T3b, T-RECLAIM, T8 |
 | `hub` (the *sweep writer*) | the backend's sweep module: the TermLink hub; for `backend: local`, the local backend module; for an external backend, its own sweep module. T4/T6/T6b/T7a/T7c are written from the state sweep (§3.4) | T1, T4, T6, T6b, T7a, T7c |
 | `reconciler` | AEF reader of the worker dir; submits *local evidence*, never a verdict of its own; a supervisor that died is replaced by it for the completion write | T3, T3b, T5, T7b |
 | `operator` | human, `fw worker resolve`, a hub-host CLI until a signed operator identity exists | T7d |
@@ -244,6 +273,21 @@ backend states which it uses. A write that carries a valid nonce but no credenti
 than the supervisor persisted. Residual: a hostile same-user process can read its supervisor's environment; this
 removes the accident and prompt-echo path, not that one. [ring20 v0.2 review §3, §S1]
 
+**Channel-bound evidence (external backends only).** A backend that authenticates by channel may present, instead of
+the signed completion, *channel-bound evidence*: the hand-back and the agent child's exit status as read by the
+supervisor from the channel the worker cannot write, persisted by the supervisor in the backend's store under the
+attempt's `(dispatch_id, attempt, nonce)`, with `persisted_at` set to that store write. It is evidence of the same
+strength for that backend and is accepted wherever this spec says "or channel-bound evidence per §3.2". `hub` and
+`local` use the signed completion. [ring20 v0.3 check N3]
+
+**Lease instead of `supervisor_gen` (external backends only).** An external backend may replace `supervisor_gen` and
+the per-write lock (§6.2) with an **exclusive single-writer lease**: at most one supervisor holds the lease for a
+dispatch at any time, every lifecycle write is validated and applied while the lease is held, and a writer that does
+not hold the current lease is rejected `fence_reject(stale_gen)` (the reason names the fencing token, whichever its
+form). T-RECLAIM is then the lease takeover: a restarted supervisor that acquires the lease is the current writer and
+the previous holder's later writes are refused. The backend declares the lease, its holder identity, its expiry and
+its takeover rule in its mapping (§6.6). [ring20 v0.3 check N1]
+
 ### 3.3 Transitions
 
 CAS = the write is applied only if the current state equals *expected prior* and the nonce matches; otherwise it is
@@ -255,22 +299,26 @@ rejected (never merged). `fence_reject` is defined after the table.
 | T2 | `dispatched` → `running` | supervisor | echo of `nonce`; session binding confirmed; `supervisor_gen` claimed | `dispatched` | sets `deadline_running` |
 | T3 | `running` → `done{outcome}` | supervisor, or reconciler when the supervisor is gone | agent child exited; `exit_code` read **after** exit; hand-back parsed and hash computed; `evidence_digest` | `running` | the single normal completion path; `outcome` derived by rule below. A reconciler submits the same fenced local evidence when the supervisor died, for instance inside `G`; so `running → done` is a valid history [ring20 v0.2 review §12] |
 | T3b | `dispatched` → `done{outcome}` | supervisor, or reconciler when the supervisor is gone | as T3 (worker died/refused before T2 landed, e.g. run.sh `exit 3`) | `dispatched` | covers fast-fail without a spurious `lost` |
-| T-RECLAIM | `running` → `running` | supervisor | restarted supervisor presents nonce + local worker dir + `supervisor_gen = prev + 1` | `running` and `supervisor_gen == prev` | fences a stale supervisor: its later writes carry the old gen and are `fence_reject`ed [codex Q1] |
-| T4 | `running`/`dispatched` → `lost` | hub | session end **confirmed from state** (§3.4): the attempt was seen alive, then absent on two consecutive sweeps at the epoch of the sweep that last saw it alive; then reconciliation requested; and no fenced `done` evidence within `G` | `running` or `dispatched` | never on a missed heartbeat and never from an event. `G` (default 120 s, at least 4 × the sweep interval) lets local evidence win; earliest `lost` ≈ 60 s + `G` after the end [codex Q1] [termlink v0.1 review §1.1, §2.1] [AEF v0.2 answers §1.2] |
-| T5 | `lost` → `done{outcome}` | reconciler (or supervisor, late) | fenced local evidence: `exit_code` + signed completion + hand-back hash, matching `(dispatch_id, attempt, nonce)` | `lost` | **idempotent upgrade**; `done` outranks `lost`. Appends history, keeps the `lost` row for audit [§6.2.1]. Accepted only if the evidence's `persisted_at` is not later than the `lost` history entry (the evidence existed when the end was confirmed); otherwise `forbidden_transition`, logged, operator notice. A T3/T3b naming a `lost` attempt is processed as T5 [ring20 v0.2 review §4, §S4] |
+| T-RECLAIM | `running` → `running` | supervisor | restarted supervisor presents nonce + local worker dir + `supervisor_gen = prev + 1` | `running` and `supervisor_gen == prev` | fences a stale supervisor: its later writes carry the old gen and are `fence_reject`ed [codex Q1]. An external backend fencing by lease: lease takeover, expected-prior `running` and the lease held (§3.2) [ring20 v0.3 check N1] |
+| T4 | `running`/`dispatched` → `lost` | hub | session end **confirmed from state** (§3.4): the attempt was seen alive, then absent on two consecutive sweeps at the epoch of the sweep that last saw it alive; then reconciliation requested; and no fenced `done` evidence within `G` | `running` or `dispatched` | never on a missed heartbeat and never from an event. `G` (default 120 s, at least 4 × the sweep interval) lets local evidence win; earliest `lost` ≈ 60 s + `G` after the end [codex Q1] [termlink v0.1 review §1.1, §2.1] [AEF v0.2 answers §1.2]. A confirmed exit of the agent child (its real exit status is known) is completion evidence even with no hand-back: it ends through T3 as `handback-malformed`, not T4 [ring20 v0.3 check N5] |
+| T5 | `lost` → `done{outcome}` | reconciler (or supervisor, late) | fenced local evidence: `exit_code` + signed completion + hand-back hash, or channel-bound evidence per §3.2 (external backends), matching `(dispatch_id, attempt, nonce)` [ring20 v0.3 check N3] | `lost` | **idempotent upgrade**; `done` outranks `lost`. Appends history, keeps the `lost` row for audit [§6.2.1]. Accepted only if the evidence's `persisted_at` is not later than the `lost` history entry (the evidence existed when the end was confirmed); otherwise `forbidden_transition`, logged, operator notice. A T3/T3b naming a `lost` attempt is processed as T5 [ring20 v0.2 review §4, §S4] |
 | T6 | `running` → `unknown` | hub | `deadline_running` passed, session end neither confirmed nor refuted: still alive past the deadline, absence seen only at another epoch (registry rebuilt or incomplete), partition, worker on another hub, reused pid | `running` | operator-visible; raises one operator notice; **never** triggers a new attempt by itself [§6.2.2] [AEF v0.2 answers §1] |
 | T6b | `dispatched` → `unknown` | hub | `deadline_dispatched` passed and the session was never seen alive (so no T2 and no T4 basis) | `dispatched` | same notice rule as T6; a worker that refused or died before T2 still ends through T3b from supervisor evidence [AEF v0.2 answers §1.3] |
 | T7a | `unknown` → `running` | hub | session confirmed alive again | `unknown` | heal path |
-| T7b | `unknown` → `done{outcome}` | reconciler | same evidence as T5 (no `persisted_at` bound: `unknown` has no confirmed end) | `unknown` | `done` outranks. A T3/T3b naming an `unknown` attempt is processed as T7b |
+| T7b | `unknown` → `done{outcome}` | reconciler | same evidence as T5, including channel-bound evidence per §3.2 (no `persisted_at` bound: `unknown` has no confirmed end) | `unknown` | `done` outranks. A T3/T3b naming an `unknown` attempt is processed as T7b |
 | T7c | `unknown` → `lost` | hub | confirmed session end, no evidence | `unknown` | |
-| T7d | `unknown` → `lost` \| `done{outcome}` | operator | explicit `fw worker resolve <id> <attempt> --as lost\|done --reason "…"`, run on the hub host; `done` additionally needs evidence **or** an operator-attested `outcome`, which writes `attested: true`, `attested_by`, `result.kind: none` and no `evidence_digest` | `unknown` | the only way out of `unknown` without hub/reconciler evidence; every resolve is logged with actor and reason. Until a signed operator identity exists this is a hub-host CLI, not an RPC, because scope alone cannot tell an operator from an agent holding control scope [AEF v0.2 answers §3]. **Detective control:** every resolve posts a notice to the operator's channel with dispatch, attempt, outcome, reason, actor and host. **Speed bump:** the CLI refuses an agent session (agent-environment markers present) without an explicit, recorded override; this is stated as a speed bump, not identity [ring20 v0.2 review §S2]. An attested `done` is **not finished work**: consumers (review verdicts, pass-rate, landing) refuse it as they refuse `paused` [ring20 v0.2 review §S3] |
+| T7d | `unknown` → `lost` \| `done{outcome}` | operator | explicit `fw worker resolve <id> <attempt> --as lost\|done --reason "…"`, run on the hub host; `done` additionally needs evidence **or** an operator-attested `outcome`, which writes `attested: true`, `attested_by`, `result.kind: none` and no `evidence_digest`. "Evidence" here is exactly T7b's: a signed completion, or channel-bound evidence per §3.2 for an external backend, bound to `(dispatch_id, attempt, nonce)` and verified by the backend in the same step as the write; the outcome is then derived by the rule below, never chosen by the operator. Anything the operator supplies that is not so bound (a pasted log, a description, a hash with no signed completion) is not evidence: the write is an attestation and records `attested: true` [ring20 v0.3 check N6] | `unknown` | the only way out of `unknown` without hub/reconciler evidence; every resolve is logged with actor and reason. Until a signed operator identity exists this is a hub-host CLI, not an RPC, because scope alone cannot tell an operator from an agent holding control scope [AEF v0.2 answers §3]. **Detective control:** every resolve posts a notice to the operator's channel with dispatch, attempt, outcome, reason, actor and host. **Speed bump:** the CLI refuses an agent session (agent-environment markers present) without an explicit, recorded override; this is stated as a speed bump, not identity [ring20 v0.2 review §S2]. An attested `done` is **not finished work**: consumers (review verdicts, pass-rate, landing) refuse it as they refuse `paused` [ring20 v0.2 review §S3] |
 
 **T8 (duplicate finalisation) is a response, not a transition.** Re-submitting a `done` with an identical
 `evidence_digest` returns the stored record, appends nothing and changes nothing. [ring20 v0.2 review §10]
 
 **A backend may stop an attempt** (worker deadline, revocation, operator request). The stop is an action, not a state:
-the confirmed end follows T3 (a hand-back is readable) or T4 (none), and the `history` entry carries `cause ∈
-{deadline_stop, revoked, operator_stop}`. T6 itself stops nothing. [ring20 v0.2 review §9]
+the confirmed end follows T3 when the agent child's exit is confirmed (its real exit status is known), whether the
+hand-back is valid, malformed or absent (rule 1 gives `handback-malformed` for the last two), or T4 when there is no
+confirmed exit evidence at all (the supervisor died with the child, the exit status was never captured). The rule is
+the same with or without a stop: **a missing or malformed hand-back from a confirmed exit is
+`done{handback-malformed}`; `lost` means no confirmed end of the child.** The `history` entry carries `cause ∈
+{deadline_stop, revoked, operator_stop}`. T6 itself stops nothing. [ring20 v0.2 review §9] [ring20 v0.3 check N5]
 
 **A `lost` attempt seen alive again** (sweep observes a live registration for its binding): **no transition.**
 `lost → running` stays forbidden. The hub logs the observation and raises an operator notice, as for `done_conflict`;
@@ -281,7 +329,8 @@ changes `outcome`/`result` of a `done` attempt (a `done` with a *different* `evi
 `done_conflict`, logged, and surfaced to the operator — it is evidence of a bug or forgery, not a race).
 
 **`outcome` derivation (T3/T3b/T5/T7b/T7d), evaluated in order** [claude Q1, codex Q1, §6.2.7]:
-1. hand-back missing/unparseable/`attempt`≠, `nonce`≠, or hash cannot be bound → `handback-malformed`;
+1. hand-back missing/unparseable/`commission`≠ (the dispatch id; for an external backend equal modulo the `<backend>:`
+   prefix), `attempt`≠, `nonce`≠, or hash cannot be bound → `handback-malformed` [ring20 v0.3 check N4];
 2. run.sh refusal path (e.g. `exit 3`) → `refused`;
 3. `exit_code != 0` or hand-back `status: failed` → `failed`;
 3b. hand-back `status: paused` with `exit_code == 0` → `paused`;
@@ -442,7 +491,9 @@ explicit authority-transfer protocol that is **not** part of v0.2. [codex Q3 con
 `exit_code`, the hand-back and a signed completion in the worker dir, and stamps the completion with `persisted_at`.
 This is the evidence the reconciler reads; it is why T5 is possible, why T5 can be bound to evidence that existed before
 the `lost` entry (§3.3), and why `_worker_done()`'s existing finalisation checks must be preserved.
-[codex Q5, claude Q2] [ring20 v0.2 review §S4]
+An external backend that authenticates by channel may persist, instead of the `exit_code` file and the signed
+completion, **channel-bound evidence per §3.2** in its own store, stamped with `persisted_at`; the S4 bound applies to it
+unchanged. [codex Q5, claude Q2] [ring20 v0.2 review §S4] [ring20 v0.3 check N3]
 
 ### 6.6 External backends
 
@@ -454,6 +505,24 @@ through an adapter, and MUST publish a mapping from its states and functions to 
 authentication per §3.2, and its parameters per §2 included). It writes no hub or local record. `worker_binding`,
 `registry_epoch_seen` and `dispatcher.session` are OPTIONAL for it. Its sweep writer may run in its supervisor under
 the conditions of §3.2. §6.4 applies unchanged: the backend is chosen at creation and never switched mid-flight.
+
+**What an external backend may substitute, and must declare** (each choice is a row of its mapping):
+- **Fencing:** `supervisor_gen` + the §6.2 per-write lock, **or** an exclusive single-writer lease (§3.2), with its
+  holder identity, expiry and takeover rule. With a lease, CC-13 and CC-14 test the lease (see those cases).
+  [ring20 v0.3 check N1]
+- **Writer authentication:** a supervisor credential or a channel the worker cannot write (§3.2).
+- **Completion evidence:** the §6.5 signed completion, **or** channel-bound evidence per §3.2. [ring20 v0.3 check N3]
+- **Ids:** its id grammar and `<backend>:` prefix (§4.1); `handback.commission` is compared modulo that prefix.
+  [ring20 v0.3 check N4]
+
+**Per-case applicability.** The mapping table lists **every** §9 case with `pass` or `n/a` and a one-line reason.
+`n/a` is allowed only when the case's subject is a capability the backend does not offer: the answer channel (§5),
+`registry_epoch` (I7), caller-chosen `D-<ulid>` ids (§4.1). `n/a` is never allowed for a case whose subject is a §3
+transition row (including a forbidden transition, a `fence_reject` reason and T8); where such a case is phrased in
+terms of a capability the backend lacks (CC-08 is phrased as a hub restart but tests T6/T7a), the backend runs it
+with its own equivalent (its own restart, its probe) and names the equivalent in the reason. Cases whose subject is
+the absent capability itself (CC-11/CC-12 answer channel, CC-17 epochs, CC-18 caller-chosen ids) may be `n/a`. A case missing from the table, or `n/a`
+outside these limits, means the backend does not conform. [ring20 v0.3 check N2]
 
 ---
 
@@ -532,7 +601,8 @@ Every case runs against **both** backends (`hub` and `local`) and against any ex
 conformance. Notation: `A1` = attempt 1. Time is injected, not slept. A case passes only if the final record matches
 exactly **and** the `history` equals one of the *admissible histories* the case lists (a case that lists none has
 exactly one). An implementation that reaches the same final record by a listed shorter path passes.
-[ring20 v0.2 review §12]
+[ring20 v0.2 review §12] An external backend reports each case `pass` or `n/a` with a reason in its mapping, under the
+limits of §6.6: `n/a` only for a capability it does not offer, never for a §3 transition row. [ring20 v0.3 check N2]
 
 ### CC-01 Completion racing session end
 - **Given** A1 `running`; run.sh has written local `exit_code=0` + hand-back and is about to submit T3.
@@ -621,11 +691,18 @@ exactly one). An implementation that reaches the same final record by a listed s
 - **When** run on `backend: local` (flock+CAS) and on `backend: hub`.
 - **Then** both produce identical final records and identical `history` (modulo timestamps); exactly one writer
   wins, the others receive `cas_mismatch` or idempotent T8; the lock-timeout path fails closed.
+- **External backend fencing by lease** (§3.2, §6.6): the 8 writers race for the lease instead of the lock; exactly
+  one holds it and writes T3, a writer that never acquired it is `fence_reject(stale_gen)` or waits and then receives
+  `cas_mismatch`/T8; a lease that cannot be acquired within the backend's declared bound fails closed, never writes
+  unleased. [ring20 v0.3 check N1]
 
 ### CC-14 Stale supervisor generation
 - **Given** A1 `running`, `supervisor_gen=1`; supervisor restarts and claims T-RECLAIM → `supervisor_gen=2`.
 - **When** the old supervisor (gen 1) submits T3.
 - **Then** `fence_reject(stale_gen)`; the gen-2 supervisor's T3 is accepted.
+- **External backend fencing by lease:** supervisor S1 holds the lease; S2 takes it over (T-RECLAIM as lease
+  takeover); S1, no longer holding it, submits T3 → `fence_reject(stale_gen)`, record unchanged; S2's T3 is accepted.
+  [ring20 v0.3 check N1]
 
 ### CC-15 Unknown resolution by operator
 - **Given** A1 `unknown`, no evidence, no confirmation.
@@ -681,6 +758,10 @@ exactly one). An implementation that reaches the same final record by a listed s
 - **Then** `unknown → done` (T7d) with `attested: true`, `attested_by` set, `result.kind: none`, no `evidence_digest`;
   the operator notice is posted; a review verdict or pass-rate consumer naming `(D, A1, result)` is refused as not
   finished work, as in CC-19. [ring20 v0.2 review §S3]
+- **And** the same call with operator-supplied material that is not bound evidence (a pasted log, a bare hash) is
+  still an attestation (`attested: true`); the same call with a signed completion (or channel-bound evidence per §3.2)
+  for `(D, A1, nonce)` gives an evidenced `done` whose `outcome` is derived by rule, with `attested: false`.
+  [ring20 v0.3 check N6]
 
 ### CC-23 The nonce alone cannot complete
 - **Given** A1 `running`, nonce n1, supervisor credential c1 (or a channel the worker cannot write).
@@ -698,10 +779,13 @@ exactly one). An implementation that reaches the same final record by a listed s
 
 ### CC-25 Backend-initiated stop
 - **Given** A1 `running`, an external backend whose worker passes its deadline.
-- **When** the backend stops the worker, then (a) a valid hand-back is readable, or (b) none is.
-- **Then** (a) `done{outcome}` through T3, (b) `lost` through the backend's sweep writer once the end is confirmed by
-  its probe; in both cases the `history` entry carries `cause: deadline_stop`; no new attempt is allocated by the stop.
-  Revocation (`cause: revoked`) behaves the same. [ring20 v0.2 review §9]
+- **When** the backend stops the worker, then (a) the child's exit is confirmed and a valid hand-back is readable,
+  (b) the child's exit is confirmed and the hand-back is absent or malformed, or (c) there is no confirmed exit
+  evidence (no exit status was captured).
+- **Then** (a) `done{outcome}` through T3; (b) `done{handback-malformed}` through T3, as in CC-16 and rule 1, never
+  `lost`; (c) `lost` through the backend's sweep writer once the end is confirmed by its probe. In every case the
+  `history` entry carries `cause: deadline_stop`; no new attempt is allocated by the stop. Revocation
+  (`cause: revoked`) behaves the same. [ring20 v0.2 review §9] [ring20 v0.3 check N5]
 
 ---
 

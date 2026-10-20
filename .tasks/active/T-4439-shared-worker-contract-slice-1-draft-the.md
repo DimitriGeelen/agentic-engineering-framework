@@ -57,7 +57,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T07:57:08Z
-last_update: 2026-10-20T20:29:48Z
+last_update: 2026-10-20T21:05:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -115,6 +115,13 @@ cost_estimate_proposed:
 - [x] Each section names its source (reviewer / condition)
 - [x] docs/reports/T-4439-reviews/ring20-v0.2-answers.md answers each of ring20's 12 numbered points and the 4 part-2 security points with accept / accept-with-change / reject, reasoning and normative wording, and lists the changes that need TermLink's re-agreement
 - [x] Spec is at v0.3 with a "Changelog v0.2.1 -> v0.3" citing [ring20 v0.2 review §N]; points 4 (late T5 vs stale_attempt) and 5 (rank fold vs T7a) are resolved in §3 and CC-06/CC-07; new conformance cases added (CC-22 onwards)
+- [x] Spec is at v0.3.1 with a "Changelog v0.3 → v0.3.1" citing [ring20 v0.3 check N1..N6], each entry flagged whether it alters anything TermLink agreed
+- [x] N1: §3.2/§6.6 allow an external backend to replace `supervisor_gen` + per-write lock with an exclusive single-writer lease declared in its mapping; CC-13 and CC-14 state how they test the lease
+- [x] N2: §6.6 requires a per-case pass / n/a mapping with reason; n/a only for an absent capability (answer channel, registry epoch, `D-<ulid>`), never for a case whose subject is a §3 transition row; §9 intro points to it
+- [x] N3: T5 (and so T7b) evidence and §6.5 accept "or channel-bound evidence per §3.2" as an alternative, scoped to external backends
+- [x] N4: `handback.commission` equals the dispatch id modulo the `<backend>:` prefix (schema + outcome rule 1)
+- [x] N5: a stop with a confirmed child exit and no/malformed hand-back ends `done{handback-malformed}` (T3); `lost` only with no confirmed exit evidence; §3.3 stop paragraph and CC-25 agree with CC-16 and rule 1
+- [x] N6: T7d `--as done` with evidence requires the same bound evidence as T7b (signed completion or channel-bound), verified by the backend; anything else is attested
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -173,6 +180,13 @@ grep -q '^## Changelog v0.2.1 → v0.3' docs/specs/shared-worker-contract-transi
 grep -q 'ring20 v0.2 review §5' docs/specs/shared-worker-contract-transitions.md
 test "$(grep -cE '^### CC-[0-9]+' docs/specs/shared-worker-contract-transitions.md)" -ge 25
 grep -q 'TermLink re-agreement' docs/reports/T-4439-reviews/ring20-v0.2-answers.md
+grep -q '^## Changelog v0.3 → v0.3.1' docs/specs/shared-worker-contract-transitions.md
+grep -q 'DRAFT v0.3.1' docs/specs/shared-worker-contract-transitions.md
+test "$(grep -oE 'ring20 v0.3 check N[1-6]' docs/specs/shared-worker-contract-transitions.md | sort -u | wc -l)" -eq 6
+grep -q 'single-writer lease' docs/specs/shared-worker-contract-transitions.md
+grep -q 'channel-bound evidence per §3.2' docs/specs/shared-worker-contract-transitions.md
+grep -q 'modulo the `<backend>:` prefix' docs/specs/shared-worker-contract-transitions.md
+grep -qE 'n/a.*never.*§3' docs/specs/shared-worker-contract-transitions.md
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
