@@ -1,0 +1,21 @@
+id: tests/unit/t3712_upgrade_step5_field_hooks.bats
+name: t3712_upgrade_step5_field_hooks
+type: script
+subsystem: tests
+location: tests/unit/t3712_upgrade_step5_field_hooks.bats
+tags: []
+
+purpose: "T-3712 — `fw upgrade` step 5 reported PARTIAL \"missing check-paid-backend, check-worktree-governance-write, Stop:stop-driver.sh\" and left the three hooks missing, while `fw hook-enable` registered them fine (055 field report, 2026-10-02…"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

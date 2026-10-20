@@ -1,0 +1,21 @@
+id: tests/unit/t3698_mcp_termlink_runtime_pin.bats
+name: t3698_mcp_termlink_runtime_pin
+type: script
+subsystem: tests
+location: tests/unit/t3698_mcp_termlink_runtime_pin.bats
+tags: []
+
+purpose: "T-3698: fw init / fw upgrade wrote a consumer .mcp.json whose termlink server had no env.TERMLINK_RUNTIME_DIR."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

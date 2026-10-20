@@ -1,0 +1,21 @@
+id: tests/unit/t2749_doctor_stray_root_tasks.bats
+name: t2749_doctor_stray_root_tasks
+type: script
+subsystem: tests
+location: tests/unit/t2749_doctor_stray_root_tasks.bats
+tags: []
+
+purpose: "T-2749 — fw doctor's stray-root-marker check (Check 2c, T-1747 / G-069) warned on /.framework.yaml but not /.tasks/, although every project-root resolver accepts either marker."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
