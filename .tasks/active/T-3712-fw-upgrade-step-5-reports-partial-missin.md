@@ -7,7 +7,7 @@ description: >
   Reported by 055-agentic-fleet-cockpit 2026-10-02 (inbox @64, from upgrading 055
   to 1.7.740, their T-413). Peer data: reproduce before fixing. 
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T11:20:26Z
-last_update: '2026-10-02T11:30:38Z'
+last_update: 2026-10-20T21:16:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced (or disproved) at HEAD: a consumer whose settings.json lacks check-paid-backend, check-worktree-governance-write and Stop:stop-driver.sh is upgraded with `fw upgrade`, and step 5 is checked for PARTIAL + whether the hooks end up registered — DISPROVED at HEAD: UPDATED then OK, all three registered (t3712 bats 3/3 ok)
+- [x] If it reproduces: root cause localised (file:line) and fixed so step 5 registers every hook `fw hook-enable` can register, and reports OK — root cause localised (see RCA); already fixed by T-3881 69e87852f, no source change needed
+- [x] Regression test under tests/unit/ that fails without the fix (or, if not reproducible, a test pinning the current correct behaviour) — tests/unit/t3712_upgrade_step5_field_hooks.bats: 3/3 ok at HEAD; with lib/init.sh + lib/hook_parity.py reverted to 69e87852f^ (T3712_UPSTREAM=<clone>) tests 2 and 3 go `not ok`
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green — 16/16 ok, 0 skips
+- [x] `bin/fw vendor self --check --task T-3712` clean — "vendored .agentic-framework/ in sync with source"
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -128,6 +131,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t3712_upgrade_step5_field_hooks.bats > /tmp/.t3712.out 2>&1 && ! grep -q "^not ok" /tmp/.t3712.out
+test "$(grep -c '# skip' /tmp/.t3712.out)" -eq 0
+timeout 600 bats tests/unit/t3881_template_hook_parity.bats > /tmp/.t3712b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3712b.out
+bin/fw vendor self --check --task T-3712
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -271,6 +279,16 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 055 (1.7.740) ran `fw upgrade`; step [5/10] printed PARTIAL "missing check-paid-backend, check-worktree-governance-write, Stop:stop-driver.sh", left them missing, and every later upgrade repeated it — while `fw hook-enable` registered the same hooks without trouble.
+
+**Root cause:** step 5 (lib/upgrade.sh `_t2912_hook_gap`, ~line 2390) treats the framework's own `.claude/settings.json` as the source of truth, but regenerates from the fixed template in `lib/init.sh generate_claude_code_config`. The template had no entries for `check-paid-backend` or `check-worktree-governance-write`, and no Stop `stop-driver` entry. Separately, `lib/hook_parity.py extract_hooks` named the framework's direct `agents/context/stop-driver.sh` command "stop-driver.sh" but the template's `fw hook stop-driver` as "stop-driver". So regenerating could never close the gap. `fw hook-enable` writes the hook directly and does not use the template, which is why it worked.
+
+**Already fixed at HEAD by T-3881 (69e87852f, 2026-10-05):** that commit added the three hooks to the template (lib/init.sh:1165, 1178, 1322) and normalised `agents/context/X.sh` to `X` (lib/hook_parity.py:66-72). Checked at HEAD: a real `fw upgrade` under `env -i` against a vendored consumer missing exactly these three hooks now reports UPDATED, a second run reports OK, and all three are registered. When lib/init.sh and lib/hook_parity.py are reverted to 69e87852f^ in the upstream, the new test goes RED: tests 2 and 3 fail (`T3712_UPSTREAM=<reverted clone> bats tests/unit/t3712_upgrade_step5_field_hooks.bats`), and the fixture control still passes.
+
+**Why structurally allowed:** a hook was registered in the framework's settings.json (by `fw hook-enable` or by hand) without also being added to the consumer template. Nothing compared the two sets until T-2912 surfaced the gap at upgrade time, and nothing checked parity before the hook shipped.
+
+**Prevention:** tests/unit/t3881_template_hook_parity.bats checks the template against the framework's settings statically (every registered hook must be templated). This task adds tests/unit/t3712_upgrade_step5_field_hooks.bats, an end-to-end test of the exact field symptom: a real upgrade subprocess has to converge (UPDATED, then OK) on the three named hooks.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -351,3 +369,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3712-fw-upgrade-step-5-reports-partial-missin.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:16:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
