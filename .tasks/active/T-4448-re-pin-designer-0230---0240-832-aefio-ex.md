@@ -106,7 +106,7 @@ bvp_scores_proposed:
 - [x] Impact grep: no AEF file under lib/ agents/ tools/ tests/ policy/ web/ docs/designs/ references E-GW-OUTGOING / E-XML-GW-OUTGOING, and nothing expects a one-way exclusive gateway check to exit 2
 - [x] policy/designer-pin.yaml pins 0.24.0 (version, sha256 a42f16b3…, bytes 1176028, source_artifact, source_tag, vendored_path) with a T-4448 history note
 - [x] `bin/fw designer sync --from-tag` succeeds: sha256 matches the MANIFEST at designer-v0.24.0 and the pin; vendor/designer/aef-workflow-designer-0.24.0.html exists with that sha256
-- [ ] Designer unit tests (tests/unit/*designer*.bats) green, and `bin/fw doctor` reports the designer pin current (no pin drift)
+- [x] Designer unit tests (tests/unit/*designer*.bats) green, and `bin/fw doctor` reports the designer pin current (no pin drift)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
