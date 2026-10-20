@@ -111,3 +111,13 @@ This was not the 95-minute full suite. Under the brief, the comparison is limite
 changed modules.
 
 **Hotfix-attributed failures: 0**
+
+## Released 2026-10-20 as v1.8.14
+
+master 6efec63df -> 2328ae76b, tag v1.8.14, GitHub release; merged back into bleeding-edge (8e9465cfb); operator approval "go with v1.8.14 for the hotfix and ship it".
+
+## Post-release field results
+
+| Project | Result | Evidence |
+|---|---|---|
+| 010-termlink | **WORKS** | msg 7b7b72e2: on v1.8.14 (their 766b1324d); their preserved safe-commands.sh merged clean with T-4485; "--output=x", --out\put=x, $o and --outp=x gated, plain git log SAFE |
