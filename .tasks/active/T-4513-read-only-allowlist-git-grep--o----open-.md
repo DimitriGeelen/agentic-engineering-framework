@@ -98,7 +98,7 @@ G-121 (ring20-dashboard msg af2bbc85). Probe: `docs/reports/G-121-bypass-probe.s
 - [x] `git grep -O pattern`, `git grep -Ovim pattern`, `git grep -iO pattern`, `git grep --open-files-in-pager=touch pattern`, `git grep --open-files-in-pager pattern`, `git grep --open-f pattern`, `git grep --op=x pattern`, `git grep -'O' pattern`, `git grep "--open-files-in-pager=x" pattern`, `git -C . grep -O pattern` and `git grep "$P" pattern` are gated by is_bash_safe_command
 - [x] Controls stay SAFE: `git grep pattern`, `git grep -n -e foo`, `git grep -C3 foo`, `git grep -i --or foo`, `git grep -e FOO`, `awk '{print $1}' F`, `sed -n 1p F`
 - [x] New bats test covers both directions; T-4510, T-4509, T-4511, T-4512, T-4485, T-4367, T-4487, T-4499 and safe-commands suites stay green
-- [ ] `bin/fw vendor self --check --task T-4513` clean
+- [x] `bin/fw vendor self --check --task T-4513` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
