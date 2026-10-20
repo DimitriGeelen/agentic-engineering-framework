@@ -1602,7 +1602,7 @@ do_upgrade() {
     local _src_sha _src_tag
     _src_sha=$(git -C "$FRAMEWORK_ROOT" rev-parse --short=12 HEAD 2>/dev/null) || _src_sha=""
     if [ -n "$_src_sha" ]; then
-        _src_tag=$(git -C "$FRAMEWORK_ROOT" describe --tags --exact-match HEAD 2>/dev/null) || _src_tag=""
+        _src_tag=$(git -C "$FRAMEWORK_ROOT" describe --tags --exact-match --exclude '*-be.*' HEAD 2>/dev/null) || _src_tag=""
         echo "  Commit:    ${_src_sha}${_src_tag:+ ($_src_tag)}"
     fi
     if [ -n "$project_version" ]; then
