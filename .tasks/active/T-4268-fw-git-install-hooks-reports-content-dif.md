@@ -7,10 +7,10 @@ description: >
   only hooks actually written. Findings (0909 run aef-install-20261017T144241Z): F-33.
   Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-15.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:28:32Z
-last_update: '2026-10-17T15:31:18Z'
+last_update: 2026-10-20T11:42:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A first install into a repo with no hooks prints no "content differs — reinstalling" line; absent hooks are reported as installed fresh
+- [x] When some hooks are present and differ, only those are reported as "differs — reinstalling", and absent ones separately
+- [x] The "Installed:" list names only hooks actually written this run (including pre-merge-commit), not a fixed list of four
+- [x] Regression bats test covers first install, partial reinstall, and listing; fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -144,6 +146,9 @@ bvp_scores_proposed:
 
 ## Verification
 
+timeout 300 bats tests/unit/t4268_install_hooks_first_install_message.bats > /tmp/.t4268.out 2>&1 && ! grep -q "^not ok" /tmp/.t4268.out
+test "$(grep -c '# skip' /tmp/.t4268.out)" -eq 0
+bin/fw vendor self --check --task T-4268
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -289,6 +294,14 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** reproduced at HEAD a717aab76 — `git init` + `agents/git/git.sh install-hooks` printed `Hook content differs: commit-msg pre-commit pre-merge-commit post-commit pre-push (marker installed: none, template: 1.19) — reinstalling` on a repo with no hooks, then an `Installed:` list of four hooks (pre-merge-commit missing).
+
+**Root cause:** `agents/git/lib/hooks.sh` (T-3998 compare loop, ~line 1712) folded `[ ! -x "$hooks_dir/$_n" ]` — which is true for an absent file — into the same `_differ` bucket as a content mismatch, and printed one "content differs — reinstalling" line for the whole bucket. The success banner (~line 1764) was a hard-coded list of four hooks written before T-3998 made installs per-hook and before pre-merge-commit existed.
+
+**Why structurally allowed:** t3998 tests asserted only the "differs" case on a re-install; no test looked at first-install output or at which hooks the banner names, so the message was correct for the case tested and wrong for the most common one.
+
+**Prevention:** the loop now records absent (`! -e`) separately from changed (non-executable or block mismatch); the banner iterates the hooks actually written. `tests/unit/t4268_install_hooks_first_install_message.bats` pins first install, partial reinstall (one absent + one differing → two listed) and `--force` (all five); all three fail on the pre-fix code.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -369,3 +382,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4268-fw-git-install-hooks-reports-content-dif.md
 - **Context:** Initial task creation
+
+### 2026-10-20T11:42:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

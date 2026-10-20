@@ -1708,13 +1708,17 @@ HOOK_EOF
     # T-3998: compare the staged hooks with the installed ones; deploy what differs.
     # T-4403: only the framework BLOCK is compared and replaced — lines outside it
     # are the consumer's (see _fw_hook_compose).
-    local _names="commit-msg pre-commit pre-merge-commit post-commit pre-push" _n _differ=""
+    # T-4268: an absent hook is not a differing one — a first install used to
+    # print "content differs — reinstalling" for all five.
+    local _names="commit-msg pre-commit pre-merge-commit post-commit pre-push" _n _differ="" _absent="" _changed=""
     if [ "$install_failed" = false ]; then
         for _n in $_names; do
             _fw_hook_block "$stage_dir/$_n" > "$stage_dir/$_n.block"
-            if [ "$force" = true ] || [ ! -x "$hooks_dir/$_n" ] \
+            if [ "$force" != true ] && [ ! -e "$hooks_dir/$_n" ]; then
+                _differ="$_differ $_n"; _absent="$_absent $_n"
+            elif [ "$force" = true ] || [ ! -x "$hooks_dir/$_n" ] \
                 || ! _fw_hook_installed_block "$hooks_dir/$_n" | cmp -s "$stage_dir/$_n.block" -; then
-                _differ="$_differ $_n"
+                _differ="$_differ $_n"; _changed="$_changed $_n"
             fi
         done
         if [ -z "$_differ" ]; then
@@ -1724,8 +1728,9 @@ HOOK_EOF
         fi
         local existing_version
         existing_version=$(grep "^# VERSION=" "$hooks_dir/commit-msg" 2>/dev/null | cut -d= -f2)
+        [ -n "$_absent" ] && echo -e "${YELLOW}Hooks not present:${_absent} — installing${NC}"
         # State the difference, not a direction (T-2852): nothing here compares ordering.
-        [ "$force" = true ] || echo -e "${YELLOW}Hook content differs:${_differ} (marker installed: ${existing_version:-none}, template: $COMMIT_MSG_HOOK_VERSION) — reinstalling${NC}"
+        [ "$force" = true ] || [ -z "$_changed" ] || echo -e "${YELLOW}Hook content differs:${_changed} (marker installed: ${existing_version:-none}, template: $COMMIT_MSG_HOOK_VERSION) — reinstalling${NC}"
         failed_hooks=()
         for _n in $_differ; do
             if _fw_hook_compose "$hooks_dir/$_n" "$stage_dir/$_n.block" "$stage_dir/$_n.new" \
@@ -1767,11 +1772,17 @@ HOOK_EOF
 
     echo -e "${GREEN}=== Hooks Installed ===${NC}"
     echo ""
+    # T-4268: list the hooks this run wrote, not a fixed four.
     echo "Installed:"
-    echo "  - $commit_msg_hook (task reference validation)"
-    echo "  - $pre_commit_hook (secret-scan — T-1844)"
-    echo "  - $post_commit_hook (bypass detection)"
-    echo "  - $pre_push_hook (audit before push)"
+    for _n in $_differ; do
+        case "$_n" in
+            commit-msg)       echo "  - $commit_msg_hook (task reference validation)" ;;
+            pre-commit)       echo "  - $pre_commit_hook (secret-scan — T-1844)" ;;
+            pre-merge-commit) echo "  - $pre_merge_commit_hook (parked-branch merge guard)" ;;
+            post-commit)      echo "  - $post_commit_hook (bypass detection)" ;;
+            pre-push)         echo "  - $pre_push_hook (audit before push)" ;;
+        esac
+    done
     echo ""
     echo "Hook behavior:"
     echo "  - Blocks commits without task references (T-XXX)"
