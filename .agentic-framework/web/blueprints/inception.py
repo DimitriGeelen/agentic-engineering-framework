@@ -564,6 +564,38 @@ def resolve_assumption(assumption_id):
 from web.shared import operator_facing_stderr as _operator_facing_stderr
 
 
+def _silent_refusal(task_id):
+    # T-3539: the CLI exited non-zero having written NOTHING to either stream.
+    return (
+        "fw inception decide failed and produced NO output on either stream.\n"
+        "That is a CLI-side failure, not a Watchtower one — the command died "
+        "before it could report a reason, so there is nothing to show here.\n"
+        f"Reproduce on the host: bin/fw task review {task_id}"
+    )
+
+
+def _filtered_refusal(task_id):
+    # T-4190 (832 OBS-427): the CLI DID explain itself, but every line was
+    # guidance written for agents (bypass flags, Tier-2 env vars), which
+    # operator_facing_stderr hides. Say that, instead of "Unknown error" or the
+    # T-3539 text — which would claim the CLI said nothing.
+    return (
+        "fw inception decide refused with a message written for agents "
+        "(bypass instructions only), so it is not shown here.\n"
+        "The full reason is in the Watchtower server log, or reproduce on the "
+        f"host: bin/fw task review {task_id}"
+    )
+
+
+def _decide_failure_reason(raw, task_id):
+    """Operator-facing reason for a failed decide: the filtered text when any
+    survives; otherwise name WHY nothing is shown (filtered vs truly empty)."""
+    shown = _operator_facing_stderr(raw)
+    if shown:
+        return shown
+    return _filtered_refusal(task_id) if raw.strip() else _silent_refusal(task_id)
+
+
 @bp.route("/inception/<task_id>/decide", methods=["POST"])
 def record_decision(task_id):
     if not re_mod.match(r"^T-\d{3,}$", task_id):
@@ -760,12 +792,8 @@ def record_decision(task_id):
         # printing its own warning, so Watchtower was handed an exit code and two
         # empty streams and could only shrug. Naming the shape would have pointed
         # at the CLI in one read instead of a full diagnosis session.
-        _silent = (
-            "fw inception decide failed and produced NO output on either stream.\n"
-            "That is a CLI-side failure, not a Watchtower one — the command died "
-            "before it could report a reason, so there is nothing to show here.\n"
-            f"Reproduce on the host: bin/fw task review {task_id}"
-        )
+        # T-4190: a non-empty refusal the sanitizer filters to nothing is a
+        # different shape and gets its own text (_decide_failure_reason).
         # T-3280: same operator-facing translation on the failure path.
         # T-3540: 1500, not 300. The FAILURE path had the tightest budget of any
         # message on this page while the sibling success-adjacent path at :608
@@ -774,7 +802,7 @@ def record_decision(task_id):
         # IW-N questions are undisposed, and 300 chars cut the list after
         # "Not yet disposed:\n    - IW" — clipping the one part the operator needed
         # and leaving a message that reads as a broken system rather than a gate.
-        _full = _operator_facing_stderr((chain_err or chain_out or _silent)[:3000]) or _silent
+        _full = _decide_failure_reason((chain_err or chain_out or "")[:3000], task_id)
         reason = _html.escape(_full[:1500])
         if len(_full) > 1500:
             # Say that it was cut, and where the rest is. A silently-clipped message
@@ -813,8 +841,8 @@ def record_decision(task_id):
                 or "side-effect warning")[:300]
         return redirect(url_for("inception.inception_detail", task_id=task_id, warning=warn))
     if outcome == _dr.NOT_LANDED:
-        err = (_operator_facing_stderr((chain_err or chain_out or "")[:3000])
-               or "Unknown error from fw inception decide")[:300]
+        # T-4190: name the filtered-to-empty and truly-empty shapes, not "Unknown error".
+        err = _decide_failure_reason((chain_err or chain_out or "")[:3000], task_id)[:300]
         return redirect(url_for("inception.inception_detail", task_id=task_id, error=err))
 
     # T-2053: success — surface a commit failure as a warning (no silent failure).

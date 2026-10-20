@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:10:09Z
-last_update: 2026-10-20T11:42:29Z
+last_update: 2026-10-20T11:58:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,23 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T11:46:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4190: inception decide: name the filtered-refusal case instead of 'Unknown error' (832 OBS-427, their T-1150)
@@ -97,11 +114,19 @@ bvp_scores_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Defect confirmed at HEAD (a717aab76): `operator_facing_stderr` maps a refusal made only of bypass-instruction lines to `''`, and the redirect path at `web/blueprints/inception.py:816-817` renders `Unknown error from fw inception decide`
-- [ ] Redirect path (`web/blueprints/inception.py:816-817`) names the filtered-refusal case (non-empty input, empty filtered output) and points at the server log instead of `Unknown error` — **blocked: fix lives in web/, which this dispatch was told not to edit**
-- [ ] htmx path (`web/blueprints/inception.py:777`) stops falling back to the "produced NO output on either stream" text when output existed but was filtered — same block
-- [ ] Regression test in `tests/unit/` pinning both paths for filtered-to-empty input — same block
+- [x] Redirect path (`web/blueprints/inception.py` NOT_LANDED branch) names the filtered-refusal case (non-empty input, empty filtered output) and points at the server log / `bin/fw task review T-XXX` instead of `Unknown error`
+- [x] htmx path (`web/blueprints/inception.py` failure fragment) says the gate refused with a message written for agents when output existed but was filtered; keeps the "produced NO output on either stream" text only for truly empty streams
+- [x] Regression test `tests/unit/test_t4190_filtered_refusal.py` pins both paths for filtered-to-empty input and the truly-empty control; it fails without the fix
+- [x] Watchtower restarted after the final change; `bin/fw vendor self --check --task T-4190` clean
 
 ### Human
+- [ ] [REVIEW] The filtered-refusal message reads as a clear, non-alarming explanation to the operator
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && grep -n -A12 "def _filtered_refusal" web/blueprints/inception.py`
+  2. Read that text as it would appear in the red "Decision not recorded" box on `/inception/<id>` (or the error banner after a non-htmx decide)
+  **Expected:** you understand the gate refused, that the reason was hidden because it was written for agents, and where to look next — without it reading as a Watchtower crash
+  **If not:** note the wording you'd prefer on this task
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -262,6 +287,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# test_every_stderr_render_site_is_sanitized is deselected: it is red at HEAD on two pre-existing approvals.py lines (643, 927), not this task's file.
+python3 -m pytest tests/unit/test_t4190_filtered_refusal.py tests/unit/test_inception_decide_htmx_error.py tests/unit/test_operator_facing_stderr.py --deselect tests/unit/test_operator_facing_stderr.py::test_every_stderr_render_site_is_sanitized -q > /tmp/.t4190.out 2>&1 && grep -q passed /tmp/.t4190.out && ! grep -q failed /tmp/.t4190.out
+! grep -q "Unknown error from fw inception decide" web/blueprints/inception.py
+bin/fw vendor self --check --task T-4190
+bin/fw watchtower current
 
 ## RCA
 
@@ -280,6 +310,8 @@ bvp_scores_proposed:
 -->
 
 **Status (2026-10-20, worker w4190): reproduces at HEAD a717aab76; NOT fixed — the fix is web-only and this dispatch forbade editing web/.**
+
+**Fixed (2026-10-20, continuation worker w4190b):** `web/blueprints/inception.py` gains `_decide_failure_reason(raw, task_id)` — filtered text if any survives; else `_filtered_refusal` when `raw.strip()` is non-empty, else `_silent_refusal` (the T-3539 text, now a module helper). Both the htmx fragment and the NOT_LANDED redirect use it, so the redirect no longer says `Unknown error` in either shape. Pinned by `tests/unit/test_t4190_filtered_refusal.py` (3 of 5 fail without the fix). Side note: `test_operator_facing_stderr.py::test_every_stderr_render_site_is_sanitized` is red at HEAD on two pre-existing `web/blueprints/approvals.py` lines (643, 927) — not this task.
 
 **Symptom:** a decide refusal whose every line is agent-facing bypass guidance renders to the operator as `Unknown error from fw inception decide` (redirect path), or as the T-3539 text claiming the CLI "produced NO output on either stream" (htmx path) — the second is actively false.
 
