@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4459: Running Watchtower writes stdout/stderr to a deleted log file: its errors are invisible
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T12:10:19Z
+# ============================================================================
+
+task_id: T-4459
+task_name: "Running Watchtower writes stdout/stderr to a deleted log file: its errors are invisible"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T11:24:43Z
+completed: 2026-10-20T12:09:55Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T13:44:23+02:00
+last_commit: 2026-10-20T13:44:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  untrack watchtower.log (git merges replaced its inode under the live server) + doctor WARN when Watchtower's stdout/stderr fd is deleted. remove watchtower.log from the index (previous commit's pathspec form re-added it)
+
+# Key outcomes
+outcomes:
+  - '`.context/working/watchtower.log` is untracked and gitignored, so git checkout/merge/stash can no longer replace the live log''s inode (`git ls-files --error-unmatch` fails, `git check-ignore` succeeds)'
+  - '`lib/watchtower.sh` has `watchtower_log_fd_deleted <pid>`: exit 0 + names the fd when the process''s stdout/stderr points to a deleted file, exit 1 when not'
+  - '`fw doctor` emits a WARN naming `bin/fw watchtower restart` when the running Watchtower''s stdout/stderr fd points to a deleted file'
+  - 'Regression test `tests/unit/t4459_watchtower_log_fd_deleted.bats` passes (helper true/false legs + untracked/ignored invariant)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/watchtower.sh'
+  - 'bin/fw'
+  - '.context/working/watchtower.log'
+  - '.gitignore'
+  - 'lib/watchtower.sh'
+  - '.tasks/active/T-4459-running-watchtower-writes-stdoutstderr-t.md'
+  - 'tests/unit/t4459_watchtower_log_fd_deleted.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T13:44:23'
+    action: 'T-4459: untrack watchtower.log (git merges replaced its inode under the live server) + doctor WARN when Watchtower''s stdout/stderr fd is deleted'
+  - time: '2026-10-20T13:44:41'
+    action: 'T-4459: remove watchtower.log from the index (previous commit''s pathspec form re-added it)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 45 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 45
+  commits: 2
+  files_changed: 8
+  lines_added: 209
+  lines_removed: 72
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4459-running-watchtower-writes-stdoutstderr-t.md
+generated_by: context-agent-hybrid

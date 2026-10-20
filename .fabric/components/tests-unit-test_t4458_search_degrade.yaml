@@ -1,0 +1,21 @@
+id: tests/unit/test_t4458_search_degrade.py
+name: test_t4458_search_degrade
+type: script
+subsystem: tests
+location: tests/unit/test_t4458_search_degrade.py
+tags: []
+
+purpose: "T-4458: /search must never answer with a blank HTTP 500, and one slow vector query must not hold the request."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4457: fw reviewer judge: the opencode seat exits 1 ('UnknownError: Unexpected server error') — likely no model pinned for the seat
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T12:11:05Z
+# ============================================================================
+
+task_id: T-4457
+task_name: "fw reviewer judge: the opencode seat exits 1 ('UnknownError: Unexpected server error') — likely no model pinned for the seat"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T11:09:14Z
+completed: 2026-10-20T12:10:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T13:18:56+02:00
+last_commit: 2026-10-20T13:18:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  name the provider error in an unavailable seat's reason (opencode 'Unexpected server error'); model pin + closed stdin pinned by test
+
+# Key outcomes
+outcomes:
+  - 'A regression test asserts the opencode launch line passes `-m "$MODEL"` (registry-pinned) and closes stdin, and that the registry pins an opencode model (tests/unit/t4457_opencode_seat_test.py)'
+  - 'When the opencode seat exits non-zero, the provider error from result.jsonl is surfaced in the seat''s unavailable reason (not just "exit 1"), capped at 100 chars'
+  - 'Existing judge/dispatch tests (tests/unit/*judge*, *t3580*, *t3582*) stay green and the signed registry/settings trust chain is untouched'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'name the provider error in an unavailable seat''s reason (opencode ''Unexpected server error''); model pin + closed stdin pinned by test'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - 'lib/reviewer/judge_cli.py'
+  - '.tasks/active/T-4457-fw-reviewer-judge-the-opencode-seat-exit.md'
+  - 'tests/unit/t4457_opencode_seat_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T13:18:56'
+    action: 'T-4457: name the provider error in an unavailable seat''s reason (opencode ''Unexpected server error''); model pin + closed stdin pinned by test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 61 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 61
+  commits: 2
+  files_changed: 5
+  lines_added: 846
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4457-fw-reviewer-judge-the-opencode-seat-exit.md
+generated_by: context-agent-hybrid

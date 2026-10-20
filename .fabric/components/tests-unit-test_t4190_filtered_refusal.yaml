@@ -1,0 +1,21 @@
+id: tests/unit/test_t4190_filtered_refusal.py
+name: test_t4190_filtered_refusal
+type: script
+subsystem: tests
+location: tests/unit/test_t4190_filtered_refusal.py
+tags: []
+
+purpose: "T-4190 (832 OBS-427) — a decide refusal the sanitizer filters to nothing must say so."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

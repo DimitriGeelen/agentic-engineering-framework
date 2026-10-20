@@ -1,0 +1,21 @@
+id: tests/unit/t4456_antigravity_seat_test.py
+name: t4456_antigravity_seat_test
+type: script
+subsystem: tests
+location: tests/unit/t4456_antigravity_seat_test.py
+tags: []
+
+purpose: "T-4456 — an antigravity seat that exits 0 because headless mode auto-denied its command tool is reported unavailable with that reason, not as a bare 'exit 0'."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

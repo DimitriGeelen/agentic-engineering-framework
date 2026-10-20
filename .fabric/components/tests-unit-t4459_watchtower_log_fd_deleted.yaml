@@ -1,0 +1,21 @@
+id: tests/unit/t4459_watchtower_log_fd_deleted.bats
+name: t4459_watchtower_log_fd_deleted
+type: script
+subsystem: tests
+location: tests/unit/t4459_watchtower_log_fd_deleted.bats
+tags: []
+
+purpose: "T-4459 — the running Watchtower wrote stdout/stderr into a deleted watchtower.log."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

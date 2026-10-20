@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4256: Vector-index doctor check WARNs inside its own stated grace window.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T12:09:51Z
+# ============================================================================
+
+task_id: T-4256
+task_name: "Vector-index doctor check WARNs inside its own stated grace window."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:25:10Z
+completed: 2026-10-20T12:08:42Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-20T13:49:57+02:00
+last_commit: 2026-10-20T13:49:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  vector-index check reports a never-built index inside its init grace window as SKIP (overall OK), not WARN; cron FAIL and vanished-index FAIL kept
+
+# Key outcomes
+outcomes:
+  - 'Within INDEX_MAX_AGE_HOURS of `initialized_at`, a never-built index (no file, no manifest) with the cron job registered and deployed yields an overall OK verdict, and the index line is SKIP (not WARN) — no longer a warning inside the grace window its own message states'
+  - 'The cron check still FAILs inside the grace window when nothing is scheduled to build the index (overall FAIL)'
+  - 'Past the grace window, and for an index that existed and vanished (manifest present), the missing index still FAILs'
+  - 'Regression test in tests/unit/t3783_vector_index_health.bats fails before the fix and passes after; the whole file stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/vector_index_health.py'
+  - 'lib/vector_index_health.py'
+  - '.tasks/active/T-4256-vector-index-doctor-check-warns-inside-i.md'
+  - 'tests/unit/t3783_vector_index_health.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T13:49:57'
+    action: 'T-4256: vector-index check reports a never-built index inside its init grace window as SKIP (overall OK), not WARN; cron FAIL and vanished-index FAIL kept'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4123 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4123
+  commits: 1
+  files_changed: 4
+  lines_added: 53
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4256-vector-index-doctor-check-warns-inside-i.md
+generated_by: context-agent-hybrid

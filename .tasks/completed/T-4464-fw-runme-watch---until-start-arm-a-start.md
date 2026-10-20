@@ -1,25 +1,21 @@
 ---
-id: T-4457
-name: "fw reviewer judge: the opencode seat exits 1 ('UnknownError: Unexpected server
-  error') — likely no model pinned for the seat"
+id: T-4464
+name: "fw runme watch --until start: arm a START watch separately from the EXIT watch,
+  so an agent can tell the operator the run began"
 description: >
-  Two independent occurrences on 2026-10-20: proxmox-ring20-management's rung-5 panel
-  (T-2255; result.jsonl only {type:error,name:UnknownError,'Unexpected server error'})
-  and AEF's own T-4350 judge run (seat opencode: exit 1). During T-4435's external
-  reviews opencode hung or failed until run with an explicit '-m zai-coding-plan/glm-5.2'
-  and stdin closed. The seat launch (agents/termlink/termlink.sh ~1492) passes ${MODEL:+-m
-  "$MODEL"}; with no model pinned in policy/review-backends.yaml for opencode it falls
-  back to opencode's default. Localise: reproduce a seat launch with and without -m;
-  check stdin handling. Fix: pin the model for the opencode kind in the registry (signed
-  per T-3580) and close stdin; surface the provider error text in the seat's unavailable
-  reason.
+  010-termlink suggestion (msg cbd43cfe): fw runme watch only returns at RUNME EXIT,
+  so an agent cannot report 'it started' without the operator saying so (their operator
+  had to say 'it is running' twice). Add --until start|exit (default exit, unchanged):
+  --until start returns as soon as the RUNME START marker appears in run.log, printing
+  the start line; the agent then arms a second watch for exit. Regression test with
+  a fake run.log.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/runme.sh, tests/unit/t4464_runme_watch_until.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T11:09:14Z
-last_update: '2026-10-20T11:15:31Z'
-date_finished:
+created: 2026-10-20T11:55:11Z
+last_update: 2026-10-20T12:12:36Z
+date_finished: 2026-10-20T12:12:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,7 +57,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T11:10:21Z'
+  - ts: '2026-10-20T11:57:19Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -79,30 +75,31 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-20T11:15:31Z'
+  - ts: '2026-10-20T12:00:46Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=300,acs=5)
+      (workflow:build); effort=8 (lines=304,acs=6)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4457: fw reviewer judge: the opencode seat exits 1 ('UnknownError: Unexpected server error') — likely no model pinned for the seat
+# T-4464: fw runme watch --until start: arm a START watch separately from the EXIT watch, so an agent can tell the operator the run began
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+010-termlink suggestion (msg cbd43cfe): `fw runme watch` only returns at RUNME EXIT, so an agent cannot tell the operator the run began. Feature in lib/runme.sh `runme_watch`; no RCA (not a bug).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] A regression test asserts the opencode launch line passes `-m "$MODEL"` (registry-pinned) and closes stdin, and that the registry pins an opencode model (tests/unit/t4457_opencode_seat_test.py)
-- [x] When the opencode seat exits non-zero, the provider error from result.jsonl is surfaced in the seat's unavailable reason (not just "exit 1"), capped at 100 chars
-- [x] Existing judge/dispatch tests (tests/unit/*judge*, *t3580*, *t3582*) stay green and the signed registry/settings trust chain is untouched
+- [x] `fw runme watch <name> --until start` returns 0 as soon as run.log holds `RUNME START`, prints the START line, and does not wait for `RUNME EXIT`
+- [x] `--until exit` and no `--until` behave as before (wait for EXIT, return the script's exit code); any other `--until` value is refused with exit 2
+- [x] `fw runme watch --help` (generated from the lib/runme.sh header) documents `--until start|exit`
+- [x] Regression tests in tests/unit/t4464_runme_watch_until.bats drive a fake run.log and pass; the existing runme bats suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,15 +284,13 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/t4457_opencode_seat_test.py tests/unit/t3852_unavailable_seat_test.py -q > /tmp/.t4457.out 2>&1 && grep -q passed /tmp/.t4457.out
-bin/fw vendor self --check --task T-4457
+timeout 120 bats tests/unit/t4464_runme_watch_until.bats > /tmp/.t4464.out 2>&1 && ! grep -q "^not ok" /tmp/.t4464.out
+test "$(grep -c '# skip' /tmp/.t4464.out)" -eq 0
+timeout 300 bats tests/unit/t3675_runme.bats tests/unit/t3741_runme_events.bats tests/unit/t3878_runme_pending.bats > /tmp/.t4464b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4464b.out
+bin/fw runme watch --help > /tmp/.t4464h.out 2>&1 && grep -q -- "--until start|exit" /tmp/.t4464h.out
+bin/fw vendor self --check --task T-4464
 
 ## RCA
-
-**Symptom:** opencode seat in `fw reviewer judge` exits 1; the operator sees only `unavailable: exit 1`. Raw stream: `{"type":"error","error":{"name":"UnknownError","data":{"message":"Unexpected server error..."}}}` (AEF /tmp/tl-dispatch/judge-t-4350-r3-*; ring20 T-2255).
-**Root cause:** the task's hypothesis (no model pinned) is false for AEF: `policy/review-backends.yaml` pins `zai-coding-plan/glm-5.2` since T-3582, `kind-model` returns it, and termlink.sh:1492 passes `-m "$MODEL"` with `< /dev/null`. The failure is a provider-side server error; the real defect is `_unavailable_reason` (lib/reviewer/judge_cli.py:816) dropping the provider's error text, so the operator cannot tell a provider outage from a launch bug. (A consumer on a pre-T-3582 vendored registry may genuinely lack the pin — that is fixed by `fw upgrade`, not code.)
-**Why structurally allowed:** the reason extractor only knew usage/rate-limit phrases and the bare exit code.
-**Prevention:** tests/unit/t4457_opencode_seat_test.py pins the launch line (model + closed stdin), the registry pin, and the error-naming reason.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -387,10 +382,27 @@ bin/fw vendor self --check --task T-4457
 
 ## Updates
 
-### 2026-10-20T11:09:14Z — task-created [task-create-agent]
+### 2026-10-20T11:55:11Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4457-fw-reviewer-judge-the-opencode-seat-exit.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4464-fw-runme-watch---until-start-arm-a-start.md
 - **Context:** Initial task creation
 
-### 2026-10-20T11:10:20Z — status-update [task-update-agent]
+### 2026-10-20T11:57:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3247a022
+- **Timestamp:** 2026-10-20T12:13:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T12:12:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,233 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4094: A task created and closed between two commits is never committed: work-completed only prints the git add hint, the handover commit is pathspec-scoped, and no check looks at untracked .tasks/ or .context/episodic/ files (dimitri-mint-dev G-012)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T12:11:54Z
+# ============================================================================
+
+task_id: T-4094
+task_name: "A task created and closed between two commits is never committed: work-completed only prints the git add hint, the handover commit is pathspec-scoped, and no check looks at untracked .tasks/ or .context/episodic/ files (dimitri-mint-dev G-012)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-12T11:37:31Z
+completed: 2026-10-20T12:11:08Z
+duration_days: 8
+updates_count: 2
+first_commit: 2026-10-13T20:19:18+02:00
+last_commit: 2026-10-20T14:02:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  commit 32 active task files that were created 2026-10-03..10-08 and never committed (G-012 class in AEF itself; found while preparing a push). commit framework-written state left uncommitted — .framework.yaml (CONTEXT_WINDOW 975000 per operator ruling 2026-09-30, PORT), vendored VERSION 1.8.10, estate_push fabric card, BVP estimator proposals on 112 active tasks. close stages the completed task file and its episodic, hint names the exact pathspec (never-committed tasks no longer left untracked)
+
+# Key outcomes
+outcomes:
+  - 'Closing a task whose active/ file was never committed leaves `.tasks/completed/<file>` staged in the git index, not untracked'
+  - 'The generated `.context/episodic/T-XXX.yaml` is staged in the same close'
+  - 'The next-step hint names a pathspec-scoped commit covering the completed file and the episodic, plus the old active/ path only when that path was tracked'
+  - 'Regression test `tests/unit/t4094_close_stages_untracked.bats` fails without the fix and passes with it; neighbouring update-task bats stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — stage, do not commit'
+    chose: 'the close stages the completed file + episodic and prints a pathspec-scoped commit hint.'
+    rationale: 'update-task.sh runs inside Watchtower''s 30 s decide window and under concurrent workers sharing one index; committing there would run every pre-commit hook mid-close, and the dispatch protocol has the parent commit the close.'
+    alternatives_rejected: ['auto-commit inside work-completed (hooks, timing, shared index); staging in handover (outside this area; handover is pathspec-scoped by design, T-3090).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/task-create/update-task.sh'
+  - '.fabric/components/lib-estate_push.yaml'
+  - '.framework.yaml'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3556-three-handoverpushtimeout-tests-pin-impl.md'
+  - '.tasks/active/T-3771-unit-tests-mutate-the-live-repo-in-place.md'
+  - '.tasks/active/T-3794-pre-push-unit-suite-ratchet-passes-on-an.md'
+  - '.tasks/active/T-3796-visual-decision-briefs-an-options-at-a-g.md'
+  - '.tasks/active/T-3798-handoversh-pushes-the-real-repos-head-wh.md'
+  - '.tasks/active/T-3802-fw-reviewer-judge-panel-seats-leave-term.md'
+  - '.tasks/active/T-3805-answer-termlink-t-3335-routing-consult-r.md'
+  - '.tasks/active/T-3813-fw-upgrade-step-7b-doorbellmail-toolkit-.md'
+  - '.tasks/active/T-3815-fw-upgrade-step-5-reports-partial-hooks-.md'
+  - '.tasks/active/T-3816-fw-upgrade-step-listing-omits-step-4c-sh.md'
+  - '.tasks/active/T-3817-triage-832-upstream-pickup-bundles-a-d-t.md'
+  - '.tasks/active/T-3823-handoversh-never-commits-the-discard-man.md'
+  - '.tasks/active/T-3834-checkrendersurfacehumanacsigpipebats-tes.md'
+  - '.tasks/active/T-3838-libshellwritescanpy-does-not-treat-trunc.md'
+  - '.tasks/active/T-3839-libbvpsh---owner-filters-rows-before-com.md'
+  - '.tasks/active/T-3842-fw-context-focus-wm-001wm-002-prints-not.md'
+  - '.tasks/active/T-3848-fw-release-pushes-master--tag-atomically.md'
+  - '.tasks/active/T-3852-reviewer-judge-panel-a-seat-that-ends-wi.md'
+  - '.tasks/active/T-3853-d-626-delegation-classifier-reads-framew.md'
+  - '.tasks/active/T-3854-test-fixtures-mutate-the-live-repos-git-.md'
+  - '.tasks/active/T-3858-verdict-ledger-reloaded-per-task-ctxledg.md'
+  - '.tasks/active/T-3859-fw-doctor-reports-a-hook-command-claudep.md'
+  - '.tasks/active/T-3861-the-vector-index-contextworkingfw-vec-in.md'
+  - '.tasks/active/T-3862-fw-upgrade-completes-without-checking-th.md'
+  - '.tasks/active/T-3863-verdict-ledger-row-cannot-be-committed-w.md'
+  - '.tasks/active/T-3864-after-fw-upgrade-a-consumer-that-correct.md'
+  - '.tasks/active/T-3866-fw-notify-has-never-delivered-on-consume.md'
+  - '.tasks/active/T-3867-libcron-seedsh-cronseedensurejobs-append.md'
+  - '.tasks/active/T-3868-loop-detect-hook-has-been-dead-in-every-.md'
+  - '.tasks/active/T-3871-designer-corpus-page-preview-thumbnails-.md'
+  - '.tasks/active/T-3912-theme-token-reds-from-my-own-template-ed.md'
+  - '.tasks/active/T-3914-watchtower-arc-close-writes-the-arc-yaml.md'
+  - '.tasks/active/T-3916-budget-critical-auto-restart-kills-the-s.md'
+  - '.tasks/active/T-3923-checkpointhandover-hook-sanitise-arithme.md'
+  - '.tasks/active/T-3945-pickup-delivery-telemetry-goal-accumulat.md'
+  - '.tasks/active/T-3947-check-paid-backend-fires-on-the-plain-wo.md'
+  - '.tasks/active/T-3976-t3511parkedmergeguard-tests-fail-at-rand.md'
+  - '.tasks/active/T-3987-inception-watchtower-configuration-panel.md'
+  - '.tasks/active/T-3988-pickup-urgent-sessions-die-at-the-hard-9.md'
+  - '.tasks/active/T-3990-time-bound-defer-fw-inception-decide--de.md'
+  - '.tasks/active/T-3993-budget-ladder-by-absolute-reserve-not-fi.md'
+  - '.tasks/active/T-3994-budget-warnurgent-reach-only-the-agents-.md'
+  - '.tasks/active/T-3995-critical-budget-block-also-blocks-read-o.md'
+  - '.tasks/active/T-3996-on-a-budget-kill-secure-untracked-work-p.md'
+  - '.tasks/active/T-4002-testthresholdstillboundsthequeue-asserts.md'
+  - '.tasks/active/T-4007-fw-upgrade-re-adds-hooks-a-consumer-deli.md'
+  - '.tasks/active/T-4011-committedblob-a-symlinked-agentic-framew.md'
+  - '.tasks/active/T-4012-urgent-message-ladder-how-an-urgent-peer.md'
+  - '.tasks/active/T-4014-fw-release-publishes-fingerprints-of-jud.md'
+  - '.tasks/active/T-4015-a-completed-task-cannot-be-reopened-and-.md'
+  - '.tasks/active/T-4016-libdelegationpy-tier0orbypassre-makes-an.md'
+  - '.tasks/active/T-4018-mail-watch-for-non-injectable-sessions-8.md'
+  - '.tasks/active/T-4019-fw-upgrade-leaves-the-consumers-push-gat.md'
+  - '.tasks/active/T-4020-operator-ruling-2026-10-10-master-receiv.md'
+  - '.tasks/active/T-4021-frameworks-resume-command-shadows-claude.md'
+  - '.tasks/active/T-4022-runme-job-queue-one-fixed-operator-comma.md'
+  - '.tasks/active/T-4025-claudemd-sub-agent-dispatch-protocol-rew.md'
+  - '.tasks/active/T-4027-1409-pickup-t-1815-no-waiting-without-a-.md'
+  - '.tasks/active/T-4028-verification-servicing-loop-step-2-fw-ve.md'
+  - '.tasks/active/T-4029-verification-servicing-loop-step-3-agent.md'
+  - '.tasks/active/T-4030-verification-servicing-loop-step-4-watch.md'
+  - '.tasks/active/T-4031-verification-servicing-loop-step-5-backf.md'
+  - '.tasks/active/T-4033-fw-reviewer-judge-leaves-a-verdict-row-u.md'
+  - '.tasks/active/T-4035-emergency-fix-lane-beside-bleeding-edge-.md'
+  - '.tasks/active/T-4036-session-records-of-claude-code-backgroun.md'
+  - '.tasks/active/T-4037-t-4003-wake-up-misses-a-conversation-sho.md'
+  - '.tasks/active/T-4038-fwmodedetectionbats-fw-doctor-prints-act.md'
+  - '.tasks/active/T-4043-a-markdown-document-opened-through-watch.md'
+  - '.tasks/active/T-4044-task-page-document-paths-written-in-cont.md'
+  - '.tasks/active/T-4045-task-board-an-awaiting-review-column-for.md'
+  - '.tasks/active/T-4046-inception-page-shows-the-human-criterion.md'
+  - '.tasks/active/T-4047-inception-page-renders-the-verification-.md'
+  - '.tasks/active/T-4048-claude-fw-start-hygiene-never-start-clau.md'
+  - '.tasks/active/T-4052-watchtower-a-boosted-link-inside-an-hx-t.md'
+  - '.tasks/active/T-4053-approvals-and-fw-review-queue-separate-r.md'
+  - '.tasks/active/T-4061-query-text-kept-outside-telemetry-resolv.md'
+  - '.tasks/active/T-4063-fw-recall-is-never-reranked-although-age.md'
+  - '.tasks/active/T-4064-keyword-index-is-one-tmpfw-search-index-.md'
+  - '.tasks/active/T-4065-embed-failover-between-fwembedhost-and-f.md'
+  - '.tasks/active/T-4066-fw-ask-cloud-fallback-claude-via-litellm.md'
+  - '.tasks/active/T-4071-watchtower-login-optional-configurable-o.md'
+  - '.tasks/active/T-4072-fw-runme-watch-returns-at-once-when-runl.md'
+  - '.tasks/active/T-4073-an-agent-in-a-consumer-cannot-discover-h.md'
+  - '.tasks/active/T-4074-fw-init--onboarding-should-start-the-sid.md'
+  - '.tasks/active/T-4076-the-credential---exec-wrapper-logs-a-pai.md'
+  - '.tasks/active/T-4079-watchtower-approvals-inbound-issues-sect.md'
+  - '.tasks/active/T-4080-lifecycle-hooks-post-github-stages-autom.md'
+  - '.tasks/active/T-4085-t3110worktreecorpuscommitguardbats-no-by.md'
+  - '.tasks/active/T-4086-fw-doctor-hook-checks-after-an-interpret.md'
+  - '.tasks/active/T-4087-readiness-rule-a-task-whose-review-crite.md'
+  - '.tasks/active/T-4089-arc-001-p1a--c5-core-signed-deciding-rec.md'
+  - '.tasks/active/T-4090-arc-001-p1a--c7-gpu-baseline-and-stop-ru.md'
+  - '.tasks/active/T-4094-a-task-created-and-closed-between-two-co.md'
+  - '.tasks/active/T-4097-t-4023-step-2-pre-release-tags-vxyz-ben-.md'
+  - '.tasks/active/T-4098-t-4023-step-2-rehearsed-rollback-of-a-ve.md'
+  - '.tasks/active/T-4099-t-4023-step-3-field-checks-declared-per-.md'
+  - '.tasks/active/T-4100-t-4023-step-4-fw-field-report--a-testbed.md'
+  - '.tasks/active/T-4101-t-4023-step-5-release-table--gate--fw-re.md'
+  - '.tasks/active/T-4102-release-channel-per-install-frameworkyam.md'
+  - '.tasks/active/T-4103-binwatchtowersh-docurrent-and-the-audit-.md'
+  - '.tasks/active/T-4104-g-114-tick-only-reverts-are-not-detected.md'
+  - '.tasks/active/T-4105-the-destructive-command-approval-guards-.md'
+  - '.tasks/active/T-4106-file-viewer-allowlist-omits-docsdesign-t.md'
+  - '.tasks/active/T-4107-fw-release-tag-and-release-commits-recon.md'
+  - '.tasks/active/T-4109-fw-upgrade-leaves-stale-claude-fw--fw-co.md'
+  - '.tasks/active/T-4110-fw-upgrade-keeps-a-locally-preserved-fil.md'
+  - '.tasks/active/T-4111-focus-anchor-one-operator-owned-goal--pa.md'
+  - '.tasks/active/T-4114-security-project-boundary-hook-misses-te.md'
+  - '.tasks/active/T-4116-file-doc-renders-its-title-twice-when-th.md'
+  - '.tasks/active/T-4119-terminators-180-s-handover-limit-is-shor.md'
+  - '.tasks/active/T-4120-checkpoint-auto-handover-failure-leaves-.md'
+  - '.tasks/active/T-4121-terminators-handover-push-races-the-agen.md'
+  - '.tasks/active/T-4125-security-budget-gate-command-classifier-.md'
+  - '.tasks/active/T-4127-watchtower-decision-commit-races-ordinar.md'
+  - '.tasks/active/T-4129-peer-review-for-1409-sprind-t-1959-templ.md'
+  - '.tasks/active/T-4130-watchtower-apitaskidcomplete-returns-htt.md'
+  - '.tasks/active/T-4133-watchtower-tasks-takes-60-145-s-after-an.md'
+  - '.tasks/active/T-4134-watchtower-decision-commit-bounded-paths.md'
+  - '.tasks/active/T-4137-open-task-recall-now-fires-for-50-of-act.md'
+  - '.tasks/active/T-4138-flaky-under-load-escalationscanv05bats-a.md'
+  - '.tasks/active/T-4139-t-4135-leg-1-claudemd-rule--decision-and.md'
+  - '.tasks/active/T-4141-sidecar-inbox-check-fw-sidecar-alerts--u.md'
+  - '.tasks/active/T-4143-t-4135-leg-2-stop-hook-guard-that-blocks.md'
+  - '.tasks/active/T-4144-large-file-scan-reports-a-tracked-files-.md'
+  - '.tasks/active/T-4148-context-window-budget-derived-from-the-s.md'
+  - '.tasks/active/T-4149-security-project-boundary-hook-check-pro.md'
+  - '.tasks/active/T-4151-worker-kind-vibe-mistral-vibe-cli-for-re.md'
+  - '.tasks/active/T-4152-fw-termlink-dispatch-leaks-its-termlink-.md'
+  - '.tasks/active/T-4154-t-4142-leg-2-write-capability-cards-for-.md'
+  - '.tasks/active/T-4156-apply-the-standing-review-rulings-d-626-.md'
+  - '.tasks/active/T-4157-fw-task-update---type-on-a-completed-tas.md'
+  - '.tasks/active/T-4159-human-ac-tick-guard-false-positive-libsh.md'
+  - '.tasks/active/T-4160-fw-fabric-enrich-misses-real-edges-scrip.md'
+  - '.tasks/active/T-4161-fabric-edge-type-names-mixed-within-card.md'
+  - '.tasks/active/T-4164-t-4091-slice-3-read-side--fw-recall--fw-.md'
+  - '.tasks/active/T-4165-t-4158-build-standing-operator-delegatio.md'
+  - '.tasks/active/T-4167-pre-commit-guard-against-reverting-commi.md'
+  - '.tasks/active/T-4169-handover-lists-a-captured-bug-task-with-.md'
+  - '.tasks/active/T-4171-budget-warn-75-and-urgent-85-never-reach.md'
+  - '.tasks/active/T-4172-sessionstart-after-a-budget-restart-is-t.md'
+  - '.tasks/active/T-4173-claude-fw-docs-say-a-budget-restart-cont.md'
+  - '.tasks/active/T-4174-budget-gauge-reads-unknown--scan-failed-.md'
+  - 'tests/unit/t4094_close_stages_untracked.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T20:19:18'
+    action: 'T-4094: commit 32 active task files that were created 2026-10-03..10-08 and never committed (G-012 class in AEF itself; found while preparing a push)'
+  - time: '2026-10-13T20:19:33'
+    action: 'T-4094: commit framework-written state left uncommitted — .framework.yaml (CONTEXT_WINDOW 975000 per operator ruling 2026-09-30, PORT), vendored VERSION 1.8.10, estate_push fabric card, BVP estimator proposals on 112 active tasks'
+  - time: '2026-10-20T14:02:56'
+    action: 'T-4094: close stages the completed task file and its episodic, hint names the exact pathspec (never-committed tasks no longer left untracked)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 11553 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, tasks, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11553
+  commits: 3
+  files_changed: 150
+  lines_added: 14682
+  lines_removed: 385
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4094-a-task-created-and-closed-between-two-co.md
+generated_by: context-agent-hybrid

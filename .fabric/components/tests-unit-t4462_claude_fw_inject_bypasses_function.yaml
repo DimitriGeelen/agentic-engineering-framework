@@ -1,0 +1,21 @@
+id: tests/unit/t4462_claude_fw_inject_bypasses_function.bats
+name: t4462_claude_fw_inject_bypasses_function
+type: script
+subsystem: tests
+location: tests/unit/t4462_claude_fw_inject_bypasses_function.bats
+tags: []
+
+purpose: "T-4462 — the line claude-fw injects into a TermLink PTY must reach the claude BINARY, not a user's claude() function or `claude` alias."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

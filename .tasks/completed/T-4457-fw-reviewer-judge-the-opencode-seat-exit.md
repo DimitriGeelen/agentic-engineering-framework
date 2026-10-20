@@ -1,22 +1,25 @@
 ---
-id: T-4459
-name: "Running Watchtower writes stdout/stderr to a deleted log file: its errors are
-  invisible"
+id: T-4457
+name: "fw reviewer judge: the opencode seat exits 1 ('UnknownError: Unexpected server
+  error') — likely no model pinned for the seat"
 description: >
-  Found 2026-10-20: /proc/<watchtower pid>/fd/1 and fd/2 point to '(deleted)', so
-  tracebacks from the running process (e.g. the /search 500 in the sibling task) are
-  written nowhere readable; .context/working/watchtower.log no longer receives them.
-  Something rotates or deletes the log while the process keeps the old fd (watchtower
-  restart / ensure / log rotation). Fix: whoever rotates must reopen (signal or restart)
-  or use copytruncate-safe logging; doctor should WARN when the live process's log
-  fd is deleted. Regression test.
+  Two independent occurrences on 2026-10-20: proxmox-ring20-management's rung-5 panel
+  (T-2255; result.jsonl only {type:error,name:UnknownError,'Unexpected server error'})
+  and AEF's own T-4350 judge run (seat opencode: exit 1). During T-4435's external
+  reviews opencode hung or failed until run with an explicit '-m zai-coding-plan/glm-5.2'
+  and stdin closed. The seat launch (agents/termlink/termlink.sh ~1492) passes ${MODEL:+-m
+  "$MODEL"}; with no model pinned in policy/review-backends.yaml for opencode it falls
+  back to opencode's default. Localise: reproduce a seat launch with and without -m;
+  check stdin handling. Fix: pin the model for the opencode kind in the registry (signed
+  per T-3580) and close stdin; surface the provider error text in the seat's unavailable
+  reason.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/t4457_opencode_seat_test.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,9 +47,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T11:24:43Z
-last_update: 2026-10-20T11:32:25Z
-date_finished:
+created: 2026-10-20T11:09:14Z
+last_update: 2026-10-20T12:10:22Z
+date_finished: 2026-10-20T12:10:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,18 +60,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-20T11:30:35Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T11:31:28Z'
+  - ts: '2026-10-20T11:10:21Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -85,9 +78,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T11:15:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=300,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4459: Running Watchtower writes stdout/stderr to a deleted log file: its errors are invisible
+# T-4457: fw reviewer judge: the opencode seat exits 1 ('UnknownError: Unexpected server error') — likely no model pinned for the seat
 
 ## Context
 
@@ -97,10 +100,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `.context/working/watchtower.log` is untracked and gitignored, so git checkout/merge/stash can no longer replace the live log's inode (`git ls-files --error-unmatch` fails, `git check-ignore` succeeds)
-- [x] `lib/watchtower.sh` has `watchtower_log_fd_deleted <pid>`: exit 0 + names the fd when the process's stdout/stderr points to a deleted file, exit 1 when not
-- [x] `fw doctor` emits a WARN naming `bin/fw watchtower restart` when the running Watchtower's stdout/stderr fd points to a deleted file
-- [x] Regression test `tests/unit/t4459_watchtower_log_fd_deleted.bats` passes (helper true/false legs + untracked/ignored invariant)
+- [x] A regression test asserts the opencode launch line passes `-m "$MODEL"` (registry-pinned) and closes stdin, and that the registry pins an opencode model (tests/unit/t4457_opencode_seat_test.py)
+- [x] When the opencode seat exits non-zero, the provider error from result.jsonl is surfaced in the seat's unavailable reason (not just "exit 1"), capped at 100 chars
+- [x] Existing judge/dispatch tests (tests/unit/*judge*, *t3580*, *t3582*) stay green and the signed registry/settings trust chain is untouched
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -285,24 +287,15 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-! git ls-files --error-unmatch .context/working/watchtower.log >/dev/null 2>&1
-git check-ignore -q .context/working/watchtower.log
-grep -q 'watchtower_log_fd_deleted()' lib/watchtower.sh
-grep -q 'watchtower_log_fd_deleted' bin/fw
-timeout 120 bats tests/unit/t4459_watchtower_log_fd_deleted.bats > /tmp/.t4459.out 2>&1 && ! grep -q "^not ok" /tmp/.t4459.out
-test "$(grep -c '# skip' /tmp/.t4459.out)" -eq 0
-bash -n bin/fw && bash -n lib/watchtower.sh
-bin/fw vendor self --check --task T-4459
+python3 -m pytest tests/unit/t4457_opencode_seat_test.py tests/unit/t3852_unavailable_seat_test.py -q > /tmp/.t4457.out 2>&1 && grep -q passed /tmp/.t4457.out
+bin/fw vendor self --check --task T-4457
 
 ## RCA
 
-**Symptom:** `/proc/<watchtower pid>/fd/{1,2}` → `.context/working/watchtower.log (deleted)`; the on-disk `watchtower.log` (different inode) stopped at 11:57:30 while the process kept logging, so tracebacks (e.g. the /search 500) were unreadable.
-
-**Root cause:** `.context/working/watchtower.log` was TRACKED in git (added by a broad `git add` in T-012, recommitted by T-3465/T-3514/T-3539/T-3540), while `.gitignore:156` ignored only `watchtower.log.*`. Git writes a tracked file by unlink+create, so any operation that rewrites it replaces the inode. Confirmed: reflog shows `merge origin/master` at 2026-10-20 11:57:46/11:57:57 +0200 — the autostash/reset/pop cycle rewrote the file, last line 11:57:30. Not the rotation in `lib/watchtower.sh:376` (that only runs at start, before the new process opens the log).
-
-**Why structurally allowed:** `fw doctor`'s Watchtower check (bin/fw ~3058) asks liveness, identity and source currency — never whether the process's output still lands anywhere. A deleted-fd log looks identical to a quiet one. `lib/integrate.py:96` even classified the file as a session transient, but nothing kept it out of the index.
-
-**Prevention:** the log is untracked + gitignored (git can no longer touch it); `watchtower_log_fd_deleted` + a doctor WARN catch any other cause (manual rm, other tools) with the fix named (`bin/fw watchtower restart`); regression test `tests/unit/t4459_watchtower_log_fd_deleted.bats` pins both.
+**Symptom:** opencode seat in `fw reviewer judge` exits 1; the operator sees only `unavailable: exit 1`. Raw stream: `{"type":"error","error":{"name":"UnknownError","data":{"message":"Unexpected server error..."}}}` (AEF /tmp/tl-dispatch/judge-t-4350-r3-*; ring20 T-2255).
+**Root cause:** the task's hypothesis (no model pinned) is false for AEF: `policy/review-backends.yaml` pins `zai-coding-plan/glm-5.2` since T-3582, `kind-model` returns it, and termlink.sh:1492 passes `-m "$MODEL"` with `< /dev/null`. The failure is a provider-side server error; the real defect is `_unavailable_reason` (lib/reviewer/judge_cli.py:816) dropping the provider's error text, so the operator cannot tell a provider outage from a launch bug. (A consumer on a pre-T-3582 vendored registry may genuinely lack the pin — that is fixed by `fw upgrade`, not code.)
+**Why structurally allowed:** the reason extractor only knew usage/rate-limit phrases and the bare exit code.
+**Prevention:** tests/unit/t4457_opencode_seat_test.py pins the launch line (model + closed stdin), the registry pin, and the error-naming reason.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -394,10 +387,27 @@ bin/fw vendor self --check --task T-4459
 
 ## Updates
 
-### 2026-10-20T11:24:43Z — task-created [task-create-agent]
+### 2026-10-20T11:09:14Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4459-running-watchtower-writes-stdoutstderr-t.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4457-fw-reviewer-judge-the-opencode-seat-exit.md
 - **Context:** Initial task creation
 
-### 2026-10-20T11:32:25Z — status-update [task-update-agent]
+### 2026-10-20T11:10:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ea35e73f
+- **Timestamp:** 2026-10-20T12:10:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T12:10:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

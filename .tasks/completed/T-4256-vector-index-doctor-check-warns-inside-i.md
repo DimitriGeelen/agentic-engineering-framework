@@ -1,29 +1,17 @@
 ---
-id: T-4460
-name: "watchtower start under load: the 5 s health check (GET /) times out, so the
-  server runs without .context/working/watchtower.url and the reviewer judge and URL
-  readers break"
+id: T-4256
+name: "Vector-index doctor check WARNs inside its own stated grace window."
 description: >
-  2026-10-20 13:47: a restart under load (avg ~18) left pid 1906090 listening on :3000
-  with watchtower.pid and watchtower.port written but NO watchtower.url. bin/watchtower.sh:430-445
-  polls 'curl -sf http://<probe>:<port>/' 5 x 1 s; the home page took 68 s under load
-  earlier today (T-4458), so the check fails and the timeout branch (~line 493) only
-  log_warns 'health check failed after 5s' and exits, never writing the url. Consequence
-  seen: fw reviewer judge T-4347 could not capture screenshots ('no running Watchtower
-  (.context/working/watchtower.url missing)'). Fix: probe the cheap identity endpoint
-  (/api/_identity, which the T-1803 identity check already uses) instead of /, with
-  a deadline sized for load (e.g. 60 s, configurable); write port+url only after identity
-  is verified, as now; and on timeout either keep a clearly-flagged state that doctor
-  reports as FAIL ('Watchtower running but triple incomplete') or stop the process,
-  never a silent half-written triple. Regression bats with a stub server that answers
-  /api/_identity fast and / slowly.
+  lib/vector_index_health.py:537-542 — emit INFO/SKIP within INDEX_MAX_AGE_HOURS of
+  init, keep cron FAIL. Findings (0909 run aef-install-20261017T144241Z): F-09. Triage:
+  docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-3.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/vector_index_health.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -51,9 +39,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T11:50:26Z
-last_update: '2026-10-20T12:00:46Z'
-date_finished:
+created: 2026-10-17T15:25:10Z
+last_update: 2026-10-20T12:08:42Z
+date_finished: 2026-10-20T12:08:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -64,8 +52,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T15:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T11:51:23Z'
+  - ts: '2026-10-17T15:31:17Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -82,33 +80,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-20T12:00:46Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=314,acs=7)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4460: watchtower start under load: the 5 s health check (GET /) times out, so the server runs without .context/working/watchtower.url and the reviewer judge and URL readers break
+# T-4256: Vector-index doctor check WARNs inside its own stated grace window.
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reproduced at HEAD a717aab76: the T-3747 branch in `evaluate()` (now ~line 596, triage cited 537-542 before line drift) still emitted WARN. Doctor (bin/fw ~2889) and audit (agents/audit/audit.sh ~5389) already render SKIP as info, so SKIP needs no consumer change.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `watchtower start` probes `/api/_identity` (cheap) instead of `GET /` for readiness, so a slow home page no longer fails the start
-- [x] The readiness deadline is 60 s by default and configurable (`WATCHTOWER_START_TIMEOUT`, registered in `lib/config.sh`)
-- [x] On deadline expiry the start stops the process it launched, removes pid/port/url, and exits non-zero — never a running server with a half-written triple
-- [x] Regression bats `tests/unit/t4460_watchtower_start_slow_home.bats` (stub server: `/api/_identity` fast, `/` slow) passes, and fails against the pre-fix script
-- [x] Neighbouring watchtower start tests (t4332, t3660, t3662) still pass; vendored copies synced
+- [x] Within INDEX_MAX_AGE_HOURS of `initialized_at`, a never-built index (no file, no manifest) with the cron job registered and deployed yields an overall OK verdict, and the index line is SKIP (not WARN) — no longer a warning inside the grace window its own message states
+- [x] The cron check still FAILs inside the grace window when nothing is scheduled to build the index (overall FAIL)
+- [x] Past the grace window, and for an index that existed and vanished (manifest present), the missing index still FAILs
+- [x] Regression test in tests/unit/t3783_vector_index_health.bats fails before the fix and passes after; the whole file stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,21 +273,21 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-#
-# Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
-# web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
-#     bin/fw vendor self --check --task T-XXXX
-# (your own task id). It checks only the files your commits changed, so another
-# worker's uncommitted edit does not block your close; that drift is listed as
-# "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4460_watchtower_start_slow_home.bats > /tmp/.t4460.out 2>&1 && ! grep -q "^not ok" /tmp/.t4460.out
-test "$(grep -c '# skip' /tmp/.t4460.out)" -eq 0
-grep -q 'WATCHTOWER_START_TIMEOUT|60|' lib/config.sh
-! grep -qE 'curl -sf "http://\$\{_probe\}:\$\{port\}/" ' bin/watchtower.sh
-bash -n bin/watchtower.sh && bash -n lib/watchtower.sh
-bin/fw vendor self --check --task T-4460
+timeout 600 bats tests/unit/t3783_vector_index_health.bats > /tmp/.t4256.out 2>&1 && ! grep -q "^not ok" /tmp/.t4256.out
+test "$(grep -c '# skip' /tmp/.t4256.out)" -eq 0
+grep -q 't4256' tests/unit/t3783_vector_index_health.bats
+python3 tools/bats-dead-negation-lint.py tests/unit/t3783_vector_index_health.bats
+bin/fw vendor self --check --task T-4256
 
 ## RCA
+
+**Symptom:** on a freshly initialised project (greenfield run aef-install-20261017T144241Z, finding F-09) `fw doctor` WARNs "vector index not built yet (project initialized 0.1h ago, limit 24h)" — a warning inside the very grace window the message names.
+
+**Root cause:** `lib/vector_index_health.py` `evaluate()` (the T-3747 branch, ~line 596) emitted verdict `WARN` for the not-built-yet-within-grace case. T-3747 downgraded FAIL to WARN, but the case is not degraded: the hourly reindex simply has not had its window, and the age check already treats an index that old as OK. So every fresh install carried one standing WARN that no action except an early manual reindex could clear.
+
+**Why structurally allowed:** the T-3747 test pinned only "not FAIL" for this state, so WARN vs informational was never asserted; the message text and the verdict were never checked against each other.
+
+**Prevention:** the branch now emits `SKIP` (the module's existing informational verdict, already used by the fast-mode canary; overall status is computed only from FAIL/WARN). A regression test pins: overall OK + index SKIP inside the grace window with the cron job deployed, overall FAIL when the cron job is missing, and FAIL outside the window.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -315,14 +302,6 @@ bin/fw vendor self --check --task T-4460
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** 2026-10-20 13:47, a restart under load (avg ~18) left pid 1906090 serving :3000 with watchtower.pid and watchtower.port but no watchtower.url; `fw reviewer judge T-4347` then failed ("no running Watchtower (.context/working/watchtower.url missing)").
-
-**Root cause:** `bin/watchtower.sh` do_start (health loop, ~line 430-495) judged readiness by `curl -sf http://<probe>:<port>/` five times at 1 s intervals. `/` renders the whole home page (68 s under load, T-4458), so readiness was measured on the most expensive route with a 5 s budget. When it expired, the fall-through branch only `log_warn`ed and returned 0, leaving the launched server running with the port file (pre-written by restart) and no url — a half-written triple.
-
-**Why structurally allowed:** the identity check (T-1803) was added *after* the `/` probe instead of replacing it, so the cheap endpoint already existed but was not the readiness signal; and the timeout branch was written as "may still be initialising" advice, not a failure, so nothing (exit code, doctor) surfaced the missing url. No test exercised a server whose `/` is slow.
-
-**Prevention:** readiness now polls `/api/_identity` against a configurable deadline (`WATCHTOWER_START_TIMEOUT`, default 60 s); on expiry the start kills its own process, clears the triple and exits 1. `tests/unit/t4460_watchtower_start_slow_home.bats` runs the real start against a stub server whose `/` sleeps, pinning both the success path and the timeout path.
 
 ## Evolution
 
@@ -400,10 +379,28 @@ bin/fw vendor self --check --task T-4460
 
 ## Updates
 
-### 2026-10-20T11:50:26Z — task-created [task-create-agent]
+### 2026-10-17T15:25:10Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4460-watchtower-start-under-load-the-5-s-heal.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4256-vector-index-doctor-check-warns-inside-i.md
 - **Context:** Initial task creation
 
-### 2026-10-20T11:51:22Z — status-update [task-update-agent]
+### 2026-10-20T11:42:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-38135426
+- **Timestamp:** 2026-10-20T12:09:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T12:08:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

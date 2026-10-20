@@ -1,22 +1,27 @@
 ---
-id: T-4464
-name: "fw runme watch --until start: arm a START watch separately from the EXIT watch,
-  so an agent can tell the operator the run began"
+id: T-4094
+name: "A task created and closed between two commits is never committed: work-completed
+  only prints the git add hint, the handover commit is pathspec-scoped, and no check
+  looks at untracked .tasks/ or .context/episodic/ files (dimitri-mint-dev G-012)"
 description: >
-  010-termlink suggestion (msg cbd43cfe): fw runme watch only returns at RUNME EXIT,
-  so an agent cannot report 'it started' without the operator saying so (their operator
-  had to say 'it is running' twice). Add --until start|exit (default exit, unchanged):
-  --until start returns as soon as the RUNME START marker appears in run.log, printing
-  the start line; the agent then arms a second watch for exit. Regression test with
-  a fake run.log.
+  dimitri-mint-dev (1.8.9 vendored): 11 completed tasks + 3 episodics stayed untracked
+  18-25 days. update-task.sh work-completed moves the file and prints 'git add ...
+  && git commit' (_print_move_next_hint) but commits nothing; the handover commit
+  is pathspec-scoped to its own files (T-3090); audit/doctor never look at untracked
+  files under .tasks/ or .context/episodic/. Suggested: (1) audit/doctor WARN on untracked
+  task/episodic files (ref-scoped FAIL at push is stronger); (2) work-completed commits
+  the move + episodic itself (pathspec-scoped), or the handover stages the session's
+  closed tasks. Note: in this repo the same class showed up as the 'staged: N' surprises
+  during 2026-10-12 closes.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
+horizon: null
+tags: [bug, tasks, audit]
+components: [agents/task-create/update-task.sh, tests/unit/t4094_close_stages_untracked.bats]
 related_tasks: []
+origin: {kind: "peer", source: "dimitri-mint-dev", ref: "G-012"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -43,9 +48,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T11:55:11Z
-last_update: '2026-10-20T12:00:46Z'
-date_finished:
+created: 2026-10-12T11:37:31Z
+last_update: 2026-10-20T12:11:08Z
+date_finished: 2026-10-20T12:11:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,8 +61,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T11:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T11:57:19Z'
+  - ts: '2026-10-12T11:46:08Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -74,32 +89,24 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-20T12:00:46Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=304,acs=6)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4464: fw runme watch --until start: arm a START watch separately from the EXIT watch, so an agent can tell the operator the run began
+# T-4094: A task created and closed between two commits is never committed: work-completed only prints the git add hint, the handover commit is pathspec-scoped, and no check looks at untracked .tasks/ or .context/episodic/ files (dimitri-mint-dev G-012)
 
 ## Context
 
-010-termlink suggestion (msg cbd43cfe): `fw runme watch` only returns at RUNME EXIT, so an agent cannot tell the operator the run began. Feature in lib/runme.sh `runme_watch`; no RCA (not a bug).
+Scope here: the update-task.sh close path (suggestion 2, staging half). The audit/doctor
+WARN on untracked .tasks/ / .context/episodic/ files (suggestion 1) lives outside
+agents/task-create and stays open for a follow-up.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw runme watch <name> --until start` returns 0 as soon as run.log holds `RUNME START`, prints the START line, and does not wait for `RUNME EXIT`
-- [x] `--until exit` and no `--until` behave as before (wait for EXIT, return the script's exit code); any other `--until` value is refused with exit 2
-- [x] `fw runme watch --help` (generated from the lib/runme.sh header) documents `--until start|exit`
-- [x] Regression tests in tests/unit/t4464_runme_watch_until.bats drive a fake run.log and pass; the existing runme bats suites stay green
+- [x] Closing a task whose active/ file was never committed leaves `.tasks/completed/<file>` staged in the git index, not untracked
+- [x] The generated `.context/episodic/T-XXX.yaml` is staged in the same close
+- [x] The next-step hint names a pathspec-scoped commit covering the completed file and the episodic, plus the old active/ path only when that path was tracked
+- [x] Regression test `tests/unit/t4094_close_stages_untracked.bats` fails without the fix and passes with it; neighbouring update-task bats stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -132,22 +139,13 @@ cost_estimate_proposed:
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-<!--
-  Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
-  web/app.py …) add a section headed "Visual Verification" (level-2 heading) after
-  Verification, with one checklist table — the check-visual-verification gate reads it
-  at commit time (T-4213; T-4202 GO):
-
-    | state | control | 1024 | 1440 | 1920 | note |
-    |-------|---------|------|------|------|------|
-    | toolbar | Load | ok | ok | ok | |
-
-  Cells: ok / clipped / hidden / overlap / unreachable (non-ok needs a note). Each
-  listed state needs screenshots at every UX_SHOT_WIDTHS width:
-  fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
--->
-
 ## Verification
+timeout 600 bats tests/unit/t4094_close_stages_untracked.bats > /tmp/.t4094.out 2>&1 && ! grep -q "^not ok" /tmp/.t4094.out
+test "$(grep -c '# skip' /tmp/.t4094.out)" -eq 0
+timeout 900 bats tests/unit/update_task_horizon_null_on_close.bats tests/unit/update_task_orphan_guard.bats > /tmp/.t4094n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4094n.out
+bash -n agents/task-create/update-task.sh
+python3 tools/bats-dead-negation-lint.py tests/unit/t4094_close_stages_untracked.bats > /tmp/.t4094l.out 2>&1 && grep -q clean /tmp/.t4094l.out
+bin/fw vendor self --check --task T-4094
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -277,20 +275,32 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-#
-# Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
-# web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
-#     bin/fw vendor self --check --task T-XXXX
-# (your own task id). It checks only the files your commits changed, so another
-# worker's uncommitted edit does not block your close; that drift is listed as
-# "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 120 bats tests/unit/t4464_runme_watch_until.bats > /tmp/.t4464.out 2>&1 && ! grep -q "^not ok" /tmp/.t4464.out
-test "$(grep -c '# skip' /tmp/.t4464.out)" -eq 0
-timeout 300 bats tests/unit/t3675_runme.bats tests/unit/t3741_runme_events.bats tests/unit/t3878_runme_pending.bats > /tmp/.t4464b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4464b.out
-bin/fw runme watch --help > /tmp/.t4464h.out 2>&1 && grep -q -- "--until start|exit" /tmp/.t4464h.out
-bin/fw vendor self --check --task T-4464
 
 ## RCA
+
+**Symptom:** dimitri-mint-dev (1.8.9): 11 completed tasks + 3 episodics stayed untracked
+for 18-25 days. A task created and closed between two commits never reached history.
+
+**Root cause:** `agents/task-create/update-task.sh` moves the task with `git mv` only when
+the file is already tracked (the two archive sites, ~line 2039 and ~2717); for an untracked
+file it falls back to plain `mv`, and nothing afterwards stages the destination. The
+episodic written by `generate-episodic` (~2089 / ~2975) is never staged either.
+`_print_move_next_hint` (line 75) then says "rename staged in index" — false here — and its
+suggested `git add <episodic> && git commit` omits the completed task file. The handover
+commit is pathspec-scoped to its own files (T-3090), so no later step sweeps them up.
+
+**Why structurally allowed:** every existing close guard (T-1523 git mv, T-2864 index
+reconcile, T-1863 orphan check) is keyed on the file being TRACKED — each starts from
+`git ls-files --error-unmatch`. The never-committed population fails that predicate and
+falls through every guard silently; untracked files are invisible to `dup-task-scan`
+(reads `--cached`) and to the pathspec-scoped handover commit.
+
+**Prevention:** a location-keyed postcondition at the end of update-task.sh (beside the
+ARCHIVED-HORIZON INVARIANT): whenever the task ends in completed/, stage that file and its
+episodic whatever their prior tracking state, and print a commit hint whose pathspec names
+exactly those paths. Pinned by `tests/unit/t4094_close_stages_untracked.bats` (untracked case
++ tracked control). Residual: staging is not committing; the audit/doctor rail for untracked
+task/episodic files (suggestion 1) is still unbuilt.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -361,6 +371,11 @@ bin/fw vendor self --check --task T-4464
 
 ## Decisions
 
+### 2026-10-20 — stage, do not commit
+- **Chose:** the close stages the completed file + episodic and prints a pathspec-scoped commit hint.
+- **Why:** update-task.sh runs inside Watchtower's 30 s decide window and under concurrent workers sharing one index; committing there would run every pre-commit hook mid-close, and the dispatch protocol has the parent commit the close.
+- **Rejected:** auto-commit inside work-completed (hooks, timing, shared index); staging in handover (outside this area; handover is pathspec-scoped by design, T-3090).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -382,10 +397,28 @@ bin/fw vendor self --check --task T-4464
 
 ## Updates
 
-### 2026-10-20T11:55:11Z — task-created [task-create-agent]
+### 2026-10-12T11:37:31Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4464-fw-runme-watch---until-start-arm-a-start.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4094-a-task-created-and-closed-between-two-co.md
 - **Context:** Initial task creation
 
-### 2026-10-20T11:57:18Z — status-update [task-update-agent]
+### 2026-10-20T11:42:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4e88a160
+- **Timestamp:** 2026-10-20T12:11:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — The generated `.context/episodic/T-XXX.yaml` is staged in the same close
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/episodic/T-XXX.yaml in: The generated `.context/episodic/T-XXX.yaml` is staged in the same close`
+
+### 2026-10-20T12:11:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,27 +1,23 @@
 ---
-id: T-4094
-name: "A task created and closed between two commits is never committed: work-completed
-  only prints the git add hint, the handover commit is pathspec-scoped, and no check
-  looks at untracked .tasks/ or .context/episodic/ files (dimitri-mint-dev G-012)"
+id: T-4459
+name: "Running Watchtower writes stdout/stderr to a deleted log file: its errors are
+  invisible"
 description: >
-  dimitri-mint-dev (1.8.9 vendored): 11 completed tasks + 3 episodics stayed untracked
-  18-25 days. update-task.sh work-completed moves the file and prints 'git add ...
-  && git commit' (_print_move_next_hint) but commits nothing; the handover commit
-  is pathspec-scoped to its own files (T-3090); audit/doctor never look at untracked
-  files under .tasks/ or .context/episodic/. Suggested: (1) audit/doctor WARN on untracked
-  task/episodic files (ref-scoped FAIL at push is stronger); (2) work-completed commits
-  the move + episodic itself (pathspec-scoped), or the handover stages the session's
-  closed tasks. Note: in this repo the same class showed up as the 'staged: N' surprises
-  during 2026-10-12 closes.
+  Found 2026-10-20: /proc/<watchtower pid>/fd/1 and fd/2 point to '(deleted)', so
+  tracebacks from the running process (e.g. the /search 500 in the sibling task) are
+  written nowhere readable; .context/working/watchtower.log no longer receives them.
+  Something rotates or deletes the log while the process keeps the old fd (watchtower
+  restart / ensure / log rotation). Fix: whoever rotates must reopen (signal or restart)
+  or use copytruncate-safe logging; doctor should WARN when the live process's log
+  fd is deleted. Regression test.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, tasks, audit]
-components: []
+horizon: null
+tags: []
+components: [bin/fw, lib/watchtower.sh, tests/unit/t4459_watchtower_log_fd_deleted.bats]
 related_tasks: []
-origin: {kind: "peer", source: "dimitri-mint-dev", ref: "G-012"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -48,9 +44,9 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "G-012"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-12T11:37:31Z
-last_update: 2026-10-20T11:42:25Z
-date_finished:
+created: 2026-10-20T11:24:43Z
+last_update: 2026-10-20T12:09:55Z
+date_finished: 2026-10-20T12:09:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,17 +58,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-12T11:45:32Z'
+  - ts: '2026-10-20T11:30:35Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=272,acs=4)
+      (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-12T11:46:08Z'
+  - ts: '2026-10-20T11:31:28Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -91,22 +87,20 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4094: A task created and closed between two commits is never committed: work-completed only prints the git add hint, the handover commit is pathspec-scoped, and no check looks at untracked .tasks/ or .context/episodic/ files (dimitri-mint-dev G-012)
+# T-4459: Running Watchtower writes stdout/stderr to a deleted log file: its errors are invisible
 
 ## Context
 
-Scope here: the update-task.sh close path (suggestion 2, staging half). The audit/doctor
-WARN on untracked .tasks/ / .context/episodic/ files (suggestion 1) lives outside
-agents/task-create and stays open for a follow-up.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Closing a task whose active/ file was never committed leaves `.tasks/completed/<file>` staged in the git index, not untracked
-- [x] The generated `.context/episodic/T-XXX.yaml` is staged in the same close
-- [x] The next-step hint names a pathspec-scoped commit covering the completed file and the episodic, plus the old active/ path only when that path was tracked
-- [x] Regression test `tests/unit/t4094_close_stages_untracked.bats` fails without the fix and passes with it; neighbouring update-task bats stay green
+- [x] `.context/working/watchtower.log` is untracked and gitignored, so git checkout/merge/stash can no longer replace the live log's inode (`git ls-files --error-unmatch` fails, `git check-ignore` succeeds)
+- [x] `lib/watchtower.sh` has `watchtower_log_fd_deleted <pid>`: exit 0 + names the fd when the process's stdout/stderr points to a deleted file, exit 1 when not
+- [x] `fw doctor` emits a WARN naming `bin/fw watchtower restart` when the running Watchtower's stdout/stderr fd points to a deleted file
+- [x] Regression test `tests/unit/t4459_watchtower_log_fd_deleted.bats` passes (helper true/false legs + untracked/ignored invariant)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -139,13 +133,22 @@ agents/task-create and stays open for a follow-up.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+<!--
+  Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
+  web/app.py …) add a section headed "Visual Verification" (level-2 heading) after
+  Verification, with one checklist table — the check-visual-verification gate reads it
+  at commit time (T-4213; T-4202 GO):
+
+    | state | control | 1024 | 1440 | 1920 | note |
+    |-------|---------|------|------|------|------|
+    | toolbar | Load | ok | ok | ok | |
+
+  Cells: ok / clipped / hidden / overlap / unreachable (non-ok needs a note). Each
+  listed state needs screenshots at every UX_SHOT_WIDTHS width:
+  fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
+-->
+
 ## Verification
-timeout 600 bats tests/unit/t4094_close_stages_untracked.bats > /tmp/.t4094.out 2>&1 && ! grep -q "^not ok" /tmp/.t4094.out
-test "$(grep -c '# skip' /tmp/.t4094.out)" -eq 0
-timeout 900 bats tests/unit/update_task_horizon_null_on_close.bats tests/unit/update_task_orphan_guard.bats > /tmp/.t4094n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4094n.out
-bash -n agents/task-create/update-task.sh
-python3 tools/bats-dead-negation-lint.py tests/unit/t4094_close_stages_untracked.bats > /tmp/.t4094l.out 2>&1 && grep -q clean /tmp/.t4094l.out
-bin/fw vendor self --check --task T-4094
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -275,32 +278,31 @@ bin/fw vendor self --check --task T-4094
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
+# web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
+#     bin/fw vendor self --check --task T-XXXX
+# (your own task id). It checks only the files your commits changed, so another
+# worker's uncommitted edit does not block your close; that drift is listed as
+# "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+! git ls-files --error-unmatch .context/working/watchtower.log >/dev/null 2>&1
+git check-ignore -q .context/working/watchtower.log
+grep -q 'watchtower_log_fd_deleted()' lib/watchtower.sh
+grep -q 'watchtower_log_fd_deleted' bin/fw
+timeout 120 bats tests/unit/t4459_watchtower_log_fd_deleted.bats > /tmp/.t4459.out 2>&1 && ! grep -q "^not ok" /tmp/.t4459.out
+test "$(grep -c '# skip' /tmp/.t4459.out)" -eq 0
+bash -n bin/fw && bash -n lib/watchtower.sh
+bin/fw vendor self --check --task T-4459
 
 ## RCA
 
-**Symptom:** dimitri-mint-dev (1.8.9): 11 completed tasks + 3 episodics stayed untracked
-for 18-25 days. A task created and closed between two commits never reached history.
+**Symptom:** `/proc/<watchtower pid>/fd/{1,2}` → `.context/working/watchtower.log (deleted)`; the on-disk `watchtower.log` (different inode) stopped at 11:57:30 while the process kept logging, so tracebacks (e.g. the /search 500) were unreadable.
 
-**Root cause:** `agents/task-create/update-task.sh` moves the task with `git mv` only when
-the file is already tracked (the two archive sites, ~line 2039 and ~2717); for an untracked
-file it falls back to plain `mv`, and nothing afterwards stages the destination. The
-episodic written by `generate-episodic` (~2089 / ~2975) is never staged either.
-`_print_move_next_hint` (line 75) then says "rename staged in index" — false here — and its
-suggested `git add <episodic> && git commit` omits the completed task file. The handover
-commit is pathspec-scoped to its own files (T-3090), so no later step sweeps them up.
+**Root cause:** `.context/working/watchtower.log` was TRACKED in git (added by a broad `git add` in T-012, recommitted by T-3465/T-3514/T-3539/T-3540), while `.gitignore:156` ignored only `watchtower.log.*`. Git writes a tracked file by unlink+create, so any operation that rewrites it replaces the inode. Confirmed: reflog shows `merge origin/master` at 2026-10-20 11:57:46/11:57:57 +0200 — the autostash/reset/pop cycle rewrote the file, last line 11:57:30. Not the rotation in `lib/watchtower.sh:376` (that only runs at start, before the new process opens the log).
 
-**Why structurally allowed:** every existing close guard (T-1523 git mv, T-2864 index
-reconcile, T-1863 orphan check) is keyed on the file being TRACKED — each starts from
-`git ls-files --error-unmatch`. The never-committed population fails that predicate and
-falls through every guard silently; untracked files are invisible to `dup-task-scan`
-(reads `--cached`) and to the pathspec-scoped handover commit.
+**Why structurally allowed:** `fw doctor`'s Watchtower check (bin/fw ~3058) asks liveness, identity and source currency — never whether the process's output still lands anywhere. A deleted-fd log looks identical to a quiet one. `lib/integrate.py:96` even classified the file as a session transient, but nothing kept it out of the index.
 
-**Prevention:** a location-keyed postcondition at the end of update-task.sh (beside the
-ARCHIVED-HORIZON INVARIANT): whenever the task ends in completed/, stage that file and its
-episodic whatever their prior tracking state, and print a commit hint whose pathspec names
-exactly those paths. Pinned by `tests/unit/t4094_close_stages_untracked.bats` (untracked case
-+ tracked control). Residual: staging is not committing; the audit/doctor rail for untracked
-task/episodic files (suggestion 1) is still unbuilt.
+**Prevention:** the log is untracked + gitignored (git can no longer touch it); `watchtower_log_fd_deleted` + a doctor WARN catch any other cause (manual rm, other tools) with the fix named (`bin/fw watchtower restart`); regression test `tests/unit/t4459_watchtower_log_fd_deleted.bats` pins both.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -371,11 +373,6 @@ task/episodic files (suggestion 1) is still unbuilt.
 
 ## Decisions
 
-### 2026-10-20 — stage, do not commit
-- **Chose:** the close stages the completed file + episodic and prints a pathspec-scoped commit hint.
-- **Why:** update-task.sh runs inside Watchtower's 30 s decide window and under concurrent workers sharing one index; committing there would run every pre-commit hook mid-close, and the dispatch protocol has the parent commit the close.
-- **Rejected:** auto-commit inside work-completed (hooks, timing, shared index); staging in handover (outside this area; handover is pathspec-scoped by design, T-3090).
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -397,11 +394,32 @@ task/episodic files (suggestion 1) is still unbuilt.
 
 ## Updates
 
-### 2026-10-12T11:37:31Z — task-created [task-create-agent]
+### 2026-10-20T11:24:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4094-a-task-created-and-closed-between-two-co.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4459-running-watchtower-writes-stdoutstderr-t.md
 - **Context:** Initial task creation
 
-### 2026-10-20T11:42:25Z — status-update [task-update-agent]
+### 2026-10-20T11:32:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-92b5851a
+- **Timestamp:** 2026-10-20T12:10:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 136
+     - evidence: `! git ls-files --error-unmatch .context/working/watchtower.log >/dev/null 2>&1`
+
+### 2026-10-20T12:09:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

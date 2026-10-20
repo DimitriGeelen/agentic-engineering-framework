@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4460: watchtower start under load: the 5 s health check (GET /) times out, so the server runs without .context/working/watchtower.url and the reviewer judge and URL readers break
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T12:12:33Z
+# ============================================================================
+
+task_id: T-4460
+task_name: "watchtower start under load: the 5 s health check (GET /) times out, so the server runs without .context/working/watchtower.url and the reviewer judge and URL readers break"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T11:50:26Z
+completed: 2026-10-20T12:12:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T14:03:03+02:00
+last_commit: 2026-10-20T14:05:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  watchtower start polls /api/_identity (not GET /) for WATCHTOWER_START_TIMEOUT (60 s); on expiry it stops its server and clears the triple instead of leaving pid/port without url. tick Agent ACs (tests green, live restart wrote url, watchtower current passes)
+
+# Key outcomes
+outcomes:
+  - '`watchtower start` probes `/api/_identity` (cheap) instead of `GET /` for readiness, so a slow home page no longer fails the start'
+  - 'The readiness deadline is 60 s by default and configurable (`WATCHTOWER_START_TIMEOUT`, registered in `lib/config.sh`)'
+  - 'On deadline expiry the start stops the process it launched, removes pid/port/url, and exits non-zero — never a running server with a half-written triple'
+  - 'Regression bats `tests/unit/t4460_watchtower_start_slow_home.bats` (stub server: `/api/_identity` fast, `/` slow) passes, and fails against the pre-fix script'
+  - 'Neighbouring watchtower start tests (t4332, t3660, t3662) still pass; vendored copies synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/watchtower.sh'
+  - 'bin/watchtower.sh'
+  - 'lib/config.sh'
+  - 'lib/watchtower.sh'
+  - '.tasks/active/T-4460-watchtower-start-under-load-the-5-s-heal.md'
+  - 'tests/unit/t4460_watchtower_start_slow_home.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T14:03:03'
+    action: 'T-4460: watchtower start polls /api/_identity (not GET /) for WATCHTOWER_START_TIMEOUT (60 s); on expiry it stops its server and clears the triple instead of leaving pid/port without url'
+  - time: '2026-10-20T14:05:17'
+    action: 'T-4460: tick Agent ACs (tests green, live restart wrote url, watchtower current passes)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 21
+  commits: 2
+  files_changed: 8
+  lines_added: 617
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4460-watchtower-start-under-load-the-5-s-heal.md
+generated_by: context-agent-hybrid

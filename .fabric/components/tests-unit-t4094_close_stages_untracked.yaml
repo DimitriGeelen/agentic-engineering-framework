@@ -1,0 +1,21 @@
+id: tests/unit/t4094_close_stages_untracked.bats
+name: t4094_close_stages_untracked
+type: script
+subsystem: tests
+location: tests/unit/t4094_close_stages_untracked.bats
+tags: []
+
+purpose: "T-4094 (peer dimitri-mint-dev G-012): a task created and closed between two commits was never committed."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

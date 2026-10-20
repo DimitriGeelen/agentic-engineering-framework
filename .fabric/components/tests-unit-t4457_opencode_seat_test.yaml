@@ -1,0 +1,21 @@
+id: tests/unit/t4457_opencode_seat_test.py
+name: t4457_opencode_seat_test
+type: script
+subsystem: tests
+location: tests/unit/t4457_opencode_seat_test.py
+tags: []
+
+purpose: "T-4457 — the opencode review seat: the launch pins the registered model and closes stdin, and a seat that dies on a provider error names that error in its unavailable reason."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

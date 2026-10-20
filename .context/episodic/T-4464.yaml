@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4464: fw runme watch --until start: arm a START watch separately from the EXIT watch, so an agent can tell the operator the run began
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T12:13:24Z
+# ============================================================================
+
+task_id: T-4464
+task_name: "fw runme watch --until start: arm a START watch separately from the EXIT watch, so an agent can tell the operator the run began"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T11:55:11Z
+completed: 2026-10-20T12:12:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T14:02:58+02:00
+last_commit: 2026-10-20T14:02:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw runme watch --until start|exit — return at the START marker so an agent can report the run began, then re-arm for exit; default unchanged
+
+# Key outcomes
+outcomes:
+  - '`fw runme watch <name> --until start` returns 0 as soon as run.log holds `RUNME START`, prints the START line, and does not wait for `RUNME EXIT`'
+  - '`--until exit` and no `--until` behave as before (wait for EXIT, return the script''s exit code); any other `--until` value is refused with exit 2'
+  - '`fw runme watch --help` (generated from the lib/runme.sh header) documents `--until start|exit`'
+  - 'Regression tests in tests/unit/t4464_runme_watch_until.bats drive a fake run.log and pass; the existing runme bats suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/runme.sh'
+  - 'lib/runme.sh'
+  - '.tasks/active/T-4464-fw-runme-watch---until-start-arm-a-start.md'
+  - 'tests/unit/t4464_runme_watch_until.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T14:02:58'
+    action: 'T-4464: fw runme watch --until start|exit — return at the START marker so an agent can report the run began, then re-arm for exit; default unchanged'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 17
+  commits: 1
+  files_changed: 4
+  lines_added: 493
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4464-fw-runme-watch---until-start-arm-a-start.md
+generated_by: context-agent-hybrid

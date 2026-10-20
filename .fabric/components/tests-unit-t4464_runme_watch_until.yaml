@@ -1,0 +1,21 @@
+id: tests/unit/t4464_runme_watch_until.bats
+name: t4464_runme_watch_until
+type: script
+subsystem: tests
+location: tests/unit/t4464_runme_watch_until.bats
+tags: []
+
+purpose: "T-4464: fw runme watch --until start|exit — an agent can report \"it began\" at the START marker, then arm a second watch for EXIT. Drives lib/runme.sh against a fake run.log in a temp project (same harness shape as t3675_runme.bats)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
