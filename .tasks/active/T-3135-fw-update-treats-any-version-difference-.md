@@ -10,7 +10,7 @@ description: >
   VERSION is a distance counter, not an ordering key. Reported by consumer 001-CashWeb
   (their T-111), reproduced here.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T08:59:16Z
-last_update: '2026-08-25T09:00:20Z'
+last_update: 2026-10-20T21:16:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,14 +74,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Consumer 001-CashWeb (their T-111): `fw update` offered and applied an older upstream as an "update". Rechecked at HEAD 2026-10-20: `lib/update.sh:167` still decides with `[ "$old_version" = "$new_version" ]`, so any difference — a DOWNGRADE included — is applied. The VERSION-resets-at-every-tag half is already gone: T-3821 made VERSION tracked and written only by `fw release` (`agents/git/lib/hooks.sh:1451-1459`; VERSION=1.8.14 at HEAD), so VERSION is now a release semver and can be ordered.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/update.sh` orders versions (semver; a pre-release sorts below its release) instead of testing string inequality
+- [x] A vendored VERSION newer than upstream is reported as "newer than upstream" and NOT applied; `--allow-downgrade` is the explicit way to apply it
+- [x] A genuinely newer upstream is still offered (negative control); unparseable versions keep the old "differs → update" behaviour with a warning
+- [x] Regression tests in `tests/unit/lib_update.bats` fail without the fix and pass with it; `bin/fw vendor self --check --task T-3135` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -174,6 +176,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/lib_update.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+grep -q '_fw_version_cmp' lib/update.sh
+bash -n lib/update.sh
+bin/fw vendor self --check --task T-3135
 
 ## RCA
 
@@ -190,6 +196,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw update` on consumer 001-CashWeb offered and applied an older upstream as an "update" (their T-111).
+
+**Root cause:** `lib/update.sh:167` (pre-fix) decided update-vs-current with `[ "$old_version" = "$new_version" ]`. Anything unequal fell through to "Update available" and `do_vendor`, so a vendored copy newer than upstream was silently downgraded. When the task was filed the effect was worse, because the git hook stamped VERSION as `<major>.<minor>.<commits-since-tag>` and the patch field reset at every tag. That part was fixed separately by T-3821: VERSION is now tracked and written only by `fw release` (`agents/git/lib/hooks.sh:1451-1459`). What was left was the comparison: it tested inequality, not order.
+
+**Why structurally allowed:** `tests/unit/lib_update.bats` only covered argument parsing. No test ran the version comparison against a real upstream. The only time consumers run an upstream older than their copy is when they vendor from bleeding-edge and then update from master, and the framework repo never does that to itself.
+
+**Prevention:** `_fw_version_cmp` (semver order, pre-release below release, `?` when a version cannot be parsed) plus 8 bats tests. Two of them (newer vendored copy is not offered; plain update leaves it untouched) fail on the pre-fix `lib/update.sh`, and a negative control passes on both. A downgrade now needs the explicit `--allow-downgrade`.
 
 ## Evolution
 
@@ -271,3 +285,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3135-fw-update-treats-any-version-difference-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:16:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

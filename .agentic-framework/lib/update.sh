@@ -10,14 +10,40 @@
 # now clones to a tempdir and deletes it. There is no global install left to
 # update in place.
 
+# T-3135: order two release versions. Prints -1, 0 or 1 (a <, =, > b), or "?"
+# when either side is not MAJOR.MINOR.PATCH[-PRE] (leading "v" allowed). A
+# pre-release sorts below its release (semver §11). This replaced a bare
+# string inequality that offered any difference — a downgrade included — as
+# an update.
+_fw_version_cmp() {
+    local re='^v?([0-9]+)\.([0-9]+)\.([0-9]+)(-([0-9A-Za-z.-]+))?$'
+    local a="$1" b="$2" i
+    [[ "$a" =~ $re ]] || { echo "?"; return 0; }
+    local -a va=("${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}")
+    local pa="${BASH_REMATCH[5]}"
+    [[ "$b" =~ $re ]] || { echo "?"; return 0; }
+    local -a vb=("${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}")
+    local pb="${BASH_REMATCH[5]}"
+    for i in 0 1 2; do
+        if (( 10#${va[i]} < 10#${vb[i]} )); then echo -1; return 0; fi
+        if (( 10#${va[i]} > 10#${vb[i]} )); then echo 1; return 0; fi
+    done
+    if [ "$pa" = "$pb" ]; then echo 0; return 0; fi
+    [ -z "$pa" ] && { echo 1; return 0; }
+    [ -z "$pb" ] && { echo -1; return 0; }
+    if [ "$(printf '%s\n%s\n' "$pa" "$pb" | sort -V | head -1)" = "$pa" ]; then echo -1; else echo 1; fi
+}
+
 do_update() {
     local check_only=false
+    local allow_downgrade=false  # T-3135
     local target_branch="${BRANCH:-master}"
     local -a _vendor_extra=()  # T-3850
 
     while [[ $# -gt 0 ]]; do
         case $1 in
             --check) check_only=true; shift ;;
+            --allow-downgrade) allow_downgrade=true; shift ;;
             --allow-delete-locals) _vendor_extra+=(--allow-delete-locals); shift ;;
             --branch) target_branch="$2"; shift 2 ;;
             --rollback)
@@ -33,6 +59,7 @@ do_update() {
                 echo "  --check         Check for updates without applying"
                 echo "  --branch NAME   Branch to update from (default: master)"
                 echo "  --rollback      Restore previous version"
+                echo "  --allow-downgrade  Apply an upstream OLDER than the vendored copy (T-3135)"
                 echo "  --allow-delete-locals  Let the re-vendor lose local files not listed in"
                 echo "                  .fwvendor-preserve.yaml (T-3850; logged, copies kept)"
                 echo "  -h, --help      Show this help"
@@ -82,7 +109,7 @@ do_update() {
     # (T-2854: the git-based branch this guarded against — _do_update_git — is
     # gone; a `.git`-carrying vendored_dir is now residue, handled below.)
     if [ -d "$vendored_dir" ] && [ -f "$vendored_dir/VERSION" ] && [ ! -d "$vendored_dir/.git" ]; then
-        _do_update_vendored "$project_root" "$vendored_dir" "$check_only" "$target_branch"
+        _do_update_vendored "$project_root" "$vendored_dir" "$check_only" "$target_branch" "$allow_downgrade"
     else
         # T-2854: reworded — the old text offered "install the framework
         # globally" as a remedy. There is no such thing since T-2800/D-377.
@@ -100,6 +127,7 @@ _do_update_vendored() {
     local vendored_dir="$2"
     local check_only="$3"
     local target_branch="$4"
+    local allow_downgrade="${5:-false}"
 
     local old_version
     old_version=$(cat "$vendored_dir/VERSION" 2>/dev/null || echo "unknown")
@@ -168,14 +196,28 @@ _do_update_vendored() {
     local new_hash
     new_hash=$(git -C "$tmpdir/upstream" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
-    # Compare versions
-    if [ "$old_version" = "$new_version" ]; then
+    # Compare versions — T-3135: by order, not by string inequality.
+    local _cmp
+    _cmp=$(_fw_version_cmp "$old_version" "$new_version")
+    if [ "$old_version" = "$new_version" ] || [ "$_cmp" = "0" ]; then
         echo -e "${GREEN}Already up to date${NC} (v${old_version})"
         echo ""
         echo "Upstream hash: $new_hash"
         rm -rf "$tmpdir"
         trap - EXIT
         return 0
+    fi
+    if [ "$_cmp" = "1" ] && [ "$allow_downgrade" != true ]; then
+        echo -e "${YELLOW}Vendored copy is newer than upstream${NC} (v${old_version} > v${new_version}, ${target_branch} ${new_hash})"
+        echo ""
+        echo "Nothing applied — updating would be a downgrade."
+        echo "To downgrade anyway: fw update --allow-downgrade${target_branch:+ --branch $target_branch}"
+        rm -rf "$tmpdir"
+        trap - EXIT
+        return 0
+    fi
+    if [ "$_cmp" = "?" ]; then
+        echo -e "${YELLOW}WARN: cannot order v${old_version} against v${new_version} (not MAJOR.MINOR.PATCH) — treating the difference as an update${NC}"
     fi
 
     # Show what's available
