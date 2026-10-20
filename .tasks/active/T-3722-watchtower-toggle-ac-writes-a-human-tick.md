@@ -11,7 +11,7 @@ description: >
   box under Human goes unticked to ticked. Render surface (P-013) needs its own REVIEW
   Human AC, which is why it is not in T-3695.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T12:41:07Z
-last_update: 2026-10-05T23:23:36Z
+last_update: 2026-10-20T21:16:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,39 +97,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [x] Defect re-checked at HEAD: `toggle_ac` (web/blueprints/tasks.py:1239-1255) writes a `via=watchtower` ledger row via `human_ac_ticks.record` for every newly ticked `### Human` box, and rolls the tick back if the row cannot be written — fixed by T-4070 (commit d82574407), so no new source change is needed here
+- [x] Regression coverage exists and is green: tests/web/test_t4070_watchtower_tick_provenance.py proves (a) a Watchtower Human tick writes one row and `human_ac_ticks.audit` returns 0 after commit, (b) the control (same tick, no row) returns 2 naming the task, (c) Agent ticks and unticks write no row, (d) a ledger write failure refuses the tick and leaves the file unchanged
+- [x] Running Watchtower is current with web/ (`bin/fw watchtower current` exits 0), so operator ticks taken today go through the fixed endpoint
 
 ## Verification
 
@@ -258,8 +228,17 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q "human_ac_ticks.record(PROJECT_ROOT, task_id, key, \"watchtower\"" web/blueprints/tasks.py
+python3 -m pytest tests/web/test_t4070_watchtower_tick_provenance.py -q > /tmp/.t3722.out 2>&1 && grep -q "5 passed" /tmp/.t3722.out
+bin/fw watchtower current
 
 ## RCA
+
+**Symptom:** an operator tick on a `### Human` box made in Watchtower, later committed by a session, made `fw audit` (lib/human_ac_ticks.py) FAIL as an unprovenanced Human tick.
+**Root cause:** T-3695 added the provenance ledger and detector but `toggle_ac` (web/blueprints/tasks.py, `_toggle_ac_line` caller) wrote only the checkbox, no ledger row — the producer of legitimate ticks was not wired to the ledger the consumer (audit) required.
+**Why structurally allowed:** T-3695 deferred the web leg because a render-surface change needs its own P-013 review; the gap was filed (this task) but the detector shipped first.
+**Resolution at HEAD:** already fixed by T-4070 (d82574407, 2026-10-11): `toggle_ac` now calls `human_ac_ticks.unprovenanced_ticks(old, new)` and `record(..., "watchtower", "watchtower", {request_id, remote_addr})` per newly ticked Human box and refuses (rolls back, 500) if the row cannot be written. This task (filed earlier) was a duplicate left open.
+**Prevention:** tests/web/test_t4070_watchtower_tick_provenance.py (5 tests incl. the no-row control that audit FAILs, and the write-failure rollback); `fw watchtower current` guards the stale-server case the audit mitigation text names.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -358,3 +337,6 @@ bvp_scores_proposed:
 
 ### 2026-10-05T22:52:18Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-10-20T21:16:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
