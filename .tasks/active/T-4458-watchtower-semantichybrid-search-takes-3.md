@@ -155,7 +155,7 @@ fix. With the deadline in place the measured win is latency, not correctness.
 - [x] `/search` never returns 500 when the keyword or vector leg raises: it renders 200 with keyword (or empty) results and a visible degraded notice (test)
 - [x] Vector leg (search + vec stats) runs under a deadline (`VECTOR_DEADLINE_SECONDS`, 10 s); past it the page returns keyword results with a visible "semantic search timed out" notice and the request thread is freed (test with a slow stub)
 - [x] Latency measured before/after on the live index, read-only, recorded in this task
-- [ ] Watchtower restarted and current; vendored copy in sync
+- [x] Watchtower restarted and current; vendored copy in sync
 
 ### Human
 - [ ] [REVIEW] Degraded-search notice reads clearly and the page stays usable
