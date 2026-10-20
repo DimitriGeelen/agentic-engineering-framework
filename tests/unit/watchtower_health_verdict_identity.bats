@@ -84,15 +84,22 @@ PY
 
     # Background the stub with stdout to a FILE (not a pipe inherited by the test
     # shell — that inheritance is what makes bats `run` hang). Poll for the port.
+    #
+    # T-4451: the file is created BEFORE the fork. The `>` redirect runs in the
+    # backgrounded child, so under load the first `cat` could run before the file
+    # existed, and under bats `set -e` that failed assignment ended the test at once.
+    # Readiness is the port appearing; 60 s is only the ceiling (python start-up
+    # under the parallel unit suite exceeded the old fixed 5 s).
+    : > "$TEST_TEMP_DIR/port.txt"
     python3 "$stub" > "$TEST_TEMP_DIR/port.txt" 2>/dev/null &
     STUB_PID=$!
-    local port="" i
-    for i in $(seq 1 25); do
-        port="$(cat "$TEST_TEMP_DIR/port.txt" 2>/dev/null)"
-        [ -n "$port" ] && break
-        sleep 0.2
+    local port="" deadline=$((SECONDS + 60))
+    while [ -z "$port" ] && [ "$SECONDS" -lt "$deadline" ]; do
+        kill -0 "$STUB_PID" 2>/dev/null || { echo "stub server exited before printing its port" >&2; return 1; }
+        port="$(cat "$TEST_TEMP_DIR/port.txt" 2>/dev/null || true)"
+        [ -n "$port" ] || sleep 0.2
     done
-    [ -n "$port" ]
+    [ -n "$port" ] || { echo "TIMED OUT: stub server printed no port within 60 s (host load?)" >&2; return 1; }
 
     # Sanity: the stub really answers /health 200 — the exact trap the old
     # `curl .../health` verdict fell into.

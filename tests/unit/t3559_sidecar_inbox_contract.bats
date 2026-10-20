@@ -56,7 +56,11 @@ EOF
     # the sandbox so the live project's inbox cursors are never read or written.
     export FRAMEWORK_ROOT="$SB/state" PROJECT_ROOT="$SB/state"
     export FW_SIDECAR_IDENTITY_FP=aaaaaaaaaaaaaaaa FW_SIDECAR_HUB_ID=testhub FW_SIDECAR_HOST=testhost
-    export SIDECAR_INBOX_TIMEOUT=20
+    # T-4451: the hook's timeout is the ceiling for the REAL producer (one python start-up
+    # plus four fake-hub calls, ~1 s idle). Under the parallel unit suite 20 s was not
+    # enough and test 1 went red on the hook's own "timed out" line. The test waits for the
+    # producer to finish (the readiness signal); 60 s is only the ceiling.
+    export SIDECAR_INBOX_TIMEOUT=60
     # Addressable, so a headless `claude -p` runner is not skipped by the hook (T-3684).
     export FW_SIDECAR_AGENT_ID=t3559-agent
 }
@@ -65,9 +69,19 @@ teardown() { [ -n "${SB:-}" ] && rm -rf "$SB"; return 0; }
 
 _hook() { bash "$HOOK" < /dev/null; }
 
+# T-4451: a producer that ran out of time must fail as a TIMEOUT, not as a bare grep
+# failure that reads like a contract break.
+_not_timed_out() {
+    if echo "$output" | grep -q 'inbox check timed out'; then
+        echo "TIMED OUT: the real producer did not answer within SIDECAR_INBOX_TIMEOUT=${SIDECAR_INBOX_TIMEOUT}s (host load?)" >&2
+        return 1
+    fi
+}
+
 @test "REAL producer -> REAL hook: a pending consult reaches the agent's context" {
     run _hook
     [ "$status" -eq 0 ]
+    _not_timed_out
     echo "$output" | grep -q '"hookEventName": "UserPromptSubmit"'
     echo "$output" | grep -q 'peer-agent'
     echo "$output" | grep -q 'conv-9'
@@ -79,6 +93,7 @@ _hook() { bash "$HOOK" < /dev/null; }
     export FAKE_HAS_MAIL=0
     run _hook
     [ "$status" -eq 0 ]
+    _not_timed_out
     [ -z "$output" ]
 }
 
@@ -92,8 +107,10 @@ _hook() { bash "$HOOK" < /dev/null; }
 @test "PEEK holds end to end: surfacing twice shows the consult twice" {
     # A consuming read would advance the cursor, and the second run would be empty.
     run _hook
+    _not_timed_out
     echo "$output" | grep -q 'peer-agent'
     run _hook
+    _not_timed_out
     echo "$output" | grep -q 'peer-agent'
 }
 
