@@ -8,10 +8,10 @@ description: >
   points only at the per-task status verb, so the warning has no bulk remedy. 832's
   fix: extend is_archive_eligible to started-work tasks whose ACs are all ticked.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:06:37Z
-last_update: '2026-10-13T19:16:04Z'
+last_update: 2026-10-20T11:42:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,14 +88,20 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw task archive-eligible` (bin/fw, `is_archive_eligible`) is the bulk remedy for tasks
+stuck in active/. It only accepted `status: work-completed`, so the CTL-029 class
+(started-work, every AC ticked, close never run) had no bulk verb. Ported from 832 OBS-360 / their T-1150.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect reproduced at HEAD before the fix: `is_archive_eligible` treats status=started-work as ineligible (bin/fw archive-eligible block)
+- [x] `fw task archive-eligible --dry-run` lists a started-work task whose real ACs are all ticked
+- [x] Still ignored: started-work with any unticked AC, started-work with only template placeholder ACs, captured/issues tasks
+- [x] Non-dry-run sweep closes an eligible started-work task through the normal `--status work-completed` gates (moves to completed/)
+- [x] CTL-029 mitigation in agents/audit/audit.sh names the bulk verb `bin/fw task archive-eligible`
+- [x] Regression tests in tests/unit/task_archive_eligible.bats pass, and the new started-work test fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -258,6 +264,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/task_archive_eligible.bats > /tmp/.t4180.out 2>&1 && ! grep -q "^not ok" /tmp/.t4180.out
+test "$(grep -c '# skip' /tmp/.t4180.out)" -eq 0
+sed -n '/CTL-029: completable-but-not-completed detection/,/PYEOF/p' agents/audit/audit.sh > /tmp/.t4180.ctl && grep -q 'bin/fw task archive-eligible' /tmp/.t4180.ctl
+bash -n bin/fw
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4180.lint 2>&1 && grep -q clean /tmp/.t4180.lint
+bin/fw vendor self --check --task T-4180
 
 ## RCA
 
@@ -274,6 +286,26 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** CTL-029 (agents/audit/audit.sh, "completable-but-not-completed") WARNs on
+active started-work tasks whose Agent ACs are all ticked, and its only remedy is the
+per-task `fw task update T-XXX --status work-completed`. `fw task archive-eligible`, the
+one bulk sweep, skipped all of them.
+
+**Root cause:** `is_archive_eligible` in bin/fw (archive-eligible block, ~line 6111)
+returned ineligible for any status other than `work-completed`. The verb was built for
+T-1903's post-re-class trap (work-completed, owner:human, stuck in active/) and its test
+pinned the exclusion ("detector ignores task with status started-work"), so the
+started-work shape CTL-029 later (T-2055) began reporting was never in its domain.
+
+**Why structurally allowed:** detector (CTL-029) and remedy (archive-eligible) were built
+by different tasks with different state predicates; nothing tied the WARN to a bulk verb
+that covers it, and the mitigation text pointed at a per-task command only.
+
+**Prevention:** the sweep accepts started-work tasks whose real (non-placeholder) ACs are
+all ticked and runs each through the normal close gates; CTL-029's mitigation names the
+sweep; bats tests pin the inclusion and the exclusions (unticked, placeholder-only,
+captured/issues).
 
 ## Evolution
 
@@ -355,3 +387,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4180-archive-eligible-sweeps-started-work-tas.md
 - **Context:** Initial task creation
+
+### 2026-10-20T11:42:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

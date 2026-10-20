@@ -99,14 +99,68 @@ EOF
     [[ "$output" != *"T-9002"* ]]
 }
 
-@test "T-1903: detector ignores task with status started-work" {
+@test "T-4180: detector finds started-work task with every AC ticked (CTL-029 class)" {
     _write_task "T-9003" "started-work" \
 "### Agent
 - [x] dummy
 "
     run "$FRAMEWORK_ROOT/bin/fw" task archive-eligible --dry-run
     [ "$status" -eq 0 ]
-    [[ "$output" != *"T-9003"* ]]
+    [[ "$output" == *"T-9003"* ]]
+    [ -f "$TEST_ROOT/.tasks/active/T-9003-test.md" ]
+}
+
+@test "T-4180: detector ignores started-work task with an unticked AC" {
+    _write_task "T-9005" "started-work" \
+"### Agent
+- [x] done
+- [ ] not yet
+"
+    run "$FRAMEWORK_ROOT/bin/fw" task archive-eligible --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"T-9005"* ]]
+}
+
+@test "T-4180: detector ignores started-work task with only template placeholder ACs" {
+    _write_task "T-9006" "started-work" \
+"### Agent
+- [x] [First criterion]
+- [x] [Second criterion]
+"
+    run "$FRAMEWORK_ROOT/bin/fw" task archive-eligible --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"T-9006"* ]]
+}
+
+@test "T-4180: detector still ignores captured and issues tasks" {
+    _write_task "T-9007" "captured" \
+"### Agent
+- [x] dummy
+"
+    _write_task "T-9008" "issues" \
+"### Agent
+- [x] dummy
+"
+    run "$FRAMEWORK_ROOT/bin/fw" task archive-eligible --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"T-9007"* ]]
+    [[ "$output" != *"T-9008"* ]]
+}
+
+@test "T-4180: sweep closes an eligible started-work task into completed/" {
+    _write_task "T-9009" "started-work" \
+"### Agent
+- [x] dummy
+"
+    # Owner agent so the close is a plain completion, not partial-complete.
+    # A real verification line: the close gates still run, and refuse `true`.
+    sed -i -e 's/^owner: human/owner: agent/' \
+           -e 's|^true$|grep -q "^id: T-9009" .tasks/active/T-9009-test.md|' \
+        "$TEST_ROOT/.tasks/active/T-9009-test.md"
+    run "$FRAMEWORK_ROOT/bin/fw" task archive-eligible --verbose
+    [ ! -f "$TEST_ROOT/.tasks/active/T-9009-test.md" ]
+    [ -f "$TEST_ROOT/.tasks/completed/T-9009-test.md" ]
+    [[ "$output" == *"archived"* ]]
 }
 
 @test "T-1903: HTML-comment-stripped detector ignores template placeholder unchecked ACs" {

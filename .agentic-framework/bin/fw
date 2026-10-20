@@ -6064,6 +6064,7 @@ PYTASK_STALE
             # [REVIEW] → [REVIEWER]) drained the Human-AC count to zero — the
             # partial-complete recheck only re-fires when --status work-completed
             # is invoked again. This sweep does that invocation for each candidate.
+            # T-4180: also started-work tasks with every AC ticked (CTL-029 class).
             FW_TASK_ARCHIVE_ARGS="$*" python3 - << 'PYTASK_ARCHIVE'
 import os, sys, re, shlex, subprocess
 
@@ -6078,9 +6079,10 @@ while i < len(args):
         verbose = True; i += 1
     elif args[i] in ('-h', '--help'):
         print("Usage: fw task archive-eligible [--dry-run] [--verbose]")
-        print("  Sweep .tasks/active/ for status: work-completed tasks whose")
-        print("  acceptance criteria are all ticked. Re-runs the partial-complete")
-        print("  recheck on each, which moves them to completed/.")
+        print("  Sweep .tasks/active/ for status: work-completed or started-work")
+        print("  tasks whose acceptance criteria are all ticked. Runs")
+        print("  --status work-completed on each (normal close gates apply),")
+        print("  which moves them to completed/.")
         print("  --dry-run lists candidates without invoking the recheck.")
         print("  Origin: L-403 (T-1903) — re-class operations can leave tasks stuck.")
         sys.exit(0)
@@ -6095,6 +6097,9 @@ active_dir = os.path.join(project_root, '.tasks', 'active')
 fw_bin = os.environ.get('FW_BIN', os.path.join(project_root, 'bin', 'fw'))
 if not os.path.isfile(fw_bin):
     fw_bin = os.path.join(project_root, '.agentic-framework', 'bin', 'fw')
+if not os.path.isfile(fw_bin):
+    # T-4180: fall back to the fw that is running this sweep.
+    fw_bin = os.path.join(os.environ.get('FRAMEWORK_ROOT', ''), 'bin', 'fw')
 
 if not os.path.isdir(active_dir):
     print(f'{YELLOW}No active/ directory — nothing to sweep.{NC}')
@@ -6109,16 +6114,23 @@ def is_archive_eligible(path):
     m = re.search(r'^id:\s*(T-\d+)', text, re.MULTILINE)
     task_id = m.group(1) if m else os.path.basename(path)
     m = re.search(r'^status:\s*(\S+)', text, re.MULTILINE)
-    if not m or m.group(1) != 'work-completed':
-        return (False, task_id, f'status={m.group(1) if m else "?"}')
+    status = m.group(1) if m else '?'
+    # T-4180: started-work with every AC ticked is the CTL-029 shape
+    # (finished, close never run). The sweep's close call runs the normal
+    # work-completed gates, so verification/RCA still decide.
+    if status not in ('work-completed', 'started-work'):
+        return (False, task_id, f'status={status}')
     ac_match = re.search(r'^## Acceptance Criteria\b(.*?)(?=^## )', text, re.MULTILINE | re.DOTALL)
     if not ac_match:
         return (False, task_id, 'no AC section')
     ac = re.sub(r'<!--.*?-->', '', ac_match.group(1), flags=re.DOTALL)
+    # Template placeholders ([First criterion] ...) are not real ACs.
+    ac = re.sub(r'^\s*-\s*\[[ x]\]\s*\[(First|Second|Third|Fourth|Fifth)\s+criterion\]\s*$',
+                '', ac, flags=re.MULTILINE | re.IGNORECASE)
     unchecked = len(re.findall(r'^\s*-\s*\[ \]', ac, re.MULTILINE))
     total = len(re.findall(r'^\s*-\s*\[[ x]\]', ac, re.MULTILINE))
     if total > 0 and unchecked == 0:
-        return (True, task_id, f'{total} AC all ticked')
+        return (True, task_id, f'{status}, {total} AC all ticked')
     return (False, task_id, f'{unchecked}/{total} unchecked')
 
 candidates = []
