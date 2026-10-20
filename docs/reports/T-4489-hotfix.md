@@ -121,3 +121,5 @@ master 6efec63df -> 2328ae76b, tag v1.8.14, GitHub release; merged back into ble
 | Project | Result | Evidence |
 |---|---|---|
 | 010-termlink | **WORKS** | msg 7b7b72e2: on v1.8.14 (their 766b1324d); their preserved safe-commands.sh merged clean with T-4485; "--output=x", --out\put=x, $o and --outp=x gated, plain git log SAFE |
+| ring20-dashboard | **WORKS** | msg 4a13dc90: v1.8.13 -> v1.8.14 from a full clone of the tag, about 11 min, exit 0, no rollback; 37 local patches all applied strict, zero fuzz; doctor 0 FAIL before and after; fast lane 6 -> 7 failed, the extra one (test_t1826) passed when re-run alone (flake), no new failures; the installed safe-commands gates all 11 lines of their T-4367/T-4485 probe (7 SAFE on v1.8.13) |
+| dimitri-mint-dev | **WORKS** (via v1.8.15-be.1) | msg ae5a4e7f: T-4485 gated (plain, abbreviated, quoted, through a variable), plain git log read-only; doctor 0 failures; findings filed as T-4498/T-4499/T-4500 |
