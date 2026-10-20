@@ -22,6 +22,10 @@ setup() {
 echo "$*" >> "$FAKE_LOG"
 if [ "${FAKE_MODE:-ok}" = "hang" ]; then sleep 30; fi
 if [ "${FAKE_MODE:-ok}" = "fail" ]; then exit 1; fi
+# T-4452: the real CLI's NOT CHECKED answer (hub read failed) is JSON on stdout + exit 3.
+if [ "${FAKE_MODE:-ok}" = "unchecked" ]; then
+    printf '%s' '{"checked": false, "reason": "reading inbox:x: termlink timed out after 15s"}'; exit 3
+fi
 # A fixture over ~128KB cannot ride in the environment (E2BIG) — hence a file.
 if [ -n "${FAKE_INBOX_FILE:-}" ]; then cat "$FAKE_INBOX_FILE"; else printf '%s' "$FAKE_INBOX"; fi
 EOF
@@ -129,7 +133,7 @@ _as_claude() {
     export FAKE_MODE=hang FAKE_INBOX=''
     run bash "$HOOK" < /dev/null
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q 'inbox check timed out; consults may be pending, run fw sidecar inbox --peek'
+    echo "$output" | grep -q 'NOT CHECKED: inbox check timed out; consults may be pending, run fw sidecar inbox --peek'
     echo "$output" | python3 -c 'import json,sys; json.load(sys.stdin)'
     [ "$(echo "$output" | wc -l)" -eq 1 ]
 }
@@ -207,4 +211,36 @@ PY
     # the label follows the notice's body, not the consult's
     echo "$ctx" | grep -A1 '^fyi: shipped$' | grep -q '^(notice — no reply expected)$'
     ! echo "$ctx" | grep -A1 '^a real question$' | grep -q 'notice — no reply expected'
+}
+
+@test "T-4452: fw exits 3 (NOT CHECKED) -> one visible NOT CHECKED line with the reason, exit 0" {
+    # Was: `[ "$rc" -eq 0 ] || exit 0` — a hub read that timed out reached the agent as silence,
+    # identical to an empty inbox.
+    export FAKE_MODE=unchecked FAKE_INBOX=''
+    run bash "$HOOK" < /dev/null
+    [ "$status" -eq 0 ]
+    [ "$(echo "$output" | wc -l)" -eq 1 ]
+    ctx=$(printf '%s' "$output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])')
+    echo "$ctx" | grep -q 'NOT CHECKED: reading inbox:x: termlink timed out after 15s'
+    echo "$ctx" | grep -q 'fw sidecar inbox --peek'
+}
+
+@test "T-4452: REAL producer, termlink sleeping past the read timeout -> NOT CHECKED, not silence" {
+    # End to end: the real `fw sidecar inbox --peek --json` (lib/sidecar_cli.py) reading through a
+    # termlink stub that hangs on subscribe. The reader times out (SIDECAR_READ_TIMEOUT=1) well
+    # inside the hook's own budget, so this exercises the reader's answer, not the hook timeout.
+    printf '#!/bin/sh\ncase "$*" in *subscribe*) sleep 10;; esac\nexit 0\n' > "$SANDBOX/bin/termlink"
+    chmod +x "$SANDBOX/bin/termlink"
+    printf '#!/usr/bin/env bash\nshift\nexec python3 "%s/lib/sidecar_cli.py" "$@"\n' "$ROOT" > "$SANDBOX/bin/fw"
+    chmod +x "$SANDBOX/bin/fw"
+    mkdir -p "$SANDBOX/proj/.context/sidecar"
+    echo "project_name: t4452" > "$SANDBOX/proj/.framework.yaml"
+    export PROJECT_ROOT="$SANDBOX/proj" FW_SIDECAR_HUB_ID=abcdef0123456789
+    export SIDECAR_READ_TIMEOUT=1 SIDECAR_INBOX_TIMEOUT=20
+    run bash "$HOOK" < /dev/null
+    [ "$status" -eq 0 ]
+    ctx=$(printf '%s' "$output" | python3 -c 'import json,sys; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])')
+    echo "$ctx" | grep -q 'NOT CHECKED: reading inbox:'
+    echo "$ctx" | grep -q 'timed out after 1s'
+    ! echo "$ctx" | grep -q 'inbox check timed out' || false   # the reader said it, not the hook's own timeout
 }

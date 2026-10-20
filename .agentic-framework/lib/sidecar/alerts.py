@@ -7,9 +7,9 @@ exactly the places it was built for. This is the shipped replacement for the
 mail half (canaries are TermLink's, their T-3327).
 
 Two routes carry peer mail, and both are read here, read-only:
-  - the hub consult inbox: `inbox.pending(advance=False)`, through a STRICT
-    reader — `inbox.default_reader` returns [] on any failure, which would read
-    as "no mail" (the very silence this exists to end);
+  - the hub consult inbox: `inbox.pending(advance=False)`, through
+    `inbox.strict_reader` — a failed read raises instead of returning [],
+    which would read as "no mail" (the very silence this exists to end);
   - receiver-stored messages awaiting hand-over, minus `seen.withheld` (T-3872),
     so this lists exactly what the prompt hook would show.
 
@@ -19,46 +19,15 @@ Any failure to read raises `Unreadable`; the CLI turns it into
 
 from __future__ import annotations
 
-import json
-import shutil
-import subprocess
-
 from . import inbox, receiver, seen
 
 DEFAULT_LIMIT = 10
 
 
-class Unreadable(RuntimeError):
-    """A mail route could not be read; the answer is unknown, not empty."""
-
-
-def strict_reader(topic: str, cursor: int, limit: int = inbox.DEFAULT_LIMIT,
-                  *, timeout: int = 15) -> list[dict]:
-    binary = inbox._binary()
-    if not (shutil.which(binary) or binary.startswith("/")):
-        raise Unreadable(f"termlink binary not found ({binary})")
-    argv = [binary, "channel", "subscribe", topic, "--json",
-            "--cursor", str(cursor), "--limit", str(limit)]
-    try:
-        proc = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
-    except (OSError, subprocess.SubprocessError) as e:
-        raise Unreadable(f"reading {topic}: {type(e).__name__}: {e}") from e
-    if proc.returncode != 0:
-        err = (proc.stderr or proc.stdout or "").strip().splitlines()
-        # A topic that does not exist yet holds no mail; anything else is unknown.
-        if any(s in l.lower() for l in err
-               for s in ("unknown topic", "no such topic", "topic not found")):
-            return []
-        raise Unreadable(f"reading {topic}: rc={proc.returncode} {err[-1] if err else ''}".strip())
-    out = []
-    for line in (proc.stdout or "").splitlines():
-        line = line.strip()
-        if line:
-            try:
-                out.append(json.loads(line))
-            except json.JSONDecodeError:
-                continue
-    return out
+# T-4452: one strict reader, defined beside the lenient one in inbox.py.
+# Re-exported under the names callers already use.
+Unreadable = inbox.Unreadable
+strict_reader = inbox.strict_reader
 
 
 def _first_line(body) -> str:

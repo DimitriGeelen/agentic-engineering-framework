@@ -204,17 +204,64 @@ def ensure_topic(agent: str | None = None, *, runner=subprocess.run,
             "reason": out.strip()[:200] or f"termlink channel create exited {proc.returncode}"}
 
 
+class Unreadable(RuntimeError):
+    """A mail route could not be read; the answer is unknown, not empty."""
+
+
+class ReadFailed(list):
+    """An empty read that is NOT an empty inbox (T-4452).
+
+    `default_reader` used to return a plain [] when termlink timed out or
+    failed, so a slow hub read exactly like "no mail". It now returns this:
+    still `== []` and falsy, so the lenient sweep callers (retry, dm, e2e)
+    behave as before, but `.reason` says why, and `strict_reader` raises on it.
+    """
+
+    def __init__(self, reason: str):
+        super().__init__()
+        self.reason = reason
+
+
+#: termlink's refusal for a topic that has never been created: no mail yet.
+_NO_TOPIC = ("unknown topic", "no such topic", "topic not found")
+
+
+#: Seconds one `channel subscribe` may take. SIDECAR_READ_TIMEOUT overrides it
+#: (a loaded hub, or a test that must not wait 15 s per topic).
+READ_TIMEOUT = 15
+
+
+def _read_timeout() -> float:
+    try:
+        return float(os.environ.get("SIDECAR_READ_TIMEOUT") or READ_TIMEOUT)
+    except ValueError:
+        return READ_TIMEOUT
+
+
 def default_reader(topic: str, cursor: int, limit: int = DEFAULT_LIMIT,
-                   *, binary: str | None = None, timeout: int = 15) -> list[dict]:
-    """Drain a topic from `cursor`. Returns raw envelopes, one per line."""
+                   *, binary: str | None = None, timeout: float | None = None) -> list[dict]:
+    """Drain a topic from `cursor`. Returns raw envelopes, one per line.
+
+    A read that did not happen (timeout, no binary, hub refused) returns a
+    `ReadFailed` naming the reason; only a real empty read or a topic that does
+    not exist yet returns a plain [] (T-4452).
+    """
+    if timeout is None:
+        timeout = _read_timeout()
     argv = [binary or _binary(), "channel", "subscribe", topic, "--json",
             "--cursor", str(cursor), "--limit", str(limit)]
     try:
         proc = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
-    except (OSError, subprocess.SubprocessError):
-        return []
+    except subprocess.TimeoutExpired:
+        return ReadFailed(f"reading {topic}: termlink timed out after {timeout:g}s")
+    except (OSError, subprocess.SubprocessError) as e:
+        return ReadFailed(f"reading {topic}: {type(e).__name__}: {e}")
     if proc.returncode != 0:
-        return []
+        err = (proc.stderr or proc.stdout or "").strip().splitlines()
+        if any(s in l.lower() for l in err for s in _NO_TOPIC):
+            return []
+        return ReadFailed(f"reading {topic}: rc={proc.returncode} "
+                          f"{err[-1] if err else ''}".strip())
     envelopes = []
     for line in (proc.stdout or "").splitlines():
         line = line.strip()
@@ -224,6 +271,24 @@ def default_reader(topic: str, cursor: int, limit: int = DEFAULT_LIMIT,
             envelopes.append(json.loads(line))
         except json.JSONDecodeError:
             continue
+    return envelopes
+
+
+def strict_reader(topic: str, cursor: int, limit: int = DEFAULT_LIMIT,
+                  *, timeout: float | None = None) -> list[dict]:
+    """`default_reader`, but a read that did not happen raises `Unreadable`.
+
+    The reader for every surface that answers "is there mail?" — `fw sidecar
+    inbox`, `fw sidecar alerts`, status, doctor and audit (T-3856, T-4312,
+    T-4452). One definition: the strict copy used to live in alerts.py while
+    `unread_summary` kept the lenient one, so a timeout still read as 0 there.
+    """
+    binary = _binary()
+    if not (shutil.which(binary) or binary.startswith("/")):
+        raise Unreadable(f"termlink binary not found ({binary})")
+    envelopes = default_reader(topic, cursor, limit, binary=binary, timeout=timeout)
+    if isinstance(envelopes, ReadFailed):
+        raise Unreadable(envelopes.reason)
     return envelopes
 
 
@@ -455,7 +520,7 @@ def pending(agent: str | None = None, *, reader=default_reader,
     return fresh
 
 
-def unread_summary(agent: str | None = None, *, reader=default_reader,
+def unread_summary(agent: str | None = None, *, reader=strict_reader,
                    limit: int = DEFAULT_LIMIT,
                    now: datetime | None = None) -> dict:
     """What is sitting unread on this agent's consult inbox, per topic.
@@ -520,7 +585,7 @@ def unread_summary(agent: str | None = None, *, reader=default_reader,
 
 
 def unread_stale(min_age_hours: float = 24, *, agent: str | None = None,
-                 reader=default_reader, limit: int = DEFAULT_LIMIT,
+                 reader=strict_reader, limit: int = DEFAULT_LIMIT,
                  now: datetime | None = None) -> list[dict]:
     """Consult-inbox topics holding an unread consult older than
     `min_age_hours` — the WARN shape for `fw doctor` and `fw audit`, mirroring

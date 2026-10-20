@@ -460,7 +460,7 @@ def _inbound_or_unknown() -> dict:
     """
     try:
         return inbox.unread_summary()
-    except circuit.CircuitError as exc:
+    except (circuit.CircuitError, inbox.Unreadable) as exc:  # T-4452: a timeout is unknown, not 0
         return {"unread": None, "topics": [], "reason": str(exc)}
 
 
@@ -743,7 +743,7 @@ def cmd_inbox_stale(args) -> int:
     mistake "I could not look" for "nothing is waiting"."""
     try:
         rows = inbox.unread_stale(min_age_hours=args.threshold_hours)
-    except circuit.CircuitError as exc:
+    except (circuit.CircuitError, inbox.Unreadable) as exc:  # T-4452
         print(f"consult-inbox backlog check could not run: {exc}", file=sys.stderr)
         return 2
     if args.json:
