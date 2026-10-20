@@ -3164,6 +3164,21 @@ _audit_review_step_downs() {
 }
 _audit_review_step_downs
 
+# T-4490 (T-4466 GO): every GREEN-DEGRADED close (a rung-5 panel closed on >=2 green vendors while
+# its other seats were provably unavailable) is a WARN, with the count per ISO week, so a seat that
+# is always broken gets fixed rather than routed around.
+_audit_review_green_degraded() {
+    [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] || return 0
+    local _gd _wk
+    _gd=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" audit 2>/dev/null | grep '^WARN green-degraded' || true)
+    [ -z "$_gd" ] && return 0
+    _wk=$(echo "$_gd" | grep '^WARN green-degraded weekly:' | sed 's/^WARN green-degraded weekly: //' | tr '\n' ';')
+    warn "Reviewer green-degraded closes: $(echo "$_gd" | grep -vc '^WARN green-degraded weekly:') criterion close(s) on a panel with unavailable seats (per ISO week: ${_wk})" \
+         "$(echo "$_gd" | grep -v '^WARN green-degraded weekly:' | head -3 | tr '\n' ';')" \
+         "Fix the unavailable seat kinds (fw reviewer judge names each reason); opt out per project: fw config set REVIEW_GREEN_DEGRADED 0"
+}
+_audit_review_green_degraded
+
 # T-3282 (G-104): the RUNNING Watchtower is a deployment surface of its own —
 # source can be fixed, tested, and closed green while the process serves the
 # pre-fix bytes (Flask debug=False, no reloader). The T-2938 detector fired

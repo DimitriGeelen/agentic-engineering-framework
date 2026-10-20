@@ -389,6 +389,8 @@ FW_CONFIG_REGISTRY=(
     # full mem/disk/cpu/net adaptive governor is slice S5b.
     "PROVISION_LOAD_MAX|0.8|Per-core normalized 1-minute loadavg threshold for the environmental governor's provisioning admission (lib/aef_governor.py). Under = allow, at/over = defer, at/over 2x = deny; bad values fall back to 0.8, logged. T-3311."
     "REVIEWER_JUDGE_WEEKLY_SPEND_CEILING|10000|Weekly USD spend ceiling for independent reviewer judgments via fw reviewer judge (T-3580, IW-7 rung selection). Estimated USD, read from the committed cost ledger (.context/costs/reviews.jsonl, reviewer-judge rows). When the due rung would pass it, the run is registered one rung lower; the SIGNED REVIEW RUN records the decision (due, granted, spend, ledger commit), the ticked criterion annotation shows rung granted/due/reason, and fw audit WARNs on every step-down. Floor 100: a value below it (0, negative, NaN, non-numeric) means no step-down, never always. T-3580."
+    # T-4490 (T-4466 GO, operator 2026-10-20). Project opt-out for green-degraded panel closes.
+    "REVIEW_GREEN_DEGRADED|1|1 (default) lets a rung-5 review panel whose only missing seats were provably UNAVAILABLE (dispatched, started and completed by the signed runtime with no verdict) close a REVIEWER-JUDGES criterion as GREEN-DEGRADED when at least two seats of distinct vendors judged green and none dissented. Never for tier-0-or-bypass, act-in-the-world or sovereignty criteria. Each close is written on the criterion and WARNed by fw audit with a per-ISO-week count. Set 0 to opt out; any value other than 1/true/yes/on also means off (lib/verdict_ledger.py). T-4490."
 )
 
 # fw_config_registry — Print all known settings with current values

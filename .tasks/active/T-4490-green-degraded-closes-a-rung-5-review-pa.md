@@ -1,10 +1,23 @@
 ---
 id: T-4490
-name: "Green-degraded closes: a rung-5 review panel that fails only on UNAVAILABLE seats closes green-degraded when >=2 distinct vendors judged green (T-4466 GO)"
+name: "Green-degraded closes: a rung-5 review panel that fails only on UNAVAILABLE
+  seats closes green-degraded when >=2 distinct vendors judged green (T-4466 GO)"
 description: >
-  Operator GO on inception T-4466 (2026-10-20). Implement in the review policy/ledger (lib/review_policy.py, lib/verdict_ledger.py, lib/reviewer/judge_cli.py) with ALL six conditions from T-4466's recommendation: (1) only when every missing seat is UNAVAILABLE with a recorded reason, never a not-evaluated or any amber/red; (2) >=2 distinct vendors green on the same reviewed revision; (3) recorded on the criterion as a GREEN-DEGRADED line (like the existing STEP-DOWN line) and WARNed by fw audit; (4) never for tier-0-or-bypass, act-in-the-world or sovereignty criteria; (5) project opt-out config key (default on) in BOTH lib/config.sh and web/blueprints/config.py (parity lint); (6) degraded closes counted per ISO week in fw audit, so a permanently broken seat gets fixed, not routed around. Must not weaken the T-3580/T-3581 provenance checks (signed dispatches, producer exclusion, append-only ledger). Regression tests per condition, including the refusals. ring20 depends on this (their arc-009 work item 3).
+  Operator GO on inception T-4466 (2026-10-20). Implement in the review policy/ledger
+  (lib/review_policy.py, lib/verdict_ledger.py, lib/reviewer/judge_cli.py) with ALL
+  six conditions from T-4466's recommendation: (1) only when every missing seat is
+  UNAVAILABLE with a recorded reason, never a not-evaluated or any amber/red; (2)
+  >=2 distinct vendors green on the same reviewed revision; (3) recorded on the criterion
+  as a GREEN-DEGRADED line (like the existing STEP-DOWN line) and WARNed by fw audit;
+  (4) never for tier-0-or-bypass, act-in-the-world or sovereignty criteria; (5) project
+  opt-out config key (default on) in BOTH lib/config.sh and web/blueprints/config.py
+  (parity lint); (6) degraded closes counted per ISO week in fw audit, so a permanently
+  broken seat gets fixed, not routed around. Must not weaken the T-3580/T-3581 provenance
+  checks (signed dispatches, producer exclusion, append-only ledger). Regression tests
+  per condition, including the refusals. ring20 depends on this (their arc-009 work
+  item 3).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T15:32:44Z
-last_update: 2026-10-20T15:32:44Z
-date_finished: null
+last_update: '2026-10-20T15:45:29Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,22 +63,66 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T15:35:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T15:45:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=319,acs=10)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4490: Green-degraded closes: a rung-5 review panel that fails only on UNAVAILABLE seats closes green-degraded when >=2 distinct vendors judged green (T-4466 GO)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-4466 GO (operator, 2026-10-20). A rung-5 panel whose missing seat(s) were dispatched but
+could not reach a verdict (T-3852 UNAVAILABLE: a usage limit, a headless auto-deny, a provider
+error) today falls to the operator even when two different vendors judged green. The ledger
+(`lib/verdict_ledger.py:_panel_fault`) now accepts that case as GREEN-DEGRADED under the six
+conditions below; "unavailable" is proven from the runtime's SIGNED artefacts (a signed start
+and a signed completion listing no verdict), never from a caller's claim.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] C1: a missing seat counts as UNAVAILABLE only when its dispatch is registered (signed) for this run's seat, task and pinned revision, has one signed runtime start and one signed runtime completion listing NO verdict, and left no ledger row; the reason recorded is the completion's exit state. A seat never dispatched, never started, with no completion, or that left a not-evaluated (or any) row refuses green-degraded — tests per refusal
+- [x] C2: green-degraded needs >=2 evaluating seats, all green, of >=2 distinct registry-derived vendors at the run's pinned revision; any amber/red/escalate seat refuses; a single green refuses; two greens of one vendor refuse — tests per refusal
+- [x] C3: the ticked criterion's reviewer annotation carries `GREEN-DEGRADED: ...` (seats green, seats unavailable with reasons); `applied.jsonl` records it; `python3 lib/verdict_ledger.py audit` emits `WARN green-degraded:` and `fw audit` WARNs on it
+- [x] C4: never for a tier-0-or-bypass, act-in-the-world or sovereignty criterion (explicit class check in the degraded path) — test
+- [x] C5: `REVIEW_GREEN_DEGRADED` (default 1) in both `lib/config.sh` and `web/blueprints/config.py`; set to 0, the same panel refuses with the old `panel-incomplete` reason — test; config-registry parity lint green
+- [x] C6: `lib/verdict_ledger.py audit` prints a per-ISO-week count of green-degraded closes (`WARN green-degraded weekly: <YYYY-Www> N`) — test
+- [x] C7: the judge (`lib/reviewer/judge_cli.py`) continues a panel past an UNAVAILABLE seat when the key is on, and `_final` reports such a panel green when the ledger accepts it — test; the T-3580/T-3986/T-3852 suites stay green
 
 ### Human
+- [ ] [REVIEW] The new REVIEW_GREEN_DEGRADED row on /config reads clearly next to the spend-ceiling row
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower restart && bin/fw watchtower url`
+  2. Open `<that URL>/config` and find the row `REVIEW_GREEN_DEGRADED`
+  **Expected:** default `1`, description names the opt-out and that every degraded close is WARNed and counted weekly by fw audit; the row's layout matches its neighbours
+  **If not:** note what reads wrong; the text lives in `web/blueprints/config.py` (`REVIEW_GREEN_DEGRADED`)
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -248,6 +305,18 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/t4490_green_degraded_test.py -q > /tmp/.t4490 2>&1 && grep -q passed /tmp/.t4490
+python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round7_test.py -q > /tmp/.t4490b 2>&1 && grep -q passed /tmp/.t4490b
+grep -q '"REVIEW_GREEN_DEGRADED|1|' lib/config.sh && grep -q '("REVIEW_GREEN_DEGRADED", "1"' web/blueprints/config.py
+timeout 300 bats tests/lint/config-registry-parity.bats > /tmp/.t4490c 2>&1 && ! grep -q "^not ok" /tmp/.t4490c
+bin/fw vendor self --check --task T-4490
+bin/fw watchtower current
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | REVIEW_GREEN_DEGRADED row | ok | ok | ok | new row after REVIEWER_JUDGE_WEEKLY_SPEND_CEILING; shots in .context/visual/T-4490/ |
 
 ## RCA
 
@@ -345,3 +414,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4490-green-degraded-closes-a-rung-5-review-pa.md
 - **Context:** Initial task creation
+
+### 2026-10-20T15:35:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

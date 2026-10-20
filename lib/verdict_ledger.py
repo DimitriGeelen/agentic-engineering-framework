@@ -184,6 +184,13 @@ OUTCOMES = (GREEN, AMBER, RED, ESCALATE, NOT_EVALUATED)
 #: Fewest seats that must have EVALUATED a criterion for a multi-seat (rung-5) panel to close it
 #: when any of its seats did not.
 MIN_EVALUATING_SEATS = 2
+#: T-4490 (T-4466 GO, operator 2026-10-20): a rung-5 panel whose ONLY missing seats are provably
+#: UNAVAILABLE (dispatched, started and completed by the signed runtime, with no verdict at all)
+#: closes GREEN-DEGRADED when at least MIN_EVALUATING_SEATS seats of distinct vendors judged green
+#: and none dissented. Project opt-out: REVIEW_GREEN_DEGRADED=0. Every such close is written on
+#: the criterion, WARNed by `audit` and counted per ISO week.
+GREEN_DEGRADED_KEY = "REVIEW_GREEN_DEGRADED"
+GREEN_DEGRADED = "GREEN-DEGRADED"
 #: outcome → judge_verdict contract state. Escalate = "could not conclude".
 _STATE = {GREEN: judge_verdict.GREEN, AMBER: judge_verdict.AMBER,
           RED: judge_verdict.RED, ESCALATE: judge_verdict.UNKNOWN,
@@ -2991,7 +2998,84 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
 
 
 def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
-    """'' unless `last` belongs to a run whose requirements are not all met: every required seat
+    return _panel_state(ctx, crit, last, mine)[0]
+
+
+def green_degraded_enabled(root: Path) -> bool:
+    """T-4490 condition 5: the project opt-out. Default on; ONLY an explicit truthy value keeps it
+    on, so a malformed setting never relaxes the panel (fail closed)."""
+    v = review_policy.config_value(root, GREEN_DEGRADED_KEY, "1").strip().lower()
+    return v in ("1", "true", "yes", "on")
+
+
+def _unavailable_seat(ctx: _Ctx, run: dict, seat: str) -> tuple[str, str]:
+    """T-4490 condition 1: (reason, '') when `seat` of `run` is provably UNAVAILABLE for this task,
+    else ('', why not). Proof comes only from SIGNED runtime artefacts, never a caller's claim:
+    exactly one review dispatch registered for this run's seat and task at the run's pinned
+    revision; no ledger row from it at all (a seat that left any row — a not-evaluated included —
+    is a verdict, not unavailable); exactly one signed runtime start in its window; exactly one
+    signed runtime completion, emitted by that runtime in its window and listing NO verdict, on an
+    append-only completions file. The recorded reason is the completion's exit state."""
+    root, rid = ctx.root, str(run.get("run_id") or "")
+    dids = sorted({str(r.get("dispatch_id") or "") for r in _read(DISPATCHES, root)
+                   if r.get("run_id") == rid and r.get("seat") == seat})
+    if not dids:
+        return "", f"seat {seat!r} of run {rid} was never dispatched"
+    if len(dids) > 1:
+        return "", f"seat {seat!r} of run {rid} has {len(dids)} dispatches — ambiguous, refusing"
+    did = dids[0]
+    drec, why = dispatch_record(root, did)
+    if drec is None:
+        return "", why
+    if drec.get("task_type") != REVIEW_TASK_TYPE or drec.get("task") != ctx.task_id:
+        return "", f"dispatch {did!r} is not a review dispatch for {ctx.task_id}"
+    if str(drec.get("revision") or "") != str(run.get("revision") or ""):
+        return "", f"dispatch {did!r} is not at run {rid}'s pinned revision"
+    if any(r.get("dispatch_id") == did for r in _read(VERDICTS, root)):
+        return "", f"seat {seat!r} (dispatch {did}) left a ledger row — that is a verdict, not unavailable"
+    starts = _starts_for(root, did)
+    if len(starts) != 1 or not _signed_ok(root, starts[0]) \
+            or starts[0].get("wdir") != drec.get("wdir"):
+        return "", f"dispatch {did!r} has no single signed runtime start — it never ran"
+    hist = history_fault(root, COMPLETIONS)
+    if hist:
+        return "", f"completions: {hist}"
+    comps = _completions_for(root, did)
+    if len(comps) != 1:
+        return "", (f"dispatch {did!r} has {len(comps)} runtime completion(s) — an unavailable seat "
+                    f"is proven by exactly one")
+    comp = comps[0]
+    if not _signed_ok(root, comp) or comp.get("source") != "runtime" or comp.get("session") != did \
+            or comp.get("wdir") != drec.get("wdir") \
+            or comp.get("worker_kind") != (drec.get("worker_kind") or "claude") \
+            or str(comp.get("revision") or "") != str(drec.get("revision") or ""):
+        return "", f"dispatch {did!r}'s completion was not signed by its own runtime"
+    try:
+        in_time = (int(starts[0]["epoch"]) <= int(drec["start_by"])
+                   and int(starts[0]["epoch"]) <= int(comp["epoch"]) <= int(drec["complete_by"]))
+    except (KeyError, TypeError, ValueError):
+        in_time = False
+    if not in_time:
+        return "", f"dispatch {did!r} started or completed outside its signed window"
+    if comp.get("verdicts"):
+        return "", f"dispatch {did!r}'s completion lists verdicts — not unavailable"
+    return f"exit {comp.get('exit_code')}, no verdict (dispatch {did})", ""
+
+
+def green_degraded_of(ctx: _Ctx, crit, last: dict) -> str:
+    """The GREEN-DEGRADED disclosure for a satisfying green `last` ('' when its panel was whole)."""
+    mine = [r for r, _i in ctx.ledger.entries() if r.get("task") == ctx.task_id
+            and r.get("ac") == crit.index and r.get("ac_digest") == criterion_digest(crit)]
+    fault, deg = _panel_state(ctx, crit, last, mine)
+    if fault or not deg:
+        return ""
+    return (f"run {deg['run_id']} closed on {len(deg['green'])} green seat(s) of distinct vendors "
+            f"({', '.join(f'{s} [{v}]' for s, v in deg['green'])}); unavailable: "
+            + "; ".join(f"{s} ({why})" for s, why in deg["unavailable"]))
+
+
+def _panel_state(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> tuple[str, dict]:
+    """(fault, degraded). '' unless `last` belongs to a run whose requirements are not all met: every required seat
     needs its own valid, completed green for this criterion, and the seats must span the run's
     required number of distinct vendors (a single-vendor panel cannot satisfy a three-vendor one).
     A vendor is derived from each seat's registered worker KIND through the one mapping in
@@ -3001,20 +3085,24 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
     root, led = ctx.root, ctx.ledger
     run, _bind, _why = run_for_dispatch(root, str(last["dispatch_id"]))
     if run is None:
-        return ""
+        return "", {}
     # Round 7: ONE binding for the whole run — its pinned revision and registry blob. The table
     # is derived once; a seat at another revision, or a registry that no longer hashes to the
     # pinned blob (an external framework checkout that moved), is refused.
     run_rev = str(run.get("revision") or "")
     pin = run.get("registry") or {}
     if not run_rev or not pin.get("sha256"):
-        return f"panel-unverified-vendor: run {run['run_id']} pins no revision or registry blob"
+        return f"panel-unverified-vendor: run {run['run_id']} pins no revision or registry blob", {}
     if registry_pin(root, run_rev).get("sha256") != pin.get("sha256"):
         return (f"panel-unverified-vendor: the registry at run {run['run_id']}'s revision "
-                f"{run_rev[:9]} no longer hashes to the blob the run pinned ({pin.get('where')})")
+                f"{run_rev[:9]} no longer hashes to the blob the run pinned ({pin.get('where')})"), {}
     table = verified_kind_vendors(root, run_rev)
     vendors: set[str] = set()
     evaluating, not_evaluated = 0, []
+    green_seats: list[tuple[str, str]] = []
+    unavailable: list[tuple[str, str]] = []
+    # T-4490: only a panel (rung 5) can close degraded, and only when the project has not opted out.
+    degradable = (review_policy.rung_number(run.get("rung")) or 0) >= 5 and green_degraded_enabled(root)
     for s in run["seats"]:
         seat_rows = []
         for r in mine:
@@ -3022,25 +3110,32 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
             if rr is not None and rr["run_id"] == run["run_id"] and bb["seat"] == s["seat"]:
                 seat_rows.append((r, bb))
         if not seat_rows:
-            return f"panel-incomplete: required seat {s['seat']!r} of run {run['run_id']} has no verdict"
+            msg = f"panel-incomplete: required seat {s['seat']!r} of run {run['run_id']} has no verdict"
+            if not degradable:
+                return msg, {}
+            reason, why = _unavailable_seat(ctx, run, s["seat"])
+            if not reason:
+                return f"{msg} and is not provably unavailable ({why})", {}
+            unavailable.append((s["seat"], reason))
+            continue
         r, bb = seat_rows[-1]
         f = _fault(ctx, r, crit, led.intro(r["id"]))
         if f:
             return (f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is unknown (its "
-                    f"latest verdict is invalid) — {f[0]}: {f[1]}")
+                    f"latest verdict is invalid) — {f[0]}: {f[1]}"), {}
         if r.get("outcome") == NOT_EVALUATED:
             # T-3986: the seat could not evaluate. It neither blocks nor counts; the seats that
             # did evaluate decide, and there must be enough of them (checked below).
             not_evaluated.append(s["seat"])
             continue
         if r.get("outcome") != GREEN:
-            return f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is {r.get('outcome')!r}"
+            return f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is {r.get('outcome')!r}", {}
         drec, _ = dispatch_record(root, str(r["dispatch_id"]))
         kind = str((drec or {}).get("worker_kind") or "claude")
         if str((drec or {}).get("revision") or "") != run_rev:
             return (f"panel-unverified-vendor: seat {s['seat']!r} of run {run['run_id']} was "
                     f"dispatched at revision {str((drec or {}).get('revision') or 'none')[:9]}, not the "
-                    f"run's pinned {run_rev[:9]} — every seat uses the run's one binding")
+                    f"run's pinned {run_rev[:9]} — every seat uses the run's one binding"), {}
         # Round 6/7: derived from the registry COMMITTED at the run's ONE pinned revision and the
         # kinds the dispatcher can launch as committed there — never the working tree.
         v = table.get(kind, "")
@@ -3048,25 +3143,43 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
             return (f"panel-unverified-vendor: seat {s['seat']!r} of run {run['run_id']} registered "
                     f"vendor {(drec or {}).get('vendor')!r} for worker kind {kind!r}, but "
                     f"{BACKENDS} as committed (for a launchable kind) maps it to {v or 'nothing'!r} "
-                    f"— a vendor is derived from the worker kind, never taken from free text")
+                    f"— a vendor is derived from the worker kind, never taken from free text"), {}
         vendors.add(v)
+        green_seats.append((s["seat"], v))
         evaluating += 1
+    if unavailable:
+        # T-4490: GREEN-DEGRADED. Conditions 1, 2 and 4; every refusal says which one failed.
+        seats = ", ".join(s for s, _ in unavailable)
+        if not_evaluated:
+            return (f"panel-incomplete: seat(s) {seats} of run {run['run_id']} unavailable and "
+                    f"seat(s) {', '.join(not_evaluated)} not-evaluated — a green-degraded close "
+                    f"needs every missing seat UNAVAILABLE, never a not-evaluated"), {}
+        cls = ctx.classify(crit)
+        if cls.delegation_class != REVIEWER_JUDGES:
+            return (f"panel-incomplete: seat(s) {seats} of run {run['run_id']} unavailable — a "
+                    f"{cls.cls} criterion never closes green-degraded"), {}
+        if evaluating < MIN_EVALUATING_SEATS or len(vendors) < MIN_EVALUATING_SEATS:
+            return (f"panel-incomplete: seat(s) {seats} of run {run['run_id']} unavailable; "
+                    f"{evaluating} green seat(s) across {len(vendors)} vendor(s) remain, and a "
+                    f"green-degraded close needs at least {MIN_EVALUATING_SEATS} green seats of "
+                    f"distinct vendors"), {}
+        return "", {"run_id": run["run_id"], "green": green_seats, "unavailable": unavailable}
     if not_evaluated:
         if len(run["seats"]) < 2:
             return (f"not-evaluated: the only seat of run {run['run_id']} did not evaluate this "
-                    f"criterion — reassign it to a seat kind that can")
+                    f"criterion — reassign it to a seat kind that can"), {}
         if evaluating < MIN_EVALUATING_SEATS or len(vendors) < MIN_EVALUATING_SEATS:
             return (f"not-evaluated: seat(s) {', '.join(not_evaluated)} of run {run['run_id']} did "
                     f"not evaluate this criterion; {evaluating} seat(s) across {len(vendors)} "
                     f"vendor(s) did, and a panel closes only on at least {MIN_EVALUATING_SEATS} "
                     f"evaluating seats of distinct vendors — reassign the criterion to another "
-                    f"seat kind, then the operator")
-        return ""
+                    f"seat kind, then the operator"), {}
+        return "", {}
     if len(vendors) < int(run.get("required_vendors") or 1):
         return (f"degraded: run {run['run_id']} demands {run.get('required_vendors')} vendor(s), "
                 f"its seats span {len(vendors)} ({', '.join(sorted(vendors))}) — a single-vendor "
-                f"panel cannot satisfy a multi-vendor requirement")
-    return ""
+                f"panel cannot satisfy a multi-vendor requirement"), {}
+    return "", {}
 
 
 def _task_ctx(root: Path, task_id: str) -> _Ctx | None:
@@ -3363,11 +3476,12 @@ def _step_down_of(root: Path, r: dict) -> str:
     return review_policy.disclosure((run or {}).get("ceiling_decision"))
 
 
-def _cite(r: dict, root: Path | None = None) -> str:
+def _cite(r: dict, root: Path | None = None, degraded: str = "") -> str:
     down = _step_down_of(root, r) if root is not None else ""
     return (f"  **Reviewer verdict:** green {r['id']} — {r['reviewer']} (rung {r['rung']}), "
             f"digest {r['ac_digest']}; dispatch {r['dispatch_id']}; "
             + (f"STEP-DOWN: {down}; " if down else "")
+            + (f"{GREEN_DEGRADED}: {degraded}; " if degraded else "")
             + f"evidence: {', '.join(r['evidence'])}; ledger {VERDICTS}")
 
 
@@ -3410,9 +3524,11 @@ def apply(task_id: str, root: Path | None = None) -> dict:
             continue
         r, why = satisfying_verdict(ctx, c)
         if r is not None:
-            if r["id"] != ann[1]:
-                lines[ann[0]] = _cite(r, root)
-                result["recited"].append({"ac": c.index, "verdict_id": r["id"]})
+            deg = green_degraded_of(ctx, c, r)
+            if r["id"] != ann[1] or (f"{GREEN_DEGRADED}:" in lines[ann[0]]) != bool(deg):
+                lines[ann[0]] = _cite(r, root, deg)
+                result["recited"].append({"ac": c.index, "verdict_id": r["id"],
+                                          **({"green_degraded": deg} if deg else {})})
             continue
         del lines[ann[0]]
         lines[c.start] = re.sub(r"\[[xX]\]", "[ ]", lines[c.start], count=1)
@@ -3427,11 +3543,12 @@ def apply(task_id: str, root: Path | None = None) -> dict:
             continue
         r, _ = satisfying_verdict(ctx, c)
         if r:
-            hits.append((c, r))
-    for c, r in sorted(hits, key=lambda h: -h[0].start):
+            hits.append((c, r, green_degraded_of(ctx, c, r)))
+    for c, r, deg in sorted(hits, key=lambda h: -h[0].start):
         lines[c.start] = re.sub(r"\[ \]", "[x]", lines[c.start], count=1)
-        lines.insert(c.end, _cite(r, root))
-        result["ticked"].append({"ac": c.index, "verdict_id": r["id"], "reviewer": r["reviewer"]})
+        lines.insert(c.end, _cite(r, root, deg))
+        result["ticked"].append({"ac": c.index, "verdict_id": r["id"], "reviewer": r["reviewer"],
+                                 **({"green_degraded": deg} if deg else {})})
     result["ticked"].sort(key=lambda t: t["ac"])
     result["withdrawn"].sort(key=lambda t: t["ac"])
     if not hits and not result["withdrawn"] and not result["recited"]:
@@ -3457,6 +3574,31 @@ def apply(task_id: str, root: Path | None = None) -> dict:
 # ── audit (fw audit) ─────────────────────────────────────────────────────────
 
 
+def green_degraded_lines(root: Path) -> list[str]:
+    """T-4490 conditions 3 and 6: one `WARN green-degraded:` line per criterion a degraded panel
+    closed (from the applied log, once per task/criterion/verdict), then the count per ISO week —
+    a seat that is always unavailable shows up as a weekly count that never drops, so it gets
+    fixed rather than routed around."""
+    seen: dict[tuple, str] = {}
+    for a in _read(APPLIED, root):
+        for t in (a.get("ticked") or []) + (a.get("recited") or []):
+            if isinstance(t, dict) and t.get("green_degraded"):
+                seen.setdefault((a.get("task"), t.get("ac"), t.get("verdict_id")),
+                                f"{a.get('ts', '')}\x1f{t['green_degraded']}")
+    out, weeks = [], {}
+    for (task, ac, vid), v in seen.items():
+        ts, what = v.split("\x1f", 1)
+        out.append(f"WARN green-degraded: {task} AC#{ac} {vid}: {what}")
+        try:
+            y, w, _d = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").isocalendar()
+            wk = f"{y}-W{w:02d}"
+        except ValueError:
+            wk = "unknown-week"
+        weeks[wk] = weeks.get(wk, 0) + 1
+    out += [f"WARN green-degraded weekly: {wk} {n}" for wk, n in sorted(weeks.items())]
+    return out
+
+
 def audit(root: Path | None = None) -> tuple[int, list[str]]:
     """Cross-check the ledger's history AND every row. (exit code, lines): 0 clean, 2 on failure.
 
@@ -3475,6 +3617,7 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
              f"{review_policy.disclosure(run['ceiling_decision'])}"
              for run in _read(RUNS, root)
              if run.get("kind") == "run" and review_policy.is_step_down(run.get("ceiling_decision"))]
+    downs += green_degraded_lines(root)
     if not n and not led.torn and not led.faults and not led.missing \
             and not _read(APPLIED, root) and not comps_exist:
         return 0, downs + ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
