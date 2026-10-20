@@ -16,16 +16,16 @@ description: >
   AEF fw runme (T-3675), runme watch --until (T-4464), and the T-4435 answer/notice
   discussion. Pickup rule (G-020): proposal, not a build spec.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-20T13:47:07Z
-last_update: '2026-10-20T14:00:36Z'
-date_finished:
+last_update: 2026-10-20T15:20:57Z
+date_finished: 2026-10-20T15:20:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -124,15 +124,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -203,7 +203,28 @@ Port in three slices (menu and lifecycle → sha manifest and confirm → batche
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: All three isolated reviewers agree that the friction reduction is real: one fixed command, a visible queue, ordered batches and per-step confirmation. They also agree, codex and claude independently, that "without weakening any gate" does not hold for 832's code as written:
+
+- jobs are loaded into the launcher's own shell, so a job can redefine `confirm()` and defeat per-step consent;
+- the load probe stops only external commands;
+- the dry run shows titles, not resolved commands;
+- the sha binds only `job.sh`.
+
+opencode's counterpoint stands: relative to today's fw runme, which has no consent at all, nothing is weaker.
+
+So adopt the design, with these prerequisites:
+
+1. Jobs run out-of-process from a declarative step manifest, and launcher functions are unreachable from job code.
+2. The confirmation shows the resolved command and helper bodies.
+3. A sha manifest covers the job and every helper, checked again before each step.
+4. No scripted-answer path outside tests.
+5. The queue is never an authorisation: Tier 0 and approvals stay at their own gates.
+
+Port in three slices (menu and lifecycle → sha manifest and confirm → batches); items 6-8 are deferred.
+
+**Date**: 2026-10-20T15:20:53Z
 
 ## Updates
 
@@ -213,3 +234,55 @@ Port in three slices (menu and lifecycle → sha manifest and confirm → batche
 ### 2026-10-20T13:50:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-20T15:20:53Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** All three isolated reviewers agree that the friction reduction is real: one fixed command, a visible queue, ordered batches and per-step confirmation. They also agree, codex and claude independently, that "without weakening any gate" does not hold for 832's code as written:
+
+- jobs are loaded into the launcher's own shell, so a job can redefine `confirm()` and defeat per-step consent;
+- the load probe stops only external commands;
+- the dry run shows titles, not resolved commands;
+- the sha binds only `job.sh`.
+
+opencode's counterpoint stands: relative to today's fw runme, which has no consent at all, nothing is weaker.
+
+So adopt the design, with these prerequisites:
+
+1. Jobs run out-of-process from a declarative step manifest, and launcher functions are unreachable from job code.
+2. The confirmation shows the resolved command and helper bodies.
+3. A sha manifest covers the job and every helper, checked again before each step.
+4. No scripted-answer path outside tests.
+5. The queue is never an authorisation: Tier 0 and approvals stay at their own gates.
+
+Port in three slices (menu and lifecycle → sha manifest and confirm → batches); items 6-8 are deferred.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-772b9e29
+- **Timestamp:** 2026-10-20T15:21:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-c72e310c
+- **Timestamp:** 2026-10-20T15:21:01Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-10-20T15:20:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
