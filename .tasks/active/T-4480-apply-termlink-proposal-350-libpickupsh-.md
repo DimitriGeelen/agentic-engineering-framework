@@ -1,13 +1,21 @@
 ---
 id: T-4480
-name: "Apply termlink proposal 350: lib/pickup.sh refuse constant dedup hash and content-free inception tasks"
+name: "Apply termlink proposal 350: lib/pickup.sh refuse constant dedup hash and content-free
+  inception tasks"
 description: >
-  010-termlink pickup offset 350 (their T-2687). HEAD pickup_dedup_hash still hashes empty type|summary|project to the constant sha256('||'), which then collides and silently drops unrelated envelopes; pickup_create_inception still builds 'Pickup:  (from )' tasks. Proposal returns 1 on unreadable/all-empty, makes record_dedup and process stop and leave the envelope in the inbox. Applies at HEAD. Verify all callers of pickup_dedup_hash (lib/pickup.sh:127,152) handle non-zero under set -e; bats red/green. Analysis: docs/reports/T-4472-termlink-proposals-triage.md, diff docs/reports/T-4472-inputs/350-lib_pickup.sh.diff. Triage only, not applied.
+  010-termlink pickup offset 350 (their T-2687). HEAD pickup_dedup_hash still hashes
+  empty type|summary|project to the constant sha256('||'), which then collides and
+  silently drops unrelated envelopes; pickup_create_inception still builds 'Pickup:  (from
+  )' tasks. Proposal returns 1 on unreadable/all-empty, makes record_dedup and process
+  stop and leave the envelope in the inbox. Applies at HEAD. Verify all callers of
+  pickup_dedup_hash (lib/pickup.sh:127,152) handle non-zero under set -e; bats red/green.
+  Analysis: docs/reports/T-4472-termlink-proposals-triage.md, diff docs/reports/T-4472-inputs/350-lib_pickup.sh.diff.
+  Triage only, not applied.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4472, T-4463]
@@ -39,8 +47,8 @@ origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T14:09:15Z
-last_update: 2026-10-20T14:09:15Z
-date_finished: null
+last_update: 2026-10-20T14:40:54Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T14:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T14:16:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4480: Apply termlink proposal 350: lib/pickup.sh refuse constant dedup hash and content-free inception tasks
@@ -63,8 +99,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `pickup_dedup_hash` returns 1 (no hash on stdout) for an unreadable envelope and for one whose type, payload.summary and source.project all extract empty; a normal envelope still hashes as before
+- [x] `pickup_record_dedup` refuses (returns 1, ledger unchanged) when the hash cannot be computed; `pickup_dedup_check` treats an uncomputable hash as "not a duplicate" instead of matching the constant `sha256("||")`
+- [x] `pickup_create_inception` refuses (returns 1, no task created) when payload.summary or source.project is empty; `pickup_process_one` then returns 1 and leaves the envelope in the inbox (no dedup row, not moved to processed/)
+- [x] Regression bats `tests/unit/t4480_pickup_constant_hash.bats` passes, and fails against the pre-fix `lib/pickup.sh`; existing pickup bats stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +287,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n lib/pickup.sh
+timeout 300 bats tests/unit/t4480_pickup_constant_hash.bats > /tmp/.t4480.out 2>&1 && ! grep -q "^not ok" /tmp/.t4480.out
+test "$(grep -c '# skip' /tmp/.t4480.out)" -eq 0
+bin/fw vendor self --check --task T-4480
 
 ## RCA
 
@@ -265,6 +307,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** (reported by 010-termlink, their T-2687) unrelated pickup envelopes were silently dropped as "duplicates", and content-free inception tasks named `Pickup:  (from )` reached the register and ranked at the top of `fw bvp`.
+
+**Root cause:** `lib/pickup.sh:107` `pickup_dedup_hash` swallows every extraction failure (`grep … 2>/dev/null || true`), so an unreadable or field-empty envelope hashes to the constant `sha256("||")`. `pickup_record_dedup` (`:149`) writes that constant into the ledger, after which `pickup_dedup_check` (`:122`) matches every later failing envelope against it. Separately `pickup_create_inception` (`:372`) builds a task from empty `summary`/`source_project` without checking them, and `pickup_process_one` ignored its exit status and recorded/moved the envelope anyway.
+
+**Why structurally allowed:** the fail-open `|| true` was there to survive `set -e`, which turned "cannot extract" into "extracted empty"; no test covered an envelope with empty values (validation checks key presence, not value).
+
+**Prevention:** the hash function now refuses to emit a hash it cannot stand behind; callers handle the non-zero; `tests/unit/t4480_pickup_constant_hash.bats` pins all three legs (hash refusal, ledger untouched, envelope left in inbox).
 
 ## Evolution
 
@@ -346,3 +396,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4480-apply-termlink-proposal-350-libpickupsh-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T14:40:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
