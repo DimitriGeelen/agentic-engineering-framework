@@ -139,7 +139,7 @@ def test_search_page_accepts_post_form(web_client, monkeypatch):
 
     def fake_execute(query, mode):
         seen["query"] = query
-        return ({}, None, None)
+        return ({}, None, None, None)
 
     monkeypatch.setattr(discovery, "_execute_search", fake_execute)
     resp = web_client.post(

@@ -8,6 +8,10 @@ T-237: Phase 1 — BM25 keyword search via tantivy.
 from __future__ import annotations
 
 
+import os
+import shutil
+import tempfile
+import threading
 import time
 from pathlib import Path
 
@@ -16,8 +20,13 @@ import tantivy
 from web.search_utils import categorize, collect_files, extract_task_id, extract_title
 from web.shared import PROJECT_ROOT
 
-# Index lives in /tmp — ephemeral, rebuilt as needed
-INDEX_DIR = Path("/tmp/fw-search-index")
+# Index lives in /tmp — ephemeral, rebuilt as needed. T-4458: each build gets its
+# own directory (<INDEX_PARENT>/<INDEX_PREFIX><pid>-*). The old single fixed
+# directory was shared by every thread and every Watchtower on the host, and two
+# rebuilds deleted each other's segment files mid-commit -> HTTP 500 on /search.
+INDEX_PARENT = Path(tempfile.gettempdir())
+INDEX_PREFIX = "fw-search-index-"
+INDEX_DIR = None  # directory of the index currently served (for index_stats)
 
 # Staleness threshold: rebuild if older than 60 seconds
 STALE_SECONDS = 60
@@ -25,6 +34,10 @@ STALE_SECONDS = 60
 # Singleton
 _index = None
 _index_built_at = 0.0
+_build_lock = threading.Lock()   # held for the whole build
+_flag_lock = threading.Lock()    # guards _rebuilding only; never held across a build
+_rebuilding = False
+_retired_dirs: list = []  # previous generations, removed one build later
 
 
 def _build_schema() -> tantivy.Schema:
@@ -38,20 +51,39 @@ def _build_schema() -> tantivy.Schema:
     return builder.build()
 
 
+def _remove_orphan_dirs() -> None:
+    """Remove index directories left by Watchtower processes that have exited."""
+    for d in INDEX_PARENT.glob(INDEX_PREFIX + "*"):
+        pid = d.name[len(INDEX_PREFIX):].split("-", 1)[0]
+        if not pid.isdigit() or int(pid) == os.getpid():
+            continue
+        try:
+            os.kill(int(pid), 0)
+        except ProcessLookupError:
+            shutil.rmtree(d, ignore_errors=True)
+        except OSError:
+            pass
+
+
 def build_index() -> tantivy.Index:
-    """Build a fresh tantivy index from all framework files."""
-    global _index, _index_built_at
+    """Build a fresh tantivy index from all framework files.
+
+    Serialised by _build_lock and written to a directory no other build uses, so
+    a concurrent request never sees a half-written or half-deleted index (T-4458).
+    """
+    with _build_lock:
+        return _build_index_locked()
+
+
+def _build_index_locked() -> tantivy.Index:
+    global _index, _index_built_at, INDEX_DIR
 
     schema = _build_schema()
 
-    # Create index directory
-    INDEX_DIR.mkdir(parents=True, exist_ok=True)
+    _remove_orphan_dirs()
+    new_dir = Path(tempfile.mkdtemp(prefix=f"{INDEX_PREFIX}{os.getpid()}-", dir=INDEX_PARENT))
 
-    # Clean old index
-    for f in INDEX_DIR.iterdir():
-        f.unlink()
-
-    index = tantivy.Index(schema, path=str(INDEX_DIR))
+    index = tantivy.Index(schema, path=str(new_dir))
     writer = index.writer(heap_size=50_000_000)
 
     files = collect_files()
@@ -82,20 +114,56 @@ def build_index() -> tantivy.Index:
     writer.commit()
     index.reload()
 
+    # Searchers opened on the previous generation may still be reading it, so it
+    # is removed one build later, not now.
+    while _retired_dirs:
+        shutil.rmtree(_retired_dirs.pop(), ignore_errors=True)
+    if INDEX_DIR is not None:
+        _retired_dirs.append(INDEX_DIR)
+
     _index = index
     _index_built_at = time.time()
+    INDEX_DIR = new_dir
 
     return index
 
 
+def _rebuild_in_background() -> None:
+    global _rebuilding
+    try:
+        build_index()
+    except Exception:
+        pass  # keep serving the previous index; the next stale read retries
+    finally:
+        with _flag_lock:
+            _rebuilding = False
+
+
 def get_index() -> tantivy.Index:
-    """Get the search index, rebuilding if stale."""
-    global _index, _index_built_at
+    """Get the search index, rebuilding if stale.
+
+    A stale index is still served while a background thread rebuilds it: the
+    build reads every file in the corpus (17 s at load ~20, T-4458), which must
+    not sit on a request thread once there is something to answer with.
+    """
+    global _rebuilding
 
     if _index is not None and (time.time() - _index_built_at) < STALE_SECONDS:
         return _index
 
-    return build_index()
+    if _index is not None:
+        with _flag_lock:
+            start = not _rebuilding
+            _rebuilding = True
+        if start:
+            threading.Thread(target=_rebuild_in_background, name="fw-search-rebuild",
+                             daemon=True).start()
+        return _index
+
+    with _build_lock:
+        if _index is not None:  # another request finished the first build while we waited
+            return _index
+        return _build_index_locked()
 
 
 def search(query_str: str, limit: int = 30) -> dict:
@@ -179,6 +247,6 @@ def index_stats() -> dict:
     return {
         "num_docs": searcher.num_docs,
         "built_at": _index_built_at,
-        "index_dir": str(INDEX_DIR),
+        "index_dir": str(INDEX_DIR) if INDEX_DIR else "",
         "stale_seconds": STALE_SECONDS,
     }

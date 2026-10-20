@@ -1,10 +1,24 @@
 ---
 id: T-4458
-name: "Watchtower semantic/hybrid search takes 30-90+ s per query and returns HTTP 500 under load: every query scans 747k chunks (2.3 GB of vectors); old handovers alone are ~500 chunks each"
+name: "Watchtower semantic/hybrid search takes 30-90+ s per query and returns HTTP
+  500 under load: every query scans 747k chunks (2.3 GB of vectors); old handovers
+  alone are ~500 chunks each"
 description: >
-  Found 2026-10-20 while routing T-4350 through fw reviewer judge. Measured (load avg ~18): /search?q=release%20decision (hybrid) -> HTTP 500 after 9-20 s with a normal-looking page and no error text; mode=semantic -> no answer within 90 s; mode=keyword -> 200 in 0.07 s; even / took 68 s while a semantic query was in flight (requests serialise behind it). The embedding call itself is fast (ollama nomic-embed-text-v2-moe: 0.09 s). The index (.context/working/fw-vec-index.db) is 3.46 GB: 13,434 docs, 747,756 chunks, 0 free pages, no duplicate paths, so it is not T-4350 bloat; it is corpus size. Handovers dominate (S-2026-0816-* ~500 chunks each). Localise: where the 500 comes from (a timeout wrapper around _execute_search? render_page?), and why one slow request blocks others (threaded=False?). Options to evaluate: exclude or summarise old handovers/large generated files from the index, an ANN index instead of brute-force KNN, a hard per-query deadline that degrades to keyword results with a visible notice (never a blank 500). Measure before/after.
+  Found 2026-10-20 while routing T-4350 through fw reviewer judge. Measured (load
+  avg ~18): /search?q=release%20decision (hybrid) -> HTTP 500 after 9-20 s with a
+  normal-looking page and no error text; mode=semantic -> no answer within 90 s; mode=keyword
+  -> 200 in 0.07 s; even / took 68 s while a semantic query was in flight (requests
+  serialise behind it). The embedding call itself is fast (ollama nomic-embed-text-v2-moe:
+  0.09 s). The index (.context/working/fw-vec-index.db) is 3.46 GB: 13,434 docs, 747,756
+  chunks, 0 free pages, no duplicate paths, so it is not T-4350 bloat; it is corpus
+  size. Handovers dominate (S-2026-0816-* ~500 chunks each). Localise: where the 500
+  comes from (a timeout wrapper around _execute_search? render_page?), and why one
+  slow request blocks others (threaded=False?). Options to evaluate: exclude or summarise
+  old handovers/large generated files from the index, an ANN index instead of brute-force
+  KNN, a hard per-query deadline that degrades to keyword results with a visible notice
+  (never a blank 500). Measure before/after.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +52,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T11:24:25Z
-last_update: 2026-10-20T11:24:25Z
-date_finished: null
+last_update: 2026-10-20T11:32:25Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,22 +64,107 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T11:30:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T11:31:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4458: Watchtower semantic/hybrid search takes 30-90+ s per query and returns HTTP 500 under load: every query scans 747k chunks (2.3 GB of vectors); old handovers alone are ~500 chunks each
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+### Localisation (2026-10-20, before any change)
+
+Read from the live server's stderr (`/proc/<pid>/fd/2` — its log file is deleted, T-4459):
+
+1. **The 500 is the keyword index, not the vector side.** Every `/search` 500 at
+   13:18 has the same traceback: `web/search.py:82 writer.commit()` or
+   `web/search.py:54 tantivy.Index(...)` raising `FileDoesNotExist(...fieldnorm|meta.json)`
+   or `LockBusy`. `build_index()` (`web/search.py:41`) wipes and rebuilds ONE fixed
+   on-disk directory, `/tmp/fw-search-index`, with no lock, whenever the singleton is
+   older than 60 s. Two request threads (the server is `async_mode="threading"`,
+   `web/app.py:270`) — or two processes: the path is host-wide, shared by every
+   project's Watchtower and every test fixture — rebuild it at once and delete each
+   other's segment files. `_execute_search` (`web/blueprints/discovery.py:221`) catches
+   the vector failure and falls back to `bm25_search` — which hits the same broken
+   directory, unguarded, so the exception reaches Flask's 500 handler.
+2. **The server does not serialise requests by design** (threaded), but the vector
+   leg runs on the request thread with no deadline, and it also calls
+   `index_stats()` (`web/embeddings.py:1832`: `COUNT(*)` and `COUNT(DISTINCT path)`
+   over 747k rows) on every search. Brute-force KNN over 2.3 GB of float vectors on
+   a host at load ~18 with 31 GB in swap is IO/CPU bound; other pages contend for the
+   same CPU/disk and the shared sqlite handle. Measurements below.
+3. **The keyword index build itself is slow and sat on the request thread.** It reads
+   13,444 files (238 MB) and takes 17 s at load ~21; any request arriving after the
+   60 s singleton TTL paid it synchronously. The startup warm-up (T-4363) GETs
+   `/search` with no query, so it never built this index either.
+
+### Measurements (live index, read-only; `/search?q=release+decision`)
+
+Before (load ~21, components timed directly): keyword build 17.0 s, keyword query
+0.001 s, embed 0.31 s, KNN k=120 5.5–6.0 s, vec `index_stats` 2.5 s. Via HTTP
+(description, load ~18): hybrid 500 after 9–20 s; semantic >90 s; `/` 68 s.
+
+After (Watchtower restarted, warm-up done, load ~38): hybrid 200 3.8–6.7 s, semantic
+200 3.6 s, keyword 200 0.16 s, no 500. Before the warm-up fix, a cold first hybrid at
+load ~78 hit the 10 s deadline and rendered keyword results with the notice (200,
+89 s total — the synchronous first keyword build, now done by the warm-up); a
+concurrent semantic search ran 4.0 s while `/` answered (19 s at load ~78, 1.4 s
+with nothing in flight).
+
+### Index composition (proposal only, not implemented)
+
+748,983 chunks: task files 358,767 (47.9 %, 4,455 files, ~80 chunks each), handovers
+287,958 (38.4 %, 2,692 files, ~107 each), episodic 69,803 (9.3 %), docs 26,198 (3.5 %).
+KNN is brute-force and linear in chunk count, so dropping handovers older than e.g.
+30 days would cut the scan by up to ~38 % (≈6 s → ≈3.7 s at load ~20). That is a
+recall trade (old handovers stop being semantically findable; still keyword-findable)
+and needs a reindex, so it is a design decision for the operator, not part of this
+fix. With the deadline in place the measured win is latency, not correctness.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Keyword index no longer shares a host-wide on-disk directory and rebuilds under a lock: N concurrent `web.search.search()` calls across a forced rebuild raise nothing (test `tests/unit/test_t4458_search_degrade.py`)
+- [x] `/search` never returns 500 when the keyword or vector leg raises: it renders 200 with keyword (or empty) results and a visible degraded notice (test)
+- [x] Vector leg (search + vec stats) runs under a deadline (`VECTOR_DEADLINE_SECONDS`, 10 s); past it the page returns keyword results with a visible "semantic search timed out" notice and the request thread is freed (test with a slow stub)
+- [x] Latency measured before/after on the live index, read-only, recorded in this task
+- [ ] Watchtower restarted and current; vendored copy in sync
 
 ### Human
+- [ ] [REVIEW] Degraded-search notice reads clearly and the page stays usable
+  **Steps:**
+  1. Open http://192.168.10.107:3000/search and search for `release decision` (default hybrid mode)
+  2. If the semantic leg is slow on the host, a notice above the results says semantic search timed out and shows keyword results; otherwise results appear as before
+  3. While a semantic search is running, open http://192.168.10.107:3000/ in another tab
+  **Expected:** no blank "500 Internal Server Error" page; the notice (when shown) is visible and understandable; the dashboard is not held for the full duration of the search
+  **If not:** note the URL, mode and the time, and check `cat /proc/$(cat /opt/999-Agentic-Engineering-Framework/.context/working/watchtower.pid)/fd/2 | tail -50`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -248,6 +347,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_t4458_search_degrade.py -q > /tmp/.t4458.out 2>&1 && grep -q passed /tmp/.t4458.out && ! grep -q failed /tmp/.t4458.out
+! grep -q 'Path("/tmp/fw-search-index")' web/search.py
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4458
 
 ## RCA
 
@@ -264,6 +367,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Watchtower `/search` (hybrid, the default) returned a generic "500 Internal Server Error" page after 9–20 s; semantic mode took >90 s; other pages slowed while a search ran.
+
+**Root cause:** `web/search.py:41 build_index()` wiped and rebuilt one fixed host-wide directory (`/tmp/fw-search-index`, `web/search.py:20`) with no lock, every 60 s, on the request thread. In the threaded server two requests (or two Watchtowers / test fixtures on the host) rebuilt it at once and deleted each other's segment files (`FileDoesNotExist ... .fieldnorm|meta.json`, `LockBusy` in the live stderr). `web/blueprints/discovery.py:_execute_search` caught the vector failure, but its keyword fallback hit the same broken directory unguarded, so the exception reached Flask's 500 handler. Separately, the vector leg (5–6 s KNN + 2.5 s `index_stats` COUNTs, far more under load) ran unbounded on the request thread.
+
+**Why structurally allowed:** the keyword index dates from a single-instance server; nothing tested concurrent rebuilds, the fallback path had no test of its own failure, and the cause was invisible because Watchtower's log file had been deleted under the running process (T-4459), so the 500s left no readable trace.
+
+**Prevention:** each build gets its own directory under a lock and a stale index is served while a background thread rebuilds (`web/search.py`); `_execute_search` never raises and puts the vector leg under a deadline with a visible notice; the warm-up builds the keyword index at start (`web/warmup.py`). `tests/unit/test_t4458_search_degrade.py` pins it (7 tests; 6 fail on the pre-fix code).
 
 ## Evolution
 
@@ -345,3 +456,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4458-watchtower-semantichybrid-search-takes-3.md
 - **Context:** Initial task creation
+
+### 2026-10-20T11:32:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

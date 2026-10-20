@@ -218,12 +218,64 @@ def decisions_api():
     })
 
 
+# T-4458: the vector leg (brute-force KNN over the whole index, plus its stats)
+# took 5-90 s on a loaded host and ran on the request thread with no bound. It now
+# runs on a small pool; past the deadline the page answers with keyword results
+# and a visible notice. The pool size also caps concurrent KNN scans.
+VECTOR_DEADLINE_SECONDS = 10.0
+_VEC_STATS_TTL = 300.0
+_vector_pool = None
+_vec_stats_cache = {"at": 0.0, "value": None}
+
+
+def _get_vector_pool():
+    global _vector_pool
+    if _vector_pool is None:
+        from concurrent.futures import ThreadPoolExecutor
+        _vector_pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="fw-vec-search")
+    return _vector_pool
+
+
+def _vector_leg(query, mode):
+    """Semantic or hybrid search plus (cached) vector index stats."""
+    import time as _time
+    from web.embeddings import index_stats as vec_index_stats
+    if mode == "semantic":
+        from web.embeddings import search as vec_search
+        search_results = vec_search(query)
+    else:
+        from web.embeddings import hybrid_search
+        search_results = hybrid_search(query)
+    now = _time.time()
+    if _vec_stats_cache["value"] is None or now - _vec_stats_cache["at"] > _VEC_STATS_TTL:
+        _vec_stats_cache["value"] = vec_index_stats()
+        _vec_stats_cache["at"] = now
+    return search_results, _vec_stats_cache["value"]
+
+
+def _keyword_categories(query):
+    """Keyword results, or ({}, reason) when the keyword index itself fails."""
+    from web.search import search as bm25_search
+    try:
+        return bm25_search(query).get("categories", {}), None
+    except Exception as e:
+        log.warning("Keyword search failed: %s", e)
+        return {}, "Keyword search is unavailable right now; try again in a minute."
+
+
 def _execute_search(query, mode):
-    """Run search with mode selection and vector fallback. Returns (results, stats, vec_stats)."""
-    from web.search import search as bm25_search, index_stats
+    """Run search with mode selection and vector fallback.
+
+    Returns (results, stats, vec_stats, notice). `notice` is None, or a sentence
+    for the page saying why results are degraded. Never raises: a failing index
+    must not turn into a blank HTTP 500 (T-4458).
+    """
+    from concurrent.futures import TimeoutError as FutureTimeout
+    from web.search import index_stats
 
     results = {}
     vec_stats = None
+    notice = None
 
     # Check vector index readiness for semantic/hybrid modes
     vec_ready = False
@@ -234,26 +286,33 @@ def _execute_search(query, mode):
         except Exception:
             pass
 
-    # Try vector search, fall back to BM25
+    use_keyword = True
     if mode in ("semantic", "hybrid") and vec_ready:
+        future = _get_vector_pool().submit(_vector_leg, query, mode)
         try:
-            if mode == "semantic":
-                from web.embeddings import search as vec_search, index_stats as vec_index_stats
-                search_results = vec_search(query)
-            else:
-                from web.embeddings import hybrid_search, index_stats as vec_index_stats
-                search_results = hybrid_search(query)
+            search_results, vec_stats = future.result(timeout=VECTOR_DEADLINE_SECONDS)
             for item in search_results.get("results", []):
                 cat = item.get("category", "Other")
                 results.setdefault(cat, []).append(item)
-            vec_stats = vec_index_stats()
+            use_keyword = False
+        except FutureTimeout:
+            log.warning("Vector search exceeded %.0fs, showing keyword results", VECTOR_DEADLINE_SECONDS)
+            notice = ("Semantic search timed out after {:.0f} s; showing keyword results "
+                      "instead.".format(VECTOR_DEADLINE_SECONDS))
         except Exception as e:
             log.warning("Vector search failed, falling back to keyword: %s", e)
-            results = bm25_search(query).get("categories", {})
-    else:
-        results = bm25_search(query).get("categories", {})
+            notice = "Semantic search failed; showing keyword results instead."
 
-    return results, index_stats(), vec_stats
+    if use_keyword:
+        results, kw_notice = _keyword_categories(query)
+        notice = kw_notice or notice
+
+    try:
+        stats = index_stats()
+    except Exception:
+        stats = None
+
+    return results, stats, vec_stats, notice
 
 
 @bp.route("/search", methods=["GET", "POST"])
@@ -266,9 +325,10 @@ def search_view():
     results = {}
     stats = None
     vec_stats = None
+    search_notice = None
 
     if query and len(query) >= 2:
-        results, stats, vec_stats = _execute_search(query, mode)
+        results, stats, vec_stats, search_notice = _execute_search(query, mode)
 
     # Load saved Q&A answers for the sidebar (T-385)
     saved_answers = []
@@ -298,6 +358,7 @@ def search_view():
         results=results,
         stats=stats,
         vec_stats=vec_stats,
+        search_notice=search_notice,
         saved_answers=saved_answers,
         tag_cloud=tag_cloud,
     )

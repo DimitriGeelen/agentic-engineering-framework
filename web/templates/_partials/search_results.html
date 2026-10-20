@@ -1,5 +1,8 @@
 {# Result-count summary and list, included by search.html inside #search-results-area. #}
 {% if query %}
+{% if search_notice %}
+<p class="search-degraded-notice" role="status" style="border-left: 3px solid var(--pico-del-color, #c62828); padding: 0.4rem 0.75rem; margin-bottom: 0.75rem;">{{ search_notice }}</p>
+{% endif %}
 <p class="text-muted text-base">
     {% set total = results.values() | map('length') | sum if results else 0 %}
     {% if results %}
