@@ -101,10 +101,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/verdict_ledger.py:_unavailable_seat` refuses (returns no reason) when `.context/reviews/refusals-interim.jsonl` holds any row for the seat's dispatch — a refused verdict is a verdict, not unavailability
-- [ ] Regression test in `tests/unit/t4490_green_degraded_test.py`: a panel with one green seat, one seat whose verdict the ledger refused, and one unavailable seat does NOT close green-degraded, and the refusal is named as the reason; the test fails without the fix
-- [ ] T-4490, T-3580 (judge CLI), T-3986 and T-3852 suites stay green
-- [ ] `bin/fw vendor self --check --task T-4507` is clean
+- [x] `lib/verdict_ledger.py:_unavailable_seat` refuses (returns no reason) when `.context/reviews/refusals-interim.jsonl` holds any row for the seat's dispatch — a refused verdict is a verdict, not unavailability
+- [x] Regression test in `tests/unit/t4490_green_degraded_test.py`: a panel with one green seat, one seat whose verdict the ledger refused, and one unavailable seat does NOT close green-degraded, and the refusal is named as the reason; the test fails without the fix
+- [x] T-4490, T-3580 (judge CLI), T-3986 and T-3852 suites stay green
+- [x] `bin/fw vendor self --check --task T-4507` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
