@@ -15,7 +15,7 @@ description: >
   surface? Do NOT just bump 32 to 37; that answers the cheap half and leaves the expensive
   half.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T10:52:26Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: 2026-10-20T22:06:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,27 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked at HEAD: `test_live_corpus_all_versions_census` (and the rest of `tests/unit/test_corpus_lint.py`) passes, with evidence recorded in this task
+- [x] Question (1) answered: the pin's current value and the task that last re-derived it (with the added-version names and flagged-set check) are recorded in this task
+- [x] Question (2) answered: whether the unit suite is now run by a gate/cron that surfaces a red census pin, with file:line evidence, recorded in `## RCA`
+
+## Reproduction at HEAD (2026-10-21)
+
+**Does not reproduce.** `python3 -m pytest tests/unit/test_corpus_lint.py -q` →
+`32 passed`. The pin is no longer 32; it has been re-derived three times since
+this task was filed, each with the add-only / flagged-set discipline the
+docstring demands (`tests/unit/test_corpus_lint.py:374-461`):
+
+- T-2976 (b05b58930): 32 → 39 versions, 14 → 16 flagged. Its docstring paragraph
+  records that the store already held 37 / 15 at `a25497afe` — exactly this
+  task's finding — and names the 7 added versions and the new finding.
+- T-2989 (4e2ddff11): 16 → 14 flagged, two deliberate drop-outs named.
+- T-3604 (7a067b6ce): 42 → 47 versions, flagged held at 14
+  (`draft-continuous-run-loop` v1–v5, adds-only proven). Current pin: 47
+  (`tests/unit/test_corpus_lint.py:464`).
+
+Question (1) was therefore answered by T-2976 (with the 5 then-unpinned
+versions inside its 7 named adds); no code change is needed here.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -194,6 +213,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_corpus_lint.py -q > /tmp/.t2892.out 2>&1 && grep -q passed /tmp/.t2892.out
+grep -q "^- id: unit-suite-nightly" .context/cron-registry.yaml
+grep -q "^check_unit_suite_report()" agents/audit/audit.sh
+! grep -q "corpus_lint" .context/audits/unit-suite/baseline.yaml
 
 ## RCA
 
@@ -210,6 +233,37 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `test_live_corpus_all_versions_census` asserted 32 versions while the
+live designer store held 37 — red, and unnoticed across sessions (found by hand
+during T-2891).
+
+**Root cause:** the census pin is a deliberate snapshot of a growing data store
+(`tests/unit/test_corpus_lint.py:464`); every corpus add (here the T-2620/T-2623
+draft-trigger work) turns it red until someone re-derives it. That is correct
+behaviour. The defect was that in 2026-08 **no gate or cron ran `tests/unit/`
+pytest at all**, so a red there was visible only to whoever happened to run the
+file.
+
+**Why structurally allowed:** unit tests were run on demand only; no nightly
+corpus run, no audit section reading its result, no pre-push check. The same
+lapse recurred twice more after this task was filed (T-2984 left
+`test_live_corpus_current_findings` red; a4f13ccc1/T-3159 left this pin red
+until T-3604) — both recorded in the test docstring.
+
+**Prevention (now in place, shipped by other tasks — verified, not added here):**
+- T-3302: cron job `unit-suite-nightly` (`.context/cron-registry.yaml:399`, first
+  registered eb688366b, 2026-09-07) runs `agents/audit/unit-suite.sh` over all of
+  `tests/unit/` (bats + pytest) and writes `.context/audits/unit-suite/LATEST.yaml`.
+- `check_unit_suite_report` (`agents/audit/audit.sh:3864`) reads that report;
+  every audit scope FAILs on every red, and pre-push (`--section structure`)
+  FAILs on any red not in `.context/audits/unit-suite/baseline.yaml` (T-3621,
+  `agents/audit/audit.sh:3855-3860`). Growing the baseline needs `--i-am-human`.
+- The census test is not in the baseline (0 `corpus_lint` entries), so a future
+  stale pin FAILs the next push and the daily audit instead of sitting silent.
+
+No new code: the expensive half of this task (question 2) was answered
+structurally by T-3302 + T-3621 after filing.
 
 ## Evolution
 
@@ -262,3 +316,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2892-corpus-all-versions-census-pinned-at-32-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T22:06:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
