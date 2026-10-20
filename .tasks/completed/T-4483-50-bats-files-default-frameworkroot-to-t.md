@@ -1,30 +1,25 @@
 ---
-id: T-4491
-name: "runme job queue slice 1 (T-4470 GO): fixed operator command, job menu and lifecycle,
-  with jobs run OUT-OF-PROCESS from a declarative step manifest"
+id: T-4483
+name: "50 bats files default FRAMEWORK_ROOT to the hard-coded /opt/999-... path, so
+  run from any other checkout they silently test the main checkout"
 description: >
-  Operator GO on inception T-4470 (2026-10-20), adapt-not-port. Slice 1 delivers 832's
-  fixed command + menu of job states + retired/done lifecycle on top of fw runme (T-3675),
-  WITH the prerequisites from docs/reports/T-4470-runme-job-queue.md §7: (1) jobs
-  never sourced into the launcher's shell: a job is a declarative step manifest the
-  launcher reads as data, each step executed in a child process, so job code cannot
-  reach confirm/ask/fail/check; (2) what the operator confirms is the resolved command
-  (helper bodies and expanded arguments shown), not a title; (4) no scripted-answer
-  path outside the test runner, refused when steps target a real project; (5) the
-  queue is never an authorisation: Tier 0 and approvals stay at their own gates (test
-  that a queued tier-0 command still hits check-tier0). Reference only: 832's code
-  in docs/reports/T-4470-inputs/ (UNTRUSTED; re-implement, do not copy blindly) and
-  the six review findings in §6, each of which must have a test proving it cannot
-  happen in AEF's version. Slices 2 (sha manifest over job+helpers rechecked per step;
-  per-step confirm with typeahead drain) and 3 (ordered batches with up-front refusal)
-  are separate tasks.
+  Found by w4380 (T-4380 phase 1, docs/reports/T-4380-prune-candidates.md): 50 bats
+  files under tests/unit set FRAMEWORK_ROOT to a literal /opt/999-Agentic-Engineering-Framework
+  default instead of deriving it from BATS_TEST_DIRNAME. Proof: with a syntax error
+  planted in a scratch copy's lib/arc.sh, four arc test files stayed 43/43 green until
+  FRAMEWORK_ROOT was pointed at the copy: they were testing the main checkout. This
+  defeats scratch-clone runs (e.g. the v1.8.13 hotfix comparison ran clones' tests)
+  and any consumer/CI run. Fix: derive the root from the test file's own location
+  (as tests/unit/t4377_unit_tiers.bats does: REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.."
+  && pwd)"), and add a lint in tests/lint that refuses a literal /opt/999 path in
+  tests/. Arc test-suite-health.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/lint/no-hardcoded-checkout-root.bats, tests/playwright/test_docs_detail.py, tests/playwright/test_fabric_detail.py, tests/playwright/test_task_detail_enhanced.py, tests/spikes/taskcreate-hook-probe.sh, tests/unit/arc_abandon.bats, tests/unit/arc_create_no_constituent_tasks.bats, tests/unit/arc_create_start_flag.bats, tests/unit/arc_id_validation_guard.bats, tests/unit/arc_lifecycle_state_machine.bats, tests/unit/audit_anchor_task_existence.bats, tests/unit/audit_corpus_lint_findings.bats, tests/unit/audit_seed_corpus_refs.bats, tests/unit/audit_stale_arc_warning.bats, tests/unit/check_task_ac_structure.bats, tests/unit/focus_drift_gate.bats, tests/unit/reviewer_human_ac_mechanical_signal.bats, tests/unit/t2987_bootstrap_shape_hint.bats, tests/unit/t2988_grouped_command_classification.bats, tests/unit/t2990_root_pollution.bats, tests/unit/t2991_verification_preflight.bats, tests/unit/t2994_gitignore_register.bats, tests/unit/t2996_seed_commit_assertion.bats, tests/unit/t3111_worktree_reexec.bats, tests/unit/t3112_worktree_hook_parity.bats, tests/unit/t3113_upgrade_worktree_advisory.bats, tests/unit/t3117_gc_landing_predicate.bats, tests/unit/t3232_verification_extractor_failure.bats, tests/unit/t3526_bvp_judge_entrypoint.bats, tests/unit/t3546_p011_reports_the_zero.bats, tests/unit/t3549_inception_handoff_refusal.bats, tests/unit/template_reviewer_prefix_example.bats, tests/unit/test_reviewer_prose_mismatch.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -52,9 +47,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T15:33:12Z
-last_update: '2026-10-20T15:45:29Z'
-date_finished:
+created: 2026-10-20T14:20:54Z
+last_update: 2026-10-20T15:57:57Z
+date_finished: 2026-10-20T15:57:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -65,8 +60,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T14:30:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T15:35:14Z'
+  - ts: '2026-10-20T14:31:44Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -83,40 +88,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-20T15:45:29Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=312,acs=12)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4491: runme job queue slice 1 (T-4470 GO): fixed operator command, job menu and lifecycle, with jobs run OUT-OF-PROCESS from a declarative step manifest
+# T-4483: 50 bats files default FRAMEWORK_ROOT to the hard-coded /opt/999-... path, so run from any other checkout they silently test the main checkout
 
 ## Context
 
-Slice 1 of T-4470 (docs/reports/T-4470-runme-job-queue.md §6-7). Jobs are `job.json`
-manifests under `.context/runme/jobs/<NNN>-<name>/`, read as data by `lib/runme_queue.py`;
-each step runs in a child process. Operator's fixed command: `bin/fw runme queue`.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `fw runme job new|dry-run|list|retire` and `fw runme queue` exist; jobs are `job.json` manifests (title, task, why, helpers, steps of `argv` or `sh`), validated with unknown keys refused; a `job.sh` is never loaded
-- [x] Menu shows each pending job with its state (NOT REHEARSED / ready / CHANGED since dry-run) and last outcome; `done` and `retired` jobs are never offered or run
-- [x] F1: job code cannot reach the launcher's confirm/ask/fail — test: a job defining and exporting `confirm(){ return 0; }` with operator answer `n` runs nothing
-- [x] F2: loading/listing/dry-running a job executes nothing — test: `$(...)`, redirects and backticks in every field create no file
-- [x] F3: dry-run runs no checks — test: a manifest with a `preflight`/`checks` key is refused and a valid dry-run executes nothing
-- [x] F4: the operator confirms the resolved command — test: helper body and full argv appear in the plan shown before the prompt
-- [x] F5: what was rehearsed is what runs — test: editing a helper after dry-run makes the job CHANGED and refused (full per-step sha manifest is slice 2)
-- [x] F6: scripted answers only in tests — test: `FW_RUNME_TEST_ANSWERS` refused without `FW_RUNME_TEST=1` and refused on a real project root; queue refused under `CLAUDECODE=1` outside test mode
-- [x] Prereq 5: a queued Tier 0 step is passed through `check-tier0.sh` before it runs and is stopped there without its own approval — test
-- [x] Existing runme tests stay green (t3675, t3741, t3878, t4464)
-- [x] 832 addendum 1 (parent consult t4491-field-lessons): per-step read-only `probe` asked for, run and shown before confirm, failure stops the job; a job leaving staged index changes is named then and at the next run; menu lines cut to terminal width, verified on a real 80-column pty; choice shown by job name — tests 16-18 (arrow picker is slice 3, so the ESC O encoding leg lands there)
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [x] No test under tests/ (fixtures excluded) defaults a root variable (`${X:-<literal checkout path>}`, `X=<literal path>`, `cd <literal path>`, `environ.get(..., "<literal path>")`, `setenv(..., "<literal path>")`) to the literal main-checkout path; each derives it from its own location (`$BATS_TEST_DIRNAME/../..` or `Path(__file__)`)
+- [x] New lint `tests/lint/no-hardcoded-checkout-root.bats` refuses those root-defaulting shapes in tests/ and has a control leg proving it fires on a planted literal
+- [x] Touched bats files still pass (run of the rewritten files: no `not ok` attributable to the root change)
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` reports clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -301,12 +288,11 @@ each step runs in a child process. Operator's fixed command: `bin/fw runme queue
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4491_runme_job_queue.bats > /tmp/.t4491.out 2>&1 && ! grep -q "^not ok" /tmp/.t4491.out
-test "$(grep -c '# skip' /tmp/.t4491.out)" -eq 0
-timeout 300 bats tests/unit/t3675_runme.bats tests/unit/t3741_runme_events.bats tests/unit/t3878_runme_pending.bats tests/unit/t4464_runme_watch_until.bats > /tmp/.t4491b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4491b.out
-python3 tools/bats-dead-negation-lint.py tests/unit/t4491_runme_job_queue.bats > /tmp/.t4491c.out 2>&1 && grep -q clean /tmp/.t4491c.out
-bash -n lib/runme.sh && python3 -m py_compile lib/runme_queue.py
-bin/fw vendor self --check --task T-4491
+timeout 300 bats tests/lint/no-hardcoded-checkout-root.bats > /tmp/.t4483-lint.out 2>&1 && ! grep -q "^not ok" /tmp/.t4483-lint.out
+test "$(grep -c '# skip' /tmp/.t4483-lint.out)" -eq 0
+timeout 600 bats tests/unit/t3066_driver_drop_identity.bats tests/unit/arc_create_start_flag.bats tests/unit/t3117_gc_landing_predicate.bats > /tmp/.t4483-unit.out 2>&1 && ! grep -q "^not ok" /tmp/.t4483-unit.out
+python3 -m pytest tests/unit/test_t4208_receiver_single_instance.py -q > /tmp/.t4483-py.out 2>&1 && grep -q passed /tmp/.t4483-py.out
+out=$(python3 tools/bats-dead-negation-lint.py tests/ 2>&1); echo "$out" | grep -q "clean"
 
 ## RCA
 
@@ -323,6 +309,14 @@ bin/fw vendor self --check --task T-4491
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** run from a scratch clone, 50 tests/unit bats files stayed green against a copy whose lib/arc.sh had a planted syntax error (T-4380 phase 1): they were testing the main checkout, not the copy.
+
+**Root cause:** each set `FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-<literal main-checkout path>}"` (e.g. tests/unit/t3117_gc_landing_predicate.bats:31, tests/unit/arc_create_start_flag.bats); t3066_driver_drop_identity.bats:21,24 hard-coded `FW=` and `cd` to it; tests/unit/test_t4208_receiver_single_instance.py:140 and three tests/playwright files defaulted to it too. The default is a host fact, not a property of the file being run.
+
+**Why structurally allowed:** on the generating host the literal always resolves to a working tree, so every run here is green by construction; the bug only shows on another checkout, which no gate runs. Copy-paste of the first file's setup spread it to 50.
+
+**Prevention:** tests/lint/no-hardcoded-checkout-root.bats refuses the root-defaulting shapes (`${X:-path}`, `X=path`, `cd path`, `[ -d path ]`, `environ.get(k, path)`, `setenv(k, path)`) anywhere in tests/ outside fixtures/; it fails on HEAD (59 lines) and passes after. Control legs pin that it fires on each shape and stays quiet on data uses.
 
 ## Evolution
 
@@ -347,6 +341,11 @@ bin/fw vendor self --check --task T-4491
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-20 — scope of the lint
+- **What changed:** the literal checkout path appears ~60 more times in tests/ as test DATA (hook payloads, prompt strings, addresses under parse, frozen fixtures), not as a root.
+- **Plan impact:** "refuse any literal /opt/999 in tests/" would fail on legitimate data; the lint refuses only root-defaulting shapes (see Decisions).
+- **Triggered:** none.
 
 ## Recommendation
 
@@ -379,11 +378,6 @@ bin/fw vendor self --check --task T-4491
 
 ## Decisions
 
-### 2026-10-20 — job format and where the launcher lives
-- **Chose:** `job.json` parsed by python (`lib/runme_queue.py`), steps as `argv` (no shell) or `sh` (bash -c in a child, helper bodies prepended and shown verbatim); one confirm per job in slice 1.
-- **Why:** a manifest that is only ever `json.loads`-ed cannot redefine the launcher (F1) nor run at load (F2); the shown text is generated from the same object that is executed (F4).
-- **Rejected:** a sourced `job.sh` with a load-time probe (832's design — findings 1-2); per-step confirm now (slice 2 owns it with the sha recheck).
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -392,6 +386,11 @@ bin/fw vendor self --check --task T-4491
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-20 — lint refuses root shapes, not every literal
+- **Chose:** refuse only root-defaulting shapes of the literal path; skip `fixtures/`.
+- **Why:** ~60 remaining uses are test data (hook payloads, `cd … && …` strings under classification, aef addresses, prompt screens, frozen task fixtures); rewriting them would change what those tests assert.
+- **Rejected:** blanket "no literal path in tests/" — false positives on data, and a fixture-rewrite churn outside scope.
 
 ## Decision
 
@@ -405,10 +404,27 @@ bin/fw vendor self --check --task T-4491
 
 ## Updates
 
-### 2026-10-20T15:33:12Z — task-created [task-create-agent]
+### 2026-10-20T14:20:54Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4491-runme-job-queue-slice-1-t-4470-go-fixed-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4483-50-bats-files-default-frameworkroot-to-t.md
 - **Context:** Initial task creation
 
-### 2026-10-20T15:35:13Z — status-update [task-update-agent]
+### 2026-10-20T15:11:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-66e93d3e
+- **Timestamp:** 2026-10-20T15:58:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T15:57:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

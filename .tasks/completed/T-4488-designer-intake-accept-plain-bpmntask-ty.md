@@ -1,24 +1,26 @@
 ---
-id: T-4478
-name: "Adapt termlink proposal 348: lib/bvp.sh confirmation telemetry ledger, no-signal
-  disclosure, first-weight exemption"
+id: T-4488
+name: "Designer intake: accept plain bpmn:task (TYPE_TO_TAG addition, as callActivity
+  in T-4374) with a lossless round trip"
 description: >
-  010-termlink pickup offset 348 (their T-3176/T-3184/T-3185). Larger patch (~19KB):
-  append-only confirmation telemetry ledger (.context/telemetry/bvp-confirmations.ndjson,
-  FW_BVP_TELEMETRY_PATH override), no-signal quadrant disclosure, first-ever driver
-  weight exempt from the gate, agent-decides verbs. Applies at HEAD. Review each hunk
-  against D-661/D-662 (agent confirm rulings) and fw bvp judge before taking; split
-  hunks inside this task, take telemetry first. Analysis: docs/reports/T-4472-termlink-proposals-triage.md,
-  diff docs/reports/T-4472-inputs/348-lib_bvp.sh.diff. Triage only, not applied.
+  832 T-1215, decided GO by their operator 2026-10-20 15:12Z (msg f82152b2): option
+  (a), AEF intake accepts plain bpmn:task with a round trip; the designer changes
+  nothing (it already re-emits bpmn:task as authored). Success clause: all 8 of the
+  8 third-party fixtures that carry a plain bpmn:task (of 11, 832 tests/fixtures/third-party/)
+  pass AEF intake with 0 refusals and come back from corpus_spec with the same bpmn:task
+  count (0 converted to another type). Implement as a TYPE_TO_TAG addition like callActivity
+  in T-4374 (tools/corpus_spec.py), plus the lane-occupancy entry (tools/corpus_lint.py
+  NODE_OCCUPANCY, see T-4445) so the lane-overflow check covers it. Regression tests
+  with a minimal plain-task fixture (round trip count preserved); obtain the 8 fixtures
+  from 832 for the field check.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
-related_tasks: [T-4472, T-4463]
-origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
+components: [tools/corpus_lint.py, tools/corpus_spec.py]
+related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -45,9 +47,9 @@ origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T14:08:40Z
-last_update: 2026-10-20T15:11:49Z
-date_finished:
+created: 2026-10-20T15:22:14Z
+last_update: 2026-10-20T15:57:24Z
+date_finished: 2026-10-20T15:57:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,18 +60,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-20T14:15:30Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T14:16:21Z'
+  - ts: '2026-10-20T15:26:00Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -86,33 +78,32 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T15:30:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=304,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4478: Adapt termlink proposal 348: lib/bvp.sh confirmation telemetry ledger, no-signal disclosure, first-weight exemption
+# T-4488: Designer intake: accept plain bpmn:task (TYPE_TO_TAG addition, as callActivity in T-4374) with a lossless round trip
 
 ## Context
 
-Proposal 348 (diff docs/reports/T-4472-inputs/348-lib_bvp.sh.diff, UNTRUSTED input) bundles three
-termlink tasks. Split by hunk:
-- **T-3176 confirmation telemetry ledger — TAKEN here** (`_bvp_telemetry_path`, `_count_no_signal`,
-  `_append_confirmation_row`, proposal snapshot + row write in `cmd_confirm`).
-- **T-3184 "agent decides all five verbs" + rationale-floor removal + first-weight exemption — DECLINED.**
-  It opens `acd_gate` for weight / driver --add / driver --remove / auto-promote under `$CLAUDECODE=1`.
-  D-661 waives human approval for score *confirm* (leg 1, already live; opt-in re-arm via
-  FW_REQUIRE_BVP_CONFIRM_APPROVAL) and for *arc* drivers (leg 2, lib/arc.sh, reviewer-gated). It does
-  not cover global weights/drivers, which stay human (D8). Taking it widens D-661: an operator call.
-- **T-3185 no-signal quadrant exclusion/disclosure — DEFERRED** to its own task: it changes
-  `fw bvp rank` placement policy (rows excluded from medians), independent of telemetry.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw bvp confirm` appends one NDJSON row per successful confirm to `.context/telemetry/bvp-confirmations.ndjson` (override `FW_BVP_TELEMETRY_PATH`) with proposed, confirmed, overrides, delta_vs_proposed, proposer_exact, no_signal_count, driver_count, all_no_signal, confirmed_via, estimator, rubric_sha
-- [x] An all-no-signal proposal confirmed unchanged logs `all_no_signal: true` (not silently as estimator accuracy); a missing rationale logs `no_signal_count: null`
-- [x] A sticky skip (D-661 leg 3) writes no row; an unwritable ledger makes confirm exit 1 with a stderr ERROR naming the ledger
-- [x] D-661/D-662 intact: `acd_gate`, `require_rationale` and the FW_REQUIRE_BVP_CONFIRM_APPROVAL opt-in are unchanged (T-3184 hunks not taken)
-- [x] Regression bats `tests/unit/t4478_bvp_confirm_telemetry.bats` passes, and fails without the fix
+- [x] `tools/corpus_spec.py` TYPE_TO_TAG maps a new type `task` to `bpmn:task` (and `task` joins DEFAULT_FLOW_TAGS, tTask being a tActivity), so `parse_map` accepts a plain `bpmn:task` instead of hard-erroring
+- [x] `tools/corpus_lint.py` NODE_OCCUPANCY has `task: 64` (activity box), so lane-overflow evaluates lanes holding one (`test_every_spec_type_has_an_occupancy_entry` stays green)
+- [x] Regression test in `tests/unit/test_corpus_spec_roundtrip.py` with a minimal plain-task fixture: parse gives 0 refusals, and parse → emit → parse keeps the `bpmn:task` count (0 converted to another type); fails without the fix
+- [x] Existing corpus_spec round-trip and lane-overflow suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -297,13 +288,11 @@ termlink tasks. Split by hunk:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4478_bvp_confirm_telemetry.bats > /tmp/.t4478.out 2>&1 && ! grep -q "^not ok" /tmp/.t4478.out
-test "$(grep -c '# skip' /tmp/.t4478.out)" -eq 0
-timeout 300 bats tests/unit/t2477_bvp_yaml_timestamp_fallback.bats > /tmp/.t4478b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4478b.out
-python3 -m pytest tests/unit/test_t3523_bvp_sticky.py -q > /tmp/.t4478c.out 2>&1 && grep -q passed /tmp/.t4478c.out && ! grep -q failed /tmp/.t4478c.out
-grep -q 'def acd_gate(verb, args, refusal_hint=""):' lib/bvp.sh && ! grep -q "_bvp_human_approval_required" lib/bvp.sh
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4478d.out 2>&1 && grep -q clean /tmp/.t4478d.out
-bin/fw vendor self --check --task T-4478
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q > /tmp/.t4488a 2>&1 && grep -q passed /tmp/.t4488a
+python3 -m pytest tests/unit/test_corpus_lint_lane_overflow.py -q > /tmp/.t4488b 2>&1 && grep -q passed /tmp/.t4488b
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k plain_task > /tmp/.t4488c 2>&1 && grep -q passed /tmp/.t4488c
+grep -q '"task": "task"' tools/corpus_spec.py
+bin/fw vendor self --check --task T-4488
 
 ## RCA
 
@@ -320,11 +309,6 @@ bin/fw vendor self --check --task T-4478
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `fw bvp confirm` kept no record of what the estimator proposed versus what was confirmed. With agents allowed to confirm (D-661 leg 1) nothing measured estimator accuracy, and an all-no-signal proposal confirmed unchanged looked the same as an accurate one.
-**Root cause:** `lib/bvp.sh` `cmd_confirm` (the `confirmed.update(overrides)` merge, ≈line 1083) merged overrides into the proposal map in place and wrote only the final `bvp_scores` + `confirmed_via`. The same write clears `bvp_scores_proposed` (M3), so the guess/confirmed pair was destroyed.
-**Why structurally allowed:** provenance (T-3487) answers *who* confirmed, not *how far from the estimate*. No test asserted any confirm side-record.
-**Prevention:** an append-only ledger row per confirm, which fails loudly when it cannot be written. `tests/unit/t4478_bvp_confirm_telemetry.bats` pins the row shape, the no-signal flag, the sticky-skip no-row case and the unwritable-ledger exit.
 
 ## Evolution
 
@@ -381,12 +365,6 @@ bin/fw vendor self --check --task T-4478
 
 ## Decisions
 
-### 2026-10-20 — which hunks of proposal 348 to take
-- **Chose:** take T-3176 telemetry only, decline T-3184, defer T-3185 to T-4486 (horizon later).
-- **Why:** telemetry is additive and does not touch either ruling. T-3184 opens `acd_gate` for the global weight/driver/auto-promote verbs, which goes beyond D-661 (confirm + arc drivers only). That is an operator decision, not an adapt. T-3185 changes rank placement policy and can be split off.
-- **Rejected:** applying the whole patch, because it bundles a governance widening. Taking the `require_rationale` floor removal alone, because it only means something together with the T-3184 gate opening.
-- **Adapted:** the diff's docstring says the estimator scores no-signal as 2. At HEAD it scores it as 0 (see this task's own proposal, `F3=0 (no-signal)`). The count reads the rationale, so it works either way. The comment was corrected.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -408,11 +386,29 @@ bin/fw vendor self --check --task T-4478
 
 ## Updates
 
-### 2026-10-20T14:08:40Z — task-created [task-create-agent]
+### 2026-10-20T15:22:14Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4478-adapt-termlink-proposal-348-libbvpsh-con.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4488-designer-intake-accept-plain-bpmntask-ty.md
 - **Context:** Initial task creation
 
-### 2026-10-20T15:11:49Z — status-update [task-update-agent]
+### 2026-10-20T15:25:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-54e98d66
+- **Timestamp:** 2026-10-20T15:57:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `tools/corpus_lint.py` NODE_OCCUPANCY has `task: 64` (activity box), so lane-overflow evaluates lanes holding one (`test_every_spec_type_has_an_occupancy_entry` stays green)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/corpus_lint.py in: `tools/corpus_lint.py` NODE_OCCUPANCY has `task: 64` (activity box), so lane-overflow evaluates lanes holding one (`test_every_spec_type_has_an_occupa`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T15:57:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,22 +1,22 @@
 ---
-id: T-4477
-name: "Evaluate termlink proposal 347: estimator body-derived blast radius (T-3189)
-  vs T-3512 write_set fallback"
+id: T-4478
+name: "Adapt termlink proposal 348: lib/bvp.sh confirmation telemetry ledger, no-signal
+  disclosure, first-weight exemption"
 description: >
-  010-termlink pickup offset 347 (their T-3188/T-3189). Adds a derivation of blast
-  radius from file refs in the task body (scrub, repo file index, ladder) and target_blast_radius
-  for all types. HEAD already has T-3512 write_set pre-close cost; overlap is the
-  design question. Applies at HEAD. Decide adapt-as-fallback-below-write_set or close
-  as superseded; if adopted, add tests incl. 'derived nothing' reporting. Analysis:
-  docs/reports/T-4472-termlink-proposals-triage.md, diff docs/reports/T-4472-inputs/347-agents_termlink_bvp-estimator_estimator.py.diff.
-  Triage only, not applied.
+  010-termlink pickup offset 348 (their T-3176/T-3184/T-3185). Larger patch (~19KB):
+  append-only confirmation telemetry ledger (.context/telemetry/bvp-confirmations.ndjson,
+  FW_BVP_TELEMETRY_PATH override), no-signal quadrant disclosure, first-ever driver
+  weight exempt from the gate, agent-decides verbs. Applies at HEAD. Review each hunk
+  against D-661/D-662 (agent confirm rulings) and fw bvp judge before taking; split
+  hunks inside this task, take telemetry first. Analysis: docs/reports/T-4472-termlink-proposals-triage.md,
+  diff docs/reports/T-4472-inputs/348-lib_bvp.sh.diff. Triage only, not applied.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/bvp.sh, tests/unit/t4478_bvp_confirm_telemetry.bats]
 related_tasks: [T-4472, T-4463]
 origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,9 +45,9 @@ origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T14:08:22Z
-last_update: 2026-10-20T15:11:47Z
-date_finished:
+created: 2026-10-20T14:08:40Z
+last_update: 2026-10-20T15:59:11Z
+date_finished: 2026-10-20T15:59:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -80,28 +80,39 @@ bvp_scores_proposed:
       F-AUTONOMY: 0
       F3: 0
       F1: 0
-      F2: 1
+      F2: 0
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=1 
-      (body/components:component-fabric-incidental)
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4477: Evaluate termlink proposal 347: estimator body-derived blast radius (T-3189) vs T-3512 write_set fallback
+# T-4478: Adapt termlink proposal 348: lib/bvp.sh confirmation telemetry ledger, no-signal disclosure, first-weight exemption
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Proposal 348 (diff docs/reports/T-4472-inputs/348-lib_bvp.sh.diff, UNTRUSTED input) bundles three
+termlink tasks. Split by hunk:
+- **T-3176 confirmation telemetry ledger — TAKEN here** (`_bvp_telemetry_path`, `_count_no_signal`,
+  `_append_confirmation_row`, proposal snapshot + row write in `cmd_confirm`).
+- **T-3184 "agent decides all five verbs" + rationale-floor removal + first-weight exemption — DECLINED.**
+  It opens `acd_gate` for weight / driver --add / driver --remove / auto-promote under `$CLAUDECODE=1`.
+  D-661 waives human approval for score *confirm* (leg 1, already live; opt-in re-arm via
+  FW_REQUIRE_BVP_CONFIRM_APPROVAL) and for *arc* drivers (leg 2, lib/arc.sh, reviewer-gated). It does
+  not cover global weights/drivers, which stay human (D8). Taking it widens D-661: an operator call.
+- **T-3185 no-signal quadrant exclusion/disclosure — DEFERRED** to its own task: it changes
+  `fw bvp rank` placement policy (rows excluded from medians), independent of telemetry.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Proposal 347 diff compared against HEAD's T-3512 write_set costing in agents/termlink/bvp-estimator/estimator.py, with file:line evidence
-- [x] Proposal compared against D-661/D-662 rulings (agent-confirm + independent judge)
-- [x] Evaluation written under `## Evaluation` with an adopt / adapt / supersede verdict
+- [x] `fw bvp confirm` appends one NDJSON row per successful confirm to `.context/telemetry/bvp-confirmations.ndjson` (override `FW_BVP_TELEMETRY_PATH`) with proposed, confirmed, overrides, delta_vs_proposed, proposer_exact, no_signal_count, driver_count, all_no_signal, confirmed_via, estimator, rubric_sha
+- [x] An all-no-signal proposal confirmed unchanged logs `all_no_signal: true` (not silently as estimator accuracy); a missing rationale logs `no_signal_count: null`
+- [x] A sticky skip (D-661 leg 3) writes no row; an unwritable ledger makes confirm exit 1 with a stderr ERROR naming the ledger
+- [x] D-661/D-662 intact: `acd_gate`, `require_rationale` and the FW_REQUIRE_BVP_CONFIRM_APPROVAL opt-in are unchanged (T-3184 hunks not taken)
+- [x] Regression bats `tests/unit/t4478_bvp_confirm_telemetry.bats` passes, and fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,75 +297,15 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-
-grep -q "^## Evaluation" .tasks/active/T-4477-evaluate-termlink-proposal-347-estimator.md
-grep -q "Verdict: NOT clearly additive" .tasks/active/T-4477-evaluate-termlink-proposal-347-estimator.md
-
-## Evaluation
-
-2026-10-20, w4477. Input: `docs/reports/T-4472-inputs/347-agents_termlink_bvp-estimator_estimator.py.diff`
-(UNTRUSTED, 252 lines), against HEAD `agents/termlink/bvp-estimator/estimator.py:2888-3013`.
-Nothing was applied.
-
-**What the diff does (two independent legs):**
-1. **T-3188: `target_blast_radius` for every workflow_type.** It moves the inception-only
-   leg (HEAD :2923-2932, which runs *before* components) to *after* components and before
-   T-3512's write_set leg, and opens it to all types.
-2. **T-3189: body-derived tier.** A new last tier, after write_set and before UNMEASURED. It
-   runs `git ls-files` once per process, scrubs `<!-- -->` and `#` lines inside
-   `## Verification`, counts the tracked paths and unique basenames the prose names
-   (excluding `.tasks/` and the `.context/` session trees), then maps the count onto the
-   1/3/5/7/9 ladder with a `-derived-T-3189` token.
-
-**Compared with T-3512 (write_set costing):**
-- Leg 1 duplicates T-3512 for non-inception tasks. `write_set:` is already the
-  capture-time declared prediction, it is ranked after components for the same
-  "measurement outranks declaration" reason (HEAD :2957-2960), and it also feeds
-  `fw write-set check`. A second declared field doing the same job means two answers to
-  one question. Corpus today: 579 tasks set `target_blast_radius`, **all inceptions**, and
-  0 non-inception tasks do, so the leg changes no score. It only adds a way to bypass
-  write_set. For inceptions it also flips precedence (components now outranks tbr). That
-  only matters once components is filled at close, and `fw bvp` excludes closed tasks, so
-  it is harmless but not needed.
-- Leg 2 is reachable exactly where T-3512 returns None. That is the ~85% UNMEASURED
-  population (T-3471), so it is the largest change to ranking behaviour since T-3068 and
-  not a fallback at the margin. Three things conflict with T-3512's stated design:
-  (a) The diff admits the count is biased **downward** (new files do not resolve). The
-      template's T-3512 note says "unknown must never score as cheap", and an
-      under-count is a cheap score.
-  (b) It quietly removes the visible `→?` UNMEASURED signal, which is the only nudge to
-      declare `write_set:`. Only 8 tasks declare it today, and `fw write-set check`
-      stays undecidable without it (CLAUDE.md §Execution Model item 4).
-  (c) Naming a file is not the same as writing it. A body that cites `lib/bvp.sh` as
-      context gets costed as if it changes that file. T-3512's own comment separates
-      prediction from mention, and this tier does not.
-- The diff's comments point at `.vendor-divergence.yaml` and termlink's local corpus
-  figures (210 tasks, 177 settings.json hits). That file does not exist here and the
-  numbers were not re-derived here. They would have to be rewritten before landing.
-
-**Compared with D-661 / D-662:**
-- D-661 leg 3 (sticky operator overrides): untouched. The diff only writes
-  `cost_estimate_proposed`, never confirmed values.
-- D-662 (the independent judge, three-state verdict with actionable guidance): the
-  derived token keeps provenance visible, which is good. But the judge is tuned to read
-  the goal hierarchy, not file-reference heuristics. A derived `3` shows up next to a
-  measured `3` with no weaker weight. D-662 explicitly keeps estimator-detector changes
-  **out of scope** of the judge build, so the two should not land coupled.
-
-**Verdict: NOT clearly additive. Stopped without applying.**
-- Leg 1: **close as superseded by T-3512.** write_set covers it for non-inception tasks,
-  and no non-inception task uses the field.
-- Leg 2: **this is a ranking-policy decision for the parent/operator, not a chore.** If
-  adopted, adapt it as an opt-in fallback strictly below write_set (config flag, default
-  off), keep the `-derived` token, and add tests for the precedence boundaries
-  (components > write_set > derived > None), the "derived nothing → `→?`" case, and the
-  git-unavailable → UNMEASURED case. Drop the termlink-local comments. Recommended
-  default: decline, and fund the write_set-declaration path instead (template nudge /
-  capture-time prompt). That raises measured coverage without inventing cost.
+timeout 300 bats tests/unit/t4478_bvp_confirm_telemetry.bats > /tmp/.t4478.out 2>&1 && ! grep -q "^not ok" /tmp/.t4478.out
+test "$(grep -c '# skip' /tmp/.t4478.out)" -eq 0
+timeout 300 bats tests/unit/t2477_bvp_yaml_timestamp_fallback.bats > /tmp/.t4478b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4478b.out
+python3 -m pytest tests/unit/test_t3523_bvp_sticky.py -q > /tmp/.t4478c.out 2>&1 && grep -q passed /tmp/.t4478c.out && ! grep -q failed /tmp/.t4478c.out
+grep -q 'def acd_gate(verb, args, refusal_hint=""):' lib/bvp.sh && ! grep -q "_bvp_human_approval_required" lib/bvp.sh
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4478d.out 2>&1 && grep -q clean /tmp/.t4478d.out
+bin/fw vendor self --check --task T-4478
 
 ## RCA
-
-Not a bug-class task (proposal evaluation); nothing broken at HEAD.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -369,6 +320,11 @@ Not a bug-class task (proposal evaluation); nothing broken at HEAD.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw bvp confirm` kept no record of what the estimator proposed versus what was confirmed. With agents allowed to confirm (D-661 leg 1) nothing measured estimator accuracy, and an all-no-signal proposal confirmed unchanged looked the same as an accurate one.
+**Root cause:** `lib/bvp.sh` `cmd_confirm` (the `confirmed.update(overrides)` merge, ≈line 1083) merged overrides into the proposal map in place and wrote only the final `bvp_scores` + `confirmed_via`. The same write clears `bvp_scores_proposed` (M3), so the guess/confirmed pair was destroyed.
+**Why structurally allowed:** provenance (T-3487) answers *who* confirmed, not *how far from the estimate*. No test asserted any confirm side-record.
+**Prevention:** an append-only ledger row per confirm, which fails loudly when it cannot be written. `tests/unit/t4478_bvp_confirm_telemetry.bats` pins the row shape, the no-signal flag, the sticky-skip no-row case and the unwritable-ledger exit.
 
 ## Evolution
 
@@ -425,6 +381,12 @@ Not a bug-class task (proposal evaluation); nothing broken at HEAD.
 
 ## Decisions
 
+### 2026-10-20 — which hunks of proposal 348 to take
+- **Chose:** take T-3176 telemetry only, decline T-3184, defer T-3185 to T-4486 (horizon later).
+- **Why:** telemetry is additive and does not touch either ruling. T-3184 opens `acd_gate` for the global weight/driver/auto-promote verbs, which goes beyond D-661 (confirm + arc drivers only). That is an operator decision, not an adapt. T-3185 changes rank placement policy and can be split off.
+- **Rejected:** applying the whole patch, because it bundles a governance widening. Taking the `require_rationale` floor removal alone, because it only means something together with the T-3184 gate opening.
+- **Adapted:** the diff's docstring says the estimator scores no-signal as 2. At HEAD it scores it as 0 (see this task's own proposal, `F3=0 (no-signal)`). The count reads the rationale, so it works either way. The comment was corrected.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -446,11 +408,30 @@ Not a bug-class task (proposal evaluation); nothing broken at HEAD.
 
 ## Updates
 
-### 2026-10-20T14:08:22Z — task-created [task-create-agent]
+### 2026-10-20T14:08:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4477-evaluate-termlink-proposal-347-estimator.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4478-adapt-termlink-proposal-348-libbvpsh-con.md
 - **Context:** Initial task creation
 
-### 2026-10-20T15:11:47Z — status-update [task-update-agent]
+### 2026-10-20T15:11:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-62684e70
+- **Timestamp:** 2026-10-20T15:59:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `fw bvp confirm` appends one NDJSON row per successful confirm to `.context/telemetry/bvp-confirmations.ndjson` (override `FW_BVP_TELEMETRY_PATH`) with proposed, confirmed, overrides, delta_vs_propose
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/telemetry/bvp-confirmations.ndjson in: `fw bvp confirm` appends one NDJSON row per successful confirm to `.context/telemetry/bvp-confirmations.ndjson` (override `FW_BVP_TELEMETRY_PATH`) wit`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T15:59:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

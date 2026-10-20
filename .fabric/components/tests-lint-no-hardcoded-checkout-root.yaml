@@ -1,0 +1,21 @@
+id: tests/lint/no-hardcoded-checkout-root.bats
+name: no-hardcoded-checkout-root
+type: script
+subsystem: tests
+location: tests/lint/no-hardcoded-checkout-root.bats
+tags: []
+
+purpose: "Invariant: no test under tests/ defaults its framework/project root to the literal path of the main checkout. A test derives its root from its own location ($BATS_TEST_DIRNAME/../.. in bats, Path(__file__) in python)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

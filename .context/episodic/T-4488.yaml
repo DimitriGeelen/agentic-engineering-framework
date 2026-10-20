@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4488: Designer intake: accept plain bpmn:task (TYPE_TO_TAG addition, as callActivity in T-4374) with a lossless round trip
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:57:53Z
+# ============================================================================
+
+task_id: T-4488
+task_name: "Designer intake: accept plain bpmn:task (TYPE_TO_TAG addition, as callActivity in T-4374) with a lossless round trip"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T15:22:14Z
+completed: 2026-10-20T15:57:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T17:29:02+02:00
+last_commit: 2026-10-20T17:29:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  corpus_spec accepts plain bpmn:task (TYPE_TO_TAG 'task', DEFAULT_FLOW_TAGS) and lane-overflow occupancy 64; regression test: plain-task fixture parses with 0 refusals and round trips with the same bpmn:task count
+
+# Key outcomes
+outcomes:
+  - '`tools/corpus_spec.py` TYPE_TO_TAG maps a new type `task` to `bpmn:task` (and `task` joins DEFAULT_FLOW_TAGS, tTask being a tActivity), so `parse_map` accepts a plain `bpmn:task` instead of hard-erroring'
+  - '`tools/corpus_lint.py` NODE_OCCUPANCY has `task: 64` (activity box), so lane-overflow evaluates lanes holding one (`test_every_spec_type_has_an_occupancy_entry` stays green)'
+  - 'Regression test in `tests/unit/test_corpus_spec_roundtrip.py` with a minimal plain-task fixture: parse gives 0 refusals, and parse → emit → parse keeps the `bpmn:task` count (0 converted to another type); fails without the fix'
+  - 'Existing corpus_spec round-trip and lane-overflow suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'corpus_spec accepts plain bpmn:task (TYPE_TO_TAG ''task'', DEFAULT_FLOW_TAGS) and lane-overflow occupancy 64; regression test: plain-task fixture parses with 0 refusals and round trips with the same bpmn:task count'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/corpus_lint.py'
+  - '.agentic-framework/tools/corpus_spec.py'
+  - '.tasks/active/T-4488-designer-intake-accept-plain-bpmntask-ty.md'
+  - 'tests/unit/test_corpus_spec_roundtrip.py'
+  - 'tools/corpus_lint.py'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T17:29:02'
+    action: 'T-4488: corpus_spec accepts plain bpmn:task (TYPE_TO_TAG ''task'', DEFAULT_FLOW_TAGS) and lane-overflow occupancy 64; regression test: plain-task fixture parses with 0 refusals and round trips with the same bpmn:task count'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 35 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 35
+  commits: 1
+  files_changed: 6
+  lines_added: 88
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4488-designer-intake-accept-plain-bpmntask-ty.md
+generated_by: context-agent-hybrid

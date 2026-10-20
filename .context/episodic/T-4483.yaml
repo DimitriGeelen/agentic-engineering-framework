@@ -1,0 +1,137 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4483: 50 bats files default FRAMEWORK_ROOT to the hard-coded /opt/999-... path, so run from any other checkout they silently test the main checkout
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:58:36Z
+# ============================================================================
+
+task_id: T-4483
+task_name: "50 bats files default FRAMEWORK_ROOT to the hard-coded /opt/999-... path, so run from any other checkout they silently test the main checkout"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-20T14:20:54Z
+completed: 2026-10-20T15:57:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T17:23:28+02:00
+last_commit: 2026-10-20T17:23:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tests derive FRAMEWORK_ROOT from their own location (50 bats ${FRAMEWORK_ROOT:-<literal>} defaults, t3066 FW/cd, t4208 setenv, 3 playwright files, spike probe); new tests/lint/no-hardcoded-checkout-root.bats refuses root-defaulting literal checkout paths
+
+# Key outcomes
+outcomes:
+  - 'No test under tests/ (fixtures excluded) defaults a root variable (`${X:-<literal checkout path>}`, `X=<literal path>`, `cd <literal path>`, `environ.get(..., "<literal path>")`, `setenv(..., "<literal path>")`) to the literal main-checkout path; each derives it from its own location (`$BATS_TEST_DIRNAME/../..` or `Path(__file__)`)'
+  - 'New lint `tests/lint/no-hardcoded-checkout-root.bats` refuses those root-defaulting shapes in tests/ and has a control leg proving it fires on a planted literal'
+  - 'Touched bats files still pass (run of the rewritten files: no `not ok` attributable to the root change)'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` reports clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — lint refuses root shapes, not every literal'
+    chose: 'refuse only root-defaulting shapes of the literal path; skip `fixtures/`.'
+    rationale: '~60 remaining uses are test data (hook payloads, `cd … && …` strings under classification, aef addresses, prompt screens, frozen task fixtures); rewriting them would change what those tests assert.'
+    alternatives_rejected: ['blanket "no literal path in tests/" — false positives on data, and a fixture-rewrite churn outside scope.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4483-50-bats-files-default-frameworkroot-to-t.md'
+  - 'tests/lint/no-hardcoded-checkout-root.bats'
+  - 'tests/playwright/test_docs_detail.py'
+  - 'tests/playwright/test_fabric_detail.py'
+  - 'tests/playwright/test_task_detail_enhanced.py'
+  - 'tests/spikes/taskcreate-hook-probe.sh'
+  - 'tests/unit/active_completed_dup_guard.bats'
+  - 'tests/unit/arc_abandon.bats'
+  - 'tests/unit/arc_create_no_constituent_tasks.bats'
+  - 'tests/unit/arc_create_start_flag.bats'
+  - 'tests/unit/arc_id_validation_guard.bats'
+  - 'tests/unit/arc_lifecycle_state_machine.bats'
+  - 'tests/unit/arc_rescore.bats'
+  - 'tests/unit/audit_anchor_task_existence.bats'
+  - 'tests/unit/audit_corpus_lint_findings.bats'
+  - 'tests/unit/audit_seed_corpus_refs.bats'
+  - 'tests/unit/audit_stale_arc_warning.bats'
+  - 'tests/unit/audit_unclosed_satisfied_warn.bats'
+  - 'tests/unit/bpmn_promote_e2e.bats'
+  - 'tests/unit/bvp_auto_promote.bats'
+  - 'tests/unit/bvp_auto_promote_enable.bats'
+  - 'tests/unit/check_inception_decisions_hook.bats'
+  - 'tests/unit/check_task_ac_structure.bats'
+  - 'tests/unit/designer_ghost_gate.bats'
+  - 'tests/unit/focus_drift_gate.bats'
+  - 'tests/unit/human_ac_tick_guard.bats'
+  - 'tests/unit/reviewer_human_ac_mechanical_signal.bats'
+  - 'tests/unit/t2954_human_ac_tick_comment_aware.bats'
+  - 'tests/unit/t2969_draft_arc_complete_warning.bats'
+  - 'tests/unit/t2987_bootstrap_shape_hint.bats'
+  - 'tests/unit/t2988_grouped_command_classification.bats'
+  - 'tests/unit/t2990_root_pollution.bats'
+  - 'tests/unit/t2991_verification_preflight.bats'
+  - 'tests/unit/t2994_gitignore_register.bats'
+  - 'tests/unit/t2996_seed_commit_assertion.bats'
+  - 'tests/unit/t3066_driver_drop_identity.bats'
+  - 'tests/unit/t3098_worktree_governance_write.bats'
+  - 'tests/unit/t3110_worktree_corpus_commit_guard.bats'
+  - 'tests/unit/t3111_worktree_reexec.bats'
+  - 'tests/unit/t3112_worktree_hook_parity.bats'
+  - 'tests/unit/t3113_upgrade_worktree_advisory.bats'
+  - 'tests/unit/t3117_gc_landing_predicate.bats'
+  - 'tests/unit/t3118_horizon_migration_scope.bats'
+  - 'tests/unit/t3232_verification_extractor_failure.bats'
+  - 'tests/unit/t3507_arc_completion_union.bats'
+  - 'tests/unit/t3526_bvp_judge_entrypoint.bats'
+  - 'tests/unit/t3527_arc_driver_judge_entrypoint.bats'
+  - 'tests/unit/t3546_p011_reports_the_zero.bats'
+  - 'tests/unit/t3549_inception_handoff_refusal.bats'
+  - 'tests/unit/t3553_arc_demo_check.bats'
+  - 'tests/unit/t4024_empty_verification_gate.bats'
+  - 'tests/unit/template_reviewer_prefix_example.bats'
+  - 'tests/unit/test_reviewer_audience_mismatch.bats'
+  - 'tests/unit/test_reviewer_defer_as_hedge.bats'
+  - 'tests/unit/test_reviewer_prose_mismatch.bats'
+  - 'tests/unit/test_reviewer_review_link_homework.bats'
+  - 'tests/unit/test_t4208_receiver_single_instance.py'
+  - 'tests/unit/worker_kinds_parity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T17:23:28'
+    action: 'T-4483: tests derive FRAMEWORK_ROOT from their own location (50 bats ${FRAMEWORK_ROOT:-<literal>} defaults, t3066 FW/cd, t4208 setenv, 3 playwright files, spike probe); new tests/lint/no-hardcoded-checkout-root.bats refuses root-defaulting literal checkout paths'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 97 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 97
+  commits: 1
+  files_changed: 58
+  lines_added: 583
+  lines_removed: 60
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4483-50-bats-files-default-frameworkroot-to-t.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4491: runme job queue slice 1 (T-4470 GO): fixed operator command, job menu and lifecycle, with jobs run OUT-OF-PROCESS from a declarative step manifest
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:57:17Z
+# ============================================================================
+
+task_id: T-4491
+task_name: "runme job queue slice 1 (T-4470 GO): fixed operator command, job menu and lifecycle, with jobs run OUT-OF-PROCESS from a declarative step manifest"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-20T15:33:12Z
+completed: 2026-10-20T15:56:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T17:47:06+02:00
+last_commit: 2026-10-20T17:47:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  runme job queue slice 1 — fw runme job new|dry-run|list|retire + fw runme queue; jobs are job.json data run out-of-process, each step through check-tier0; 18 bats legs (six review findings, prereq 5, 832 addendum lessons)
+
+# Key outcomes
+outcomes:
+  - '`fw runme job new|dry-run|list|retire` and `fw runme queue` exist; jobs are `job.json` manifests (title, task, why, helpers, steps of `argv` or `sh`), validated with unknown keys refused; a `job.sh` is never loaded'
+  - 'Menu shows each pending job with its state (NOT REHEARSED / ready / CHANGED since dry-run) and last outcome; `done` and `retired` jobs are never offered or run'
+  - 'F1: job code cannot reach the launcher''s confirm/ask/fail — test: a job defining and exporting `confirm(){ return 0; }` with operator answer `n` runs nothing'
+  - 'F2: loading/listing/dry-running a job executes nothing — test: `$(...)`, redirects and backticks in every field create no file'
+  - 'F3: dry-run runs no checks — test: a manifest with a `preflight`/`checks` key is refused and a valid dry-run executes nothing'
+  - 'F4: the operator confirms the resolved command — test: helper body and full argv appear in the plan shown before the prompt'
+  - 'F5: what was rehearsed is what runs — test: editing a helper after dry-run makes the job CHANGED and refused (full per-step sha manifest is slice 2)'
+  - 'F6: scripted answers only in tests — test: `FW_RUNME_TEST_ANSWERS` refused without `FW_RUNME_TEST=1` and refused on a real project root; queue refused under `CLAUDECODE=1` outside test mode'
+  - 'Prereq 5: a queued Tier 0 step is passed through `check-tier0.sh` before it runs and is stopped there without its own approval — test'
+  - 'Existing runme tests stay green (t3675, t3741, t3878, t4464)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — job format and where the launcher lives'
+    chose: '`job.json` parsed by python (`lib/runme_queue.py`), steps as `argv` (no shell) or `sh` (bash -c in a child, helper bodies prepended and shown verbatim); one confirm per job in slice 1.'
+    rationale: 'a manifest that is only ever `json.loads`-ed cannot redefine the launcher (F1) nor run at load (F2); the shown text is generated from the same object that is executed (F4).'
+    alternatives_rejected: ['a sourced `job.sh` with a load-time probe (832''s design — findings 1-2); per-step confirm now (slice 2 owns it with the sha recheck).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/runme_queue.py'
+  - '.agentic-framework/lib/runme.sh'
+  - '.fabric/components/lib-runme_queue.yaml'
+  - 'lib/runme_queue.py'
+  - 'lib/runme.sh'
+  - '.tasks/active/T-4491-runme-job-queue-slice-1-t-4470-go-fixed-.md'
+  - 'tests/unit/t4491_runme_job_queue.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T17:47:06'
+    action: 'T-4491: runme job queue slice 1 — fw runme job new|dry-run|list|retire + fw runme queue; jobs are job.json data run out-of-process, each step through check-tier0; 18 bats legs (six review findings, prereq 5, 832 addendum lessons)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23
+  commits: 1
+  files_changed: 7
+  lines_added: 1512
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4491-runme-job-queue-slice-1-t-4470-go-fixed-.md
+generated_by: context-agent-hybrid

@@ -1,26 +1,24 @@
 ---
-id: T-4488
-name: "Designer intake: accept plain bpmn:task (TYPE_TO_TAG addition, as callActivity
-  in T-4374) with a lossless round trip"
+id: T-4477
+name: "Evaluate termlink proposal 347: estimator body-derived blast radius (T-3189)
+  vs T-3512 write_set fallback"
 description: >
-  832 T-1215, decided GO by their operator 2026-10-20 15:12Z (msg f82152b2): option
-  (a), AEF intake accepts plain bpmn:task with a round trip; the designer changes
-  nothing (it already re-emits bpmn:task as authored). Success clause: all 8 of the
-  8 third-party fixtures that carry a plain bpmn:task (of 11, 832 tests/fixtures/third-party/)
-  pass AEF intake with 0 refusals and come back from corpus_spec with the same bpmn:task
-  count (0 converted to another type). Implement as a TYPE_TO_TAG addition like callActivity
-  in T-4374 (tools/corpus_spec.py), plus the lane-occupancy entry (tools/corpus_lint.py
-  NODE_OCCUPANCY, see T-4445) so the lane-overflow check covers it. Regression tests
-  with a minimal plain-task fixture (round trip count preserved); obtain the 8 fixtures
-  from 832 for the field check.
+  010-termlink pickup offset 347 (their T-3188/T-3189). Adds a derivation of blast
+  radius from file refs in the task body (scrub, repo file index, ladder) and target_blast_radius
+  for all types. HEAD already has T-3512 write_set pre-close cost; overlap is the
+  design question. Applies at HEAD. Decide adapt-as-fallback-below-write_set or close
+  as superseded; if adopted, add tests incl. 'derived nothing' reporting. Analysis:
+  docs/reports/T-4472-termlink-proposals-triage.md, diff docs/reports/T-4472-inputs/347-agents_termlink_bvp-estimator_estimator.py.diff.
+  Triage only, not applied.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-4472, T-4463]
+origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -47,9 +45,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T15:22:14Z
-last_update: 2026-10-20T15:25:59Z
-date_finished:
+created: 2026-10-20T14:08:22Z
+last_update: 2026-10-20T15:58:49Z
+date_finished: 2026-10-20T15:58:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,8 +58,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T14:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T15:26:00Z'
+  - ts: '2026-10-20T14:16:21Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -72,15 +80,16 @@ bvp_scores_proposed:
       F-AUTONOMY: 0
       F3: 0
       F1: 0
-      F2: 0
+      F2: 1
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4488: Designer intake: accept plain bpmn:task (TYPE_TO_TAG addition, as callActivity in T-4374) with a lossless round trip
+# T-4477: Evaluate termlink proposal 347: estimator body-derived blast radius (T-3189) vs T-3512 write_set fallback
 
 ## Context
 
@@ -90,10 +99,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `tools/corpus_spec.py` TYPE_TO_TAG maps a new type `task` to `bpmn:task` (and `task` joins DEFAULT_FLOW_TAGS, tTask being a tActivity), so `parse_map` accepts a plain `bpmn:task` instead of hard-erroring
-- [x] `tools/corpus_lint.py` NODE_OCCUPANCY has `task: 64` (activity box), so lane-overflow evaluates lanes holding one (`test_every_spec_type_has_an_occupancy_entry` stays green)
-- [x] Regression test in `tests/unit/test_corpus_spec_roundtrip.py` with a minimal plain-task fixture: parse gives 0 refusals, and parse → emit → parse keeps the `bpmn:task` count (0 converted to another type); fails without the fix
-- [x] Existing corpus_spec round-trip and lane-overflow suites stay green
+- [x] Proposal 347 diff compared against HEAD's T-3512 write_set costing in agents/termlink/bvp-estimator/estimator.py, with file:line evidence
+- [x] Proposal compared against D-661/D-662 rulings (agent-confirm + independent judge)
+- [x] Evaluation written under `## Evaluation` with an adopt / adapt / supersede verdict
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,13 +286,75 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q > /tmp/.t4488a 2>&1 && grep -q passed /tmp/.t4488a
-python3 -m pytest tests/unit/test_corpus_lint_lane_overflow.py -q > /tmp/.t4488b 2>&1 && grep -q passed /tmp/.t4488b
-python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py -q -k plain_task > /tmp/.t4488c 2>&1 && grep -q passed /tmp/.t4488c
-grep -q '"task": "task"' tools/corpus_spec.py
-bin/fw vendor self --check --task T-4488
+
+grep -q "^## Evaluation" .tasks/active/T-4477-evaluate-termlink-proposal-347-estimator.md
+grep -q "Verdict: NOT clearly additive" .tasks/active/T-4477-evaluate-termlink-proposal-347-estimator.md
+
+## Evaluation
+
+2026-10-20, w4477. Input: `docs/reports/T-4472-inputs/347-agents_termlink_bvp-estimator_estimator.py.diff`
+(UNTRUSTED, 252 lines), against HEAD `agents/termlink/bvp-estimator/estimator.py:2888-3013`.
+Nothing was applied.
+
+**What the diff does (two independent legs):**
+1. **T-3188: `target_blast_radius` for every workflow_type.** It moves the inception-only
+   leg (HEAD :2923-2932, which runs *before* components) to *after* components and before
+   T-3512's write_set leg, and opens it to all types.
+2. **T-3189: body-derived tier.** A new last tier, after write_set and before UNMEASURED. It
+   runs `git ls-files` once per process, scrubs `<!-- -->` and `#` lines inside
+   `## Verification`, counts the tracked paths and unique basenames the prose names
+   (excluding `.tasks/` and the `.context/` session trees), then maps the count onto the
+   1/3/5/7/9 ladder with a `-derived-T-3189` token.
+
+**Compared with T-3512 (write_set costing):**
+- Leg 1 duplicates T-3512 for non-inception tasks. `write_set:` is already the
+  capture-time declared prediction, it is ranked after components for the same
+  "measurement outranks declaration" reason (HEAD :2957-2960), and it also feeds
+  `fw write-set check`. A second declared field doing the same job means two answers to
+  one question. Corpus today: 579 tasks set `target_blast_radius`, **all inceptions**, and
+  0 non-inception tasks do, so the leg changes no score. It only adds a way to bypass
+  write_set. For inceptions it also flips precedence (components now outranks tbr). That
+  only matters once components is filled at close, and `fw bvp` excludes closed tasks, so
+  it is harmless but not needed.
+- Leg 2 is reachable exactly where T-3512 returns None. That is the ~85% UNMEASURED
+  population (T-3471), so it is the largest change to ranking behaviour since T-3068 and
+  not a fallback at the margin. Three things conflict with T-3512's stated design:
+  (a) The diff admits the count is biased **downward** (new files do not resolve). The
+      template's T-3512 note says "unknown must never score as cheap", and an
+      under-count is a cheap score.
+  (b) It quietly removes the visible `→?` UNMEASURED signal, which is the only nudge to
+      declare `write_set:`. Only 8 tasks declare it today, and `fw write-set check`
+      stays undecidable without it (CLAUDE.md §Execution Model item 4).
+  (c) Naming a file is not the same as writing it. A body that cites `lib/bvp.sh` as
+      context gets costed as if it changes that file. T-3512's own comment separates
+      prediction from mention, and this tier does not.
+- The diff's comments point at `.vendor-divergence.yaml` and termlink's local corpus
+  figures (210 tasks, 177 settings.json hits). That file does not exist here and the
+  numbers were not re-derived here. They would have to be rewritten before landing.
+
+**Compared with D-661 / D-662:**
+- D-661 leg 3 (sticky operator overrides): untouched. The diff only writes
+  `cost_estimate_proposed`, never confirmed values.
+- D-662 (the independent judge, three-state verdict with actionable guidance): the
+  derived token keeps provenance visible, which is good. But the judge is tuned to read
+  the goal hierarchy, not file-reference heuristics. A derived `3` shows up next to a
+  measured `3` with no weaker weight. D-662 explicitly keeps estimator-detector changes
+  **out of scope** of the judge build, so the two should not land coupled.
+
+**Verdict: NOT clearly additive. Stopped without applying.**
+- Leg 1: **close as superseded by T-3512.** write_set covers it for non-inception tasks,
+  and no non-inception task uses the field.
+- Leg 2: **this is a ranking-policy decision for the parent/operator, not a chore.** If
+  adopted, adapt it as an opt-in fallback strictly below write_set (config flag, default
+  off), keep the `-derived` token, and add tests for the precedence boundaries
+  (components > write_set > derived > None), the "derived nothing → `→?`" case, and the
+  git-unavailable → UNMEASURED case. Drop the termlink-local comments. Recommended
+  default: decline, and fund the write_set-declaration path instead (template nudge /
+  capture-time prompt). That raises measured coverage without inventing cost.
 
 ## RCA
+
+Not a bug-class task (proposal evaluation); nothing broken at HEAD.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -376,10 +446,30 @@ bin/fw vendor self --check --task T-4488
 
 ## Updates
 
-### 2026-10-20T15:22:14Z — task-created [task-create-agent]
+### 2026-10-20T14:08:22Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4488-designer-intake-accept-plain-bpmntask-ty.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4477-evaluate-termlink-proposal-347-estimator.md
 - **Context:** Initial task creation
 
-### 2026-10-20T15:25:59Z — status-update [task-update-agent]
+### 2026-10-20T15:11:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cbd60c15
+- **Timestamp:** 2026-10-20T15:58:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Proposal 347 diff compared against HEAD's T-3512 write_set costing in agents/termlink/bvp-estimator/estimator.py, with file:line evidence
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/termlink/bvp-estimator/estimator.py in: Proposal 347 diff compared against HEAD's T-3512 write_set costing in agents/termlink/bvp-estimator/estimator.py, with file:line evidence`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T15:58:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,21 @@
+id: tests/unit/t4478_bvp_confirm_telemetry.bats
+name: t4478_bvp_confirm_telemetry
+type: script
+subsystem: tests
+location: tests/unit/t4478_bvp_confirm_telemetry.bats
+tags: []
+
+purpose: "T-4478: `fw bvp confirm` appends one row per confirmation to an append-only NDJSON ledger (adapted from 010-termlink T-3176, proposal 348)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

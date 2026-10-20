@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4477: Evaluate termlink proposal 347: estimator body-derived blast radius (T-3189) vs T-3512 write_set fallback
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:59:08Z
+# ============================================================================
+
+task_id: T-4477
+task_name: "Evaluate termlink proposal 347: estimator body-derived blast radius (T-3189) vs T-3512 write_set fallback"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T14:08:22Z
+completed: 2026-10-20T15:58:49Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T17:13:38+02:00
+last_commit: 2026-10-20T17:13:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  evaluate termlink proposal 347 — not clearly additive; leg 1 superseded by T-3512, leg 2 is a ranking-policy call (not applied)
+
+# Key outcomes
+outcomes:
+  - 'Proposal 347 diff compared against HEAD''s T-3512 write_set costing in agents/termlink/bvp-estimator/estimator.py, with file:line evidence'
+  - 'Proposal compared against D-661/D-662 rulings (agent-confirm + independent judge)'
+  - 'Evaluation written under `## Evaluation` with an adopt / adapt / supersede verdict'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4477-evaluate-termlink-proposal-347-estimator.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T17:13:38'
+    action: 'T-4477: evaluate termlink proposal 347 — not clearly additive; leg 1 superseded by T-3512, leg 2 is a ranking-policy call (not applied)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 110 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 110
+  commits: 1
+  files_changed: 1
+  lines_added: 117
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4477-evaluate-termlink-proposal-347-estimator.md
+generated_by: context-agent-hybrid

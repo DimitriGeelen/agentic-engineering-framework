@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4478: Adapt termlink proposal 348: lib/bvp.sh confirmation telemetry ledger, no-signal disclosure, first-weight exemption
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:59:38Z
+# ============================================================================
+
+task_id: T-4478
+task_name: "Adapt termlink proposal 348: lib/bvp.sh confirmation telemetry ledger, no-signal disclosure, first-weight exemption"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-20T14:08:40Z
+completed: 2026-10-20T15:59:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T17:18:49+02:00
+last_commit: 2026-10-20T17:18:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw bvp confirm appends a confirmation telemetry row (proposed vs confirmed, delta, no-signal count) to .context/telemetry/bvp-confirmations.ndjson (FW_BVP_TELEMETRY_PATH); termlink 348 T-3176 hunk taken, T-3184 acd_gate opening declined (beyond D-661), T-3185 deferred to T-4486; bats regression
+
+# Key outcomes
+outcomes:
+  - '`fw bvp confirm` appends one NDJSON row per successful confirm to `.context/telemetry/bvp-confirmations.ndjson` (override `FW_BVP_TELEMETRY_PATH`) with proposed, confirmed, overrides, delta_vs_proposed, proposer_exact, no_signal_count, driver_count, all_no_signal, confirmed_via, estimator, rubric_sha'
+  - 'An all-no-signal proposal confirmed unchanged logs `all_no_signal: true` (not silently as estimator accuracy); a missing rationale logs `no_signal_count: null`'
+  - 'A sticky skip (D-661 leg 3) writes no row; an unwritable ledger makes confirm exit 1 with a stderr ERROR naming the ledger'
+  - 'D-661/D-662 intact: `acd_gate`, `require_rationale` and the FW_REQUIRE_BVP_CONFIRM_APPROVAL opt-in are unchanged (T-3184 hunks not taken)'
+  - 'Regression bats `tests/unit/t4478_bvp_confirm_telemetry.bats` passes, and fails without the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — which hunks of proposal 348 to take'
+    chose: 'take T-3176 telemetry only, decline T-3184, defer T-3185 to T-4486 (horizon later).'
+    rationale: 'telemetry is additive and does not touch either ruling. T-3184 opens `acd_gate` for the global weight/driver/auto-promote verbs, which goes beyond D-661 (confirm + arc drivers only). That is an operator decision, not an adapt. T-3185 changes rank placement policy and can be split off.'
+    alternatives_rejected: ['applying the whole patch, because it bundles a governance widening. Taking the `require_rationale` floor removal alone, because it only means something together with the T-3184 gate opening.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/bvp.sh'
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-4478-adapt-termlink-proposal-348-libbvpsh-con.md'
+  - '.tasks/active/T-4486-adapt-termlink-proposal-348-t-3185-hunk-.md'
+  - 'tests/unit/t4478_bvp_confirm_telemetry.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T17:18:49'
+    action: 'T-4478: fw bvp confirm appends a confirmation telemetry row (proposed vs confirmed, delta, no-signal count) to .context/telemetry/bvp-confirmations.ndjson (FW_BVP_TELEMETRY_PATH); termlink 348 T-3176 hunk taken, T-3184 acd_gate opening declined (beyond D-661), T-3185 deferred to T-4486; bats regression'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 110 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 110
+  commits: 1
+  files_changed: 5
+  lines_added: 699
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4478-adapt-termlink-proposal-348-libbvpsh-con.md
+generated_by: context-agent-hybrid
