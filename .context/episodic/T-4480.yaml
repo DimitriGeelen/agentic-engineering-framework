@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4480: Apply termlink proposal 350: lib/pickup.sh refuse constant dedup hash and content-free inception tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:15:37Z
+# ============================================================================
+
+task_id: T-4480
+task_name: "Apply termlink proposal 350: lib/pickup.sh refuse constant dedup hash and content-free inception tasks"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T14:09:15Z
+completed: 2026-10-20T15:14:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T16:44:05+02:00
+last_commit: 2026-10-20T16:44:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lib/pickup.sh refuses constant sha256('||') dedup hash and content-free pickup tasks; refused envelope stays in inbox (termlink proposal 350)
+
+# Key outcomes
+outcomes:
+  - '`pickup_dedup_hash` returns 1 (no hash on stdout) for an unreadable envelope and for one whose type, payload.summary and source.project all extract empty; a normal envelope still hashes as before'
+  - '`pickup_record_dedup` refuses (returns 1, ledger unchanged) when the hash cannot be computed; `pickup_dedup_check` treats an uncomputable hash as "not a duplicate" instead of matching the constant `sha256("||")`'
+  - '`pickup_create_inception` refuses (returns 1, no task created) when payload.summary or source.project is empty; `pickup_process_one` then returns 1 and leaves the envelope in the inbox (no dedup row, not moved to processed/)'
+  - 'Regression bats `tests/unit/t4480_pickup_constant_hash.bats` passes, and fails against the pre-fix `lib/pickup.sh`; existing pickup bats stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/pickup.sh'
+  - 'lib/pickup.sh'
+  - '.tasks/active/T-4480-apply-termlink-proposal-350-libpickupsh-.md'
+  - 'tests/unit/t4480_pickup_constant_hash.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T16:44:05'
+    action: 'T-4480: lib/pickup.sh refuses constant sha256(''||'') dedup hash and content-free pickup tasks; refused envelope stays in inbox (termlink proposal 350)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 65 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 65
+  commits: 1
+  files_changed: 4
+  lines_added: 280
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4480-apply-termlink-proposal-350-libpickupsh-.md
+generated_by: context-agent-hybrid

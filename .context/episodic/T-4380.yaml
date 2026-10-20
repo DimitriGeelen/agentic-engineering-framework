@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4380: Evidence-driven prune and merge of duplicate or dead tests, each change backed by a recorded red run
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:23:04Z
+# ============================================================================
+
+task_id: T-4380
+task_name: "Evidence-driven prune and merge of duplicate or dead tests, each change backed by a recorded red run"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T11:58:59Z
+completed: 2026-10-20T15:22:15Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-20T14:14:44+02:00
+last_commit: 2026-10-20T16:39:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  phase 1 prune/merge evidence report — 13 inline-replica tests confirmed green under mutation, 8 duplicate-run merges ranked (~2,500 file-s), 50 files with a hard-coded repo root. phase 2 - A1-A13 tests now run the shipped code (red under origin mutation); merge B2/B3/m21 duplicates; evidence report
+
+# Key outcomes
+outcomes:
+  - 'Report `docs/reports/T-4380-prune-candidates.md` exists with section (a) never-fail candidates, section (b) duplicate coverage, a ranking by file-seconds, and an "unproven" list'
+  - 'Every (a) candidate marked CONFIRMED cites a mutation run in a scratch copy under `.context/scratch/t4380/` (what was broken, the test command, the green result)'
+  - 'Every (b) group names the function+behaviour, the evidence, and which test keeps the red run on the origin bug (origin task cited)'
+  - 'Every candidate carries file:test, class, evidence, proposed action and expected saving (median file-seconds over the 21 v2 suite reports, `LATEST.yaml` included)'
+  - 'No file under `tests/`, `lib/`, `agents/` or `bin/` is changed by this task''s commits (phase 1 is evidence only)'
+  - 'A1-A13 are rewritten to exercise the real production code (root derived from the test file''s own location, no literal /opt path); none deleted'
+  - 'Each of A1-A13 has a recorded red run under its report mutation (scratch copy, rewritten test red) and a green run on the unbroken code, in `docs/reports/T-4380-phase2-evidence.md`'
+  - 'The three mutation-proven duplicate groups (B2 git_common get_task_name, B3 judge UNKNOWN copies, m21 worker_kinds_parity line 101) are deleted only after the keeper is shown red under the same mutation'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` is clean and the git-discovery fence lint passes; only `tests/` (plus the evidence report and this task file) is edited'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4380-phase2-evidence.md'
+  - 'docs/reports/T-4380-prune-candidates.md'
+  - '.tasks/active/T-4380-evidence-driven-prune-and-merge-of-dupli.md'
+  - 'tests/unit/audit_ctl013_skip_nested_audit.bats'
+  - 'tests/unit/audit_ctl_arc_membership_python_import.bats'
+  - 'tests/unit/audit_ctl_arc_tag_only_pattern.bats'
+  - 'tests/unit/audit_split_root_asset_lint.bats'
+  - 'tests/unit/audit_stale_slice_reference.bats'
+  - 'tests/unit/doctor_duplicate_hook_detection.bats'
+  - 'tests/unit/git_common.bats'
+  - 'tests/unit/handover_filter_deferd_wip.bats'
+  - 'tests/unit/render_surface_review_state_dup_human.bats'
+  - 'tests/unit/test_arc_driver_judge.py'
+  - 'tests/unit/test_bvp_judge.py'
+  - 'tests/unit/test_doctor_consumer_version_ahead.bats'
+  - 'tests/unit/test_inception_decide_preserves_h3.py'
+  - 'tests/unit/test_next_directive_schema.py'
+  - 'tests/unit/test_upgrade_downgrade_guard.bats'
+  - 'tests/unit/upgrade_duplicate_hook_detection.bats'
+  - 'tests/unit/upgrade_relative_hook_path_detection.bats'
+  - 'tests/unit/worker_kinds_parity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T14:14:44'
+    action: 'T-4380: phase 1 prune/merge evidence report — 13 inline-replica tests confirmed green under mutation, 8 duplicate-run merges ranked (~2,500 file-s), 50 files with a hard-coded repo root'
+  - time: '2026-10-20T16:39:58'
+    action: 'T-4380: phase 2 - A1-A13 tests now run the shipped code (red under origin mutation); merge B2/B3/m21 duplicates; evidence report'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1643 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1643
+  commits: 2
+  files_changed: 21
+  lines_added: 708
+  lines_removed: 548
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4380-evidence-driven-prune-and-merge-of-dupli.md
+generated_by: context-agent-hybrid

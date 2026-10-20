@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4479: Adapt termlink proposal 349: safe-commands.sh write scan — herestring greps, sed -i flag anchor, /dev/stdout|stderr strip
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:20:28Z
+# ============================================================================
+
+task_id: T-4479
+task_name: "Adapt termlink proposal 349: safe-commands.sh write scan — herestring greps, sed -i flag anchor, /dev/stdout|stderr strip"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-20T14:08:57Z
+completed: 2026-10-20T15:18:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T16:59:20+02:00
+last_commit: 2026-10-20T16:59:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  write scan uses herestrings (SIGPIPE fail-open on >64KB commands under pipefail), sed -i anchored on a flag token (catches -ni/-Ei, no longer refuses -in- filenames), /dev/stdout|stderr join the sink strip
+
+# Key outcomes
+outcomes:
+  - 'Each of termlink''s three claims is measured at HEAD (SIGPIPE fail-open, sed -i false positive, /dev/stdout|stderr) and the verdict recorded under ## Decisions'
+  - '`has_bash_write_pattern` scans with herestrings, not `echo | grep -q` (no fail-open on a >64KB command under pipefail); bats test red before, green after'
+  - '`sed -n p notes-in-x.md` classifies as a read, while `-i`, `-i.bak`, `-iE`, `-ni`, `--in-place`, `--in`, `"-i"` stay writes; bats red/green'
+  - '`>/dev/stdout` and `2>/dev/stderr` classify as reads; `/dev/stdoutx`, `/dev/stderr.bak` and any other redirect on the line stay writes; bats red/green'
+  - 'Existing write-scanner suites (t3746, t3643) still green; vendor self --check clean for this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — which of termlink''s 349 hunks to take'
+    chose: '(a) herestrings — taken; claim reproduced at HEAD (needs a multi-line command >64KB; a single long line does not trigger it because grep reads the whole line first). Extended to the remaining `echo | grep` sites in the same function and the python/bash branches of `_fw_single_command_is_safe` (tighten-only; the python branch is not tested because the chain splitter is quadratic and a >64KB command does not reach it in useful time). (b) sed -i anchor — taken, re-implemented: `(^|[^[:alnum:]_.-])-(-i|[a-zA-Z]*i)`. (c) /dev/stdout|stderr strip — taken as written, with a negative corpus.'
+    rationale: 'each hunk is red at HEAD and green after (29 tests). (b) also closes a fail-open termlink did not report: `sed -ni` / `sed -Ei` were not writes at HEAD.'
+    alternatives_rejected: ['termlink''s sed regex as written: it misses `sed -iE` (in-place, suffix E) and `sed --in` (GNU long-option abbreviation), both verified. Termlink''s redirect-rule rewrite `>>?($|[^&])`: HEAD''s two-rule form (T-3746) already catches `2> out` and `&> out`; not needed.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4479-adapt-termlink-proposal-349-safe-command.md'
+  - 'tests/unit/t4479_write_scan_herestring.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T16:59:20'
+    action: 'T-4479: write scan uses herestrings (SIGPIPE fail-open on >64KB commands under pipefail), sed -i anchored on a flag token (catches -ni/-Ei, no longer refuses -in- filenames), /dev/stdout|stderr join the sink strip'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 70 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 70
+  commits: 1
+  files_changed: 4
+  lines_added: 232
+  lines_removed: 35
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4479-adapt-termlink-proposal-349-safe-command.md
+generated_by: context-agent-hybrid

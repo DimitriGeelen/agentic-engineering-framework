@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4474: Adapt termlink proposal 342: claude-fw TermLink inject carries TERMLINK_SIDECAR_SOCKET / _STATUS_SOCKET
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:17:54Z
+# ============================================================================
+
+task_id: T-4474
+task_name: "Adapt termlink proposal 342: claude-fw TermLink inject carries TERMLINK_SIDECAR_SOCKET / _STATUS_SOCKET"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T14:07:26Z
+completed: 2026-10-20T15:17:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T16:45:11+02:00
+last_commit: 2026-10-20T16:45:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw --termlink injects TERMLINK_SIDECAR_SOCKET/_STATUS_SOCKET (%q) before 'command claude' (010-termlink proposal 342, re-merged over T-4462); bats regression
+
+# Key outcomes
+outcomes:
+  - 'The `--termlink` injected command line prefixes `TERMLINK_SIDECAR_SOCKET=` / `TERMLINK_SIDECAR_STATUS_SOCKET=` (values `printf %q`-quoted) when set in claude-fw''s environment, and adds nothing when unset'
+  - 'The injected line still runs `command claude` (T-4462) and carries the T-4249 per-run marker token; T-4454''s identity export is untouched'
+  - 'A bats test runs the injected line with the sockets set (including a value with a space) and unset, and asserts what the launched `claude` sees; it fails against the pre-fix line'
+  - '`bash -n bin/claude-fw` is clean and vendored copy is in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-4474-adapt-termlink-proposal-342-claude-fw-te.md'
+  - 'tests/unit/t4474_claude_fw_inject_sidecar_env.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T16:45:11'
+    action: 'T-4474: claude-fw --termlink injects TERMLINK_SIDECAR_SOCKET/_STATUS_SOCKET (%q) before ''command claude'' (010-termlink proposal 342, re-merged over T-4462); bats regression'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 69 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 69
+  commits: 1
+  files_changed: 4
+  lines_added: 163
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4474-adapt-termlink-proposal-342-claude-fw-te.md
+generated_by: context-agent-hybrid

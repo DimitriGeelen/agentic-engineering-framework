@@ -1,0 +1,21 @@
+id: tests/unit/t4473_arc_scoring_file_persist.bats
+name: t4473_arc_scoring_file_persist
+type: script
+subsystem: tests
+location: tests/unit/t4473_arc_scoring_file_persist.bats
+tags: []
+
+purpose: "T-4473 (010-termlink proposal 341, their T-3472): approve-driver --scoring-file must STORE the spec inline."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

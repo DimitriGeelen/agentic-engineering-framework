@@ -1,0 +1,21 @@
+id: tests/unit/test_sidecar_runtime_dir_t4482.py
+name: test_sidecar_runtime_dir_t4482
+type: script
+subsystem: tests
+location: tests/unit/test_sidecar_runtime_dir_t4482.py
+tags: []
+
+purpose: "T-4482: the sidecar resolves the TermLink runtime dir the way the hub does."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

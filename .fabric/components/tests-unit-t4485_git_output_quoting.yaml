@@ -1,0 +1,21 @@
+id: tests/unit/t4485_git_output_quoting.bats
+name: t4485_git_output_quoting
+type: script
+subsystem: tests
+location: tests/unit/t4485_git_output_quoting.bats
+tags: []
+
+purpose: "T-4485 (SECURITY): T-4367's git --output check matched RAW words, so every shell spelling that produces the word `--output=FILE` only after bash has processed it — quotes, a backslash, a variable, a parameter default, a loop variable —…"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

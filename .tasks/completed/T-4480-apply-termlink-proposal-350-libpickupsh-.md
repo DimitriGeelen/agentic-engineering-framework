@@ -1,21 +1,25 @@
 ---
-id: T-4380
-name: "Evidence-driven prune and merge of duplicate or dead tests, each change backed
-  by a recorded red run"
+id: T-4480
+name: "Apply termlink proposal 350: lib/pickup.sh refuse constant dedup hash and content-free
+  inception tasks"
 description: >
-  Using T-4376's measurement, merge or delete tests that duplicate coverage or can
-  never fail. Every merged/pruned test keeps (or proves) a red run on its origin bug;
-  the fault-detection-fidelity driver scores this. No pruning on taste. Arc test-suite-health
-  (arc-026), anchor T-4376; build only after the inception GO.
+  010-termlink pickup offset 350 (their T-2687). HEAD pickup_dedup_hash still hashes
+  empty type|summary|project to the constant sha256('||'), which then collides and
+  silently drops unrelated envelopes; pickup_create_inception still builds 'Pickup:  (from
+  )' tasks. Proposal returns 1 on unreadable/all-empty, makes record_dedup and process
+  stop and leave the envelope in the inbox. Applies at HEAD. Verify all callers of
+  pickup_dedup_hash (lib/pickup.sh:127,152) handle non-zero under set -e; bats red/green.
+  Analysis: docs/reports/T-4472-termlink-proposals-triage.md, diff docs/reports/T-4472-inputs/350-lib_pickup.sh.diff.
+  Triage only, not applied.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
-related_tasks: []
-arc_id: test-suite-health
+components: [lib/pickup.sh, tests/unit/t4480_pickup_constant_hash.bats]
+related_tasks: [T-4472, T-4463]
+origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -42,9 +46,9 @@ arc_id: test-suite-health
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-19T11:58:59Z
-last_update: 2026-10-20T14:21:57Z
-date_finished:
+created: 2026-10-20T14:09:15Z
+last_update: 2026-10-20T15:14:41Z
+date_finished: 2026-10-20T15:14:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,17 +60,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-19T12:00:44Z'
+  - ts: '2026-10-20T14:15:30Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=287,acs=4)
+      (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-19T12:01:46Z'
+  - ts: '2026-10-20T14:16:22Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -78,40 +82,27 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: verdict-determinacy=? (unscored (no scorer for 
-      verdict-determinacy; not counted)); fault-detection-fidelity=? (unscored 
-      (no scorer for fault-detection-fidelity; not counted)); D1=4 
-      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4380: Evidence-driven prune and merge of duplicate or dead tests, each change backed by a recorded red run
+# T-4480: Apply termlink proposal 350: lib/pickup.sh refuse constant dedup hash and content-free inception tasks
 
 ## Context
 
-Phase 1 only (evidence, no deletions, no test edits): `docs/reports/T-4380-prune-candidates.md`.
-Inputs: `docs/reports/T-4376-test-suite-refactor.md`, `docs/reports/T-4376-test-suite-measurement.md`.
-Mutations run only in scratch copies under `.context/scratch/t4380/`, never the working tree.
-Phase 2 (actual edits) needs the parent's go.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Report `docs/reports/T-4380-prune-candidates.md` exists with section (a) never-fail candidates, section (b) duplicate coverage, a ranking by file-seconds, and an "unproven" list
-- [x] Every (a) candidate marked CONFIRMED cites a mutation run in a scratch copy under `.context/scratch/t4380/` (what was broken, the test command, the green result)
-- [x] Every (b) group names the function+behaviour, the evidence, and which test keeps the red run on the origin bug (origin task cited)
-- [x] Every candidate carries file:test, class, evidence, proposed action and expected saving (median file-seconds over the 21 v2 suite reports, `LATEST.yaml` included)
-- [x] No file under `tests/`, `lib/`, `agents/` or `bin/` is changed by this task's commits (phase 1 is evidence only)
-
-#### Phase 2 (proven items only, parent go 2026-10-20)
-- [x] A1-A13 are rewritten to exercise the real production code (root derived from the test file's own location, no literal /opt path); none deleted
-- [x] Each of A1-A13 has a recorded red run under its report mutation (scratch copy, rewritten test red) and a green run on the unbroken code, in `docs/reports/T-4380-phase2-evidence.md`
-- [x] The three mutation-proven duplicate groups (B2 git_common get_task_name, B3 judge UNKNOWN copies, m21 worker_kinds_parity line 101) are deleted only after the keeper is shown red under the same mutation
-- [x] `python3 tools/bats-dead-negation-lint.py tests/` is clean and the git-discovery fence lint passes; only `tests/` (plus the evidence report and this task file) is edited
+- [x] `pickup_dedup_hash` returns 1 (no hash on stdout) for an unreadable envelope and for one whose type, payload.summary and source.project all extract empty; a normal envelope still hashes as before
+- [x] `pickup_record_dedup` refuses (returns 1, ledger unchanged) when the hash cannot be computed; `pickup_dedup_check` treats an uncomputable hash as "not a duplicate" instead of matching the constant `sha256("||")`
+- [x] `pickup_create_inception` refuses (returns 1, no task created) when payload.summary or source.project is empty; `pickup_process_one` then returns 1 and leaves the envelope in the inbox (no dedup row, not moved to processed/)
+- [x] Regression bats `tests/unit/t4480_pickup_constant_hash.bats` passes, and fails against the pre-fix `lib/pickup.sh`; existing pickup bats stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,19 +280,19 @@ Phase 2 (actual edits) needs the parent's go.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-test -f docs/reports/T-4380-prune-candidates.md
-grep -q "^## (a)" docs/reports/T-4380-prune-candidates.md && grep -q "^## (b)" docs/reports/T-4380-prune-candidates.md && grep -qi "unproven" docs/reports/T-4380-prune-candidates.md
-grep -q "CONFIRMED" docs/reports/T-4380-prune-candidates.md && grep -q "\.context/scratch/t4380/" docs/reports/T-4380-prune-candidates.md
-test -f docs/reports/T-4380-phase2-evidence.md
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4380-lint.out 2>&1 && grep -q clean /tmp/.t4380-lint.out
+#
+# Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
+# web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
+#     bin/fw vendor self --check --task T-XXXX
+# (your own task id). It checks only the files your commits changed, so another
+# worker's uncommitted edit does not block your close; that drift is listed as
+# "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n lib/pickup.sh
+timeout 300 bats tests/unit/t4480_pickup_constant_hash.bats > /tmp/.t4480.out 2>&1 && ! grep -q "^not ok" /tmp/.t4480.out
+test "$(grep -c '# skip' /tmp/.t4480.out)" -eq 0
+bin/fw vendor self --check --task T-4480
 
 ## RCA
-
-**Symptom:** the unit suite carries tests that cannot fail and groups of tests that pin the same behaviour; they cost file-seconds and detect nothing extra (T-4376 measurement).
-**Root cause:** nothing asks, when a test is added, whether it can go red. In bats `run` always succeeds, so a test that only calls `run`, or whose checks all end in `|| true`, passes against any code.
-**Why structurally allowed:** the dead-negation lint (T-4398, `tools/bats-dead-negation-lint.py`) covers one shape only; nothing measures mutation kill or duplicate coverage.
-**Prevention:** phase 1 produces the evidence list; phase 2 edits, and T-4379 (lint as membership gate) can take the confirmed shapes as lint rules.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -317,17 +308,15 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4380-lint.out 2>&1 && g
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** (reported by 010-termlink, their T-2687) unrelated pickup envelopes were silently dropped as "duplicates", and content-free inception tasks named `Pickup:  (from )` reached the register and ranked at the top of `fw bvp`.
+
+**Root cause:** `lib/pickup.sh:107` `pickup_dedup_hash` swallows every extraction failure (`grep … 2>/dev/null || true`), so an unreadable or field-empty envelope hashes to the constant `sha256("||")`. `pickup_record_dedup` (`:149`) writes that constant into the ledger, after which `pickup_dedup_check` (`:122`) matches every later failing envelope against it. Separately `pickup_create_inception` (`:372`) builds a task from empty `summary`/`source_project` without checking them, and `pickup_process_one` ignored its exit status and recorded/moved the envelope anyway.
+
+**Why structurally allowed:** the fail-open `|| true` was there to survive `set -e`, which turned "cannot extract" into "extracted empty"; no test covered an envelope with empty values (validation checks key presence, not value).
+
+**Prevention:** the hash function now refuses to emit a hash it cannot stand behind; callers handle the non-zero; `tests/unit/t4480_pickup_constant_hash.bats` pins all three legs (hash refusal, ledger untouched, envelope left in inbox).
+
 ## Evolution
-
-### 2026-10-20 — phase 1 split
-- **What changed:** the parent scoped this run to evidence only (report, no test edits).
-- **Plan impact:** deletions and merges wait for the parent's go on the report.
-- **Triggered:** phase 2 under this same task after the go.
-
-### 2026-10-20 — phase 2 (proven items only)
-- **What changed:** A1–A13 now run the shipped code (blocks cut out of audit.sh/handover.sh/upgrade.sh/bin/fw/inception.sh, or the module called directly) and each goes red under its report mutation (13 of 13; evidence in `docs/reports/T-4380-phase2-evidence.md`). B2, B3 and m21 duplicates deleted after the keeper was shown red under the same mutation. A10 exposed a live bug: the python in `agents/context/checkpoint.sh` lost its indentation in T-3989 (SyntaxError, swallowed), so the restart signal has not carried the directive for ~12 days. The positive test is strict-xfail until it is fixed.
-- **Plan impact:** the A9 smoke deletion (~301 s) and A13's "delete" were not done (this phase forbade deleting A-file tests; A13 was rewritten instead). Real saving this phase is ~159 file-s (m21); the rest is fault detection, as the report predicted.
-- **Triggered:** the checkpoint.sh directive bug needs its own task (outside `tests/`, not fixed here).
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -403,11 +392,28 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4380-lint.out 2>&1 && g
 
 ## Updates
 
-### 2026-10-19T11:58:59Z — task-created [task-create-agent]
+### 2026-10-20T14:09:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4380-evidence-driven-prune-and-merge-of-dupli.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4480-apply-termlink-proposal-350-libpickupsh-.md
 - **Context:** Initial task creation
 
-### 2026-10-20T11:37:55Z — status-update [task-update-agent]
+### 2026-10-20T14:40:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f7399844
+- **Timestamp:** 2026-10-20T15:14:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T15:14:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,23 +1,23 @@
 ---
-id: T-4476
-name: "Adapt termlink proposal 346: handover.sh enrichment_status marker, honest fallback,
-  CONTEXT_DIR default (not commit-pending)"
+id: T-4473
+name: "Adapt termlink proposal 341: lib/arc.sh approve-driver persists --scoring-file
+  inline (+ attach to approved driver)"
 description: >
-  010-termlink pickup offset 346 (their T-2882/T-3269). Take: enrichment_status: pending
-  in handover frontmatter (both templates), Gotchas section placeholder instead of
-  'See gaps register above.', the focus.yaml CONTEXT_DIR fallback, and the 'mechanical
-  fallback, not a recommendation' disclosure under Suggested First Action. Decline
-  the scripts/commit-pending.sh hunk (helper absent in AEF). Check handover.sh:614-621
-  consumers and the TODO-detector (line ~621) still behave. Analysis: docs/reports/T-4472-termlink-proposals-triage.md,
-  diff docs/reports/T-4472-inputs/346-agents_handover_handover.sh.diff. Triage only,
-  not applied.
+  010-termlink pickup offset 341 (their T-3472). HEAD lib/arc.sh stores only scoring_file:
+  path on the reviewer's inline entry and writes no scoring: block; estimator.load_scoring_spec
+  reads only the inline scoring: dict, so a spec approved via --scoring-file scores
+  nothing. Proposal adds _arc_persist_scoring (check/new/attach), validated before
+  the entry exists and round-tripped after write; attach to an already-approved driver
+  is operator-path only. Analysis and diff: docs/reports/T-4472-termlink-proposals-triage.md,
+  docs/reports/T-4472-inputs/341-lib_arc.sh.diff (applies at HEAD and v1.8.13). Needs
+  red/green bats; keep reviewer path unchanged. Triage only, not applied.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/arc.sh, tests/unit/t4473_arc_scoring_file_persist.bats]
 related_tasks: [T-4472, T-4463]
 origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -46,9 +46,9 @@ origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T14:08:04Z
-last_update: 2026-10-20T14:40:59Z
-date_finished:
+created: 2026-10-20T14:07:07Z
+last_update: 2026-10-20T15:16:04Z
+date_finished: 2026-10-20T15:16:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -70,7 +70,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-20T14:16:21Z'
+  - ts: '2026-10-20T14:16:20Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -89,7 +89,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4476: Adapt termlink proposal 346: handover.sh enrichment_status marker, honest fallback, CONTEXT_DIR default (not commit-pending)
+# T-4473: Adapt termlink proposal 341: lib/arc.sh approve-driver persists --scoring-file inline (+ attach to approved driver)
 
 ## Context
 
@@ -99,12 +99,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Both handover templates (full and checkpoint) emit `enrichment_status: pending` in the frontmatter
-- [x] Gotchas section no longer says "See gaps register above."; it carries an honest unfilled placeholder that does NOT add a `[TODO` token (D8 count for an unfilled digest handover stays 3, so D8/D8b grading is unchanged)
-- [x] Suggested First Action prints the "Mechanical fallback, ranked by <why> — not a reasoned recommendation" disclosure under the `Continue T-XXX` line, for both the focus and the heuristic branch
-- [x] The focus.yaml lookup falls back to `$PROJECT_ROOT/.context` when CONTEXT_DIR is empty
-- [x] The commit-pending hunk is NOT applied (`grep -c commit-pending agents/handover/handover.sh` = 0)
-- [x] Regression bats `tests/unit/t4476_handover_honest_fallback.bats` fails on the old generator and passes on the new; neighbouring handover bats stay green
+- [x] `fw arc approve-driver <arc> <name> --scoring-file <spec>` (reviewer path and --i-am-human path) writes the validated spec as an inline `scoring:` block on the new `scoped_drivers` entry, and `estimator.load_scoring_spec` returns it
+- [x] An invalid `--scoring-file` on the --i-am-human path is refused before any entry is appended (arc YAML unchanged)
+- [x] `--scoring-file` on an already-approved driver attaches the spec in place under --i-am-human (approval fields kept), is refused without the operator path, and is refused on a --weight mismatch
+- [x] Reviewer path without --scoring-file is unchanged (no `scoring:` key written); regression bats `tests/unit/t4473_arc_scoring_file_persist.bats` red without the fix, green with it
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4473` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,12 +288,35 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-bash -n agents/handover/handover.sh
-test "$(grep -c commit-pending agents/handover/handover.sh)" -eq 0
-timeout 300 bats tests/unit/t4476_handover_honest_fallback.bats > /tmp/.t4476.out 2>&1 && ! grep -q "^not ok" /tmp/.t4476.out
-test "$(grep -c '# skip' /tmp/.t4476.out)" -eq 0
-timeout 300 bats tests/unit/t4191_handover_todo_markers.bats tests/unit/t3210_handover_suggested_action.bats tests/unit/t3211_handover_sfa_full_name.bats > /tmp/.t4476n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4476n.out
-bin/fw vendor self --check --task T-4476
+bash -n lib/arc.sh
+timeout 300 bats tests/unit/t4473_arc_scoring_file_persist.bats > /tmp/.t4473.out 2>&1 && ! grep -q "^not ok" /tmp/.t4473.out
+test "$(grep -c '# skip' /tmp/.t4473.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/t4473_arc_scoring_file_persist.bats > /tmp/.t4473.lint 2>&1 && grep -q clean /tmp/.t4473.lint
+bin/fw vendor self --check --task T-4473
+
+## RCA
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
+
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
+
+**Symptom:** a scoped driver approved with `fw arc approve-driver … --scoring-file spec.yaml` passes review ("scorable") but contributes nothing to any ranking (010-termlink T-3472, pickup offset 341).
+
+**Root cause:** `lib/arc.sh` `arc_approve_driver` hands `--scoring-file` only to the reviewer's inline entry (`e["scoring_file"]`, arc.sh:1639); the append heredoc (arc.sh:1676-1708) writes `{name, weight, approved_at, approved_by, rationale, reviewer}` and no `scoring:`. The estimator reads only an inline `scoring:` dict (`estimator.py:2320 load_scoring_spec`), so the spec the reviewer validated is discarded. The --i-am-human/--from-watchtower paths skip the reviewer, so a bad file was not even validated there. A second gap: once approved, the T-1979 dedup refused any later `--scoring-file`, leaving remove + re-approve (losing the approval record) as the only route.
+
+**Why structurally allowed:** the reviewer's check (a) and the writer are separate code; T-3429 tests asserted the review verdict and the entry's existence, never that the approved entry carries a spec the estimator can load. Nothing round-tripped writer → estimator.
+
+**Prevention:** `_arc_persist_scoring` validates before append and re-reads after write through `estimator.load_scoring_spec` + `validate_scoring_spec` (fails loudly if the stored spec is not what the estimator would score); `tests/unit/t4473_arc_scoring_file_persist.bats` pins writer → estimator round trip on both approval paths.
 
 ## Evolution
 
@@ -319,16 +341,6 @@ bin/fw vendor self --check --task T-4476
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
-
-## RCA
-
-**Symptom:** An unfilled, auto-generated handover reads as advice. Its Gotchas section says "See gaps register above." (a deflection that looks like an answer), its Suggested First Action prints `Continue T-XXX` with no sign it is a mechanical ranking, and nothing in the frontmatter says the narrative was never written (termlink T-2882 / T-3370).
-
-**Root cause:** `agents/handover/handover.sh:1521` hard-codes "See gaps register above." as the Gotchas body; `:1611-1616` prints the heuristic pick bare; the frontmatter templates at `:396-400` and `:825-828` carry no enrichment marker. Separately `:1596` builds the focus path from `$CONTEXT_DIR` with no default, so an empty CONTEXT_DIR silently reads `/working/focus.yaml` and drops the focus outrank (T-3210) without error (the `except OSError` swallows it).
-
-**Why structurally allowed:** T-4191 made Decisions/Failures/Open Questions look unfilled with `[TODO]`, but Gotchas and Suggested First Action were left as constants, and no test asserted that a mechanical line discloses itself. D8 counts only `[TODO`, so a constant that is not a `[TODO` is invisible to it.
-
-**Prevention:** `tests/unit/t4476_handover_honest_fallback.bats` runs the real generator and pins the marker, the Gotchas wording, the disclosure under both SFA branches, the empty-CONTEXT_DIR focus fallback, and the absence of the commit-pending hook. The Gotchas placeholder deliberately avoids a `[TODO` token so D8's count (3 on an unfilled digest handover → WARN) and D8b's rot threshold (>3) keep their present grading; a 4th `[TODO` would have turned every unfilled handover into a D8 FAIL.
 
 ## Recommendation
 
@@ -370,12 +382,6 @@ bin/fw vendor self --check --task T-4476
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-20 — Gotchas placeholder wording
-- **Chose:** an honest placeholder without a `[TODO` token ("Not recorded — the gaps register above is a starting point, not an answer.").
-- **Why:** audit D8 FAILs at >3 `[TODO` in LATEST.md and D8b counts archive handovers with >3 as rot. An unfilled digest handover has exactly 3 today (WARN). termlink's `[TODO: …]` would make every unfilled handover a D8 FAIL and push D8b to FAIL, a grading change outside this task's scope. The frontmatter `enrichment_status: pending` is the machine-readable unfilled signal instead.
-- **Rejected:** termlink's `[TODO: …]` verbatim (changes audit grading); raising the D8 threshold (audit.sh, out of scope).
-- **Declined:** the `scripts/commit-pending.sh` hunk (helper absent in AEF, per T-4472 triage).
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -388,11 +394,28 @@ bin/fw vendor self --check --task T-4476
 
 ## Updates
 
-### 2026-10-20T14:08:04Z — task-created [task-create-agent]
+### 2026-10-20T14:07:07Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4476-adapt-termlink-proposal-346-handoversh-e.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4473-adapt-termlink-proposal-341-libarcsh-app.md
 - **Context:** Initial task creation
 
-### 2026-10-20T14:40:59Z — status-update [task-update-agent]
+### 2026-10-20T14:40:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-65eb20fb
+- **Timestamp:** 2026-10-20T15:16:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T15:16:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

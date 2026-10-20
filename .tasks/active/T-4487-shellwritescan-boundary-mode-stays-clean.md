@@ -1,32 +1,13 @@
 ---
-id: T-4485
-name: "SECURITY: T-4367's git --output check matches raw words — quoting, a backslash,
-  a variable or a parameter default hides it, so git writes a file while classified
-  SAFE (released in v1.8.13)"
+id: T-4487
+name: "shell_write_scan boundary mode stays CLEAN on an unresolvable git --output target ($o, ${O:-…}, $(…), loop variable): decide whether to fail closed"
 description: >
-  ring20-dashboard (msg 9fc80de4, probe tmp/t4367_probe.sh) on v1.8.13 6efec63df,
-  reproduced by AEF at bleeding-edge HEAD 2026-10-20 (is_bash_safe_command, PROJECT_ROOT
-  + payload cwd set): SAFE for git diff "--output=/tmp/x"; git diff '--output=/tmp/x';
-  git diff --out\put=/tmp/x; o=--output=/tmp/x; git diff $o; git diff ${O:---output=/tmp/x};
-  for o in --output=/tmp/x; do git diff $o; done; git log -p "--output=/tmp/x". Gated
-  correctly only for the unquoted literal forms and $(echo ...). Root: _fw_git_has_output_opt
-  (agents/context/lib/safe-commands.sh) matches --output against raw words. Fix (from
-  their review, all four): dequote each word the way lib/shell_write_scan.py _tokens
-  does before matching; fail closed when a diff-family git command (diff/log/show/diff-tree/diff-index/whatchanged/format-patch
-  and any other subcommand accepting --output or -o FILE) carries an unquoted $, ${,
-  a backtick or a glob in its arguments; in T-4396 loops refuse a body that passes
-  a loop variable as a git argument; preferably classify git words through shell_write_scan's
-  tokenizer so both gates read the same words. Also check whether lib/shell_write_scan.py
-  itself catches these shapes and fix it there if not. Regression bats with every
-  probe line (load ../helpers/known_cwd) red before, green after; existing safe-commands
-  suites green. This is a released security gap: after the fix, ring20-dashboard field-tests
-  it with the same probe, then it ships (v1.8.14 or a v1.8.13.x hotfix — the operator/field-evidence
-  decision).
+  ring20-dashboard (msg f5a021db) T-4485 field test: scan_boundary(cmd, cwd=project, guarded=outside the project) with --output=/etc/x HITs on literal, quoted, escaped, --output F, abbreviated and $'…'/brace forms, but is CLEAN on o=--output=/etc/x; git diff $o, git diff ${O:---output=/etc/x}, git diff $(echo --output=/etc/x) and the for-loop variable, identically on v1.8.13 and the tip. The new UNRESOLVED step reaches _check_target, but an unresolved target only bites when ctx.mentions is set, which boundary mode does not set. General scanner limit, now harmless for these shapes because the read-only allowlist gates them (T-4485), so they reach the normal task gate. Decide: should boundary mode fail closed on an unresolved write target for git --output (and other write options)? Measure false-positive cost on the corpus of real agent commands before changing.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
@@ -56,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T14:41:55Z
-last_update: '2026-10-20T14:45:33Z'
-date_finished:
+created: 2026-10-20T15:21:45Z
+last_update: 2026-10-20T15:21:45Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -69,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-20T14:42:30Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-20T14:45:33Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=306,acs=8)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4485: SECURITY: T-4367's git --output check matches raw words — quoting, a backslash, a variable or a parameter default hides it, so git writes a file while classified SAFE (released in v1.8.13)
+# T-4487: shell_write_scan boundary mode stays CLEAN on an unresolvable git --output target ($o, ${O:-…}, $(…), loop variable): decide whether to fail closed
 
 ## Context
 
@@ -109,12 +62,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Regression bats `tests/unit/t4485_git_output_quoting.bats` (load ../helpers/known_cwd) asserts every probe line from ring20-dashboard (msg 9fc80de4) is NOT safe under `is_bash_safe_command`: double-quoted, single-quoted, backslash-split `--output`, `$o`, `${O:---output=...}`, loop variable, `git log -p "--output=..."`; red before the fix, green after
-- [x] Control leg: plain read-only git diff/log/show (no --output, no expansion) stays SAFE
-- [x] `_fw_git_has_output_opt` (agents/context/lib/safe-commands.sh) dequotes words before matching and fails closed on an unquoted `$`, backtick or glob in a diff-family git command's arguments
-- [x] `lib/shell_write_scan.py` checked against the same shapes; fixed there if it misses them
-- [x] Existing safe-commands bats suites stay green
-- [x] `bin/fw vendor self --check --task T-4485` clean
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -299,11 +248,6 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4485_git_output_quoting.bats > /tmp/.t4485 2>&1 && ! grep -q "^not ok" /tmp/.t4485
-test "$(grep -c '# skip' /tmp/.t4485)" -eq 0
-timeout 600 bats tests/unit/t4367_git_output_option.bats tests/unit/t4396_safe_commands_loops.bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats > /tmp/.t4485b 2>&1 && ! grep -q "^not ok" /tmp/.t4485b
-python3 tools/bats-dead-negation-lint.py tests/unit/t4485_git_output_quoting.bats > /tmp/.t4485c 2>&1 && grep -q clean /tmp/.t4485c
-bin/fw vendor self --check --task T-4485
 
 ## RCA
 
@@ -320,14 +264,6 @@ bin/fw vendor self --check --task T-4485
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `is_bash_safe_command` classified `git diff "--output=/tmp/x"`, `git diff '--output=/tmp/x'`, `git diff --out\put=/tmp/x`, `o=--output=/tmp/x; git diff $o`, `git diff ${O:---output=/tmp/x}`, `for o in --output=/tmp/x; do git diff $o; done` and `git log -p "--output=/tmp/x"` as SAFE (read-only, no task needed) although git writes `/tmp/x`. Released in v1.8.13; found by ring20-dashboard (msg 9fc80de4).
-
-**Root cause:** `_fw_git_has_output_opt` (agents/context/lib/safe-commands.sh:569-580) word-split the RAW command text and regex-matched each raw word against `--output`. The word git receives is the word *after* bash's quote removal and expansions, so any quote, backslash, `$var`, `${p:-default}` or loop variable put a different string in front of the regex than in front of git. The write scanner (lib/shell_write_scan.py `_segment`, git branch) did dequote (its `_tokens`), so it caught the quoted/backslash forms, but read `$o` / `${O:---output=…}` as literal words and missed every expansion form.
-
-**Why structurally allowed:** T-4367 shipped tests only for the unquoted literal spelling (`git diff --output=/tmp/x`); no test asked "what word does git actually get". The two gates tokenise independently (bash raw split vs. Python bash-style lexer), so the allowlist could disagree with the scanner on the same command and nothing compared them.
-
-**Prevention:** both gates now read the diff-family words through one function, `shell_write_scan.git_output_risk` (dequoted, ANSI-C decoded, brace-expanded; any `$`, backtick or unquoted glob fails closed). `tests/unit/t4485_git_output_quoting.bats` pins every field-probe line plus brace/glob/ANSI-C shapes for both gates, with a control leg so it cannot pass by gating everything.
 
 ## Evolution
 
@@ -405,10 +341,7 @@ bin/fw vendor self --check --task T-4485
 
 ## Updates
 
-### 2026-10-20T14:41:55Z — task-created [task-create-agent]
+### 2026-10-20T15:21:45Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4485-security-t-4367s-git---output-check-matc.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4487-shellwritescan-boundary-mode-stays-clean.md
 - **Context:** Initial task creation
-
-### 2026-10-20T14:42:29Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

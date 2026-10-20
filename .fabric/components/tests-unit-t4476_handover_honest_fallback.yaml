@@ -1,0 +1,21 @@
+id: tests/unit/t4476_handover_honest_fallback.bats
+name: t4476_handover_honest_fallback
+type: script
+subsystem: tests
+location: tests/unit/t4476_handover_honest_fallback.bats
+tags: []
+
+purpose: "T-4476 (termlink proposal 346, their T-2882/T-3370): an unfilled handover must say it is unfilled."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

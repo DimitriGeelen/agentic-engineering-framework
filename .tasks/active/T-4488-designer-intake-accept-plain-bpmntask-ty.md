@@ -1,15 +1,10 @@
 ---
-id: T-4484
-name: "audit_split_root_asset_lint.bats test 10 is red at HEAD (live-count check 'count
-  -eq 12') and not in the unit baseline"
+id: T-4488
+name: "Designer intake: accept plain bpmn:task (TYPE_TO_TAG addition, as callActivity in T-4374) with a lossless round trip"
 description: >
-  Found by w4380 (T-4380): tests/unit/audit_split_root_asset_lint.bats test 10 asserts
-  a live count of PROJECT_ROOT framework-asset sites (-eq 12); it is red at HEAD and
-  in today's fast-tier run. Decide: a new site was added deliberately (update the
-  reviewed baseline count with the reason) or a regression (remove the site). Check
-  which commit changed the count.
+  832 T-1215, decided GO by their operator 2026-10-20 15:12Z (msg f82152b2): option (a), AEF intake accepts plain bpmn:task with a round trip; the designer changes nothing (it already re-emits bpmn:task as authored). Success clause: all 8 of the 8 third-party fixtures that carry a plain bpmn:task (of 11, 832 tests/fixtures/third-party/) pass AEF intake with 0 refusals and come back from corpus_spec with the same bpmn:task count (0 converted to another type). Implement as a TYPE_TO_TAG addition like callActivity in T-4374 (tools/corpus_spec.py), plus the lane-occupancy entry (tools/corpus_lint.py NODE_OCCUPANCY, see T-4445) so the lane-overflow check covers it. Regression tests with a minimal plain-task fixture (round trip count preserved); obtain the 8 fixtures from 832 for the field check.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T14:21:17Z
-last_update: 2026-10-20T14:22:14Z
-date_finished:
+created: 2026-10-20T15:22:14Z
+last_update: 2026-10-20T15:22:14Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,27 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-20T14:22:15Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4484: audit_split_root_asset_lint.bats test 10 is red at HEAD (live-count check 'count -eq 12') and not in the unit baseline
+# T-4488: Designer intake: accept plain bpmn:task (TYPE_TO_TAG addition, as callActivity in T-4374) with a lossless round trip
 
 ## Context
 
@@ -85,9 +62,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] The commit that moved the PROJECT_ROOT shell-site count is identified and classified (regression vs deliberate) in ## RCA
-- [x] tests/unit/audit_split_root_asset_lint.bats passes in full (test 10 green), with the reason recorded next to the baseline or the offending site removed
-- [x] Regression guard: the test failure message names the offending sites so a future rise is diagnosable
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,9 +249,6 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
-out=$(bats tests/unit/audit_split_root_asset_lint.bats 2>&1); echo "$out" | grep -q '^ok 10 ' && ! echo "$out" | grep -q '^not ok'
-python3 tools/bats-dead-negation-lint.py tests/ 2>&1 | grep -q clean
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -291,11 +264,6 @@ python3 tools/bats-dead-negation-lint.py tests/ 2>&1 | grep -q clean
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** test 10 of audit_split_root_asset_lint.bats (`count -eq 12`) red at HEAD (live count 22).
-**Root cause:** deliberate additions, not a regression. 10 sites landed after the T-2649 baseline (28c7a1bd3, 2026-07-28), all in-repo source reads or framework-repo existence guards: T-2980 seed-ref audit (audit.sh:1564,1578), T-2433 sandbox profile (audit.sh:8482, bin/fw:3048,3051,5228), designer-pin dc/bvp guard (bin/fw:2594,3009), T-4449 template-sync pre-commit leg (hooks.sh:685,686). Last mover: a1bd1efc2 (T-4449, 2026-10-20). Test line: tests/unit/audit_split_root_asset_lint.bats:156.
-**Why structurally allowed:** a live-count ratchet that is only run by the unit suite; authors of the new sites did not run it, and the failure output printed no site list.
-**Prevention:** baseline updated to 22 with the reason recorded beside it; failure now prints the count and every site, so the next rise is diagnosable at a glance.
 
 ## Evolution
 
@@ -373,10 +341,7 @@ python3 tools/bats-dead-negation-lint.py tests/ 2>&1 | grep -q clean
 
 ## Updates
 
-### 2026-10-20T14:21:17Z — task-created [task-create-agent]
+### 2026-10-20T15:22:14Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4484-auditsplitrootassetlintbats-test-10-is-r.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4488-designer-intake-accept-plain-bpmntask-ty.md
 - **Context:** Initial task creation
-
-### 2026-10-20T14:22:14Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

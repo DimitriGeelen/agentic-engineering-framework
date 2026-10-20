@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4473: Adapt termlink proposal 341: lib/arc.sh approve-driver persists --scoring-file inline (+ attach to approved driver)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:16:55Z
+# ============================================================================
+
+task_id: T-4473
+task_name: "Adapt termlink proposal 341: lib/arc.sh approve-driver persists --scoring-file inline (+ attach to approved driver)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T14:07:07Z
+completed: 2026-10-20T15:16:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T16:44:58+02:00
+last_commit: 2026-10-20T16:44:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  approve-driver --scoring-file stores the spec inline as scoring: (validated before append, round-tripped through the estimator after); attaches to an approved driver on the operator path only
+
+# Key outcomes
+outcomes:
+  - '`fw arc approve-driver <arc> <name> --scoring-file <spec>` (reviewer path and --i-am-human path) writes the validated spec as an inline `scoring:` block on the new `scoped_drivers` entry, and `estimator.load_scoring_spec` returns it'
+  - 'An invalid `--scoring-file` on the --i-am-human path is refused before any entry is appended (arc YAML unchanged)'
+  - '`--scoring-file` on an already-approved driver attaches the spec in place under --i-am-human (approval fields kept), is refused without the operator path, and is refused on a --weight mismatch'
+  - 'Reviewer path without --scoring-file is unchanged (no `scoring:` key written); regression bats `tests/unit/t4473_arc_scoring_file_persist.bats` red without the fix, green with it'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4473` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/arc.sh'
+  - 'lib/arc.sh'
+  - '.tasks/active/T-4473-adapt-termlink-proposal-341-libarcsh-app.md'
+  - 'tests/unit/t4473_arc_scoring_file_persist.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T16:44:58'
+    action: 'T-4473: approve-driver --scoring-file stores the spec inline as scoring: (validated before append, round-tripped through the estimator after); attaches to an approved driver on the operator path only'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 68 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 68
+  commits: 1
+  files_changed: 4
+  lines_added: 380
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4473-adapt-termlink-proposal-341-libarcsh-app.md
+generated_by: context-agent-hybrid

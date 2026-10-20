@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4476: Adapt termlink proposal 346: handover.sh enrichment_status marker, honest fallback, CONTEXT_DIR default (not commit-pending)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:18:51Z
+# ============================================================================
+
+task_id: T-4476
+task_name: "Adapt termlink proposal 346: handover.sh enrichment_status marker, honest fallback, CONTEXT_DIR default (not commit-pending)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-20T14:08:04Z
+completed: 2026-10-20T15:17:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T17:05:36+02:00
+last_commit: 2026-10-20T17:05:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  handover marks itself enrichment_status: pending, honest Gotchas placeholder, mechanical-fallback disclosure under Suggested First Action, CONTEXT_DIR default for focus lookup (termlink 346; commit-pending hunk declined)
+
+# Key outcomes
+outcomes:
+  - 'Both handover templates (full and checkpoint) emit `enrichment_status: pending` in the frontmatter'
+  - 'Gotchas section no longer says "See gaps register above."; it carries an honest unfilled placeholder that does NOT add a `[TODO` token (D8 count for an unfilled digest handover stays 3, so D8/D8b grading is unchanged)'
+  - 'Suggested First Action prints the "Mechanical fallback, ranked by <why> — not a reasoned recommendation" disclosure under the `Continue T-XXX` line, for both the focus and the heuristic branch'
+  - 'The focus.yaml lookup falls back to `$PROJECT_ROOT/.context` when CONTEXT_DIR is empty'
+  - 'The commit-pending hunk is NOT applied (`grep -c commit-pending agents/handover/handover.sh` = 0)'
+  - 'Regression bats `tests/unit/t4476_handover_honest_fallback.bats` fails on the old generator and passes on the new; neighbouring handover bats stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — Gotchas placeholder wording'
+    chose: 'an honest placeholder without a `[TODO` token ("Not recorded — the gaps register above is a starting point, not an answer.").'
+    rationale: 'audit D8 FAILs at >3 `[TODO` in LATEST.md and D8b counts archive handovers with >3 as rot. An unfilled digest handover has exactly 3 today (WARN). termlink''s `[TODO: …]` would make every unfilled handover a D8 FAIL and push D8b to FAIL, a grading change outside this task''s scope. The frontmatter `enrichment_status: pending` is the machine-readable unfilled signal instead.'
+    alternatives_rejected: ['termlink''s `[TODO: …]` verbatim (changes audit grading); raising the D8 threshold (audit.sh, out of scope).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/handover.sh'
+  - 'agents/handover/handover.sh'
+  - '.tasks/active/T-4476-adapt-termlink-proposal-346-handoversh-e.md'
+  - 'tests/unit/t3211_handover_sfa_full_name.bats'
+  - 'tests/unit/t4476_handover_honest_fallback.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T17:05:36'
+    action: 'T-4476: handover marks itself enrichment_status: pending, honest Gotchas placeholder, mechanical-fallback disclosure under Suggested First Action, CONTEXT_DIR default for focus lookup (termlink 346; commit-pending hunk declined)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 69 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 69
+  commits: 1
+  files_changed: 5
+  lines_added: 218
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4476-adapt-termlink-proposal-346-handoversh-e.md
+generated_by: context-agent-hybrid

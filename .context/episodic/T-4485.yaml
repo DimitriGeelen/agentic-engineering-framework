@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4485: SECURITY: T-4367's git --output check matches raw words — quoting, a backslash, a variable or a parameter default hides it, so git writes a file while classified SAFE (released in v1.8.13)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T15:12:51Z
+# ============================================================================
+
+task_id: T-4485
+task_name: "SECURITY: T-4367's git --output check matches raw words — quoting, a backslash, a variable or a parameter default hides it, so git writes a file while classified SAFE (released in v1.8.13)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T14:41:55Z
+completed: 2026-10-20T15:11:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T17:03:53+02:00
+last_commit: 2026-10-20T17:04:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  git --output check judges the words bash hands git (shared shell_write_scan.git_output_risk: dequoted, brace-expanded; $/backtick/unquoted glob fail closed); scanner reads expansion shapes; regression bats with every field probe line. tick vendor-check AC
+
+# Key outcomes
+outcomes:
+  - 'Regression bats `tests/unit/t4485_git_output_quoting.bats` (load ../helpers/known_cwd) asserts every probe line from ring20-dashboard (msg 9fc80de4) is NOT safe under `is_bash_safe_command`: double-quoted, single-quoted, backslash-split `--output`, `$o`, `${O:---output=...}`, loop variable, `git log -p "--output=..."`; red before the fix, green after'
+  - 'Control leg: plain read-only git diff/log/show (no --output, no expansion) stays SAFE'
+  - '`_fw_git_has_output_opt` (agents/context/lib/safe-commands.sh) dequotes words before matching and fails closed on an unquoted `$`, backtick or glob in a diff-family git command''s arguments'
+  - '`lib/shell_write_scan.py` checked against the same shapes; fixed there if it misses them'
+  - 'Existing safe-commands bats suites stay green'
+  - '`bin/fw vendor self --check --task T-4485` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4485-security-t-4367s-git---output-check-matc.md'
+  - 'tests/unit/t4485_git_output_quoting.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T17:03:53'
+    action: 'T-4485: git --output check judges the words bash hands git (shared shell_write_scan.git_output_risk: dequoted, brace-expanded; $/backtick/unquoted glob fail closed); scanner reads expansion shapes; regression bats with every field probe line'
+  - time: '2026-10-20T17:04:48'
+    action: 'T-4485: tick vendor-check AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 29 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 29
+  commits: 2
+  files_changed: 6
+  lines_added: 661
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4485-security-t-4367s-git---output-check-matc.md
+generated_by: context-agent-hybrid
