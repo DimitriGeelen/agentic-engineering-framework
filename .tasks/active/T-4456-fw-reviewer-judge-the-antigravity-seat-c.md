@@ -50,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T11:08:56Z
-last_update: 2026-10-20T11:18:59Z
+last_update: 2026-10-20T19:45:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,8 +102,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] DEFERRED (needs agy flag/settings location; `agy --help` and its home are refused by the project-boundary gate here): the antigravity seat launch gives the seat a per-run settings file whose permissions.allow names only the read-only command tool
+- [x] Diagnosis recorded (2026-10-20, AEF): our antigravity seat is NOT headless-denied — both of today's antigravity dispatches (T-4490 18:15Z, T-4475 19:31Z) read the exported tree and printed full reviews; the auto-denied case is ring20's install. No allow-rule settings file is added here (nothing to fix on our launch; see RCA)
 - [x] An antigravity seat that exits 0 but produced no verdict (output says the command tool was auto-denied) is reported unavailable with that reason, not as a bare "exit 0"
+- [x] A seat whose printed verdict the ledger REFUSED (row in refusals-interim.jsonl for that dispatch and criterion) is reported as `verdict-refused` with the ledger's reason, and is NOT marked unavailable (T-4490 antigravity case: was `unavailable: exit 0`)
+- [x] The opencode `Unexpected server error` is classified: OURS — the registry pins retired model `zai-coding-plan/glm-5.2` (probe: 5.2 fails with and without our flags, 5.3 answers). Filed T-4506; the green-degraded ledger hole a refused seat opens is filed as T-4507
 - [x] Regression test tests/unit/t4456_antigravity_seat_test.py passes; existing *judge*, *t3580*, *t3582* tests stay green; signed trust chain untouched
 
 ### Human
@@ -287,6 +289,8 @@ bvp_scores_proposed:
 # web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
 #     bin/fw vendor self --check --task T-XXXX
 python3 -m pytest tests/unit/t4456_antigravity_seat_test.py -q > /tmp/.t4456.out 2>&1 && grep -q passed /tmp/.t4456.out
+python3 -m pytest tests/unit/t3852_unavailable_seat_test.py -q > /tmp/.t4456b.out 2>&1 && grep -q passed /tmp/.t4456b.out
+grep -q "REFUSALS" lib/reviewer/judge_cli.py
 bin/fw vendor self --check --task T-4456
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
@@ -294,10 +298,11 @@ bin/fw vendor self --check --task T-4456
 
 ## RCA
 
-**Symptom:** every antigravity dispatch exits 0 with no verdict; log: "a tool required the command permission that headless mode cannot prompt for, so it was auto-denied".
-**Root cause:** (a) the seat is launched `-p ... --mode plan --sandbox` with no allow-rule for its command tool (termlink.sh antigravity branch), so any shell read is auto-denied; (b) `_unavailable_reason` (lib/reviewer/judge_cli.py:816) reported only "exit 0" and never read result.md, where antigravity prints its refusal.
-**Why structurally allowed:** exit 0 + no ledger row had no named cause; antigravity's flags/settings location were never verified (docs/harnesses.md: "Not checked").
-**Prevention:** (b) fixed and pinned by t4456_antigravity_seat_test.py. (a) OPEN: needs `agy --help` / its settings path, which the boundary gate refuses from this session; operator or a TermLink-dispatched probe must supply it before an allow-rule file can be added and signed.
+**Symptom:** `fw reviewer judge` on T-4490 (and reportedly T-4475) showed the antigravity seat as `unavailable: exit 0` with no ledger row; ring20 saw the same with an "auto-denied" log.
+**Root cause (AEF):** the seat was not unavailable. `/tmp/tl-dispatch/judge-t-4490-r5-antigravity-4ff2e308e566/result.md` holds a full review; `record-for-worker` refused its verdict ("the screenshot of '/config' is not cited as evidence", class unseen-page) and wrote the refusal to `.context/reviews/refusals-interim.jsonl`, not `verdicts.jsonl`. `_collect` (lib/reviewer/judge_cli.py:886) looked only at verdict rows, so "no row" became `unavailable: <exit code>` and the refusal reason was lost. (T-4475's antigravity row V-20261020-741d682e exists and `_collect` reads it as not-evaluated today — no repro there.) Ring20's case (command tool auto-denied) is their install: the earlier half of this task already names it as `tool permission auto-denied (headless)`.
+**Opencode:** ours, not the provider's — `policy/review-backends.yaml:111` pins `zai-coding-plan/glm-5.2`, which `opencode models zai-coding-plan` no longer lists; a probe with our exact flags fails on 5.2 and answers on 5.3. Filed T-4506.
+**Why structurally allowed:** "no ledger row" was treated as one state, but it has two causes — the seat never judged, or it judged and the ledger refused the row — and only the first was modelled. The same conflation exists in the ledger's own `_unavailable_seat` (filed T-4507: a refused seat could count as provably unavailable for green-degraded).
+**Prevention:** `_collect` reads refusals for the dispatch; t4456_antigravity_seat_test.py pins `verdict-refused` with the reason and no `unavailable` key, plus a control where a seat with no refusal stays unavailable.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

@@ -883,7 +883,12 @@ def _collect(root: Path, task_id: str, dispatch_id: str, criteria: list[dict],
     led = ctx.ledger
     rows = [(r, i) for r, i in led.entries()
             if r.get("task") == task_id and r.get("dispatch_id") == dispatch_id]
-    unavailable = "" if (rows or led.faults) else (_unavailable_reason(dispatch_id) or "no completion")
+    # T-4456: a harness seat whose printed verdict `record-for-worker` refused also leaves no row,
+    # but it judged: name the ledger's refusal, never `unavailable: exit 0`.
+    refused = {} if rows else {
+        r.get("ac"): str(r.get("reason") or "") for r in vl._read(vl.REFUSALS, root)
+        if r.get("task") == task_id and r.get("dispatch_id") == dispatch_id}
+    unavailable = "" if (rows or refused or led.faults) else (_unavailable_reason(dispatch_id) or "no completion")
     out = []
     for c in criteria:
         mine = [(r, i) for r, i in rows if r.get("ac") == c["ac_index"]]
@@ -907,6 +912,9 @@ def _collect(root: Path, task_id: str, dispatch_id: str, criteria: list[dict],
                     res.update(source="ledger-row-invalid", why=f"{f[0]}: {f[1]}")
                     if f[0] == "unseen-page":
                         res["flag"] = f"green-on-unseen-page: {f[1]}"
+        elif c["ac_index"] in refused:
+            res.update(source="verdict-refused",
+                       why=f"verdict refused by the ledger: {refused[c['ac_index']] or 'no reason given'}")
         out.append(res)
     return out
 
