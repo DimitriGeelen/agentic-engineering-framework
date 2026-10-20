@@ -6,10 +6,10 @@ description: >
   init, keep cron FAIL. Findings (0909 run aef-install-20261017T144241Z): F-09. Triage:
   docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-3.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:25:10Z
-last_update: '2026-10-17T15:31:17Z'
+last_update: 2026-10-20T11:42:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,14 +86,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reproduced at HEAD a717aab76: the T-3747 branch in `evaluate()` (now ~line 596, triage cited 537-542 before line drift) still emitted WARN. Doctor (bin/fw ~2889) and audit (agents/audit/audit.sh ~5389) already render SKIP as info, so SKIP needs no consumer change.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Within INDEX_MAX_AGE_HOURS of `initialized_at`, a never-built index (no file, no manifest) with the cron job registered and deployed yields an overall OK verdict, and the index line is SKIP (not WARN) — no longer a warning inside the grace window its own message states
+- [x] The cron check still FAILs inside the grace window when nothing is scheduled to build the index (overall FAIL)
+- [x] Past the grace window, and for an index that existed and vanished (manifest present), the missing index still FAILs
+- [x] Regression test in tests/unit/t3783_vector_index_health.bats fails before the fix and passes after; the whole file stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -271,8 +273,21 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t3783_vector_index_health.bats > /tmp/.t4256.out 2>&1 && ! grep -q "^not ok" /tmp/.t4256.out
+test "$(grep -c '# skip' /tmp/.t4256.out)" -eq 0
+grep -q 't4256' tests/unit/t3783_vector_index_health.bats
+python3 tools/bats-dead-negation-lint.py tests/unit/t3783_vector_index_health.bats
+bin/fw vendor self --check --task T-4256
 
 ## RCA
+
+**Symptom:** on a freshly initialised project (greenfield run aef-install-20261017T144241Z, finding F-09) `fw doctor` WARNs "vector index not built yet (project initialized 0.1h ago, limit 24h)" — a warning inside the very grace window the message names.
+
+**Root cause:** `lib/vector_index_health.py` `evaluate()` (the T-3747 branch, ~line 596) emitted verdict `WARN` for the not-built-yet-within-grace case. T-3747 downgraded FAIL to WARN, but the case is not degraded: the hourly reindex simply has not had its window, and the age check already treats an index that old as OK. So every fresh install carried one standing WARN that no action except an early manual reindex could clear.
+
+**Why structurally allowed:** the T-3747 test pinned only "not FAIL" for this state, so WARN vs informational was never asserted; the message text and the verdict were never checked against each other.
+
+**Prevention:** the branch now emits `SKIP` (the module's existing informational verdict, already used by the fast-mode canary; overall status is computed only from FAIL/WARN). A regression test pins: overall OK + index SKIP inside the grace window with the cron job deployed, overall FAIL when the cron job is missing, and FAIL outside the window.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -368,3 +383,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4256-vector-index-doctor-check-warns-inside-i.md
 - **Context:** Initial task creation
+
+### 2026-10-20T11:42:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

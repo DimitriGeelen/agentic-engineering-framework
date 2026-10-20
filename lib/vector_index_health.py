@@ -590,18 +590,20 @@ def evaluate(project_root: Path, framework_root: Path, canary: bool = True,
     # T-3747: a project initialized less than INDEX_MAX_AGE_HOURS ago whose index was
     # never built (no file, no manifest) is "not built yet", not broken: the hourly
     # reindex has not had its window, and the age check already tolerates an index
-    # that old. WARN, not FAIL. The cron check below still FAILs when nothing is
-    # scheduled to build it, and an index that existed and vanished still FAILs.
+    # that old. The cron check below still FAILs when nothing is scheduled to build
+    # it, and an index that existed and vanished still FAILs. T-4256: SKIP, not
+    # WARN — inside the window the message itself states nothing is degraded, and a
+    # WARN there was a standing warning on every fresh install.
     init_at = project_initialized_at(project_root)
     if (manifest is None and not path.exists() and init_at is not None
             and 0 <= now - init_at < max_age * 3600):
         checks.append(_check(
-            "index", "WARN",
+            "index", "SKIP",
             f"vector index not built yet (project initialized {(now - init_at) / 3600:.1f}h ago, "
             f"limit {max_age:g}h)", f"Build it now: {REMEDY_REINDEX}"))
         checks.append(check_cron(project_root))
         verdicts = [c["verdict"] for c in checks]
-        status = "FAIL" if "FAIL" in verdicts else "WARN"
+        status = "FAIL" if "FAIL" in verdicts else ("WARN" if "WARN" in verdicts else "OK")
         return {"status": status, "full": canary, "ts": now,
                 "project_root": str(project_root), "checks": checks}
     idx = check_index(path)
