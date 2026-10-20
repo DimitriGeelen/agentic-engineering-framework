@@ -92,8 +92,11 @@ PYEOF
 
     if [ "$episodic_count" -gt 0 ]; then
         echo "Recent:"
+        # awk NR<=3, not head -3: head exits early, sort takes SIGPIPE on a
+        # corpus larger than a pipe buffer, and context.sh's pipefail+errexit
+        # turns that into exit 141 mid-output (T-2906).
         find "$CONTEXT_DIR/episodic" -name "T-*.yaml" -type f -printf '%T@ %f\n' 2>/dev/null | \
-            sort -rn | head -3 | awk '{print "  - " $2}' | sed 's/.yaml$//'
+            sort -rn | awk 'NR<=3 {sub(/\.yaml$/, "", $2); print "  - " $2}'
     fi
     echo ""
 

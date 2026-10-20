@@ -34,7 +34,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-10T18:36:45Z
-last_update: 2026-10-20T21:02:07Z
+last_update: 2026-10-20T23:50:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -64,6 +64,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=7 (lines=179,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T21:15:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=197,acs=7)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-10T18:45:13Z'
@@ -100,6 +109,7 @@ bvp_scores_proposed:
 - [x] An unreadable/unparseable memory file prints `?` with a reason instead of a silent `0`
 - [x] Regression test `tests/unit/t2906_context_status_counts.bats` covers flat form, indented form, and malformed file; fails against the old grep and passes with the fix
 - [x] `bin/fw vendor self --check --task T-2906` clean
+- [x] `bin/fw context status` exits 0 under `set -euo pipefail` with a large episodic corpus — the "Recent:" listing no longer dies with SIGPIPE (exit 141) in `sort -rn | head -3`; regression test with 4000 episodic files
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -226,6 +236,8 @@ bin/fw vendor self --check --task T-2906
 **Why structurally allowed:** a `grep -c` that matches nothing returns 0, and 0 is a legitimate count, so an empty scan is indistinguishable from an empty corpus (same class as T-1369 / T-2672). No test exercised `do_status` against real-shaped data, and three of four counters stayed right, so the output looked plausible.
 
 **Prevention:** counts now come from parsing the YAML (`yaml.safe_load`, list length of the top-level key), independent of key order and indentation; a file that exists but cannot be parsed prints `?` plus the reason on stderr rather than 0. `tests/unit/t2906_context_status_counts.bats` pins the flat form, the indented form and the malformed-file case.
+
+**Second defect, found at the close gate (2026-10-21):** the first Verification line exited 141. Not in the T-2906 counting code: `agents/context/lib/status.sh` "Recent:" listing piped `find … -printf | sort -rn | head -3`. `agents/context/context.sh:21` runs `set -euo pipefail`; with 3,597 episodic files sort writes ~121 KB, more than a pipe buffer, so when `head` exits after 3 lines `sort` takes SIGPIPE, the pipeline status is 141 and errexit kills `fw context status` mid-output (the OTHER CONTEXT section never printed). Pre-existing, latent until the corpus outgrew 64 KB; the bats fixtures had empty episodic dirs. Fix: `awk 'NR<=3'` in place of `head -3`, so the reader drains its input and nothing upstream is signalled. Test: `t2906` case with 4,000 episodic files, run under `set -o pipefail`.
 
 ## Evolution
 

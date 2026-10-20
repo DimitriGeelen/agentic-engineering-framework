@@ -82,3 +82,18 @@ EOF
     [[ "$output" == *"cannot count learnings.yaml"* ]]
     [[ "$output" != *"Learnings: 0"* ]] || false
 }
+
+@test "large episodic corpus: Recent listing survives pipefail (no SIGPIPE 141)" {
+    # sort writes more than a pipe buffer; a reader that exits early (head -3)
+    # signals it, and under context.sh's pipefail+errexit that is exit 141.
+    for i in $(seq 1 4000); do : > "$CONTEXT_DIR/episodic/T-$i-long-episodic-name-padding.yaml"; done
+    run bash -c 'set -euo pipefail; RED="" GREEN="" YELLOW="" CYAN="" NC=""
+        ensure_context_dirs() { :; }
+        source "$FRAMEWORK_ROOT/lib/compat.sh"
+        source "$FRAMEWORK_ROOT/agents/context/lib/status.sh"
+        do_status'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Task summaries: 4000"* ]]
+    [[ "$output" == *"=== END STATUS ==="* ]]
+    [[ "$output" != *".yaml"* ]] || false
+}
