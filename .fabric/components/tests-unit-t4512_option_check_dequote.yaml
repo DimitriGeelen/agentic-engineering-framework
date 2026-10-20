@@ -1,0 +1,21 @@
+id: tests/unit/t4512_option_check_dequote.bats
+name: t4512_option_check_dequote
+type: script
+subsystem: tests
+location: tests/unit/t4512_option_check_dequote.bats
+tags: []
+
+purpose: "T-4512 (SECURITY, G-121): the read-only allowlist's option checks read raw or quote-stripped words, so `find . -'exec' touch {} \\;` and `curl -'o' F URL` read as SAFE while find ran a command and curl wrote F."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

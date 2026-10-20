@@ -445,7 +445,8 @@ def _tokens(command: str, strip_heredocs: bool = True, masks: list | None = None
 
     T-4149: strip_heredocs=False when the caller already blanked bodies with the lexer;
     `masks`, when given, receives one string per token: 'u' for each unquoted character,
-    'q' for each quoted or escaped one (brace expansion only applies to unquoted text)."""
+    'q' for each quoted or escaped one (brace expansion only applies to unquoted text),
+    'd' for a `$` that expands inside double quotes (T-4512)."""
     cmd = _strip_heredoc_bodies(command) if strip_heredocs else command
     cmd = _decode_ansi_c_quoted(cmd).replace("`", "\n")
     out: list[str] = []
@@ -495,10 +496,13 @@ def _tokens(command: str, strip_heredocs: bool = True, masks: list | None = None
             mbuf.append("q" * (j - i - 1))
             inword, i = True, j + 1
         elif c == '"':
-            j, part = i + 1, []
+            # T-4512: pm marks a `$` that EXPANDS inside the quotes 'd' (one word, content
+            # unknown); every other quoted character is 'q'.
+            j, part, pm = i + 1, [], []
             while j < n and cmd[j] != '"':
                 if cmd[j] == "\\" and j + 1 < n and cmd[j + 1] in '"\\$`\n':
                     part.append(cmd[j + 1])
+                    pm.append("q")
                     j += 2
                 elif cmd.startswith(("$(", "${"), j) and not cmd.startswith("$((", j):
                     # T-4149: a nested "$(cmd "x")" / "${v:-"x"}" is one unit — its inner
@@ -509,15 +513,17 @@ def _tokens(command: str, strip_heredocs: bool = True, masks: list | None = None
                     except ParseError:
                         return None
                     part.append(cmd[j:e])
+                    pm.append("d" + "q" * (e - j - 1))
                     j = e
                 else:
                     part.append(cmd[j])
+                    pm.append("d" if cmd[j] == "$" and j + 1 < n and _EXPANDS.match(cmd[j + 1]) else "q")
                     j += 1
             if j >= n:
                 return None
             p = "".join(part)
             buf.append(p)
-            mbuf.append("q" * len(p))
+            mbuf.append("".join(pm))
             inword, i = True, j + 1
         else:
             op = next((o for o in OPERATORS if cmd.startswith(o, i)), None)
@@ -566,6 +572,53 @@ def git_output_risk(command: str) -> str | None:
             if _GIT_OUTPUT_RE.match(e.lstrip("\x00")):
                 return "--output writes a file"
     return None
+
+
+_EXPANDS = re.compile(r"[A-Za-z_0-9{(@*#?$!-]")
+# The framework's own documented idiom (CLAUDE.md §Watchtower Port): its output is a URL.
+_WATCHTOWER_URL_SUB = re.compile(r"\$\((?:bin/fw|fw|\.agentic-framework/bin/fw) watchtower url\)")
+
+
+def option_words(command: str) -> tuple[list[tuple[str, str]] | None, str | None]:
+    """T-4512: the words bash hands the program, for an option check on ONE simple
+    command. The read-only allowlist (agents/context/lib/safe-commands.sh) matched raw
+    or quote-stripped words, so `find . -'exec'` and `curl -'o' F` hid the option.
+    Words are dequoted, ANSI-C decoded and brace-expanded, each with a kind:
+      'L'  literal: exactly this word reaches the program
+      'E'  one word that BEGINS with a quoted expansion ("$X", "$(cmd)/x"): its
+           content is unknown, so it may be an option
+    A quoted expansion after a literal first character (`"Bearer $T"`) is 'L': whatever
+    it expands to, the word cannot start with `-`. Returns (None, reason) for what the
+    text cannot resolve: a backtick, an unquoted $ (may split into several words), an
+    unquoted glob, a brace expression left unexpanded, an unterminated quote."""
+    if "`" in command:
+        return None, "backtick substitution"
+    masks: list[str] = []
+    toks = _tokens(command, masks=masks)
+    if toks is None:
+        return None, "does not tokenise"
+    out: list[tuple[str, str]] = []
+    for t, m in zip(toks, masks):
+        if t in _OPSET:
+            continue
+        if t.startswith("\x00"):
+            t, m = t[1:], m[1:]
+        for e, em in _brace_expand(t, m):
+            u = "".join(c for k, c in enumerate(e) if em[k] == "u")
+            if "$" in u:
+                return None, "an unquoted expansion ($) may split into several words"
+            if any(c in "*?[" for c in u):
+                return None, "an unquoted glob"
+            if "{" in u and ("," in u or ".." in u):
+                return None, "a brace expression not expanded from the text"
+            kind = "L"
+            if em[:1] == "d":
+                kind = "E"
+                mt = _WATCHTOWER_URL_SUB.match(e)
+                if mt and "d" not in em[mt.end():]:
+                    e, kind = "http://watchtower" + e[mt.end():], "L"
+            out.append((e, kind))
+    return out, None
 
 
 def _decode_ansi_c_quoted(text: str) -> str:

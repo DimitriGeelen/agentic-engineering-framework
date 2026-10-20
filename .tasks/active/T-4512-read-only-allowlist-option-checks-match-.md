@@ -1,10 +1,16 @@
 ---
 id: T-4512
-name: "Read-only allowlist: option checks match raw words, so quoted -'exec' (find) and -'o' (curl) pass as SAFE"
+name: "Read-only allowlist: option checks match raw words, so quoted -'exec' (find)
+  and -'o' (curl) pass as SAFE"
 description: >
-  Same class as T-4485 for git. Route every option check through one shared dequoting tokenizer (quotes removed, ANSI-C decoded, braces expanded), and refuse what cannot be resolved. Reported by ring20-dashboard msg af2bbc85 (found by their cloud review of the public repo); reproduced on bleeding-edge HEAD 2026-10-20 with a classification-only probe: has_bash_write_pattern = no write AND is_bash_safe_command = SAFE. Concern G-121.
+  Same class as T-4485 for git. Route every option check through one shared dequoting
+  tokenizer (quotes removed, ANSI-C decoded, braces expanded), and refuse what cannot
+  be resolved. Reported by ring20-dashboard msg af2bbc85 (found by their cloud review
+  of the public repo); reproduced on bleeding-edge HEAD 2026-10-20 with a classification-only
+  probe: has_bash_write_pattern = no write AND is_bash_safe_command = SAFE. Concern
+  G-121.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T20:21:30Z
-last_update: 2026-10-20T20:21:30Z
-date_finished: null
+last_update: '2026-10-20T20:30:38Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +56,52 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T20:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T20:30:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=305,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4512: Read-only allowlist: option checks match raw words, so quoted -'exec' (find) and -'o' (curl) pass as SAFE
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+G-121 cause 4 of 5 (ring20-dashboard msg af2bbc85). Probe: `docs/reports/G-121-bypass-probe.sh` (classification only). Same class as T-4485, which fixed git `--output` alone.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `find . -'exec' touch {} \;`, `find . "-exec" …`, `find . -e\xec …`, `find . $'-exec' …` and `find . -{exec,name} …` are gated (not SAFE) by is_bash_safe_command
+- [x] `curl -'o' F URL`, `curl "-o" F URL`, `curl $'-o' F URL` and `curl -{o,s} F URL` are gated
+- [x] Option checks route through one shared dequoting tokenizer (reusing the T-4485 git word-dequoter), which refuses what it cannot resolve
+- [x] Controls stay SAFE: `find . -name '*.md'`, `curl -s URL`, `git grep pattern`, `awk '{print $1}' F`, `sed -n 1p F`
+- [x] New bats test covers both directions; T-4485, T-4367, T-4487, T-4499 and safe-commands suites stay green
+- [x] `bin/fw vendor self --check --task T-4512` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +286,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4512_option_check_dequote.bats > /tmp/.t4512.out 2>&1 && ! grep -q "^not ok" /tmp/.t4512.out
+test "$(grep -c '# skip' /tmp/.t4512.out)" -eq 0
+out=$(bash docs/reports/G-121-bypass-probe.sh 2>&1); echo "$out" | grep -E "^nowrite +gated +find \. -'exec'" >/dev/null && echo "$out" | grep -E "^nowrite +gated +curl -'o'" >/dev/null
+bin/fw vendor self --check --task T-4512
 
 ## RCA
 
@@ -264,6 +306,16 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `find . -'exec' touch {} \;` and `curl -'o' pwned URL` classified `nowrite` + `SAFE`, so they ran with no active task while find executed a command and curl wrote a file. Also found while localising: `sed -'i'`, `sed $'-i'`, `sort -'o'`, `sort -{o,u}`, `curl "$O" F URL`, `git branch -l x $'-D'` read as SAFE / read-only.
+
+**Root cause:** every option check read words that are not the program's argv. `_fw_find_has_action_predicate` and `_fw_fetch_writes_file` (agents/context/lib/safe-commands.sh, the `stripped="$(_fw_strip_quoted …)"` lines at HEAD) ran on `_fw_strip_quoted`, which DELETES quoted text, so `-'exec'` became `-`; `_fw_git_refverb_is_read` split raw words (`$'-D'` is not `-D` to `read -ra`); the sed `-i` / sort `-o` rules in `has_bash_write_pattern` are regexes over the raw line, which a quote after `-` or a brace defeats. None of them expanded braces or decoded ANSI-C quoting.
+
+**Why structurally allowed:** T-4485 found the same class for git `--output` and fixed it locally (git_output_risk) rather than as a shared primitive, so the other option checks kept their own ad-hoc splitting. The suites for find/curl (T-3238, T-3222) tested spellings an agent types plainly, never spellings bash rewrites before the program sees them.
+
+**Fix / prevention:** one tokenizer, `lib/shell_write_scan.py option_words` (built on the `_tokens` / `_brace_expand` pair T-4485 uses; masks now mark a double-quoted expanding `$` as `d`), surfaced in bash as `_fw_option_words`. find, curl/wget, git branch/tag and a new sed/sort arm (`_fw_filter_option_writes`) all read it. Unresolvable words (unquoted `$`, backtick, unquoted glob, unexpanded brace, unterminated quote) fail closed; a word that BEGINS with a quoted expansion is kind `E` and counts as a possible option. find keeps `-name "-delete"` SAFE through a value grammar (value-taking tests consume the next word) instead of by deleting quotes. `curl -sf "$(bin/fw watchtower url)/page"` stays SAFE by a narrow exemption for that exact documented substitution. `tests/unit/t4512_option_check_dequote.bats` (7 tests, both directions; 6 fail on HEAD) pins it.
+
+**Left open (not this task):** command substitution inside arguments is still unjudged (`cat "$(touch x)"` is SAFE, OBS-185); curl's own file-writing options beyond `-o/-O/--output*` (`-c` cookie jar, `-D`, `--trace`, `-K` config) are not checked; the tick guard's lexer refuses a dq string containing `\$(` as "does not tokenise" on HEAD too (fail-closed, cosmetic).
 
 ## Evolution
 
@@ -345,3 +397,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4512-read-only-allowlist-option-checks-match-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:24:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

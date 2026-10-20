@@ -592,6 +592,59 @@ sys.exit(1 if s.git_output_risk(sys.argv[2]) else 3)' "$_FW_SAFE_COMMANDS_LIB" "
 }
 _FW_SAFE_COMMANDS_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../lib" 2>/dev/null && pwd)"
 
+# T-4512: THE word list every option check reads. The find and curl/wget checks
+# matched quote-stripped words and sed/sort matched raw text, so -'exec', "-o",
+# $'-i' and -{o,u} hid the option they look for (G-121; T-4485 fixed git alone).
+# _fw_option_words <one clause> fills _FW_OW (words as the program gets them) and
+# _FW_OWK (L = literal, E = begins with a quoted expansion, content unknown).
+# Plain text is split in bash; anything with a quote, backslash, $, backtick, glob
+# or brace goes to lib/shell_write_scan.py option_words, the tokenizer git_output_risk
+# uses. Returns 1 when the words cannot be resolved (unquoted $, backtick, unquoted
+# glob, unterminated quote) or python3/the library fails: callers treat 1 as unsafe.
+_fw_option_words() {
+    _FW_OW=(); _FW_OWK=()
+    local _special="[]\$\`'\"\\\\*?[{]" _rec _ok=0
+    if ! [[ "$1" =~ $_special ]]; then
+        read -ra _FW_OW <<< "$1"
+        local _i
+        for _i in "${!_FW_OW[@]}"; do _FW_OWK[_i]=L; done
+        return 0
+    fi
+    while IFS= read -r -d '' _rec; do
+        if [ "$_rec" = OK ]; then _ok=1; break; fi
+        _FW_OWK+=("${_rec:0:1}"); _FW_OW+=("${_rec:1}")
+    done < <(python3 -I -c 'import sys
+sys.path.insert(0, sys.argv[1])
+import shell_write_scan as s
+words, why = s.option_words(sys.argv[2])
+if words is None:
+    sys.exit(1)
+sys.stdout.write("".join(k + w + "\0" for w, k in words) + "OK\0")' "$_FW_SAFE_COMMANDS_LIB" "$1" 2>/dev/null)
+    [ "$_ok" -eq 1 ] && return 0
+    _FW_OW=(); _FW_OWK=()
+    return 1
+}
+
+# T-4512: does this sed/sort clause name its in-place / output option? The outer
+# has_bash_write_pattern regexes read the raw line, so a quoted or brace-built
+# `-i` / `-o` passed them. Judged on _fw_option_words; a word that cannot be
+# resolved, or one that begins with an expansion, counts as the option.
+_fw_filter_option_writes() {
+    local base="$1" i tok
+    _fw_option_words "$2" || return 0
+    for (( i=1; i<${#_FW_OW[@]}; i++ )); do
+        tok="${_FW_OW[i]}"
+        [ "${_FW_OWK[i]}" = E ] && return 0
+        [ "$tok" = -- ] && return 1
+        case "$base:$tok" in
+            sed:--i*|sort:--o*) return 0 ;;
+            *:--*) ;;
+            sed:-*i*|sort:-*o*) return 0 ;;
+        esac
+    done
+    return 1
+}
+
 # Single (non-compound) command classification. This is the original
 # is_bash_safe_command body, unchanged apart from the name.
 _fw_single_command_is_safe() {
@@ -985,6 +1038,9 @@ _fw_single_command_is_safe() {
         # scope boundary (CLAUDE.md §Enforcement Tiers, T-2742): a file's contents are
         # not visible to a command-string scan, so executing one is never provably read-only.
         sed|awk|sort|uniq|cut|tr|nl|od|paste|join|fold|expand|unexpand|rev|comm|cmp|diff|colordiff|column|jq|seq|base64|md5sum|sha1sum|sha256sum|cksum|strings|xxd|tput|zcat|gunzip)
+            # T-4512: the outer sed -i / sort -o rules read raw text; a quoted or
+            # brace-built option is judged here on the dequoted words.
+            case "$base" in sed|sort) _fw_filter_option_writes "$base" "$cmd" && return 1 ;; esac
             return 0
             ;;
 
@@ -1579,10 +1635,12 @@ _fw_fetch_writes_file() {
     # (`-O-`, `-O -`, `--output-document=-`) or a no-download mode (`--spider`,
     # `--help`, `--version`) is present. The two trackers below carry that.
     local wget_stdout=0 wget_nofetch=0
-    stripped="$(_fw_strip_quoted "$cmd")" || return 0
-
-    # shellcheck disable=SC2086  # deliberate word-splitting: tokenising argv
-    set -- $stripped
+    # T-4512: the words curl/wget get (_fw_option_words), not quote-stripped ones:
+    # stripping turned `curl -'o' F URL` into `curl - F URL`. No value grammar is
+    # tracked here, so a word that begins with an expansion counts as a write.
+    _fw_option_words "$cmd" || return 0
+    [[ " ${_FW_OWK[*]} " == *" E "* ]] && return 0
+    set -- "${_FW_OW[@]}"
     [ $# -eq 0 ] && return 1
     base="${1##*/}"
     shift
@@ -1679,7 +1737,11 @@ _fw_fetch_writes_file() {
 _fw_git_refverb_is_read() {
     local verb="$1" cmd="$2"
     local -a words
-    read -ra words <<< "$cmd"
+    # T-4512: the words git gets, so `$'-D'` or `-'d'` is the flag it spells. A word
+    # that begins with an expansion may be any flag: not a read.
+    _fw_option_words "$cmd" || return 1
+    [[ " ${_FW_OWK[*]} " == *" E "* ]] && return 1
+    words=("${_FW_OW[@]}")
     # words[0]=git, words[1]=verb; arguments start at index 2.
     local args=("${words[@]:2}")
 
@@ -1734,16 +1796,26 @@ _fw_git_refverb_is_read() {
 # Failure direction is toward BLOCKING: an unparseable clause (unbalanced quote)
 # reads as carrying an action, which sends the command to the task gate rather
 # than past it — the same asymmetry argument as the compound-command judge.
+#
+# T-4512: quote-stripping hid a QUOTED predicate as well (`find . -'exec' touch {} \;`:
+# find gets -exec, the stripper left `-`). The words are now the ones find gets
+# (_fw_option_words), and the mention case is kept by the grammar instead: a test
+# that takes a value consumes the next word, so `-name "-delete"` is a name. A word
+# that begins with an expansion ("$X") in predicate position may be any predicate.
 _fw_find_has_action_predicate() {
-    local stripped tok
-    stripped="$(_fw_strip_quoted "$1")" || return 0
-    # shellcheck disable=SC2086  # deliberate word-splitting: tokenising argv
-    set -- $stripped
-    while [ $# -gt 0 ]; do
-        tok="$1"; shift
+    local i tok
+    _fw_option_words "$1" || return 0
+    for (( i=1; i<${#_FW_OW[@]}; i++ )); do
+        tok="${_FW_OW[i]}"
+        [ "${_FW_OWK[i]}" = E ] && return 0
         case "$tok" in
             -delete|-exec|-execdir|-ok|-okdir|-fprint|-fprintf|-fprint0|-fls)
                 return 0 ;;
+            -name|-iname|-path|-ipath|-wholename|-iwholename|-regex|-iregex|-lname|-ilname|\
+            -type|-xtype|-user|-group|-uid|-gid|-perm|-size|-mtime|-mmin|-atime|-amin|\
+            -ctime|-cmin|-newer|-anewer|-cnewer|-newer??|-samefile|-inum|-links|-maxdepth|\
+            -mindepth|-fstype|-context|-used|-regextype|-printf|-files0-from|-D)
+                i=$((i + 1)) ;;
         esac
     done
     return 1
