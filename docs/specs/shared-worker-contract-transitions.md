@@ -1,7 +1,21 @@
 # Shared dispatched-worker contract — transition table and conformance spec
 
-**Status:** DRAFT v0.3.2 for agreement by TermLink, ring20 and AEF. TermLink agreed v0.2.1; the six changes marked "TermLink re-agreement" in `docs/reports/T-4439-reviews/ring20-v0.2-answers.md` need their sign-off. ring20: SIGN-WITH-NOTES on v0.3, signing conditions N1-N3 and notes N4-N6 worded in here; v0.3.1 is the version ring20 signs; v0.3.2 is editorial only. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
+**Status:** DRAFT v0.3.3 for agreement by TermLink, ring20 and AEF. TermLink AGREES to v0.3.x: the six changes marked "TermLink re-agreement" in `docs/reports/T-4439-reviews/ring20-v0.2-answers.md` (v0.3) and v0.3.1 [termlink v0.3 agree]; v0.3.3 words in its hub credential carrier. ring20: SIGN-WITH-NOTES on v0.3, signing conditions N1-N3 and notes N4-N6 worded in here; v0.3.1 is the version ring20 signs; v0.3.2 is editorial only. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
 **Contract version field value:** `wc/0.3` (see §2; a patch revision does not change it). **Rule:** no implementation starts before this table is agreed.
+
+## Changelog v0.3.2 → v0.3.3
+
+Source: **[termlink v0.3 agree]** = TermLink's reply msg 469e56bc (2026-10-20): it agrees to v0.3 (all six changes) and
+v0.3.1, and answers open question 6 (what carries the supervisor credential on the hub). The version field stays
+`wc/0.3`: v0.3 already required a hub `supervisor_token` returned at T1; this names its carrier.
+
+1. **Status:** TermLink AGREES to v0.3.x. [termlink v0.3 agree]
+2. **Hub carrier (§3.2, §4.1):** `dispatch.allocate` returns `{dispatch_id, attempt, nonce, supervisor_token}`; the
+   token is 32 random bytes, returned once, stored only as its sha256. Lifecycle writes present it; worker-field
+   writes present the nonce only; a wrong or missing token is `fence_reject(bad_credential)`. [termlink v0.3 agree]
+3. **Open question 6 closed** for the hub; the reconciler's credential for non-hub backends stays open. [termlink v0.3 agree]
+4. **§6 honest limit:** with supervisor and worker under one uid the token is a speed bump, not a boundary.
+   [termlink v0.3 agree]
 
 ## Changelog v0.3.1 → v0.3.2
 
@@ -281,7 +295,11 @@ confirmed by an independent probe (a service manager's unit state counts, §6.3)
 `supervisor_token` returned with `(attempt, nonce)` at T1, stored hashed, kept out of the agent child's environment
 and prompt), **or** a channel the worker cannot write (ring20: root-owned stdout; the nonce there is an echo). Each
 backend states which it uses. A write that carries a valid nonce but no credential or channel proof is rejected
-`bad_credential`. Evidence for T3/T3b/T5/T7b is the signed completion of §6.5, so a reconciler cannot assert more
+`bad_credential`. **Hub carrier:** the `supervisor_token` (§4.1) is 32 random bytes, returned once by
+`dispatch.allocate`, and the hub keeps only its sha256 (as for the nonce). Every lifecycle write presents it: the
+supervisor's T2, T3, T3b, T-RECLAIM, T8 and the reconciler's T3, T3b, T5, T7b (and T8). Worker-field writes
+(`questions`, answer acks) present the nonce only. A wrong or missing token is `fence_reject(bad_credential)`.
+[termlink v0.3 agree] Evidence for T3/T3b/T5/T7b is the signed completion of §6.5, so a reconciler cannot assert more
 than the supervisor persisted. Residual: a hostile same-user process can read its supervisor's environment; this
 removes the accident and prompt-echo path, not that one. [ring20 v0.2 review §3, §S1]
 
@@ -401,7 +419,9 @@ whose listing was incomplete.
 *Sources: [§6.2.3] hub-allocated, atomic, no overlap; [claude Q2] TermLink is CAS owner; [opencode Q1] TOCTOU.*
 
 4.1 **Allocation is the backend's, atomically (T1).** A dispatcher asks `allocate(dispatch_id, dispatcher)`; the
-backend returns `(attempt, nonce)`. A client never numbers an attempt or mints a nonce.
+backend returns `(attempt, nonce)`. A client never numbers an attempt or mints a nonce. **Hub:** `dispatch.allocate`
+returns `{dispatch_id, attempt, nonce, supervisor_token}`; the token is 32 random bytes, returned once and never again,
+and stored only as its sha256, like the nonce (§3.2 writer authentication). [termlink v0.3 agree]
 **`dispatch_id`:** a caller may choose the id. It must be a well-formed `D-<ulid>` and unused; if taken, the backend
 fails with its own error `id_taken` and **never substitutes another id** (a caller holding a different key than the
 record is the worst failure in shadow mode). With no id given the backend allocates one. The id is immutable once
@@ -510,6 +530,8 @@ the `lost` entry (§3.3), and why `_worker_done()`'s existing finalisation check
 An external backend that authenticates by channel may persist, instead of the `exit_code` file and the signed
 completion, **channel-bound evidence per §3.2** in its own store, stamped with `persisted_at`; the S4 bound applies to it
 unchanged. [codex Q5, claude Q2] [ring20 v0.2 review §S4] [ring20 v0.3 check N3]
+**Honest limit:** when supervisor and worker run as the same uid (AEF local today), a `supervisor_token` on disk is a
+speed bump, not a boundary; real separation needs a different uid or a container (TermLink T-3477). [termlink v0.3 agree]
 
 ### 6.6 External backends
 
@@ -817,8 +839,10 @@ Still open:
    TermLink (hub backend). They are per-backend parameters under the §2 invariant. ring20 states `G = 0` (evidence read
    before `lost`) and `deadline_running` = `timeout_sec` + 60 s [ring20 v0.2 review §11]; the local backend and ring20's
    `ANSWER_TTL` and retention still need confirming.
-6. **Supervisor credential mechanism for the hub** (§3.2) is not specified beyond "a credential the worker never sees";
-   TermLink to propose the carrier. [ring20 v0.2 review §3]
+6. ~~**Supervisor credential carrier for the hub** (§3.2)~~ **Closed in v0.3.3:** `dispatch.allocate` returns a
+   `supervisor_token`, stored hashed (§3.2, §4.1). [termlink v0.3 agree] **Still open for non-hub backends:** how a
+   reconciler that replaces a dead supervisor holds the credential "the worker never sees" (local backend; external
+   backends declare it in their §6.6 mapping). [ring20 v0.2 review §3]
 3. ~~**Who runs the reconciler on a hub host that has no AEF** (ring20 workers)?~~ **Closed in v0.2.1:** ring20 has no
    reconciler of its own; its supervisor submits late evidence through T5 (ring20 msg b193272e, relayed by TermLink).
    [termlink v0.2 agree §3]

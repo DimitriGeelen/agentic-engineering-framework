@@ -57,7 +57,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T07:57:08Z
-last_update: 2026-10-20T21:42:18Z
+last_update: 2026-10-20T21:46:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -126,6 +126,10 @@ cost_estimate_proposed:
 - [x] T4 row and §3.4 mark the two-sweep/epoch evidence as the hub's and point to §3.2's hubless sweep writer (independent probe / unit state, evidence read before the write)
 - [x] §3.2 lists T8 among the reconciler's writes (CC-04 relies on it)
 - [x] T4 row marks "`G` at least 4 × the sweep interval" as hub-only, other backends per §2
+- [x] Spec is at v0.3.3 with a "Changelog v0.3.2 → v0.3.3" citing [termlink v0.3 agree]; status line records that TermLink AGREES to v0.3.x
+- [x] §3.2 writer authentication and §4.1 allocate state the hub carrier: `dispatch.allocate` returns `{dispatch_id, attempt, nonce, supervisor_token}`, token 32 random bytes, returned once, stored only as sha256; lifecycle writes (T2, T3, T3b, T-RECLAIM, T8; reconciler T3/T3b/T5/T7b) present it, worker-field writes present the nonce only; wrong/missing token → `fence_reject(bad_credential)`
+- [x] Open question 6 (hub carrier) closed; the reconciler-credential remainder for non-hub backends kept open
+- [x] §6 states the same-uid limit in one sentence (token on disk is a speed bump, not a boundary; real separation needs a different uid or a container, TermLink T-3477)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -185,7 +189,6 @@ grep -q 'ring20 v0.2 review §5' docs/specs/shared-worker-contract-transitions.m
 test "$(grep -cE '^### CC-[0-9]+' docs/specs/shared-worker-contract-transitions.md)" -ge 25
 grep -q 'TermLink re-agreement' docs/reports/T-4439-reviews/ring20-v0.2-answers.md
 grep -q '^## Changelog v0.3 → v0.3.1' docs/specs/shared-worker-contract-transitions.md
-grep -q 'DRAFT v0.3.2' docs/specs/shared-worker-contract-transitions.md
 grep -q '^## Changelog v0.3.1 → v0.3.2' docs/specs/shared-worker-contract-transitions.md
 grep -q 'no semantics change' docs/specs/shared-worker-contract-transitions.md
 grep -qE '^\| `reconciler` .*\| T3, T3b, T5, T7b, T8 \|$' docs/specs/shared-worker-contract-transitions.md
@@ -195,6 +198,15 @@ grep -q "This section is the \*\*hub's\*\* evidence" docs/specs/shared-worker-co
 test "$(grep -oE 'ring20 v0.3 check N[1-6]' docs/specs/shared-worker-contract-transitions.md | sort -u | wc -l)" -eq 6
 grep -q 'single-writer lease' docs/specs/shared-worker-contract-transitions.md
 grep -q 'channel-bound evidence per §3.2' docs/specs/shared-worker-contract-transitions.md
+grep -q 'DRAFT v0.3.3' docs/specs/shared-worker-contract-transitions.md
+grep -q '^## Changelog v0.3.2 → v0.3.3' docs/specs/shared-worker-contract-transitions.md
+grep -q 'termlink v0.3 agree' docs/specs/shared-worker-contract-transitions.md
+grep -q 'TermLink AGREES to v0.3' docs/specs/shared-worker-contract-transitions.md
+grep -qF '{dispatch_id, attempt, nonce, supervisor_token}' docs/specs/shared-worker-contract-transitions.md
+grep -q 'stored only as its sha256' docs/specs/shared-worker-contract-transitions.md
+grep -q 'speed bump, not a boundary' docs/specs/shared-worker-contract-transitions.md
+grep -q 'TermLink T-3477' docs/specs/shared-worker-contract-transitions.md
+grep -qF '~~**Supervisor credential carrier for the hub' docs/specs/shared-worker-contract-transitions.md
 grep -q 'modulo the `<backend>:` prefix' docs/specs/shared-worker-contract-transitions.md
 grep -qE 'n/a.*never.*§3' docs/specs/shared-worker-contract-transitions.md
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -353,6 +365,8 @@ grep -qE 'n/a.*never.*§3' docs/specs/shared-worker-contract-transitions.md
 **Why structurally allowed:** spec revisions are folded point-by-point from reviews; nothing cross-checks the writer table against the conformance cases, or hub-only phrasing against §6.6.
 **Prevention:** the ## Verification lines pin each correction; ring20's per-point check against the text is the review step that caught these.
 
+**v0.3.3 (hub credential carrier):** **Symptom:** §3.2 required a hub `supervisor_token` "the worker never sees" but open question 6 left its carrier unspecified, so the hub's `bad_credential` reject had no defined input. **Root cause:** v0.3 (spec §3.2 writer authentication, from ring20 v0.2 review §3/S1) stated the requirement before the hub owner (TermLink) had proposed a mechanism. **Why structurally allowed:** the spec deliberately parks backend-owned mechanisms as open questions until the owning party answers. **Prevention:** TermLink's answer (msg 469e56bc) is now worded into §3.2/§4.1/§6.5 and pinned by ## Verification; the remaining non-hub reconciler credential stays a named open question.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -428,6 +442,9 @@ grep -qE 'n/a.*never.*§3' docs/specs/shared-worker-contract-transitions.md
      legacy tasks lacking this section. -->
 
 ## Updates
+
+### 2026-10-20 — spec v0.3.2 → v0.3.3, TermLink agrees + hub carrier [agent]
+- **Action:** TermLink AGREES to v0.3 (six changes) and v0.3.1 (msg 469e56bc). Worded its hub credential carrier into §3.2 and §4.1 (`dispatch.allocate` → `{dispatch_id, attempt, nonce, supervisor_token}`, 32 random bytes, returned once, sha256-only; lifecycle writes present it, worker-field writes the nonce only; else `bad_credential`), added the same-uid honest limit to §6.5, closed open question 6 for the hub and kept the non-hub reconciler credential open. Version field stays `wc/0.3`.
 
 ### 2026-10-20 — spec v0.3.1 → v0.3.2, editorial [agent]
 - **Action:** fixed ring20 v0.3 full-check nits (a) T4/§3.4 hub-evidence scope + pointer to §3.2 hubless sweep writer, (b) T8 in §3.2 reconciler row, (c) T4 `G` ≥ 4 × sweep marked hub-only. Changelog v0.3.1 → v0.3.2: editorial only, no semantics change.
