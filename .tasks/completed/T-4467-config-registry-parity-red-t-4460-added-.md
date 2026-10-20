@@ -4,12 +4,12 @@ name: "Config registry parity red: T-4460 added WATCHTOWER_START_TIMEOUT to lib/
 description: >
   tests/lint/config-registry-parity.bats tests 60 and 62 fail (config.sh=63 keys, config.py=62): T-4460 (286fddab8) added WATCHTOWER_START_TIMEOUT (default 60) to lib/config.sh:266 but not to web/blueprints/config.py, the /config page's registry. Blocks the pre-push invariant suite. Add the row next to WATCHTOWER_OPEN_FIREWALL.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T12:19:34Z
-last_update: 2026-10-20T12:19:34Z
-date_finished: null
+last_update: 2026-10-20T12:28:12Z
+date_finished: 2026-10-20T12:25:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -96,7 +96,7 @@ date_finished: null
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-- [ ] [REVIEW] The new WATCHTOWER_START_TIMEOUT row on /config reads like its neighbours
+- [x] [REVIEW] The new WATCHTOWER_START_TIMEOUT row on /config reads like its neighbours
   **Steps:**
   1. Open `/config` on Watchtower (`cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` prints the base URL)
   2. Find the row WATCHTOWER_START_TIMEOUT (right after PORT, near WATCHTOWER_OPEN_FIREWALL)
@@ -117,6 +117,7 @@ date_finished: null
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261020-5309dd2c — reviewer-judge-t-4467-r3-6778994e7d6b:reviewer (rung rung-3-termlink-single-reviewer), digest 27dd0eaab0b8; dispatch judge-t-4467-r3-6778994e7d6b; evidence: .context/reviews/evidence/T-4467/AC1-judge-t-4467-r3-6778994e7d6b.md, .context/reviews/evidence/T-4467/01-config.png, .context/reviews/evidence/T-4467/config@1024.png, .context/reviews/evidence/T-4467/config@1440.png, .context/reviews/evidence/T-4467/config@1920.png; ledger .context/reviews/verdicts.jsonl
 
 ## Visual Verification
 
@@ -348,6 +349,15 @@ bin/fw vendor self --check --task T-4467
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** A one-row registry addition that restores parity between lib/config.sh and the /config page. The parity lint is green, the push went through (7eb672165), and the row renders like its neighbours at all three widths (Visual Verification table plus .context/visual/T-4467/). The [REVIEW] check goes to the independent reviewer (fw reviewer judge), as the operator decided for T-4347.
+
+**Evidence:**
+- tests/lint/config-registry-parity.bats: 3/3 ok (was 2 red).
+- /config at 1024/1440/1920: value 60, default 60, DEFAULT badge, full description.
+- `bin/fw watchtower current` passes; vendor check clean.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -375,3 +385,20 @@ bin/fw vendor self --check --task T-4467
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4467-config-registry-parity-red-t-4460-added-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9b8264c9
+- **Timestamp:** 2026-10-20T12:26:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — web/blueprints/config.py carries WATCHTOWER_START_TIMEOUT with the same default (60) and description as lib/config.sh:266
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/config.sh in: web/blueprints/config.py carries WATCHTOWER_START_TIMEOUT with the same default (60) and description as lib/config.sh:266`
+
+### 2026-10-20T12:25:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
