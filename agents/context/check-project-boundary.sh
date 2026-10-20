@@ -22,6 +22,10 @@
 #   /root/.local/**, /root/.claude/**, /proc/**, /sys/**, /dev/**,
 #   /bin/**, /sbin/**, /lib/**, /lib64/**
 #
+# T-4361 (GitHub #104): the /root/.claude and /root/.local entries also apply to the
+# running account's $HOME/.claude and $HOME/.local, and the registry key
+# BOUNDARY_EXTRA_READ_PATHS (colon-separated absolute paths) adds read-only entries.
+#
 # Origin: T-559 (cd block) → T-1702 (read-side block, G-065 fix).
 # Part of: Agentic Engineering Framework (P-002: Structural Enforcement)
 
@@ -32,6 +36,29 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
 fw_hook_crash_trap "check-project-boundary"
+
+# T-4361 (GitHub #104): the Claude/shim zones belong to the RUNNING account, not to
+# root. `/root/.claude` and `/root/.local` were literals, so a non-root account was
+# refused its own ~/.claude and ~/.local. They are kept (root-run installs) and the
+# account's $HOME equivalents are added. An unset, relative or `/` HOME adds nothing.
+BOUNDARY_HOME=""
+case "${HOME:-}" in
+    /?*) BOUNDARY_HOME=$(realpath -m "$HOME" 2>/dev/null || echo "$HOME") ;;
+esac
+BOUNDARY_HOME="${BOUNDARY_HOME%/}"
+# Extra Bash READ paths the operator allows (registry key BOUNDARY_EXTRA_READ_PATHS).
+# Only absolute entries count; `/` and empty entries are dropped, never widened.
+BOUNDARY_EXTRA_READ=""
+_bd_extra_raw=$(fw_config BOUNDARY_EXTRA_READ_PATHS "" 2>/dev/null || true)
+IFS=':' read -r -a _bd_extra_list <<< "$_bd_extra_raw"
+for _bd_p in "${_bd_extra_list[@]}"; do
+    case "$_bd_p" in /?*) ;; *) continue ;; esac
+    _bd_p=$(realpath -m "$_bd_p" 2>/dev/null || echo "$_bd_p")
+    _bd_p="${_bd_p%/}"
+    [ -n "$_bd_p" ] || continue
+    BOUNDARY_EXTRA_READ="${BOUNDARY_EXTRA_READ:+$BOUNDARY_EXTRA_READ:}$_bd_p"
+done
+unset _bd_extra_raw _bd_extra_list _bd_p
 
 # Read stdin (JSON from Claude Code)
 INPUT=$(cat)
@@ -76,6 +103,12 @@ except:
             exit 0
             ;;
     esac
+    # T-4361: the running account's own Claude Code config.
+    if [ -n "$BOUNDARY_HOME" ]; then
+        case "$RESOLVED" in
+            "$BOUNDARY_HOME"/.claude/*) exit 0 ;;
+        esac
+    fi
 
     # F-25: a sibling git worktree of THIS repo is the same repository, not
     # another project. `git worktree list` (run against PROJECT_ROOT) only
@@ -110,6 +143,7 @@ except:
     echo "    - $PROJECT_ROOT/**  (project files)" >&2
     echo "    - /tmp/**           (agent dispatch scratch)" >&2
     echo "    - /root/.claude/**  (Claude Code config)" >&2
+    [ -n "$BOUNDARY_HOME" ] && echo "    - $BOUNDARY_HOME/.claude/**  (this account's Claude Code config)" >&2
     echo "" >&2
     echo "  For cross-project reads, use TermLink dispatch:" >&2
     echo "" >&2
@@ -179,6 +213,8 @@ except Exception:
     export _BOUNDARY_CMD="$COMMAND"
     export _BOUNDARY_CWD="$CMD_CWD"
     export _BOUNDARY_FW_LIB="$FRAMEWORK_ROOT/lib"   # T-3766: registered credential files
+    export _BOUNDARY_HOME="$BOUNDARY_HOME"           # T-4361
+    export _BOUNDARY_EXTRA_READ="$BOUNDARY_EXTRA_READ"
     MATCH_RESULT=$(python3 << 'PYEOF'
 import re, sys, os, subprocess
 
@@ -191,6 +227,17 @@ project_root = project_root.rstrip('/')
 if not project_root:
     print('SAFE')
     sys.exit(0)
+
+# T-4361 (GitHub #104): account-relative zones and operator-allowed extra reads, both
+# already sanitised (absolute, realpath'd, no `/`) by the bash side above.
+_HOME = os.environ.get('_BOUNDARY_HOME', '').rstrip('/')
+_CLAUDE_ZONES = ('/root/.claude',) + ((_HOME + '/.claude',) if _HOME else ())
+_EXTRA_READ = tuple(p.rstrip('/') for p in os.environ.get('_BOUNDARY_EXTRA_READ', '').split(':')
+                    if p.startswith('/') and p.rstrip('/'))
+
+
+def _in_claude_zone(p):
+    return any(p == z or p.startswith(z + '/') for z in _CLAUDE_ZONES)
 
 # T-1361 / G-053-C: Strip content between balanced "..." and '...' before
 # pattern scanning. Prevents false-positives on quoted string literals (commit
@@ -592,7 +639,7 @@ for target_dir in matches:
     target = target_dir.rstrip('/')
     if not target.startswith(project_root + '/') and target != project_root:
         # Allow cd to safe zones
-        if target.startswith('/tmp') or target.startswith('/root/.claude'):
+        if target.startswith('/tmp') or _in_claude_zone(target):
             continue
         if _in_sibling_worktree(target):   # F-25
             continue
@@ -733,7 +780,7 @@ def _write_verb_targets(cmd):
 
 for target_file in (list(write_ops.findall(command)) + list(_tee_targets(command))
                     + [t for t in _write_verb_targets(command) if t.startswith('/')]):
-    if target_file.startswith(('/tmp/', '/root/.claude/', '/dev/', '/etc/cron.d/')):
+    if target_file.startswith(('/tmp/', '/dev/', '/etc/cron.d/')) or _in_claude_zone(target_file):
         continue
     if not target_file.startswith(project_root + '/'):
         if _in_sibling_worktree(target_file):   # F-25
@@ -769,14 +816,14 @@ READ_ALLOWED_PREFIXES = (
     '/lib/',
     '/lib64/',
     '/opt/',              # exact /opt only — handled below; SUBDIRS narrowed
-)
+) + tuple(z + '/' for z in ((_HOME + '/.local', _HOME + '/.claude') if _HOME else ()))   # T-4361
 # Exact-path allowlist (no trailing slash test).
 READ_ALLOWED_EXACT = {
     project_root,
     '/tmp', '/usr', '/etc', '/proc', '/sys', '/dev',
     '/bin', '/sbin', '/lib', '/lib64', '/opt', '/var',
     '/root', '/home',
-}
+} | ({_HOME} if _HOME else set())   # T-4361: listing the account's own home, as /root
 
 # Tokenize: split on whitespace and shell meta. For each /-starting token,
 # strip surrounding shell punctuation that can lead it (none expected after
@@ -808,6 +855,10 @@ def _read_outside(cand):
     if any(cand == r or cand.startswith(r + '/') for r in _READ_ROOTS):
         return False
     if _in_sibling_worktree(cand):   # F-25
+        return False
+    # T-4361: operator-allowed extra read paths (BOUNDARY_EXTRA_READ_PATHS). Checked
+    # before the prefix list so an extra under /opt/ is not sent to the /opt narrowing.
+    if any(cand == x or cand.startswith(x + '/') for x in _EXTRA_READ):
         return False
     # Allow paths with leading prefix in the explicit list.
     if any(cand == a.rstrip('/') or cand.startswith(a) for a in READ_ALLOWED_PREFIXES):
@@ -899,7 +950,7 @@ if _rhits:
 # a target built at run time ($VAR, printf, a path read from a file), code inside an
 # interpreter (python -c, perl -e, awk), and write verbs the scanner does not name.
 _ROOTS = {project_root, os.path.realpath(project_root)}
-_ZONES = tuple(sorted({z for p in ('/tmp', '/root/.claude', '/dev', '/etc/cron.d')
+_ZONES = tuple(sorted({z for p in ('/tmp', '/dev', '/etc/cron.d') + _CLAUDE_ZONES
                        for z in (p, os.path.realpath(p))}))
 
 
@@ -919,7 +970,7 @@ def _cd_ok(p):
     # `cd /` (leaving a temp dir before `rm -rf $T`) is not another project; a relative
     # write after it resolves under / and is judged as a write.
     return (p == '/' or any(_under(p, r) for r in _ROOTS) or _under(p, '/tmp')
-            or _under(p, '/root/.claude') or _in_sibling_worktree(p))
+            or any(_under(p, z) for z in _CLAUDE_ZONES) or _in_sibling_worktree(p))
 
 
 try:
@@ -971,6 +1022,9 @@ PYEOF
     echo "" >&2
     echo "  Neither path crosses the boundary of *this* session; each" >&2
     echo "  target project enforces its own governance in its own process." >&2
+    echo "" >&2
+    echo "  To let this project READ an extra path (e.g. a tool install dir):" >&2
+    echo "    $(_fw_cmd) config set BOUNDARY_EXTRA_READ_PATHS /path/one:/path/two" >&2
     echo "" >&2
     echo "  Project root: $PROJECT_ROOT" >&2
     echo "" >&2
