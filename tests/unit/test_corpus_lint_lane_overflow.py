@@ -74,6 +74,25 @@ def test_every_spec_type_has_an_occupancy_entry():
     assert missing == set(), f"types with no occupancy entry: {sorted(missing)}"
 
 
+def test_a_lane_holding_a_call_activity_is_evaluated_not_skipped(monkeypatch):
+    """T-4445: T-4374 added the `call` type (bpmn:callActivity) without an occupancy
+    entry, so every lane holding one would have skipped this rule. A call activity is an
+    activity box with its name inside, so it occupies what a task does."""
+    # emit_map refuses a callActivity whose calledElement is not a corpus map; a fixture
+    # index keeps the test off the live corpus (T-3326).
+    monkeypatch.setattr(corpus_spec, "store_index",
+                        lambda *a, **k: {"by_id": {"called": {}}, "by_uuid": {}})
+
+    def call_target(spec):
+        for n in spec["nodes"]:
+            n["called_element"] = "called"
+    lanes, nodes = [("agent", 100)], [("c1", "agent", 0, "call"), ("c2", "agent", 300, "call")]
+    f = _findings(lanes, nodes, call_target)
+    assert len(f) == 1 and f[0]["node"] == "c1, c2"
+    assert f"c2 (call, y=300 + {SERVICE}px occupancy)" in f[0]["detail"]
+    assert _skips(lanes, nodes, call_target) == []
+
+
 def test_occupancy_is_not_ordered_by_shape_size():
     """832's inversion, pinned because it is the counterintuitive part of their table
     and the reason a per-type table built from raw height gets tight lanes wrong: a

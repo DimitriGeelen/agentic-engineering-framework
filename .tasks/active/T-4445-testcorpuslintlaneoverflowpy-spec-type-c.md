@@ -2,9 +2,13 @@
 id: T-4445
 name: "test_corpus_lint_lane_overflow.py: spec type 'call' has no lane-occupancy entry"
 description: >
-  test_every_spec_type_has_an_occupancy_entry: types with no occupancy entry: ['call']. A new corpus spec type (likely from T-4399's BPMN work) was added without its occupancy entry. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or expectation drift from a deliberate change (update the test, say why).
+  test_every_spec_type_has_an_occupancy_entry: types with no occupancy entry: ['call'].
+  A new corpus spec type (likely from T-4399's BPMN work) was added without its occupancy
+  entry. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push
+  (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or
+  expectation drift from a deliberate change (update the test, say why).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T08:07:53Z
-last_update: 2026-10-20T08:07:53Z
-date_finished: null
+last_update: '2026-10-20T08:15:35Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T08:11:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T08:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=309,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4445: test_corpus_lint_lane_overflow.py: spec type 'call' has no lane-occupancy entry
@@ -62,8 +94,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `tools/corpus_lint.py` NODE_OCCUPANCY has a `call` entry (64, activity box with the name inside, same as service/subprocess) and `test_every_spec_type_has_an_occupancy_entry` passes unchanged
+- [x] A new regression test shows that a lane holding a `call` node is evaluated (it fires on spill, and it is not skipped)
+- [x] tests/unit/test_corpus_lint_lane_overflow.py green; vendor self --check --task T-4445 clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +281,19 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_corpus_lint_lane_overflow.py -q > /tmp/.t4445.out 2>&1 && grep -q passed /tmp/.t4445.out
+python3 -c "import sys; sys.path.insert(0,'tools'); import corpus_lint as c; assert c.NODE_OCCUPANCY['call'] == 64"
+bin/fw vendor self --check --task T-4445
 
 ## RCA
+
+**Symptom:** `test_every_spec_type_has_an_occupancy_entry` red in the 2026-10-20T01:03Z nightly: `types with no occupancy entry: ['call']`.
+
+**Root cause:** product regression, not expectation drift. T-4374 (a86d4a226) added `"call": "callActivity"` to `tools/corpus_spec.py:68` TYPE_TO_TAG but did not add it to `tools/corpus_lint.py:457` NODE_OCCUPANCY. lane-overflow treats a type with no occupancy entry as unevaluable, so every lane holding a call activity would be skipped by the rule, silently, for good. That is exactly the gap this test exists to catch.
+
+**Why structurally allowed:** T-4374 ran its own corpus_spec tests but not the lint suite. Only this cross-module parity test pins the two tables together, and it runs in the nightly, not at commit time.
+
+**Prevention:** the parity test catches it, and now passes. A new test proves that a lane holding a `call` node is evaluated and fires on spill, so if the entry is removed the failure points at the behaviour, not only at the table.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +389,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4445-testcorpuslintlaneoverflowpy-spec-type-c.md
 - **Context:** Initial task creation
+
+### 2026-10-20T08:11:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
