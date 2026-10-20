@@ -74,7 +74,8 @@ last_update: 2026-09-22T18:00:00Z
 EOF
     run _selector
     [ "$status" -eq 0 ]
-    [ "$output" = "Continue T-5001: a plain one-line task name" ]
+    # T-4476: a mechanical-fallback disclosure follows the Continue line.
+    [ "${lines[0]}" = "Continue T-5001: a plain one-line task name" ]
 }
 
 @test "t3211: handover.sh no longer contains the truncating one-line name regex" {

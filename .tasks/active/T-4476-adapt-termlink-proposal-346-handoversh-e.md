@@ -1,13 +1,21 @@
 ---
 id: T-4476
-name: "Adapt termlink proposal 346: handover.sh enrichment_status marker, honest fallback, CONTEXT_DIR default (not commit-pending)"
+name: "Adapt termlink proposal 346: handover.sh enrichment_status marker, honest fallback,
+  CONTEXT_DIR default (not commit-pending)"
 description: >
-  010-termlink pickup offset 346 (their T-2882/T-3269). Take: enrichment_status: pending in handover frontmatter (both templates), Gotchas section placeholder instead of 'See gaps register above.', the focus.yaml CONTEXT_DIR fallback, and the 'mechanical fallback, not a recommendation' disclosure under Suggested First Action. Decline the scripts/commit-pending.sh hunk (helper absent in AEF). Check handover.sh:614-621 consumers and the TODO-detector (line ~621) still behave. Analysis: docs/reports/T-4472-termlink-proposals-triage.md, diff docs/reports/T-4472-inputs/346-agents_handover_handover.sh.diff. Triage only, not applied.
+  010-termlink pickup offset 346 (their T-2882/T-3269). Take: enrichment_status: pending
+  in handover frontmatter (both templates), Gotchas section placeholder instead of
+  'See gaps register above.', the focus.yaml CONTEXT_DIR fallback, and the 'mechanical
+  fallback, not a recommendation' disclosure under Suggested First Action. Decline
+  the scripts/commit-pending.sh hunk (helper absent in AEF). Check handover.sh:614-621
+  consumers and the TODO-detector (line ~621) still behave. Analysis: docs/reports/T-4472-termlink-proposals-triage.md,
+  diff docs/reports/T-4472-inputs/346-agents_handover_handover.sh.diff. Triage only,
+  not applied.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4472, T-4463]
@@ -39,8 +47,8 @@ origin: {kind: "peer", source: "010-termlink", ref: "framework:pickup"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T14:08:04Z
-last_update: 2026-10-20T14:08:04Z
-date_finished: null
+last_update: 2026-10-20T14:40:59Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T14:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T14:16:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4476: Adapt termlink proposal 346: handover.sh enrichment_status marker, honest fallback, CONTEXT_DIR default (not commit-pending)
@@ -63,8 +99,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Both handover templates (full and checkpoint) emit `enrichment_status: pending` in the frontmatter
+- [x] Gotchas section no longer says "See gaps register above."; it carries an honest unfilled placeholder that does NOT add a `[TODO` token (D8 count for an unfilled digest handover stays 3, so D8/D8b grading is unchanged)
+- [x] Suggested First Action prints the "Mechanical fallback, ranked by <why> — not a reasoned recommendation" disclosure under the `Continue T-XXX` line, for both the focus and the heuristic branch
+- [x] The focus.yaml lookup falls back to `$PROJECT_ROOT/.context` when CONTEXT_DIR is empty
+- [x] The commit-pending hunk is NOT applied (`grep -c commit-pending agents/handover/handover.sh` = 0)
+- [x] Regression bats `tests/unit/t4476_handover_honest_fallback.bats` fails on the old generator and passes on the new; neighbouring handover bats stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,22 +289,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+bash -n agents/handover/handover.sh
+test "$(grep -c commit-pending agents/handover/handover.sh)" -eq 0
+timeout 300 bats tests/unit/t4476_handover_honest_fallback.bats > /tmp/.t4476.out 2>&1 && ! grep -q "^not ok" /tmp/.t4476.out
+test "$(grep -c '# skip' /tmp/.t4476.out)" -eq 0
+timeout 300 bats tests/unit/t4191_handover_todo_markers.bats tests/unit/t3210_handover_suggested_action.bats tests/unit/t3211_handover_sfa_full_name.bats > /tmp/.t4476n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4476n.out
+bin/fw vendor self --check --task T-4476
 
 ## Evolution
 
@@ -289,6 +319,16 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** An unfilled, auto-generated handover reads as advice. Its Gotchas section says "See gaps register above." (a deflection that looks like an answer), its Suggested First Action prints `Continue T-XXX` with no sign it is a mechanical ranking, and nothing in the frontmatter says the narrative was never written (termlink T-2882 / T-3370).
+
+**Root cause:** `agents/handover/handover.sh:1521` hard-codes "See gaps register above." as the Gotchas body; `:1611-1616` prints the heuristic pick bare; the frontmatter templates at `:396-400` and `:825-828` carry no enrichment marker. Separately `:1596` builds the focus path from `$CONTEXT_DIR` with no default, so an empty CONTEXT_DIR silently reads `/working/focus.yaml` and drops the focus outrank (T-3210) without error (the `except OSError` swallows it).
+
+**Why structurally allowed:** T-4191 made Decisions/Failures/Open Questions look unfilled with `[TODO]`, but Gotchas and Suggested First Action were left as constants, and no test asserted that a mechanical line discloses itself. D8 counts only `[TODO`, so a constant that is not a `[TODO` is invisible to it.
+
+**Prevention:** `tests/unit/t4476_handover_honest_fallback.bats` runs the real generator and pins the marker, the Gotchas wording, the disclosure under both SFA branches, the empty-CONTEXT_DIR focus fallback, and the absence of the commit-pending hook. The Gotchas placeholder deliberately avoids a `[TODO` token so D8's count (3 on an unfilled digest handover → WARN) and D8b's rot threshold (>3) keep their present grading; a 4th `[TODO` would have turned every unfilled handover into a D8 FAIL.
 
 ## Recommendation
 
@@ -330,6 +370,12 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-20 — Gotchas placeholder wording
+- **Chose:** an honest placeholder without a `[TODO` token ("Not recorded — the gaps register above is a starting point, not an answer.").
+- **Why:** audit D8 FAILs at >3 `[TODO` in LATEST.md and D8b counts archive handovers with >3 as rot. An unfilled digest handover has exactly 3 today (WARN). termlink's `[TODO: …]` would make every unfilled handover a D8 FAIL and push D8b to FAIL, a grading change outside this task's scope. The frontmatter `enrichment_status: pending` is the machine-readable unfilled signal instead.
+- **Rejected:** termlink's `[TODO: …]` verbatim (changes audit grading); raising the D8 threshold (audit.sh, out of scope).
+- **Declined:** the `scripts/commit-pending.sh` hunk (helper absent in AEF, per T-4472 triage).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -346,3 +392,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4476-adapt-termlink-proposal-346-handoversh-e.md
 - **Context:** Initial task creation
+
+### 2026-10-20T14:40:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
