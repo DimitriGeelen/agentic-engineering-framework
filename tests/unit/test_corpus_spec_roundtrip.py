@@ -563,6 +563,15 @@ def test_generate_missing_id_refuses_naming_the_id(tmp_path, id_line):
     assert "needs an id" in msg and "`id:`" in msg
 
 
+@pytest.mark.parametrize("body", ["", "- a\n", "just text\n"])
+def test_generate_non_mapping_spec_refuses_naming_the_id(tmp_path, body):
+    p = tmp_path / "spec.yaml"
+    p.write_text(body)
+    with pytest.raises(SystemExit) as e:
+        corpus_spec.main(["generate", str(p)])
+    assert "not a mapping" in str(e.value) and "`id:`" in str(e.value)
+
+
 # ── T-4501: bpmn:boundaryEvent (832 boundary-events / kitchen-sink goldens) ──
 
 GOLDENS = REPO_ROOT / "tests" / "fixtures" / "corpus-832-goldens"

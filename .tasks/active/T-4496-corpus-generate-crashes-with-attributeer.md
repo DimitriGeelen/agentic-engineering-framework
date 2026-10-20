@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T15:50:00Z
-last_update: 2026-10-20T19:02:24Z
+last_update: 2026-10-20T19:12:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,6 +95,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `emit_map` (and so `corpus_spec generate`) refuses a spec whose `id` is null, missing, empty or not a string with a SystemExit naming the missing `id` — no AttributeError/KeyError traceback
 - [x] Regression test in tests/unit/test_corpus_spec_roundtrip.py covers null, missing and empty id via `main(["generate", …])`; fails without the fix, passes with it
+- [x] A spec file that is not a mapping (empty file, list, scalar) refuses with "spec is not a mapping … needs at least `id:`" instead of `AttributeError: 'NoneType' object has no attribute 'get'` (found while deriving 832's kitchen-sink: a failed derive leaves an empty YAML); `test_generate_non_mapping_spec_refuses_naming_the_id`
 - [x] Existing tests/unit/test_corpus_spec_roundtrip.py stays green
 - [x] `bin/fw vendor self --check --task T-4496` clean
 

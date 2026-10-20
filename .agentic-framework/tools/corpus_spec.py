@@ -582,6 +582,9 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
     # T-4496: the id names the map in every generated element id, so a spec
     # without one (`id: null`, e.g. derived from a map with no aef:workflowMeta)
     # used to die as an AttributeError deep in the emitter. Refuse up front.
+    if not isinstance(spec, dict):
+        raise SystemExit(f"generate: spec is not a mapping (got {type(spec).__name__}) "
+                         f"— an empty file? A spec needs at least `id:`")
     if not isinstance(spec.get("id"), str) or not spec["id"].strip():
         raise SystemExit(
             f"generate: spec needs an id (top-level `id:` is {spec.get('id')!r}) "
