@@ -104,11 +104,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `watchtower start` probes `/api/_identity` (cheap) instead of `GET /` for readiness, so a slow home page no longer fails the start
-- [ ] The readiness deadline is 60 s by default and configurable (`WATCHTOWER_START_TIMEOUT`, registered in `lib/config.sh`)
-- [ ] On deadline expiry the start stops the process it launched, removes pid/port/url, and exits non-zero — never a running server with a half-written triple
-- [ ] Regression bats `tests/unit/t4460_watchtower_start_slow_home.bats` (stub server: `/api/_identity` fast, `/` slow) passes, and fails against the pre-fix script
-- [ ] Neighbouring watchtower start tests (t4332, t3660, t3662) still pass; vendored copies synced
+- [x] `watchtower start` probes `/api/_identity` (cheap) instead of `GET /` for readiness, so a slow home page no longer fails the start
+- [x] The readiness deadline is 60 s by default and configurable (`WATCHTOWER_START_TIMEOUT`, registered in `lib/config.sh`)
+- [x] On deadline expiry the start stops the process it launched, removes pid/port/url, and exits non-zero — never a running server with a half-written triple
+- [x] Regression bats `tests/unit/t4460_watchtower_start_slow_home.bats` (stub server: `/api/_identity` fast, `/` slow) passes, and fails against the pre-fix script
+- [x] Neighbouring watchtower start tests (t4332, t3660, t3662) still pass; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
