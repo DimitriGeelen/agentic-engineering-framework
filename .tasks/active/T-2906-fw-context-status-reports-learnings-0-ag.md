@@ -16,7 +16,7 @@ description: >
   not be another widened regex; parse the YAML or cross-check the count against a
   non-zero file.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -34,7 +34,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-10T18:36:45Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: 2026-10-20T21:02:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Defect reproduces at HEAD: `fw context status` prints `Learnings: 0` while learnings.yaml holds 700+ `id: L-` entries
+- [ ] `do_status` counts learnings, candidates, patterns and decisions by parsing the YAML (not by an indentation-sensitive grep), so both the flat `- application: …\n  id: L-NNN` and the indented `  - id: L-NNN` serialisations count
+- [ ] An unreadable/unparseable memory file prints `?` with a reason instead of a silent `0`
+- [ ] Regression test `tests/unit/t2906_context_status_counts.bats` covers flat form, indented form, and malformed file; fails against the old grep and passes with the fix
+- [ ] `bin/fw vendor self --check --task T-2906` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -195,6 +198,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bin/fw context status > /tmp/.t2906.out 2>&1 && ! grep -q "^Learnings: 0 " /tmp/.t2906.out
+out=$(bats tests/unit/t2906_context_status_counts.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bash -n agents/context/lib/status.sh
+bin/fw vendor self --check --task T-2906
 
 ## RCA
 
@@ -211,6 +218,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw context status` printed `Learnings: 0 (+ 0 candidates)` against a learnings.yaml holding 733 `id: L-` entries (reproduced 2026-10-20 at HEAD 3bcb79bd9).
+
+**Root cause:** `agents/context/lib/status.sh:55` counted learnings with `grep -c "^  - id: L-"` — a pattern that encodes one YAML *serialisation* (indented dash, `id` first key), not the data. Since T-1232's mining run (c3df4ac31, 2026-04-13) learnings.yaml has been dumped by PyYAML in the flat form (`- application: …` / `  id: L-NNN`, keys sorted), so the pattern matched zero rows. The patterns/decisions counters (lines 38-47) carry the same latent defect; they still matched only because those files kept the indented form.
+
+**Why structurally allowed:** a `grep -c` that matches nothing returns 0, and 0 is a legitimate count, so an empty scan is indistinguishable from an empty corpus (same class as T-1369 / T-2672). No test exercised `do_status` against real-shaped data, and three of four counters stayed right, so the output looked plausible.
+
+**Prevention:** counts now come from parsing the YAML (`yaml.safe_load`, list length of the top-level key), independent of key order and indentation; a file that exists but cannot be parsed prints `?` plus the reason on stderr rather than 0. `tests/unit/t2906_context_status_counts.bats` pins the flat form, the indented form and the malformed-file case.
 
 ## Evolution
 
@@ -263,3 +278,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2906-fw-context-status-reports-learnings-0-ag.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:02:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

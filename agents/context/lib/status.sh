@@ -30,33 +30,58 @@ do_status() {
     # Project Memory
     echo -e "${YELLOW}=== PROJECT MEMORY ===${NC}"
 
-    # Count patterns
-    local failure_patterns=0
-    local success_patterns=0
-    local workflow_patterns=0
-    if [ -f "$CONTEXT_DIR/project/patterns.yaml" ]; then
-        failure_patterns=$(grep -c "^  - id: FP-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || true)
-        success_patterns=$(grep -c "^  - id: SP-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || true)
-        workflow_patterns=$(grep -c "^  - id: WP-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || true)
-    fi
+    # Count patterns, decisions, learnings (T-2906). Parse the YAML rather than
+    # grep one serialisation of it: learnings.yaml moved to PyYAML's flat
+    # "- application: …\n  id: L-NNN" form in April and "^  - id: L-" matched
+    # nothing for months — an empty scan reads exactly like an empty corpus.
+    # A missing file is 0; a file that will not parse is "?" with the reason.
+    local counts
+    counts=$(python3 - "$CONTEXT_DIR/project" <<'PYEOF'
+import os, sys
+try:
+    import yaml
+except Exception as e:
+    yaml = None
+    err = e
+root = sys.argv[1]
+
+def entries(name):
+    path = os.path.join(root, name)
+    if not os.path.isfile(path):
+        return []
+    if yaml is None:
+        raise RuntimeError("PyYAML unavailable: %s" % err)
+    with open(path) as fh:
+        data = yaml.safe_load(fh) or {}
+    if not isinstance(data, dict):
+        raise RuntimeError("top level is %s, not a mapping" % type(data).__name__)
+    return [e for v in data.values() if isinstance(v, list) for e in v if isinstance(e, dict)]
+
+def count(name, pred):
+    try:
+        return str(sum(1 for e in entries(name) if pred(e)))
+    except Exception as e:
+        sys.stderr.write("context status: cannot count %s: %s\n" % (name, e))
+        return "?"
+
+def id_prefix(p):
+    return lambda e: str(e.get("id", "")).startswith(p)
+
+print(" ".join([
+    count("patterns.yaml", id_prefix("FP-")),
+    count("patterns.yaml", id_prefix("SP-")),
+    count("patterns.yaml", id_prefix("WP-")),
+    count("decisions.yaml", id_prefix("D-")),
+    count("learnings.yaml", id_prefix("L-")),
+    count("learnings.yaml", lambda e: "observation" in e),
+]))
+PYEOF
+)
+    [ -n "$counts" ] || counts="? ? ? ? ? ?"
+    local failure_patterns success_patterns workflow_patterns decisions learnings candidates
+    read -r failure_patterns success_patterns workflow_patterns decisions learnings candidates <<< "$counts"
     echo "Patterns: $failure_patterns failure, $success_patterns success, $workflow_patterns workflow"
-
-    # Count decisions
-    local decisions=0
-    if [ -f "$CONTEXT_DIR/project/decisions.yaml" ]; then
-        decisions=$(grep -c "^  - id: D-" "$CONTEXT_DIR/project/decisions.yaml" 2>/dev/null || true)
-    fi
     echo "Decisions: $decisions"
-
-    # Count learnings
-    local learnings=0
-    local candidates=0
-    if [ -f "$CONTEXT_DIR/project/learnings.yaml" ]; then
-        learnings=$(grep -c "^  - id: L-" "$CONTEXT_DIR/project/learnings.yaml" 2>/dev/null || true)
-        learnings=$(echo "$learnings" | tr -d '[:space:]')
-        candidates=$(grep -c "^  - observation:" "$CONTEXT_DIR/project/learnings.yaml" 2>/dev/null || true)
-        candidates=$(echo "$candidates" | tr -d '[:space:]')
-    fi
     echo "Learnings: $learnings (+ $candidates candidates)"
     echo ""
 
