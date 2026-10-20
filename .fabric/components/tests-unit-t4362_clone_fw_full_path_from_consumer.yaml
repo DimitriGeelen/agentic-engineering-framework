@@ -1,0 +1,21 @@
+id: tests/unit/t4362_clone_fw_full_path_from_consumer.bats
+name: t4362_clone_fw_full_path_from_consumer
+type: script
+subsystem: tests
+location: tests/unit/t4362_clone_fw_full_path_from_consumer.bats
+tags: []
+
+purpose: "T-4362 (GitHub #105): a clone's bin/fw, called by full path from inside a vendored consumer, must run ITSELF for `upgrade` — not the consumer's .agentic-framework copy."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

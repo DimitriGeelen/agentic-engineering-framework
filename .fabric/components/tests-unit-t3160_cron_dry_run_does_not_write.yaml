@@ -1,0 +1,21 @@
+id: tests/unit/t3160_cron_dry_run_does_not_write.bats
+name: t3160_cron_dry_run_does_not_write
+type: script
+subsystem: tests
+location: tests/unit/t3160_cron_dry_run_does_not_write.bats
+tags: []
+
+purpose: "T-3160 — Regression: 'fw cron install --dry-run' ran the writing generator as its diff step, rewriting the git-tracked .context/cron/agentic-audit.crontab and then printing \"(dry-run — no changes made)\" (G-087 / 001-CashWeb field report: a…"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
