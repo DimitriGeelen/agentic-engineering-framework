@@ -127,6 +127,14 @@ def merge(new_doc: dict, prev_doc: dict):
         if key != "hooks" and key not in new_doc:
             new_doc[key] = value
             carried.append(("(top-level)", key))
+        elif (key != "hooks" and isinstance(value, dict)
+              and isinstance(new_doc.get(key), dict)):
+            # T-2861: a template-emitted DEFAULT (worktree.bgIsolation) must not
+            # override a value the operator set on purpose — previous wins per sub-key.
+            for sub, sub_value in value.items():
+                if new_doc[key].get(sub) != sub_value:
+                    new_doc[key][sub] = sub_value
+                    carried.append(("(top-level)", f"{key}.{sub}"))
 
     return carried, kept, removed
 

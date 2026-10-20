@@ -2572,6 +2572,34 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
         else
             echo -e "  ${GREEN}OK${NC}  $consumer_total/$fw_total hooks present (all types matched)"
         fi
+        # T-2861: a hook-converged consumer never takes the regenerate branch above,
+        # so the template's worktree.bgIsolation=none default would never reach it.
+        # Add the key only when ABSENT — an explicit operator value is left alone.
+        if [ -f "$settings_file" ] && ! python3 -c "import json,sys; sys.exit(0 if 'bgIsolation' in (json.load(open(sys.argv[1])).get('worktree') or {}) else 1)" "$settings_file" 2>/dev/null; then
+            if [ "$dry_run" = true ]; then
+                echo -e "  ${CYAN}WOULD SET${NC}  worktree.bgIsolation=none (governance state is tracked; a background worktree forks it)"
+                changes=$((changes + 1))
+            elif python3 -c "
+import json, os, sys, tempfile
+p = sys.argv[1]
+doc = json.load(open(p))
+wt = doc.get('worktree')
+if not isinstance(wt, dict):
+    wt = {}
+wt['bgIsolation'] = 'none'
+doc = {'worktree': wt, **{k: v for k, v in doc.items() if k != 'worktree'}}
+fd, tmp = tempfile.mkstemp(dir=os.path.dirname(p))
+with os.fdopen(fd, 'w') as f:
+    json.dump(doc, f, indent=2)
+    f.write('\n')
+os.replace(tmp, p)
+" "$settings_file" 2>/dev/null; then
+                echo -e "  ${GREEN}SET${NC}  worktree.bgIsolation=none (governance state is tracked; a background worktree forks it)"
+                changes=$((changes + 1))
+            else
+                echo -e "  ${YELLOW}WARN${NC}  could not set worktree.bgIsolation=none in $settings_file (unparseable JSON?)"
+            fi
+        fi
         # T-3906: the consumer's own hooks are information, not a gap.
         local project_hook_count
         project_hook_count=$(echo "$hook_analysis" | cut -d'|' -f7)

@@ -15,7 +15,7 @@ description: >
   not write it. Scope: fw init and fw upgrade should emit the setting for consumer
   projects; verify it does not regress the framework repo's own settings.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T17:13:22Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: 2026-10-20T21:52:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] AC1 — `generate_claude_code_config` (lib/init.sh, used by `fw init` and by `fw upgrade` step 5 regenerate) emits `"worktree": {"bgIsolation": "none"}` in `.claude/settings.json` for consumer and framework mode; `fw upgrade` step 5 (lib/upgrade.sh) also sets it on a hook-converged consumer that lacks the key (that consumer never takes the regenerate branch).
+- [ ] AC2 — A regenerate over an existing settings.json keeps an operator's explicit `worktree.*` values (previous value wins per sub-key; settings_merge.py), so the default never overrides a deliberate choice.
+- [ ] AC3 — Regression bats `tests/unit/t2861_init_bgisolation.bats` fails without the fix, passes with it; neighbouring settings tests (settings_regenerate_preserves_hooks, hook_absolute_paths, t3881_template_hook_parity) stay green.
+- [ ] AC4 — Framework repo's own `.claude/settings.json` unchanged (still `bgIsolation: none`); `bin/fw vendor self --check --task T-2861` clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -195,6 +197,12 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/t2861_init_bgisolation.bats > /tmp/.t2861.out 2>&1 && grep -q '^ok 1 ' /tmp/.t2861.out && ! grep -q '^not ok' /tmp/.t2861.out
+bats tests/unit/settings_regenerate_preserves_hooks.bats tests/unit/hook_absolute_paths.bats tests/unit/t3881_template_hook_parity.bats > /tmp/.t2861n.out 2>&1 && ! grep -q '^not ok' /tmp/.t2861n.out
+python3 -c "import json; assert json.load(open('.claude/settings.json'))['worktree']['bgIsolation'] == 'none'"
+grep -q '"bgIsolation": "none"' lib/init.sh
+bin/fw vendor self --check --task T-2861
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -210,6 +218,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** In a consumer created by `fw init` (/opt/001-test-install), a background Claude Code session refused the first Write of an inception (the C-001 `docs/reports/T-XXX-*.md` artifact) with "This background session hasn't isolated its changes yet. Call EnterWorktree first" — and following that advice forks the tracked governance state (T-2821/T-2822 class, 43 stranded commits).
+
+**Root cause:** `lib/init.sh` `generate_claude_code_config` writes `.claude/settings.json` from a fixed heredoc whose only top-level key is `"hooks"`. T-3263 (b281d91b3) added `worktree.bgIsolation: "none"` to the framework repo's own `.claude/settings.json` by hand, but the generator template was never changed — T-3263 AC4 explicitly deferred "init scaffold". `fw upgrade` step 5 (lib/upgrade.sh) regenerates through the same function, and `settings_merge.py` only carries top-level keys a consumer already had, so no consumer ever received the key.
+
+**Why structurally allowed:** The framework repo's settings.json is hand-maintained, while consumers get the template; nothing compares non-hook top-level keys between the two (t3881_template_hook_parity checks hooks only). The deferral lived in a completed task's AC text, which nothing re-reads.
+
+**Prevention:** The template now emits the key, and `tests/unit/t2861_init_bgisolation.bats` pins it for consumer mode, framework mode and the regenerate path (including that an operator's explicit `worktree` value survives a regenerate).
 
 ## Evolution
 
@@ -262,3 +278,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2861-fw-init-does-not-set-bgisolation-none-so.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:52:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

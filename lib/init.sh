@@ -1059,8 +1059,16 @@ generate_claude_code_config() {
         fi
 
         # Use unquoted heredoc so $fw_prefix expands (T-663: framework-aware hook paths)
+        # T-2861: worktree.bgIsolation=none — governance state (.tasks/, .context/,
+        # docs/reports/) is tracked, so the harness's background-worktree guard forks
+        # it (T-2821/T-2822) and blocks the C-001 inception artifact. T-3263 set this
+        # in the framework repo's own settings.json only; consumers get it from here.
+        # An operator's explicit worktree.* value survives a regenerate (settings_merge.py).
         cat > "$dir/.claude/settings.json" << SJSON
 {
+  "worktree": {
+    "bgIsolation": "none"
+  },
   "hooks": {
     "PreCompact": [
       {
