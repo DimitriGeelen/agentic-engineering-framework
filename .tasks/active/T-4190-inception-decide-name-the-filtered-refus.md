@@ -10,10 +10,10 @@ description: >
   input was non-empty and output is empty, say the gate refused with a message written
   for agents and point at the server log.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:10:09Z
-last_update: '2026-10-13T19:16:05Z'
+last_update: 2026-10-20T11:42:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect confirmed at HEAD (a717aab76): `operator_facing_stderr` maps a refusal made only of bypass-instruction lines to `''`, and the redirect path at `web/blueprints/inception.py:816-817` renders `Unknown error from fw inception decide`
+- [ ] Redirect path (`web/blueprints/inception.py:816-817`) names the filtered-refusal case (non-empty input, empty filtered output) and points at the server log instead of `Unknown error` — **blocked: fix lives in web/, which this dispatch was told not to edit**
+- [ ] htmx path (`web/blueprints/inception.py:777`) stops falling back to the "produced NO output on either stream" text when output existed but was filtered — same block
+- [ ] Regression test in `tests/unit/` pinning both paths for filtered-to-empty input — same block
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -277,6 +279,21 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Status (2026-10-20, worker w4190): reproduces at HEAD a717aab76; NOT fixed — the fix is web-only and this dispatch forbade editing web/.**
+
+**Symptom:** a decide refusal whose every line is agent-facing bypass guidance renders to the operator as `Unknown error from fw inception decide` (redirect path), or as the T-3539 text claiming the CLI "produced NO output on either stream" (htmx path) — the second is actively false.
+
+**Reproduction:**
+`python3 -c "from web.shared import operator_facing_stderr as f; print(repr(f('Refused. Bypass: --skip-disposition-gate x\n  FW_SKIP_DISPOSITION_GATE=1 (logged Tier-2)')))"` → `''`; `('' or 'Unknown error from fw inception decide')` is what reaches `?error=`.
+
+**Root cause:** `web/blueprints/inception.py:816-817` (and `:777`) use `operator_facing_stderr(raw) or <fallback>`; the fallback cannot tell "raw was empty" from "raw was non-empty and every line was dropped by `web/shared.py:2361-2370`". T-3539 handled only the both-streams-empty shape.
+
+**Not in lib/inception.sh:** every refusal `do_inception_decide` (lib/inception.sh:419-865) emits itself starts with an `ERROR:` line that matches no drop pattern, so it survives the filter. The fully-filtered input comes from callees (gate stderr written for agents). A lib-side workaround (forcing a survivor line on every exit) would patch the producer for a consumer-side ambiguity; rejected.
+
+**Why structurally allowed:** the sanitizer's tests pin what it drops, not what the caller does when it drops everything; no test feeds a caller a filtered-to-empty input.
+
+**Prevention / fix to dispatch (web/ scope):** at both call sites, branch on `raw.strip() and not filtered` → "fw inception decide refused with a message written for agents (bypass instructions only, hidden here). Reason is in the server log / `bin/fw task review T-XXX`"; keep `_silent` only for truly empty input. Add a pytest feeding a bypass-only stderr through both paths.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -357,3 +374,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4190-inception-decide-name-the-filtered-refus.md
 - **Context:** Initial task creation
+
+### 2026-10-20T11:42:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
