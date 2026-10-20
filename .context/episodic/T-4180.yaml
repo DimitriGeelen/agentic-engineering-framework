@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4180: archive-eligible sweeps started-work tasks whose ACs are all ticked (CTL-029 class) (832 OBS-360, their T-1150)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T12:08:01Z
+# ============================================================================
+
+task_id: T-4180
+task_name: "archive-eligible sweeps started-work tasks whose ACs are all ticked (CTL-029 class) (832 OBS-360, their T-1150)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T19:06:37Z
+completed: 2026-10-20T12:07:26Z
+duration_days: 7
+updates_count: 2
+first_commit: 2026-10-20T13:50:20+02:00
+last_commit: 2026-10-20T13:50:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  archive-eligible sweep also closes started-work tasks with every AC ticked (CTL-029 class); CTL-029 names the sweep; sweep falls back to the running fw. vendor audit.sh (CTL-029 mitigation names the sweep)
+
+# Key outcomes
+outcomes:
+  - 'Defect reproduced at HEAD before the fix: `is_archive_eligible` treats status=started-work as ineligible (bin/fw archive-eligible block)'
+  - '`fw task archive-eligible --dry-run` lists a started-work task whose real ACs are all ticked'
+  - 'Still ignored: started-work with any unticked AC, started-work with only template placeholder ACs, captured/issues tasks'
+  - 'Non-dry-run sweep closes an eligible started-work task through the normal `--status work-completed` gates (moves to completed/)'
+  - 'CTL-029 mitigation in agents/audit/audit.sh names the bulk verb `bin/fw task archive-eligible`'
+  - 'Regression tests in tests/unit/task_archive_eligible.bats pass, and the new started-work test fails without the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - '.tasks/active/T-4180-archive-eligible-sweeps-started-work-tas.md'
+  - 'tests/unit/task_archive_eligible.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T13:50:20'
+    action: 'T-4180: archive-eligible sweep also closes started-work tasks with every AC ticked (CTL-029 class); CTL-029 names the sweep; sweep falls back to the running fw'
+  - time: '2026-10-20T13:50:56'
+    action: 'T-4180: vendor audit.sh (CTL-029 mitigation names the sweep)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 9660 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9660
+  commits: 2
+  files_changed: 6
+  lines_added: 136
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4180-archive-eligible-sweeps-started-work-tas.md
+generated_by: context-agent-hybrid

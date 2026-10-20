@@ -1,0 +1,120 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4347: Standing permission for GitHub decision comments (operator ruling 2026-10-19: 'you can post fully automatically no approval needed')
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T12:06:07Z
+# ============================================================================
+
+task_id: T-4347
+task_name: "Standing permission for GitHub decision comments (operator ruling 2026-10-19: 'you can post fully automatically no approval needed')"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T22:54:00Z
+completed: 2026-10-20T12:04:15Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-19T00:59:51+02:00
+last_commit: 2026-10-20T14:01:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  standing permission for GitHub decision comments (ISSUES_DECISIONS_STANDING_PERMISSION, default 0). enable ISSUES_DECISIONS_STANDING_PERMISSION=1 for this project — operator ruling 2026-10-19: 'you can post fully automatically no approval needed' / 'please codify that'. key-0 test isolates PROJECT_ROOT (read this checkout's key=1); ACs ticked. T-4343: recorded red run on v1.8.11 (26 not ok), ACs ticked. partial-complete state (owner human, [REVIEW] /config row); T-4367, T-4368 filed. Visual Verification evidence for the reviewer judge. reviewer verdict
+
+# Key outcomes
+outcomes:
+  - 'Config key ISSUES_DECISIONS_STANDING_PERMISSION (default 0) registered in lib/config.sh and web/blueprints/config.py'
+  - 'lib/issues.py cmd_comment: key 1 posts a decision stage without --approved-by-operator and writes approved_by ''standing-permission:operator-2026-10-19'' on the ledger row; key 0 is unchanged'
+  - 'Tests t4347 cover key 0 refuses, key 1 posts + provenance, template stages unchanged; existing issues suites green'
+  - 'Key set to 1 for this project; T-4039 report has the new operator answer with the verbatim ruling; vendor synced'
+  - '[REVIEW] The new ISSUES_DECISIONS_STANDING_PERMISSION row on Watchtower /config reads correctly'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'enable ISSUES_DECISIONS_STANDING_PERMISSION=1 for this project — operator ruling 2026-10-19: ''you can post fully automatically no approval needed'' / ''please codify that'''
+    source: git-mined
+  - description: 'standing permission for GitHub decision comments (ISSUES_DECISIONS_STANDING_PERMISSION, default 0)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/issues.py'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.context/reviews/evidence/T-4347/01-config.png'
+  - '.context/reviews/evidence/T-4347/AC1-judge-t-4347-r3-526997f83bd7.md'
+  - '.context/reviews/evidence/T-4347/AC1-judge-t-4347-r3-e51e18a29a3b.md'
+  - '.context/reviews/evidence/T-4347/config@1024.png'
+  - '.context/reviews/evidence/T-4347/config@1440.png'
+  - '.context/reviews/evidence/T-4347/config@1920.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - 'docs/reports/T-4039-inbound-github-issues.md'
+  - '.framework.yaml'
+  - 'lib/config.sh'
+  - 'lib/issues.py'
+  - '.tasks/active/T-4343-read-only-allowlist-treats-git--c----git.md'
+  - '.tasks/active/T-4347-standing-permission-for-github-decision-.md'
+  - '.tasks/active/T-4367-read-only-allowlist-treats-git-difflogsh.md'
+  - '.tasks/active/T-4368-classify-git-check-attr-check-ref-format.md'
+  - '.tasks/completed/T-4340-fw-release-posts-released-in-vxyz-on-eve.md'
+  - '.tasks/completed/T-4364-weekly-cron-ran-fw-release-tag-and-relea.md'
+  - 'tests/unit/t4077_issues_comment_test.py'
+  - 'tests/unit/t4078_issues_sync_test.py'
+  - 'tests/unit/t4088_issues_close_test.py'
+  - 'tests/unit/t4108_issues_security_test.py'
+  - 'tests/unit/t4347_issues_standing_permission_test.py'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T00:59:51'
+    action: 'T-4347: standing permission for GitHub decision comments (ISSUES_DECISIONS_STANDING_PERMISSION, default 0)'
+  - time: '2026-10-19T01:01:38'
+    action: 'T-4347: enable ISSUES_DECISIONS_STANDING_PERMISSION=1 for this project — operator ruling 2026-10-19: ''you can post fully automatically no approval needed'' / ''please codify that'''
+  - time: '2026-10-19T10:49:55'
+    action: 'T-4347: key-0 test isolates PROJECT_ROOT (read this checkout''s key=1); ACs ticked. T-4343: recorded red run on v1.8.11 (26 not ok), ACs ticked'
+  - time: '2026-10-19T11:08:18'
+    action: 'T-4347: partial-complete state (owner human, [REVIEW] /config row); T-4367, T-4368 filed'
+  - time: '2026-10-20T13:40:15'
+    action: 'T-4347: Visual Verification evidence for the reviewer judge'
+  - time: '2026-10-20T13:41:58'
+    action: 'T-4347: reviewer verdict'
+  - time: '2026-10-20T14:01:44'
+    action: 'T-4347: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 2230 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, issues, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2230
+  commits: 7
+  files_changed: 27
+  lines_added: 1358
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4347-standing-permission-for-github-decision-.md
+generated_by: context-agent-hybrid

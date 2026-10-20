@@ -48,7 +48,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:57:14Z
-last_update: 2026-10-19T10:39:57Z
+last_update: '2026-10-19T23:15:29Z'
 date_finished: 2026-10-19T10:39:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -69,6 +69,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-19T23:15:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=356,acs=10)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-10-18T23:01:55Z'
@@ -295,6 +304,21 @@ bin/fw watchtower current
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+## Visual Verification
+
+Evidence for the `[REVIEW]` criterion, captured 2026-10-20 by a non-producer worker
+(`fw ux shots T-4350 "search=<watchtower>/search?q=release%20decision"`). Screenshots:
+`.context/visual/T-4350/search@{1024,1440,1920}.png`. The page shows **hybrid results**
+("Found 20 results for release decision (hybrid) — 13449 docs indexed, 749004 chunks"),
+not the T-4458 keyword-fallback notice; no error panel, list not empty.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| search | result list | ok | ok | ok | 20 results, hybrid mode; release/decision tasks, decisions.yaml, fabric cards, one episodic |
+| search | result titles | ok | ok | ok | T-ID + title per result; the episodic T-4364 result's title renders as a `====` separator line (pre-existing title extraction, not the reindex) |
+| search | result snippets | ok | ok | ok | snippet per result with query terms bolded; one filter chip reads "(19)" with an empty label |
+| search | error/notice area | ok | ok | ok | no error panel and no keyword-fallback notice: the hybrid path answered inside the deadline |
 
 ## RCA
 

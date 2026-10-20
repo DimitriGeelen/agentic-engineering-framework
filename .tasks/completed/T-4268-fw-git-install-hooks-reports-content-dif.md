@@ -1,32 +1,19 @@
 ---
-id: T-4347
-name: "Standing permission for GitHub decision comments (operator ruling 2026-10-19:
-  'you can post fully automatically no approval needed')"
+id: T-4268
+name: "fw git install-hooks reports \"content differs — reinstalling\" on a first
+  install."
 description: >
-  Operator ruling 2026-10-19, verbatim: 'you can post fully automatically no approval
-  needed', then 'please codify that'. Until now lib/issues.py required --approved-by-operator
-  for decision stages (accepted / needs-info / duplicate / not-planned), and cmd_approve
-  refuses under agent control (T-4039 operator answer 1, 2026-10-10: template stages
-  automatic, decisions need the operator's yes each time). Codify the new ruling:
-  a config key ISSUES_DECISIONS_STANDING_PERMISSION (default 0, registered in lib/config.sh
-  and web/blueprints/config.py) that, when 1, lets fw issues comment post a decision
-  stage without a per-comment approval; the ledger row records approved_by: standing-permission
-  and the ruling reference; the comment text itself is unchanged (footer still says
-  Dimitri looks at every issue). With the key 0, behaviour is exactly as today. Set
-  it to 1 for this project with the ruling cited in .framework.yaml's history or the
-  commit message. Update docs/reports/T-4039-inbound-github-issues.md (operator answers:
-  new entry superseding answer 1 for decisions) and the CLAUDE.md release-train /
-  issue lines if they state the old rule. Tests: key 0 refuses a decision stage without
-  approval; key 1 posts it and records the standing-permission provenance (fake gh).
+  agents/git/lib/hooks.sh:1542-1557 — distinguish absent from differing, and list
+  only hooks actually written. Findings (0909 run aef-install-20261017T144241Z): F-33.
+  Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-15.
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
-tags: [github, issues, governance]
-components: [lib/config.sh, web/blueprints/config.py]
+owner: agent
+horizon: null
+tags: []
+components: [agents/git/lib/hooks.sh, tests/unit/t4268_install_hooks_first_install_message.bats]
 related_tasks: []
-origin: {kind: "operator"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -53,9 +40,9 @@ origin: {kind: "operator"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T22:54:00Z
-last_update: '2026-10-19T23:15:29Z'
-date_finished: 2026-10-19T09:05:51Z
+created: 2026-10-17T15:28:32Z
+last_update: 2026-10-20T12:08:05Z
+date_finished: 2026-10-20T12:08:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -66,8 +53,18 @@ date_finished: 2026-10-19T09:05:51Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T15:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-18T22:55:17Z'
+  - ts: '2026-10-17T15:31:18Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -84,28 +81,9 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-18T23:00:45Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=302,acs=6)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-10-19T23:15:29Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 3
-      tier: 2
-      effort: 8
-    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
-      (lines=327,acs=7)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4347: Standing permission for GitHub decision comments (operator ruling 2026-10-19: 'you can post fully automatically no approval needed')
+# T-4268: fw git install-hooks reports "content differs — reinstalling" on a first install.
 
 ## Context
 
@@ -115,11 +93,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Config key ISSUES_DECISIONS_STANDING_PERMISSION (default 0) registered in lib/config.sh and web/blueprints/config.py
-- [x] lib/issues.py cmd_comment: key 1 posts a decision stage without --approved-by-operator and writes approved_by 'standing-permission:operator-2026-10-19' on the ledger row; key 0 is unchanged
-- [x] Tests t4347 cover key 0 refuses, key 1 posts + provenance, template stages unchanged; existing issues suites green
-  - The key-0 test read this checkout's .framework.yaml once the key was set to 1 here (4 reds); it now uses an empty temp PROJECT_ROOT. All issues suites: 77 passed.
-- [x] Key set to 1 for this project; T-4039 report has the new operator answer with the verbatim ruling; vendor synced
+- [x] A first install into a repo with no hooks prints no "content differs — reinstalling" line; absent hooks are reported as installed fresh
+- [x] When some hooks are present and differ, only those are reported as "differs — reinstalling", and absent ones separately
+- [x] The "Installed:" list names only hooks actually written this run (including pre-merge-commit), not a fixed list of four
+- [x] Regression bats test covers first install, partial reinstall, and listing; fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -151,12 +128,6 @@ cost_estimate_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-- [ ] [REVIEW] The new ISSUES_DECISIONS_STANDING_PERMISSION row on Watchtower /config reads correctly
-  **Steps:**
-  1. Open Watchtower /config (`cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` prints the base URL)
-  2. Find the row ISSUES_DECISIONS_STANDING_PERMISSION
-  **Expected:** value 1 (set in .framework.yaml), default 0, and the description names the operator ruling of 2026-10-19 and that 0 keeps per-comment approval
-  **If not:** note what is wrong; the text lives in web/blueprints/config.py line 25
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -175,11 +146,9 @@ cost_estimate_proposed:
 
 ## Verification
 
-grep -q ISSUES_DECISIONS_STANDING_PERMISSION lib/config.sh && grep -q ISSUES_DECISIONS_STANDING_PERMISSION web/blueprints/config.py
-out=$(python3 -m pytest tests/unit/t4347_issues_standing_permission_test.py tests/unit/t4077_issues_comment_test.py tests/unit/t4078_issues_sync_test.py tests/unit/t4088_issues_close_test.py tests/unit/t4108_issues_security_test.py tests/unit/t4340_issues_release_test.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-grep -q "standing-permission:operator-2026-10-19" docs/reports/T-4039-inbound-github-issues.md
-bin/fw vendor self --check
-
+timeout 300 bats tests/unit/t4268_install_hooks_first_install_message.bats > /tmp/.t4268.out 2>&1 && ! grep -q "^not ok" /tmp/.t4268.out
+test "$(grep -c '# skip' /tmp/.t4268.out)" -eq 0
+bin/fw vendor self --check --task T-4268
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -309,24 +278,7 @@ bin/fw vendor self --check
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-## Visual Verification
-
-Captured 2026-10-20 with `bin/fw ux shots T-4347 "config=<watchtower url>/config"` (.context/visual/T-4347/config@{1024,1440,1920}.png); each width read at the FW_ISSUES_DECISIONS_STANDING_PERMISSION row.
-
-| state | control | 1024 | 1440 | 1920 | note |
-|-------|---------|------|------|------|------|
-| config | ISSUES_DECISIONS_STANDING_PERMISSION value (1) | ok | ok | ok | bold 1, FILE source badge |
-| config | ISSUES_DECISIONS_STANDING_PERMISSION default (0) | ok | ok | ok | |
-| config | ISSUES_DECISIONS_STANDING_PERMISSION description | ok | ok | ok | full text visible; names ruling 2026-10-19, T-4347, and "0 keeps the per-comment approval" |
-
-Observation outside the listed controls: at 1024 the key-name cell wraps to 3 characters per line (FW_ / ISS / UES …), as it does for every row on the page; the name is still readable and nothing is clipped.
-
 ## RCA
-
-**Symptom:** a decision-stage GitHub comment (accepted / needs-info / duplicate / not-planned) could not be posted by the agent without a per-comment operator approval record, although the operator ruled 2026-10-19 'you can post fully automatically no approval needed'.
-**Root cause:** lib/issues.py:375-381 (cmd_comment) hard-requires --approved-by-operator for DECISION_STAGES and, under agent control, an approvals.jsonl record that only the operator's terminal can write (cmd_approve, :268). The 2026-10-10 answer 1 was an unconditional gate with no switch.
-**Why structurally allowed:** the policy lived only in code and the T-4039 report; no config key expressed it, so a changed ruling had no non-code path.
-**Prevention:** key ISSUES_DECISIONS_STANDING_PERMISSION (registry parity lint) plus t4347 tests pin both the 0 and 1 behaviours and the ledger provenance.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -341,6 +293,14 @@ Observation outside the listed controls: at 1024 the key-name cell wraps to 3 ch
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** reproduced at HEAD a717aab76 — `git init` + `agents/git/git.sh install-hooks` printed `Hook content differs: commit-msg pre-commit pre-merge-commit post-commit pre-push (marker installed: none, template: 1.19) — reinstalling` on a repo with no hooks, then an `Installed:` list of four hooks (pre-merge-commit missing).
+
+**Root cause:** `agents/git/lib/hooks.sh` (T-3998 compare loop, ~line 1712) folded `[ ! -x "$hooks_dir/$_n" ]` — which is true for an absent file — into the same `_differ` bucket as a content mismatch, and printed one "content differs — reinstalling" line for the whole bucket. The success banner (~line 1764) was a hard-coded list of four hooks written before T-3998 made installs per-hook and before pre-merge-commit existed.
+
+**Why structurally allowed:** t3998 tests asserted only the "differs" case on a re-install; no test looked at first-install output or at which hooks the banner names, so the message was correct for the case tested and wrong for the most common one.
+
+**Prevention:** the loop now records absent (`! -e`) separately from changed (non-executable or block mismatch); the banner iterates the hooks actually written. `tests/unit/t4268_install_hooks_first_install_message.bats` pins first install, partial reinstall (one absent + one differing → two listed) and `--force` (all five); all three fail on the pre-fix code.
 
 ## Evolution
 
@@ -394,12 +354,6 @@ Observation outside the listed controls: at 1024 the key-name cell wraps to 3 ch
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
-**Recommendation:** GO
-**Rationale:** The standing permission is live and used: decision comments on #95–#105 and #14 posted under it, each ledger row carrying approved_by standing-permission:operator-2026-10-19. The only open item is how the new /config row reads.
-**Evidence:**
-- curl of Watchtower /config contains ISSUES_DECISIONS_STANDING_PERMISSION; `bin/fw watchtower current` exit 0
-- All issues suites: 77 passed (t4347 key-0 test now isolated from this checkout's key=1)
-- Verbatim ruling recorded in docs/reports/T-4039-inbound-github-issues.md:81
 
 ## Decisions
 
@@ -424,22 +378,28 @@ Observation outside the listed controls: at 1024 the key-name cell wraps to 3 ch
 
 ## Updates
 
-### 2026-10-18T22:54:00Z — task-created [task-create-agent]
+### 2026-10-17T15:28:32Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4347-standing-permission-for-github-decision-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4268-fw-git-install-hooks-reports-content-dif.md
 - **Context:** Initial task creation
 
-### 2026-10-18T22:55:16Z — status-update [task-update-agent]
+### 2026-10-20T11:42:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-dd281feb
-- **Timestamp:** 2026-10-19T09:06:59Z
+- **Scan ID:** R-d19c9521
+- **Timestamp:** 2026-10-20T12:08:14Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
-### 2026-10-19T09:05:51Z — status-update [task-update-agent]
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T12:08:05Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
