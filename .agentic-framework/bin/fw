@@ -9500,7 +9500,8 @@ PYREVQ
         if [ -z "$wo_target" ]; then
             echo -e "${RED}Usage:${NC}"
             echo '  fw work-on "Fix login bug" --type build                  # Create new task + start'
-            echo '  fw work-on "Fix login bug" --description "Details here"  # With description'
+            echo '  fw work-on "Fix login bug" --type build --description "Details here"  # With description'
+            echo '  (--type is required off-tty: build, refactor, test, inception, ...)'
             echo '  fw work-on T-042                                         # Resume existing task'
             exit 1
         fi

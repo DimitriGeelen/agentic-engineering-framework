@@ -12,7 +12,7 @@ description: >
   stop. Fix is either a default --type or truthful usage text; choosing between them
   is the task's decision.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -30,7 +30,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-07T17:10:29Z
-last_update: '2026-08-17T12:36:09Z'
+last_update: 2026-10-20T21:02:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,14 +85,15 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Usage text fix in bin/fw work-on block; see Description and RCA.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked at HEAD: every `fw work-on "<name>"` usage example printed by bin/fw either carries `--type` or is accepted off-tty
+- [x] If it reproduces: usage text fixed and a regression test pins that no printed work-on example for a new task omits `--type`
+- [x] `bin/fw vendor self --check --task T-2859` clean (only if vendored paths changed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -191,6 +192,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t2859_work_on_usage_examples.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bin/fw work-on </dev/null 2>&1 || true); ! echo "$out" | grep -E 'fw work-on "' | grep -qv -- '--type'
+bin/fw vendor self --check --task T-2859
 
 ## RCA
 
@@ -207,6 +211,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw work-on` with no args printed `fw work-on "Fix login bug" --description "Details here"` as a usage example; run in any agent/cron/dispatch context it fails with `Missing required flag(s): --type (stdin is not a tty …)` and `work-on: task creation failed — no task created, focus unchanged`. Still reproduced at HEAD 3bcb79bd9 (bats test below fails on unfixed bin/fw with exactly that message).
+
+**Root cause:** bin/fw:9503 (work-on usage block) omitted `--type`, while work-on's create path (bin/fw ~9666-9677) defaults only `--description` and `--owner`, and agents/task-create/create-task.sh:135-142 (T-100160) makes `--type` mandatory when stdin is not a tty. The usage line predates T-100160; that change made a previously-valid (interactively prompted) example invalid off-tty, and nobody re-read the usage text.
+
+**Why structurally allowed:** usage examples are inert strings — no test executed them, so the parser contract and the advertised examples could drift silently.
+
+**Prevention:** tests/unit/t2859_work_on_usage_examples.bats extracts every `fw work-on "..."` example from the live usage output and RUNS it off-tty in a synthetic project; any future example the parser rejects fails the suite.
 
 ## Evolution
 
@@ -234,6 +246,11 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-20 — truthful usage text vs default --type
+- **Chose:** fix the usage text (add `--type build` to the description example plus a one-line note that --type is required off-tty).
+- **Why:** workflow_type drives gates (G-020 build readiness, inception discipline, RCA gate); silently defaulting to build would mis-type inceptions/refactors and hide a real choice. The off-tty fail-fast already names `--type`.
+- **Rejected:** defaulting `--type build` in `fw work-on` — wider behavioural change across every consumer for a documentation defect.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -259,3 +276,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2859-fw-work-on-usage-text-advertises-a---typ.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:02:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
