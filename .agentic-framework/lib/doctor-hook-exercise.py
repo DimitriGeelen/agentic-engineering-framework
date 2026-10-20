@@ -11,6 +11,9 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 
 PROBE_WORKERS = 8
+# T-4461: per-hook budget. A probe that exceeds it proves nothing about path
+# resolution (the hook was found and started), so it is reported as undetermined.
+PROBE_TIMEOUT = float(os.environ.get("HOOK_EXERCISE_TIMEOUT", "5"))
 
 
 def _tag(cmd: str) -> str:
@@ -28,7 +31,11 @@ def _tag(cmd: str) -> str:
 
 
 def _probe(event: str, cmd: str, test_cwd: str, probe_env: dict):
-    """Run one hook from a foreign CWD; return (event, tag, reason) on failure, else None."""
+    """Run one hook from a foreign CWD.
+
+    Returns None when it resolved, ("FAIL", event, tag, reason) when it did not,
+    and ("TIMEOUT", event, tag, reason) when it ran past PROBE_TIMEOUT (T-4461).
+    """
     try:
         proc = subprocess.run(
             ["/bin/sh", "-c", cmd],
@@ -37,12 +44,12 @@ def _probe(event: str, cmd: str, test_cwd: str, probe_env: dict):
             text=True,
             cwd=test_cwd,
             env=probe_env,
-            timeout=5,
+            timeout=PROBE_TIMEOUT,
         )
     except subprocess.TimeoutExpired:
-        return (event, _tag(cmd), "timeout")
+        return ("TIMEOUT", event, _tag(cmd), f"not determined (timed out after {PROBE_TIMEOUT:g}s)")
     except Exception as e:
-        return (event, _tag(cmd), f"spawn: {e}")
+        return ("FAIL", event, _tag(cmd), f"spawn: {e}")
     rc = proc.returncode
     stderr_low = (proc.stderr or "").lower()
     if rc in (0, 2):
@@ -57,7 +64,7 @@ def _probe(event: str, cmd: str, test_cwd: str, probe_env: dict):
             if stderr_low
             else f"exit {rc}, no stderr"
         )
-        return (event, _tag(cmd), f"exit {rc}: {first_err}")
+        return ("FAIL", event, _tag(cmd), f"exit {rc}: {first_err}")
     return None
 
 
@@ -111,11 +118,13 @@ def main() -> int:
     # start). Results are gathered in job order, so the report is unchanged.
     with ThreadPoolExecutor(max_workers=PROBE_WORKERS) as pool:
         results = list(pool.map(lambda j: _probe(j[0], j[1], j[2], probe_env), jobs))
-    fails = [r for r in results if r is not None]
+    fails = [r for r in results if r is not None and r[0] == "FAIL"]
+    timeouts = [r for r in results if r is not None and r[0] == "TIMEOUT"]
 
-    print(f"{total}|{len(fails)}")
-    for ev, tag, reason in fails[:5]:
-        print(f"FAIL|{ev}|{tag}|{reason}")
+    # Header: total|failed|undetermined. Readers that cut fields 1-2 are unaffected.
+    print(f"{total}|{len(fails)}|{len(timeouts)}")
+    for kind, ev, tag, reason in fails[:5] + timeouts[:5]:
+        print(f"{kind}|{ev}|{tag}|{reason}")
     return 0
 
 

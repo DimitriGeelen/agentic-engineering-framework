@@ -2360,16 +2360,26 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
         local hook_exercise
         hook_exercise=$(SETTINGS_FILE="$settings_file" python3 "$exercise_script" 2>/dev/null)
         if [ -n "$hook_exercise" ]; then
-            local hex_total hex_fail
+            local hex_total hex_fail hex_undet
             hex_total=$(echo "$hook_exercise" | head -1 | cut -d'|' -f1)
             hex_fail=$(echo "$hook_exercise" | head -1 | cut -d'|' -f2)
+            # T-4461: field 3 = probes that ran past their budget. A timeout says
+            # nothing about path resolution, so it is a WARN, never a FAIL.
+            hex_undet=$(echo "$hook_exercise" | head -1 | cut -s -d'|' -f3)
             if [ "${hex_fail:-0}" -gt 0 ]; then
                 echo -e "  ${RED}FAIL${NC}  Hook exercise from /tmp: $hex_fail/$hex_total hook(s) failed to resolve"
-                echo "$hook_exercise" | tail -n +2 | while IFS='|' read -r _ event tag reason; do
+                echo "$hook_exercise" | grep '^FAIL|' | while IFS='|' read -r _ event tag reason; do
                     echo -e "        ${RED}x${NC} $event/$tag - $reason"
                 done
                 echo -e "        Run: fw upgrade (regenerates hook paths to absolute form)"
                 issues=$((issues + 1))
+            elif [ "${hex_undet:-0}" -gt 0 ]; then
+                echo -e "  ${YELLOW}WARN${NC}  Hook exercise from /tmp: $hex_undet/$hex_total hook(s) not determined (timed out); none failed to resolve"
+                echo "$hook_exercise" | grep '^TIMEOUT|' | while IFS='|' read -r _ event tag reason; do
+                    echo -e "        ${YELLOW}?${NC} $event/$tag - $reason"
+                done
+                echo -e "        Host under load? Re-run fw doctor; HOOK_EXERCISE_TIMEOUT=<s> raises the per-hook budget"
+                warnings=$((warnings + 1))
             elif [ "${hex_total:-0}" -gt 0 ]; then
                 # T-2714 (OBS-110): name the scope. The probe deliberately covers
                 # PreToolUse+PostToolUse only (see lib/doctor-hook-exercise.py —

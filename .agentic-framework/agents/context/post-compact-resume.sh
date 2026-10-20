@@ -342,7 +342,8 @@ if [ -f "$HOOK_EXERCISE_HELPER" ] && [ -f "$SETTINGS_FILE" ]; then
     if [ -n "$HOOK_PROBE" ]; then
         HOOK_PROBE_FAIL=$(echo "$HOOK_PROBE" | head -1 | cut -d'|' -f2)
         if [ "${HOOK_PROBE_FAIL:-0}" -gt 0 ]; then
-            HOOK_PROBE_DETAIL=$(echo "$HOOK_PROBE" | tail -n +2 | sed 's/^FAIL|/- /' | sed 's/|/ \/ /g')
+            # T-4461: TIMEOUT| lines are undetermined, not broken — list only FAIL| lines.
+            HOOK_PROBE_DETAIL=$(echo "$HOOK_PROBE" | grep '^FAIL|' | sed 's/^FAIL|/- /' | sed 's/|/ \/ /g')
             CONTEXT="${CONTEXT}
 
 ## Broken Hook Warning (T-1630)

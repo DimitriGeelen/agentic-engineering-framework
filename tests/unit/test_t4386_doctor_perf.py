@@ -164,7 +164,7 @@ def test_hook_exercise_runs_probes_concurrently(tmp_path):
                        env=dict(os.environ, SETTINGS_FILE=str(claude / "settings.json")),
                        capture_output=True, text=True, timeout=60)
     elapsed = time.monotonic() - t0
-    assert r.stdout.splitlines()[0] == "6|0"
+    assert r.stdout.splitlines()[0] == "6|0|0"
     assert elapsed < 4.5, f"6 one-second probes took {elapsed:.1f}s — run serially?"
 
 
