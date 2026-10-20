@@ -97,10 +97,10 @@ list in one table-driven test, so the next gap is caught here rather than in the
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] TYPE_TO_TAG covers sendTask, receiveTask, manualTask, inclusiveGateway, complexGateway, eventBasedGateway, adHocSubProcess and transaction; each parses with 0 refusals and round trips losslessly (emit → parse → emit identical, canonical(out) == canonical(src))
-- [ ] Unmodelled plain node attributes (messageRef, instantiate, implementation, eventGatewayType, ordering, method, …) survive the round trip instead of being dropped
-- [ ] A table-driven test over the full BPMN 2.0 flow-node list asserts every tag is either in TYPE_TO_TAG or refused by name (choreography tags, implicitThrowEvent); the unknown-tag probe moved off complexGateway
-- [ ] New activity types are valid boundary hosts and have lint occupancy entries; existing corpus_spec / corpus_lint tests stay green
+- [x] TYPE_TO_TAG covers sendTask, receiveTask, manualTask, inclusiveGateway, complexGateway, eventBasedGateway, adHocSubProcess and transaction; each parses with 0 refusals and round trips losslessly (emit → parse → emit identical, canonical(out) == canonical(src))
+- [x] Unmodelled plain node attributes (messageRef, instantiate, implementation, eventGatewayType, ordering, method, …) survive the round trip instead of being dropped
+- [x] A table-driven test over the full BPMN 2.0 flow-node list asserts every tag is either in TYPE_TO_TAG or refused by name (choreography tags, implicitThrowEvent); the unknown-tag probe moved off complexGateway
+- [x] New activity types are valid boundary hosts and have lint occupancy entries; existing corpus_spec / corpus_lint tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -365,6 +365,11 @@ bin/fw vendor self --check --task T-4505
 -->
 
 ## Decisions
+
+### 2026-10-20 — which unprefixed node attributes to carry
+- **Chose:** a per-tag whitelist of BPMN 2.0 schema attributes (`BPMN_SCHEMA_ATTRS`) carried verbatim in `attrs`; anything else unprefixed (e.g. `foo`, `default` on startEvent) stays dropped.
+- **Why:** lossless round trips for sendTask/receiveTask/eventBasedGateway need messageRef/instantiate/eventGatewayType. T-4399's RCA named the T-4389 blanket drop as a root cause. A scan of every tracked .bpmn found no node with such an attribute, so no existing map changes. T-4399's test now asserts gatewayDirection (tGateway schema) is carried, while `foo` and startEvent `default` are still dropped.
+- **Rejected:** carry every unprefixed attribute (would carry non-BPMN junk and invalid `default` placements T-4399 pinned as dropped); carry only for the new tags (inconsistent; the same loss on serviceTask `implementation`).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
