@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4462: claude-fw injects a bare 'claude' into an interactive TermLink PTY, so a user's claude() shell function or alias hijacks the launch
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T14:26:14Z
+# ============================================================================
+
+task_id: T-4462
+task_name: "claude-fw injects a bare 'claude' into an interactive TermLink PTY, so a user's claude() shell function or alias hijacks the launch"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T11:53:35Z
+completed: 2026-10-20T14:22:08Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T14:05:31+02:00
+last_commit: 2026-10-20T14:06:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw TermLink mode injects 'command claude' so a user's claude() function or alias in the PTY's interactive shell cannot hijack the launch; regression test runs the real injected line in bash -i. tick vendor-sync AC. verification grep uses -F (the ${ in the pattern is literal)
+
+# Key outcomes
+outcomes:
+  - 'bin/claude-fw TermLink mode injects `command claude…` (not a bare `claude`), so a shell function or alias named `claude` in the PTY''s interactive shell cannot intercept the launch'
+  - 'Regression test tests/unit/t4462_claude_fw_inject_bypasses_function.bats runs the exact injected line in a scratch `bash -i` whose rc defines a `claude()` function and a `claude` alias, with a stand-in binary on PATH: the binary is reached, the function is not, and the exit marker prints 0 — and it fails against the pre-fix line'
+  - 'Existing claude-fw tests stay green (t4426, t4454, t3954, t3647, t3648, t4118, t3358)'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4462` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-4462-claude-fw-injects-a-bare-claude-into-an-.md'
+  - 'tests/unit/t4462_claude_fw_inject_bypasses_function.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T14:05:31'
+    action: 'T-4462: claude-fw TermLink mode injects ''command claude'' so a user''s claude() function or alias in the PTY''s interactive shell cannot hijack the launch; regression test runs the real injected line in bash -i'
+  - time: '2026-10-20T14:06:02'
+    action: 'T-4462: tick vendor-sync AC'
+  - time: '2026-10-20T14:06:24'
+    action: 'T-4462: verification grep uses -F (the ${ in the pattern is literal)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 148 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 148
+  commits: 3
+  files_changed: 4
+  lines_added: 471
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4462-claude-fw-injects-a-bare-claude-into-an-.md
+generated_by: context-agent-hybrid

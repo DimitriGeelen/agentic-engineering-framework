@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4461: fw doctor 'Hook exercise from /tmp' FAILs intermittently under I/O load (1/26 hooks failed to resolve, not reproducible)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T14:26:55Z
+# ============================================================================
+
+task_id: T-4461
+task_name: "fw doctor 'Hook exercise from /tmp' FAILs intermittently under I/O load (1/26 hooks failed to resolve, not reproducible)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T11:53:11Z
+completed: 2026-10-20T14:26:19Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T14:09:59+02:00
+last_commit: 2026-10-20T14:09:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor hook exercise reports a timed-out probe as 'not determined (timed out)' (WARN), not a failed resolve; header gains an undetermined field; slow-stub regression test
+
+# Key outcomes
+outcomes:
+  - '`lib/doctor-hook-exercise.py` reports a probe that hits its timeout as undetermined (third header field + `TIMEOUT|` lines), never in the failed-to-resolve count'
+  - '`fw doctor` prints a WARN "not determined (timed out)" for timed-out probes instead of FAIL; FAIL detail lists only `FAIL|` lines (bin/fw and post-compact-resume.sh)'
+  - 'Regression test with a slow stub hook (sleep past the timeout) asserts `1|0|1` and that a genuinely missing hook still counts as failed; passes, along with the existing T-4386 concurrency test'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/doctor-hook-exercise.py'
+  - 'agents/context/post-compact-resume.sh'
+  - 'bin/fw'
+  - 'lib/doctor-hook-exercise.py'
+  - '.tasks/active/T-4461-fw-doctor-hook-exercise-from-tmp-fails-i.md'
+  - 'tests/unit/test_t4386_doctor_perf.py'
+  - 'tests/unit/test_t4461_hook_exercise_timeout.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T14:09:59'
+    action: 'T-4461: doctor hook exercise reports a timed-out probe as ''not determined (timed out)'' (WARN), not a failed resolve; header gains an undetermined field; slow-stub regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 153 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 153
+  commits: 1
+  files_changed: 9
+  lines_added: 502
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4461-fw-doctor-hook-exercise-from-tmp-fails-i.md
+generated_by: context-agent-hybrid
