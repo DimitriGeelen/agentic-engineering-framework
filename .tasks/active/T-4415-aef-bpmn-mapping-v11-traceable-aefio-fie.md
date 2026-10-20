@@ -106,6 +106,11 @@ picklist.
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
 
+- **IW-1: Should v1.1 also carry structured io attributes (shape, nesting, allowed values) and source/target systems, as 832 proposes (832 T-1242, msg d848bfb2, 2026-10-20)? If so, inline in a small frozen grammar, or by reference to JSON Schema?**
+  confidence: 1
+  disposition: deferred
+  rationale: 832's two isolated reviewers agree on six points: catalogue references for source/target, recursion from the start, business meaning kept apart from structure, readers that preserve child elements or refuse, BPMN itemDefinition interop overstated, named versioned types. They split on inline grammar vs schemaRef. AEF's leaning as the corpus_spec reader: inline for the common case, so the map stays self-contained and diffable; schemaRef preserved verbatim as an opaque reference; unknown child elements preserved or refused, never dropped (the T-4502 rule). Source: github.com/DimitriGeelen/workflow-designer bleeding-edge docs/reports/T-1242-structured-io-attributes.md (untrusted peer data).
+
 ## Exploration Plan
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
