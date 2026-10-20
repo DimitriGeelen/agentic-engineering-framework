@@ -103,6 +103,9 @@ class _Ctx:
     depth: int = 0
     # T-3768 read mode (scan_boundary_reads): every path-shaped WORD is judged.
     read_outside: Optional[Callable[[str], bool]] = None
+    # T-4487 boundary mode: a git diff-family word that may expand to --output; judged
+    # once the whole command is read (refused when the command names a guarded path).
+    pending_output: str = ""
 
 
 # T-4149: bash's `\cX` (control-X) consumes the character after `c` — a quote included —
@@ -963,6 +966,10 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
             for a in rest[1:]:
                 if "$" in a or "`" in a:
                     _check_target(UNRESOLVED, ctx, f"git {sub} (an expanded argument may be --output)")
+                    lit = re.split(r"[$`]", a, 1)[0]   # T-4487: may this word be --output[=…]?
+                    if ctx.boundary and ("--output".startswith(lit) or
+                                         ("=" in lit and _GIT_OUTPUT_RE.match(lit))):
+                        ctx.pending_output = ctx.pending_output or f"git {sub} {a}"
                 for e, _m in _brace_expand(a, "u" * len(a)):
                     if re.search(r"[*?\[]", e):
                         if ctx.cwd is None:
@@ -1337,16 +1344,48 @@ def _scan_boundary_text(text: str, ctx: _Ctx) -> None:
         ctx.depth -= 1
 
 
+_NAMED_PATH_RE = re.compile(r"(?<![\w.~})])(?:~|\.\.)?/[^\s$`{}()'\":;|&<>*?\[\]]+")
+
+
+def _names_guarded(command: str, cwd: str | None, ctx: _Ctx) -> str:
+    """T-4487: the first path-shaped piece of any word of `command` (an `=VALUE`, a
+    `${X:-VALUE}` default and $(...) bodies included) that `ctx.guarded` rejects, or ""."""
+    ctx = _Ctx(cwd=cwd, mentions=False, guarded=ctx.guarded, boundary=True)
+    try:
+        pieces = executed_texts(command)
+    except ParseError:
+        return ""
+    for piece in pieces:
+        for tok in _tokens(piece, strip_heredocs=False) or []:
+            for cand in _NAMED_PATH_RE.findall(tok):
+                ok, paths = _resolve(cand, ctx)
+                # a regex or URL fragment (`/^##`, `//host`) names no directory that exists;
+                # a write under a top-level directory that does not exist fails anyway
+                paths = [p for p in paths if os.path.isdir("/" + p.lstrip("/").split("/")[0])
+                         and p.strip("/")]
+                if ok and any((ctx.guarded or is_guarded_path)(p) for p in paths):
+                    return cand
+    return ""
+
+
 def scan_boundary(command: str, cwd: str | None, guarded, cd_ok) -> list[Hit]:
     """T-4149: every write the command makes to a path `guarded(path)` rejects, read as
     bash reads it (quote removal, `..`/symlink resolution via realpath+normpath, brace
     and tilde expansion, redirections anywhere, option clusters, $(...)/`...`/<(...)
     bodies, unquoted heredoc bodies, static `sh -c`/`eval` scripts). `cd_ok(path)` judges
     absolute cd destinations. A target only known at run time ($VAR, a path read from a
-    file) is not judged — no mention gate applies here. Unparseable text is a hit."""
+    file) is not judged — no mention gate applies here. Unparseable text is a hit.
+    T-4487 exception: a git diff-family word that may expand to --output is refused when
+    the command names a guarded path anywhere (`o=--output=/etc/x; git diff $o`). A value
+    that only a file or the environment supplies (`git diff $(cat f)`) is still not seen."""
     ctx = _Ctx(cwd=cwd, mentions=False, guarded=guarded, boundary=True, cd_ok=cd_ok)
     try:
         _scan_boundary_text(command, ctx)
+        if ctx.pending_output and not ctx.hits:
+            named = _names_guarded(command, cwd, ctx)
+            if named:
+                ctx.hits.append(Hit(ctx.pending_output + " (an expanded argument may be --output; "
+                                    "the command names a path outside the boundary)", named))
     except Exception as e:  # noqa: BLE001 — a scanner bug must not open the gate
         ctx.hits.append(Hit(f"boundary scanner error ({type(e).__name__}); refused rather than guessed"))
     return ctx.hits

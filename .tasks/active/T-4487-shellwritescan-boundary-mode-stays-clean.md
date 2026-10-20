@@ -1,13 +1,24 @@
 ---
 id: T-4487
-name: "shell_write_scan boundary mode stays CLEAN on an unresolvable git --output target ($o, ${O:-…}, $(…), loop variable): decide whether to fail closed"
+name: "shell_write_scan boundary mode stays CLEAN on an unresolvable git --output
+  target ($o, ${O:-…}, $(…), loop variable): decide whether to fail closed"
 description: >
-  ring20-dashboard (msg f5a021db) T-4485 field test: scan_boundary(cmd, cwd=project, guarded=outside the project) with --output=/etc/x HITs on literal, quoted, escaped, --output F, abbreviated and $'…'/brace forms, but is CLEAN on o=--output=/etc/x; git diff $o, git diff ${O:---output=/etc/x}, git diff $(echo --output=/etc/x) and the for-loop variable, identically on v1.8.13 and the tip. The new UNRESOLVED step reaches _check_target, but an unresolved target only bites when ctx.mentions is set, which boundary mode does not set. General scanner limit, now harmless for these shapes because the read-only allowlist gates them (T-4485), so they reach the normal task gate. Decide: should boundary mode fail closed on an unresolved write target for git --output (and other write options)? Measure false-positive cost on the corpus of real agent commands before changing.
+  ring20-dashboard (msg f5a021db) T-4485 field test: scan_boundary(cmd, cwd=project,
+  guarded=outside the project) with --output=/etc/x HITs on literal, quoted, escaped,
+  --output F, abbreviated and $'…'/brace forms, but is CLEAN on o=--output=/etc/x;
+  git diff $o, git diff ${O:---output=/etc/x}, git diff $(echo --output=/etc/x) and
+  the for-loop variable, identically on v1.8.13 and the tip. The new UNRESOLVED step
+  reaches _check_target, but an unresolved target only bites when ctx.mentions is
+  set, which boundary mode does not set. General scanner limit, now harmless for these
+  shapes because the read-only allowlist gates them (T-4485), so they reach the normal
+  task gate. Decide: should boundary mode fail closed on an unresolved write target
+  for git --output (and other write options)? Measure false-positive cost on the corpus
+  of real agent commands before changing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T15:21:45Z
-last_update: 2026-10-20T15:21:45Z
-date_finished: null
+last_update: 2026-10-20T19:02:26Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-20T15:30:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-20T15:31:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4487: shell_write_scan boundary mode stays CLEAN on an unresolvable git --output target ($o, ${O:-…}, $(…), loop variable): decide whether to fail closed
@@ -62,8 +101,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] False-positive cost measured on the corpus of real agent Bash commands (~/.claude/projects/*/*.jsonl) for both candidate rules (fail closed on every unresolved git --output target vs. only when the command also names a write-guarded path); numbers and the chosen rule recorded in ## Decisions
+- [x] scan_boundary returns a hit for `o=--output=/etc/x; git diff $o`, `git diff ${O:---output=/etc/x}`, `git diff $(echo --output=/etc/x)` and `for o in --output=/etc/x; do git diff $o; done` with the project as cwd and guarded = outside the project
+- [x] scan_boundary stays clean for unresolved diff-family arguments that name no outside path (`git diff $BASE..HEAD`, `git log $(git merge-base HEAD master)..HEAD`, `git show $sha -- lib/x.py`) and for redirects to /tmp
+- [x] Regression bats test covers both directions and fails without the fix; t4485_git_output_quoting.bats, t4367_git_output_option.bats, t4499_sidecar_body_data.bats and check_project_boundary.bats stay green
+- [ ] Vendored copy synced (`bin/fw vendor self --check --task T-4487` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +290,21 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4487_boundary_unresolved_git_output.bats > /tmp/.t4487.out 2>&1 && ! grep -q "^not ok" /tmp/.t4487.out
+test "$(grep -c '# skip' /tmp/.t4487.out)" -eq 0
+timeout 600 bats tests/unit/t4485_git_output_quoting.bats tests/unit/t4367_git_output_option.bats tests/unit/t4499_sidecar_body_data.bats tests/unit/check_project_boundary.bats > /tmp/.t4487b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4487b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4487_boundary_unresolved_git_output.bats > /tmp/.t4487l.out 2>&1 && grep -q clean /tmp/.t4487l.out
+bin/fw vendor self --check --task T-4487
 
 ## RCA
+
+**Symptom:** ring20-dashboard's T-4485 field test: `scan_boundary` (the project-boundary hook's write scanner) HITs `git diff --output=/etc/x` in every literal/quoted/escaped form but is CLEAN on `o=--output=/etc/x; git diff $o`, `git diff ${O:---output=/etc/x}`, `git diff $(echo --output=/etc/x)` and a for-loop variable — so the boundary hook lets a write to /etc/x through (the read-only allowlist refuses them, but a task-holding session passes that gate).
+
+**Root cause:** `lib/shell_write_scan.py:_check_target` (≈line 649) refuses an unresolved target only under `elif ctx.mentions:`; `scan_boundary` builds its context with `mentions=False` (≈line 1380), so the T-4485 UNRESOLVED step in the git branch (≈line 966, "an expanded argument may be --output") was a no-op in boundary mode. The same held for a literal `--ou=$o`, whose `$o` value `_resolve` cannot resolve.
+
+**Why structurally allowed:** boundary mode was documented as "a target only known at run time is not judged — no mention gate applies here" (T-4149), and the boundary hook has no equivalent of the task-file mention gate. T-4485's tests exercised the read-only allowlist (`is_bash_safe_command`) and the mention-gated scan, not `scan_boundary`, so the gap had no test.
+
+**Prevention:** `tests/unit/t4487_boundary_unresolved_git_output.bats` pins both directions against `scan_boundary` directly (5 refusal shapes, 3 controls). Boundary mode now records a git diff-family word that may expand to `--output` (`ctx.pending_output`) and refuses it once the whole command is read if the command names a write-guarded path (`_names_guarded`) — the boundary analogue of the mention gate. Residual, stated in the docstring: a value that comes only from a file or the environment (`git diff $(cat f)`, f holding `--output=/etc/x`) still names no outside path and stays clean.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -320,6 +375,11 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-20 — fail closed, but only on a possible --output word plus a named outside path
+- **Chose:** in boundary mode, refuse when a git diff|log|show|diff-tree|diff-index|whatchanged word containing `$`/backtick has a literal prefix that is a prefix of `--output` (or is `--ou…=`), AND some word of the command names a path the boundary guards (absolute, `~/`, or `../`, top-level directory existing).
+- **Why:** measured on 222,185 distinct Bash commands from all session transcripts (`~/.claude/projects/*/*.jsonl`, script `.context/working/t4487_measure.py`, guard = outside the command's cwd, which over-counts): unresolved git diff-family sites 893; failing closed on all of them = 893 refusals (0.40%), almost all `git show $sha` / `git diff $BASE..HEAD`. The chosen rule refuses 22 (0.01%), about half of them the project root itself named from a subdirectory cwd (not a hit in the real hook, which compares against the project root), the rest commands that really do name an outside path (`/usr/bin/time`, `/etc/machine-id`, another project).
+- **Rejected:** (a) fail closed on every unresolved word — 40x the false positives for no extra coverage of the reported shapes; (b) leave it as is — the boundary hook is the only gate a task-holding session meets for these commands; (c) resolve same-command assignments — a partial shell evaluator, and still blind to loops and substitutions.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -345,3 +405,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4487-shellwritescan-boundary-mode-stays-clean.md
 - **Context:** Initial task creation
+
+### 2026-10-20T19:02:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
