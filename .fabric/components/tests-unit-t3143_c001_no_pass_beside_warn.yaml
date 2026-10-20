@@ -1,0 +1,21 @@
+id: tests/unit/t3143_c001_no_pass_beside_warn.bats
+name: t3143_c001_no_pass_beside_warn
+type: script
+subsystem: tests
+location: tests/unit/t3143_c001_no_pass_beside_warn.bats
+tags: []
+
+purpose: "T-3143: audit C-001 must not print its \"All inceptions have research artifacts\" PASS in the same run as its own C-001 WARN."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

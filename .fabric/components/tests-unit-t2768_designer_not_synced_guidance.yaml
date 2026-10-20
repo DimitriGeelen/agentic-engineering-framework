@@ -1,0 +1,21 @@
+id: tests/unit/t2768_designer_not_synced_guidance.bats
+name: t2768_designer_not_synced_guidance
+type: script
+subsystem: tests
+location: tests/unit/t2768_designer_not_synced_guidance.bats
+tags: []
+
+purpose: "T-2768 (T-2757 IW-4): the designer not-synced guidance must name a SOURCE for the build and state the LAN precondition of the fetch path. It used to say only \"832 must deliver the build, then: fw designer sync --from <file>\" — a dead end."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

@@ -1,0 +1,21 @@
+id: tests/unit/t3079_pending_approval_age.bats
+name: t3079_pending_approval_age
+type: script
+subsystem: tests
+location: tests/unit/t3079_pending_approval_age.bats
+tags: []
+
+purpose: "T-3079: no rail detected a Tier 0 approval request left sitting unanswered. Pending cards (.context/approvals/pending-*.yaml) were read only by pull surfaces (/approvals, fw approvals pending); three sat unseen for months."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

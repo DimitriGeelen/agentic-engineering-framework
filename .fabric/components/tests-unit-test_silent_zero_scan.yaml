@@ -1,0 +1,21 @@
+id: tests/unit/test_silent_zero_scan.py
+name: test_silent_zero_scan
+type: script
+subsystem: tests
+location: tests/unit/test_silent_zero_scan.py
+tags: []
+
+purpose: "T-2680: pin the silent-zero store-grep detector (T-2679 Slice 1)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

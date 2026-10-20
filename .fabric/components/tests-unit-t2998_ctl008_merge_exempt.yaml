@@ -1,0 +1,21 @@
+id: tests/unit/t2998_ctl008_merge_exempt.bats
+name: t2998_ctl008_merge_exempt
+type: script
+subsystem: tests
+location: tests/unit/t2998_ctl008_merge_exempt.bats
+tags: []
+
+purpose: "T-2998 — CTL-008 must not count git-generated merge subjects as task-less."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

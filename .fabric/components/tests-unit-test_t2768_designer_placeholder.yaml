@@ -1,0 +1,21 @@
+id: tests/unit/test_t2768_designer_placeholder.py
+name: test_t2768_designer_placeholder
+type: script
+subsystem: tests
+location: tests/unit/test_t2768_designer_placeholder.py
+tags: []
+
+purpose: "T-2768 (T-2757 IW-4): the /designer placeholder names a source + LAN precondition."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
