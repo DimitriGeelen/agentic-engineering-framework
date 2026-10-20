@@ -86,14 +86,32 @@ do_status() {
             return 1
         fi
     else
-        echo "  status:       ${_c_yel}NOT SYNCED — 832 must deliver the build, then: fw designer sync --from <file>${_c_off}"
+        echo "  status:       ${_c_yel}NOT SYNCED${_c_off}"
+        _not_synced_guidance
     fi
     return 0
 }
 
+# T-2768 (T-2757 IW-4): the not-synced guidance names every source the build can
+# come from, and the precondition each one has. It used to say only "832 must
+# deliver the build, then: fw designer sync --from <file>" — no source for <file>
+# and no hint that the one fetch path needs the LAN origin, so readers routed
+# around it (L-399). Keep web/blueprints/designer.py _placeholder() in step.
+_not_synced_guidance() {
+    local origin
+    origin="$(_pin_get source_origin 2>/dev/null)" || origin=""
+    [ -n "$origin" ] || origin="<source_origin unset in policy/designer-pin.yaml>"
+    echo "  get the build from ONE of:"
+    echo "    1. fw designer install              — the copy vendored inside the framework (offline; refresh it with fw upgrade)"
+    echo "    2. fw designer sync --from-tag      — fetch the pinned tag from ${origin}"
+    echo "                                          PRECONDITION: that origin is a LAN repo; it must be reachable from this host"
+    echo "    3. fw designer sync --from <file>   — an artifact delivered by 832-Workflow-designer (e.g. termlink file send)"
+    echo "  every path verifies sha256 against the pin before installing."
+}
+
 do_path() {
     local vpath; vpath="$(_vendored_abs)"
-    [ -f "$vpath" ] || { echo "designer build not synced (run: fw designer status)" >&2; return 1; }
+    [ -f "$vpath" ] || { echo "designer build not synced" >&2; _not_synced_guidance >&2; return 1; }
     printf '%s\n' "$vpath"
 }
 

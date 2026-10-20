@@ -10,7 +10,7 @@ description: >
   discipline per L-399: name every mechanism the reader needs, so they do not route
   around it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T15:31:55Z
-last_update: '2026-08-17T12:36:09Z'
+last_update: 2026-10-20T21:52:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,8 +89,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Defect reproduces at HEAD before the fix: `fw designer status` NOT SYNCED line (agents/designer/designer.sh:89) and the web placeholder (web/blueprints/designer.py `_placeholder`) name no source and no LAN precondition
+- [ ] `fw designer status` (not synced) names all three sources: `fw designer install` (vendored copy, offline), `fw designer sync --from-tag` with the pin's `source_origin` and the explicit statement that it must be reachable from this host (LAN), and `fw designer sync --from <file>` for an artifact delivered by 832
+- [ ] `fw designer path` error and the `/designer` placeholder page carry the same source + LAN-precondition guidance
+- [ ] Regression tests (bats for CLI, pytest for the placeholder) fail on the old message and pass on the new one; existing designer bats stay green
+- [ ] `bin/fw vendor self --check --task T-2768` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -189,8 +192,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t2768_designer_not_synced_guidance.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/designer_sync_sha256.bats tests/unit/t3064_designer_onboarding_install.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 -m pytest tests/unit/test_t2768_designer_placeholder.py -q > /tmp/.t2768.out 2>&1 && grep -q passed /tmp/.t2768.out
+bin/fw vendor self --check --task T-2768
 
 ## RCA
+
+**Symptom:** a consumer whose designer build is absent sees `NOT SYNCED — 832 must deliver the build, then: fw designer sync --from <file>` (CLI) and the same text on the `/designer` placeholder page. It names no place to get `<file>` and does not mention that the one fetch path (`--from-tag`) needs the LAN origin — a dead end, so readers route around it.
+
+**Root cause:** `agents/designer/designer.sh:89` (`do_status`), `:96` (`do_path`) and `web/blueprints/designer.py` `_placeholder()` were written for the framework host, where 832 hand-delivers artifacts. Neither the `fw designer install` onboarding path (T-3064) nor the `--from-tag` intake (T-2616) were added to the guidance when they shipped, and the pin's `source_origin` (`ssh://…192.168.10.201…`, LAN-only) was never surfaced.
+
+**Why structurally allowed:** the only test asserted the substring `NOT SYNCED`; nothing pinned the guidance's content, so new intake verbs could ship without the message learning about them (L-399 producer/consumer split: mechanisms existed, the block message did not name them).
+
+**Prevention:** `tests/unit/t2768_designer_not_synced_guidance.bats` and `tests/unit/test_t2768_designer_placeholder.py` assert every surface names all three sources and the LAN precondition with the pin's own origin.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -257,3 +272,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2768-fix-not-synced-guidance-to-name-a-source.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:52:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
