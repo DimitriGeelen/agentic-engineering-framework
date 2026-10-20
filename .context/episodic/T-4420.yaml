@@ -1,0 +1,120 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4420: Release v1.8.13 security hotfix (T-4367, T-4368, T-4395, T-4408, T-4409; T-4396 if entangled) via the T-4035 hotfix lane
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T10:18:35Z
+# ============================================================================
+
+task_id: T-4420
+task_name: "Release v1.8.13 security hotfix (T-4367, T-4368, T-4395, T-4408, T-4409; T-4396 if entangled) via the T-4035 hotfix lane"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T18:40:08Z
+completed: 2026-10-20T10:17:51Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-19T21:19:58+02:00
+last_commit: 2026-10-20T12:10:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.8.13 hotfix — security fixes T-4367, T-4368, T-4395, T-4396 (entangled with T-4409), T-4408, T-4409, T-4422. carry T-4429 test fixtures (known cwd) onto the hotfix — tests only, from bleeding-edge 8d58a0c77. hotfix report complete — b92c427ac (+T-4429 fixtures), targeted attribution of every hf-only red/timeout; hotfix-attributed failures: 0; T-4422 field probe requested. v1.8.13 release notes. merge v1.8.13 (master 6efec63df) back into bleeding-edge
+
+# Key outcomes
+outcomes:
+  - 'Scratch clones .context/scratch/v1813/{hf,base} exist; base is at ee1d6fcfe (v1.8.12); hf branch hotfix/v1.8.13 = ee1d6fcfe + only the security fix commits of T-4367, T-4368, T-4395, T-4408, T-4409, T-4422 (code, tests, vendored copies; no task files), T-4396 only if needed and named in the report'
+  - 'On hf the safe-commands/boundary suites (t4343, t4344, t4264, t4367, t4395, t4408, t4409, context_safe_commands, safe_commands_chain, check_project_boundary, + t4396 if included) pass, each run alone'
+  - 'Full-suite comparison hf vs base (run-side.sh method: clean env, own report dirs, jobs=6) recorded in docs/reports/T-4420-hotfix-v1813.md with contents, diffstat, suites, table, and each hotfix-only red re-run alone; 0 failures attributed to the diff'
+  - 'Build phase pushed nothing (the worker''s constraint, held until the evidence was complete); the release was then cut by the parent through the T-4035 hotfix lane under T-4146 field evidence: master ee1d6fcfe -> 6efec63df, tag v1.8.13, GitHub release, merged back into bleeding-edge (916df0825)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'hotfix report complete — b92c427ac (+T-4429 fixtures), targeted attribution of every hf-only red/timeout; hotfix-attributed failures: 0; T-4422 field probe requested'
+    source: git-mined
+  - description: 'carry T-4429 test fixtures (known cwd) onto the hotfix — tests only, from bleeding-edge 8d58a0c77'
+    source: git-mined
+  - description: 'v1.8.13 hotfix — security fixes T-4367, T-4368, T-4395, T-4396 (entangled with T-4409), T-4408, T-4409, T-4422'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/check-project-boundary.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'docs/releases/v1.8.13-notes.md'
+  - 'docs/reports/T-4420-hotfix-v1813.md'
+  - 'lib/shell_write_scan.py'
+  - 'tests/unit/context_safe_commands.bats'
+  - 'tests/unit/fd_dup_not_chain_split.bats'
+  - 'tests/unit/helpers/known_cwd.bash'
+  - 'tests/unit/safe_commands_chain.bats'
+  - 'tests/unit/safe_commands_env_prefix.bats'
+  - 'tests/unit/t2889_git_refverb_args.bats'
+  - 'tests/unit/t2988_grouped_command_classification.bats'
+  - 'tests/unit/t3174_partial_complete_edit_matrix.bats'
+  - 'tests/unit/t3179_partial_complete_commit.bats'
+  - 'tests/unit/t3221_commit_exemption_clause.bats'
+  - 'tests/unit/t3222_fetch_writes_file.bats'
+  - 'tests/unit/t3238_find_action_predicates.bats'
+  - 'tests/unit/t3245_trailer_quote_strip.bats'
+  - 'tests/unit/t3374_env_prefix_denylist.bats'
+  - 'tests/unit/t3432_scoped_close_clears_scoped_focus.bats'
+  - 'tests/unit/t3454_gate_contract_collision.bats'
+  - 'tests/unit/t3814_fw_git_commit_checkpoint.bats'
+  - 'tests/unit/t4367_git_output_option.bats'
+  - 'tests/unit/t4395_boundary_unknown_top_reads.bats'
+  - 'tests/unit/t4396_safe_commands_loops.bats'
+  - 'tests/unit/t4408_git_env_repo_boundary.bats'
+  - 'tests/unit/t4409_git_cwd_repo_boundary.bats'
+  - 'tests/unit/test_safe_commands_git_commit.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T21:19:58'
+    action: 'T-4420: v1.8.13 hotfix — security fixes T-4367, T-4368, T-4395, T-4396 (entangled with T-4409), T-4408, T-4409, T-4422'
+  - time: '2026-10-20T00:01:43'
+    action: 'T-4420: carry T-4429 test fixtures (known cwd) onto the hotfix — tests only, from bleeding-edge 8d58a0c77'
+  - time: '2026-10-20T09:56:52'
+    action: 'T-4420: hotfix report complete — b92c427ac (+T-4429 fixtures), targeted attribution of every hf-only red/timeout; hotfix-attributed failures: 0; T-4422 field probe requested'
+  - time: '2026-10-20T10:52:37'
+    action: 'T-4420: v1.8.13 release notes'
+  - time: '2026-10-20T12:10:28'
+    action: 'T-4420: merge v1.8.13 (master 6efec63df) back into bleeding-edge'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 937 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 937
+  commits: 5
+  files_changed: 31
+  lines_added: 1677
+  lines_removed: 119
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4420-release-v1813-security-hotfix-t-4367-t-4.md
+generated_by: context-agent-hybrid

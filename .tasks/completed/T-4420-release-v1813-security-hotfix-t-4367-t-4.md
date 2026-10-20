@@ -17,12 +17,12 @@ description: >
   merge back, announce. The broad bleeding-edge release (sidecar, reindex, upgrade
   hooks, issues labels, test tiers…) is v1.8.14 after its own field round.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-project-boundary.sh, agents/context/lib/safe-commands.sh, lib/shell_write_scan.py, tests/unit/context_safe_commands.bats, tests/unit/helpers/known_cwd.bash, tests/unit/safe_commands_chain.bats, tests/unit/safe_commands_env_prefix.bats, tests/unit/t2988_grouped_command_classification.bats, tests/unit/t3174_partial_complete_edit_matrix.bats, tests/unit/t3179_partial_complete_commit.bats, tests/unit/t3221_commit_exemption_clause.bats, tests/unit/t3222_fetch_writes_file.bats, tests/unit/t3245_trailer_quote_strip.bats, tests/unit/t3374_env_prefix_denylist.bats, tests/unit/test_safe_commands_git_commit.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -51,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T18:40:08Z
-last_update: 2026-10-19T19:15:48Z
-date_finished:
+last_update: 2026-10-20T10:17:51Z
+date_finished: 2026-10-20T10:17:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -105,8 +105,8 @@ Build the v1.8.13 hotfix branch in scratch clones (T-4345 lane, docs/reports/T-4
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Scratch clones .context/scratch/v1813/{hf,base} exist; base is at ee1d6fcfe (v1.8.12); hf branch hotfix/v1.8.13 = ee1d6fcfe + only the security fix commits of T-4367, T-4368, T-4395, T-4408, T-4409, T-4422 (code, tests, vendored copies; no task files), T-4396 only if needed and named in the report
 - [x] On hf the safe-commands/boundary suites (t4343, t4344, t4264, t4367, t4395, t4408, t4409, context_safe_commands, safe_commands_chain, check_project_boundary, + t4396 if included) pass, each run alone
-- [ ] Full-suite comparison hf vs base (run-side.sh method: clean env, own report dirs, jobs=6) recorded in docs/reports/T-4420-hotfix-v1813.md with contents, diffstat, suites, table, and each hotfix-only red re-run alone; 0 failures attributed to the diff
-- [ ] Nothing pushed, no tag created, master untouched (origin master still ee1d6fcfe)
+- [x] Full-suite comparison hf vs base (run-side.sh method: clean env, own report dirs, jobs=6) recorded in docs/reports/T-4420-hotfix-v1813.md with contents, diffstat, suites, table, and each hotfix-only red re-run alone; 0 failures attributed to the diff
+- [x] Build phase pushed nothing (the worker's constraint, held until the evidence was complete); the release was then cut by the parent through the T-4035 hotfix lane under T-4146 field evidence: master ee1d6fcfe -> 6efec63df, tag v1.8.13, GitHub release, merged back into bleeding-edge (916df0825)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,11 +286,13 @@ Build the v1.8.13 hotfix branch in scratch clones (T-4345 lane, docs/reports/T-4
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 test -f docs/reports/T-4420-hotfix-v1813.md
-grep -q 'Failures attributed to the hotfix diff' docs/reports/T-4420-hotfix-v1813.md
-test "$(git -C .context/scratch/v1813/hf merge-base hotfix/v1.8.13 ee1d6fcfe)" = "$(git rev-parse ee1d6fcfe)"
-test -z "$(git -C .context/scratch/v1813/hf diff --name-only ee1d6fcfe hotfix/v1.8.13 -- .tasks)"
-test "$(git ls-remote origin refs/heads/master | cut -c1-40)" = "$(git rev-parse ee1d6fcfe)"
-test -z "$(git ls-remote --tags origin refs/tags/v1.8.13)"
+grep -q 'Hotfix-attributed failures: 0' docs/reports/T-4420-hotfix-v1813.md
+test "$(git merge-base hotfix/v1.8.13 ee1d6fcfe)" = "$(git rev-parse ee1d6fcfe)"
+test -z "$(git diff --name-only ee1d6fcfe hotfix/v1.8.13 -- .tasks)"
+# Post-release state (the build phase asserted the opposite: nothing pushed until the evidence was complete)
+test "$(git ls-remote origin refs/heads/master | cut -c1-40)" = "$(git rev-parse hotfix/v1.8.13)"
+test -n "$(git ls-remote --tags origin refs/tags/v1.8.13)"
+git merge-base --is-ancestor hotfix/v1.8.13 bleeding-edge
 
 ## RCA
 
@@ -399,3 +401,20 @@ test -z "$(git ls-remote --tags origin refs/tags/v1.8.13)"
 
 ### 2026-10-19T19:15:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c3eac348
+- **Timestamp:** 2026-10-20T10:17:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T10:17:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
