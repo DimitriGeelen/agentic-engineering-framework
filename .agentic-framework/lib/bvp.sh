@@ -35,6 +35,7 @@ import os
 import sys
 import re
 import glob
+import json
 import statistics
 from pathlib import Path
 
@@ -97,6 +98,48 @@ def _str_safe_load(text):
         for ch, res in yaml.SafeLoader.yaml_implicit_resolvers.items()
     }
     return yaml.load(text, Loader=_L)
+
+
+# ------------------------------------------------- confirmation telemetry (T-4478)
+# Adapted from 010-termlink T-3176 (proposal 348). confirmed_via (T-3487) records WHO
+# confirmed; this ledger records how far the confirmed scores sit from what the
+# estimator proposed — the proposal itself is cleared on confirm (M3), so without it
+# the pair is gone. Append-only; the override env var exists so a fixture run never
+# writes into the real ledger, which could not be cleaned up afterwards.
+def _bvp_telemetry_path():
+    override = os.environ.get('FW_BVP_TELEMETRY_PATH')
+    if override:
+        return Path(override)
+    return PROJECT_ROOT / '.context' / 'telemetry' / 'bvp-confirmations.ndjson'
+
+
+def _count_no_signal(proposal_entry, confirmed_keys):
+    """How many drivers in this proposal were scored with NO evidence. An
+    all-no-signal proposal confirmed unchanged would otherwise log as
+    `proposer_exact` — the estimator agreeing with itself, recorded as accuracy.
+    Read from the rationale string, the only place the distinction survives.
+    Returns (count, driver_count); count is None when the rationale is missing —
+    "did not measure" must not render as "measured, none"."""
+    driver_count = len(confirmed_keys)
+    if not isinstance(proposal_entry, dict):
+        return None, driver_count
+    rationale = proposal_entry.get('rationale')
+    if not isinstance(rationale, str) or not rationale.strip():
+        return None, driver_count
+    return len(re.findall(r'no-signal', rationale)), driver_count
+
+
+def _append_confirmation_row(row):
+    """One NDJSON line per confirmation. Never raises; returns (ok, error_text).
+    A confirmation missing from the ledger must not be silent (G-063)."""
+    path = _bvp_telemetry_path()
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, 'a') as fh:
+            fh.write(json.dumps(row, sort_keys=True) + "\n")
+        return True, None
+    except (OSError, TypeError, ValueError) as exc:
+        return False, str(exc)
 
 
 # ----------------------------------------------------------- §ACD agent gate
@@ -1083,6 +1126,7 @@ def cmd_confirm(args):
     # Build the confirmed map. Proposed is a list of timestamped entries
     # (per T-1918 schema); take the newest entry's scores dict.
     confirmed = {}
+    latest = None
     if proposed:
         latest = proposed[-1] if isinstance(proposed, list) else proposed
         # latest is expected to have a 'scores' key per M3, or be the scores dict directly.
@@ -1091,6 +1135,8 @@ def cmd_confirm(args):
                 confirmed.update({k: int(v) for k, v in (latest.get('scores') or {}).items()})
             else:
                 confirmed.update({k: int(v) for k, v in latest.items() if isinstance(v, (int, float)) and not isinstance(v, bool)})
+    # T-4478: snapshot the proposal BEFORE overrides land — the telemetry row needs both.
+    proposed_scores = dict(confirmed)
     confirmed.update(overrides)
 
     if not confirmed:
@@ -1186,6 +1232,38 @@ def cmd_confirm(args):
         print(f"  Overrides applied: {overrides}")
     print(f"  Confirmed by: {fm['confirmed_by']}  at: {fm['confirmed_at']}  via: {fm['confirmed_via']}")
     print(f"  bvp_scores_proposed: cleared (M3 — estimator may re-propose if next pass diverges by ≥2)")
+
+    # T-4478: record the confirmation. Human confirmations are recorded too — a ledger
+    # of agent rows only cannot answer "is the estimator better or worse than the
+    # operator". A sticky skip returned above, so a skip never reaches here.
+    delta = {k: [proposed_scores.get(k), v] for k, v in confirmed.items()
+             if proposed_scores.get(k) != v}
+    no_signal, driver_count = _count_no_signal(latest, confirmed.keys())
+    row = {
+        'ts': fm['confirmed_at'],
+        'task': task_id,
+        'confirmed_via': confirmed_via,
+        'confirmed_by': fm['confirmed_by'],
+        'proposal_existed': bool(proposed_scores),
+        'proposed': proposed_scores,
+        'confirmed': dict(confirmed),
+        'overrides': dict(overrides),
+        'delta_vs_proposed': delta,
+        'proposer_exact': bool(proposed_scores) and not delta and not overrides,
+        'no_signal_count': no_signal,
+        'driver_count': driver_count,
+        'all_no_signal': (None if no_signal is None
+                          else bool(driver_count) and no_signal >= driver_count),
+        'estimator': latest.get('estimator') if isinstance(latest, dict) else None,
+        'rubric_sha': latest.get('rubric_sha') if isinstance(latest, dict) else None,
+    }
+    ok, err = _append_confirmation_row(row)
+    if not ok:
+        print(f"ERROR: scores were confirmed but the telemetry row could NOT be written: {err}",
+              file=sys.stderr)
+        print(f"  Ledger: {_bvp_telemetry_path()}", file=sys.stderr)
+        print(f"  {task_id} is confirmed on disk; the ledger is now incomplete.", file=sys.stderr)
+        return 1
     return 0
 
 
