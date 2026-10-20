@@ -320,6 +320,27 @@ patterns:
       - 'test "$(grep -lE ''X'' .tasks/*/T-1851-*.md | wc -l)" -eq 1'
       - 'grep -q "pattern" .tasks/completed/T-1851-*.md'
 
+  - id: silent-zero-store-grep
+    name: "Store grep can silently match zero (fixed indent or zero-fallback count)"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_silent_zero_store_grep"
+    description: >
+      A grep that pins a YAML key at an exact indent (`^  - id:`) against a
+      store, or a `grep -c` on a `.context/` store whose failure is folded into
+      0 (`|| echo 0`). When the store is reshaped the check matches nothing,
+      exits 0 and reports "none" — indistinguishable from a genuinely empty
+      store. T-2676 (harvest.sh, 549:0 miss ratio) and T-2677 (audit
+      graduation counter, never fired in its life) were both this shape.
+      Same rules as lib/silent_zero_scan.py, which fw audit runs over the
+      source tree (T-2680, T-2679 Slice 1).
+    examples_positive:
+      - 'grep -c "^  - id: L-" .context/project/learnings.yaml || echo 0'
+      - 'grep "^    pattern:" .context/project/patterns.yaml'
+    examples_negative:
+      - 'grep -cE "^[[:space:]]*(- )?id: L-" .context/project/learnings.yaml'
+      - 'grep "^  pass:" build.log'
+
   - id: audience-mismatch
     name: "[REVIEW] Human AC asks about agent experience (should be Agent self-eval)"
     detection_confidence: heuristic

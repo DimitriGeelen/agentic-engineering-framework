@@ -3526,6 +3526,12 @@ check_self_vendor_drift() {
         find "$FRAMEWORK_ROOT/.agentic-framework/lib" "$FRAMEWORK_ROOT/.agentic-framework/agents" "$FRAMEWORK_ROOT/.agentic-framework/web" -type f \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "claude-fw" -o -name "*.md" \) 2>/dev/null
         # T-4392: tools/ scanned whole (minus *.pyc), parity with _self_vendor_tools.
         find "$FRAMEWORK_ROOT/.agentic-framework/tools" -path '*/__pycache__' -prune -o -type f ! -name "*.pyc" -print 2>/dev/null
+        # T-2661: root single-file payload, parity with lib/upgrade.sh
+        # _self_vendor_root_data (same list, kept literal here: audit does not
+        # source upgrade.sh).
+        for _svrd in .secret-scan-patterns .secret-scan-allowlist status-transitions.yaml metrics.sh; do
+            printf '%s\n' "$FRAMEWORK_ROOT/.agentic-framework/$_svrd"
+        done
     )
 
     # templates class: .agentic-framework/.tasks/templates/*.md vs source
@@ -4329,6 +4335,31 @@ check_gitignore_register() {
          "File it (fw work-on / concerns.yaml) and name the id in the comment, or drop the promise. Origin T-2990: 'root-cause task pending' beside two rules, no task ever filed, 56MB over three months. Silence with FW_GITIGNORE_REGISTER_ADVISORY=0."
 }
 check_gitignore_register
+
+# T-2680 (T-2679 Slice 1). A grep that pins a YAML key at an exact indent, or a
+# `grep -c` on a .context/ store whose failure is folded into 0, reads "none"
+# when the store is reshaped — exit 0, plausible output. T-2676 (harvest.sh) and
+# T-2677 (this file's graduation counter) were dead for months in exactly that
+# shape. Static scan only; whether a flagged grep currently matches is the
+# Slice 2 probe registry's job (T-2681). WARN, never FAIL.
+check_silent_zero_store_greps() {
+    [ -f "$FRAMEWORK_ROOT/lib/silent_zero_scan.py" ] || return 0
+    local _out _n
+    _out=$(python3 "$FRAMEWORK_ROOT/lib/silent_zero_scan.py" --root "$FRAMEWORK_ROOT" 2>&1) || {
+        warn "Silent-zero store greps: scanner did not run" "$(echo "$_out" | head -1)" \
+             "Run: python3 lib/silent_zero_scan.py --root \"$FRAMEWORK_ROOT\""
+        return 0
+    }
+    if [ -z "$_out" ]; then
+        pass "Silent-zero store greps: none (no fixed-indent or zero-fallback store greps in lib/ agents/ bin/)"
+        return 0
+    fi
+    _n=$(echo "$_out" | grep -c .)
+    warn "Silent-zero store greps: $_n grep(s) can read a reshaped store as empty" \
+         "$(echo "$_out" | head -3 | cut -c1-140 | paste -sd ';' -)" \
+         "Make the pattern indent-tolerant (^[[:space:]]*key:) or parse the YAML; for counts, fail loudly when the store is unreadable instead of '|| echo 0'. Full list: python3 lib/silent_zero_scan.py (T-2680)"
+}
+check_silent_zero_store_greps
 
 # T-3420 (arc-011 sidecar, slice 8). `fw sidecar status` (T-3417) exposes two
 # numbers that must not climb: `UNKNOWN` — consults the sweep has already

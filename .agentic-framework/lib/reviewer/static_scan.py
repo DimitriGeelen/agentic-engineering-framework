@@ -2675,6 +2675,37 @@ def detect_worktree_handoff_durability(body: str) -> list[Finding]:
     return findings
 
 
+# ───── silent-zero-store-grep detector (T-2680, T-2679 Slice 1) ─────
+#
+# Same rule set as `lib/silent_zero_scan.py` (which `fw audit` runs over lib/,
+# agents/, bin/), applied to the task's own `## Verification` lines: a check
+# that greps a store at a fixed indent, or folds a failed count into 0, passes
+# the day it is written and goes silently inert when the store is reshaped.
+
+
+def detect_silent_zero_store_grep(verification_section: str) -> list[Finding]:
+    """Verification greps a YAML store at a fixed indent, or counts a
+    `.context/` store with a zero fallback (T-2676 / T-2677 family).
+
+    Heuristic, partial lie-severity → CONCERN.
+    """
+    if not verification_section:
+        return []
+    from lib.silent_zero_scan import scan_text
+
+    return [
+        Finding(
+            pattern_id="silent-zero-store-grep",
+            pattern_name="Store grep can silently match zero: fixed-indent pattern or zero-fallback count (T-2680)",
+            detection_confidence="heuristic",
+            lie_severity="partial",
+            location=f"Verification:line {lineno}",
+            evidence=f"{rule}: {snippet}"[:200],
+        )
+        for _path, lineno, rule, snippet in scan_text(verification_section, "Verification")
+    ]
+
+
 # ───────────────────────── Orchestration ─────────────────────────
 
 
@@ -2807,6 +2838,9 @@ def scan_task(
     # handoff command chains a `.claude/worktrees/` cd-prefix to a verb that
     # outlives the session.
     findings.extend(detect_worktree_handoff_durability(body))
+    # v1.7 +3: T-2680 — silent-zero-store-grep (T-2679 Slice 1); same rules
+    # as lib/silent_zero_scan.py, which fw audit runs over the source tree.
+    findings.extend(detect_silent_zero_store_grep(verif_section))
 
     task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
 

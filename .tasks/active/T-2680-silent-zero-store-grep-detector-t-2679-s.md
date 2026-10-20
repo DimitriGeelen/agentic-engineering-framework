@@ -6,7 +6,7 @@ description: >
   stores and zero-fallback count patterns. Ships as an audit WARN section plus a reviewer
   static-scan pattern. First slice authorised by the T-2679 GO.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-29T16:40:31Z
-last_update: '2026-08-17T12:36:08Z'
+last_update: '2026-10-20T22:00:20Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,6 +55,15 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=6 (lines=145,acs=4)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T22:00:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=152,acs=8)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-07-29T16:45:08Z'
     estimator: bvp-estimator-v1-heuristic
@@ -73,20 +82,53 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T22:00:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2680: silent-zero store-grep detector (T-2679 Slice 1)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice 1 / Candidate C of the T-2679 GO (`docs/reports/T-2679-determinism-graduation-tripwire.md`):
+a static detector for the grep family behind T-2676 and T-2677. Re-checked at HEAD
+2026-10-21: nothing of the kind existed (no `silent_zero`/`fixed-indent` scanner in
+`agents/audit/`, `lib/reviewer/`, `lib/`, `tools/`), so it was built rather than closed.
+
+**Live findings at introduction (16; `python3 lib/silent_zero_scan.py`)** — NOT fixed
+here (one bug = one task; parent to triage). Two are already dead today:
+- `lib/harvest.sh:427,436` — `grep "^    name:"` against practices.yaml, whose live shape
+  is `^  name:` (2-space) → the practices sub-stage of harvest matches 0.
+- `agents/audit/audit.sh:8295` — `grep -c "^  - type:"` on patterns.yaml → 0 live
+  (`grep -c "^  - type:" .context/project/patterns.yaml` prints 0).
+The rest (harvest decisions, decision.sh/pattern.sh next-id, init.sh cron counts,
+5 zero-fallback counts) currently match but are shape-pinned.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Detector module `lib/silent_zero_scan.py` flags (a) fixed-indent greps (`^` + 2+ literal spaces + YAML key) against a YAML store (a `.context/` path, a `*.yaml` literal, or a variable resolving to / named as one), and (b) zero-fallback counts (`grep -c … || echo 0` / `|| n=0`) against a `.context/` store; prints `file:line: <rule>: <snippet>` and exits 0 (findings are advisory)
+- [x] Detector does NOT flag indent-tolerant greps (`^[[:space:]]*`, `^ *`, `^ +`, `^\s*`), stdin greps, comments, nor greps of non-store files
+- [x] `fw audit` (structure section, check id `silent-zero-store-greps`) emits one summarised WARN with count + first 3 findings, and a PASS line when none are found
+- [x] Reviewer static scan exposes the same rules as pattern `silent-zero-store-grep` over the task's `## Verification` lines (lie_severity partial → CONCERN, not FAIL), catalogued in `policy/anti-patterns.yaml`
+- [x] Regression tests `tests/unit/test_silent_zero_scan.py` cover both rules, the tolerant-grep negatives, and the T-2676/T-2677 verbatim shapes; all pass (19 passed)
+- [x] `bin/fw vendor self --check --task T-2680` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -120,6 +162,14 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 -m pytest -q tests/unit/test_silent_zero_scan.py
+python3 lib/silent_zero_scan.py --root . lib agents bin
+python3 -m pytest -q tests/unit/test_reviewer_static_scan.py
+bash -n agents/audit/audit.sh
+out=$(bash agents/audit/audit.sh --check silent-zero-store-greps 2>&1); echo "$out" | grep -qE "\[(WARN|PASS)\] Silent-zero store greps"
+python3 -c "import yaml; c=yaml.safe_load(open('policy/anti-patterns.yaml')); assert any(p['id']=='silent-zero-store-grep' for p in c['patterns'])"
+bin/fw vendor self --check --task T-2680
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -167,6 +217,28 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** shell components that read `.context/` YAML stores with greps reported
+"none"/0 for months while the store held hundreds of entries (T-2676 harvest.sh 549:0;
+T-2677 audit graduation counter, `agents/audit/audit.sh` then-line `grep -c '^  - id: L-'`,
+never fired in its life).
+
+**Root cause:** the greps encode the store serializer's indentation (`^  ` / `^    `) as if
+it were a contract, and fold "no match"/"unreadable" into 0 (`|| echo 0`, `|| n=0`). When
+the store's shape changes, the grep matches nothing, exits 0, and its output is a
+plausible empty result.
+
+**Why structurally allowed:** nothing scanned for the shape. Each instance was found by
+accident (T-2667 knowledge-leveling baseline) and fixed site-by-site; the family itself
+had no detector, so the same shape remained at 16 other sites (see Context), two of them
+already dead (`lib/harvest.sh:427,436`, `agents/audit/audit.sh:8295`).
+
+**Prevention:** `lib/silent_zero_scan.py` + `fw audit` check `silent-zero-store-greps`
+(structure section, runs daily and at pre-push, WARN) surfaces every site; reviewer
+pattern `silent-zero-store-grep` catches the shape in task `## Verification` lines;
+`tests/unit/test_silent_zero_scan.py` pins the T-2676/T-2677 verbatim shapes and the
+tolerant negatives. Whether a flagged grep currently matches live data is Slice 2's probe
+registry (T-2681).
 
 ## Evolution
 
@@ -219,3 +291,15 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2680-silent-zero-store-grep-detector-t-2679-s.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:57:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fee5852b
+- **Timestamp:** 2026-10-20T22:10:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
