@@ -5547,6 +5547,28 @@ if [ "$tier0_violations" -eq 0 ]; then
     pass "No Tier 0 violations detected"
 fi
 
+# T-3079: Tier 0 approval cards left unanswered. Only pull surfaces (/approvals,
+# fw approvals pending) used to read .context/approvals/pending-*.yaml; three cards
+# sat unseen for months. Same predicate as fw doctor: lib/approval_queue_age.py.
+if [ -f "$FRAMEWORK_ROOT/lib/approval_queue_age.py" ]; then
+    _aq_hours="$(fw_config APPROVAL_PENDING_WARN_HOURS)"
+    _aq_rows=$(python3 "$FRAMEWORK_ROOT/lib/approval_queue_age.py" stale "$PROJECT_ROOT/.context/approvals" "${_aq_hours:-24}" 2>/dev/null) && _aq_rc=0 || _aq_rc=$?
+    if [ "$_aq_rc" -eq 2 ]; then
+        warn "Pending-approval age check could not run" \
+             "lib/approval_queue_age.py exited 2" \
+             "Run: python3 lib/approval_queue_age.py stale .context/approvals ${_aq_hours:-24}"
+    elif [ "$_aq_rc" -eq 0 ] && [ -n "$_aq_rows" ]; then
+        while IFS=$'\t' read -r _aq_file _aq_age _aq_kind _aq_preview; do
+            [ -z "$_aq_file" ] && continue
+            warn "Tier 0 approval request unanswered for ${_aq_age}h ($_aq_kind): $_aq_file" \
+                 "Command: $_aq_preview" \
+                 "Review: bin/fw approvals pending (or Watchtower /approvals); sweep: bin/fw approvals expire"
+        done <<< "$_aq_rows"
+    elif [ "$_aq_rc" -eq 0 ]; then
+        pass "No Tier 0 approval request pending over ${_aq_hours:-24}h"
+    fi
+fi
+
 echo ""
 fi # end enforcement
 

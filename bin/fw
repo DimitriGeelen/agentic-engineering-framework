@@ -3753,6 +3753,27 @@ else:
         fi
     fi
 
+    # T-3079: Tier 0 approval cards left unanswered. Before this, only pull surfaces
+    # (/approvals, fw approvals pending) read .context/approvals/pending-*.yaml, and
+    # three cards sat unseen for months. Same predicate as fw audit (enforcement).
+    if [ -f "$FRAMEWORK_ROOT/lib/approval_queue_age.py" ]; then
+        _aq_hours="$(fw_config APPROVAL_PENDING_WARN_HOURS)"
+        _aq_rows=$(python3 "$FRAMEWORK_ROOT/lib/approval_queue_age.py" stale "${FW_DOCTOR_APPROVALS_DIR:-$PROJECT_ROOT/.context/approvals}" "${_aq_hours:-24}" 2>/dev/null) && _aq_rc=0 || _aq_rc=$?  # set -e; dir override is a test seam
+        if [ "$_aq_rc" -eq 2 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Pending-approval age check could not run (lib/approval_queue_age.py exit 2)"
+            warnings=$((warnings + 1))
+        elif [ "$_aq_rc" -eq 0 ] && [ -n "$_aq_rows" ]; then
+            while IFS=$'\t' read -r _aq_file _aq_age _aq_kind _aq_preview; do
+                [ -z "$_aq_file" ] && continue
+                echo -e "  ${YELLOW}WARN${NC}  Tier 0 approval request unanswered for ${_aq_age}h ($_aq_kind): $_aq_file — $_aq_preview"
+                warnings=$((warnings + 1))
+            done <<< "$_aq_rows"
+            echo "         Review: bin/fw approvals pending (or Watchtower /approvals); sweep: bin/fw approvals expire"
+        elif [ "$_aq_rc" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  No Tier 0 approval request pending over ${_aq_hours:-24}h"
+        fi
+    fi
+
     _doctor_phase "Watchtower smoke test"  # T-3452
     # Check: Watchtower smoke test (T-486) — run if server is reachable
     # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)

@@ -8,7 +8,7 @@ description: >
   age. A pending approval is a governance object with an implicit expiry expectation
   and no expiry check. Sibling rails: T-3061 unclosed_satisfied, T-3073 C-001.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T18:49:46Z
-last_update: '2026-08-18T19:00:19Z'
+last_update: '2026-10-20T22:00:27Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,6 +66,23 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T22:00:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3079: no rail detects a Tier 0 approval request left sitting unanswered
@@ -78,8 +95,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect reproduced at HEAD before the fix: `.context/approvals/` held pending cards and no `fw doctor` / `fw audit` check read `pending-*.yaml` (grep of audit.sh and the doctor case found none)
+- [x] `lib/approval_queue_age.py stale <dir> <hours>` lists every pending card older than the threshold (TSV: file, age_hours, origin kind, preview); a card with an unparseable YAML body or timestamp is reported (age from mtime), never skipped; exit 1 when there is no approvals directory, exit 2 when the check cannot run
+- [x] `fw doctor` and `fw audit` (enforcement section) both WARN, one line per stale card with its age and origin, naming `bin/fw approvals pending` / `bin/fw approvals expire` as the remedy; they print an OK/PASS line when nothing is stale, and nothing at all when there is no approvals directory
+- [x] Threshold is a registry key `APPROVAL_PENDING_WARN_HOURS` (default 24) in `lib/config.sh`, distinct from the grant TTL
+- [x] Regression bats `tests/unit/t3079_pending_approval_age.bats` covers stale/fresh/malformed/missing-dir for the module and the doctor + audit WARN lines; red without the fix, green with it
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -172,6 +192,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -c "import ast; ast.parse(open('lib/approval_queue_age.py').read())"
+bash -n bin/fw && bash -n agents/audit/audit.sh && bash -n lib/config.sh
+grep -q "APPROVAL_PENDING_WARN_HOURS|24|" lib/config.sh
+out=$(bats tests/unit/t3079_pending_approval_age.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 tools/bats-dead-negation-lint.py tests/unit/t3079_pending_approval_age.bats > /tmp/.t3079-lint 2>&1 && grep -q clean /tmp/.t3079-lint
+bin/fw vendor self --check --task T-3079
 
 ## RCA
 
@@ -188,6 +214,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** pending Tier 0 approval cards (`.context/approvals/pending-*.yaml`) sat unanswered for months (2026-04-30, 08-05, 08-17) and nobody saw them until an operator opened /approvals. Still reproduced at HEAD 2026-10-20: 5 pending cards, no rail reporting them.
+
+**Root cause:** the only readers of `pending-*.yaml` are pull-only surfaces the operator has to open: `web/blueprints/approvals.py:_load_pending_approvals` (marks a card `expired` after `EXPIRY_SECONDS=3600`, display only) and `bin/fw` `approvals pending|expire` (~line 8789). `fw doctor` and `fw audit` (`agents/audit/audit.sh`), the two push surfaces that run on cron and before push, never looked at the directory. The `.context/approvals/(pending|resolved)-` filter at audit.sh:5246 even explicitly excludes these files from the uncommitted-state check, as ephemeral churn.
+
+**Why structurally allowed:** a pending card was treated as UI state rather than as a governance object with an expiry. Expiry was applied when a card was rendered, never as a sweep or an alarm. With nobody opening the page, a card just sat there.
+
+**Prevention:** `lib/approval_queue_age.py` is a single age predicate, called by both `fw doctor` and `fw audit`. Both WARN on any pending card older than `APPROVAL_PENDING_WARN_HOURS` (default 24). An unreadable card is reported, not skipped. Pinned by `tests/unit/t3079_pending_approval_age.bats`.
 
 ## Evolution
 
@@ -269,3 +303,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3079-no-rail-detects-a-tier-0-approval-reques.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:52:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
