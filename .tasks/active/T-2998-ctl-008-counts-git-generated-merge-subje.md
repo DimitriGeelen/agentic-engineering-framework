@@ -15,7 +15,7 @@ description: >
   exempt two-parent commits, or accept git's default merge subject as structural.
   Note that line is also the L-387 pipeline shape.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-14T19:55:48Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: 2026-10-20T21:52:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect reproduced at HEAD: audit.sh CTL-008 (oe-hourly) counted `git log --oneline -20` with no merge exemption, so a git-default `Merge branch 'x'` subject was a task-less offender
+- [x] CTL-008 and CTL-010 count with `--no-merges` (all four CTL-008 log calls incl. the WARN sample, and the CTL-010 fallback) — merge commits exempt, matching the commit-msg hook's MERGE_HEAD exemption (agents/git/lib/hooks.sh:202)
+- [x] Regression bats `tests/unit/t2998_ctl008_merge_exempt.bats`: fixture repo with T- commits plus a git-default `--no-ff` merge reports 100% / no WARN; negative control — a real task-less non-merge commit still counts as an offender
+- [x] `bin/fw vendor self --check --task T-2998` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -194,8 +196,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t2998_ctl008_merge_exempt.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+c=$(grep -c 'log --oneline -20 --no-merges' agents/audit/audit.sh); [ "$c" -ge 5 ]
+python3 tools/bats-dead-negation-lint.py tests/unit/t2998_ctl008_merge_exempt.bats
+bin/fw vendor self --check --task T-2998
 
 ## RCA
+
+**Symptom:** consumer 001-CashWeb (G-008): after `git merge --no-ff <branch>`, `fw audit` CTL-008 reported 90% traceability with git's own `Merge branch '…'` subjects listed as task-less offenders.
+
+**Root cause:** `agents/audit/audit.sh:6354-6372` (CTL-008, oe-hourly) and `:6534` (CTL-010 fallback) count `git log --oneline -20 | grep -cv '^[a-f0-9]* T-'` with no merge exemption, while the commit-msg hook (`agents/git/lib/hooks.sh:202-203`) deliberately admits any commit made with MERGE_HEAD set. The audit measured a stricter rule than the gate it audits, so every git-default merge subject was a guaranteed offender.
+
+**Why structurally allowed:** the hook's merge exemption and the audit's counter were written independently with no shared predicate and no test exercising a merge commit through CTL-008; this repo mostly lands by fast-forward, so its own history rarely contained a two-parent commit to surface it.
+
+**Prevention:** `tests/unit/t2998_ctl008_merge_exempt.bats` runs the real audit section over a fixture with a git-default merge (must be 100%) and a task-less non-merge commit (must still count) — both directions pinned.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -291,3 +305,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2998-ctl-008-counts-git-generated-merge-subje.md
 - **Context:** Initial task creation
+
+### 2026-10-20T21:52:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

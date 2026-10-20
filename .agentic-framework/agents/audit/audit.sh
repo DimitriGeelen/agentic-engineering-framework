@@ -6345,6 +6345,8 @@ echo "=== OE-HOURLY: HOURLY CONTROL CHECKS ==="
 
 # CTL-008 OE: Task Reference Gate — recent commits have T-XXX prefix
 # T-590: Respect traceability baseline if set
+# T-2998: --no-merges — the commit-msg hook admits any MERGE_HEAD commit, so git's
+# default "Merge branch 'x'" subject is not a task-less commit (CTL-010 likewise).
 _ctl008_range=""
 _ctl008_baseline_file="$PROJECT_ROOT/.context/project/traceability-baseline"
 if [ -f "$_ctl008_baseline_file" ]; then
@@ -6355,16 +6357,16 @@ if [ -f "$_ctl008_baseline_file" ]; then
 fi
 if [ -n "$_ctl008_range" ]; then
     # shellcheck disable=SC2086 # _ctl008_range intentionally unquoted
-    total_recent=$(git -C "$PROJECT_ROOT" log --oneline -20 $_ctl008_range 2>/dev/null | wc -l | tr -d ' ')
+    total_recent=$(git -C "$PROJECT_ROOT" log --oneline -20 --no-merges $_ctl008_range 2>/dev/null | wc -l | tr -d ' ')
 else
-    total_recent=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | wc -l | tr -d ' ')
+    total_recent=$(git -C "$PROJECT_ROOT" log --oneline -20 --no-merges 2>/dev/null | wc -l | tr -d ' ')
 fi
 if [ "$total_recent" -gt 0 ]; then
     if [ -n "$_ctl008_range" ]; then
         # shellcheck disable=SC2086
-        without_task=$(git -C "$PROJECT_ROOT" log --oneline -20 $_ctl008_range 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
+        without_task=$(git -C "$PROJECT_ROOT" log --oneline -20 --no-merges $_ctl008_range 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
     else
-        without_task=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
+        without_task=$(git -C "$PROJECT_ROOT" log --oneline -20 --no-merges 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
     fi
     without_task=$(echo "$without_task" | tr -d '[:space:]')
     ratio=$(( (total_recent - without_task) * 100 / total_recent ))
@@ -6373,7 +6375,7 @@ if [ "$total_recent" -gt 0 ]; then
         pass "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)"
     elif [ "$ratio" -ge 80 ]; then
         grace_warn "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)" \
-             "$(git -C "$PROJECT_ROOT" log --oneline -20 ${_ctl008_range} | grep -v '^[a-f0-9]* T-' | head -3)" \
+             "$(git -C "$PROJECT_ROOT" log --oneline -20 --no-merges ${_ctl008_range} | grep -v '^[a-f0-9]* T-' | head -3)" \
              "Ensure all commits use T-XXX prefix (commit-msg hook)"
     else
         grace_fail "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)" \
@@ -6535,7 +6537,7 @@ if [ -f "$BYPASS_LOG" ]; then
     fi
 else
     # Check if any commits lack T-XXX (potential unlogged bypasses)
-    no_task=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
+    no_task=$(git -C "$PROJECT_ROOT" log --oneline -20 --no-merges 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
     no_task=$(echo "$no_task" | tr -d '[:space:]')
     if [ "$no_task" -gt 0 ]; then
         grace_warn "CTL-010: No bypass log but $no_task commit(s) without T-XXX prefix" \
