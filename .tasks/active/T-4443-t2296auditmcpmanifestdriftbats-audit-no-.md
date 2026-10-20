@@ -1,10 +1,16 @@
 ---
 id: T-4443
-name: "t2296_audit_mcp_manifest_drift.bats: audit no longer emits PASS:/FAIL:/ABSENT for the MCP manifest check"
+name: "t2296_audit_mcp_manifest_drift.bats: audit no longer emits PASS:/FAIL:/ABSENT
+  for the MCP manifest check"
 description: >
-  All 3 tests fail at the output assertion (lines 79, 88, 100). Likely the T-4375 structure-audit speed-ups or another audit.sh change altered how this check is invoked or printed. Localise the change. Found by the 2026-10-20T01:03Z fast-tier nightly as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product regression (fix code) or expectation drift from a deliberate change (update the test, say why).
+  All 3 tests fail at the output assertion (lines 79, 88, 100). Likely the T-4375
+  structure-audit speed-ups or another audit.sh change altered how this check is invoked
+  or printed. Localise the change. Found by the 2026-10-20T01:03Z fast-tier nightly
+  as a NEW red; blocks pre-push (ratchet). Still red at HEAD 2026-10-20. Decide: product
+  regression (fix code) or expectation drift from a deliberate change (update the
+  test, say why).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T08:07:17Z
-last_update: 2026-10-20T08:07:17Z
-date_finished: null
+last_update: 2026-10-20T08:09:21Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-20T08:09:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4443: t2296_audit_mcp_manifest_drift.bats: audit no longer emits PASS:/FAIL:/ABSENT for the MCP manifest check
@@ -62,8 +86,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of the 3 reds in tests/unit/t2296_audit_mcp_manifest_drift.bats localised to a file:line and recorded in ## RCA
+- [x] Classified as product regression or expectation drift; code or test fixed accordingly without weakening what the test protects
+- [x] `bats tests/unit/t2296_audit_mcp_manifest_drift.bats` passes with no skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +273,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t2296_audit_mcp_manifest_drift.bats > /tmp/.t4443.out 2>&1 && ! grep -q "^not ok" /tmp/.t4443.out
+test "$(grep -c '# skip' /tmp/.t4443.out)" -eq 0
+timeout 300 bats tests/unit/t4417_audit_bounded_reads.bats > /tmp/.t4443b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4443b.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4443c.out 2>&1 && grep -q clean /tmp/.t4443c.out
 
 ## RCA
 
@@ -264,6 +293,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** all 3 tests in `tests/unit/t2296_audit_mcp_manifest_drift.bats` fail at their verdict assertions (lines 79, 88, 100): no `PASS:`/`FAIL:`/`ABSENT` in the output.
+
+**Root cause:** expectation drift, not a product regression. T-4417 (commit b70c0cb3b) deliberately routed every read in the audit body through `_audit_bounded` (`agents/audit/audit.sh:770`), including the MCP block (`agents/audit/audit.sh:8463`: `MCP_DRIFT_OUT=$(_audit_bounded "$PROJECT_ROOT/bin/fw" mcp check 2>&1)`). The test extracts only that block into a stand-alone runner, so `_audit_bounded` is undefined there: the call returns 127 ("command not found"), which the `*)` branch reports as `INFO: ... status=127 (unexpected)`. Every branch the test drives was unreachable. The audit itself is correct (real audit.sh defines the helper).
+
+**Why structurally allowed:** the harness defined its own stubs for every helper the block used *at the time*, and nothing asserted that the extracted block ran without an undefined command, so a new helper dependency degraded silently into the catch-all branch instead of a clear harness error. T-4417's own suite (`t4417_audit_bounded_reads.bats`) tested the wrapper, not the extract-a-block consumers of the body.
+
+**Prevention:** the harness now extracts the real `_audit_timeout_probe`/`_audit_bounded` definitions from audit.sh (so the test exercises the shipped wrapper, not a stub), and every test asserts the runner output contains no `command not found` — the next helper added to the block fails with a named cause rather than a mystery verdict.
 
 ## Evolution
 
@@ -345,3 +382,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4443-t2296auditmcpmanifestdriftbats-audit-no-.md
 - **Context:** Initial task creation
+
+### 2026-10-20T08:09:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

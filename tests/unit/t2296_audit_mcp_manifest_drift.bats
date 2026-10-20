@@ -26,6 +26,20 @@ _extract_block() {
     ' "$AUDIT_SH"
 }
 
+# T-4443: since T-4417 (b70c0cb3b) the block reads through `_audit_bounded`
+# (agents/audit/audit.sh) — a deliberate change bounding every audit read.
+# Extract the REAL helper (plus its timeout probe) instead of stubbing it, so
+# the test keeps exercising the shipped wrapper's exit-code passthrough.
+_extract_bounded_helpers() {
+    awk '
+        /^_AUDIT_TIMEOUT_CMD=\(\)$/ { p=1 }
+        p { print }
+        p && /^_audit_bounded\(\) \{/ { inb=1 }
+        p && inb && /^}$/ { exit }
+    ' "$AUDIT_SH"
+    echo "_audit_timeout_probe"
+}
+
 # Build a stub bin/fw that responds to `mcp check` only — all other args
 # exit silently. Exit code controlled by FW_STUB_MCP_EXIT.
 _install_fw_stub() {
@@ -69,6 +83,7 @@ warn() { echo "WARN: \$*"; }
 PROJECT_ROOT="$TEST_TEMP_DIR"
 export FW_STUB_MCP_EXIT=$exit_code
 RUNNER
+    _extract_bounded_helpers >> "$script"
     _extract_block >> "$script"
     bash "$script"
 }
@@ -80,6 +95,8 @@ RUNNER
     [[ "$output" == *"framework-mcp manifest"* ]]
     [[ "$output" == *"in sync"* ]]
     [[ "$output" != *"FAIL:"* ]]
+    # T-4443: an undefined helper in the extracted block must fail by name.
+    [[ "$output" != *"command not found"* ]]
 }
 
 @test "t2: fw mcp check exits 1 (drift) → audit emits FAIL with remediation" {
@@ -90,6 +107,8 @@ RUNNER
     [[ "$output" == *"out of sync"* ]]
     # Remediation must be copy-pasteable and name emit-manifest
     [[ "$output" == *"fw mcp emit-manifest"* ]]
+    # T-4443: an undefined helper in the extracted block must fail by name.
+    [[ "$output" != *"command not found"* ]]
 }
 
 @test "t3: fw mcp check exits 2 (absent) → audit emits INFO (not FAIL — fresh project)" {
@@ -99,4 +118,6 @@ RUNNER
     [[ "$output" == *"framework-mcp manifest"* ]]
     [[ "$output" == *"ABSENT"* ]]
     [[ "$output" != *"FAIL:"* ]]
+    # T-4443: an undefined helper in the extracted block must fail by name.
+    [[ "$output" != *"command not found"* ]]
 }
