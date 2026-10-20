@@ -169,12 +169,14 @@ _fw_initial_git_cwd() {
 
 # T-4511: does the text carry process substitution, `<(CMD)` or `>(CMD)`? Bash runs
 # CMD whatever the outer verb is, so `cat <(touch x)` executes touch, and the outer
-# redirect scan only sees `>`. Quote-aware so a mention is not a use: single-quoted
-# text and a backslash-escaped character are skipped. Double-quoted text is NOT
-# skipped, because a "$(…)" inside it parses afresh and may hold one (over-blocks a
-# literal "<(" in double quotes, toward the gate).
+# redirect scan only sees `>`. A mention is not a use: a backslash-escaped character
+# is skipped, and so is single-quoted text, but only on a line with NO double quote.
+# Inside "…" a `'` is literal while inside "$(…)" it opens a quote again, so a
+# flat scan of a line mixing the two could misread where a quote ends and skip a
+# real `<(`; refusing every unescaped `<(` / `>(` there over-blocks toward the gate.
 _fw_has_process_subst() {
-    local s="$1" i n=${#1} ch sq=0 dq=0
+    local s="$1" i n=${#1} ch sq=0 honour_sq=1
+    [[ "$s" == *'"'* ]] && honour_sq=0
     for (( i=0; i<n; i++ )); do
         ch="${s:i:1}"
         if [ "$sq" -eq 1 ]; then
@@ -182,8 +184,7 @@ _fw_has_process_subst() {
             continue
         fi
         case "$ch" in
-            '"') dq=$((1 - dq)) ;;
-            "'") [ "$dq" -eq 0 ] && sq=1 ;;
+            "'") sq=$honour_sq ;;
             '\') i=$((i+1)) ;;
             '<'|'>') [ "${s:i+1:1}" = "(" ] && return 0 ;;
         esac
