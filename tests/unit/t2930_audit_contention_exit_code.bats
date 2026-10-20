@@ -196,34 +196,32 @@ exit 0"
     [ "$uniq_n" -eq 4 ] || { echo "outcomes not distinct: $seen" >&2; return 1; }
 }
 
-# ── Cron: immune today, but by accident — pin it ──────────────────────────────
+# ── Cron: 75 reaches cron, by decision (T-3162) ───────────────────────────────
 
-@test "t2930: every generated audit cron line pipes to logger" {
-    # Measured 2026-08-12: audit's exit code never reaches cron, because each
-    # generated line ends '2>&1 | logger -t agentic-cron' and a pipeline's status
-    # is the LAST command's. That is why the remedy needed no cron-side change.
-    #
-    # But it is an ACCIDENT of the logging convention, not a decision. Remove the
-    # logger pipe (or add 'set -o pipefail') and every contended cron run starts
-    # reporting a failure. This leg makes that change go red instead of silent.
+@test "t2930: every generated audit cron line hands cron the audit's own status" {
+    # Until T-3162 audit's exit code never reached cron: each generated line ended
+    # '2>&1 | logger -t agentic-cron' and a pipeline's status is the LAST
+    # command's. This leg pinned that as an accident so revoking it would be a
+    # decision. T-3162 made it: every line now ends '; exit ${PIPESTATUS[0]}', so
+    # a contended run reports 75 (EX_TEMPFAIL, "did not run") to cron instead of
+    # reading as clean — the same not-audited-vs-clean split this task drew.
     local crontab="$FRAMEWORK_ROOT/.context/cron/agentic-audit.crontab"
     [ -f "$crontab" ] || skip "no generated crontab in this tree"
     local audit_lines bad
     audit_lines=$(grep -v '^#' "$crontab" | grep 'fw" audit' || true)
     [ -n "$audit_lines" ] || skip "no audit cron lines"
-    bad=$(printf '%s\n' "$audit_lines" | grep -vc '| logger' || true)
+    bad=$(printf '%s\n' "$audit_lines" | grep -vc '| logger -t agentic-cron; exit \${PIPESTATUS\[0\]}$' || true)
     [ "$bad" -eq 0 ] || {
-        echo "audit cron lines not piped to logger — exit 75 would now surface as a cron failure" >&2
-        printf '%s\n' "$audit_lines" | grep -v '| logger' >&2
+        echo "audit cron lines that do not propagate the audit's exit status:" >&2
+        printf '%s\n' "$audit_lines" | grep -v 'exit \${PIPESTATUS\[0\]}$' >&2
         return 1
     }
 }
 
-@test "t2930: a logger pipeline really does swallow 75" {
-    # Asserts the mechanism the leg above relies on, rather than trusting the
-    # claim that pipelines return the last status.
-    run bash -c '(exit 75) 2>&1 | logger -t t2930-probe; echo "rc=$?"'
-    [[ "$output" == *"rc=0"* ]]
+@test "t2930: the generated line shape really does carry 75 through the logger pipe" {
+    # Asserts the mechanism, rather than trusting the claim.
+    run bash -c '(exit 75) 2>&1 | logger -t t2930-probe; exit ${PIPESTATUS[0]}'
+    [ "$status" -eq 75 ]
 }
 
 # ── L-533 enumerating guard ───────────────────────────────────────────────────

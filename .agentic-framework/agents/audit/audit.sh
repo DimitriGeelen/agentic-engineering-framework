@@ -400,10 +400,9 @@ _audit_load_functions() {
 #   75  DID NOT RUN — lock contention; the verdict is unknown, not clean
 #
 # Callers decide what "did not run" is worth. See agents/git/lib/hooks.sh (blocks) and
-# the cron note below (immune — every generated audit line pipes to logger, so the
-# pipeline exit code is logger's and no audit code ever reaches cron; pinned by
-# tests/unit/t2930_audit_contention_exit_code.bats so that immunity stops being an
-# accident that a future edit could silently revoke).
+# cron: since T-3162 every generated line ends '| logger ...; exit ${PIPESTATUS[0]}', so
+# a contended cron run reports 75 to cron (previously logger's 0 masked it); pinned by
+# tests/unit/t2930_audit_contention_exit_code.bats.
 #
 # Remedy shape accepted from 832 on the DM rail (539/541), filed here as OBS-224.
 AUDIT_LOCK_DIR="${CONTEXT_DIR}/locks"

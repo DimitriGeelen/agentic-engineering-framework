@@ -74,6 +74,10 @@ def render_crontab(project_root: str, jobs: list, fw_path: str) -> str:
         elif "2>/dev/null" in resolved:
             resolved = resolved.replace("2>/dev/null",
                                         "2>&1 | logger -t agentic-cron")
+        # T-3162: the pipeline's status is logger's (always 0); hand cron
+        # the job's own. Mirrors bin/fw cron generate.
+        if "PIPESTATUS" not in resolved:
+            resolved += "; exit ${PIPESTATUS[0]}"
         lines.append(f"# {name}")
         if status == "paused":
             lines.append(f"# PAUSED: {schedule} root {resolved}")

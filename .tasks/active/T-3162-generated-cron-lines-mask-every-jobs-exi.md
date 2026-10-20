@@ -13,7 +13,7 @@ description: >
   must be a bare executable path. The stderr-capture gain of T-1720 is real and should
   be kept.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -31,7 +31,7 @@ related_tasks: [T-3160, T-3161, T-3149]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T12:09:12Z
-last_update: '2026-08-26T12:15:15Z'
+last_update: 2026-10-20T20:49:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -121,19 +121,21 @@ drift reports permanent false drift.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `bin/fw` `cron generate` appends `; exit ${PIPESTATUS[0]}` to every generated active job line, after the logger pipe
-- [ ] `lib/cron_dry_run.py` emits byte-identical output to `fw cron generate` for the same registry, including the new suffix
-- [ ] Paused lines (`# PAUSED: ...`) and non-`fw` commands get the same treatment, so resuming a job does not change its failure semantics
-- [ ] A job that exits non-zero produces a non-zero status from the fully generated line — verified by executing the generated line, not by reading it
-- [ ] `.context/cron/agentic-audit.crontab` regenerated and deployed, so both drift checks stay green after the generator change
-- [ ] Regression test `tests/unit/t3162_cron_job_exit_status_survives_logger_pipe.bats` pins: generated line propagates non-zero status, stderr still reaches logger, both generators byte-identical
+- [x] `bin/fw` `cron generate` appends `; exit ${PIPESTATUS[0]}` to every generated active job line, after the logger pipe
+- [x] `lib/cron_dry_run.py` emits byte-identical output to `fw cron generate` for the same registry, including the new suffix
+- [x] Paused lines (`# PAUSED: ...`) and non-`fw` commands get the same treatment, so resuming a job does not change its failure semantics
+- [x] A job that exits non-zero produces a non-zero status from the fully generated line — verified by executing the generated line, not by reading it
+- [x] `.context/cron/agentic-audit.crontab` regenerated and deployed, so both drift checks stay green after the generator change
+- [x] Regression test `tests/unit/t3162_cron_job_exit_status_survives_logger_pipe.bats` pins: generated line propagates non-zero status, stderr still reaches logger, both generators byte-identical
 
 ## Verification
 
 python3 lib/cron_dry_run.py "$PROJECT_ROOT" "$PROJECT_ROOT/.context/cron-registry.yaml" "$PWD/bin/fw" > /tmp/.t3162-dry 2>&1 && diff -q /tmp/.t3162-dry "$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
 bash -c 'set -eo pipefail; ! bash -c "false 2>&1 | logger -t t3162-probe; exit \${PIPESTATUS[0]}"'
 out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
-bats tests/unit/t3162_cron_job_exit_status_survives_logger_pipe.bats > /tmp/.t3162-bats 2>&1 && grep -q "^ok 1 " /tmp/.t3162-bats && ! grep -q "^not ok" /tmp/.t3162-bats
+bats tests/unit/t3162_cron_job_exit_status_survives_logger_pipe.bats > /tmp/.t3162-bats 2>&1 && grep -q "^ok 5 " /tmp/.t3162-bats && ! grep -q "^not ok" /tmp/.t3162-bats
+bats tests/unit/t2930_audit_contention_exit_code.bats > /tmp/.t3162-t2930 2>&1 && ! grep -q "^not ok" /tmp/.t3162-t2930
+bin/fw vendor self --check --task T-3162
 
 ## RCA
 
@@ -151,9 +153,24 @@ lives entirely in that fourth transition, so no existing check could see it — 
 failure it hides is silent by construction, which is why it took an external reporter
 walking the generator line by line to find it rather than an incident.
 
-**Prevention:** (to be written with the fix) — a test that *executes* a generated line
-with a failing command and asserts non-zero, rather than asserting on the generated text,
-so the property is pinned at the transition L-365 says nothing else watches.
+**Root cause location:** `bin/fw` `cron generate` (~bin/fw:7060-7063 at fix time) and
+`lib/cron_dry_run.py` `render_crontab` (~:72-76) append/rewrite to `2>&1 | logger -t
+agentic-cron` with nothing after it.
+
+**Prevention:** both generators now append `; exit ${PIPESTATUS[0]}` (skipped only if the
+registry command already names PIPESTATUS). `tests/unit/t3162_cron_job_exit_status_survives_logger_pipe.bats`
+*executes* generated lines under `/bin/bash -c` with a logger stub: failing job → 7,
+passing → 0, stderr reaches logger, paused + `2>/dev/null`-rewritten lines carry the
+suffix, both generators byte-identical (5/5; tests 1 and 4 fail with the fix reverted).
+`tests/unit/t2930_audit_contention_exit_code.bats` — which pinned the old masking as an
+accident so that removing it had to be deliberate — now pins the new shape on every
+deployed audit line. Deployed: `fw cron install` → `/etc/cron.d/agentic-audit-999-agentic-engineering-framework`,
+`fw doctor` "Cron registry in sync".
+
+**Commit attribution note:** the `bin/fw` / `.agentic-framework/bin/fw` hunk of this fix
+(the `; exit \${PIPESTATUS[0]}` lines in `cron generate`) landed inside b0ed4b696
+(T-4515). A concurrent worker ran a path commit of the whole `bin/fw` while this hunk
+was uncommitted. The rest of the fix is in the T-3162 commit.
 
 ## Evolution
 
@@ -210,6 +227,12 @@ so the property is pinned at the transition L-365 says nothing else watches.
 
 ## Decisions
 
+### 2026-10-20 — audit's 75 (lock contention) now reaches cron unmasked
+- **Chose:** raw `; exit ${PIPESTATUS[0]}`; a contended cron audit reports 75 (EX_TEMPFAIL, "did not run") to cron. t2930's pin, which existed so this change would be deliberate, is updated to the new shape; the audit.sh comment is updated.
+- **Why:** mapping 75→0 in the cron line would bring back exactly the T-2930 false green: "not audited" reading the same as "clean".
+- **Rejected:** `rc=${PIPESTATUS[0]}; [ $rc = 75 ] && rc=0; exit $rc` (masks did-not-run); `SHELL=/bin/bash -o pipefail` (cron.d SHELL is a bare path).
+- **Known consequence, not fixed here:** registry jobs wrapped in `flock -n` exit 1 when the lock is held. That now reaches cron as status 1 and looks the same as a real failure. If that noise matters, the fix is `flock -n -E 75` in the registry commands, filed separately.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -235,3 +258,6 @@ so the property is pinned at the transition L-365 says nothing else watches.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3162-generated-cron-lines-mask-every-jobs-exi.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:49:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
