@@ -1,24 +1,28 @@
 ---
-id: T-4452
-name: "sidecar inbox: a TermLink call that times out reads as 'no mail' (default_reader
-  returns [] on timeout), so a slow hub silently hides pending consults"
+id: T-4455
+name: "fw reviewer judge derives no page from a criterion that names a URL with a
+  query string or a full Watchtower URL, so render criteria end 'no evaluating verdict'"
 description: >
-  Found by w4451 (T-4451): lib/sidecar/inbox.py:208 default_reader(timeout=15) returns
-  an empty list when the termlink call times out. Callers (the UserPromptSubmit inbox
-  hook, alerts, session-start) then report nothing pending: a slow or loaded hub is
-  indistinguishable from an empty inbox (silent false negative; Reliability directive).
-  This session saw 'inbox check timed out' once from the hook wrapper, but the reader
-  itself never says so. Fix: the reader distinguishes timeout/error from empty (raise
-  or return a sentinel), and every caller surfaces 'NOT CHECKED: timed out' (the T-3856
-  convention) instead of silence. Regression test with a stub termlink that sleeps
-  past the timeout.
+  Operator asked (2026-10-20) to route T-4350, T-4351, T-4432, T-4347 through the
+  independent reviewer. T-4350's judge run: every seat not-evaluated / unavailable;
+  the claude seat said 'screenshot capture failed (no page derived)' and the review
+  sandbox cannot reach Watchtower (HTTP 000, by design). Cause: lib/reviewer/judge_cli.py:289
+  _URL_TOKEN_RE = r'`(/[a-z][\w/.-]*)`' accepts only a backticked bare path. T-4350's
+  criterion names '/search?q=release decision' (query + space) and T-4432's names
+  'http://<watchtower>:3000/cron' (full URL, not backticked), so _pages_for (judge_cli.py:303)
+  returns nothing for tasks that changed no blueprint. Fix: accept (a) a backticked
+  path with a query string (keep the query; URL-encode spaces) and (b) a full URL
+  whose origin is this project's Watchtower (strip the origin, keep path+query), backticked
+  or bare; never capture a foreign origin. Regression tests on _pages_for with each
+  form. Then re-run 'fw reviewer judge --dry-run' on T-4350 and T-4432 and show the
+  derived pages.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/t4455_pages_for_test.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,9 +50,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T09:42:35Z
-last_update: '2026-10-20T09:45:44Z'
-date_finished:
+created: 2026-10-20T10:56:50Z
+last_update: 2026-10-20T11:23:03Z
+date_finished: 2026-10-20T11:23:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,7 +64,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-20T09:43:27Z'
+  - ts: '2026-10-20T10:57:25Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -78,18 +82,18 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-20T09:45:44Z'
+  - ts: '2026-10-20T11:00:43Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=297,acs=4)
+      (workflow:build); effort=8 (lines=300,acs=7)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4452: sidecar inbox: a TermLink call that times out reads as 'no mail' (default_reader returns [] on timeout), so a slow hub silently hides pending consults
+# T-4455: fw reviewer judge derives no page from a criterion that names a URL with a query string or a full Watchtower URL, so render criteria end 'no evaluating verdict'
 
 ## Context
 
@@ -99,11 +103,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `inbox.default_reader` returns a `ReadFailed` sentinel (falsy, `== []`, carries `.reason`) on timeout, OSError or a non-zero termlink exit other than "unknown topic"; a genuine empty read and an unknown topic still return a plain `[]`
-- [x] One strict reader (`inbox.strict_reader`, re-exported as `alerts.strict_reader`) raises `Unreadable` for any `ReadFailed`, so `fw sidecar inbox` and `fw sidecar alerts` print `NOT CHECKED: ... timed out ...` and exit 3 when termlink sleeps past the timeout
-- [x] `inbox.unread_summary`/`unread_stale` read strictly: `fw sidecar inbox-stale` exits 2 with the reason and `fw sidecar status` reports unread unknown, never 0, when the hub read fails
-- [x] The UserPromptSubmit hook (`agents/context/sidecar-inbox.sh`) emits `NOT CHECKED: <reason>` when the CLI exits 3, and its own timeout line also reads `NOT CHECKED`; fw exiting 1 stays silent (fail open)
-- [x] Regression tests (`tests/unit/test_sidecar_inbox_timeout_t4452.py` with a stub termlink that sleeps past the timeout; new cases in `tests/unit/sidecar_inbox_hook.bats`) fail without the fix and pass with it; existing `tests/unit/test_sidecar_*` and sidecar hook bats stay green
+- [x] `_pages_for` derives a page from a backticked path with a query string, keeping the query and URL-encoding spaces (`/search?q=release decision` → `/search?q=release%20decision`)
+- [x] `_pages_for` derives path+query from a full URL whose origin is this project's Watchtower (the `watchtower.url` origin, or a `<watchtower>` placeholder host), backticked or bare
+- [x] `_pages_for` never captures a page from a foreign origin URL; existing backticked bare-path behaviour unchanged
+- [x] pytest regression tests in tests/unit/t4455_pages_for_test.py cover each form and fail without the fix; neighbouring judge_cli tests still pass
+- [x] `fw reviewer judge --dry-run` on T-4350 and T-4432 shows a derived page for each; vendor synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,22 +292,20 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_sidecar_inbox_timeout_t4452.py -q -p no:cacheprovider > /tmp/.t4452a 2>&1 && grep -q passed /tmp/.t4452a
-python3 -m pytest tests/unit/ -q -k sidecar -p no:cacheprovider > /tmp/.t4452b 2>&1 && grep -q passed /tmp/.t4452b
-timeout 300 bats tests/unit/sidecar_inbox_hook.bats > /tmp/.t4452c 2>&1 && ! grep -q "^not ok" /tmp/.t4452c
-test "$(grep -c '# skip' /tmp/.t4452c)" -eq 0
-python3 tools/bats-dead-negation-lint.py tests/unit/sidecar_inbox_hook.bats > /tmp/.t4452d 2>&1 && grep -q clean /tmp/.t4452d
-bin/fw vendor self --check --task T-4452
+python3 -m pytest tests/unit/t4455_pages_for_test.py -q > /tmp/.t4455-pytest.out 2>&1 && grep -q "7 passed" /tmp/.t4455-pytest.out
+bin/fw reviewer judge T-4350 --dry-run > /tmp/.t4455-a.out 2>&1 && grep -q "pages: /search?q=release%20decision" /tmp/.t4455-a.out
+bin/fw reviewer judge T-4432 --dry-run > /tmp/.t4455-b.out 2>&1 && grep -q "pages: /cron" /tmp/.t4455-b.out
+bin/fw vendor self --check --task T-4455
 
 ## RCA
 
-**Symptom:** a slow or loaded TermLink hub (termlink call past its timeout) read as "no pending consults": the UserPromptSubmit hook, `fw sidecar status` and the doctor/audit consult-backlog check reported nothing pending while consults could be waiting.
+**Symptom:** `fw reviewer judge` on T-4350 / T-4432 ended with every seat not-evaluated; the claude seat reported "screenshot capture failed (no page derived)".
 
-**Root cause:** `lib/sidecar/inbox.py:208` `default_reader` caught `subprocess.TimeoutExpired` (and every other OSError / non-zero exit) and returned `[]`, the same value as an empty inbox. `unread_summary`/`unread_stale` (status, doctor, audit) used it directly. T-4312 moved the CLI and `fw sidecar alerts` to a separate copy, `alerts.strict_reader`, but the hook `agents/context/sidecar-inbox.sh` then dropped the CLI's exit 3 with `[ "$rc" -eq 0 ] || exit 0`, so the NOT CHECKED answer never reached the agent.
+**Root cause:** lib/reviewer/judge_cli.py:289 `_URL_TOKEN_RE = r"`(/[a-z][\w/.-]*)`"` accepted only a backticked bare path. T-4350's criterion names `/search?q=release decision` (query + space) and T-4432's names a bare full URL `http://192.168.10.107:3000/cron`; neither matched, and since neither task changed a blueprint the route fallback in `_pages_for` (judge_cli.py:303) added nothing, so the page list was empty.
 
-**Why structurally allowed:** two readers with two contracts (lenient default, strict copy in alerts.py) and `[]` meaning both "empty" and "failed"; t4312 even pinned the lenient contract. Each fix landed at one caller; the hook treated every non-zero CLI exit as infrastructure absence. No test drove a termlink that hangs past the reader timeout.
+**Why structurally allowed:** the page-derivation regex was only ever tested through tasks whose criteria quoted a plain backticked route (t4214 fixtures), and an empty page list degrades to "not-evaluated" rather than failing loudly at judge time, so the gap surfaced only as unevaluable seats.
 
-**Prevention:** the reader returns a `ReadFailed` sentinel (still `== []` for the lenient sweep callers) and one `inbox.strict_reader` turns it into `Unreadable`; every inbox-facing caller uses it. Regression tests with a sleeping stub termlink pin NOT CHECKED at the reader, CLI (`inbox`, `alerts`, `inbox-stale`) and hook layers.
+**Prevention:** `_criterion_pages` now accepts backticked path+query (query kept, spaces encoded) and full URLs whose origin is this project's Watchtower (watchtower.url netloc, or localhost/127.0.0.1/`<watchtower>` on the project port), never a foreign origin; tests/unit/t4455_pages_for_test.py pins each form (5 of 7 fail on the pre-fix code).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -395,10 +397,27 @@ bin/fw vendor self --check --task T-4452
 
 ## Updates
 
-### 2026-10-20T09:42:35Z — task-created [task-create-agent]
+### 2026-10-20T10:56:50Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4452-sidecar-inbox-a-termlink-call-that-times.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4455-fw-reviewer-judge-derives-no-page-from-a.md
 - **Context:** Initial task creation
 
-### 2026-10-20T09:43:26Z — status-update [task-update-agent]
+### 2026-10-20T10:57:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3ad6d7eb
+- **Timestamp:** 2026-10-20T11:23:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-20T11:23:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

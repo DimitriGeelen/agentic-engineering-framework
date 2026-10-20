@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4454: claude-fw registers its TermLink session with the HOST key, not the project's RAIL_IDENTITY_FILE key (same gap T-4311 closed for the sidecar)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T11:22:48Z
+# ============================================================================
+
+task_id: T-4454
+task_name: "claude-fw registers its TermLink session with the HOST key, not the project's RAIL_IDENTITY_FILE key (same gap T-4311 closed for the sidecar)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T10:45:23Z
+completed: 2026-10-20T11:21:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T12:51:55+02:00
+last_commit: 2026-10-20T12:51:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw registers its TermLink session with the project RAIL_IDENTITY_FILE key (exported only when the key exists); regression bats; vendor synced
+
+# Key outcomes
+outcomes:
+  - '`bin/claude-fw` exports `TERMLINK_IDENTITY_FILE` before `termlink spawn` when the project''s RAIL_IDENTITY_FILE (resolved via `lib/rail-identity.sh` `rail_identity_configured_path`) names an existing file'
+  - 'When RAIL_IDENTITY_FILE is unset, or names a missing file, `TERMLINK_IDENTITY_FILE` is NOT set at registration (no keypair minted at a guessed path); the missing case WARNs on stderr'
+  - 'Regression bats `tests/unit/t4454_claude_fw_rail_identity.bats` (fake termlink on PATH recording its env at spawn) covers present / absent / unset, and fails without the fix'
+  - 'Existing claude-fw bats (t4426 tmux redraw, t3954 installed copy, t3647, t3648, t4118) stay green; vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-4454-claude-fw-registers-its-termlink-session.md'
+  - 'tests/unit/t4454_claude_fw_rail_identity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T12:51:55'
+    action: 'T-4454: claude-fw registers its TermLink session with the project RAIL_IDENTITY_FILE key (exported only when the key exists); regression bats; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 36
+  commits: 1
+  files_changed: 4
+  lines_added: 502
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4454-claude-fw-registers-its-termlink-session.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,21 @@
+id: tests/unit/t4455_pages_for_test.py
+name: t4455_pages_for_test
+type: script
+subsystem: tests
+location: tests/unit/t4455_pages_for_test.py
+tags: []
+
+purpose: "T-4455: `fw reviewer judge` derives the pages to screenshot from a render criterion's text."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

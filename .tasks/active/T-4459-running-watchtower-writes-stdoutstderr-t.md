@@ -1,21 +1,10 @@
 ---
-id: T-4453
-name: "fw upgrade run from a pre-release clone vendors upstream master, not the clone:
-  a pinned -be tag cannot be installed with fw upgrade"
+id: T-4459
+name: "Running Watchtower writes stdout/stderr to a deleted log file: its errors are invisible"
 description: >
-  dimitri-mint-dev T-158 (msg ec31e9af): '<v1.8.14-be.1 clone>/bin/fw upgrade <project>'
-  (env -u FRAMEWORK_ROOT -u PROJECT_ROOT) printed 'Source: /tmp/fw-upstream-.../fw'
-  in its vendor step and vendored MASTER; T-4350 was absent afterwards. 'fw vendor
-  --source <clone> --target <project>' worked. So the T-4023 pre-release flow (cut
-  vX-be.N, field projects pin and install it) has no working fw upgrade path; field
-  projects must know a second verb. Expected: fw upgrade invoked from a framework
-  checkout vendors THAT checkout (or takes an explicit --source / --ref <tag>) and
-  prints which commit it vendored. Check T-4405's handoff (lib/upgrade.sh, it re-execs
-  upstream's bin/fw) — likely the cause: the handoff to upstream should not happen
-  when the invoking fw IS a framework checkout at the requested ref. Keep upgrade_fresh_machine_simulation.bats
-  green; add a regression test with a local -be tag.
+  Found 2026-10-20: /proc/<watchtower pid>/fd/1 and fd/2 point to '(deleted)', so tracebacks from the running process (e.g. the /search 500 in the sibling task) are written nowhere readable; .context/working/watchtower.log no longer receives them. Something rotates or deletes the log while the process keeps the old fd (watchtower restart / ensure / log rotation). Fix: whoever rotates must reopen (signal or restart) or use copytruncate-safe logging; doctor should WARN when the live process's log fd is deleted. Regression test.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T10:30:24Z
-last_update: '2026-10-20T10:45:31Z'
-date_finished:
+created: 2026-10-20T11:24:43Z
+last_update: 2026-10-20T11:24:43Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-20T10:31:17Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-20T10:45:31Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=337,acs=7)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4453: fw upgrade run from a pre-release clone vendors upstream master, not the clone: a pinned -be tag cannot be installed with fw upgrade
+# T-4459: Running Watchtower writes stdout/stderr to a deleted log file: its errors are invisible
 
 ## Context
 
@@ -101,11 +62,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause localised with file:line and recorded in ## RCA (reproduced hermetically: a local framework clone at a -be tag, its bin/fw upgrade against a temp consumer with a file:// upstream_repo)
-- [x] `<framework checkout>/bin/fw upgrade <consumer>` vendors THAT checkout (not upstream_repo's HEAD), even when invoked with FRAMEWORK_ROOT/PROJECT_ROOT unset
-- [x] The upgrade output names the commit (and tag, when HEAD is tagged) of the source it vendored
-- [x] Bare-from-consumer upgrade (consumer's vendored fw) still auto-clones upstream as before
-- [x] Regression bats test with a local -be tag fails without the fix and passes with it; upgrade_fresh_machine_simulation.bats, t4405_*, t4424_* stay green
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,13 +248,6 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-bash -n bin/fw && bash -n lib/upgrade.sh
-timeout 600 bats tests/unit/t4453_upgrade_from_framework_checkout.bats > /tmp/.t4453.out 2>&1 && ! grep -q "^not ok" /tmp/.t4453.out && grep -q "^ok 1 " /tmp/.t4453.out
-test "$(grep -c '# skip' /tmp/.t4453.out)" -eq 0
-timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4453fm.out 2>&1 && ! grep -q "^not ok" /tmp/.t4453fm.out
-timeout 600 bats tests/unit/t4405_upgrade_handoff_forwards_args.bats tests/unit/t4424_upgrade_flag_declaration.bats > /tmp/.t4453h.out 2>&1 && ! grep -q "^not ok" /tmp/.t4453h.out
-python3 tools/bats-dead-negation-lint.py tests/unit/t4453_upgrade_from_framework_checkout.bats > /tmp/.t4453l.out 2>&1 && grep -q clean /tmp/.t4453l.out
-bin/fw vendor self --check --task T-4453
 
 ## RCA
 
@@ -313,36 +264,6 @@ bin/fw vendor self --check --task T-4453
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `<v1.8.14-be.1 clone>/bin/fw upgrade <project>` (run from inside the
-project, FRAMEWORK_ROOT/PROJECT_ROOT unset) printed "Bare-from-consumer detected —
-auto-cloning upstream", cloned `upstream_repo:` (master) into `/tmp/fw-upstream-*`
-and vendored that; the clone's own -be fixes (T-4350) never reached the project.
-Reproduced hermetically: clone + `v9.9.9-be.1` tag, file:// upstream, `--dry-run`.
-
-**Root cause:** `bin/fw:163` `resolve_framework` (T-498 preference) — when
-PROJECT_ROOT (here = cwd = the consumer) carries `.agentic-framework/FRAMEWORK.md`,
-it returns the consumer's vendored copy even though the invoking `bin/fw` lives in
-a framework checkout outside the project. FRAMEWORK_ROOT therefore equals
-`<target>/.agentic-framework`, so `lib/upgrade.sh:1336` takes the T-1634
-bare-from-consumer branch and hands off to an upstream clone (T-4405 handoff). The
-handoff is downstream of the misresolution, not its cause; even `lib/upgrade.sh`
-itself was sourced from the consumer's old vendored tree.
-
-**Why structurally allowed:** the T-498 rule is right for every other verb (a
-framework checkout's bin/fw run inside a consumer should act on the consumer's
-pinned runtime), and every upgrade test ran either the consumer's vendored fw
-(fresh-machine simulation) or the framework fw with cwd outside the consumer —
-no test ran a *separate framework checkout* with cwd inside the consumer, which is
-exactly the T-4023 pre-release flow. The header named only `Framework: <path>
-(vVERSION)`; VERSION is the same for master and -be, so the output never showed
-which commit was vendored, and the miss surfaced only as "T-4350 absent afterwards".
-
-**Prevention:** `tests/unit/t4453_upgrade_from_framework_checkout.bats` runs a
--be-tagged checkout's bin/fw upgrade with cwd = consumer under `env -i` and asserts
-the checkout is the source (no auto-clone) and that its commit + tag are printed;
-plus a control that the consumer's own vendored fw still auto-clones. The upgrade
-header now prints `Commit: <sha> (<tag>)` so the source revision is always visible.
 
 ## Evolution
 
@@ -420,10 +341,7 @@ header now prints `Commit: <sha> (<tag>)` so the source revision is always visib
 
 ## Updates
 
-### 2026-10-20T10:30:24Z — task-created [task-create-agent]
+### 2026-10-20T11:24:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4453-fw-upgrade-run-from-a-pre-release-clone-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4459-running-watchtower-writes-stdoutstderr-t.md
 - **Context:** Initial task creation
-
-### 2026-10-20T10:31:17Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

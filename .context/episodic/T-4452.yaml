@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4452: sidecar inbox: a TermLink call that times out reads as 'no mail' (default_reader returns [] on timeout), so a slow hub silently hides pending consults
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T11:13:36Z
+# ============================================================================
+
+task_id: T-4452
+task_name: "sidecar inbox: a TermLink call that times out reads as 'no mail' (default_reader returns [] on timeout), so a slow hub silently hides pending consults"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T09:42:35Z
+completed: 2026-10-20T11:10:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T12:03:39+02:00
+last_commit: 2026-10-20T12:03:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar inbox read that times out/fails is NOT CHECKED, never an empty inbox
+
+# Key outcomes
+outcomes:
+  - '`inbox.default_reader` returns a `ReadFailed` sentinel (falsy, `== []`, carries `.reason`) on timeout, OSError or a non-zero termlink exit other than "unknown topic"; a genuine empty read and an unknown topic still return a plain `[]`'
+  - 'One strict reader (`inbox.strict_reader`, re-exported as `alerts.strict_reader`) raises `Unreadable` for any `ReadFailed`, so `fw sidecar inbox` and `fw sidecar alerts` print `NOT CHECKED: ... timed out ...` and exit 3 when termlink sleeps past the timeout'
+  - '`inbox.unread_summary`/`unread_stale` read strictly: `fw sidecar inbox-stale` exits 2 with the reason and `fw sidecar status` reports unread unknown, never 0, when the hub read fails'
+  - 'The UserPromptSubmit hook (`agents/context/sidecar-inbox.sh`) emits `NOT CHECKED: <reason>` when the CLI exits 3, and its own timeout line also reads `NOT CHECKED`; fw exiting 1 stays silent (fail open)'
+  - 'Regression tests (`tests/unit/test_sidecar_inbox_timeout_t4452.py` with a stub termlink that sleeps past the timeout; new cases in `tests/unit/sidecar_inbox_hook.bats`) fail without the fix and pass with it; existing `tests/unit/test_sidecar_*` and sidecar hook bats stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/sidecar-inbox.sh'
+  - '.agentic-framework/lib/sidecar/alerts.py'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - 'agents/context/sidecar-inbox.sh'
+  - 'lib/sidecar/alerts.py'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/inbox.py'
+  - '.tasks/active/T-4452-sidecar-inbox-a-termlink-call-that-times.md'
+  - 'tests/unit/sidecar_inbox_hook.bats'
+  - 'tests/unit/test_sidecar_inbox_timeout_t4452.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T12:03:39'
+    action: 'T-4452: sidecar inbox read that times out/fails is NOT CHECKED, never an empty inbox'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 87 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 87
+  commits: 1
+  files_changed: 11
+  lines_added: 800
+  lines_removed: 101
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4452-sidecar-inbox-a-termlink-call-that-times.md
+generated_by: context-agent-hybrid

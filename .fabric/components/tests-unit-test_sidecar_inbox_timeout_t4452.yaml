@@ -1,0 +1,21 @@
+id: tests/unit/test_sidecar_inbox_timeout_t4452.py
+name: test_sidecar_inbox_timeout_t4452
+type: script
+subsystem: tests
+location: tests/unit/test_sidecar_inbox_timeout_t4452.py
+tags: []
+
+purpose: "T-4452 — a termlink read that times out is NOT an empty inbox."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown

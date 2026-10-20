@@ -1,23 +1,10 @@
 ---
-id: T-4455
-name: "fw reviewer judge derives no page from a criterion that names a URL with a
-  query string or a full Watchtower URL, so render criteria end 'no evaluating verdict'"
+id: T-4458
+name: "Watchtower semantic/hybrid search takes 30-90+ s per query and returns HTTP 500 under load: every query scans 747k chunks (2.3 GB of vectors); old handovers alone are ~500 chunks each"
 description: >
-  Operator asked (2026-10-20) to route T-4350, T-4351, T-4432, T-4347 through the
-  independent reviewer. T-4350's judge run: every seat not-evaluated / unavailable;
-  the claude seat said 'screenshot capture failed (no page derived)' and the review
-  sandbox cannot reach Watchtower (HTTP 000, by design). Cause: lib/reviewer/judge_cli.py:289
-  _URL_TOKEN_RE = r'`(/[a-z][\w/.-]*)`' accepts only a backticked bare path. T-4350's
-  criterion names '/search?q=release decision' (query + space) and T-4432's names
-  'http://<watchtower>:3000/cron' (full URL, not backticked), so _pages_for (judge_cli.py:303)
-  returns nothing for tasks that changed no blueprint. Fix: accept (a) a backticked
-  path with a query string (keep the query; URL-encode spaces) and (b) a full URL
-  whose origin is this project's Watchtower (strip the origin, keep path+query), backticked
-  or bare; never capture a foreign origin. Regression tests on _pages_for with each
-  form. Then re-run 'fw reviewer judge --dry-run' on T-4350 and T-4432 and show the
-  derived pages.
+  Found 2026-10-20 while routing T-4350 through fw reviewer judge. Measured (load avg ~18): /search?q=release%20decision (hybrid) -> HTTP 500 after 9-20 s with a normal-looking page and no error text; mode=semantic -> no answer within 90 s; mode=keyword -> 200 in 0.07 s; even / took 68 s while a semantic query was in flight (requests serialise behind it). The embedding call itself is fast (ollama nomic-embed-text-v2-moe: 0.09 s). The index (.context/working/fw-vec-index.db) is 3.46 GB: 13,434 docs, 747,756 chunks, 0 free pages, no duplicate paths, so it is not T-4350 bloat; it is corpus size. Handovers dominate (S-2026-0816-* ~500 chunks each). Localise: where the 500 comes from (a timeout wrapper around _execute_search? render_page?), and why one slow request blocks others (threaded=False?). Options to evaluate: exclude or summarise old handovers/large generated files from the index, an ANN index instead of brute-force KNN, a hard per-query deadline that degrades to keyword results with a visible notice (never a blank 500). Measure before/after.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -50,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-20T10:56:50Z
-last_update: '2026-10-20T11:00:43Z'
-date_finished:
+created: 2026-10-20T11:24:25Z
+last_update: 2026-10-20T11:24:25Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -63,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-20T10:57:25Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-20T11:00:43Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=300,acs=7)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4455: fw reviewer judge derives no page from a criterion that names a URL with a query string or a full Watchtower URL, so render criteria end 'no evaluating verdict'
+# T-4458: Watchtower semantic/hybrid search takes 30-90+ s per query and returns HTTP 500 under load: every query scans 747k chunks (2.3 GB of vectors); old handovers alone are ~500 chunks each
 
 ## Context
 
@@ -103,11 +62,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `_pages_for` derives a page from a backticked path with a query string, keeping the query and URL-encoding spaces (`/search?q=release decision` → `/search?q=release%20decision`)
-- [x] `_pages_for` derives path+query from a full URL whose origin is this project's Watchtower (the `watchtower.url` origin, or a `<watchtower>` placeholder host), backticked or bare
-- [x] `_pages_for` never captures a page from a foreign origin URL; existing backticked bare-path behaviour unchanged
-- [x] pytest regression tests in tests/unit/t4455_pages_for_test.py cover each form and fail without the fix; neighbouring judge_cli tests still pass
-- [x] `fw reviewer judge --dry-run` on T-4350 and T-4432 shows a derived page for each; vendor synced
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -292,20 +248,8 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/t4455_pages_for_test.py -q > /tmp/.t4455-pytest.out 2>&1 && grep -q "7 passed" /tmp/.t4455-pytest.out
-bin/fw reviewer judge T-4350 --dry-run > /tmp/.t4455-a.out 2>&1 && grep -q "pages: /search?q=release%20decision" /tmp/.t4455-a.out
-bin/fw reviewer judge T-4432 --dry-run > /tmp/.t4455-b.out 2>&1 && grep -q "pages: /cron" /tmp/.t4455-b.out
-bin/fw vendor self --check --task T-4455
 
 ## RCA
-
-**Symptom:** `fw reviewer judge` on T-4350 / T-4432 ended with every seat not-evaluated; the claude seat reported "screenshot capture failed (no page derived)".
-
-**Root cause:** lib/reviewer/judge_cli.py:289 `_URL_TOKEN_RE = r"`(/[a-z][\w/.-]*)`"` accepted only a backticked bare path. T-4350's criterion names `/search?q=release decision` (query + space) and T-4432's names a bare full URL `http://192.168.10.107:3000/cron`; neither matched, and since neither task changed a blueprint the route fallback in `_pages_for` (judge_cli.py:303) added nothing, so the page list was empty.
-
-**Why structurally allowed:** the page-derivation regex was only ever tested through tasks whose criteria quoted a plain backticked route (t4214 fixtures), and an empty page list degrades to "not-evaluated" rather than failing loudly at judge time, so the gap surfaced only as unevaluable seats.
-
-**Prevention:** `_criterion_pages` now accepts backticked path+query (query kept, spaces encoded) and full URLs whose origin is this project's Watchtower (watchtower.url netloc, or localhost/127.0.0.1/`<watchtower>` on the project port), never a foreign origin; tests/unit/t4455_pages_for_test.py pins each form (5 of 7 fail on the pre-fix code).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -397,10 +341,7 @@ bin/fw vendor self --check --task T-4455
 
 ## Updates
 
-### 2026-10-20T10:56:50Z — task-created [task-create-agent]
+### 2026-10-20T11:24:25Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4455-fw-reviewer-judge-derives-no-page-from-a.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4458-watchtower-semantichybrid-search-takes-3.md
 - **Context:** Initial task creation
-
-### 2026-10-20T10:57:25Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
