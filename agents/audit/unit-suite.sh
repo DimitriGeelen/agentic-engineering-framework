@@ -218,6 +218,13 @@ _run_one() {
         echo "not-run 0 0" > "$meta"; return 0
     fi
     cap="$FILE_TIMEOUT"; [ "$left" -lt "$cap" ] && cap="$left"
+    # T-4450: the runner's own knobs (FW_UNIT_SUITE_TIER, _DIR, _REPORT, ...) are
+    # read into its variables at startup; a test must see the environment it gets
+    # when run alone. Leaked, a nested runner on a fixture corpus inherited
+    # tier=fast and refused (no tiers.yaml) — t4058 red 5/5 every nightly.
+    local v; for v in $(compgen -e); do
+        case "$v" in FW_UNIT_SUITE_*) unset "$v" ;; esac
+    done
     t0=$(date +%s); rc=0
     if [ "$leg" = bats ]; then
         ( cd "$FRAMEWORK_ROOT" && timeout -k 10 "$cap" bats --tap "$file" ) \
