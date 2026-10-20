@@ -1,0 +1,21 @@
+id: tests/unit/t4492_runme_sha_manifest.bats
+name: t4492_runme_sha_manifest
+type: script
+subsystem: tests
+location: tests/unit/t4492_runme_sha_manifest.bats
+tags: []
+
+purpose: "T-4492: runme job queue slice 2 of the T-4470 GO — the sha manifest over job.json and every file a step reaches, rechecked immediately before each step (prerequisite 3, review finding 5: \"the sha binds job.sh only\"), and the per-step y/N…"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
