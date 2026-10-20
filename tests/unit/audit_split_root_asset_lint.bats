@@ -149,11 +149,24 @@ EOF
     # If this count RISES: a new unreviewed site landed — fix it or disposition
     # it in a task and update this baseline in the same commit.
     # If it FALLS: a kept site was fixed/removed — just update the baseline.
-    count=$(grep -rnE '\$\{?PROJECT_ROOT\}?/(lib|agents|policy|web)/' \
+    #
+    # T-4484: baseline 12 -> 22. The 10 added since T-2649 are deliberate,
+    # each an in-repo SOURCE read or framework-repo existence guard (never
+    # resolved from a consumer's PROJECT_ROOT): T-2980 audit seed-ref check
+    # (audit.sh x2), T-2433 sandbox profile (audit.sh x1, bin/fw x3 + $PROJECT_ROOT/
+    # policy/sandbox-profile.d), designer-pin dz/dc + bvp scoring guard (bin/fw x2),
+    # T-4449 template-sync pre-commit leg (hooks.sh x2). The test never ratcheted
+    # them in, so it sat red until now.
+    sites=$(grep -rnE '\$\{?PROJECT_ROOT\}?/(lib|agents|policy|web)/' \
                 "$REPO_ROOT/agents/" "$REPO_ROOT/lib/" "$REPO_ROOT/bin/fw" 2>/dev/null \
             | grep -v ".agentic-framework" \
-            | grep -cv "FRAMEWORK_ROOT:-")
-    [ "$count" -eq 12 ]
+            | grep -v "FRAMEWORK_ROOT:-" || true)
+    count=$(printf '%s\n' "$sites" | grep -c .)
+    if [ "$count" -ne 22 ]; then
+        echo "PROJECT_ROOT framework-asset sites: $count (baseline 22)" >&2
+        printf '%s\n' "$sites" >&2
+        false
+    fi
 }
 
 @test "drift tripwire: audit.sh carries the same pattern core as this replica" {
