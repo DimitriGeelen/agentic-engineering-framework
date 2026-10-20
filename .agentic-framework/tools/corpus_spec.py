@@ -66,6 +66,9 @@ TYPE_TO_TAG = {
     # is descriptive, nothing here executes it. calledElement = called map's
     # corpus id; aef:ioMapping + sibling aef:callRef carry data mapping/identity.
     "call": "callActivity",
+    # T-4488: plain untyped activity (832 T-1215), round-trip only — third-party
+    # BPMN uses it widely; re-emitted as authored, never coerced to a typed task.
+    "task": "task",
 }
 TAG_TO_TYPE = {v: k for k, v in TYPE_TO_TAG.items()}
 
@@ -75,7 +78,7 @@ TAG_TO_TYPE = {v: k for k, v in TYPE_TO_TAG.items()}
 # hard-error); they are listed so adding them to TYPE_TO_TAG carries `default`.
 DEFAULT_FLOW_TAGS = {"exclusiveGateway", "inclusiveGateway", "complexGateway",
                      "serviceTask", "userTask", "scriptTask", "subProcess",
-                     "callActivity"}
+                     "callActivity", "task"}
 
 # Known structured aef:* ext children; everything else is preserved verbatim.
 _KNOWN_EXT = {"uid", "position", "eventDef", "link", "meta", "workflowMeta", "laneMeta",

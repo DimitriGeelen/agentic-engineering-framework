@@ -498,3 +498,35 @@ def test_default_flow_on_non_carrier_and_other_unprefixed_attrs_stay_dropped():
     out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
     assert "foo=" not in out and "gatewayDirection" not in out
     assert out.count(' default="') == 1  # not tier_default
+
+
+# ── T-4488: plain bpmn:task (832 T-1215), round-trip only, never coerced ──
+
+def _plain_task_xml():
+    return HEAD + (
+        '<bpmn:startEvent id="s1"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>'
+        '<bpmn:task id="t1" name="Review draft">'
+        '<bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing></bpmn:task>'
+        '<bpmn:task id="t2"><bpmn:incoming>f2</bpmn:incoming>'
+        '<bpmn:outgoing>f3</bpmn:outgoing></bpmn:task>'
+        '<bpmn:endEvent id="e1"><bpmn:incoming>f3</bpmn:incoming></bpmn:endEvent>'
+        '<bpmn:sequenceFlow id="f1" sourceRef="s1" targetRef="t1"/>'
+        '<bpmn:sequenceFlow id="f2" sourceRef="t1" targetRef="t2"/>'
+        '<bpmn:sequenceFlow id="f3" sourceRef="t2" targetRef="e1"/>'
+    ) + TAIL
+
+
+def test_plain_task_is_accepted_and_round_trips_with_its_count():
+    src = _plain_task_xml()
+    spec = corpus_spec.parse_map(src)  # 0 refusals: no SystemExit
+    tasks = [n for n in spec["nodes"] if n["type"] == "task"]
+    assert [n["id"] for n in tasks] == ["t1", "t2"]
+    assert tasks[0]["name"] == "Review draft"
+    out = corpus_spec.emit_map(spec, version=1, compat_alias=False)
+    # same bpmn:task count, none converted to a typed task
+    assert out.count("<bpmn:task ") == src.count("<bpmn:task ") == 2
+    for typed in ("serviceTask", "userTask", "scriptTask"):
+        assert f"<bpmn:{typed}" not in out
+    spec2 = corpus_spec.parse_map(out)
+    assert [n["type"] for n in spec2["nodes"]] == [n["type"] for n in spec["nodes"]]
+    assert corpus_spec.emit_map(spec2, version=1, compat_alias=False) == out

@@ -460,6 +460,7 @@ NODE_OCCUPANCY = {
     "gateway": 48 + 18, "parallel-gateway": 48 + 18,   # *Gateway: name renders below
     "service": 64, "user": 64, "script": 64, "subprocess": 64,   # name inside the box
     "call": 64,                                        # T-4445: callActivity (T-4374) is an activity box
+    "task": 64,                                        # T-4488: plain bpmn:task is an activity box too
 }
 
 # 832: LANE_FIT_MARGIN = 12, applied at BOTH edges, so the height at which a lane is
