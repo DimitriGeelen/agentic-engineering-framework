@@ -3760,7 +3760,9 @@ else:
         # Declare first: `local x=$(…)` would mask the exit status in `local`'s
         # own return value.
         local smoke_result smoke_rc
-        smoke_result=$(python3 "$FRAMEWORK_ROOT/web/smoke_test.py" --port "$_doctor_wt_port" --json 2>/dev/null) && smoke_rc=0 || smoke_rc=$?
+        # T-4354 (GH #97): probe the URL the /health gate just used, not
+        # localhost — a Watchtower bound to one FW_HOST address is not there.
+        smoke_result=$(python3 "$FRAMEWORK_ROOT/web/smoke_test.py" --port "$_doctor_wt_port" --url "$_doctor_wt_url" --json 2>/dev/null) && smoke_rc=0 || smoke_rc=$?
         # One parse, not three: three independent `json.load`s could disagree
         # with each other, and did — each failed silently to its own `|| echo 0`.
         # `UNPARSED` is a value the caller must handle, not a zero that hides.

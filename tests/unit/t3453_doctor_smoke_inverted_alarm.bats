@@ -63,6 +63,7 @@ _run_block() {
         echo 'warnings=0'
         echo "FRAMEWORK_ROOT='$TEST_TEMP_DIR/fwroot'"
         echo '_doctor_wt_port=3002'
+        echo "_doctor_wt_url='http://127.0.0.1:3002'"  # T-4354: doctor passes --url
         echo '_smoke_block() {'
         cat "$1"
         echo '}'
