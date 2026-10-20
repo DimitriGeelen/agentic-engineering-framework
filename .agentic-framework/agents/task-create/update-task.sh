@@ -1626,6 +1626,14 @@ run_verification_commands() {
     if [ "${FW_ALLOW_UNPARSEABLE_VERIFICATION:-0}" = "1" ]; then
         log_gate_bypass "FW_ALLOW_UNPARSEABLE_VERIFICATION" "verification block has unparseable line(s)" 2>/dev/null || true
     fi
+    # T-2958: a backtick outside single quotes parses fine and is substituted by
+    # the eval below — "``" collapses to "" and the line passes emptily.
+    if ! check_verification_backticks "$verify_cmds"; then
+        exit 1
+    fi
+    if [ "${FW_ALLOW_BACKTICK_VERIFICATION:-0}" = "1" ] && [ -n "$(find_unquoted_backtick_lines "$verify_cmds")" ]; then
+        log_gate_bypass "FW_ALLOW_BACKTICK_VERIFICATION" "verification block has backtick substitution" 2>/dev/null || true
+    fi
 
     check_verification_port_literals "$verify_cmds"
     check_verification_unjudged_test_runs "$verify_cmds"

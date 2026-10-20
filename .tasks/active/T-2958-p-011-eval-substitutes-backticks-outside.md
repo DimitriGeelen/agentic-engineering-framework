@@ -8,7 +8,7 @@ description: >
   (re.sub(r'','',t) = silent no-op). T-1413 fixed that one line by escaping; the rule
   never generalised. Needs a close-gate check or lint, not another single-line fix.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T22:25:11Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: '2026-10-20T20:45:20Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,6 +75,23 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T20:45:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2958: P-011 eval substitutes backticks outside single quotes — collapsed pattern can pass emptily
@@ -87,8 +104,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect reproduced at HEAD: a Verification line ``grep -q "``" f`` (and the T-446 code-fence regex inside `python3 -c "…"`) passes T-2991's parse check and evals GREEN on a file containing no backticks (the pair collapses to the empty pattern). Triple backticks alone are already refused as unparseable; the pair is the silent case.
+- [x] `lib/verification-port.sh` gains `find_unquoted_backtick_lines` (prints each line holding a backtick that bash would command-substitute: outside single quotes / `$'…'` and not backslash-escaped) and `check_verification_backticks` (refuses, bypass `FW_ALLOW_BACKTICK_VERIFICATION=1`)
+- [x] The P-011 gate in `agents/task-create/update-task.sh` calls the check BEFORE the eval loop, and logs the bypass Tier-2
+- [x] Regression bats `tests/unit/t2958_verification_backticks.bats` covers: flagged (bare, in double quotes, code-fence regex), not flagged (single-quoted, escaped, `$'…'`, `$(…)`), and the end-to-end close refusal; fails without the fix
+- [x] `bin/fw vendor self --check --task T-2958` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -187,6 +207,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/verification-port.sh && bash -n agents/task-create/update-task.sh
+grep -q 'check_verification_backticks "\$verify_cmds"' agents/task-create/update-task.sh
+bats tests/unit/t2958_verification_backticks.bats > /tmp/.t2958.out 2>&1 && grep -q '^ok 1 ' /tmp/.t2958.out
+bats tests/unit/verification_port_hardcode.bats > /tmp/.t2958b.out 2>&1 && grep -q '^ok 1 ' /tmp/.t2958b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t2958_verification_backticks.bats > /tmp/.t2958c.out 2>&1 && grep -q clean /tmp/.t2958c.out
+bin/fw vendor self --check --task T-2958
 
 ## RCA
 
@@ -203,6 +229,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** A Verification line carrying Markdown-style backticks outside single quotes passes while asserting nothing. Reproduced at HEAD 6b0cd894d: ``grep -q "``" f`` and the T-446 shape `python3 -c "…re.sub(r'```[a-z]*```','',t)…"` both cleared T-2991's parse check and evalled GREEN against a file holding no backticks.
+
+**Root cause:** `agents/task-create/update-task.sh:1677` (pre-fix) runs each line via `eval "$cmd"`. An unescaped backtick outside single quotes or `$'…'` is command substitution, so `` `` `` becomes the empty string and a fenced regex runs its middle as a command. The only lexical preflight, `check_verification_parseable` (`lib/verification-port.sh:89`), asks whether bash *can parse* the line, and these lines parse.
+
+**Why structurally allowed:** T-1413 fixed T-446's one line by escaping it, and the rule never became a check. The gate's preflights (parseable, port literal, unjudged test run) each catch a named class. None of them asks about the quoting state at a backtick. A false green produces no error, so nothing prompted anyone to look.
+
+**Prevention:** `check_verification_backticks` (`lib/verification-port.sh`, a small quoting-state lexer: normal / `$(…)` / single / ANSI-C / double, comment-aware) runs before the eval loop and refuses the line, naming three literal spellings and the `$(…)` form. Bypass `FW_ALLOW_BACKTICK_VERIFICATION=1` is logged Tier-2. `tests/unit/t2958_verification_backticks.bats` (13 tests) pins the predicate and the end-to-end refusal. The e2e test proves on evidence that the line never runs: the file it would `touch` does not exist. A read-only scan of the active-task Verification blocks found no real line that would now be refused. Every backtick hit was single-quoted or inside an HTML template comment the extractor strips.
 
 ## Evolution
 
@@ -284,3 +318,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2958-p-011-eval-substitutes-backticks-outside.md
 - **Context:** Initial task creation
+
+### 2026-10-20T20:35:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

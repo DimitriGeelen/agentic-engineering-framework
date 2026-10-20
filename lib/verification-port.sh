@@ -123,6 +123,101 @@ check_verification_parseable() {
     return 1
 }
 
+# T-2958 — print every line of $1 that holds a backtick bash will command-substitute.
+#
+# WHY THIS EXISTS. The gate evals each line, so a backtick that is not inside
+# single quotes (or `$'…'`) and not backslash-escaped is command substitution,
+# not text. Task files are Markdown, and Markdown writes code with backticks:
+#     grep -q "``" f                      -> grep -q "" f      (matches anything)
+#     re.sub(r'```[a-z]*```','',t)  in "…" -> runs `[a-z]*` as a command
+# Both still PARSE, so check_verification_parseable lets them through, and the
+# collapsed pattern passes emptily. T-446 shipped exactly this (a code-fence
+# regex reduced to `re.sub(r'','',t)`, a silent no-op); T-1413 escaped that one
+# line and the rule never generalised.
+#
+# A small lexer, not a regex: what decides is the quoting state AT the backtick.
+# States: N normal, P inside `$(`/`(` (normal rules, `)` closes), S '…',
+# A $'…', D "…". A `#` at word start in N/P begins a comment and ends the scan.
+# Prints offending lines, one per line; empty when clean. Always exits 0.
+_t2958_line_has_live_backtick() {
+    local s="$1" n=${#1} i=0 c nx prev=" " stack="N" top
+    while (( i < n )); do
+        c="${s:i:1}"; nx="${s:i+1:1}"; top="${stack: -1}"
+        case "$top" in
+            S) [[ $c == "'" ]] && stack="${stack%?}" ;;
+            A) if [[ $c == '\' ]]; then ((i++)) || true
+               elif [[ $c == "'" ]]; then stack="${stack%?}"; fi ;;
+            D) case "$c" in
+                   '\') ((i++)) || true ;;
+                   '"') stack="${stack%?}" ;;
+                   '`') return 0 ;;
+                   '$') [[ $nx == "(" ]] && { stack+="P"; ((i++)) || true; } ;;
+               esac ;;
+            *) case "$c" in
+                   '\') ((i++)) || true ;;
+                   "'") stack+="S" ;;
+                   '"') stack+="D" ;;
+                   '`') return 0 ;;
+                   '$') if [[ $nx == "'" ]]; then stack+="A"; ((i++)) || true
+                        elif [[ $nx == "(" ]]; then stack+="P"; ((i++)) || true; fi ;;
+                   '(') stack+="P" ;;
+                   ')') [[ $top == "P" ]] && stack="${stack%?}" ;;
+                   '#') [[ $prev == [[:space:]\;\&\|\(] ]] && return 1 ;;
+               esac ;;
+        esac
+        prev="$c"
+        ((i++)) || true
+    done
+    return 1
+}
+
+find_unquoted_backtick_lines() {
+    local text="$1" line
+    while IFS= read -r line; do
+        line="${line#"${line%%[![:space:]]*}"}"
+        [ -z "$line" ] && continue
+        _t2958_line_has_live_backtick "$line" && printf '%s\n' "$line"
+    done <<< "$text"
+    return 0
+}
+
+# Refuse a Verification block holding a live backtick. Returns 0 when safe to
+# run, 1 when it must not be. Bypass: FW_ALLOW_BACKTICK_VERIFICATION=1 (logged
+# Tier-2 by the caller) — a deliberate legacy `cmd` substitution is legal shell.
+check_verification_backticks() {
+    local text="$1" bad
+    bad=$(find_unquoted_backtick_lines "$text")
+    [ -z "$bad" ] && return 0
+
+    if [ "${FW_ALLOW_BACKTICK_VERIFICATION:-0}" = "1" ]; then
+        echo "  WARN: verification line(s) hold backtick substitution — running anyway" >&2
+        echo "        (FW_ALLOW_BACKTICK_VERIFICATION=1)" >&2
+        return 0
+    fi
+
+    {
+        echo ""
+        echo "BLOCKED: the ## Verification block has backtick(s) bash will substitute."
+        echo ""
+        echo "$bad" | sed 's/^/    /'
+        echo ""
+        echo "  Each line is eval'd. A backtick outside single quotes is command"
+        echo "  substitution, not text: \"\`\`\" collapses to \"\", so grep -q \"\`\`\" f"
+        echo "  matches every file, and a code-fence regex inside \"…\" runs its"
+        echo "  middle as a command. The line still parses and can pass emptily (T-2958)."
+        echo ""
+        echo "  Fix one of:"
+        echo "    - put the literal in single quotes:   grep -q '\`\`\`' f"
+        echo "    - escape it:                          grep -q \"\\\`\\\`\\\`\" f"
+        echo "    - spell it without a backtick:        grep -q \$'\\x60\\x60\\x60' f"
+        echo "    - for substitution, use \$(cmd) instead of \`cmd\`"
+        echo ""
+        echo "  Bypass (logged Tier-2): FW_ALLOW_BACKTICK_VERIFICATION=1"
+        echo ""
+    } >&2
+    return 1
+}
+
 # Extract the ## Verification block of a task file, stripped of comments, blank
 # lines and fences — the same shape update-task.sh executes.
 #
