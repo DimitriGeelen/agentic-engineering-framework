@@ -228,6 +228,42 @@ def ever_in_source_history(source, includes):
     return {l for l in out.splitlines() if l}
 
 
+def released_match(source, rel, path, cache):
+    """Release tag whose copy of `rel` has exactly these bytes, or None (T-4554).
+
+    The stamp is rewritten only by a full vendor, so a file copied from a
+    release tag during a hotfix matches neither the stamp nor the current
+    source -- ring20 had two such files called local edits on v1.8.12. Bytes
+    that some release shipped at this path are the framework's, not the
+    consumer's. Every v* tag in the source repo counts; no git, no tags -> None.
+    """
+    if os.path.islink(path):
+        return None
+    if "tags" not in cache:
+        try:
+            out = subprocess.run(["git", "-C", source, "tag", "--list", "v*",
+                                  "--sort=-version:refname"],
+                                 capture_output=True, text=True, timeout=60, check=True).stdout
+            cache["tags"] = [t for t in out.split() if t]
+        except (OSError, subprocess.SubprocessError):
+            cache["tags"] = []
+    tags = cache["tags"]
+    if not tags:
+        return None
+    try:
+        blob = subprocess.run(["git", "hash-object", "--no-filters", path],
+                              capture_output=True, text=True, timeout=30, check=True).stdout.strip()
+        out = subprocess.run(["git", "-C", source, "cat-file", "--batch-check"],
+                             input="".join(f"{t}:{rel}\n" for t in tags),
+                             capture_output=True, text=True, timeout=120, check=True).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+    for tag, line in zip(tags, out.splitlines()):
+        if line.split(" ", 1)[0] == blob:
+            return tag
+    return None
+
+
 def source_commit(source):
     """Full sha of the source checkout's HEAD, or None (T-3136)."""
     if not os.path.exists(os.path.join(source, ".git")):
@@ -293,8 +329,9 @@ def cmd_pre(a):
     src = walk(a.source, includes, excludes)
     dst = walk(dest, includes, excludes)
     history = None
+    tag_cache = {}
 
-    keep, at_risk, in_file_hits = [], [], []
+    keep, at_risk, in_file_hits, released = [], [], [], []
     for rel in sorted(dst):
         if manifest and rel in manifest["in_file"] and rel in src:
             in_file_hits.append(rel)
@@ -308,7 +345,11 @@ def cmd_pre(a):
                 if rel not in stamp:
                     at_risk.append((rel, "local-only — would be DELETED"))
                 elif digest(dst[rel]) != stamp[rel]:
-                    at_risk.append((rel, "removed upstream, but edited locally — would be DELETED"))
+                    tag = released_match(a.source, rel, dst[rel], tag_cache)
+                    if tag:
+                        released.append((rel, tag))
+                    else:
+                        at_risk.append((rel, "removed upstream, but edited locally — would be DELETED"))
             else:
                 if history is None:
                     history = ever_in_source_history(a.source, includes)
@@ -320,7 +361,11 @@ def cmd_pre(a):
         if stamp is not None and rel in stamp:
             dhash = digest(dst[rel])
             if dhash != stamp[rel] and dhash != digest(src[rel]):
-                at_risk.append((rel, "edited locally — would be OVERWRITTEN"))
+                tag = released_match(a.source, rel, dst[rel], tag_cache)
+                if tag:
+                    released.append((rel, tag))
+                else:
+                    at_risk.append((rel, "edited locally — would be OVERWRITTEN"))
 
     if stamp is None:
         print(f"  NOTE  no vendor stamp yet ({VENDOR_DIR}/{STAMP}) — local EDITS to framework "
@@ -329,6 +374,9 @@ def cmd_pre(a):
     for rel in keep:
         tag = "local-only" if rel not in src else "kept local over upstream"
         print(f"  PRESERVE  {rel}  ({tag}; {MANIFEST})")
+    for rel, tag in released:
+        print(f"  RELEASED  {rel}  — matches {tag}, not the vendor stamp; framework-owned, "
+              "takes upstream (not a local edit)")
     for rel in in_file_hits:
         print(f"  IN-FILE   {rel}  (takes upstream; {len((manifest or {}).get('in_file', {}).get(rel, []))} marker(s) "
               "checked after the copy)")
