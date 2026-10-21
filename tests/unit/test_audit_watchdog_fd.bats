@@ -79,16 +79,16 @@ _anyone_holds_lock() {
     grep -q 'exec \$_n>&-' "$FRAMEWORK_ROOT/agents/audit/audit.sh"
 }
 
-@test "no fd > 2 leaks to orphan watchdog after fw audit (pipe-fd-3 regression)" {
-    # Run fw audit through a pipe so FD 3 is the pipe write end in the
-    # parent shell. If the watchdog inherits it, the pipe never closes.
-    "$FRAMEWORK_ROOT/bin/fw" audit --section structure 2>&1 | head -1 >/dev/null
-    sleep 1
-    # Find any orphan sleep with PPID=1; check none holds a non-/dev/null
-    # writable FD other than 0/1/2.
-    local leaked=""
+# T-3809: list fds > 2 (other than /dev/null) held by orphans (PPID=1) that carry
+# this run's T3809_MARK in their environment. Scoping by the inherited marker means
+# only descendants of this test's own fw audit are inspected — a host-wide scan of
+# every orphan `sleep` went red whenever a concurrent audit (another suite file,
+# another session's pre-push gate) left one holding a pipe.
+_marked_orphan_leaks() {
+    local mark="$1" leaked="" pid fd n target
     while read -r pid; do
         [ -z "$pid" ] && continue
+        tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | grep -qx "T3809_MARK=$mark" || continue
         for fd in /proc/$pid/fd/*; do
             [ -e "$fd" ] || continue
             n="${fd##*/}"
@@ -98,9 +98,47 @@ _anyone_holds_lock() {
             case "$target" in /dev/null) continue ;; esac
             leaked="$leaked $pid:fd$n→$target"
         done
-    done < <(ps -e -o pid,ppid,cmd | awk '$2==1 && $3=="sleep" {print $1}')
+    done < <(ps -e -o pid=,ppid= | awk '$2==1 {print $1}')
+    echo "$leaked"
+}
+
+# Start an orphan (PPID=1) `sleep` holding a pipe at fd 3, with T3809_MARK=$1
+# (empty = unmarked). Prints its pid.
+_plant_orphan() {
+    local mark="$1" pidfile="$TEST_TEMP_DIR/orphan.$RANDOM"
+    T3809_MARK="$mark" setsid bash -c 'sleep 60 3> >(cat >/dev/null) & echo $! > "$1"' _ "$pidfile" </dev/null >/dev/null 2>&1
+    local i; for i in 1 2 3 4 5 6 7 8 9 10; do [ -s "$pidfile" ] && break; sleep 0.2; done
+    cat "$pidfile"
+}
+
+@test "no fd > 2 leaks to orphan watchdog after fw audit (pipe-fd-3 regression)" {
+    # Run fw audit through a pipe so FD 3 is the pipe write end in the
+    # parent shell. If the watchdog inherits it, the pipe never closes.
+    export T3809_MARK="audit-$$-$RANDOM"
+    "$FRAMEWORK_ROOT/bin/fw" audit --section structure 2>&1 | head -1 >/dev/null
+    sleep 1
+    local leaked
+    leaked=$(_marked_orphan_leaks "$T3809_MARK")
     if [ -n "$leaked" ]; then
         echo "FAIL: orphan watchdog leaked fds:$leaked" >&2
         return 1
     fi
+}
+
+@test "T-3809: an unrelated orphan holding a pipe fd does not count as this audit's leak" {
+    local pid
+    pid=$(_plant_orphan "")
+    [ -n "$pid" ]
+    leaked=$(_marked_orphan_leaks "audit-$$-$RANDOM")
+    kill "$pid" 2>/dev/null || true
+    [ -z "$leaked" ]
+}
+
+@test "T-3809: control — a marked orphan holding a pipe fd IS detected" {
+    local mark="ctl-$$-$RANDOM" pid
+    pid=$(_plant_orphan "$mark")
+    [ -n "$pid" ]
+    leaked=$(_marked_orphan_leaks "$mark")
+    kill "$pid" 2>/dev/null || true
+    [[ "$leaked" == *"$pid:fd3"* ]]
 }

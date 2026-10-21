@@ -11,7 +11,7 @@ description: >
   concurrency); test unchanged in 914326e07..HEAD. Fix: tag the watchdog (env marker
   or process group) and scan only descendants of this test's audit.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T11:13:16Z
-last_update: '2026-10-04T11:15:43Z'
+last_update: 2026-10-21T00:04:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect reproduced (or not) at HEAD with recorded evidence
+- [x] The fd-leak assertion scans only watchdog processes started by this test's own fw audit, not every PPID=1 sleep on the host
+- [x] Regression test: an unrelated orphan sleep holding a pipe fd does not redden the test (fails before the fix)
+- [x] Watchdog fd test file is green
+
+Test-only change (tests/ is not vendored), so `fw vendor self --check` has nothing of this task's to check.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -258,8 +262,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/test_audit_watchdog_fd.bats > /tmp/.t3809.out 2>&1 && ! grep -q "^not ok" /tmp/.t3809.out
+test "$(grep -c '# skip' /tmp/.t3809.out)" -eq 0
+grep -q 'T3809_MARK' tests/unit/test_audit_watchdog_fd.bats
+python3 tools/bats-dead-negation-lint.py tests/unit/test_audit_watchdog_fd.bats > /tmp/.t3809.lint 2>&1 && grep -q clean /tmp/.t3809.lint
 
 ## RCA
+
+**Symptom:** `no fd > 2 leaks to orphan watchdog after fw audit` went red in the 12-job suite (T-3747 round 3), green alone.
+
+**Root cause:** `tests/unit/test_audit_watchdog_fd.bats:101` (pre-fix) selected candidates with `ps -e ... awk '$2==1 && $3=="sleep"'` — every orphan `sleep` on the host, not the ones its own `fw audit` spawned. Any concurrent process (another suite file's audit, another session's pre-push gate, an unrelated daemon) leaving a PPID=1 sleep holding a pipe fd reddened it. Reproduced at HEAD 20884da63: planted `setsid bash -c 'sleep 120 3> >(cat)'` → `FAIL: orphan watchdog leaked fds: 2573905:fd3→pipe:[...]`.
+
+**Why structurally allowed:** the test was written and validated serially; host-wide `ps` scans are only wrong under concurrency, which the suite introduced later. Nothing lints for host-global process scans in tests.
+
+**Prevention:** the test now exports a per-run marker (`T3809_MARK=<pid-random>`) before `fw audit`; environment is inherited by every descendant including the reparented watchdog `sleep`, so the scan reads `/proc/<pid>/environ` and only considers processes carrying this run's marker. Two new tests pin it: an unmarked orphan holding a pipe fd is ignored (failed before the fix), and a marked one is detected (control leg, so the scan cannot silently go blind).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -355,3 +371,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3809-testauditwatchdogfd-scans-every-ppid1-sl.md
 - **Context:** Initial task creation
+
+### 2026-10-21T00:04:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
