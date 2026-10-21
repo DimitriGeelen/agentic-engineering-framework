@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4556: Worker-contract vectors: confirm_end acts on attempts never seen alive (CC-01/02/03/06/09/25); seed seen_alive_epoch
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T14:58:48Z
+# ============================================================================
+
+task_id: T-4556
+task_name: "Worker-contract vectors: confirm_end acts on attempts never seen alive (CC-01/02/03/06/09/25); seed seen_alive_epoch"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T14:57:16Z
+completed: 2026-10-21T14:58:36Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-21T16:58:35+02:00
+last_commit: 2026-10-21T16:58:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  confirm_end presumes a last-seen epoch; seed seen_alive_epoch in CC-01/02/03/06/09/25 (termlink CC-06 vs CC-17 finding)
+
+# Key outcomes
+outcomes:
+  - 'Every attempt that a `confirm_end` step acts on has `seen_alive_epoch` in its `given` (CC-01, CC-02, CC-03 both variants, CC-06, CC-09 via-lost, CC-25 both variants)'
+  - 'The `confirm_end` op description states that precondition and that `G` elapses inside the op'
+  - '`check_vectors.py` and the unit test still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4556-worker-contract-vectors-confirmend-acts-.md'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T16:58:35'
+    action: 'T-4556: confirm_end presumes a last-seen epoch; seed seen_alive_epoch in CC-01/02/03/06/09/25 (termlink CC-06 vs CC-17 finding)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 2
+  lines_added: 356
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4556-worker-contract-vectors-confirmend-acts-.md
+generated_by: context-agent-hybrid
