@@ -12,7 +12,7 @@ description: >
   is retained by the suite report — next step: rerun under suite load with --print-output-on-failure
   captured.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: [T-3747]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T17:02:27Z
-last_update: '2026-10-03T17:15:39Z'
+last_update: 2026-10-21T00:03:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,14 +92,23 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Suite-only red in fw_focus_alias.bats (2026-10-03 run: tests 3-5; recurred 2026-10-18T18:13Z run: tests 2-5).
+
+### 2026-10-21 — does not reproduce at HEAD (20884da63) [w3775]
+
+- `bats tests/unit/fw_focus_alias.bats` alone, 3x → 8/8 ok each.
+- 12 concurrent copies, `bats --print-output-on-failure`, load average 65/56/45 → 96/96 ok, 0 `not ok`.
+- Under a dispatched-worker env plus `CLAUDE_PROJECT_DIR=$PWD CLAUDECODE=1` (FW_SESSION_SCOPED_FOCUS etc. exported) → 8/8 ok (T-3747's `env -u` scrub holds).
+- Unit-suite history: the file ran green in every report from 2026-10-04 to 2026-10-17 and in the 2026-10-19 complete run (LAST-COMPLETE.yaml); the 2026-10-20 runs timed out before reaching it. Only one recurrence since filing: 2026-10-18T18:13Z.
+- Retained output of that recurrence (`.context/audits/unit-suite/failures/2026-10-18T18:13:15Z/bats/fw_focus_alias.bats.out`): test 1 ok, tests 2-5 `not ok` on the `$status` assertion only, tests 6-8 ok. Every test that ran `fw focus`/`fw context focus` after test 1 failed, then the static/`focuss` tests passed: a window of a few seconds in which the focus path through `bin/fw` → `agents/context/context.sh focus` exited non-zero. That run had 30 reds across unrelated files (approvals_close_ready_arcs, doctor_hook_counters, handover_push_timeout, lib_review, ...) and ran against a shared dirty tree; no commit touched bin/fw, lib/ or agents/context between 18:00Z and 19:15Z, so the transient matches an uncommitted, in-progress edit by a concurrent worker in the main checkout (G-118 class), not a defect in the test or the alias.
+- The retained .out does not include the command's stdout/stderr (bats prints it only with --print-output-on-failure), so the exact failing message is not recoverable. That is the remaining observability gap: if this recurs, the suite runner should pass `--print-output-on-failure` so the failure dir carries the message.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction attempted at HEAD (alone, repeated, and under parallel load); outcome recorded with command + output
+- [x] If it reproduces: root cause localised with file:line, fixed, and a regression test fails without the fix; if not: evidence of non-reproduction and the retained suite failure output analysed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,6 +268,8 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/fw_focus_alias.bats > /tmp/.t3775.out 2>&1 && ! grep -q "^not ok" /tmp/.t3775.out
+test "$(grep -c '# skip' /tmp/.t3775.out)" -eq 0
 
 ## RCA
 
@@ -275,6 +286,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** fw_focus_alias.bats tests 3-5 (2026-10-03) and 2-5 (2026-10-18T18:13Z) red only inside the full unit suite; test 1 and the non-`fw focus` tests 6-8 green in the same file run.
+
+**Root cause:** Not a defect at HEAD — does not reproduce (alone 3x, 12x concurrent under load avg 65, worker env + CLAUDE_PROJECT_DIR/CLAUDECODE; see Context). The first instance was the FW_SESSION_SCOPED_FOCUS leak fixed by T-3747 (920e1f9d8, `tests/unit/fw_focus_alias.bats:28-32` scrubs it). The 2026-10-18 recurrence is a seconds-wide window where every `bin/fw focus` → `agents/context/context.sh focus` call (bin/fw:6663) exited non-zero, in a run with 30 unrelated reds against a shared dirty tree and no committed change to the path in that window: consistent with a concurrent worker's uncommitted mid-edit of the shared checkout, which this test cannot guard against.
+
+**Why structurally allowed:** the suite runs against the live main checkout that parallel workers edit; and the failure dir keeps only bats' TAP lines, not the failing command's output, so the cause of a transient red cannot be read afterwards.
+
+**Prevention:** T-3747's env scrub covers the reproducible cause. The remaining gap (suite runner should run bats with `--print-output-on-failure`, or snapshot the tree, so transient reds are diagnosable) is a runner change outside this task's scope — recorded here for the parent to file if wanted.
 
 ## Evolution
 
@@ -356,3 +375,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3775-fwfocusalias-tests-3-5-red-only-under-th.md
 - **Context:** Initial task creation
+
+### 2026-10-21T00:03:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
