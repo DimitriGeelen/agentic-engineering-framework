@@ -1,13 +1,20 @@
 ---
 id: T-4563
-name: "T-4528 foreign-delete guard refuses every re-vendor commit that deletes vendored files last touched by the previous upgrade task"
+name: "T-4528 foreign-delete guard refuses every re-vendor commit that deletes vendored
+  files last touched by the previous upgrade task"
 description: >
-  832 on be.2: the pristine vendor commit after fw upgrade was refused because the upgrade deletes a file under .agentic-framework/ whose last commit belonged to their previous upgrade task (guard owner = first T-id of the last commit's subject). Naming that task got it through, but this hits every upgrade that removes vendored files. Exempt deletions under the vendored framework dir when the staged set is only that dir (or recognise upgrade/vendor commits), else at least name the sanctioned path in fw upgrade's next-steps text. Regression test.
+  832 on be.2: the pristine vendor commit after fw upgrade was refused because the
+  upgrade deletes a file under .agentic-framework/ whose last commit belonged to their
+  previous upgrade task (guard owner = first T-id of the last commit's subject). Naming
+  that task got it through, but this hits every upgrade that removes vendored files.
+  Exempt deletions under the vendored framework dir when the staged set is only that
+  dir (or recognise upgrade/vendor commits), else at least name the sanctioned path
+  in fw upgrade's next-steps text. Regression test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, upgrade, git-hook]
 components: []
 related_tasks: [T-4528]
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "ecf73284"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T17:37:21Z
-last_update: 2026-10-21T17:37:21Z
-date_finished: null
+last_update: 2026-10-21T18:07:13Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T17:45:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T17:46:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4563: T-4528 foreign-delete guard refuses every re-vendor commit that deletes vendored files last touched by the previous upgrade task
@@ -63,8 +98,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A commit whose every staged path is under `.agentic-framework/` and that deletes a vendored file last committed by another task passes the foreign-delete guard
+- [x] A mixed commit (vendored-dir changes plus a deletion of another task's file outside `.agentic-framework/`) is still refused
+- [x] The refusal text names the sanctioned path for a re-vendor (commit only the vendored dir, or name the owning task)
+- [x] Regression bats covers both legs and fails without the fix; vendored copy synced (`bin/fw vendor self --check --task T-4563` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +286,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4528_foreign_delete_guard.bats > /tmp/.t4563.out 2>&1 && grep -q '^ok 9 T-4563' /tmp/.t4563.out && grep -q '^ok 10 T-4563' /tmp/.t4563.out && ! grep -q '^not ok' /tmp/.t4563.out
+test "$(grep -c '# skip' /tmp/.t4563.out)" -eq 0
+grep -q 'VENDOR_DIR = ".agentic-framework/"' agents/git/lib/foreign-delete-guard.py
+bin/fw vendor self --check --task T-4563
 
 ## RCA
 
@@ -265,6 +306,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 832 (be.2): the pristine vendor commit after `fw upgrade` was refused by the commit-msg hook — "deletes files last committed by another task" — for a file under `.agentic-framework/` the upgrade removed.
+
+**Root cause:** `agents/git/lib/foreign-delete-guard.py` `main()` (the loop over `deleted`, ~line 141) attributes every deleted path to the first T-id of the last commit that touched it. Vendored files are, by construction, last committed by the previous upgrade's task, so every upgrade that drops a vendored file is a "foreign delete". The guard had no notion of a re-vendor commit; the only ways through were naming that task or the Tier-2 override.
+
+**Why structurally allowed:** T-4528's bats covered the stale-scratch-index case in `src/` only; no fixture had a vendored dir, and the framework repo's own `fw vendor self` rarely deletes files, so the consumer upgrade path never exercised the guard before shipping.
+
+**Prevention:** a commit whose every staged path is under `.agentic-framework/` is exempt (a stale index would carry other paths); mixed commits keep the guard. The refusal now prints the sanctioned path (commit the vendored dir on its own). Pinned by tests 9-10 in `tests/unit/t4528_foreign_delete_guard.bats`, both verified red without the fix.
 
 ## Evolution
 
@@ -346,3 +395,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4563-t-4528-foreign-delete-guard-refuses-ever.md
 - **Context:** Initial task creation
+
+### 2026-10-21T18:07:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -123,3 +123,34 @@ _worker_b_commits() {
     run git -C "$REPO" commit -m "T-003: drop untagged"
     [ "$status" -eq 0 ]
 }
+
+# T-4563: fw upgrade removes vendored files whose last commit is the PREVIOUS
+# upgrade's task; a commit staging only .agentic-framework/ is a re-vendor.
+_previous_upgrade_vendors() {
+    mkdir -p "$REPO/.agentic-framework/lib"
+    echo old > "$REPO/.agentic-framework/lib/dropped.sh"
+    echo v1 > "$REPO/.agentic-framework/VERSION"
+    git -C "$REPO" add .agentic-framework
+    git -C "$REPO" commit -q --no-verify -m "T-010: fw upgrade to v1" -- .agentic-framework
+}
+
+@test "T-4563: a pure re-vendor commit deleting the previous upgrade's vendored file passes" {
+    _previous_upgrade_vendors
+    git -C "$REPO" rm -q .agentic-framework/lib/dropped.sh
+    echo v2 > "$REPO/.agentic-framework/VERSION"
+    git -C "$REPO" add .agentic-framework
+    run git -C "$REPO" commit -m "T-011: re-vendor v2"
+    [ "$status" -eq 0 ]
+    ! git -C "$REPO" cat-file -e HEAD:.agentic-framework/lib/dropped.sh 2>/dev/null || false
+}
+
+@test "T-4563: a mixed commit deleting another task's file outside the vendored dir is still refused" {
+    _previous_upgrade_vendors
+    _worker_a_commits
+    git -C "$REPO" rm -q .agentic-framework/lib/dropped.sh src/a1.txt
+    run git -C "$REPO" commit -m "T-011: re-vendor v2"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"src/a1.txt  (last committed by T-002)"* ]]
+    [[ "$output" == *"commit .agentic-framework/ on its own"* ]]
+    git -C "$REPO" cat-file -e HEAD:src/a1.txt
+}

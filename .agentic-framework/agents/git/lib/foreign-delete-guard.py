@@ -31,6 +31,11 @@ import subprocess
 import sys
 
 OVERRIDE = "FW_ALLOW_FOREIGN_DELETE"
+# T-4563: `fw upgrade` re-vendors the framework into this dir and removes files the
+# new version dropped; their last commit is the PREVIOUS upgrade's task, so every
+# such re-vendor commit was refused. A commit that stages nothing outside this dir
+# is a re-vendor, not a stale index: its deletions under the dir are exempt.
+VENDOR_DIR = ".agentic-framework/"
 TASK_RE = re.compile(r"T-[0-9]+")
 
 
@@ -45,19 +50,22 @@ def message(path):
     return lines
 
 
-def staged_deletions():
+def staged_changes():
+    """Return (deletions, every staged path) for the index being committed."""
     r = git("diff-index", "--cached", "-M", "--name-status", "-z", "HEAD")
     if r.returncode != 0:
         raise RuntimeError(r.stderr.strip() or "git diff-index failed")
     fields = r.stdout.split("\0")
-    deleted, added = [], set()
+    deleted, added, staged = [], set(), []
     i = 0
     while i < len(fields) and fields[i]:
         kind = fields[i][0]
         if kind in "RC":
+            staged.extend(fields[i + 1:i + 3])
             i += 3
             continue
         path = fields[i + 1]
+        staged.append(path)
         i += 2
         if kind == "D":
             deleted.append(path)
@@ -65,7 +73,7 @@ def staged_deletions():
             added.add(os.path.basename(path))
     # A task file moving active/ -> completed/ with enough edits that -M does not
     # pair it is a delete + add under the same name: a move, not a deletion.
-    return [p for p in deleted if os.path.basename(p) not in added]
+    return [p for p in deleted if os.path.basename(p) not in added], staged
 
 
 def last_subjects(paths):
@@ -121,7 +129,9 @@ def main(argv):
     if git("rev-parse", "-q", "--verify", "HEAD").returncode != 0:
         return 0
     try:
-        deleted = staged_deletions()
+        deleted, staged = staged_changes()
+        if staged and all(p.startswith(VENDOR_DIR) for p in staged):
+            return 0  # pure re-vendor commit (T-4563)
         if not deleted:
             return 0
         subjects = last_subjects(deleted)
@@ -167,6 +177,12 @@ def main(argv):
     print(f"Deliberate deletion: name the owning task(s) in the message ({', '.join(owners)}),",
           file=sys.stderr)
     print(f"  or {OVERRIDE}=1 git commit ...   (Tier-2, logged)", file=sys.stderr)
+    if any(p.startswith(VENDOR_DIR) for p, _ in hits):
+        print(f"Re-vendor after fw upgrade: commit {VENDOR_DIR} on its own "
+              f"(git commit -m \"{own}: re-vendor\" -- {VENDOR_DIR.rstrip('/')});",
+              file=sys.stderr)
+        print("  a commit that stages only that dir may delete vendored files (T-4563).",
+              file=sys.stderr)
     return 1
 
 
