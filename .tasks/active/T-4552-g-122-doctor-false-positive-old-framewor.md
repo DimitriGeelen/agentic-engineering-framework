@@ -97,10 +97,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw doctor` G-122 check does not count `# VERSION=N` markers or lines that belong to a framework hook (any version) as commented project lines
-- [ ] A genuine commented project line under the T-4403 header still produces the G-122 WARN
-- [ ] Regression bats test uses the exact field fragments (`# VERSION=1.17`, `# VERSION=1.5`, inception_commit_limit echo, .secret-scan-allowlist echo, `_version=$(git describe ...)`) plus the project-line control, and fails without the fix
-- [ ] Vendored copy in sync (`bin/fw vendor self --check --task T-4552` clean)
+- [x] `fw doctor` G-122 check does not count `# VERSION=N` markers or lines that belong to a framework hook (any version) as commented project lines
+- [x] A genuine commented project line under the T-4403 header still produces the G-122 WARN
+- [x] Regression bats test uses the exact field fragments (`# VERSION=1.17`, `# VERSION=1.5`, inception_commit_limit echo, .secret-scan-allowlist echo, `_version=$(git describe ...)`) plus the project-line control, and fails without the fix
+- [x] Vendored copy in sync (`bin/fw vendor self --check --task T-4552` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
