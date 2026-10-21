@@ -30,6 +30,13 @@ _run_fw() {
     run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' NO_COLOR=1 '$FW' pickup $*"
 }
 
+# T-4175: send never writes the sender's inbox, so an inbound envelope is seeded
+# by sending --local and moving it in, as an arriving envelope would land.
+_seed_inbox() {
+    bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' NO_COLOR=1 '$FW' pickup send $* --local" >/dev/null 2>&1
+    mv "$PROJECT_ROOT/.context/pickup/undelivered/"*.yaml "$PROJECT_ROOT/.context/pickup/inbox/"
+}
+
 # --- Help ---
 
 @test "fw pickup: no args shows help" {
@@ -95,23 +102,31 @@ _run_fw() {
 }
 
 @test "fw pickup send: creates envelope" {
-    _run_fw "send --type bug-report --summary 'Test bug' --source-project testproj"
+    _run_fw "send --type bug-report --summary 'Test bug' --source-project testproj --local"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Created"* ]]
-    [ -f "$PROJECT_ROOT/.context/pickup/inbox/P-001-bug-report.yaml" ]
+    [ -f "$PROJECT_ROOT/.context/pickup/undelivered/P-001-bug-report.yaml" ]
+    [ ! -e "$PROJECT_ROOT/.context/pickup/inbox/P-001-bug-report.yaml" ]
+}
+
+@test "fw pickup send: no target exits non-zero (T-4175)" {
+    _run_fw "send --type bug-report --summary 'Test bug'"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"No target"* ]]
 }
 
 @test "fw pickup send: envelope has correct fields" {
-    bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' NO_COLOR=1 '$FW' pickup send --type learning --summary 'Use X not Y' --source-project myproj" >/dev/null
-    local f="$PROJECT_ROOT/.context/pickup/inbox/P-001-learning.yaml"
+    bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' NO_COLOR=1 '$FW' pickup send --type learning --summary 'Use X not Y' --source-project myproj --local" >/dev/null 2>&1
+    local f="$PROJECT_ROOT/.context/pickup/undelivered/P-001-learning.yaml"
     [ -f "$f" ]
     grep -q "type: learning" "$f"
-    grep -q 'summary: "Use X not Y"' "$f"
-    grep -q 'project: "myproj"' "$f"
+    # yaml.safe_dump (T-2308) writes plain scalars, not the old quoted heredoc form.
+    grep -q 'summary: Use X not Y' "$f"
+    grep -q 'project: myproj' "$f"
 }
 
 @test "fw pickup list: shows envelope after send" {
-    bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' NO_COLOR=1 '$FW' pickup send --type bug-report --summary 'Fix the widget' --source-project testproj" >/dev/null
+    _seed_inbox --type bug-report --summary "'Fix the widget'" --source-project testproj
     _run_fw "list"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Fix the widget"* ]]
@@ -127,7 +142,7 @@ _run_fw() {
 }
 
 @test "fw pickup process --dry-run: shows what would be processed" {
-    bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' NO_COLOR=1 '$FW' pickup send --type bug-report --summary 'Dry run test' --source-project testproj" >/dev/null
+    _seed_inbox --type bug-report --summary "'Dry run test'" --source-project testproj
     _run_fw "process --dry-run"
     [ "$status" -eq 0 ]
     [[ "$output" == *"WOULD PROCESS"* ]]
@@ -136,7 +151,7 @@ _run_fw() {
 }
 
 @test "fw pickup status: counts update after send" {
-    bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' NO_COLOR=1 '$FW' pickup send --type bug-report --summary 'Count test' --source-project testproj" >/dev/null
+    _seed_inbox --type bug-report --summary "'Count test'" --source-project testproj
     _run_fw "status"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Inbox:"* ]]

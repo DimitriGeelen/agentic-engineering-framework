@@ -25,7 +25,7 @@ teardown() {
 parse_envelope_field() {
     local field="$1"
     local envelope
-    envelope=$(ls -t "$TMP_PROJECT/.context/pickup/inbox/"*.yaml 2>/dev/null | head -1)
+    envelope=$(ls -t "$TMP_PROJECT/.context/pickup/undelivered/"*.yaml 2>/dev/null | head -1)
     [ -n "$envelope" ] || { echo "NO_ENVELOPE"; return 1; }
     PARSE_PATH="$field" python3 - "$envelope" <<'PYEOF'
 import os, sys, yaml
@@ -41,7 +41,7 @@ PYEOF
 
 @test "t2308 t1: --detail with embedded double-quote produces parseable YAML, round-trips verbatim" {
     local payload='Stack trace says: "could not find expected colon" at line 42'
-    run do_pickup_send --type bug-report --summary "embedded quote test" --detail "$payload"
+    run do_pickup_send --type bug-report --summary "embedded quote test" --detail "$payload" --local
     [ "$status" -eq 0 ]
     [[ "$output" == *"Created"* ]]
     run parse_envelope_field "payload.detail"
@@ -51,7 +51,7 @@ PYEOF
 
 @test "t2308 t2: --detail with regex backslashes (\\d, \\s) round-trips verbatim, no YAML escape error" {
     local payload='Regex matched \d{4} but expected \s+, no match — check pattern'
-    run do_pickup_send --type bug-report --summary "regex backslash test" --detail "$payload"
+    run do_pickup_send --type bug-report --summary "regex backslash test" --detail "$payload" --local
     [ "$status" -eq 0 ]
     [[ "$output" == *"Created"* ]]
     run parse_envelope_field "payload.detail"
@@ -62,7 +62,7 @@ PYEOF
 
 @test "t2308 t3: --summary with quote+backslash combination parses + round-trips" {
     local payload='Bug: regex \w+ failed on input "abc\\def" — escape mismatch'
-    run do_pickup_send --type bug-report --summary "$payload" --detail "small detail"
+    run do_pickup_send --type bug-report --summary "$payload" --detail "small detail" --local
     [ "$status" -eq 0 ]
     [[ "$output" == *"Created"* ]]
     run parse_envelope_field "payload.summary"
@@ -75,7 +75,7 @@ PYEOF
     local payload="Line 1: symptom observed
 Line 2: stack trace follows
 Line 3:   indented continuation"
-    run do_pickup_send --type bug-report --summary "multi-line test" --detail "$payload"
+    run do_pickup_send --type bug-report --summary "multi-line test" --detail "$payload" --local
     [ "$status" -eq 0 ]
     [[ "$output" == *"Created"* ]]
     run parse_envelope_field "payload.detail"
@@ -87,7 +87,7 @@ Line 3:   indented continuation"
 
 @test "t2308 t5: non-ASCII unicode in --detail round-trips (allow_unicode)" {
     local payload='Émission: «règle» — naïve quoting → 文字化け'
-    run do_pickup_send --type bug-report --summary "unicode test" --detail "$payload"
+    run do_pickup_send --type bug-report --summary "unicode test" --detail "$payload" --local
     [ "$status" -eq 0 ]
     run parse_envelope_field "payload.detail"
     [ "$status" -eq 0 ]
@@ -99,10 +99,10 @@ Line 3:   indented continuation"
 @test "t2308 t6: emitted envelope file is itself yaml.safe_load parseable (post-write guard)" {
     local payload='Mixed: "quotes" + \d{2,4} regex + newline
 and second line'
-    run do_pickup_send --type bug-report --summary 'sum "with quote"' --detail "$payload"
+    run do_pickup_send --type bug-report --summary 'sum "with quote"' --detail "$payload" --local
     [ "$status" -eq 0 ]
     local envelope
-    envelope=$(ls -t "$TMP_PROJECT/.context/pickup/inbox/"*.yaml 2>/dev/null | head -1)
+    envelope=$(ls -t "$TMP_PROJECT/.context/pickup/undelivered/"*.yaml 2>/dev/null | head -1)
     [ -f "$envelope" ]
     # If yaml.safe_load throws, exit status is non-zero — caught by the run/[ ] test.
     run python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1])); print('OK')" "$envelope"

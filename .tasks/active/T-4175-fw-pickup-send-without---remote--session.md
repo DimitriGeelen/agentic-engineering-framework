@@ -11,10 +11,10 @@ description: >
   via an explicit flag (e.g. --local); (3) outgoing envelopes never written to the
   sender's inbound inbox. Silent-failure class (D2).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T18:18:05Z
-last_update: '2026-10-13T18:31:10Z'
+last_update: '2026-10-21T22:14:15Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,6 +85,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:14:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4175: fw pickup send without --remote/--session exits 0, delivers nothing, and writes the outgoing envelope into the sender's own inbound inbox (dimitri-mint-dev P-013, their T-113)
@@ -97,8 +113,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw pickup send` with neither `--remote` nor `--local` exits non-zero, names both options, and writes no envelope anywhere
+- [x] `--local` is the explicit local-only path: exits 0, says NOT delivered, saves the envelope in `.context/pickup/undelivered/` (outbound, still counted by `pickup_next_id`)
+- [x] No send path writes the outgoing envelope into `.context/pickup/inbox/` (written to `undelivered/` first; a successful push moves it to `sent/`)
+- [x] Regression bats `tests/unit/t4175_pickup_send_requires_target.bats` fails on the pre-fix lib and passes after; neighbouring pickup suites green after their fixtures move to `--local`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -262,7 +280,21 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 bats tests/unit/t4175_pickup_send_requires_target.bats > /tmp/.t4175.out 2>&1 && ! grep -q "^not ok" /tmp/.t4175.out
+test "$(grep -c '# skip' /tmp/.t4175.out)" -eq 0
+timeout 900 bats tests/unit/lib_pickup.bats tests/unit/t3628_pickup_send_delivery.bats tests/unit/pickup_send_yaml_safety.bats tests/unit/t3059_pickup_send_concurrent_ids.bats tests/unit/pickup_send_remote_session.bats tests/unit/t3763_pickup_send_remote_channel.bats tests/unit/t4274_pickup_inbox_filename.bats tests/integration/fw_pickup.bats > /tmp/.t4175n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4175n.out
+bash -n lib/pickup.sh
+bin/fw vendor self --check --task T-4175
+
 ## RCA
+
+**Symptom:** dimitri-mint-dev (P-013, their T-113) sent five bug reports with no `--remote`: each exited 0, printed a path and one yellow "NOT delivered" line, and the envelopes sat in their own `.context/pickup/inbox/`, where `fw pickup process` would file the sender's outgoing reports as inbound work.
+
+**Root cause:** `lib/pickup.sh` `do_pickup_send` wrote every envelope to `$PICKUP_INBOX` (`local filepath="$PICKUP_INBOX/$filename"`) before deciding whether to deliver, and the no-remote branch (`if [ -z "$remote" ]`) only warned and fell through to `echo "$filepath"` with status 0. T-3628 added the warning and T-3763 moved failed pushes out of the inbox, but the no-target path kept both the success exit and the inbox write.
+
+**Why structurally allowed:** the no-target case was treated as a legitimate "local save" mode, and the pickup suites (lib_pickup, fw_pickup, yaml_safety, t3628, t3059) used target-less send as a convenient inbox seeder — t3628 even asserted `status -eq 0` plus the inbox file, pinning the defect as expected behaviour.
+
+**Prevention:** `tests/unit/t4175_pickup_send_requires_target.bats` pins: no target → non-zero and no file anywhere; `--local` → undelivered/ only; the inbox is untouched on every send path, including while the sidecar push is running. Fixtures that need an inbound envelope now seed the inbox explicitly instead of via send.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -333,6 +365,12 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-22 — where a --local envelope lives
+- **Chose:** `.context/pickup/undelivered/` (the existing T-3763 dir for outbound envelopes awaiting a resend), written there directly from the start.
+- **Why:** already counted by `pickup_next_id`, already outside what `fw pickup process` reads; no new directory or allocator change needed.
+- **Rejected:** a new `outbox/` dir (a second spelling of "outbound, not delivered"); keeping the inbox write for `--local` (violates want 3).
+- **Also:** `tests/integration/fw_pickup.bats` "envelope has correct fields" was already red before this change (it grepped the pre-T-2308 quoted scalars); fixed alongside since this task edits that test.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -358,3 +396,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4175-fw-pickup-send-without---remote--session.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:14:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

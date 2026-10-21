@@ -26,11 +26,13 @@ teardown() {
     rm -rf "$TMP_PROJECT"
 }
 
-@test "send without --remote says plainly that nothing was delivered" {
-    run do_pickup_send --type learning --summary "local only"
+@test "send --local says plainly that nothing was delivered" {
+    # T-4175: local-only is explicit, and never lands in the sender's inbox.
+    run do_pickup_send --type learning --summary "local only" --local
     [ "$status" -eq 0 ]
     [[ "$output" == *"NOT delivered"* ]]
-    [ -f "$D/inbox/P-001-learning.yaml" ]
+    [ -f "$D/undelivered/P-001-learning.yaml" ]
+    [ ! -e "$D/inbox/P-001-learning.yaml" ]
 }
 
 @test "a failed remote push says NOT delivered and exits non-zero" {

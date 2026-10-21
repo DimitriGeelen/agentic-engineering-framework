@@ -369,10 +369,10 @@ EOF
 }
 
 @test "pickup: do_pickup_send creates envelope file" {
-    run do_pickup_send --type bug-report --summary "Test bug" --source-project testproj
+    run do_pickup_send --type bug-report --summary "Test bug" --source-project testproj --local
     [ "$status" -eq 0 ]
     [[ "$output" == *"Created"* ]]
-    [ -f "$PICKUP_INBOX/P-001-bug-report.yaml" ]
+    [ -f "$PICKUP_DIR/undelivered/P-001-bug-report.yaml" ]
 }
 
 @test "pickup: do_pickup_send envelope has correct content" {
@@ -381,8 +381,8 @@ EOF
     # scalars (`summary: "Use X not Y"`) — an artifact of the prior heredoc
     # emitter, NOT a contract. PyYAML's safe_dump emits plain scalars when
     # the value contains no YAML-active chars; both forms are valid YAML.
-    do_pickup_send --type learning --summary "Use X not Y" --source-project myproj --task-id T-099 --tags "perf,api"
-    local f="$PICKUP_INBOX/P-001-learning.yaml"
+    do_pickup_send --type learning --summary "Use X not Y" --source-project myproj --task-id T-099 --tags "perf,api" --local
+    local f="$PICKUP_DIR/undelivered/P-001-learning.yaml"
     [ -f "$f" ]
     run python3 - "$f" <<'PYEOF'
 import sys, yaml
@@ -400,10 +400,10 @@ PYEOF
 }
 
 @test "pickup: do_pickup_send auto-increments ID" {
-    do_pickup_send --type bug-report --summary "First" --source-project p1
-    do_pickup_send --type bug-report --summary "Second" --source-project p1
-    [ -f "$PICKUP_INBOX/P-001-bug-report.yaml" ]
-    [ -f "$PICKUP_INBOX/P-002-bug-report.yaml" ]
+    do_pickup_send --type bug-report --summary "First" --source-project p1 --local
+    do_pickup_send --type bug-report --summary "Second" --source-project p1 --local
+    [ -f "$PICKUP_DIR/undelivered/P-001-bug-report.yaml" ]
+    [ -f "$PICKUP_DIR/undelivered/P-002-bug-report.yaml" ]
 }
 
 @test "pickup: do_pickup send routes through do_pickup" {

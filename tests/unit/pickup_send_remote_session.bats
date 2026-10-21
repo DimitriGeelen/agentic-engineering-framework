@@ -33,10 +33,10 @@ teardown() {
     [[ "$output" == *"STUB sidecar send --to tl-target --hub some-hub"* ]]
 }
 
-@test "--session alone (no --remote) is accepted and ignored" {
+@test "--session alone (no --remote) is no target and is refused (T-4175)" {
     run do_pickup_send --type bug-report --summary "test" --session tl-target
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"Created"* ]]
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"No target"* ]]
 }
 
 @test "help text mentions --session and the requirement" {

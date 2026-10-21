@@ -600,7 +600,7 @@ pickup_sidecar_send() {
 
 do_pickup_send() {
     local pickup_type="" summary="" detail="" priority="medium"
-    local source_project="" task_id="" tags="" remote="" session=""
+    local source_project="" task_id="" tags="" remote="" session="" local_only=false
 
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -613,6 +613,7 @@ do_pickup_send() {
             --tags) tags="$2"; shift 2 ;;
             --remote) remote="$2"; shift 2 ;;
             --session) session="$2"; shift 2 ;;
+            --local) local_only=true; shift ;;
             -h|--help)
                 echo -e "${BOLD}fw pickup send${NC} — Create and deliver a pickup envelope"
                 echo ""
@@ -630,6 +631,9 @@ do_pickup_send() {
                 echo "  --tags TAG1,TAG2      Comma-separated tags"
                 echo "  --remote HUB          Deliver via fw sidecar send to HUB (hubs.toml profile or address)"
                 echo "  --session SESSION     Recipient agent id on the remote hub (required with --remote)"
+                echo "  --local               Do not deliver: save the envelope in .context/pickup/undelivered/ only"
+                echo ""
+                echo "One target is required: --remote HUB --session SESSION, or --local."
                 echo "  -h, --help            Show this help"
                 return 0
                 ;;
@@ -656,6 +660,17 @@ do_pickup_send() {
     if [ -n "$remote" ] && [ -z "$session" ]; then
         echo -e "${RED}--remote requires --session SESSION (target session on the remote hub)${NC}" >&2
         echo "  SESSION is the recipient's agent id on that hub (fw sidecar send --to)" >&2
+        return 1
+    fi
+
+    # T-4175: a send with no target delivered nothing yet exited 0, and wrote the
+    # envelope into the sender's own inbox. Local-only must be asked for.
+    if [ -z "$remote" ] && [ "$local_only" != true ]; then
+        echo -e "${RED}No target: pass --remote HUB --session SESSION to deliver, or --local to save without delivering${NC}" >&2
+        return 1
+    fi
+    if [ -n "$remote" ] && [ "$local_only" = true ]; then
+        echo -e "${RED}--local and --remote are mutually exclusive${NC}" >&2
         return 1
     fi
 
@@ -690,8 +705,12 @@ do_pickup_send() {
         tag_yaml="[${tags//,/, }]"
     fi
 
+    # T-4175: an outgoing envelope is never written to the inbox, not even
+    # transiently — `fw pickup process` reads the inbox as incoming work. It starts
+    # in undelivered/ and moves to sent/ once a push succeeds.
     local filename="${pickup_id}-${pickup_type}.yaml"
-    local filepath="$PICKUP_INBOX/$filename"
+    mkdir -p "$PICKUP_UNDELIVERED"
+    local filepath="$PICKUP_UNDELIVERED/$filename"
 
     # T-2308 (P-002 fix): write envelope via yaml.safe_dump, not shell heredoc.
     # User-controlled fields ($summary, $detail, $source_project, $task_id) may
@@ -759,8 +778,8 @@ PYEOF
     # Remote push if requested (validated upstream — see --remote/--session gate).
     # T-3628: "Created" is not "delivered". Every path that leaves the envelope
     # only in this project's own inbox says so, and a failed push fails the verb.
-    if [ -z "$remote" ]; then
-        echo -e "${YELLOW}NOT delivered:${NC} saved locally in this project's inbox only." >&2
+    if [ "$local_only" = true ]; then
+        echo -e "${YELLOW}NOT delivered:${NC} --local — saved in $PICKUP_UNDELIVERED only." >&2
         echo "  To deliver: fw pickup send ... --remote HUB --session SESSION" >&2
     else
         # T-3763: deliver through the one channel (T-3631 GO, T-3758) — a sidecar
@@ -774,12 +793,7 @@ PYEOF
             --body "fw pickup envelope $pickup_id ($pickup_type) from $source_project
 $(cat "$filepath")" 2>&1 || push_rc=$?
         if [ "$push_rc" -ne 0 ]; then
-            # Out of the inbox: `fw pickup process` would read it as incoming.
-            mkdir -p "$PICKUP_UNDELIVERED"
-            local undelivered_path
-            if undelivered_path=$(pickup_move_preserving "$filepath" "$PICKUP_UNDELIVERED"); then
-                filepath="$undelivered_path"
-            fi
+            # Already in undelivered/ (T-4175), never in the inbox.
             echo -e "${RED}NOT delivered:${NC} fw sidecar send exited $push_rc — envelope kept in $PICKUP_UNDELIVERED" >&2
             echo "$filepath"
             return 1

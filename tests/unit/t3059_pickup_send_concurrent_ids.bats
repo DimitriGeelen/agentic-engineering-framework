@@ -23,19 +23,19 @@ teardown() {
 @test "N concurrent sends yield N distinct ids and N envelopes" {
     local n=12 i
     for i in $(seq 1 "$n"); do
-        do_pickup_send --type learning --summary "concurrent $i" >/dev/null 2>&1 &
+        do_pickup_send --type learning --summary "concurrent $i" --local >/dev/null 2>&1 &
     done
     wait
 
     local ids
-    ids=$(grep -h '^pickup_id:' "$TMP_PROJECT/.context/pickup/inbox/"*.yaml | sort)
+    ids=$(grep -h '^pickup_id:' "$TMP_PROJECT/.context/pickup/undelivered/"*.yaml | sort)
     [ "$(printf '%s\n' "$ids" | wc -l)" -eq "$n" ]
     [ "$(printf '%s\n' "$ids" | sort -u | wc -l)" -eq "$n" ]
-    [ "$(ls "$TMP_PROJECT/.context/pickup/inbox/"*.yaml | wc -l)" -eq "$n" ]
+    [ "$(ls "$TMP_PROJECT/.context/pickup/undelivered/"*.yaml | wc -l)" -eq "$n" ]
 }
 
 @test "lock is released after a send, so a following send is not blocked" {
-    run timeout 20 bash -c 'source "$1/lib/pickup.sh"; do_pickup_send --type learning --summary a && do_pickup_send --type learning --summary b' _ "$FRAMEWORK_ROOT"
+    run timeout 20 bash -c 'source "$1/lib/pickup.sh"; do_pickup_send --type learning --summary a --local && do_pickup_send --type learning --summary b --local' _ "$FRAMEWORK_ROOT"
     [ "$status" -eq 0 ]
-    [ "$(ls "$TMP_PROJECT/.context/pickup/inbox/"*.yaml | wc -l)" -eq 2 ]
+    [ "$(ls "$TMP_PROJECT/.context/pickup/undelivered/"*.yaml | wc -l)" -eq 2 ]
 }
