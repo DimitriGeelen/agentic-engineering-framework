@@ -1,0 +1,21 @@
+id: tests/unit/test_worker_contract_vectors.py
+name: test_worker_contract_vectors
+type: script
+subsystem: tests
+location: tests/unit/test_worker_contract_vectors.py
+tags: []
+
+purpose: "T-4520: schema check and local runner for the shared worker-contract vectors."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

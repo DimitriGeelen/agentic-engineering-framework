@@ -1,0 +1,21 @@
+id: tests/conformance/worker-contract/README.md
+name: README
+type: script
+subsystem: tests
+location: tests/conformance/worker-contract/README.md
+tags: []
+
+purpose: "`vectors.yaml` is the **single** conformance vector file for the shared dispatched-worker contract (spec v0.3.3, `contract_version: wc/0.3`, §9 cases CC-01..CC-25). AEF owns it, as agreed with TermLink and ring20."
+purpose_source: markdown
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown
