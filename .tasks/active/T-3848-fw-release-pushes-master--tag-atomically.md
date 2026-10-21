@@ -10,7 +10,7 @@ description: >
   push (T-3822), or refuse to finish while the dev branch on the remote does not contain
   the release commit. RCA family: docs/reports/T-3785-v1.8.0-release-rca.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T07:08:36Z
-last_update: '2026-10-05T07:15:46Z'
+last_update: 2026-10-21T09:16:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect reproduced at HEAD before the fix: in a throwaway repo with a file:// remote, a release from `bleeding-edge` that reconciles VERSION leaves `origin/bleeding-edge` behind `origin/master`
+- [x] `release_tag_and_release` pushes the checked-out development branch (when it is a branch other than the release branch) in the SAME `--atomic` push as the release branch and tag
+- [x] The pre-flight remote fast-forward check (T-3819) also grades the development branch on every remote, so a remote dev branch holding commits HEAD lacks refuses before VERSION is committed or a tag exists
+- [x] Regression bats `tests/unit/t3848_release_pushes_dev_branch.bats` fails without the fix and passes with it (file:// remote only; no real push)
+- [x] Existing release bats suites still pass; `bin/fw vendor self --check --task T-3848` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,8 +260,22 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/release.sh
+timeout 300 bats tests/unit/t3848_release_pushes_dev_branch.bats > /tmp/.t3848-v.out 2>&1 && ! grep -q "^not ok" /tmp/.t3848-v.out
+test "$(grep -c '# skip' /tmp/.t3848-v.out)" -eq 0
+timeout 600 bats tests/unit/t3822_release_atomic_publish.bats tests/unit/t3819_release_remote_preflight.bats tests/unit/t3820_release_full_rollback.bats tests/unit/t3190_release_master_ff.bats > /tmp/.t3848-r.out 2>&1 && ! grep -q "^not ok" /tmp/.t3848-r.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t3848_release_pushes_dev_branch.bats > /tmp/.t3848-l.out 2>&1 && grep -q "clean" /tmp/.t3848-l.out
+bin/fw vendor self --check --task T-3848
 
 ## RCA
+
+**Symptom:** after `fw release` cut v1.8.1 (master d18b0ba01), `origin/bleeding-edge` was 1 commit BEHIND `origin/master` — the VERSION-reconcile commit existed on master and the local dev branch, but not on the remote dev branch. Fixed by hand with `git push origin bleeding-edge`. Reproduced at HEAD (2979f6c8e) by the new bats: tests 1–3 failed before the fix.
+
+**Root cause:** `lib/release.sh` `release_tag_and_release` built the atomic push refspecs from only `refs/heads/$release_branch` and `refs/tags/$next` (the `refspecs+=` lines before the per-remote push loop, ~line 690). `release_reconcile_version` (lib/release.sh:136) commits onto HEAD, i.e. the checked-out dev branch, so the release created a commit on the dev branch and published it only through master.
+
+**Why structurally allowed:** T-3822 made the push atomic across the two refs it *knew about*. Every release test (t3190/t3819/t3820/t3822) asserted on master and the tag only; none checked the remote dev branch, so the invariant "master never leads the dev branch" was enforced locally (master is ff'd to HEAD) but never on the remote.
+
+**Prevention:** the checked-out branch (when it is not the release branch, and HEAD is not detached) is now a third refspec in the same `--atomic` push, and the T-3819 pre-flight `release_remote_ff_check` grades it on every remote before anything is written, so a remote dev branch with foreign commits refuses cleanly instead of failing the atomic push late. `tests/unit/t3848_release_pushes_dev_branch.bats` pins: remote dev branch == remote master after release; one pre-push run carrying all three refs; pre-flight refusal leaves HEAD/VERSION/tag untouched; release-from-master and detached-HEAD controls.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -354,3 +371,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3848-fw-release-pushes-master--tag-atomically.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:16:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

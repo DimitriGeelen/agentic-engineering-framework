@@ -565,6 +565,19 @@ release_tag_and_release() {
         fi
     fi
 
+    # T-3848: the dev branch HEAD is on carries the reconcile commit below and
+    # is master's only writer. v1.8.1 published master + tag and left
+    # origin/bleeding-edge one commit BEHIND origin/master. It rides in the
+    # same atomic push, so it is graded on every remote here too.
+    local dev_branch=""
+    dev_branch="$(git -C "$root" symbolic-ref -q --short HEAD 2>/dev/null)" || dev_branch=""
+    [ "$dev_branch" = "$release_branch" ] && dev_branch=""
+    if [ -n "$dev_branch" ]; then
+        if ! release_remote_ff_check "$root" "$dev_branch" "$offline"; then
+            return 1
+        fi
+    fi
+
     if $dry_run; then
         echo -e "${CYAN}would tag $next${NC} ($commits commits since $latest, bump=$bump)"
         if [ -f "$ver_file" ]; then
@@ -579,6 +592,7 @@ release_tag_and_release() {
             uptodate) echo "$release_branch is already at HEAD — no fast-forward needed" ;;
             missing)  echo -e "${YELLOW}no local '$release_branch'${NC} — would skip the fast-forward" ;;
         esac
+        [ -n "$dev_branch" ] && echo -e "${CYAN}would push $dev_branch${NC} in the same atomic push (T-3848)"
         release_issue_leg "$root" "$latest" "$next" "$gh_repo" true
         return 0
     fi
@@ -667,13 +681,14 @@ release_tag_and_release() {
     # pre-push audit lock held by cron, which clears on its own.
     local refspecs=()
     $publish_branch && refspecs+=("refs/heads/${release_branch}:refs/heads/${release_branch}")
+    [ -n "$dev_branch" ] && refspecs+=("refs/heads/${dev_branch}:refs/heads/${dev_branch}")
     refspecs+=("refs/tags/${next}:refs/tags/${next}")
     local pub_ok=0 pub_attempted=0 remote
     while IFS= read -r remote; do
         [ -z "$remote" ] && continue
         pub_attempted=$((pub_attempted + 1))
         if $publish_branch; then
-            echo -e "${CYAN}Pushing $release_branch + $next to $remote (atomic)...${NC}"
+            echo -e "${CYAN}Pushing $release_branch${dev_branch:+ + $dev_branch} + $next to $remote (atomic)...${NC}"
         else
             echo -e "${CYAN}Pushing $next to $remote (atomic)...${NC}"
         fi
