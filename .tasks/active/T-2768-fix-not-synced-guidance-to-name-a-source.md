@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T15:31:55Z
-last_update: 2026-10-20T21:52:16Z
+last_update: '2026-10-20T22:00:21Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -58,6 +58,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=7 (lines=179,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T22:00:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=198,acs=7)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-03T15:45:10Z'
@@ -125,6 +134,13 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] The `/designer` "not yet synced" placeholder page reads as a usable next step, not a dead end
+  **Steps:**
+  1. Look at the captured page at the three widths: `cd /opt/999-Agentic-Engineering-Framework && ls .context/visual/T-2768/` and open `placeholder@1024.png`, `placeholder@1440.png`, `placeholder@1920.png`
+  2. Optional, live: the framework repo has the build vendored, so the placeholder only shows against a project without it. Start a throwaway Watchtower on an empty project root: `mkdir -p /tmp/t2768-wt/.context /tmp/t2768-wt/.tasks/active && cd /opt/999-Agentic-Engineering-Framework && PROJECT_ROOT=/tmp/t2768-wt python3 -m web.app --port 3917`, open `http://<this-host>:3917/designer`, stop it with Ctrl-C
+  3. Read the page as an operator who has never synced the designer
+  **Expected:** three numbered sources (`fw designer install`, `fw designer sync --from-tag` with the pin's origin and a bold "Precondition:" that it is a LAN repo reachable from this host, `fw designer sync --from <file>`), and the sha256 line; nothing clipped or running off the right edge at any width; you would know which command to run
+  **If not:** note which source or sentence is unclear (or which width clips) on this task; the text lives in `web/blueprints/designer.py` `_placeholder()` and must stay in step with `agents/designer/designer.sh` `_not_synced_guidance`
 
 ## Verification
 
@@ -198,6 +214,18 @@ python3 -m pytest tests/unit/test_t2768_designer_placeholder.py -q > /tmp/.t2768
 bin/fw vendor self --check --task T-2768
 bin/fw watchtower current
 
+## Visual Verification
+
+Shots: `bin/fw ux shots T-2768 "placeholder=http://192.168.10.107:3917/designer"` (2026-10-21). The placeholder renders only when the pinned build is absent, and the live Watchtower (:3000) has it vendored, so the shots come from a throwaway Watchtower started from the same checkout with `PROJECT_ROOT=/tmp/t2768-wt` (empty project, same code; stopped afterwards). Measured with Playwright at each width: document scrollWidth equals viewport width (1024/1440/1920), the `<ol>` is 640 px with scrollWidth = clientWidth, and no `<code>` element's right edge passes the body's right edge (the long `ssh://…` origin wraps inside the list item).
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| placeholder | heading + "not yet vendored" line | ok | ok | ok | |
+| placeholder | source 1: fw designer install | ok | ok | ok | |
+| placeholder | source 2: sync --from-tag + origin + Precondition | ok | ok | ok | origin `ssh://git@192.168.10.201:6611/workflow-designer` shown in full, wraps onto its own line at 1024 |
+| placeholder | source 3: sync --from <file> | ok | ok | ok | |
+| placeholder | sha256 line | ok | ok | ok | |
+
 ## RCA
 
 **Symptom:** a consumer whose designer build is absent sees `NOT SYNCED — 832 must deliver the build, then: fw designer sync --from <file>` (CLI) and the same text on the `/designer` placeholder page. It names no place to get `<file>` and does not mention that the one fetch path (`--from-tag`) needs the LAN origin — a dead end, so readers route around it.
@@ -245,6 +273,15 @@ bin/fw watchtower current
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** Every not-synced surface (`fw designer status`, `fw designer path`, the `/designer` placeholder) now names all three sources and the LAN precondition with the pin's own origin, and tests pin the content, so a new intake verb can no longer ship without the message learning about it. The page renders clean at 1024/1440/1920 (no overflow, measured). The one judgement left for you is whether the wording reads as a usable next step.
+**Evidence:**
+- `tests/unit/t2768_designer_not_synced_guidance.bats` and `tests/unit/test_t2768_designer_placeholder.py` green; existing designer bats green
+- Screenshots `.context/visual/T-2768/placeholder@{1024,1440,1920}.png`; Playwright: document scrollWidth = viewport at each width, no `<code>` past the body edge
+- `bin/fw watchtower current` → current (restarted 2026-10-21 02:0x after the last `web/` change)
 
 ## Decisions
 
