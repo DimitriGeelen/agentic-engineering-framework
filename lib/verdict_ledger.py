@@ -151,7 +151,8 @@ COMPLETIONS = Path(".context/reviews/review-completions.jsonl")
 #: only moves that row's audit grade from FAIL to WARN; it never makes the row count.
 ACKS = Path(".context/reviews/acknowledged-refusals.jsonl")
 ACK_KIND = "acknowledged-refusal"
-#: `audit` exit code when every failing row is acknowledged: WARN, never PASS.
+#: `audit` exit code when every failing row is acknowledged, void or provisional (T-4519): WARN,
+#: never PASS.
 AUDIT_WARN = 3
 #: Where a reviewer's evidence report lives (the judge's brief names the same directory).
 REPORT_DIR = ".context/reviews/evidence"
@@ -2350,12 +2351,27 @@ def _completion_fault(base: _Base, row: dict) -> tuple[str, str] | None:
     if entry.get("verdict_sha256") != verdict_hash(row):
         return "verdict-tampered", ("the row's bytes differ from the verdict the worker left when it "
                                     "exited (verdict hash mismatch)")
+    if not comp.get("result_sha256"):
+        return "bad-completion", "the runtime recorded no result stream for the worker"
     if row.get("outcome") == GREEN and comp.get("exit_code") != 0:
         return "worker-failed", (f"the worker exited {comp.get('exit_code')} — a green from a "
                                  f"failed or killed review does not count")
-    if not comp.get("result_sha256"):
-        return "bad-completion", "the runtime recorded no result stream for the worker"
     return None
+
+
+def _in_flight(root: Path, dispatch_id: str) -> bool:
+    """T-4519 leg 2: the dispatch's runtime has signed its start but not yet its completion, and
+    its signed `complete_by` window is still open — a row its worker committed is PROVISIONAL
+    (never counts) until run.sh signs the exit. Past the window it is a plain no-completion."""
+    drec, _ = dispatch_record(root, dispatch_id)
+    starts = _starts_for(root, dispatch_id)
+    if drec is None or _completions_for(root, dispatch_id) or len(starts) != 1 \
+            or not _signed_ok(root, starts[0]) or starts[0].get("wdir") != drec.get("wdir"):
+        return False
+    try:
+        return int(_clock()) <= int(drec.get("complete_by"))
+    except (TypeError, ValueError):
+        return False
 
 
 def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool = True,
@@ -2375,7 +2391,10 @@ def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool 
     if why:
         return "no-provenance", why
     f = _worker_fault(base, row, intro) or (None if recording else _completion_fault(base, row))
-    if f:
+    # T-4519: a runtime-attested green from a worker that exited non-zero is VOID — it never
+    # counts, and `audit` grades it WARN — but only when every OTHER check below passes too.
+    void = f if f and f[0] == "worker-failed" else None
+    if f and not void:
         return f
     if row["outcome"] != GREEN:
         g = row.get("guidance")
@@ -2422,7 +2441,7 @@ def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool 
             return "introduced-by-producer", (
                 f"the commit that added this row ({intro['sha'][:9]}) was authored by "
                 f"{hit!r}, a producer of {base.task_id}")
-    return None
+    return void
 
 
 def _is_render_review(ctx: "_Ctx", crit) -> bool:
@@ -3643,7 +3662,7 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
     if not n and not led.torn and not led.faults and not led.missing \
             and not _read(APPLIED, root) and not comps_exist:
         return 0, downs + ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
-    out, bad, acked = [], 0, 0
+    out, bad, acked, voided = [], 0, 0, 0
     acks, ack_lines = _committed_acks(root)
     for ln in ack_lines:
         if ln.startswith("FAIL"):
@@ -3688,6 +3707,20 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
             tp, _sub = _find_task(root, task)
             bases[task] = _Base(root, task, tp.read_text(encoding="utf-8", errors="replace") if tp else "")
         f = _row_fault(bases[task], r, intro)
+        # T-4519: two runtime-attested non-counting states are WARN, never PASS and never FAIL —
+        # a green whose worker was killed after committing it (VOID: the runtime signed a
+        # non-zero exit), and a committed row whose dispatch is still running (PROVISIONAL until
+        # run.sh signs the exit). Neither ever counts; append-only history is checked as before.
+        if f and f[0] == "worker-failed":
+            voided += 1
+            out.append(f"WARN void: {rid} ({task}) worker failed — {f[1]}; never counts, a later "
+                       f"verdict on the criterion supersedes it")
+            continue
+        if f and f[0] == "no-completion" and _in_flight(root, str(r.get("dispatch_id"))):
+            voided += 1
+            out.append(f"WARN provisional: {rid} ({task}) its dispatch {r.get('dispatch_id')} is "
+                       f"still running — counts only once the runtime signs exit 0")
+            continue
         if f:
             ack, why = _ack_for(root, acks, r, f[0], committed=intro is not None)
             if ack is not None:
@@ -3699,8 +3732,9 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
             out.append(f"FAIL {rid} ({task}): {f[0].replace('-', ' ')} — {f[1]}"
                        + (f" [acknowledgement not honoured: {why}]" if why else ""))
     out += downs
-    out.append(f"verdict ledger: {n} row(s), {bad} failure(s), {acked} acknowledged refusal(s)")
-    return (2 if bad else AUDIT_WARN if acked else 0), out
+    out.append(f"verdict ledger: {n} row(s), {bad} failure(s), {acked} acknowledged refusal(s), "
+               f"{voided} void/provisional row(s)")
+    return (2 if bad else AUDIT_WARN if acked or voided else 0), out
 
 
 # ── acknowledged refusals (T-3657) ───────────────────────────────────────────
@@ -3920,7 +3954,7 @@ def _cli(argv: list[str] | None = None) -> int:
     ak.add_argument("--reason", required=True)
 
     sub.add_parser("audit", help="cross-check every ledger row; exit 2 on any failure, "
-                   f"{AUDIT_WARN} when every failing row is acknowledged")
+                   f"{AUDIT_WARN} when every failing row is acknowledged, void or provisional")
 
     ls = sub.add_parser("list", help="verdicts recorded for a task")
     ls.add_argument("task_id")
