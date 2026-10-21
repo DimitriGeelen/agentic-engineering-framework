@@ -227,6 +227,120 @@ What draft 2 must address:
 
 **Full maps:** awaiting greenfield's operator. Draft 2 can be written from these fragments; the full maps confirm it.
 
+## Draft proposal: exact text (DRAFT 2, 2026-10-21; supersedes draft 1; not ruled)
+
+**Sources:**
+
+- the external review of draft 1 (codex, claude-code);
+- 832's designer check (points 1-8);
+- greenfield's producer check (points a-i).
+
+**Rules that hold throughout:**
+
+- Every addition is optional.
+- A v1 map is valid and means exactly what it meant before.
+- Readers preserve unknown attributes and child elements verbatim, or refuse them naming the element; never drop.
+- A map that uses v1.1 constructs declares `mappingVersion="1.1"` on `aef:meta` at process level, so a v1.0 reader that
+  refuses unknown children fails clearly rather than silently.
+
+### A. Attributes on `aef:input` / `aef:output`
+
+| Attribute | Value | Meaning |
+|---|---|---|
+| `name` | string | v1, unchanged. Free text stays valid, including legacy forms like `Account [Name, Phone, …]` (832 f) |
+| `type` | v1's vocabulary, **unchanged and open** | Includes at least `string`, `number`, `boolean`, `ref`, `path`, `task_id`; the exact list is the designer's and the v1 bridge's (832 1). **Optional** when `fieldRef` or `typeRef` is present (greenfield c). When both `type` and `typeRef` are present, `typeRef` is authoritative and `type` is informational |
+| `required` | `true` \| `false` | v1, unchanged: whether this step can run without the io |
+| `cardinality` | `one` \| `many` | How many instances flow. **Absence of the value is expressed only by `required`.** So `optional` is not a cardinality value (832 5) |
+| `role` | `read` \| `write` \| `create` \| `match` | What the step does with the data (greenfield d). `match` = the io is a lookup/join key used to find an existing instance. It is allowed on inputs and outputs. `match` + `create` on the same step = **upsert** ("update if exists, else create", greenfield h) |
+| `fieldRef` | field IRI / QName | **One field.** The identity of a single attribute, e.g. `sfdc:Opportunity.Id` or `nid:attr-…` (review 2, greenfield a) |
+| `typeRef` | IRI / QName of a class, shape or named type | **A structure.** The fields come from that definition. Allowed to name a property IRI only through `fieldRef`, never here |
+| `schemaRef` | URI of a JSON Schema | Alternative to `typeRef`; at most one of the two |
+| `conceptRef` | IRI into the business ontology | Business meaning, kept apart from structure. Replaces draft 1's `dataType` |
+| `ref` | as in v1 | **Read rule for existing maps (greenfield a):** when `ref` holds a field IRI and there is no `fieldRef`, a reader treats it as `fieldRef`. Otherwise `ref` keeps its v1 meaning (data-object identity). New maps write `fieldRef` |
+| `dataType` | as in v1 | **Read rule for existing maps (greenfield b):** technical tokens such as `id` and `reference` are read as v1 `type` hints, never as a concept. New maps write `conceptRef` for meaning and `type` / `typeRef` for structure |
+| `sourceSystem` / `targetSystem` | catalogue reference | Where an input comes from, or where an output goes. If absent, they are **derived from the prefix map**: a declared prefix (`sfdc:`, `tacton:`) can name its system. An explicit attribute overrides the derivation, and a step default on `aef:meta` sits in between (greenfield e) |
+
+**Prefix map.** Prefixes are declared once per map in `aef:prefixes` on the process `aef:meta`:
+
+```xml
+<aef:prefix name="sfdc" iri="…" system="sys:salesforce"/>
+```
+
+An undeclared prefix is an error.
+
+### B. Field selection: child `aef:field`
+
+```xml
+<aef:output typeRef="sfdc:Account" targetSystem="sys:salesforce" role="write">
+  <aef:field fieldRef="sfdc:Account.Name"/>
+  <aef:field path="Phone"/>
+  <aef:field path="OwnerId" required="true"/>
+</aef:output>
+```
+
+- Each `aef:field` carries `fieldRef` (an identity) or `path` (traversal relative to `typeRef`), or both.
+- **List paths** use `[]`: `LineItems[].Sku` (greenfield g).
+- **A kind of line** is selected with a child condition:
+  ```xml
+  <aef:field path="LineItems[]"><aef:when path="Kind" const="TradeIn"/></aef:field>
+  ```
+  `aef:when` uses the keywords in C.
+- **Narrowing** may tighten the type (`required="true"`, `cardinality="one"`), never loosen it.
+- With no `aef:field` the whole type flows (the v1 meaning).
+- Legacy style B maps one-to-one onto `typeRef` plus `aef:field` (greenfield f), and the free-text form stays valid.
+
+### C. Step expectations: child `aef:expect`
+
+An expectation is a **precondition** on an input and a **postcondition** on an output. It is an assertion to check,
+never an assignment.
+
+| Keyword | Meaning |
+|---|---|
+| `const` | equals |
+| `enum` | one of the child `<aef:value>` elements (no comma lists) |
+| `minimum` / `maximum` | inclusive bounds |
+| `exclusiveMinimum` / `exclusiveMaximum` | exclusive bounds |
+| `pattern` | ECMA-262 regex |
+| `present` / `absent` | `true`: the member exists or does not exist; a `null` member counts as present |
+
+How expectations are read:
+
+- Literals are typed from the resolved field type.
+- Several `aef:expect` on one io all must hold (AND).
+- `description` is free text.
+- `ruleRef` with `ruleLanguage` (`jsonschema` \| `shacl`) carries anything richer; it may sit alongside `path` and
+  `description`.
+- **On failure** a precondition makes the step not start. The map may route that to a BPMN error boundary event;
+  otherwise it is a runtime error. A failed postcondition is an error raised by the step.
+
+**Behavioural rules** such as upsert are expressed by `role` (`match` + `create`), not by expectations (greenfield h).
+
+**Type-level rules** (true wherever the type is used) belong in the referenced type, never here. Lint:
+
+- an expectation that contradicts the type is an **error**;
+- one already implied by the type is a **warning**.
+
+### D. Examples: child `aef:example`
+
+`<aef:example path="Amount" value="12500"/>` is documentation only. It is never a rule and never a fixture.
+
+### E. Out of v1.1
+
+- **Inline structure** (draft 1's `aef:attr`) is deferred to v1.2; no producer needs it.
+- **Field-to-field transformations** stay in the producer's ontology (greenfield's AttributeMapping), not in the map
+  (greenfield i).
+
+### Still open for the ruling
+
+1. 832 to give the **exact v1 `type` vocabulary** for the table in A.
+2. Whether `ref` is also the **data-flow join key** between one step's output and the next step's input, or whether
+   that needs its own attribute.
+3. **`typeRef` version pinning:** an IRI that includes the version, or a separate attribute? greenfield's OWL classes
+   may carry no per-class version.
+4. Confirmation against **greenfield's full maps** (VZN-T1, WT-01).
+5. **Prior-art mapping, documented as a mapping only:** `typeRef` ↔ BPMN `itemDefinition@structureRef`,
+   `cardinality=many` ↔ `isCollection`. Never shorten `sourceSystem` to `source`, because Zeebe uses it.
+
 ## Next step
 
 1. Write the exact attribute names and the v1.1 placement as normative text.
