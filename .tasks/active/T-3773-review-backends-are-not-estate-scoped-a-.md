@@ -14,7 +14,7 @@ description: >
   allowlist in the registry or a host-local overlay), a doctor/audit check, and a
   one-command way to add the fourth backend.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T16:23:19Z
-last_update: '2026-10-03T16:30:46Z'
+last_update: 2026-10-21T07:00:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,13 @@ Operator ruling (relayed by 832, 7e88ade2 + b9708bc6, 2026-10-03): the estate's 
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect re-checked at HEAD (2026-10-21, 1ff8ea451): still reproduces — evidence under ## RCA
+- [ ] Operator picks an option under ## Recommendation (blocks the build: the agreed scope conflicts with the committed-registry provenance model of T-3580/T-3766/T-4437)
+- [ ] Estate-specific backends (codex, opencode, antigravity and the coming fourth) are no longer shipped to consumers by `fw upgrade` / `fw vendor`, and the shipped registry still loads and pins `openrouter` paid
+- [ ] A backend bound to another estate is refused at use (`fw review credential`, `fw review isolated-run`, review dispatch) with a message naming the estate binding
+- [ ] `fw doctor` / `fw audit` report whether this estate's backends are declared locally
+- [ ] One command adds a backend to the estate's local declaration
+- [ ] Regression test(s) for the above; `bin/fw vendor self --check --task T-3773` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,6 +283,20 @@ Operator ruling (relayed by 832, 7e88ade2 + b9708bc6, 2026-10-03): the estate's 
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Reproduces at HEAD (2026-10-21, 1ff8ea451):**
+- `grep -n "id:" policy/review-backends.yaml` → claude-code, codex, opencode, local-gpu, openrouter, antigravity; antigravity's `description:`/`credential.note:`/`binary:` (lines 165-171) name the `dimitri-mint-dev` sudo user and `/home/dimitri-mint-dev/.local/bin/agy`.
+- `lib/upgrade.sh:439` vendors `review-backends.yaml` verbatim to every consumer (`_svp_name` loop), and `lib/review_cost.py:66-69` (`policy_path`) falls back to the vendored FRAMEWORK_ROOT copy, so a consumer in another estate is declared entitled to all six.
+- `docs/harnesses.md` still names `dimitri-mint-dev` 10 times.
+- No estate concept exists anywhere: `grep -n estate lib/*.py lib/*.sh` → nothing.
+
+**Symptom:** a framework installed in another estate carries this estate's internal subscriptions (and their host details) as declared, internal, approval-free backends; it only fails at use time, when the credential is not on that host.
+
+**Root cause:** the registry has one scope — "the framework" — and one location, `policy/review-backends.yaml`, which is both the framework's mechanism config (openrouter pin, schema) and this estate's subscription list. T-3580 round 5 (`lib/upgrade.sh:435-438`) added it to the vendored policy set because the vendored `lib/verdict_ledger.py` derives vendors from it, so the estate list rode along.
+
+**Why structurally allowed:** nothing distinguishes a framework-generic backend from an estate entitlement; the T-3580/T-3766/T-4437 provenance model deliberately reads the registry **as committed in git** (`lib/verdict_ledger.py:1064-1099` `_registry_blob`/`_committed_registry_map`, `lib/review_credential.py:147` `committed_credentials`), which makes "keep it in the repo" the path of least resistance.
+
+**Prevention:** pending the operator's choice below — the estate binding plus a doctor/audit check is the prevention; a regression test that a consumer vendor sync ships no estate-bound backend pins it.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -331,6 +350,18 @@ Operator ruling (relayed by 832, 7e88ade2 + b9708bc6, 2026-10-03): the estate's 
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Operator decision needed before build (worker w3773, 2026-10-21).** The scope agreed with 832 says estate entries move to config "not committed in the framework repo". Every consumer of the registry that carries a security guarantee reads it **as committed in git**: the review run pins one registry blob (`lib/verdict_ledger.py:1064-1099`), the dispatcher pins model and binary from the committed copy (`agents/termlink/termlink.sh:998-1043`), and credential locations come from the committed registry only (`lib/review_credential.py:147`). An uncommitted, host-local file would bypass those guarantees. That is a trade-off for the operator to make, not the worker. Options:
+
+1. **Committed estate overlay, not vendored.** Framework `policy/review-backends.yaml` keeps only generic entries (claude-code, local-gpu, openrouter pin + schema), and it is the only file `lib/upgrade.sh` vendors. This estate's entries move to a committed, non-vendored file (e.g. `policy/estate/review-backends.yaml`, with an `estate:` id). `review_cost` merges the two; the committed-blob readers pin both. `fw review backend add --estate` writes the overlay; doctor/audit check that the overlay matches the host's estate id. **Keeps all provenance guarantees.** Cost: the descriptions stay in this repo and therefore in the public GitHub mirror (`master`) at release.
+2. **Host-local, uncommitted overlay** (e.g. `~/.config/agentic-framework/estate/review-backends.yaml`), exactly as agreed with 832. The signed run record hashes its content instead of a git blob. **Nothing estate-specific is published.** Cost: weakens T-3580/T-3766, because a same-user process can edit the overlay between runs with no git attribution. Needs a design pass on how verdict provenance survives (larger task, possibly an inception).
+3. **Tag and filter only:** add `estate:` to each estate-bound entry, filter those out when vendoring to consumers, and refuse any entry whose estate is not the host's. The registry stays as one committed file. Smallest change and keeps provenance. Cost: same public-mirror exposure as option 1, and mechanism and estate data stay in one file.
+
+**Recommendation:** GO — Option 1
+**Rationale:** It is the only option that keeps consumers from receiving or being entitled to this estate's backends **and** keeps the committed-registry provenance that T-3580/T-3766/T-4437 rely on. Option 2 meets the "not committed" wording but reopens the forgery gap the verdict ledger was hardened against. Option 3 works but keeps mixing mechanism and estate data, which is the root cause. If the public mirror must not carry host detail (the `dimitri-mint-dev` user, home paths), combine option 1 with stripping those strings to a host-local credential note. That part needs no provenance because `credential:` is location, not value.
+**Evidence:**
+- Defect reproduces at HEAD: see ## RCA (registry lines 159-171, `lib/upgrade.sh:439`, `lib/review_cost.py:66-69`)
+- Provenance readers that require committed state: `lib/verdict_ledger.py:1064-1099`, `lib/review_credential.py:147-154`, `agents/termlink/termlink.sh:998-1043`
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -358,3 +389,6 @@ Operator ruling (relayed by 832, 7e88ade2 + b9708bc6, 2026-10-03): the estate's 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3773-review-backends-are-not-estate-scoped-a-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T07:00:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
