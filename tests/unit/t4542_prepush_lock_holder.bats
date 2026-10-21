@@ -42,6 +42,7 @@ setup() {
     LOCK_FILE="$TMP_REPO/.context/locks/audit.lock"
     HOLDER_FILE="$TMP_REPO/.context/locks/audit.lock.holder"
     WAITING_FILE="$TMP_REPO/.context/locks/push-waiting"
+    READY_FILE="$TMP_REPO/fake-cron-ready"
     touch "$LOCK_FILE"
     CRON_PID=""
     SLEEPER_PID=""
@@ -76,21 +77,31 @@ STUB
     chmod +x "$TMP_REPO/agents/audit/audit.sh"
 }
 
-# A fake cron audit: takes the lock and writes the holder record the way
-# agents/audit/audit.sh does, then sits on it for N seconds.
-_fake_cron_audit_for() {
-    ( exec 200>"$LOCK_FILE"
-      flock -n 200 || exit 75
-      printf 'pid=%s\nsince=%s\njob=audit.sh --cron --section structure\n' \
-          "$BASHPID" "$(( $(date +%s) - 812 ))" > "$HOLDER_FILE"
-      exec sleep "$1" ) &
-    CRON_PID=$!
+# Wait for the background lock holder to write its ready file (it does so only
+# AFTER it holds the lock). Never probe the lock itself: a probe takes the lock
+# for a moment, and a holder that tries at that instant loses it (the flake
+# this replaces). Fails at once if the holder has exited, else after ~30 s.
+_wait_lock_holder_ready() {
     local i=0
-    while flock -n "$LOCK_FILE" -c true 2>/dev/null || [ ! -s "$HOLDER_FILE" ]; do
+    while [ ! -e "$READY_FILE" ]; do
+        kill -0 "$CRON_PID" 2>/dev/null || { echo "lock holder exited before taking the lock" >&2; return 1; }
         i=$((i + 1))
-        [ "$i" -gt 50 ] && { echo "fake cron never took the lock" >&2; return 1; }
+        [ "$i" -gt 300 ] && { echo "lock holder not ready after 30s" >&2; return 1; }
         sleep 0.1
     done
+}
+
+# A fake cron audit: takes the lock and writes the holder record the way
+# agents/audit/audit.sh does, signals ready, then sits on it for N seconds.
+_fake_cron_audit_for() {
+    ( exec 200>"$LOCK_FILE"
+      flock -w 30 200 || exit 75
+      printf 'pid=%s\nsince=%s\njob=audit.sh --cron --section structure\n' \
+          "$BASHPID" "$(( $(date +%s) - 812 ))" > "$HOLDER_FILE"
+      : > "$READY_FILE"
+      exec sleep "$1" ) &
+    CRON_PID=$!
+    _wait_lock_holder_ready
 }
 
 _run_push_hook() {
@@ -118,9 +129,9 @@ _run_push_hook() {
 
 @test "t4542 (a2) a dead holder record is not presented as the holder" {
     printf 'pid=999999\nsince=1\njob=audit.sh --cron\n' > "$HOLDER_FILE"
-    ( exec 200>"$LOCK_FILE"; flock -n 200 || exit 75; exec sleep 60 ) &
+    ( exec 200>"$LOCK_FILE"; flock -w 30 200 || exit 75; : > "$READY_FILE"; exec sleep 60 ) &
     CRON_PID=$!
-    sleep 0.5
+    _wait_lock_holder_ready
     FW_PREPUSH_LOCK_WAIT=2 _run_push_hook
     [ "$status" -eq 1 ]
     [[ "$output" == *"holder unknown (recorded pid 999999 has exited)"* ]]
@@ -129,12 +140,19 @@ _run_push_hook() {
 
 @test "t4542 (b) the waiting gate leaves a live push-waiting marker and removes it afterwards" {
     _fake_cron_audit_for 60
-    ( for _ in $(seq 1 40); do
-          [ -f "$WAITING_FILE" ] && { cp "$WAITING_FILE" "$TMP_REPO/seen-marker"; exit 0; }
-          sleep 0.1
+    # Watch until the push has returned (not for a fixed time: hook start-up
+    # under load can eat a fixed budget). Copy only a complete record, and keep
+    # looking if the marker vanished between the test and the copy.
+    local push_done="$TMP_REPO/push-done"
+    ( for _ in $(seq 1 600); do
+          grep -q '^pid=' "$WAITING_FILE" 2>/dev/null \
+              && cp "$WAITING_FILE" "$TMP_REPO/seen-marker" 2>/dev/null && exit 0
+          [ -e "$push_done" ] && exit 0
+          sleep 0.05
       done ) &
     local watcher=$!
     FW_PREPUSH_LOCK_WAIT=3 _run_push_hook
+    : > "$push_done"
     wait "$watcher"
     [ "$status" -eq 1 ]
     grep -q '^pid=[0-9][0-9]*$' "$TMP_REPO/seen-marker"

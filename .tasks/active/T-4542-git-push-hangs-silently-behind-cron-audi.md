@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T13:45:12Z
-last_update: 2026-10-21T18:07:14Z
+last_update: 2026-10-21T20:28:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -104,6 +104,8 @@ bvp_scores_proposed:
 - [x] while a pre-push waits (live `.context/locks/push-waiting` marker), a `--cron` audit does not take the lock — it exits 75 without running, so back-to-back cron audits cannot starve the push
 - [x] window exhausted still BLOCKs with the existing exit-75 message (no-false-pass rule unchanged), now naming the holder
 - [x] bats regression `tests/unit/t4542_prepush_lock_holder.bats` holds the lock from a fake cron audit and passes; existing T-3297/T-3421 tests still pass
+- [x] follow-up (flake): the fake-cron helper no longer probes the lock it is waiting for; it waits on an explicit ready file the fake cron writes after it holds the lock (blocking `flock -w`, generous bound, fails fast if the fake cron dies), and test (a2) uses the same ready signal instead of `sleep 0.5`
+- [x] the bats file runs 20 times in a row in the foreground, all green (count recorded under ## Updates)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -317,6 +319,8 @@ bin/fw vendor self --check --task T-4542
 
 **Prevention:** `tests/unit/t4542_prepush_lock_holder.bats` (6 tests) checks four things: the holder is named immediately and in progress lines, a dead holder record is not trusted, the waiting gate writes and removes `.context/locks/push-waiting`, and the REAL `audit.sh --cron` yields (exit 75, lock not taken) to a live waiter. The controls check that a dead waiter and a foreground audit do not yield.
 
+**Follow-up — the regression test was flaky (tests 1 and 3, "fake cron never took the lock"):** the cause was in the test, not in pre-push. `_fake_cron_audit_for` in `tests/unit/t4542_prepush_lock_holder.bats` (~line 85) polled with `flock -n "$LOCK_FILE" -c true` to see whether the lock was taken yet. That probe *takes the lock itself* for a moment. When it held the lock at the instant the backgrounded fake cron ran its non-blocking `flock -n 200`, the fake cron exited 75 and never held the lock, and the helper gave up after 5 s. Reproduced in isolation: 155/200 fake crons lost to a tight probe loop. At the helper's 0.1 s cadence the collision is rare, which is why the test was intermittent. Fix: the fake cron takes the lock with a blocking `flock -w 30`, writes the holder record, then writes a `fake-cron-ready` file. The helper waits only on that file (30 s bound, and it fails at once if the fake cron has exited), so nothing contends for the lock. Test (a2)'s `sleep 0.5` was replaced with the same ready signal. The first 20-run loop after that fix was 19/20 and exposed a second test-only race, in test (b). Its marker watcher gave up after a fixed 4 s, counted from before the hook started, and its `[ -f ] && cp` could lose to the marker being removed. The watcher now runs until the push has returned, and it copies only a complete record, retrying if the copy fails. The pre-push code needed no change. In production the lock is taken by audit.sh, which does not probe, and the push waits with a non-blocking retry loop, which is the behaviour under test. **Why nothing caught it:** the test passed in the worker's own runs, and a single green run cannot show that a helper races its subject. **Prevention:** a lock test must never probe the lock it is waiting on. Readiness is signalled by the holder (ready file), and the 20-run foreground loop is the evidence.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -400,3 +404,7 @@ bin/fw vendor self --check --task T-4542
 
 ### 2026-10-21T18:07:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-21T22:44:00Z — flake fix [w4542b]
+- **Action:** fake-cron helper waits on a ready file instead of probing audit.lock; test (b) watcher bounded by push completion
+- **Evidence:** 20 consecutive foreground runs of tests/unit/t4542_prepush_lock_holder.bats: **20/20 green**, 0 skips (load avg 25–40). Earlier loop with only the helper fix: 19/20 (test b). t3297/t3421 pre-push lock tests green; bats dead-negation lint clean. No pre-push source change.
