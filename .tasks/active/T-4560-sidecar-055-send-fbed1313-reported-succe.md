@@ -10,10 +10,10 @@ description: >
   restarts around 14:00Z) and find why a send can report success with no receipt;
   a send that is HUB_ACCEPTED but never received must surface on the sender side.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, sidecar, delivery]
 components: []
 related_tasks: [T-4531]
@@ -45,7 +45,7 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "5ad1cbc4"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T15:48:02Z
-last_update: '2026-10-21T16:01:41Z'
+last_update: 2026-10-21T16:36:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,11 @@ Evidence from 055's sender records (msg a2cefaf7): client_msg_id fbed1313-e330-4
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw sidecar send` exits non-zero and prints the delivery state when a direct send is REJECTED (401) or UNDELIVERABLE (receiver down), in text and --json mode
+- [x] `fw sidecar send` exits 0 and prints the state for RECEIVED (direct) and HUB_ACCEPTED/SENT (hub path)
+- [x] Regression test covers REJECTED, UNDELIVERABLE and RECEIVED exit codes + printed state
+- [x] Part 1 traced: `## RCA` names, with file:line, how a sender holds a token our receiver rejects after a restart; fixed here or follow-up task filed and named
+- [x] No token value printed or logged by the change or the test
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -285,6 +288,9 @@ Evidence from 055's sender records (msg a2cefaf7): client_msg_id fbed1313-e330-4
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 python3 -m pytest tests/unit/test_sidecar_send_state_t4560.py tests/unit/test_sidecar_receiver_t3693.py -q > /tmp/.t4560.out 2>&1 && grep -q passed /tmp/.t4560.out
+grep -q "T-4560" lib/sidecar/http_server.py
+bin/fw vendor self --check --task T-4560
 
 ## RCA
 
@@ -301,6 +307,21 @@ Evidence from 055's sender records (msg a2cefaf7): client_msg_id fbed1313-e330-4
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 055's direct send fbed1313 (10:59:01Z 2026-10-21) to our receiver on :33709 was REJECTED with HTTP 401. Our receiver store, refusals and receipts held nothing for it (a 401 is refused before storage, by design).
+
+**Root cause (Part 1, traced not guessed):** a receiver restart rotated the token and then failed, leaving the old receiver live.
+- `.context/sidecar/watcher/events.jsonl` 10:52:14Z `STOP_REQUESTED reason=restart` (caller `.agentic-framework/lib/sidecar_cli.py ensure`), then 10:52:15Z `RECEIVER_RESTARTED rc=2 "server exited with 3 before binding"`. `receiver/server.log:691`: `refusing to start — live receiver(s) already serve agent '999-Agentic-Engineering-Framework': pid 1724968 (T-4208)`.
+- `lib/sidecar_cli.py:879` (`_start_receiver`) calls `lifecycle.write_token()` *before* spawning the server. The rival check in `_reclaim_orphan_receivers` (`sidecar_cli.py:797`) did not see pid 1724968: it was started by a concurrent start in the gap. The new server's own rival guard (`lib/sidecar/http_server.py` `serve`, the T-4208 check) then exits 3. So the token file was rotated, and nothing that reads the new token was started.
+- The live receiver (pid 1724968, :33709) had bound its token once, at startup (`http_server.py` `serve` → `make_server(port, token)`), and `_is_authorized` compared only that copy. Senders read the token from the registry's `token_file` at send time (`lib/sidecar/direct.py:170`). The receiver (old in-memory token) was stale; the discovery record and token file were current. Every send was a 401 until the 11:15:06Z token rewrite plus the successful restart (:44973) healed it.
+
+**Part 2 (silent failure):** on current bleeding-edge, `_send_direct` (`lib/sidecar_cli.py:87-99`) prints `NOT delivered: <STATE>` and the client_msg_id and returns 1 for any non-RECEIVED state. `bin/fw` passes the exit code through (`exec`). That has been true since T-3693 (801c9c253), so the vendored 1.8.10 copy 055 ran had the same code. The "exit 0" report is not reproducible here: most likely 055's caller kept only the client_msg_id line. No code change was needed. The behaviour is now pinned by tests.
+
+**Fix:** `http_server.py` `_is_authorized` accepts the startup token or the token currently in `receiver.token` (re-read per request, constant-time compare). A rotation under a live receiver no longer 401s every sender, and a wrong token is still refused.
+
+**Why structurally allowed:** the token had two owners, the file (senders) and the process memory (receiver), and nothing reconciled them. T-4208's rival guard added a path where the file changes and no process adopts it. No test rotated the token under a live receiver.
+
+**Prevention:** `tests/unit/test_sidecar_send_state_t4560.py`. `test_live_receiver_accepts_token_rewritten_after_it_started` fails without the fix (reproduced the 401). `test_wrong_token_still_rejected_after_rotation` keeps auth biting. CLI tests pin the exit code and printed state for REJECTED, UNDELIVERABLE, RECEIVED and HUB_ACCEPTED/SENT. Residual (not fixed here): `_start_receiver` still rotates the token before it knows the server will start. That is harmless now, but ordering it after a successful bind would be cleaner.
 
 ## Evolution
 
@@ -382,3 +403,7 @@ Evidence from 055's sender records (msg a2cefaf7): client_msg_id fbed1313-e330-4
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4560-sidecar-055-send-fbed1313-reported-succe.md
 - **Context:** Initial task creation
+
+### 2026-10-21T16:36:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -13,6 +13,7 @@ T-3561 / T-3693 (arc-011 slice 1). Localhost HTTP, stdlib only.
 Authentication (T-3475): every POST must carry `Authorization: Bearer <token>`
 matching .context/sidecar/receiver.token, compared in constant time. The token
 is read BEFORE the port is bound; with no token the server refuses to start.
+A token rewritten while the server runs is accepted too (T-4560).
 A refused caller gets 401 and its message is never stored, so never injected.
 """
 
@@ -54,10 +55,18 @@ class ReceiverHandler(http.server.BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _is_authorized(self) -> bool:
+        # T-4560: senders read receiver.token at send time, so the file is the
+        # truth. A start that rewrites it and then refuses (T-4208 rival, exit 3)
+        # leaves this process live with the token it read at startup; checking
+        # only that one made every send a 401 until the next restart (055's
+        # fbed1313, 10:59Z 2026-10-21). Accept the startup token or the current one.
         header = self.headers.get("Authorization", "")
         if not header.startswith("Bearer ") or not self.token:
             return False
-        return hmac.compare_digest(header[7:].strip().encode(), self.token.encode())
+        offered = header[7:].strip().encode()
+        current = lifecycle.read_token() or ""
+        return any(hmac.compare_digest(offered, t.encode())
+                   for t in {self.token, current} if t)
 
     def _read_json(self):
         length = int(self.headers.get("Content-Length", 0) or 0)
