@@ -1691,7 +1691,11 @@ do_upgrade() {
     local _src_sha _src_tag
     _src_sha=$(git -C "$FRAMEWORK_ROOT" rev-parse --short=12 HEAD 2>/dev/null) || _src_sha=""
     if [ -n "$_src_sha" ]; then
-        _src_tag=$(git -C "$FRAMEWORK_ROOT" describe --tags --exact-match --exclude '*-be.*' HEAD 2>/dev/null) || _src_tag=""
+        # T-4566: a label, not a version floor — a -be tag is exactly what this line must
+        # name on a -be cut, so it is not excluded; a release tag on the same commit wins.
+        _src_tag=$(git -C "$FRAMEWORK_ROOT" tag --points-at HEAD 2>/dev/null \
+            | awk '/-be\./ { be = $0; next } { print; exit } END { if (NR && be != "") print be }' \
+            | head -n1) || _src_tag=""
         echo "  Commit:    ${_src_sha}${_src_tag:+ ($_src_tag)}"
     fi
     if [ -n "$project_version" ]; then

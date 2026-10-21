@@ -78,3 +78,18 @@ _run_checkout_upgrade() {
     [[ "$output" == *"Bare-from-consumer"* ]]
     [[ "$output" == *"would clone file://$upstream_bare"* ]]
 }
+
+@test "T-4566: Commit: line names the release tag when the commit also carries a -be tag" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/proj"
+    local co="$TEST_TEMP_DIR/be-checkout"
+    make_upstream_bare "$upstream_bare"
+    make_fresh_consumer "$proj" "$upstream_bare"
+    _make_be_checkout "$co"
+    git -C "$co" tag v9.9.9
+
+    run _run_checkout_upgrade "$co" "$proj" --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"(v9.9.9)"* ]]
+    [[ "$output" != *"(v9.9.9-be.1)"* ]] || false
+}

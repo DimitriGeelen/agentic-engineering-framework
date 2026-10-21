@@ -2,12 +2,16 @@
 id: T-4566
 name: "t4453_upgrade_from_framework_checkout.bats tests 1-2 fail on HEAD"
 description: >
-  Found by the T-4234 worker on 2026-10-21: tests 1 and 2 of tests/unit/t4453_upgrade_from_framework_checkout.bats fail on current bleeding-edge with and without the T-4234 change. Find whether a recent upgrade change (T-4554 release-tag pre-flight, T-4235 auto-unshallow, T-4555 cron regenerate, T-4234 dry-run preview) broke them or the test is stale; fix the cause, not the assertion. Never add them to the unit-suite baseline.
+  Found by the T-4234 worker on 2026-10-21: tests 1 and 2 of tests/unit/t4453_upgrade_from_framework_checkout.bats
+  fail on current bleeding-edge with and without the T-4234 change. Find whether a
+  recent upgrade change (T-4554 release-tag pre-flight, T-4235 auto-unshallow, T-4555
+  cron regenerate, T-4234 dry-run preview) broke them or the test is stale; fix the
+  cause, not the assertion. Never add them to the unit-suite baseline.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, upgrade, test]
 components: []
 related_tasks: [T-4453, T-4234]
@@ -38,8 +42,8 @@ related_tasks: [T-4453, T-4234]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T20:43:54Z
-last_update: 2026-10-21T20:43:54Z
-date_finished: null
+last_update: 2026-10-21T21:06:19Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T20:45:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T20:45:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4566: t4453_upgrade_from_framework_checkout.bats tests 1-2 fail on HEAD
@@ -62,8 +94,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of t4453 tests 1-2 failing on HEAD localised to a file:line and recorded in ## RCA
+- [x] Cause fixed in source (not the assertion); tests/unit/t4453_upgrade_from_framework_checkout.bats fully green, no skips
+- [ ] tests/unit/upgrade_fresh_machine_simulation.bats stays green
+  <!-- 2026-10-21 w4566: tests 12/14 red in the working tree because of ANOTHER worker's in-flight lib/upgrade.sh hunk @3115 sourcing untracked lib/working-gitignore.sh (absent from the git-built upstream fixture); not this change. Re-run once that lands. -->
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4566` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +283,19 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t4453_upgrade_from_framework_checkout.bats > /tmp/.t4566a 2>&1 && ! grep -q "^not ok" /tmp/.t4566a
+test "$(grep -c '# skip' /tmp/.t4566a)" -eq 0
+timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4566b 2>&1 && ! grep -q "^not ok" /tmp/.t4566b
+timeout 600 bats tests/unit/t4431_be_tags.bats > /tmp/.t4566c 2>&1 && ! grep -q "^not ok" /tmp/.t4566c
+bin/fw vendor self --check --task T-4566
 
 ## RCA
+
+**Symptom:** t4453 tests 1-2 red at HEAD: `fw upgrade` from a -be checkout printed `Commit:    <sha>` with no `(v9.9.9-be.1)` tag.
+**Root cause:** none of today's upgrade changes (T-4554/T-4235/T-4555/T-4234) — `git log -L1690,1700:lib/upgrade.sh` lands on 2612aa389 (T-4504, 2026-10-20), which added `--exclude '*-be.*'` to the Commit: line's `git describe --tags --exact-match` (lib/upgrade.sh:1694) to satisfy t4431_be_tags test 11 ("every describe --tags excludes -be tags"). That invariant protects *version derivation* (the release floor must never be a -be tag); the Commit: line is a *label* of the exact revision vendored, and naming the -be tag on a -be cut is the whole point of T-4453. The exclude erased the label. Confirmed: HEAD's lib/upgrade.sh via T4453_UPGRADE_SH → tests 1-2 red; fixed file → green.
+**Fix:** lib/upgrade.sh:1694-1698 labels via `git tag --points-at HEAD`, preferring a release tag and falling back to a -be tag. Not a `describe`, so the t4431 lint (correctly scoped to version derivation) still holds; no assertion in either test changed.
+**Why structurally allowed:** T-4504 ran the one red test it was fixing, not t4453, which pins the same line with the opposite expectation; the two were never run together before landing.
+**Prevention:** t4453 test 4 pins precedence (release tag wins over a -be tag on the same commit); with the label off `describe`, t4453 and t4431 are both green and a future "add the exclude" fix has no lint to satisfy.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +391,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4566-t4453upgradefromframeworkcheckoutbats-te.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:47:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
