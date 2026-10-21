@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4254: fw init classifies a target as existing-project when it holds only a `.context/` dir with no code.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T20:48:12Z
+# ============================================================================
+
+task_id: T-4254
+task_name: "fw init classifies a target as existing-project when it holds only a `.context/` dir with no code."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:24:34Z
+completed: 2026-10-21T20:47:13Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-21T22:37:53+02:00
+last_commit: 2026-10-21T22:37:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init census treats .context/ and .tasks/ as framework scaffolding, so a target holding only them is greenfield; regression bats (+ code-beside-.context control)
+
+# Key outcomes
+outcomes:
+  - '`fw init` on a directory holding only a `.context/` (and/or `.tasks/`) dir with foreign files seeds the greenfield onboarding set, not existing-project'
+  - 'A directory with real user content (e.g. `main.py`) beside `.context/` is still classified existing-project'
+  - 'Regression bats test fails before the fix and passes after; neighbouring init tests stay green'
+  - '`bin/fw vendor self --check --task T-4254` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - 'lib/init.sh'
+  - '.tasks/active/T-4254-fw-init-classifies-a-target-as-existing-.md'
+  - 'tests/unit/init_project_shape_detection.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T22:37:53'
+    action: 'T-4254: fw init census treats .context/ and .tasks/ as framework scaffolding, so a target holding only them is greenfield; regression bats (+ code-beside-.context control)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6082 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6082
+  commits: 1
+  files_changed: 4
+  lines_added: 84
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4254-fw-init-classifies-a-target-as-existing-.md
+generated_by: context-agent-hybrid
