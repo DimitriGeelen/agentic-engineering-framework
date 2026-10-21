@@ -101,7 +101,7 @@ bvp_scores_proposed:
 - [x] (a) `cmd_cleanup` only plans/acts on dispatch dirs whose meta.json `project` resolves to this project (`${PROJECT_ROOT:-$(pwd)}`); another project's finished worker dir and its endpoint are left untouched (bats: `t4558_cleanup_project_scope.bats`)
 - [x] (b) The live-worker regex is derived from `DISPATCH_WORKER_KINDS` (no hardcoded `claude|ollama-tool-loop`); a running codex, opencode or antigravity (`agy`) worker is reported ACTIVE, not orphaned (bats)
 - [x] (c) A finished worker with an uncollected result is KEPT (dir and result survive `--yes`), while its leaked endpoint is still stopped (bats)
-- [ ] Existing cleanup suites (t3595, t3651, t3580_round7, t4152, termlink.bats) stay green after fixture update; `bin/fw vendor self --check --task T-4558` clean
+- [x] Existing cleanup suites (t3595, t3651, t3580_round7, t4152, termlink.bats) stay green after fixture update; `bin/fw vendor self --check --task T-4558` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
