@@ -96,11 +96,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Regressing commit identified and the cause named with file:line in ## RCA (code regression vs. legitimately changed expectation)
-- [ ] tests/unit/t3644_literal_assignment_segment.bats passes in full (was red)
-- [ ] docs/reports/G-121-bypass-probe.sh: all 13 bypass lines still gated, controls SAFE
-- [ ] Closest neighbouring safe-commands suites still green; bats dead-negation lint clean
-- [ ] bin/fw vendor self --check --task T-4536 clean
+- [x] Regressing commit identified and the cause named with file:line in ## RCA (code regression vs. legitimately changed expectation)
+- [x] tests/unit/t3644_literal_assignment_segment.bats passes in full (was red)
+- [x] docs/reports/G-121-bypass-probe.sh: all 13 bypass lines still gated, controls SAFE
+- [x] Closest neighbouring safe-commands suites still green; bats dead-negation lint clean
+- [x] bin/fw vendor self --check --task T-4536 clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
