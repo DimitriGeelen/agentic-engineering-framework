@@ -331,6 +331,10 @@ def task_touches_render_surface_cheap(
 
 # ── Criterion parsing ────────────────────────────────────────────────────────
 
+#: Lines the framework writes UNDER a criterion (lib/verdict_ledger.py: `_cite`,
+#: `_route_to_operator`). Not the producer's text, so never classified (T-3853).
+GENERATED_ANNOTATION_RE = re.compile(r"^\s*\*\*Reviewer (verdict|escalation)\b")
+
 
 @dataclass
 class Criterion:
@@ -354,8 +358,17 @@ class Criterion:
         return "\n".join(self.lines)
 
     @property
+    def producer_text(self) -> str:
+        """The criterion as its author wrote it: `body_text` minus framework annotations.
+
+        T-3853: the classifier read the reviewer's escalation note as part of the
+        criterion, so 'authorize' in the framework's own words made a layout check
+        operator-only. Classify only what the producer wrote."""
+        return "\n".join(ln for ln in self.lines if not GENERATED_ANNOTATION_RE.match(ln))
+
+    @property
     def expected(self) -> str:
-        m = _EXPECTED_RE.search("\n".join(self.lines[1:]))
+        m = _EXPECTED_RE.search("\n".join(self.producer_text.split("\n")[1:]))
         return m.group(1).strip() if m else ""
 
 
@@ -513,7 +526,7 @@ def classify(
       9. unclassified       (REVIEWER-JUDGES — no longer the human tie-break)
     """
     title = criterion.title
-    body = criterion.body_text
+    body = criterion.producer_text
 
     hit = _m(_TIER0_OR_BYPASS_RE, body)
     if hit:
@@ -596,7 +609,7 @@ def _deterministic_reason(criterion: Criterion) -> str:
 
 def _is_agent_self(criterion: Criterion) -> bool:
     """T-2147's audience test, reused as a class rather than as a finding."""
-    body = criterion.body_text
+    body = criterion.producer_text
     if _AUDIENCE_OPT_OUT_RE.search(body):
         return False
     if not _AGENT_AS_SUBJECT_RE.search(body):

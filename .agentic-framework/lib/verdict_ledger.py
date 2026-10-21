@@ -123,6 +123,7 @@ from lib import review_cost  # noqa: E402
 from lib import review_policy  # noqa: E402
 from lib import task_commits  # noqa: E402
 from lib.delegation import (  # noqa: E402
+    GENERATED_ANNOTATION_RE,
     REVIEWER_JUDGES,
     classify,
     frontmatter,
@@ -349,7 +350,8 @@ def title_digest(title: str) -> str:
 
 
 #: Lines the framework writes UNDER a criterion. Not part of what a reviewer judged.
-_GENERATED_RE = re.compile(r"^\s*\*\*Reviewer (verdict|escalation)\b")
+#: One definition, shared with the delegation classifier (T-3853).
+_GENERATED_RE = GENERATED_ANNOTATION_RE
 
 
 def criterion_body(crit) -> str:
@@ -3502,6 +3504,37 @@ def release(task_id: str, ac: int, reason: str, root: Path | None = None) -> dic
     return {"task": task_id, "ac": ac, "verdict_id": vid, "released": True}
 
 
+_ESCALATION_RE = re.compile(r"^\s*\*\*Reviewer escalation \((V-[\w-]+)", re.IGNORECASE)
+
+
+def resolve_escalation(task_id: str, ac: int, reason: str, root: Path | None = None) -> dict:
+    """Operator action: mark a reviewer escalation resolved (T-3853). Removes every escalation
+    note under the criterion and records the resolution in the applied log. Ownership and the
+    tick are untouched — resolving the escalation is not answering the criterion. The CLI
+    refuses agents."""
+    root = root or _root()
+    ctx = _task_ctx(root, task_id)
+    if ctx is None:
+        raise VerdictRefused(f"{task_id} is not an active task")
+    if not (reason or "").strip():
+        raise VerdictRefused("a reason is required")
+    lines = ctx.text.split("\n")
+    crit = next((c for c in human_criteria(ctx.text) if c.index == ac), None)
+    if crit is None:
+        raise VerdictRefused(f"{task_id} has no Human criterion #{ac}")
+    hits = [(i, m.group(1)) for i in range(crit.start + 1, min(crit.end + 1, len(lines)))
+            for m in [_ESCALATION_RE.match(lines[i])] if m]
+    if not hits:
+        raise VerdictRefused(f"AC#{ac} of {task_id} carries no reviewer escalation — nothing to resolve")
+    for i, _vid in reversed(hits):
+        del lines[i]
+    ctx.path.write_text("\n".join(lines), encoding="utf-8")
+    vids = [v for _i, v in hits]
+    _append(APPLIED, {"ts": _now(), "task": task_id, "kind": "escalation-resolved", "ac": ac,
+                      "verdict_ids": vids, "reason": reason.strip()}, root)
+    return {"task": task_id, "ac": ac, "verdict_ids": vids, "resolved": True}
+
+
 def _annotation(lines: list[str], crit) -> tuple[int, str] | None:
     """(line index, verdict id) of the reviewer-verdict annotation under `crit`, if any."""
     for i in range(crit.start + 1, min(crit.end + 1, len(lines))):
@@ -3946,6 +3979,13 @@ def _cli(argv: list[str] | None = None) -> int:
     rl.add_argument("--reason", required=True)
     rl.add_argument("--i-am-human", action="store_true")
 
+    re_ = sub.add_parser("resolve-escalation", help="(operator) mark a reviewer escalation on a "
+                         "criterion resolved: removes the note, logs the resolution")
+    re_.add_argument("task_id")
+    re_.add_argument("--ac", type=int, required=True)
+    re_.add_argument("--reason", required=True)
+    re_.add_argument("--i-am-human", action="store_true")
+
     ak = sub.add_parser("acknowledge", help="record that a refused ledger row was caused by a "
                         "framework defect a completed task has fixed (audit FAIL -> WARN; the row "
                         "never counts)")
@@ -4093,6 +4133,17 @@ def _cli(argv: list[str] | None = None) -> int:
             return 1
         try:
             print(json.dumps(release(args.task_id, args.ac, args.reason)))
+        except VerdictRefused as e:
+            print(f"REFUSED: {e}", file=sys.stderr)
+            return 1
+        return 0
+    if args.cmd == "resolve-escalation":
+        if os.environ.get("CLAUDECODE") == "1" and not args.i_am_human:
+            print("REFUSED: resolving a reviewer escalation is an operator action (--i-am-human)",
+                  file=sys.stderr)
+            return 1
+        try:
+            print(json.dumps(resolve_escalation(args.task_id, args.ac, args.reason)))
         except VerdictRefused as e:
             print(f"REFUSED: {e}", file=sys.stderr)
             return 1

@@ -10,7 +10,7 @@ description: >
   matched the framework's own annotation; fw reviewer verdict release refuses, verdict
   apply ignores annotations on unticked criteria.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T07:12:12Z
-last_update: '2026-10-05T07:15:47Z'
+last_update: 2026-10-21T09:05:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect reproduced at HEAD: a `[REVIEW]` layout criterion whose only risk word sits in a framework-written `**Reviewer escalation (…):**` line classifies `act-in-the-world` / `sovereignty-field` (operator-only)
+- [x] `lib/delegation.py` classifies on producer text only: lines matching the framework's generated-annotation shape (`**Reviewer verdict` / `**Reviewer escalation`) are excluded from every regex the classifier runs (risk classes, inception, agent-self), the same exclusion `verdict_ledger.criterion_body` already applies to the digest
+- [x] Risk words in the PRODUCER text still route operator-only (no weakening): the same criterion with "authorize" in its Steps stays `act-in-the-world`
+- [x] Operator command `fw reviewer verdict resolve-escalation T-XXX --ac N --reason "…"` removes the escalation note from the criterion and appends a `kind: escalation-resolved` row to the applied log; refused under `CLAUDECODE=1` without `--i-am-human`; refuses when the criterion has no escalation note or the reason is empty
+- [x] Regression tests in `tests/unit/` fail without the fix and pass with it; neighbouring delegation / verdict-ledger tests stay green
+- [x] `bin/fw vendor self --check --task T-3853` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +261,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t3853_producer_text.py -q > /tmp/.t3853a 2>&1 && grep -q passed /tmp/.t3853a
+python3 -m pytest tests/unit/test_delegation_classifier.py tests/unit/test_t3579_verdict_ledger.py -q > /tmp/.t3853b 2>&1 && grep -q passed /tmp/.t3853b
+bin/fw vendor self --check --task T-3853
 
 ## RCA
 
@@ -273,6 +280,32 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** ring20 G-225 (second case after 'sovereignty'): after a reviewer escalated a Human
+criterion, `fw task delegate` / `fw reviewer surface` classified it OPERATOR-ONLY because the
+word 'authorize' appeared in the framework-written `**Reviewer escalation (…):**` line under it.
+Reproduced at HEAD 410c26372: a `[REVIEW]` layout criterion plus that note →
+`act-in-the-world ('authorize')`. And no command removed the note once the escalation was
+answered: `fw reviewer verdict release` refuses (the criterion is not reviewer-ticked) and
+`apply` ignores annotations on unticked criteria.
+
+**Root cause:** `lib/delegation.py:classify` (and `_is_agent_self`, `Criterion.expected`) ran
+every regex over `Criterion.body_text`, i.e. every line under the checkbox, including lines the
+framework itself writes there (`lib/verdict_ledger.py:_route_to_operator` escalation note,
+`_cite` verdict citation). `verdict_ledger.criterion_body` already excluded those lines from the
+digest via its own private `_GENERATED_RE`, but the classifier never got the same exclusion:
+two readers of one criterion disagreed about what the criterion is.
+
+**Why structurally allowed:** the generated-annotation definition lived privately in
+`verdict_ledger.py` (and a copy in `human_ac_ticks.py`); the classifier's tests only ever built
+criteria from producer text, so no fixture carried an annotation.
+
+**Prevention:** one shared `delegation.GENERATED_ANNOTATION_RE` (verdict_ledger now aliases
+it), a `Criterion.producer_text` the classifier uses for every match, and
+`tests/unit/test_t3853_producer_text.py` pinning that both annotation kinds leave the class
+unchanged while producer risk words still route operator-only. New operator verb
+`fw reviewer verdict resolve-escalation T-XXX --ac N --reason …` (agent-refused) clears a
+resolved note and logs `kind: escalation-resolved` in `.context/reviews/applied.jsonl`.
 
 ## Evolution
 
@@ -354,3 +387,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3853-d-626-delegation-classifier-reads-framew.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:05:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
