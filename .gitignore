@@ -167,3 +167,7 @@ docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
 # T-4212 (T-4202 leg A): per-width UX screenshots. Regenerated per run; the
 # checklist in the task file is the committed record. Large binary evidence.
 .context/visual/
+
+# T-4189: task-id high-water mark — per-checkout allocator state, like
+# .context/working/.obs-highwater. Every worktree's mark is read at allocation.
+.tasks/.id-highwater

@@ -277,15 +277,11 @@ generate_id() {
     done < <(fw_task_view_dirs)
     shopt -u nullglob
 
-    if [ "${#ids[@]}" -eq 0 ]; then
-        printf "T-%03d" 1
-        return
-    fi
-
     # Ascending unique; walk up from the bottom and stop at the first gap larger
     # than the threshold — everything above that cliff is a quarantined band.
+    # No task files at all leaves main_max=0 (next T-001, unless a mark says more).
     local n prev="" main_max=0
-    while IFS= read -r n; do
+    [ "${#ids[@]}" -gt 0 ] && while IFS= read -r n; do
         if [ -z "$prev" ]; then
             main_max=$n
         elif [ $((n - prev)) -gt "$gap_threshold" ]; then
@@ -295,6 +291,23 @@ generate_id() {
         fi
         prev=$n
     done < <(printf '%s\n' "${ids[@]}" | sort -n -u)
+
+    # T-4189: max over the files that exist now is pulled DOWN by deletion —
+    # remove the top task file and its id is reissued (832 OBS-426; T-2966 was
+    # the same defect in the OBS allocator). Take the max with the high-water
+    # mark of every view; a mark past the quarantine cliff is ignored like the
+    # band it would point into. Persisted at generation time, inside the
+    # allocation keylock: a crash before the write skips an id, never reuses one.
+    local mark
+    while IFS= read -r d; do
+        mark=$(head -n1 "$d/.id-highwater" 2>/dev/null) || continue
+        [[ "$mark" =~ ^[0-9]+$ ]] || continue
+        mark=$((10#$mark))
+        if [ "$mark" -gt "$main_max" ] && [ $((mark - main_max)) -le "$gap_threshold" ]; then
+            main_max=$mark
+        fi
+    done < <(fw_task_view_dirs)
+    printf '%s\n' $((main_max + 1)) > "$TASKS_DIR/.id-highwater" 2>/dev/null || true
 
     printf "T-%03d" $((main_max + 1))
 }

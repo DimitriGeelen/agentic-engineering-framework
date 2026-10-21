@@ -10,10 +10,10 @@ description: >
   file, or scan git history for every id ever used, and take the maximum with it in
   generate_id.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:09:28Z
-last_update: '2026-10-13T19:16:05Z'
+last_update: 2026-10-21T22:06:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] generate_id persists a high-water mark (`.tasks/.id-highwater`, gitignored) at allocation time and takes the max of it and the main-cluster max, so deleting the highest-numbered task file does not let its id be reissued
+- [x] The mark is read from every task view (all worktrees), and a mark more than FW_ID_QUARANTINE_GAP above the main cluster is ignored, so T-100202 quarantine still holds
+- [x] Regression bats `tests/unit/t4189_task_id_highwater.bats` fails before the fix and passes after; t100202_id_quarantine.bats, create_task.bats and task_id_race.bats stay green
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4189` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,8 +262,21 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4189_task_id_highwater.bats > /tmp/.t4189.out 2>&1 && ! grep -q "^not ok" /tmp/.t4189.out
+test "$(grep -c '# skip' /tmp/.t4189.out)" -eq 0
+timeout 300 bats tests/unit/t100202_id_quarantine.bats tests/unit/task_id_race.bats > /tmp/.t4189n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4189n.out
+git check-ignore -q .tasks/.id-highwater
+bin/fw vendor self --check --task T-4189
 
 ## RCA
+
+**Symptom:** deleting the highest-numbered task file (e.g. an aborted capture) let the next `fw task create` reissue the same id, so git history holds two unrelated tasks under one number (832 OBS-426, their T-1150).
+
+**Root cause:** `agents/task-create/create-task.sh:266-300` `generate_id` computed `main-cluster max + 1` over the task files that exist *now*. Nothing recorded which ids had ever been issued, so the ceiling dropped whenever the top file disappeared — the same max-over-survivors defect T-2966 fixed for OBS ids.
+
+**Why structurally allowed:** the allocator tests (create_task.bats, t100202, task_id_race) only ever add files; none removes one and mints again. The T-2966 fix was scoped to `observe.sh` and the pattern was never applied to the sibling allocator.
+
+**Prevention:** `generate_id` now persists `.tasks/.id-highwater` at generation time (inside the allocation keylock) and takes the max with it across all task views; `tests/unit/t4189_task_id_highwater.bats` pins delete-then-mint, the cross-worktree read and the quarantine interplay.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -357,3 +372,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4189-generateid-high-water-mark-so-a-deleted-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:06:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
