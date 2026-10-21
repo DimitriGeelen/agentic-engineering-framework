@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4562: /resume template's Watchtower check is refused with no focus since T-4512 (curl word starts with a file-read expansion)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T20:33:06Z
+# ============================================================================
+
+task_id: T-4562
+task_name: "/resume template's Watchtower check is refused with no focus since T-4512 (curl word starts with a file-read expansion)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T17:37:02Z
+completed: 2026-10-21T20:30:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T19:37:52+02:00
+last_commit: 2026-10-21T20:54:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file 832 be.2 findings (resume template refused w/o focus; T-4563 foreign-delete guard vs re-vendor). /resume step 5 uses new read-only 'fw watchtower reachable' (resolves URL, checks identity) instead of WURL=$(cat …); curl — refused by the no-focus gate since T-4512; allowlisted; init.sh fallback + .claude copy synced; regression bats runs every template command through the gate. tick Agent ACs. fill RCA
+
+# Key outcomes
+outcomes:
+  - 'Step 5 of `lib/templates/resume-md.md` no longer reads `watchtower.url` into a variable and curls it; it runs a single `bin/fw watchtower …` verb that resolves the URL and probes reachability itself'
+  - 'That verb is read-only and `is_bash_safe_command` accepts it with no task in focus (gate not loosened: `agents/context/lib/safe-commands.sh` unchanged in its refusal of expansion-led words)'
+  - 'Every rendered/shipped copy of the template (vendored `.agentic-framework/lib/templates/resume-md.md`, any rendered `.claude/commands/resume.md`) carries the new step'
+  - 'Regression test extracts every inline shell command from the template and asserts `is_bash_safe_command` accepts each; it fails on the old step 5'
+  - '`bin/fw vendor self --check --task T-4562` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/templates/resume-md.md'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'bin/watchtower.sh'
+  - '.claude/commands/resume.md'
+  - 'lib/init.sh'
+  - 'lib/templates/resume-md.md'
+  - '.tasks/active/T-4562-resume-templates-watchtower-check-is-ref.md'
+  - '.tasks/active/T-4563-t-4528-foreign-delete-guard-refuses-ever.md'
+  - 'tests/unit/lib_upgrade.bats'
+  - 'tests/unit/t4562_resume_template_safe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T19:37:52'
+    action: 'T-4562: file 832 be.2 findings (resume template refused w/o focus; T-4563 foreign-delete guard vs re-vendor)'
+  - time: '2026-10-21T20:12:22'
+    action: 'T-4562: /resume step 5 uses new read-only ''fw watchtower reachable'' (resolves URL, checks identity) instead of WURL=$(cat …); curl — refused by the no-focus gate since T-4512; allowlisted; init.sh fallback + .claude copy synced; regression bats runs every template command through the gate'
+  - time: '2026-10-21T20:12:45'
+    action: 'T-4562: tick Agent ACs'
+  - time: '2026-10-21T20:54:42'
+    action: 'T-4562: fill RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 173 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, resume, gate]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 173
+  commits: 4
+  files_changed: 13
+  lines_added: 903
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4562-resume-templates-watchtower-check-is-ref.md
+generated_by: context-agent-hybrid
