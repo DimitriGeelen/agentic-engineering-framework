@@ -10,10 +10,10 @@ description: >
   behaviour in bin/claude-fw, then fix the docs/header (and the banner of T-4170)
   so the operator knows a fresh session with the handover is what happens.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T16:39:23Z
-last_update: '2026-10-13T16:46:18Z'
+last_update: 2026-10-21T22:15:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4173: claude-fw docs say a budget restart continues with 'claude -c', but the restart starts a FRESH session (new id, only hook context): reconcile code and docs (CLAUDE.md §Auto-Restart, claude-fw header) (dimitri-mint-dev P-011, their T-108)
@@ -96,8 +112,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduction checked on bleeding-edge: CLAUDE.md §Auto-Restart, bin/claude-fw header and the T-4170 banner already say "fresh session" (fixed by T-4352/T-3166); remaining stale claims located (docs/context-compaction.md:88, agents/context/post-compact-resume.sh header comments)
+- [ ] docs/context-compaction.md no longer says an auto-restart re-injects via `claude -c`; it says the restart is a fresh session that reads the handover (FW_RESTART_MODE=continue = `--resume`)
+- [ ] post-compact-resume.sh header comments attribute auto-restart to SessionStart `startup` of a fresh session, not `claude -c`
+- [ ] Regression bats tests/unit/t4173_restart_fresh_docs.bats fails before the fix and passes after
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,6 +278,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 120 bats tests/unit/t4173_restart_fresh_docs.bats > /tmp/.t4173 2>&1 && ! grep -q "^not ok" /tmp/.t4173
+test "$(grep -c '# skip' /tmp/.t4173)" -eq 0
+timeout 120 bats tests/unit/t4352_restart_mode_docs.bats > /tmp/.t4352 2>&1 && ! grep -q "^not ok" /tmp/.t4352
+bash -n agents/context/post-compact-resume.sh
+bin/fw vendor self --check --task T-4173
 
 ## RCA
 
@@ -276,6 +299,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** dimitri-mint-dev P-011 (their T-108): after a budget restart the new session (43b771a3) had a new id and only ~65K of hook-injected context, while the docs promised the restart continues the conversation with `claude -c`.
+
+**Root cause:** T-3166 made the restart a fresh session by default (`${FW_RESTART_MODE:-fresh}`, bin/claude-fw:1573/1639/1739) but left the prose describing the old `claude -c` behaviour. T-4352 corrected CLAUDE.md §Auto-Restart, the consumer template and docs/harnesses.md; the claude-fw header (bin/claude-fw:6) and the T-4170 banner (bin/claude-fw:629) already say "fresh". Still stale on bleeding-edge: docs/context-compaction.md:88 ("Session auto-restarted … `claude -c` re-injects") and agents/context/post-compact-resume.sh:8 and :46 (the hook that serves the restart says it fires "after claude -c … auto-restart" and "claude-fw → `claude -c`").
+
+**Why structurally allowed:** the T-4352 regression bats pins only the three surfaces it edited; nothing reads the remaining docs/comments against the code's default, so a doc outside that list can keep the old claim indefinitely.
+
+**Prevention:** tests/unit/t4173_restart_fresh_docs.bats reads the default from bin/claude-fw and fails if docs/context-compaction.md or the post-compact-resume.sh header attributes the auto-restart to `claude -c` while the default is fresh.
 
 ## Evolution
 
@@ -357,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4173-claude-fw-docs-say-a-budget-restart-cont.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:15:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

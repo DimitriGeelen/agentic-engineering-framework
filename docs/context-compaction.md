@@ -85,7 +85,7 @@ mistake it for the whole recovery.
 | Situation | Action |
 |-----------|--------|
 | You just ran `/compact` | Run `/resume` (or `fw resume status`) before starting new work. Don't act on the auto-injected banner alone. |
-| Session auto-restarted (budget-critical auto-restart loop) | Same as above — `claude -c` re-injects via the same truncated path. |
+| Session auto-restarted (budget-critical auto-restart loop) | Same as above. The restart is a fresh session (new id, previous conversation not restored, T-3166); the SessionStart hook injects the handover via the same truncated path. `FW_RESTART_MODE=continue` resumes the conversation instead (`--resume <id>`). |
 | You're not sure what's stale after a compact | `fw resume sync` reconciles working memory (`focus.yaml`, task status) against what's actually on disk. |
 | You just want a one-line gut check | `fw resume quick` |
 
