@@ -1,13 +1,18 @@
 ---
 id: T-4554
-name: "fw upgrade pre-flight flags files as locally edited when they match a released tag but not the installed-files record"
+name: "fw upgrade pre-flight flags files as locally edited when they match a released
+  tag but not the installed-files record"
 description: >
-  ring20 on be.2: agents/context/lib/safe-commands.sh and lib/shell_write_scan.py were byte-identical to v1.8.12 (ee1d6fcfe), copied from the tag during the 1.8.12 hotfix, but the installed-files record held pre-hotfix hashes, so pre-flight called them local edits and refused. Pre-flight should treat a file matching any released framework version's bytes as framework-owned (not local), and say so.
+  ring20 on be.2: agents/context/lib/safe-commands.sh and lib/shell_write_scan.py
+  were byte-identical to v1.8.12 (ee1d6fcfe), copied from the tag during the 1.8.12
+  hotfix, but the installed-files record held pre-hotfix hashes, so pre-flight called
+  them local edits and refused. Pre-flight should treat a file matching any released
+  framework version's bytes as framework-owned (not local), and say so.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, upgrade, consumer]
 components: []
 related_tasks: [T-3925, T-3704]
@@ -39,8 +44,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "f506e892"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T14:44:13Z
-last_update: 2026-10-21T14:44:13Z
-date_finished: null
+last_update: 2026-10-21T15:54:31Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T14:45:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T14:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4554: fw upgrade pre-flight flags files as locally edited when they match a released tag but not the installed-files record
@@ -63,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/vendor_preserve.py` pre-flight treats a vendored file whose bytes equal that path at any `v*` release tag in the source repo as framework-owned (not at-risk), and prints `RELEASED  <path>  — matches <tag>` for it
+- [x] A file whose bytes match no release tag, no stamp hash and no current source is still listed `edited locally — would be OVERWRITTEN` and the run still refuses
+- [x] Regression bats `tests/unit/t4554_vendor_released_tag_match.bats`: stale-stamp + tag-equal file passes; edited file refuses (fails without the fix)
+- [x] `tests/unit/t3850_vendor_preserve_locals.bats` and `tests/unit/upgrade_fresh_machine_simulation.bats` stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +284,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4554_vendor_released_tag_match.bats > /tmp/.t4554.out 2>&1 && ! grep -q "^not ok" /tmp/.t4554.out && test "$(grep -c '# skip' /tmp/.t4554.out)" -eq 0
+timeout 900 bats tests/unit/t3850_vendor_preserve_locals.bats > /tmp/.t4554b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4554b.out
+timeout 1200 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4554c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4554c.out
+bin/fw vendor self --check --task T-4554
 
 ## RCA
 
@@ -265,6 +304,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** ring20 `fw upgrade` pre-flight refused, listing `agents/context/lib/safe-commands.sh` and `lib/shell_write_scan.py` as "edited locally — would be OVERWRITTEN", although both were byte-identical to v1.8.12 (copied from the tag during the hotfix).
+
+**Root cause:** `lib/vendor_preserve.py` `cmd_pre` (the overwrite branch, `dhash != stamp[rel] and dhash != digest(src[rel])`) judged "local" against exactly two references: the vendor stamp (`.fw-vendor-stamp.json`, the installed-files record) and the *current* source bytes. A file that was framework bytes from another release — any hand-applied hotfix, partial rollback, or copy-from-tag — matches neither, so it was classified as a consumer edit.
+
+**Why structurally allowed:** the stamp is only rewritten by a full vendor, so any out-of-band but framework-authored change makes it stale; the classifier had no notion of "framework-owned bytes" beyond the single stamp snapshot, and the T-3850 tests only exercised genuine edits.
+
+**Prevention:** the classifier now also consults every `v*` release tag in the source repo (one `git cat-file --batch-check` over `<tag>:<path>`, blob ids compared with `git hash-object --no-filters`) and reports `RELEASED <path> — matches <tag>`; `tests/unit/t4554_vendor_released_tag_match.bats` pins both the pass (tag-equal) and the refuse (genuine edit) legs.
 
 ## Evolution
 
@@ -330,6 +377,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-21 — which tags count as "released"
+- **Chose:** every `v*` tag in the source repo (not only tags merged into the source HEAD).
+- **Why:** a hotfix tag (v1.8.12 here) can sit on master off the source branch; requiring ancestry would miss exactly the case reported. Any `v*` tag is a published framework version, so its bytes are framework-owned.
+- **Rejected:** `--merged HEAD` (misses off-branch hotfix tags); refreshing the stamp out-of-band (does not help consumers already holding a stale stamp).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -346,3 +398,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4554-fw-upgrade-pre-flight-flags-files-as-loc.md
 - **Context:** Initial task creation
+
+### 2026-10-21T15:54:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
