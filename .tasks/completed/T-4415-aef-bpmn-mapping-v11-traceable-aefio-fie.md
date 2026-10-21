@@ -6,16 +6,16 @@ description: >
   Inception: aef-bpmn-mapping v1.1: traceable aef:io fields (ref, role, cardinality,
   dataType on aef:input/aef:output)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-19T17:22:58Z
-last_update: 2026-10-21T12:57:04Z
-date_finished:
+last_update: 2026-10-21T14:01:24Z
+date_finished: 2026-10-21T14:01:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -144,15 +144,15 @@ picklist.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -237,7 +237,11 @@ Draft 2 supersedes the filing-time shape above.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Asked by 832 (msg 98166137, their inception T-1219) for aef-greenfield-test's ontology-generated maps (their T-276). aef:io/aef:input/aef:output are SEMANTIC-class in the frozen v1 standard (policy/standards/aef-bpmn-mapping-v1-partI.md §1), so new attributes are a v1.1 revision, not a designer-local choice. Proposed shape: optional attributes on aef:input/aef:output — ref (IRI or CURIE), role (read|write|create|match), cardinality (1|0..1|0..*), dataType (id|reference|date|datetime|decimal|currency|percent|picklist) kept separate from the existing type — rather than a BPMN itemDefinition link (heavier, and our maps carry no itemDefinitions today). Today tools/bpmn_to_tasks.py does not read aef:io at all and tools/corpus_spec.py round-trips it verbatim (T-4387), so v1.1 is additive and breaks nothing; what v1.1 must decide is validation (closed value sets, CURIE prefix registry) and whether the forward compile starts reading it. Operator decides the standard revision.
+
+**Date**: 2026-10-21T14:01:23Z
 
 ## Updates
 
@@ -246,3 +250,36 @@ Draft 2 supersedes the filing-time shape above.
 
 ### 2026-10-21T12:57:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-21T14:01:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Asked by 832 (msg 98166137, their inception T-1219) for aef-greenfield-test's ontology-generated maps (their T-276). aef:io/aef:input/aef:output are SEMANTIC-class in the frozen v1 standard (policy/standards/aef-bpmn-mapping-v1-partI.md §1), so new attributes are a v1.1 revision, not a designer-local choice. Proposed shape: optional attributes on aef:input/aef:output — ref (IRI or CURIE), role (read|write|create|match), cardinality (1|0..1|0..*), dataType (id|reference|date|datetime|decimal|currency|percent|picklist) kept separate from the existing type — rather than a BPMN itemDefinition link (heavier, and our maps carry no itemDefinitions today). Today tools/bpmn_to_tasks.py does not read aef:io at all and tools/corpus_spec.py round-trips it verbatim (T-4387), so v1.1 is additive and breaks nothing; what v1.1 must decide is validation (closed value sets, CURIE prefix registry) and whether the forward compile starts reading it. Operator decides the standard revision.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-98a5ca1f
+- **Timestamp:** 2026-10-21T14:01:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-16a92a0a
+- **Timestamp:** 2026-10-21T14:01:25Z
+- **Overall:** CONFIRMED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-4415-structured-io-attributes.md` | file | ✓ pass |
+| `tools/bpmn_to_tasks.py` | file | ✓ pass |
+| `T-1219` | task | ✓ pass |
+| `T-276` | task | ✓ pass |
+| `T-4387` | task | ✓ pass |
+
+### 2026-10-21T14:01:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
