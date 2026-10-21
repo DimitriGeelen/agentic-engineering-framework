@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4326: fw rail status reports state: host when the session already exports TERMLINK_IDENTITY_FILE (host key resolved from the ambient env)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T23:04:59Z
+# ============================================================================
+
+task_id: T-4326
+task_name: "fw rail status reports state: host when the session already exports TERMLINK_IDENTITY_FILE (host key resolved from the ambient env)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T19:32:54Z
+completed: 2026-10-21T23:04:03Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-21T23:42:07+02:00
+last_commit: 2026-10-21T23:42:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw rail status resolves the host fingerprint with TERMLINK_IDENTITY_FILE/AGENT_ID/IDENTITY_DIR unset (inside the $() subshell so termlink shell functions still apply), so a session exporting its project key no longer measures that key as the host and reports state: host; regression bats with stub termlink; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduced on current bleeding-edge: with TERMLINK_IDENTITY_FILE exported to a project key and RAIL_IDENTITY_FILE to the same key, `fw rail status` reports `state: host`'
+  - '`rail_identity_status` resolves the host fingerprint with TERMLINK_IDENTITY_FILE, TERMLINK_AGENT_ID and TERMLINK_IDENTITY_DIR unset (same as `lib/sidecar/dm.py` identity_is_host_shared)'
+  - 'Regression bats test: exported project key + RAIL_IDENTITY_FILE to the same key reads `state: project`; fails before the fix, passes after'
+  - 'Existing rail-identity tests stay green; vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/rail-identity.sh'
+  - 'lib/rail-identity.sh'
+  - '.tasks/active/T-4326-fw-rail-status-reports-state-host-when-t.md'
+  - 'tests/unit/t4326_rail_status_ambient_identity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T23:42:07'
+    action: 'T-4326: fw rail status resolves the host fingerprint with TERMLINK_IDENTITY_FILE/AGENT_ID/IDENTITY_DIR unset (inside the $() subshell so termlink shell functions still apply), so a session exporting its project key no longer measures that key as the host and reports state: host; regression bats with stub termlink; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4531 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [rail, identity, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4531
+  commits: 1
+  files_changed: 4
+  lines_added: 102
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4326-fw-rail-status-reports-state-host-when-t.md
+generated_by: context-agent-hybrid
