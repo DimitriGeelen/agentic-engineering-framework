@@ -1,13 +1,17 @@
 ---
 id: T-4572
-name: "fw build fails: esbuild cannot resolve js-yaml from lib/ts/src/fw-util.ts (cloud run)"
+name: "fw build fails: esbuild cannot resolve js-yaml from lib/ts/src/fw-util.ts (cloud
+  run)"
 description: >
-  Cloud runs (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md sections 1 and 4): fw build -v fails because esbuild cannot resolve 'js-yaml' imported in lib/ts/src/fw-util.ts on a clean machine. Declare the dependency where fw build installs from (or bundle-time resolution), make fw build say what is missing, test.
+  Cloud runs (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md
+  sections 1 and 4): fw build -v fails because esbuild cannot resolve 'js-yaml' imported
+  in lib/ts/src/fw-util.ts on a clean machine. Declare the dependency where fw build
+  installs from (or bundle-time resolution), make fw build say what is missing, test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, build]
 components: []
 related_tasks: [T-4508]
@@ -39,8 +43,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:48:44Z
-last_update: 2026-10-21T21:48:44Z
-date_finished: null
+last_update: 2026-10-21T22:05:52Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T22:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T22:00:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4572: fw build fails: esbuild cannot resolve js-yaml from lib/ts/src/fw-util.ts (cloud run)
@@ -63,8 +95,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/build.sh` installs lib/ts's declared dependencies (`npm ci` from package-lock.json, `npm install` fallback) when any declared package is missing from `lib/ts/node_modules` before invoking esbuild
+- [x] When a declared dependency is still missing (no npm, or install failed), `fw build` exits non-zero and names the missing package(s) on stderr
+- [x] esbuild's own stderr is no longer discarded: a failed compile exits non-zero with esbuild's message and the failing source named
+- [x] `fw build -v` is accepted as `--verbose`
+- [x] Regression bats `tests/unit/t4572_build_missing_deps.bats` passes (fails against the pre-fix build.sh)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +284,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n lib/build.sh
+timeout 300 bats tests/unit/t4572_build_missing_deps.bats > /tmp/.t4572.out 2>&1 && ! grep -q "^not ok" /tmp/.t4572.out
+test "$(grep -c '# skip' /tmp/.t4572.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/t4572_build_missing_deps.bats
+bin/fw vendor self --check --task T-4572
 
 ## RCA
 
@@ -265,6 +305,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** on a clean machine `fw build -v` fails with esbuild "Could not resolve \"js-yaml\"" from `lib/ts/src/fw-util.ts:19` (cloud runs, T-4508 report sections 1 and 4).
+
+**Root cause:** js-yaml *is* declared (`lib/ts/package.json` devDependencies, pinned in package-lock.json), but `lib/build.sh` never installs it: `lib/ts/node_modules/` is gitignored (`.gitignore:64`) and build.sh goes straight to `npx --yes esbuild` (build.sh:51), which fetches esbuild alone into the npx cache. esbuild bundles and resolves `js-yaml` upward from `lib/ts/src/`, finds no node_modules, fails. On dev hosts it worked only because someone once ran `npm install` in lib/ts by hand. build.sh also sends esbuild stderr to /dev/null (build.sh:57), so under `set -e` the failure was either silent or surfaced only by `-v` paths, never naming the package; and `-v` was not recognised as `--verbose`.
+
+**Why structurally allowed:** no test exercised build.sh from a tree without `lib/ts/node_modules`; the developer host always had it, so the dependency on a manual install step was invisible.
+
+**Prevention:** build.sh now checks every declared package against `lib/ts/node_modules`, installs from the lockfile when any is missing, and refuses with the missing names when it cannot; `tests/unit/t4572_build_missing_deps.bats` runs build.sh in a synthetic tree with no node_modules (stub npm/npx) and pins both the install path and the named-missing-dependency refusal.
 
 ## Evolution
 
@@ -346,3 +393,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4572-fw-build-fails-esbuild-cannot-resolve-js.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:05:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
