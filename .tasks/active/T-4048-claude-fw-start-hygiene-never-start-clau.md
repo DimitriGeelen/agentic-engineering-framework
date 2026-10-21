@@ -15,7 +15,7 @@ description: >
   itself is on a tty (not attach) and print PASS/FAIL, D restart guidance: resume
   by exact id, never fresh, never -c.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:11:48Z
-last_update: '2026-10-10T18:16:29Z'
+last_update: 2026-10-21T10:48:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,14 +95,21 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+055 msg 3f0d69ea, docs/reports/T-491-session-hops.md (in 055). Reproduced at HEAD 2379a926b:
+`_name_fresh_relaunch` (bin/claude-fw) returns early when restart_count is 0, so a bare
+`claude-fw` still hands claude an empty argv (agents view under defaultToAgentsView), and
+nothing in bin/claude-fw or lib/conversation-holder.sh reads ~/.claude/jobs/ before a
+`--resume <id>` (grep: zero hits). This task ships proposals A and B; C and D are under
+## Recommendation.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A: a bare first `claude-fw` launch hands claude `-n fw-<dir>`, never an empty argv; a first launch with the user's own args keeps them untouched (tests/unit/t3629_fresh_relaunch_not_agents_view.bats)
+- [x] B: `claude-fw --resume <id>` (also `-r <id>`, `--resume=<id>`) is REFUSED (exit 3) when ~/.claude/jobs/<id8>/state.json names that sessionId with a live state (not done/failed/stopped); the message says it is a background job and names `claude stop <short>` then `claude-fw --resume <id>`; FW_ALLOW_BACKGROUND_RESUME=1 overrides with a warning; a stopped job or no job passes (tests/unit/t4048_claude_fw_background_resume.bats)
+- [x] Regression tests fail with the fix mutated out (mutation tests inside both bats files)
+- [ ] `bin/fw vendor self --check --task T-4048` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -136,6 +143,13 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+timeout 600 bats tests/unit/t3629_fresh_relaunch_not_agents_view.bats > /tmp/.t4048a 2>&1 && ! grep -q "^not ok" /tmp/.t4048a
+test "$(grep -c '# skip' /tmp/.t4048a)" -eq 0
+timeout 600 bats tests/unit/t4048_claude_fw_background_resume.bats > /tmp/.t4048b 2>&1 && ! grep -q "^not ok" /tmp/.t4048b
+test "$(grep -c '# skip' /tmp/.t4048b)" -eq 0
+timeout 600 bats tests/unit/t4497_claude_fw_continue_not_worker.bats > /tmp/.t4048c 2>&1 && ! grep -q "^not ok" /tmp/.t4048c
+bash -n bin/claude-fw && bash -n lib/conversation-holder.sh
+bin/fw vendor self --check --task T-4048
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -268,6 +282,27 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** one T-4003 test restart cost the operator 7 conversations in a day (055). A bare
+`claude-fw` opened Claude Code's agents overview and started the conversation as a background
+job in the shared claude daemon (no tty); `claude-fw --resume <id>` of such a job became a
+`claude attach` viewer that the T-4003 tmux typing path cannot reach.
+
+**Root cause:** `bin/claude-fw` `_name_fresh_relaunch` (T-3629) rewrote an empty argv only on
+RELAUNCHES (`[ "$restart_count" -gt 0 ] || return 0`), and its test pinned the bare first
+launch as unchanged ("a bare first launch is not renamed"). Separately, the resume path
+(`_conversation_guard` → lib/conversation-holder.sh `fw_conversation_holder`) knows only the
+live holders the sidecar records, never Claude Code's own background jobs
+(~/.claude/jobs/<short>/state.json), so a resume of a live daemon job went through unexamined.
+
+**Why structurally allowed:** T-3629 was scoped to the restart symptom it was filed for; the
+first launch was treated as "the user's argv", although claude-fw's machinery (hooks, handover
+injection, tmux typing) assumes a foreground conversation. The background-job store is Claude
+Code CLI state outside every check the framework ran.
+
+**Prevention:** bats regressions with mutation legs: t3629 now asserts the bare first launch is
+named; t4048_claude_fw_background_resume.bats asserts the refusal for live jobs, the pass for
+stopped jobs / no job, and that deleting the guard lets the resume through.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -335,6 +370,26 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO (close on A+B); C and D need an operator decision, options below.
+**Rationale:** A and B remove the two mechanisms that created hidden background conversations
+(empty argv on the first launch; resume of a live daemon job). Proposal C (post-start "is
+claude itself on the pane tty, not attach" PASS/FAIL) is mostly made unnecessary by A+B: in
+direct mode claude is the wrapper's foreground child, and the only route to `attach` known
+from 055's report is now refused before launch. Proposal D ("resume by exact id, never fresh,
+never -c") partly ships already (T-4497: every -c becomes `--resume <recorded id>`), but "never
+fresh" would reverse T-3166's default FW_RESTART_MODE=fresh, which frees context on a budget
+restart. That trade is the operator's call.
+**Evidence:**
+- tests/unit/t3629_fresh_relaunch_not_agents_view.bats 7/7 (test 6 was already red at HEAD after T-4497; realigned)
+- tests/unit/t4048_claude_fw_background_resume.bats 6/6 (includes the mutation leg)
+- Neighbour suites t4497, t3358, t4069, t4118, claude_fw_restart_mode, t4003, t4462: all ok
+
+Options for the operator:
+1. C as a tmux-mode-only check: after the inject, poll `tmux list-panes -F '#{pane_current_command}'` and print PASS/FAIL (small follow-up task).
+2. C not built: rely on A+B (recommended unless 055 reports another route to attach).
+3. D: keep FW_RESTART_MODE=fresh as the default (recommended: context is freed; the handover carries state).
+4. D: make `continue` (resume of the recorded id) the default restart mode.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -362,3 +417,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4048-claude-fw-start-hygiene-never-start-clau.md
 - **Context:** Initial task creation
+
+### 2026-10-21T10:48:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

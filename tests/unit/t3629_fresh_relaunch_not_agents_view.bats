@@ -96,19 +96,36 @@ assert_named_relaunches() {
     [ "$(head -1 "$ARGV")" = "$(printf '2\t--model\tsonnet')" ]
 }
 
-@test "a bare first launch is not renamed — only relaunches are" {
+# T-4048 (055 T-491 proposal A): a bare FIRST launch hit the same agents view and
+# parked the conversation as a tty-less background job, so it is named too.
+@test "a bare first launch is named -n fw-<dir>, never an empty argv (T-4048)" {
     run_interactive
+    base=$(printf '%s' "${TDIR##*/}" | tr -c 'A-Za-z0-9._-' '-')
+    [ "$(head -1 "$ARGV")" = "$(printf '2\t-n\tfw-%s' "$base")" ]
+}
+
+@test "mutation (T-4048): with the first-launch leg removed the bare launch argv is empty" {
+    pre="${TDIR}/claude-fw.firstlaunch"
+    sed 's/^        CLAUDE_ARGS=("-n" "fw-\${base}")$/        :/' "$REPO/bin/claude-fw" > "$pre"
+    if cmp -s "$pre" "$REPO/bin/claude-fw"; then
+        echo "mutation did not land"; false
+    fi
+    bash -n "$pre"
+    WRAPPER="$pre" run_interactive
     [ "$(head -1 "$ARGV")" = "0" ]
 }
 
-@test "FW_RESTART_MODE=continue still relaunches with exactly -c" {
+# Since T-4497 a continue relaunch never hands claude a bare -c: it becomes
+# --resume <id> (covered by t4497_claude_fw_continue_not_worker.bats), or, with no
+# interactive transcript to continue — this fixture has none — a fresh, named run.
+@test "FW_RESTART_MODE=continue with nothing to continue relaunches named, never bare -c or empty" {
     write_signal
     cd "$TDIR" || return 1
     run env PATH="${TDIR}/stubbin:${PATH}" HOME="$TDIR" \
         FW_NO_STARTUP_BANNER=1 FW_NO_TERMINATOR=1 FW_RESTART_MODE=continue \
         FW_MAX_RESTARTS=2 FW_RESTART_WINDOW=3600 \
         timeout 180 bash "$WRAPPER"
-    [ "$(relaunch_argv | head -1)" = "$(printf '1\t-c')" ]
+    assert_named_relaunches
 }
 
 @test "mutation: without the guard the relaunch argv is empty (the suite can fail)" {

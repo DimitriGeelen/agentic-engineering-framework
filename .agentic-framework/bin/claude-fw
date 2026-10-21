@@ -1176,12 +1176,41 @@ fi
 # idle). Any real argument takes the conversation path; `-n <name>` also labels
 # the session. The name is restricted to [A-Za-z0-9._-] because the TermLink
 # path joins CLAUDE_ARGS with spaces into one shell line.
+# T-4048 (055 T-491 proposal A): the FIRST launch too — a bare `claude-fw` opened the
+# agents overview and started the conversation as a tty-less background job in the
+# shared claude daemon. A launch with the user's own arguments is left untouched.
 _name_fresh_relaunch() {
-    [ "$restart_count" -gt 0 ] || return 0
     [ "${#CLAUDE_ARGS[@]}" -eq 0 ] || return 0
     local base
     base=$(printf '%s' "${PWD##*/}" | tr -c 'A-Za-z0-9._-' '-')
-    CLAUDE_ARGS=("-n" "fw-${base}-r${restart_count}")
+    if [ "$restart_count" -gt 0 ]; then
+        CLAUDE_ARGS=("-n" "fw-${base}-r${restart_count}")
+    else
+        CLAUDE_ARGS=("-n" "fw-${base}")
+    fi
+}
+
+# T-4048 (055 T-491 proposal B): refuse to --resume a conversation that is a live
+# Claude Code background job. The resume becomes a `claude attach` viewer, not a
+# foreground conversation on this tty, so claude-fw's typing path cannot reach it and
+# the operator ends up with one more hidden conversation. Stopping the job keeps the
+# conversation, and a plain --resume then opens it here.
+_background_job_guard() {
+    local _job _short _state
+    declare -F fw_conversation_background_job >/dev/null || return 0
+    _job=$(fw_conversation_background_job "$1")
+    [ -n "$_job" ] || return 0
+    read -r _short _state <<< "$_job"
+    if [ "${FW_ALLOW_BACKGROUND_RESUME:-0}" = "1" ]; then
+        echo "claude-fw: WARNING: conversation $1 is a live background job ($_short, state $_state); resuming anyway — it opens as a 'claude attach' viewer, not on this tty (FW_ALLOW_BACKGROUND_RESUME=1)" >&2
+        return 0
+    fi
+    echo "claude-fw: REFUSED — conversation $1 is a Claude Code BACKGROUND job ($_short, state $_state)." >&2
+    echo "  Resuming it would open a 'claude attach' viewer, not a conversation on this terminal," >&2
+    echo "  so claude-fw cannot type into it (T-4003) and it keeps running hidden in the claude daemon." >&2
+    echo "  To bring it to the foreground here:  claude stop $_short && claude-fw --resume $1" >&2
+    echo "  (stopping keeps the conversation). Override: FW_ALLOW_BACKGROUND_RESUME=1" >&2
+    return 1
 }
 
 # T-3890: refuse to open a conversation that another live process already holds
@@ -1199,6 +1228,7 @@ _conversation_guard() {
     . "$lib"
     _id=$(fw_conversation_target "$PWD" "${CLAUDE_ARGS[@]}")
     [ -n "$_id" ] || return 0
+    _background_job_guard "$_id" || return 1   # T-4048
     _holder=$(fw_conversation_holder "${PROJECT_ROOT:-$PWD}" "$_id")
     [ -n "$_holder" ] || return 0
     if [ "${FW_ALLOW_DUPLICATE_CONVERSATION:-0}" = "1" ]; then

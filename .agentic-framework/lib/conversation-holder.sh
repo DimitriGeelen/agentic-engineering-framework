@@ -156,3 +156,32 @@ fw_conversation_holder() {
     echo "$pid"
     return 0
 }
+
+# T-4048 (055 T-491 proposal B): Claude Code keeps its own background jobs (`claude
+# --bg`, and a bare `claude` that the agents view parks in the shared daemon) under
+# ~/.claude/jobs/<first 8 of the session id>/state.json. `--resume <id>` of a job that
+# is still live does not give a foreground conversation: it becomes a `claude attach`
+# viewer with no tty of its own, which claude-fw's tmux typing (T-4003) cannot reach.
+#
+# fw_conversation_background_job <id> — prints "<short> <state>" when <id> is a live
+# background job (state not done/failed/stopped), else nothing. Return 0 always.
+fw_conversation_background_job() {
+    local id="$1" cfg="${CLAUDE_CONFIG_DIR:-$HOME/.claude}" f
+    [ -n "$id" ] || return 0
+    f="$cfg/jobs/${id:0:8}/state.json"
+    [ -f "$f" ] || return 0
+    python3 - "$f" "$id" <<'PY' 2>/dev/null
+import json, sys
+try:
+    d = json.load(open(sys.argv[1]))
+except Exception:
+    sys.exit(0)
+if d.get("sessionId") != sys.argv[2]:
+    sys.exit(0)
+state = str(d.get("state") or "unknown")
+if state in ("done", "failed", "stopped"):
+    sys.exit(0)
+print(d.get("daemonShort") or sys.argv[2][:8], state)
+PY
+    return 0
+}
