@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4546: Flaky under load: t4171_budget_band_operator_visible.bats 'warn: first call emits a lighter operator message; urgent is still announced after warn
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:08:51Z
+# ============================================================================
+
+task_id: T-4546
+task_name: "Flaky under load: t4171_budget_band_operator_visible.bats 'warn: first call emits a lighter operator message; urgent is still announced after warn"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T14:05:03Z
+completed: 2026-10-21T18:08:19Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T18:32:26+02:00
+last_commit: 2026-10-21T18:32:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t4171 bats waits for the backgrounded urgent push before teardown (no rm -rf race under load)
+
+# Key outcomes
+outcomes:
+  - 'Root cause localised: the urgent-band push (`fw_notify`, lib/notify.sh:111) runs in the background by design and was still writing into the test''s TEST_TEMP_DIR when teardown ran `rm -rf` (failure log: "rm: cannot remove ... Directory not empty" in teardown of test 4)'
+  - 'tests/unit/t4171_budget_band_operator_visible.bats waits for every background push started by `_gate` to exit (lock inherited by the push) before teardown removes the temp dir; no sleep-based polling remains in the file'
+  - 'Regression test: a slow fake dispatcher (sleeps, then writes) is fully drained by the wait helper before the test asserts, and the file passes'
+  - 'The file passes 20 consecutive foreground runs while the host is loaded with parallel bats runs of the same file; it is NOT added to the unit-suite baseline (2026-10-21: PASS=20 FAIL=0 with 12 parallel bats loops + 4 busy loops, load average 38→65 on 24 cores)'
+  - '`python3 tools/bats-dead-negation-lint.py tests/` reports clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4546-flaky-under-load-t4171budgetbandoperator.md'
+  - 'tests/unit/t4171_budget_band_operator_visible.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T18:32:26'
+    action: 'T-4546: t4171 bats waits for the backgrounded urgent push before teardown (no rm -rf race under load)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 243 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 243
+  commits: 1
+  files_changed: 2
+  lines_added: 114
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4546-flaky-under-load-t4171budgetbandoperator.md
+generated_by: context-agent-hybrid
