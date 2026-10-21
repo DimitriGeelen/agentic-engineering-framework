@@ -258,7 +258,8 @@ def main() -> int:
 
     # T-3695: the Human-tick provenance ledger is the operator's record; an agent that
     # could write it could launder any tick past `fw audit`.
-    if os.path.basename(file_path) == "human-ac-ticks.jsonl" and _under_agent_control() \
+    if os.path.basename(file_path) in ("human-ac-ticks.jsonl", "standing-delegations.jsonl") \
+            and _under_agent_control() \
             and os.environ.get("FW_ALLOW_HUMAN_AC_TICK") != "1":
         sys.stderr.write(
             "\nBLOCKED: .context/reviews/human-ac-ticks.jsonl records that a HUMAN ticked a\n"

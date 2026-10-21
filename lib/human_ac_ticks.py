@@ -17,7 +17,16 @@ PROVENANCE — a tick counts as the human's when either holds:
   2. the criterion carries a `**Reviewer verdict:** green <id>` annotation whose id is a
      green row for this task in `.context/reviews/verdicts.jsonl` AND an applied tick in
      `applied.jsonl` (verdict_checker) — the T-3579 verdict path; whether that row is
-     genuine is `lib/verdict_ledger.py audit`'s FAIL to raise.
+     genuine is `lib/verdict_ledger.py audit`'s FAIL to raise;
+  3. a STANDING DELEGATION (T-4165, inception T-4158): the operator records once, in
+     `.context/reviews/standing-delegations.jsonl` (`delegation grant`, refused under agent
+     control unless --i-am-human), a criterion pattern, a scope (arc and/or task list), a
+     condition pattern and an expiry. An agent tick counts when the criterion carries
+     `**Delegated tick:** SD-xxxxxxxx verdict <id>` and: the grant is unrevoked, unexpired
+     and older than the tick commit; the task is in scope; the ticked title matches the
+     pattern; <id> is a GREEN verdict row for this task bound (ac_digest) to a DIFFERENT
+     Human criterion whose title matches the condition; and the ticked criterion is not
+     tier0-or-bypass / act-in-the-world (lib/delegation.py). One cite licenses one tick.
 One ledger row licenses ONE tick (consumed oldest-first), every `### Human` section is
 read, and merge commits are judged against every parent.
 Everything else FAILs. The FAIL line names the committing identity and says AGENT when it
@@ -38,6 +47,7 @@ be read is still 3).
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import hashlib
 import json
 import os
@@ -60,6 +70,11 @@ CUTOFF = "2026-10-02T00:00:00Z"
 
 BOX_RE = re.compile(r"^\s*-\s*\[([ xX])\]\s*(.*)$")
 VERDICT_RE = re.compile(r"\*\*Reviewer verdict:\*\*\s*green\s+(\S+)")
+DELEGATIONS = ".context/reviews/standing-delegations.jsonl"
+DELEGATED_RE = re.compile(r"\*\*Delegated tick:\*\*\s*(SD-[0-9a-f]+)\s+verdict\s+(\S+)")
+MAX_DELEGATION_DAYS = 366
+# T-4158: the operator may delegate an approval, never an action they alone can take
+NEVER_DELEGABLE = ("tier0-or-bypass", "act-in-the-world")
 AGENT_TRAILER_RE = re.compile(
     r"(?im)^co-authored-by:.*(claude|anthropic)|generated with \[?claude code")
 
@@ -83,7 +98,7 @@ def _human_section(text: str) -> str:
                      re.finditer(r"(?ms)^### Human\b.*?(?=^### |^## [^A]|\Z)", text or ""))
 
 
-_GENERATED_RE = re.compile(r"^\s*\*\*Reviewer (verdict|escalation)\b")
+_GENERATED_RE = re.compile(r"^\s*\*\*(Reviewer (verdict|escalation)\b|Delegated tick:)")
 
 
 def boxes(section: str) -> list[tuple[str, bool, str]]:
@@ -201,6 +216,106 @@ class VerdictBacking:
             self.budget[vid] -= 1
             return True
         return False
+
+
+# ── standing delegation (T-4165) ─────────────────────────────────────────────
+
+def delegation_cites(text: str) -> list[tuple[str, str, str]]:
+    """[(criterion key, grant id, verdict id)] for Human boxes carrying a
+    `**Delegated tick:**` annotation — same walk and same key as `boxes`."""
+    lines = strip_html_comment_lines(_human_section(text)).split("\n")
+    keys = [k for k, _, _ in boxes(_human_section(text))]
+    out, n = [], -1
+    for i, line in enumerate(lines):
+        if not BOX_RE.match(line):
+            continue
+        n += 1
+        for nxt in lines[i + 1:]:
+            if BOX_RE.match(nxt) or nxt.startswith("#"):
+                break
+            d = DELEGATED_RE.search(nxt)
+            if d:
+                out.append((keys[n], d.group(1), d.group(2)))
+                break
+    return out
+
+
+def delegation_grants(root: Path) -> dict[str, dict]:
+    """{grant id: grant row + 'revoked' (ts or "")}; a revoke for an unknown id is ignored."""
+    grants: dict[str, dict] = {}
+    for r in _jsonl(root, DELEGATIONS):
+        gid = str(r.get("id") or "")
+        if r.get("kind") == "grant" and gid and gid not in grants:
+            grants[gid] = dict(r, revoked="")
+        elif r.get("kind") == "revoke" and gid in grants and not grants[gid]["revoked"]:
+            grants[gid]["revoked"] = str(r.get("ts") or "")
+    return grants
+
+
+def _task_arcs(text: str) -> set[str]:
+    m = re.match(r"(?s)---\n(.*?)\n---", text or "")
+    fm = m.group(1) if m else ""
+    arcs = set(re.findall(r"(?m)^arc_id:\s*['\"]?([\w.-]+)", fm))
+    arcs |= set(re.findall(r"\barc:([\w.-]+)", " ".join(re.findall(r"(?m)^tags:.*$", fm))))
+    return arcs
+
+
+def _utc(ts: str) -> str:
+    """Any ISO timestamp → `YYYY-MM-DDTHH:MM:SSZ` (UTC), so string comparison is ordering."""
+    try:
+        return datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone(
+            timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    except (ValueError, AttributeError):
+        return ""
+
+
+def delegation_refusal(grant: dict | None, task_id: str, text: str, key: str, verdict_id: str,
+                       verdict_digest: dict[str, str], commit_date: str) -> str:
+    """"" when the standing delegation backs this tick, else why it does not."""
+    if not grant:
+        return "no such grant"
+    when = _utc(commit_date)
+    if not when:
+        return "tick commit has no readable date"
+    if _utc(str(grant.get("ts") or "")) > when or not _utc(str(grant.get("ts") or "")):
+        return "tick predates the grant"
+    if grant.get("revoked") and _utc(grant["revoked"]) <= when:
+        return "grant revoked"
+    if str(grant.get("expires") or "") < when[:10]:
+        return "grant expired"
+    in_tasks = task_id in (grant.get("tasks") or [])
+    in_arc = bool(grant.get("arc")) and grant["arc"] in _task_arcs(text)
+    if not (in_tasks or in_arc):
+        return "task outside the grant's scope"
+    title = key.split("\n", 1)[0]
+    try:
+        if not re.search(str(grant.get("pattern") or ""), title) or not grant.get("pattern"):
+            return "criterion does not match the grant pattern"
+        cond = re.compile(str(grant.get("condition") or ""))
+    except re.error:
+        return "grant pattern does not compile"
+    digest = verdict_digest.get(verdict_id)
+    if not digest:
+        return f"{verdict_id} is not a green verdict for {task_id}"
+    try:
+        if str(Path(__file__).resolve().parent.parent) not in sys.path:
+            sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        import verdict_ledger as _vl  # noqa: PLC0415
+        from lib.delegation import classify  # noqa: PLC0415
+        crits = list(_vl.human_criteria(text))
+    except Exception:  # noqa: BLE001 — no validator, no delegation (fail closed)
+        return "verdict/classifier modules unavailable"
+    bound = [c for c in crits if _vl.criterion_digest(c) == digest]
+    if not any(criterion_key(c.title) != title and cond.search(c.title) and grant.get("condition")
+               for c in bound):
+        return f"{verdict_id} is not bound to a different criterion matching the condition"
+    for c in crits:
+        if criterion_key(c.title) == title:
+            producer = [ln for ln in c.lines if not _GENERATED_RE.match(ln)]
+            cls = classify(dataclasses.replace(c, lines=producer)).cls
+            if cls in NEVER_DELEGABLE:
+                return f"criterion class {cls} is never delegable"
+    return ""
 
 
 def unprovenanced_ticks(old: str, new: str, backing: "VerdictBacking | None" = None
@@ -407,7 +522,7 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
     # Oldest first, merges INCLUDED (review round 1: a tick made while resolving a merge
     # appeared in no non-merge commit). Ledger rows are consumed in this order.
     log = _git(root, "log", "--topo-order", "--reverse",
-               "--format=%x1e%H%x1f%P%x1f%an <%ae>%x1f%ae%x1f%ce%x1f%B", *rng)
+               "--format=%x1e%H%x1f%P%x1f%an <%ae>%x1f%ae%x1f%ce%x1f%cI%x1f%B", *rng)
     # One ledger row covers ONE tick (review round 1: a single `ack` used to license every
     # later re-tick of the same criterion text).
     budget = Counter(r.get("digest") for r in ledger_rows(root))
@@ -415,8 +530,8 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
     findings = []
     commits = []
     for rec in log.split("\x1e")[1:]:
-        parts = rec.split("\x1f", 5)
-        if len(parts) < 6:
+        parts = rec.split("\x1f", 6)
+        if len(parts) < 7:
             continue
         commits.append(parts)
     # T-4375: every diff-tree in one process, every blob through one cat-file --batch
@@ -431,7 +546,9 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
 
 
 def _scan(root, commits, diffs, blobs, budget, checkers, findings) -> list[dict]:
-    for sha, parents, who, aemail, cemail, msg in commits:
+    grants = delegation_grants(root)
+    cited: Counter = Counter()  # (grant id, verdict id) already spent: one cite, one tick
+    for sha, parents, who, aemail, cemail, cdate, msg in commits:
         parents = parents.split() or [None]
         agent = is_agent_identity(aemail, cemail, msg)
         per_parent: list[dict] = []
@@ -459,7 +576,8 @@ def _scan(root, commits, diffs, blobs, budget, checkers, findings) -> list[dict]
                 old = "" if (status.startswith("A") or not parent) else blobs.show(parent, old_path)
                 tid = _task_id(new_path)
                 backing = checkers.setdefault(tid, VerdictBacking(root, tid))
-                got[new_path] = (tid, unprovenanced_ticks(old, blobs.show(sha, new_path), backing))
+                new = blobs.show(sha, new_path)
+                got[new_path] = (tid, unprovenanced_ticks(old, new, backing), new)
             per_parent.append(got)
         # a tick is NEW in this commit only if it is new relative to EVERY parent; a tick
         # inherited from a merged branch was judged in that branch's own commit
@@ -467,10 +585,11 @@ def _scan(root, commits, diffs, blobs, budget, checkers, findings) -> list[dict]
         for got in per_parent[1:]:
             paths &= set(got)
         for path in sorted(paths):
-            tid, first = per_parent[0][path]
+            tid, first, new = per_parent[0][path]
             keys = Counter(k for k, _, _ in first)
             for got in per_parent[1:]:
                 keys &= Counter(k for k, _, _ in got[path][1])  # kinds may differ per parent
+            cites = {k: (g, v) for k, g, v in delegation_cites(new)} if first else {}
             for key, kind, vid in first:
                 if keys[key] <= 0:
                     continue
@@ -481,6 +600,17 @@ def _scan(root, commits, diffs, blobs, budget, checkers, findings) -> list[dict]
                 if budget[d] > 0:
                     budget[d] -= 1
                     continue
+                why = ""
+                if key in cites:  # T-4165: a standing delegation, cited on the criterion
+                    gid, dvid = cites[key]
+                    why = delegation_refusal(grants.get(gid), tid, new, key, dvid,
+                                             checkers[tid].digest, cdate)
+                    if not why and cited[(gid, dvid)]:
+                        why = f"{gid} verdict {dvid} already licensed a tick"
+                    if not why:
+                        cited[(gid, dvid)] += 1
+                        continue
+                    kind += f" (delegation refused: {why})"
                 findings.append({"commit": sha, "who": who, "agent": agent, "task": tid,
                                  "path": path, "kind": kind if not vid else kind + " (verdict replayed)",
                                  "criterion": key[:100], "merge": len(parents) > 1})
@@ -540,9 +670,59 @@ def _human_criterion(root: Path, task_id: str, n: int) -> str | None:
     return None
 
 
+def _append(root: Path, rel: str, row: dict) -> None:
+    p = root / rel
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(row, sort_keys=True) + "\n")
+
+
+def grant_delegation(root: Path, pattern: str, condition: str, arc: str, tasks: list[str],
+                     expires: str, by: str, today: str | None = None) -> dict:
+    """Append a standing-delegation grant; ValueError names what is wrong with it."""
+    for name, rx in (("--pattern", pattern), ("--condition", condition)):
+        try:
+            if not rx or re.search(rx, ""):
+                raise ValueError(f"{name} {rx!r} matches every criterion — name the criterion")
+        except re.error as e:
+            raise ValueError(f"{name} does not compile: {e}") from None
+    bad = [t for t in tasks if not re.fullmatch(r"T-\d+", t)]
+    if bad or not (arc or tasks):
+        raise ValueError("scope needs --arc and/or --tasks T-1,T-2 (task ids)")
+    today = today or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    try:
+        days = (datetime.strptime(expires, "%Y-%m-%d") - datetime.strptime(today, "%Y-%m-%d")).days
+    except ValueError:
+        raise ValueError(f"--expires {expires!r} is not YYYY-MM-DD") from None
+    if not 0 <= days <= MAX_DELEGATION_DAYS:
+        raise ValueError(f"--expires must be today..{MAX_DELEGATION_DAYS} days ahead")
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    row = {"ts": ts, "kind": "grant", "pattern": pattern, "condition": condition,
+           "arc": arc or None, "tasks": tasks, "expires": expires, "by": by,
+           "id": "SD-" + hashlib.sha256(f"{ts}\n{pattern}\n{condition}\n{arc}\n{tasks}"
+                                        .encode()).hexdigest()[:8]}
+    _append(root, DELEGATIONS, row)
+    return row
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="human_ac_ticks")
     sub = ap.add_subparsers(dest="cmd", required=True)
+    dg = sub.add_parser("delegation", help="operator: standing delegation of Human ticks (T-4165)")
+    dsub = dg.add_subparsers(dest="dcmd", required=True)
+    g = dsub.add_parser("grant", help="delegate ticks of a criterion pattern, on a green verdict")
+    g.add_argument("--pattern", required=True, help="regex on the delegated criterion's title")
+    g.add_argument("--condition", required=True,
+                   help="regex on the title of the criterion whose GREEN verdict must exist")
+    g.add_argument("--arc", default="", help="scope: tasks whose arc_id (or arc: tag) is this")
+    g.add_argument("--tasks", default="", help="scope: comma-separated task ids")
+    g.add_argument("--expires", required=True, help="YYYY-MM-DD, at most a year ahead")
+    g.add_argument("--i-am-human", action="store_true")
+    r = dsub.add_parser("revoke", help="revoke a grant; ticks committed afterwards stop counting")
+    r.add_argument("grant_id")
+    r.add_argument("--reason", default="")
+    r.add_argument("--i-am-human", action="store_true")
+    dsub.add_parser("list", help="show grants and their state")
     a = sub.add_parser("audit", help="FAIL on unprovenanced ### Human ticks since the cutoff")
     a.add_argument("--since", default=None,
                    help="a date; default: ancestry from the commit that added this detector")
@@ -556,6 +736,40 @@ def main(argv: list[str] | None = None) -> int:
         rc, lines = audit(root, args.since)
         print("\n".join(lines))
         return rc
+    if args.cmd == "delegation" and args.dcmd == "list":
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        for gid, gr in delegation_grants(root).items():
+            state = ("revoked " + gr["revoked"]) if gr["revoked"] else \
+                ("expired" if str(gr.get("expires")) < today else "active")
+            print(f"{gid} {state} expires={gr.get('expires')} arc={gr.get('arc') or '-'} "
+                  f"tasks={','.join(gr.get('tasks') or []) or '-'} pattern={gr.get('pattern')!r} "
+                  f"condition={gr.get('condition')!r} by={gr.get('by')}")
+        return 0
+    if args.cmd == "delegation" and _under_agent_control() and not args.i_am_human:
+        print("REFUSED: a standing delegation is the operator's grant (CLAUDECODE/AI_AGENT set). "
+              "Ask the operator to run it in their own terminal.", file=sys.stderr)
+        return 2
+    if args.cmd == "delegation":
+        by = "agent-override" if _under_agent_control() else (os.environ.get("USER") or "operator")
+        if args.dcmd == "revoke":
+            if args.grant_id not in delegation_grants(root):
+                print(f"no grant {args.grant_id} in {DELEGATIONS}", file=sys.stderr)
+                return 1
+            _append(root, DELEGATIONS, {"ts": datetime.now(timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%SZ"), "kind": "revoke", "id": args.grant_id, "by": by,
+                "reason": args.reason})
+            print(f"revoked {args.grant_id}")
+            return 0
+        tasks = [t.strip() for t in args.tasks.split(",") if t.strip()]
+        try:
+            row = grant_delegation(root, args.pattern, args.condition, args.arc, tasks,
+                                   args.expires, by)
+        except ValueError as e:
+            print(f"REFUSED: {e}", file=sys.stderr)
+            return 1
+        print(f"granted {row['id']} in {DELEGATIONS}: an agent cites it on the criterion as\n"
+              f"  **Delegated tick:** {row['id']} verdict <green verdict id>")
+        return 0
     if _under_agent_control() and not args.i_am_human:
         print("REFUSED: recording a Human tick is the operator's act (CLAUDECODE/AI_AGENT set). "
               "Hand the task over with: fw task review " + args.task_id, file=sys.stderr)

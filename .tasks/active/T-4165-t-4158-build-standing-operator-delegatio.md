@@ -11,10 +11,10 @@ description: >
   when it cites that verdict id; never for tier-0-or-bypass or act-in-the-world classes.
   Field user: ring20-manager (arc-008 step approvals, their T-2363).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:34:02Z
-last_update: '2026-10-13T15:46:27Z'
+last_update: 2026-10-21T22:25:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,20 +85,43 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4165: T-4158 build: standing operator delegation as a Human-tick provenance kind — recorded once by the operator, scoped, conditional on a green verdict, expiring and revocable; audit accepts in-scope agent ticks that cite the verdict
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Build leg of inception T-4158 (GO 2026-10-13, see its Recommendation). ring20-manager's
+operator delegated the "[REVIEW] Step N output approved" ticks (sovereignty-field class,
+so the verdict path cannot reach them) conditional on a green independent review on the
+same task. Today each tick needs a per-tick `ack --i-am-human`. This adds a once-recorded,
+scoped, expiring, revocable standing delegation the tick detector honours.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Standing-delegation ledger `.context/reviews/standing-delegations.jsonl` (append-only grant/revoke rows) with `python3 lib/human_ac_ticks.py delegation grant|revoke|list`; grant needs criterion pattern, scope (`--arc` and/or `--tasks`), condition pattern, expiry; grant and revoke are refused under agent control unless `--i-am-human`
+- [x] Grant refuses a pattern that is empty or matches everything; expiry is mandatory and bounded
+- [x] `human_ac_ticks.py audit` accepts a Human tick that carries `**Delegated tick:** SD-xxxx verdict <id>` only when ALL hold: grant exists, not revoked and unexpired at the tick commit; task in scope (task list or `arc_id`); ticked criterion title matches the grant pattern; the cited verdict is a GREEN row for this task in `verdicts.jsonl` whose `ac_digest` is a DIFFERENT Human criterion of the same task whose title matches the grant's condition pattern; the ticked criterion is not tier0-or-bypass / act-in-the-world (lib/delegation.py classifier); one cite licenses one tick
+- [x] The `**Delegated tick:**` annotation is excluded from the criterion key (adding it does not turn the criterion into a new one)
+- [x] Regression tests (pytest) cover the accept path and each refusal leg (no grant, revoked, expired, out of scope, pattern miss, non-green / wrong-criterion verdict, act-in-the-world class, replay) and the agent-control refusal of grant
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,6 +284,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t4165_standing_delegation.py -q > /tmp/.t4165 2>&1 && grep -q passed /tmp/.t4165
+python3 lib/human_ac_ticks.py delegation --help > /tmp/.t4165h 2>&1 && grep -q grant /tmp/.t4165h
+bin/fw vendor self --check --task T-4165
 
 ## RCA
 
@@ -333,6 +359,17 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-22 — grant surface: operator CLI now, Watchtower later
+- **Chose:** grants/revokes via `python3 lib/human_ac_ticks.py delegation grant|revoke`, run by the operator in their own terminal (refused under CLAUDECODE/AI_AGENT unless `--i-am-human`; the Bash text gate and the Write/Edit guard refuse the verbs and `standing-delegations.jsonl` under agent control, like `ack`).
+- **Why:** T-4158 names "Watchtower or --i-am-human"; a Watchtower form is a render-surface change that needs its own `[REVIEW]` criterion (P-013), so it does not belong in this build. ring20-manager can use the CLI today. The operator one-liner for their case: `python3 lib/human_ac_ticks.py delegation grant --pattern 'Step \d+ output approved' --condition 'Independent review' --arc arc-008 --expires <YYYY-MM-DD>`.
+- **Rejected:** a `--from-watchtower` flag with no endpoint behind it (unverifiable provenance).
+- **Open for the operator:** whether to file the Watchtower grant/revoke form as a follow-up build task.
+
+### 2026-10-22 — grant-validity clock
+- **Chose:** grant/revoke/expiry are judged against the tick commit's committer date (`%cI`), and a tick committed before the grant does not count.
+- **Why:** a later grant must not launder earlier ticks; a revoke stops ticks committed after it.
+- **Residual (same as T-3581):** committer dates can be set by the committer; ancestry-based ordering would need the grant itself to be committed. Same-user forgery of the ledger stays out of scope, as for `ack`.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -358,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4165-t-4158-build-standing-operator-delegatio.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:25:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

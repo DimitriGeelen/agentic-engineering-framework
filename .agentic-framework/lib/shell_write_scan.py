@@ -56,11 +56,13 @@ from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 LEDGER_NAME = "human-ac-ticks.jsonl"
+# T-4165: the operator's standing-delegation grants are guarded the same way
+LEDGER_NAMES = (LEDGER_NAME, "standing-delegations.jsonl")
 
 # A mention of a guarded path anywhere in the command (quotes/backslashes removed).
 MENTION_RE = re.compile(
     r"\.tasks\b|tasks/(?:active|completed|templates)\b|/(?:active|completed)/T-\d"
-    r"|human-ac-ticks\.jsonl|toggle-ac",
+    r"|human-ac-ticks\.jsonl|standing-delegations\.jsonl|toggle-ac",
     re.I,
 )
 # T-4159: a task-file NAME (`T-NNNN[-slug].md`) with the path word in front of it. It is
@@ -894,7 +896,7 @@ def _segments(tokens: list[str]) -> list[list[str]]:
 
 def is_guarded_path(path: str) -> bool:
     parts = path.replace("\\", "/").split("/")
-    return ".tasks" in parts or os.path.basename(path) == LEDGER_NAME
+    return ".tasks" in parts or os.path.basename(path) in LEDGER_NAMES
 
 
 def _provably_outside(path: str, root: str) -> bool:
@@ -912,7 +914,7 @@ def _guarded_within(root: str) -> Callable[[str], bool]:
     not provably outside the project. The ledger name stays guarded everywhere, as the
     Write/Edit leg already does, so the Bash leg is never more permissive than that one."""
     def guarded(path: str) -> bool:
-        if os.path.basename(path) == LEDGER_NAME:
+        if os.path.basename(path) in LEDGER_NAMES:
             return True
         parts = path.replace("\\", "/").split("/")
         return ".tasks" in parts and not _provably_outside(path, root)
@@ -1127,7 +1129,8 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
         return
     ops = [a for a in args if not a.startswith("-")]
     if not ctx.boundary and \
-            any(os.path.basename(a) in ("human_ac_ticks.py", "human_ac_ticks") for a in ops[:2]) and "ack" in ops:
+            any(os.path.basename(a) in ("human_ac_ticks.py", "human_ac_ticks") for a in ops[:2]) and ("ack" in ops or ("delegation" in ops and
+                                                   ("grant" in ops or "revoke" in ops))):
         ctx.hits.append(Hit("records a Human-tick provenance row (the operator's act)"))
         return
     if verb in ("cd", "pushd"):

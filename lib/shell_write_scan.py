@@ -914,7 +914,7 @@ def _guarded_within(root: str) -> Callable[[str], bool]:
     not provably outside the project. The ledger name stays guarded everywhere, as the
     Write/Edit leg already does, so the Bash leg is never more permissive than that one."""
     def guarded(path: str) -> bool:
-        if os.path.basename(path) == LEDGER_NAME:
+        if os.path.basename(path) in LEDGER_NAMES:
             return True
         parts = path.replace("\\", "/").split("/")
         return ".tasks" in parts and not _provably_outside(path, root)
@@ -1129,7 +1129,8 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
         return
     ops = [a for a in args if not a.startswith("-")]
     if not ctx.boundary and \
-            any(os.path.basename(a) in ("human_ac_ticks.py", "human_ac_ticks") for a in ops[:2]) and "ack" in ops:
+            any(os.path.basename(a) in ("human_ac_ticks.py", "human_ac_ticks") for a in ops[:2]) and ("ack" in ops or ("delegation" in ops and
+                                                   ("grant" in ops or "revoke" in ops))):
         ctx.hits.append(Hit("records a Human-tick provenance row (the operator's act)"))
         return
     if verb in ("cd", "pushd"):
