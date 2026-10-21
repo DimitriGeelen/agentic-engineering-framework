@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4542: git push hangs silently behind cron audits: pre-push waits on audit.lock that back-to-back cron audits keep holding, and the wait line is not shown
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T21:10:17Z
+# ============================================================================
+
+task_id: T-4542
+task_name: "git push hangs silently behind cron audits: pre-push waits on audit.lock that back-to-back cron audits keep holding, and the wait line is not shown"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T13:45:12Z
+completed: 2026-10-21T21:09:48Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-21T20:13:46+02:00
+last_commit: 2026-10-21T22:45:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-push names the audit-lock holder (pid, job, age) at once and while waiting; cron audits yield to a waiting push via .context/locks/push-waiting; regression bats. deflake prepush lock-holder bats — fake cron signals ready via file instead of the helper probing (and stealing) audit.lock; test (b) watcher bounded by push completion; 20/20 foreground runs green
+
+# Key outcomes
+outcomes:
+  - 'audit.sh records the lock holder (pid, job/args, since) in `.context/locks/audit.lock.holder` after taking the flock'
+  - 'pre-push prints the wait line on stderr immediately, naming the holder pid, job and age, and repeats a progress line while waiting'
+  - 'while a pre-push waits (live `.context/locks/push-waiting` marker), a `--cron` audit does not take the lock — it exits 75 without running, so back-to-back cron audits cannot starve the push'
+  - 'window exhausted still BLOCKs with the existing exit-75 message (no-false-pass rule unchanged), now naming the holder'
+  - 'bats regression `tests/unit/t4542_prepush_lock_holder.bats` holds the lock from a fake cron audit and passes; existing T-3297/T-3421 tests still pass'
+  - 'follow-up (flake): the fake-cron helper no longer probes the lock it is waiting for; it waits on an explicit ready file the fake cron writes after it holds the lock (blocking `flock -w`, generous bound, fails fast if the fake cron dies), and test (a2) uses the same ready signal instead of `sleep 0.5`'
+  - 'the bats file runs 20 times in a row in the foreground, all green (count recorded under ## Updates)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - 'agents/audit/audit.sh'
+  - 'agents/git/lib/hooks.sh'
+  - '.tasks/active/T-4542-git-push-hangs-silently-behind-cron-audi.md'
+  - 'tests/unit/t4542_prepush_lock_holder.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T20:13:46'
+    action: 'T-4542: pre-push names the audit-lock holder (pid, job, age) at once and while waiting; cron audits yield to a waiting push via .context/locks/push-waiting; regression bats'
+  - time: '2026-10-21T22:45:17'
+    action: 'T-4542: deflake prepush lock-holder bats — fake cron signals ready via file instead of the helper probing (and stealing) audit.lock; test (b) watcher bounded by push completion; 20/20 foreground runs green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 444 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 444
+  commits: 2
+  files_changed: 6
+  lines_added: 787
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4542-git-push-hangs-silently-behind-cron-audi.md
+generated_by: context-agent-hybrid

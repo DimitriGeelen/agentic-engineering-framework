@@ -13,12 +13,12 @@ description: >
   cron result); (b) print the wait line immediately with the holder PID and its age.
   Regression tests for both.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/git/lib/hooks.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T13:45:12Z
-last_update: 2026-10-21T20:28:40Z
-date_finished:
+last_update: 2026-10-21T21:09:48Z
+date_finished: 2026-10-21T21:09:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -408,3 +408,22 @@ bin/fw vendor self --check --task T-4542
 ### 2026-10-21T22:44:00Z — flake fix [w4542b]
 - **Action:** fake-cron helper waits on a ready file instead of probing audit.lock; test (b) watcher bounded by push completion
 - **Evidence:** 20 consecutive foreground runs of tests/unit/t4542_prepush_lock_holder.bats: **20/20 green**, 0 skips (load avg 25–40). Earlier loop with only the helper fix: 19/20 (test b). t3297/t3421 pre-push lock tests green; bats dead-negation lint clean. No pre-push source change.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-21d8137e
+- **Timestamp:** 2026-10-21T21:10:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — audit.sh records the lock holder (pid, job/args, since) in `.context/locks/audit.lock.holder` after taking the flock
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/locks/audit.lock in: audit.sh records the lock holder (pid, job/args, since) in `.context/locks/audit.lock.holder` after taking the flock`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T21:09:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
