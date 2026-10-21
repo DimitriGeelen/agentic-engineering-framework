@@ -12,11 +12,14 @@ nothing else. It is never sourced, so job text cannot reach the launcher's promp
      "why": "one or more lines the operator reads first",
      "helpers": {"commit_closed": "git commit -m \\"$1\\" -- .tasks"},
      "scripts": ["tools/upgrade-helper.sh"],
-     "steps": [{"title": "Readiness", "argv": ["bin/fw", "task", "review", "T-1"],
-                "probe": ["bin/fw", "task", "review", "T-1"]},
+     "steps": [{"title": "Upgrade", "argv": ["tools/upgrade-helper.sh", "1.8.2"],
+                "probe": ["tools/upgrade-helper.sh", "--check", "1.8.2"]},
                {"title": "Commit", "sh": "commit_closed 'T-1: close'"}]}
 
-  argv  runs with no shell; what is shown is exactly what runs.
+  argv  runs with no shell, cwd = the project root; what is shown is exactly what runs.
+        A step that calls fw names THIS project's fw: bin/fw in the framework repo,
+        .agentic-framework/bin/fw in a consumer (T-3952: a cwd-relative bin/fw
+        crashes in a consumer, which has no bin/ at its root).
   sh    runs as `bash -c <helpers + text>` in a child; the whole script is shown.
   probe a read-only readiness check (the target command's own, where one exists —
         832 addendum §3). Never run by dry-run (finding 3); the operator is asked
