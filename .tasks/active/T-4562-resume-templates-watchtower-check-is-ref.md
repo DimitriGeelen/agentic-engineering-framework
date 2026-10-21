@@ -98,11 +98,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Step 5 of `lib/templates/resume-md.md` no longer reads `watchtower.url` into a variable and curls it; it runs a single `bin/fw watchtower …` verb that resolves the URL and probes reachability itself
-- [ ] That verb is read-only and `is_bash_safe_command` accepts it with no task in focus (gate not loosened: `agents/context/lib/safe-commands.sh` unchanged in its refusal of expansion-led words)
-- [ ] Every rendered/shipped copy of the template (vendored `.agentic-framework/lib/templates/resume-md.md`, any rendered `.claude/commands/resume.md`) carries the new step
-- [ ] Regression test extracts every inline shell command from the template and asserts `is_bash_safe_command` accepts each; it fails on the old step 5
-- [ ] `bin/fw vendor self --check --task T-4562` clean
+- [x] Step 5 of `lib/templates/resume-md.md` no longer reads `watchtower.url` into a variable and curls it; it runs a single `bin/fw watchtower …` verb that resolves the URL and probes reachability itself
+- [x] That verb is read-only and `is_bash_safe_command` accepts it with no task in focus (gate not loosened: `agents/context/lib/safe-commands.sh` unchanged in its refusal of expansion-led words)
+- [x] Every rendered/shipped copy of the template (vendored `.agentic-framework/lib/templates/resume-md.md`, any rendered `.claude/commands/resume.md`) carries the new step
+- [x] Regression test extracts every inline shell command from the template and asserts `is_bash_safe_command` accepts each; it fails on the old step 5
+- [x] `bin/fw vendor self --check --task T-4562` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
