@@ -12,7 +12,7 @@ description: >
   a sanctioned verb to drop an uncommitted (never-counted) row instead of hand-editing
   the ledger.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T12:38:56Z
-last_update: '2026-10-10T12:45:55Z'
+last_update: 2026-10-21T10:39:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,8 +98,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction at HEAD recorded: the discard verb already ships (T-3863, `fw reviewer verdict discard`), but `_commit_rows_once` still gives up on index.lock after 5 tries (~5 s of sleep), and `fw reviewer judge` exits 0 when a seat's row is uncommitted
+- [x] `lib/verdict_ledger.py` `_commit_rows_once` waits on a held `.git/index.lock` against a bounded deadline (`INDEX_LOCK_WAIT_S`, 60 s), not a fixed 5 tries; a non-lock error still fails at once
+- [x] `fw reviewer judge` sets `uncommitted` on its result, prints `ERROR: … uncommitted …` naming the row and the discard verb on stderr, and exits non-zero (4) when any dispatched seat's verdict row is uncommitted
+- [x] Regression pytest `tests/unit/test_t4033_judge_uncommitted_loud.py` covers both legs (lock deadline outlasts 5 tries; judge exit/stderr) and fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -262,8 +264,24 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 900 python3 -m pytest tests/unit/test_t4033_judge_uncommitted_loud.py tests/unit/test_t3863_verdict_commit_gitignored_context.py tests/unit/t4010_judge_no_seat_test.py tests/unit/t3580_judge_cli_test.py -q -p no:cacheprovider > /tmp/.t4033.out 2>&1 && grep -q passed /tmp/.t4033.out
+grep -q "INDEX_LOCK_WAIT_S = " lib/verdict_ledger.py && ! grep -q "for attempt in range(5)" lib/verdict_ledger.py
+grep -q "def _flag_uncommitted" lib/reviewer/judge_cli.py
+bin/fw vendor self --check --task T-4033
 
 ## RCA
+
+**Symptom:** on 832 (msg 885af175, T-1114) `fw reviewer judge` finished with the T-310 verdict row V-20261010-08c85aa1 appended but never committed. The judge printed `unknown` and exited 0, and the next pre-push audit FAILed on the uncommitted row.
+
+**Root cause:** two independent gaps.
+1. `lib/verdict_ledger.py:_commit_rows_once` (the `for attempt in range(5)` loop) retried a commit that hit `.git/index.lock` 5 times with 0.5–2 s sleeps, about 5 s in total. A parallel session's commit (pre-commit hooks included) routinely holds the lock longer, so the reviewer's commit gave up and the row stayed uncommitted.
+2. `lib/reviewer/judge_cli.py:judge` set `res["code"] = 0` whatever the seats' rows were. `_collect` did see the `uncommitted` fault (since T-3863 it also names the git error), but only as a per-criterion `ledger-row-invalid` → final `unknown`. Nothing reached the exit code or stderr, so the run read as finished.
+
+The third ask, a sanctioned way to drop the row, already shipped with T-3863 (`fw reviewer verdict discard`, operator-only), so it was not re-done here.
+
+**Why structurally allowed:** the judge's exit code only covered "no seat recorded anything" (T-4010). "A seat recorded, but its row will never count" was a third state with no exit path of its own. The retry count was sized for brief lock contention and was never tested against a lock that is held for a while.
+
+**Prevention:** `tests/unit/test_t4033_judge_uncommitted_loud.py`. Leg 1 holds a real `index.lock` for 7 s, which at HEAD fails with the old 5-try loop. Leg 2 runs a worker whose ledger commit is lost: at HEAD the judge returns `code` 0; with the fix it returns 4 and prints `ERROR: verdict row left uncommitted … fw reviewer verdict discard …`. A committed-row control proves the flag is not always on.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -359,3 +377,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4033-fw-reviewer-judge-leaves-a-verdict-row-u.md
 - **Context:** Initial task creation
+
+### 2026-10-21T10:39:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

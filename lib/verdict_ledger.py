@@ -159,6 +159,8 @@ COMMIT_ERRORS = Path(".context/reviews/commit-errors.jsonl")
 #: The only excuse `recorded.jsonl` accepts for a row that is gone; a committed row cannot be
 #: discarded — the append-only history check refuses its removal whatever this file says.
 DISCARDED = Path(".context/reviews/discarded.jsonl")
+#: T-4033: how long a verdict commit waits for another git process's .git/index.lock (seconds).
+INDEX_LOCK_WAIT_S = 60.0
 #: `audit` exit code when every failing row is acknowledged, void or provisional (T-4519): WARN,
 #: never PASS.
 AUDIT_WARN = 3
@@ -303,7 +305,12 @@ def _commit_rows_once(root: Path, paths: list[str], identity: str, message: str,
     env.pop(_WORKER_ENV, None)
     _restore_committed_evidence(root, env)
     err = ""
-    for attempt in range(5):        # another git process may hold .git/index.lock briefly
+    # T-4033: another git process may hold .git/index.lock. Wait against a bounded deadline, not
+    # a fixed 5 tries (~5 s): on 832 a parallel session's commit outlasted that, and a reviewer's
+    # row was left uncommitted.
+    deadline = time.monotonic() + INDEX_LOCK_WAIT_S
+    attempt = 0
+    while True:
         # T-4008: -f — every path here is named explicitly by the ledger. Without it a cited
         # screenshot (`*.png` is ignored repo-wide) made `git add` refuse the WHOLE call, the
         # commit never ran, and a reviewer's green stayed uncommitted, never to count.
@@ -314,9 +321,10 @@ def _commit_rows_once(root: Path, paths: list[str], identity: str, message: str,
         if not (add.returncode or com.returncode):
             return _head_sha(root), ""
         err = (add.stderr + com.stderr).strip()[-500:]
-        if "index.lock" not in err:
+        if "index.lock" not in err or time.monotonic() >= deadline:
             break
-        time.sleep(0.5 * (attempt + 1))
+        attempt += 1
+        time.sleep(min(0.5 * attempt, 2.0, max(deadline - time.monotonic(), 0.05)))
     # T-4469: a refused commit must not leave its rows staged — the next unrelated commit
     # carried one on 832 and the append-only ledger then blocked every push.
     subprocess.run(["git", "reset", "-q", "--", *paths], cwd=str(root), env=env,

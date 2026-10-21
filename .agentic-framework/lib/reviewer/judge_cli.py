@@ -910,7 +910,7 @@ def _collect(root: Path, task_id: str, dispatch_id: str, criteria: list[dict],
                 if f is None:
                     res["outcome"] = row["outcome"]
                 else:
-                    res.update(source="ledger-row-invalid", why=f"{f[0]}: {f[1]}")
+                    res.update(source="ledger-row-invalid", why=f"{f[0]}: {f[1]}", fault=f[0])
                     if f[0] == "unseen-page":
                         res["flag"] = f"green-on-unseen-page: {f[1]}"
         elif c["ac_index"] in refused:
@@ -1157,7 +1157,24 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
             f"— the dispatch likely could not register (check `fw termlink worker-kinds` and that "
             f"agents/termlink/termlink.sh and policy/review-backends.yaml are committed, T-4010)")
         res["code"] = 3
+    _flag_uncommitted(res)
     return res
+
+
+def _flag_uncommitted(res: dict) -> None:
+    """T-4033 (832 T-1114): a seat's verdict row that was appended but never committed never
+    counts, and the pre-push audit FAILs on it. The judge printed `unknown` and exited 0 — a
+    finished-looking run. Name every such row, with its commit error and the discard verb, and
+    exit 4 (unless an earlier error already set a code)."""
+    rows = [f"AC#{r['ac']} row {r.get('verdict_id') or '?'} — {r.get('why', '')}"
+            for d in res.get("dispatches") or [] for r in d.get("results") or []
+            if r.get("fault") == "uncommitted"]
+    if not rows:
+        res.pop("uncommitted", None)
+        return
+    res["uncommitted"] = rows
+    if not res.get("code"):
+        res["code"] = 4
 
 
 def _not_evaluated_kinds(res: dict, ac: int) -> set[str]:
@@ -1244,6 +1261,7 @@ def judge_with_reassign(task_id: str, root: Path, **kw) -> dict:
         if names:
             res["no_seat_recorded"] += "; unavailable: " + ", ".join(
                 f"{k} ({v})" for k, v in sorted(names.items()))
+    _flag_uncommitted(res)
     return res
 
 
@@ -1287,6 +1305,9 @@ def _print_result(res: dict) -> None:
         print(f"  final AC#{ac}: {res['outcomes'][ac]} - {why}")
     if res.get("no_seat_recorded"):
         print(f"ERROR: {res['no_seat_recorded']}", file=sys.stderr)
+    for u in res.get("uncommitted") or []:
+        print(f"ERROR: verdict row left uncommitted (it does not count, and fw audit FAILs on it): "
+              f"{u}", file=sys.stderr)
 
 
 def main(argv: list[str] | None = None, *, dispatcher: Dispatcher | None = None,
