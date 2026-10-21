@@ -98,7 +98,7 @@ bvp_scores_proposed:
 - [x] `tests/unit/test_t3736_basename_index_single_build.py` drives a fake monotonic clock and an empty fake walk instead of wall time and the real tree: the counts cannot be disturbed by host load (file runtime 176 s → ~1 s at load ~100)
 - [x] Regression tests `test_tree_walk_slower_than_ttl_is_not_redone` and `test_index_build_slower_than_ttl_is_not_redone` (fake clock advances 40 s inside the walk) fail on HEAD's `web/shared.py` (2 failed) and pass after
 - [x] The test file passes 20 consecutive foreground iterations while the host is loaded (load avg 43→70, 8 CPU burners + 12 parallel copies per iteration): 260/260 runs passed; neighbours test_t3587_file_refs / test_t3853_producer_text / test_govd_sandbox: 83 passed
-- [ ] `bin/fw vendor self --check --task T-4547` is clean
+- [x] `bin/fw vendor self --check --task T-4547` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
