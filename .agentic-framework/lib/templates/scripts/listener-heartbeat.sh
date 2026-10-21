@@ -32,6 +32,14 @@ set -u
 
 TERMLINK="${TERMLINK_BIN:-termlink}"
 
+# T-2913 — every channel post goes through rail_post (rail-post.sh), which
+# applies the project's rail signing identity and from_project label via the
+# framework's lib/rail-identity.sh instead of posting bare (host-signed).
+RAIL_POST_LIB="${RAIL_POST_LIB:-$(cd "$(dirname "$0")" && pwd)/rail-post.sh}"
+[ -f "$RAIL_POST_LIB" ] || { echo "listener-heartbeat: rail-post lib not found: $RAIL_POST_LIB (set RAIL_POST_LIB to override)" >&2; exit 2; }
+# shellcheck source=rail-post.sh
+. "$RAIL_POST_LIB"
+
 die_usage() {
     echo "listener-heartbeat: $*" >&2
     echo "Try --help for usage." >&2
@@ -127,7 +135,7 @@ hub_args=()
 [ -n "$hub" ] && hub_args+=(--hub "$hub")
 
 post_one() {
-    local post_args=(channel post "${hub_args[@]}" "$topic" \
+    local post_args=("${hub_args[@]}" "$topic" \
         --ensure-topic \
         --msg-type heartbeat \
         --payload "$role" \
@@ -141,7 +149,7 @@ post_one() {
     # confuse auto-discover (it would consider an empty value valid).
     [ -n "$pty_session" ] && post_args+=(--metadata "pty_session=$pty_session")
     post_args+=(--json)
-    "$TERMLINK" "${post_args[@]}" 2>&1
+    rail_post "${post_args[@]}" 2>&1
 }
 
 emit_once() {

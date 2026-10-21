@@ -1,0 +1,8 @@
+# T-3725: sidecar receiver runtime state; the token is a secret
+receiver.token
+receiver.token.tmp
+ready-for-input.yaml
+receiver/
+sessions/
+watcher/
+liveness.yaml

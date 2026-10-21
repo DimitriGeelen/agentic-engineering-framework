@@ -25,6 +25,14 @@
 set -u
 
 TERMLINK="${TERMLINK_BIN:-termlink}"
+
+# T-2913 — every channel post goes through rail_post (rail-post.sh), which
+# applies the project's rail signing identity and from_project label via the
+# framework's lib/rail-identity.sh instead of posting bare (host-signed).
+RAIL_POST_LIB="${RAIL_POST_LIB:-$(cd "$(dirname "$0")" && pwd)/rail-post.sh}"
+[ -f "$RAIL_POST_LIB" ] || { echo "chat-arc-broadcast: rail-post lib not found: $RAIL_POST_LIB (set RAIL_POST_LIB to override)" >&2; exit 2; }
+# shellcheck source=rail-post.sh
+. "$RAIL_POST_LIB"
 HUBS_FILE="${HOME}/.termlink/hubs.toml"
 BE_REACHABLE_STATE="${HOME}/.termlink/be-reachable.state"
 PER_HUB_TIMEOUT=8   # PL-189 — same per-call bound as the discovery verbs
@@ -76,12 +84,8 @@ case "$PER_HUB_TIMEOUT" in
     ''|*[!0-9]*) die "invalid --timeout-secs: $PER_HUB_TIMEOUT" ;;
 esac
 
-# Build TIMEOUT_CMD; degrade gracefully if `timeout` is missing.
-if command -v timeout >/dev/null 2>&1; then
-    TIMEOUT_CMD="timeout $PER_HUB_TIMEOUT"
-else
-    TIMEOUT_CMD=""
-fi
+# Per-hub bound: rail_post applies RAIL_POST_TIMEOUT via timeout(1) when it
+# is installed, and degrades to an unbounded call when it is not.
 
 # Extract unique hub addresses from hubs.toml. Uses the same minimal TOML
 # parsing as fleet-adoption-snapshot.sh / agent-chat-arc-recent.sh — only
@@ -109,7 +113,7 @@ while IFS= read -r addr; do
     [ -n "$addr" ] || continue
     attempted=$((attempted + 1))
 
-    out="$($TIMEOUT_CMD "$TERMLINK" channel post agent-chat-arc \
+    out="$(RAIL_POST_TIMEOUT="$PER_HUB_TIMEOUT" rail_post agent-chat-arc \
         --hub "$addr" \
         --msg-type chat \
         --payload "$PAYLOAD" \
