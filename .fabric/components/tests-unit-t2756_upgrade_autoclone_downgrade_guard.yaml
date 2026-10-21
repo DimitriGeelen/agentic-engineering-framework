@@ -1,0 +1,21 @@
+id: tests/unit/t2756_upgrade_autoclone_downgrade_guard.bats
+name: t2756_upgrade_autoclone_downgrade_guard
+type: script
+subsystem: tests
+location: tests/unit/t2756_upgrade_autoclone_downgrade_guard.bats
+tags: []
+
+purpose: "T-2756: bare `fw upgrade` from a consumer auto-clones the upstream and hands off to the CLONE's bin/fw (T-1634)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

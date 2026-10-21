@@ -1,0 +1,21 @@
+id: tests/unit/t4528_foreign_delete_guard.bats
+name: t4528_foreign_delete_guard
+type: script
+subsystem: tests
+location: tests/unit/t4528_foreign_delete_guard.bats
+tags: []
+
+purpose: "T-4528: commit-msg refuses a commit that deletes files last committed by a DIFFERENT task unless the message names that task."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

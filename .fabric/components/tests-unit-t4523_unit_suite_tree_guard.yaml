@@ -1,0 +1,21 @@
+id: tests/unit/t4523_unit_suite_tree_guard.bats
+name: t4523_unit_suite_tree_guard
+type: script
+subsystem: tests
+location: tests/unit/t4523_unit_suite_tree_guard.bats
+tags: []
+
+purpose: "T-4523: the unit-suite runner must notice when the tests change the checkout they run in. ring20's clean-room run left ~146 tracked files modified or deleted in its clone, and the runner graded only the tests, never the tree."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

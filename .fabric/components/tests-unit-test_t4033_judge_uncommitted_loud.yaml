@@ -1,0 +1,21 @@
+id: tests/unit/test_t4033_judge_uncommitted_loud.py
+name: test_t4033_judge_uncommitted_loud
+type: script
+subsystem: tests
+location: tests/unit/test_t4033_judge_uncommitted_loud.py
+tags: []
+
+purpose: "T-4033 (832 T-1114, T-310 row V-20261010-08c85aa1) — a verdict row left uncommitted by a lost .git/index.lock race was silent."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

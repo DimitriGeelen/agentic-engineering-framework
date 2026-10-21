@@ -1,0 +1,21 @@
+id: agents/audit/unit_tree_guard.py
+name: unit_tree_guard
+type: script
+subsystem: audit
+location: agents/audit/unit_tree_guard.py
+tags: []
+
+purpose: "unit_tree_guard.py — T-4523: did the unit suite change the checkout it ran in?"
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

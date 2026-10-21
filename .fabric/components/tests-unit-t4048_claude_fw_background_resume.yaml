@@ -1,0 +1,21 @@
+id: tests/unit/t4048_claude_fw_background_resume.bats
+name: t4048_claude_fw_background_resume
+type: script
+subsystem: tests
+location: tests/unit/t4048_claude_fw_background_resume.bats
+tags: []
+
+purpose: "T-4048 (055 T-491 proposal B) — claude-fw must not --resume a conversation that is a live Claude Code background job."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown
