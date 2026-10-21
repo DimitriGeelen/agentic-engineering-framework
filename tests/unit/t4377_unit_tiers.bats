@@ -19,15 +19,17 @@ setup() {
     WORK="$BATS_TEST_TMPDIR/t4377"
     mkdir -p "$WORK/suite" "$WORK/reports"
     LOCK="$WORK/unit-suite.lock"
-    cat > "$WORK/suite/fast.bats" <<'EOF'
-@test "fast passes" { true; }
+    # T-4521: fixture tests are spelled @@test and restored by sed, so bats <1.11 (which
+    # scans source text, heredocs included) does not count them as tests of this file.
+    sed 's/^@@test/@test/' > "$WORK/suite/fast.bats" <<'EOF'
+@@test "fast passes" { true; }
 EOF
-    cat > "$WORK/suite/skipper.bats" <<'EOF'
-@test "skipper skips" { skip "fixture skip"; }
+    sed 's/^@@test/@test/' > "$WORK/suite/skipper.bats" <<'EOF'
+@@test "skipper skips" { skip "fixture skip"; }
 EOF
-    cat > "$WORK/suite/slow.bats" <<'EOF'
-@test "slow passes" { true; }
-@test "slow skips" { skip "fixture skip"; }
+    sed 's/^@@test/@test/' > "$WORK/suite/slow.bats" <<'EOF'
+@@test "slow passes" { true; }
+@@test "slow skips" { skip "fixture skip"; }
 EOF
     cat > "$WORK/suite/test_skipper.py" <<'EOF'
 import pytest

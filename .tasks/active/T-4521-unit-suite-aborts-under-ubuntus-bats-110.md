@@ -9,7 +9,7 @@ description: >
   the fixtures invisible to the bats preprocessor (generate them at run time or escape
   the @test lines) and add a lint that refuses @test inside heredocs.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T08:58:51Z
-last_update: '2026-10-21T09:00:42Z'
+last_update: 2026-10-21T09:03:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] No line in tests/unit/t4058_unit_suite_keeps_failures.bats matches the bats preprocessor's test pattern inside a heredoc fixture (fixtures generated without a literal `@test` at line start)
+- [x] t4058_unit_suite_keeps_failures.bats still passes in full (fixtures behave as before at run time)
+- [x] A lint (tools/bats-heredoc-test-lint.py) refuses any `@test` line inside a heredoc in a .bats file, reports clean on tests/, and is pinned by a regression bats test that feeds it a bad fixture
+- [x] `bats --count tests/unit/t4058_unit_suite_keeps_failures.bats` equals the number of real tests (no fixture tests counted)
+- [x] The 9 other files with the same defect (found by the lint; confirmed by bats 1.10.0 vs 1.13.0 `--count` over all of tests/, which disagreed on exactly these 10 files) are fixed with the same `@@test` + sed convention, and pass under both bats 1.10.0 and 1.13.0
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,8 +284,23 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 tools/bats-heredoc-test-lint.py tests/ > /tmp/.t4521-lint.out 2>&1 && grep -q "clean: no @test inside a heredoc" /tmp/.t4521-lint.out
+timeout 300 bats tests/lint/bats-heredoc-test.bats > /tmp/.t4521-lint-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4521-lint-bats.out
+test "$(grep -c '# skip' /tmp/.t4521-lint-bats.out)" -eq 0
+test "$(bats --count tests/unit/t4058_unit_suite_keeps_failures.bats)" -eq 5
+timeout 580 bats tests/unit/t4058_unit_suite_keeps_failures.bats > /tmp/.t4521-t4058.out 2>&1 && ! grep -q "^not ok" /tmp/.t4521-t4058.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4521-dn.out 2>&1 && grep -q clean /tmp/.t4521-dn.out
+bin/fw vendor self --check --task T-4521
 
 ## RCA
+
+**Symptom:** on a clean Ubuntu 24.04 (apt bats 1.10.0), `bats tests/unit/` and `fw test unit` abort before running anything: `Error: Duplicate test name(s) in file ".../t4058_unit_suite_keeps_failures.bats": test_fixture_passing_test`. Reproduced here with bats-core v1.10.0 checked out next to the host's 1.13.0.
+
+**Root cause:** `tests/unit/t4058_unit_suite_keeps_failures.bats:19-30` (pre-fix) wrote fixture suites with `cat > … <<'EOF'` whose body lines start with `@test`. Bats <1.11 discovers tests by matching source text against `^[[:blank:]]*@test…\{` line by line with no notion of heredocs, so each fixture line became a test of the outer file — two named "fixture passing test" → duplicate-name abort. Bats 1.11+ registers tests at run time, so the heredoc stays data. Nine other files had the same shape without a duplicate name (bats-cron-env-lint.bats also had duplicates); under 1.10 each counted phantom tests and the fixture text written to disk was the preprocessed form, not `@test`.
+
+**Why structurally allowed:** every host that runs the suite here has bats ≥1.11 (1.13.0 on this host), so the defect is invisible locally; no gate pinned a minimum bats version and nothing checked the source shape. It surfaced only in ring20's clean-room run.
+
+**Prevention:** `tools/bats-heredoc-test-lint.py` (quote-, comment- and `$( )`-aware heredoc detection, same test patterns bats 1.10 uses) refuses any `@test` line in a heredoc body; `tests/lint/bats-heredoc-test.bats` runs it over the whole `tests/` tree (picked up by `fw test` lint leg and the audit invariant suite) and pins it against bad/good fixtures. Its precision was checked against ground truth: bats 1.10.0 vs 1.13.0 `--count` over all 1,085 .bats files differ on exactly the 10 files the lint flagged. Convention for fixtures: spell them `@@test` and write with `sed 's/^@@test/@test/' > file <<'EOF'`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -378,3 +396,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4521-unit-suite-aborts-under-ubuntus-bats-110.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:03:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

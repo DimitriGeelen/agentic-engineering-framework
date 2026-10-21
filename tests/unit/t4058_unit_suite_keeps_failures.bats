@@ -16,17 +16,19 @@ setup() {
 }
 
 _write_red_fixture_suite() {
-    cat > "$WORK/suite/passing.bats" <<'EOF'
-@test "fixture passing test" { true; }
+    # T-4521: fixture tests are spelled @@test and restored by sed, so bats <1.11 (which
+    # scans source text, heredocs included) does not count them as tests of this file.
+    sed 's/^@@test/@test/' > "$WORK/suite/passing.bats" <<'EOF'
+@@test "fixture passing test" { true; }
 EOF
-    cat > "$WORK/suite/failing.bats" <<'EOF'
-@test "fixture red asserts MARKER-4058" { [ "left-4058" = "right-4058" ]; }
+    sed 's/^@@test/@test/' > "$WORK/suite/failing.bats" <<'EOF'
+@@test "fixture red asserts MARKER-4058" { [ "left-4058" = "right-4058" ]; }
 EOF
 }
 
 _write_green_fixture_suite() {
-    cat > "$WORK/suite/passing.bats" <<'EOF'
-@test "fixture passing test" { true; }
+    sed 's/^@@test/@test/' > "$WORK/suite/passing.bats" <<'EOF'
+@@test "fixture passing test" { true; }
 EOF
 }
 

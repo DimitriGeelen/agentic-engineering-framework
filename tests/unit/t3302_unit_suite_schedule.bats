@@ -23,9 +23,11 @@ setup() {
 }
 
 _write_green_fixture_suite() {
-    cat > "$WORK/suite/fixture.bats" <<'EOF'
-@test "fixture passes" { true; }
-@test "fixture skips" { skip "fixture skip"; true; }
+    # T-4521: fixture tests are spelled @@test and restored by sed, so bats <1.11 (which
+    # scans source text, heredocs included) does not count them as tests of this file.
+    sed 's/^@@test/@test/' > "$WORK/suite/fixture.bats" <<'EOF'
+@@test "fixture passes" { true; }
+@@test "fixture skips" { skip "fixture skip"; true; }
 EOF
     cat > "$WORK/suite/test_fixture.py" <<'EOF'
 def test_fixture_ok():
@@ -35,8 +37,8 @@ EOF
 
 _write_red_fixture_suite() {
     _write_green_fixture_suite
-    cat > "$WORK/suite/red.bats" <<'EOF'
-@test "fixture bats red" { false; }
+    sed 's/^@@test/@test/' > "$WORK/suite/red.bats" <<'EOF'
+@@test "fixture bats red" { false; }
 EOF
     cat > "$WORK/suite/test_red.py" <<'EOF'
 def test_fixture_py_red():
@@ -47,8 +49,8 @@ EOF
 # A corpus whose bats leg CANNOT finish inside the window — the shape that
 # starved the pytest leg to 1 second on four consecutive nightlies (T-3359).
 _write_overrunning_bats_fixture() {
-    cat > "$WORK/suite/slow.bats" <<'EOF'
-@test "fixture bats overruns the window" { sleep 30; }
+    sed 's/^@@test/@test/' > "$WORK/suite/slow.bats" <<'EOF'
+@@test "fixture bats overruns the window" { sleep 30; }
 EOF
     # Deliberately slower than the old 1-second starvation floor: under the
     # pre-T-3359 arithmetic this leg is killed and records 0 tests; with the

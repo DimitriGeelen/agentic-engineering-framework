@@ -157,12 +157,14 @@ EOF
 # ── 4. runner: per-file durations, completion, per-file timeout (v2) ────────
 
 @test "T-3602: runner records per-file durations, completion, and per-file timeouts" {
-    cat > "$WORK/suite/fast.bats" <<'EOF'
-@test "fast ok" { true; }
-@test "fast red" { false; }
+    # T-4521: fixture tests are spelled @@test and restored by sed, so bats <1.11 (which
+    # scans source text, heredocs included) does not count them as tests of this file.
+    sed 's/^@@test/@test/' > "$WORK/suite/fast.bats" <<'EOF'
+@@test "fast ok" { true; }
+@@test "fast red" { false; }
 EOF
-    cat > "$WORK/suite/slow.bats" <<'EOF'
-@test "slow hangs" { sleep 60; }
+    sed 's/^@@test/@test/' > "$WORK/suite/slow.bats" <<'EOF'
+@@test "slow hangs" { sleep 60; }
 EOF
     cat > "$WORK/suite/test_fast.py" <<'EOF'
 def test_ok():
@@ -256,8 +258,8 @@ PY
 }
 
 @test "T-3602: a daemon leaked by a test does not keep holding the overlap lock" {
-    cat > "$WORK/suite/leak.bats" <<EOF2
-@test "leaks a daemon" { ( setsid sleep 60 >/dev/null 2>&1 3>&- & ) ; true; }
+    sed 's/^@@test/@test/' > "$WORK/suite/leak.bats" <<EOF2
+@@test "leaks a daemon" { ( setsid sleep 60 >/dev/null 2>&1 3>&- & ) ; true; }
 EOF2
     run env FW_UNIT_SUITE_DIR="$WORK/suite" FW_UNIT_SUITE_REPORT_DIR="$WORK/reports" \
             FW_UNIT_SUITE_LOCK="$WORK/lock" FW_UNIT_SUITE_TIMEOUT=60 "$RUNNER"

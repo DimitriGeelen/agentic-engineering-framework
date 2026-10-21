@@ -61,9 +61,11 @@ _run_leg() {
 @test "A3 — with tests/unit/ present and non-empty, the suite still runs" {
     command -v bats >/dev/null || skip "bats not installed"
     mkdir -p "$FAKE/tests/unit"
-    cat > "$FAKE/tests/unit/zz_probe.bats" <<'EOF'
+    # T-4521: fixture tests are spelled @@test and restored by sed, so bats <1.11 (which
+    # scans source text, heredocs included) does not count them as tests of this file.
+    sed 's/^@@test/@test/' > "$FAKE/tests/unit/zz_probe.bats" <<'EOF'
 #!/usr/bin/env bats
-@test "probe" { true; }
+@@test "probe" { true; }
 EOF
     _run_leg unit
     [[ "$output" == *"probe"* ]]

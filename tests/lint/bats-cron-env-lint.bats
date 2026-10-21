@@ -24,8 +24,10 @@ setup() {
 }
 
 @test "fixture: cron install without FW_CRON_INSTALL_DIR is a violation (exit 1, file named)" {
-    cat > "$FIX/leaky.bats" <<'EOF'
-@test "x" {
+    # T-4521: fixture tests are spelled @@test and restored by sed, so bats <1.11 (which
+    # scans source text, heredocs included) does not count them as tests of this file.
+    sed 's/^@@test/@test/' > "$FIX/leaky.bats" <<'EOF'
+@@test "x" {
     run "$FRAMEWORK_ROOT/agents/audit/audit.sh" schedule install
 }
 EOF
@@ -35,9 +37,9 @@ EOF
 }
 
 @test "fixture: same file with FW_CRON_INSTALL_DIR exported passes" {
-    cat > "$FIX/safe.bats" <<'EOF'
+    sed 's/^@@test/@test/' > "$FIX/safe.bats" <<'EOF'
 setup() { export FW_CRON_INSTALL_DIR="$BATS_TEST_TMPDIR/cron.d"; }
-@test "x" {
+@@test "x" {
     run "$FRAMEWORK_ROOT/bin/fw" cron install
 }
 EOF
@@ -46,8 +48,8 @@ EOF
 }
 
 @test "fixture: a file that never runs a cron install is not flagged" {
-    cat > "$FIX/unrelated.bats" <<'EOF'
-@test "x" { run echo hello; }
+    sed 's/^@@test/@test/' > "$FIX/unrelated.bats" <<'EOF'
+@@test "x" { run echo hello; }
 EOF
     run python3 "$LINT" "$FIX"
     [ "$status" -eq 0 ]

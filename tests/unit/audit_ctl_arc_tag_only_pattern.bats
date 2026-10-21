@@ -36,8 +36,10 @@ EOF
 # one-shot migrator
 grep -lE "tags:.*arc:foo" *.md
 EOF
-    cat > "$PROJECT_ROOT/tests/unit/arc_test.bats" <<'EOF'
-@test "fixture" {
+    # T-4521: fixture tests are spelled @@test and restored by sed, so bats <1.11 (which
+    # scans source text, heredocs included) does not count them as tests of this file.
+    sed 's/^@@test/@test/' > "$PROJECT_ROOT/tests/unit/arc_test.bats" <<'EOF'
+@@test "fixture" {
     grep "arc:foo" file.md
 }
 EOF
@@ -100,8 +102,8 @@ EOF
 }
 
 @test "violation under tests/ is exempt (allowlist)" {
-    cat > "$PROJECT_ROOT/tests/unit/check_arc_membership.bats" <<'EOF'
-@test "scan" {
+    sed 's/^@@test/@test/' > "$PROJECT_ROOT/tests/unit/check_arc_membership.bats" <<'EOF'
+@@test "scan" {
     grep -lE "^tags:.*arc:foo" *.md
 }
 EOF

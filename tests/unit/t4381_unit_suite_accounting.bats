@@ -16,8 +16,10 @@ setup() {
     WORK="$BATS_TEST_TMPDIR/t4381"
     mkdir -p "$WORK/suite" "$WORK/reports"
     # Every fixture suite carries one green bats file so the bats leg is real.
-    cat > "$WORK/suite/passing.bats" <<'EOF'
-@test "fixture passing test" { true; }
+    # T-4521: fixture tests are spelled @@test and restored by sed, so bats <1.11 (which
+    # scans source text, heredocs included) does not count them as tests of this file.
+    sed 's/^@@test/@test/' > "$WORK/suite/passing.bats" <<'EOF'
+@@test "fixture passing test" { true; }
 EOF
 }
 
@@ -118,8 +120,8 @@ EOF
 
 @test "a run with a per-file timeout does not overwrite LAST-COMPLETE.yaml" {
     echo "prior: complete-run-sentinel" > "$WORK/reports/LAST-COMPLETE.yaml"
-    cat > "$WORK/suite/slow.bats" <<'EOF'
-@test "fixture sleeps past its per-file cap" { sleep 30; }
+    sed 's/^@@test/@test/' > "$WORK/suite/slow.bats" <<'EOF'
+@@test "fixture sleeps past its per-file cap" { sleep 30; }
 EOF
     cat > "$WORK/suite/test_ok.py" <<'EOF'
 def test_ok():

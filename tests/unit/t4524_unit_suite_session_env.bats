@@ -12,8 +12,10 @@ setup() {
     RUNNER="$REPO_ROOT/agents/audit/unit-suite.sh"
     WORK="$BATS_TEST_TMPDIR/t4524"
     mkdir -p "$WORK/suite" "$WORK/reports" "$WORK/env"
-    cat > "$WORK/suite/dump.bats" <<'EOF'
-@test "dump env" { env > "$T4524_ENV_DIR/bats.env"; }
+    # T-4521: fixture tests are spelled @@test and restored by sed, so bats <1.11 (which
+    # scans source text, heredocs included) does not count them as tests of this file.
+    sed 's/^@@test/@test/' > "$WORK/suite/dump.bats" <<'EOF'
+@@test "dump env" { env > "$T4524_ENV_DIR/bats.env"; }
 EOF
     cat > "$WORK/suite/test_dump.py" <<'EOF'
 import os
