@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4543: Pre-push red: t2461_doctor_mcp_consumer_path.bats t1, t2, t3, t6 (doctor MCP asset paths, manifest emit path, pid file, consumer SKIP hint)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T13:50:12Z
+# ============================================================================
+
+task_id: T-4543
+task_name: "Pre-push red: t2461_doctor_mcp_consumer_path.bats t1, t2, t3, t6 (doctor MCP asset paths, manifest emit path, pid file, consumer SKIP hint)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T13:46:02Z
+completed: 2026-10-21T13:49:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T15:47:52+02:00
+last_commit: 2026-10-21T15:48:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t2461 pins the MCP-manifest check where T-3801 moved it (lib/doctor-drift.sh), adds a doctor wiring test and a behavioural consumer SKIP-hint test. tick vendor-check AC
+
+# Key outcomes
+outcomes:
+  - 'Root cause of the t2461 reds (tests 1, 2, 3, 6) identified with the introducing commit and file:line, and recorded in ## RCA as code-regression vs moved-expectation'
+  - '`bats tests/unit/t2461_doctor_mcp_consumer_path.bats` passes in full (0 `not ok`, 0 skips)'
+  - 'Nearest neighbouring doctor/MCP suites still pass after the fix'
+  - '`bin/fw vendor self --check --task T-4543` is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4543-pre-push-red-t2461doctormcpconsumerpathb.md'
+  - 'tests/unit/t2461_doctor_mcp_consumer_path.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T15:47:52'
+    action: 'T-4543: t2461 pins the MCP-manifest check where T-3801 moved it (lib/doctor-drift.sh), adds a doctor wiring test and a behavioural consumer SKIP-hint test'
+  - time: '2026-10-21T15:48:19'
+    action: 'T-4543: tick vendor-check AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 2
+  lines_added: 414
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4543-pre-push-red-t2461doctormcpconsumerpathb.md
+generated_by: context-agent-hybrid

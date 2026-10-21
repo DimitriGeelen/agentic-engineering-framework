@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4544: Pre-push red: t3890_conversation_holder.bats 'claude-fw refuses before launching, and the override is honoured
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T13:51:19Z
+# ============================================================================
+
+task_id: T-4544
+task_name: "Pre-push red: t3890_conversation_holder.bats 'claude-fw refuses before launching, and the override is honoured"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T13:46:12Z
+completed: 2026-10-21T13:50:14Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T15:49:15+02:00
+last_commit: 2026-10-21T15:49:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t3890 test 6 extracts _background_job_guard (added to _conversation_guard by T-4048) and asserts every guard helper is defined; test fix, code was correct
+
+# Key outcomes
+outcomes:
+  - 'Commit that turned the test red is identified, and the RCA says whether the code or the test was wrong'
+  - '`bats tests/unit/t3890_conversation_holder.bats` passes in full (no `not ok`, no skips)'
+  - 'Nearest suites for the changed file still pass'
+  - '`bin/fw vendor self --check --task T-4544` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 't3890 test 6 extracts _background_job_guard (added to _conversation_guard by T-4048) and asserts every guard helper is defined; test fix, code was correct'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4544-pre-push-red-t3890conversationholderbats.md'
+  - 'tests/unit/t3890_conversation_holder.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T15:49:15'
+    action: 'T-4544: t3890 test 6 extracts _background_job_guard (added to _conversation_guard by T-4048) and asserts every guard helper is defined; test fix, code was correct'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 2
+  lines_added: 394
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4544-pre-push-red-t3890conversationholderbats.md
+generated_by: context-agent-hybrid
