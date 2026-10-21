@@ -8,10 +8,10 @@ description: >
   status captured) was listed under tasks_parked in every handover for 9 days. agents/handover/handover.sh:355/783
   tasks_parked. Fix the classification and add a test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:51:06Z
-last_update: '2026-10-13T16:00:49Z'
+last_update: 2026-10-21T22:19:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,6 +82,23 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=1 (body:episodic-only); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4169: Handover lists a captured bug task with horizon now under tasks_parked, so it never surfaces (ring20 T-2215 sat 9 days): parked must mean horizon later/next only, and a bug-class task in captured+now must surface in Work in Progress
@@ -94,8 +111,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `classify_active_tasks` (agents/handover/handover.sh) puts a captured task with `horizon: now` (or no horizon) in a new `tasks_ready:` bucket, and only captured tasks with `horizon: next|later` in `tasks_parked:`; both emission sites carry `tasks_ready:`
+- [x] The five buckets still partition `.tasks/active/` (nothing dropped, nothing doubled)
+- [x] In digest mode, Work in Progress ranks captured+now above captured+next/later, and a bug-class captured+now task is never elided by the top-N cut
+- [x] Regression tests in tests/unit/handover_task_classification.bats fail before the fix and pass after; AGENT.md documents `tasks_ready:`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -258,8 +277,21 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/handover_task_classification.bats > /tmp/.t4169.out 2>&1 && ! grep -q "^not ok" /tmp/.t4169.out
+grep -c '^tasks_ready: \[\$READY_TASKS\]' agents/handover/handover.sh | grep -qx 2
+grep -q 'tasks_ready:' agents/handover/AGENT.md
+bash -n agents/handover/handover.sh
+bin/fw vendor self --check --task T-4169
 
 ## RCA
+
+**Symptom:** ring20-manager T-2215 (bug, `status: captured`, `horizon: now`) appeared under `tasks_parked:` in every handover for 9 days and never in the digest Work in Progress, so no session picked it up.
+
+**Root cause:** `classify_active_tasks` (agents/handover/handover.sh:372) mapped `captured` → parked on status alone, ignoring `horizon:`. `horizon: now` means "ready to work on" (CLAUDE.md §Horizon), so captured+now is ready backlog, not parked. Separately the digest WIP sort (handover.sh:1131-1133) ranked only started-work first and then cut to the top 5 by last_update, so an untouched captured+now bug lost to any recently-touched later/next task and was elided.
+
+**Why structurally allowed:** T-3027 introduced the buckets with a fixture set containing one captured task and no horizon field at all, so the test pinned "captured = parked" as the rule; nothing asserted the horizon axis.
+
+**Prevention:** captured+now goes to a new `tasks_ready:` bucket (parked = captured + next/later only); digest WIP ranks in-flight > captured+now > rest and never elides a bug-class captured+now task; bats regressions pin both, plus the five-bucket partition.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -355,3 +387,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4169-handover-lists-a-captured-bug-task-with-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:19:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

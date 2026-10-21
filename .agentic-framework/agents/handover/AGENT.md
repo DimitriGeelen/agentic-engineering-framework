@@ -56,7 +56,8 @@ session_id: S-YYYY-MMDD-HHMM
 timestamp: [ISO 8601]
 predecessor: [previous session ID]
 tasks_active: [list]              # status started-work or issues — in flight
-tasks_parked: [list]              # status captured — backlog, not being worked
+tasks_ready: [list]               # status captured, horizon now (or none) — ready, not yet started (T-4169)
+tasks_parked: [list]              # status captured, horizon next/later — backlog, not being worked
 tasks_awaiting_review: [list]     # status work-completed, still in active/ — partial-complete
 tasks_unknown_status: [list]      # status missing or unparseable — a parse failure, not a state
 tasks_touched: [list]
