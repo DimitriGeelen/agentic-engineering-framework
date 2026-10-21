@@ -68,13 +68,13 @@ STUB
     cd "$PROJ"
 }
 
-# Every recorded post carries exactly one from_project=proj-t2913 and the
-# project key as its identity file.
+# Every recorded post carries exactly one from_project=Proj_T2913 (the verbatim
+# dir name, T-4327) and the project key as its identity file.
 _assert_all_posts_governed() {
     local n
     n="$(wc -l < "$POSTS")"
     [ "$n" -ge "${1:-1}" ] || { echo "expected >= ${1:-1} posts, got $n"; cat "$POSTS"; return 1; }
-    run jq -r '[.args[] | select(. == "from_project=proj-t2913")] | length' "$POSTS"
+    run jq -r '[.args[] | select(. == "from_project=Proj_T2913")] | length' "$POSTS"
     [ "$status" -eq 0 ]
     echo "$output" | grep -vqx 1 && { echo "label count per post: $output"; cat "$POSTS"; return 1; }
     run jq -r '.idfile' "$POSTS"
@@ -132,7 +132,7 @@ _assert_all_posts_governed() {
         --topic dm:a:b --conversation-id cid-t2913 --up-to 1
     [ "$status" -eq 0 ]
     [ "$(jq -r '.idfile' "$POSTS")" = "" ]
-    [ "$(jq -r '[.args[] | select(. == "from_project=proj-t2913")] | length' "$POSTS")" = "1" ]
+    [ "$(jq -r '[.args[] | select(. == "from_project=Proj_T2913")] | length' "$POSTS")" = "1" ]
 }
 
 @test "C (control): without the framework lib the post is unlabelled and says so" {

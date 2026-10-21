@@ -12,10 +12,10 @@ description: >
   and the auto-attached label use it consistently; check every consumer of rail_project_label
   before changing it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [rail, labels]
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ origin: {kind: "peer", source: "832"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T19:33:12Z
-last_update: '2026-10-18T19:46:09Z'
+last_update: 2026-10-21T21:23:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,11 @@ canonical form costs them nothing.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `rail_project_label` with no RAIL_PROJECT_LABEL configured returns the verbatim project dir name (`832-Workflow-designer` stays `832-Workflow-designer`), the same string `lib/sidecar/circuit.py project_id()` returns
+- [x] A configured RAIL_PROJECT_LABEL is still normalised the same way on the rail and in the sidecar (unchanged behaviour, both sides agree)
+- [x] `check-rail-mcp-label.sh` block message suggests the verbatim dir-name label for an unconfigured project (regression bats fails before the fix)
+- [x] Every consumer of rail_project_label checked (rail_post_exec, do_rail post, MCP label hook, sidecar mirror) and existing tests updated where they pinned the lower-cased spelling
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4327` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,8 +282,34 @@ canonical form costs them nothing.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/rail-identity.sh && bash -n lib/config.sh
+timeout 300 bats tests/unit/rail_identity_guard.bats tests/unit/t2913_scripts_rail_identity.bats tests/unit/rail_mcp_label_guard.bats > /tmp/.t4327.out 2>&1 && ! grep -q "^not ok" /tmp/.t4327.out
+test "$(grep -c '# skip' /tmp/.t4327.out)" -eq 0
+python3 -m pytest tests/unit/test_sidecar_project_label_t3957.py -q > /tmp/.t4327py.out 2>&1 && grep -q passed /tmp/.t4327py.out
+out=$(bash -c 'source lib/rail-identity.sh; unset FW_RAIL_PROJECT_LABEL; PROJECT_ROOT=/x/832-Workflow-designer rail_project_label'); test "$out" = "832-Workflow-designer"
+bin/fw vendor self --check --task T-4327
 
 ## RCA
+
+**Symptom:** for an unconfigured project, `check-rail-mcp-label.sh` told the agent to retry with
+`from_project: "832-workflow-designer"`, and `fw rail post` / `rail_post_exec` auto-attached the same
+lower-cased spelling. 832's exact-match gate (their T-420) compares against the verbatim dir name and
+refused it; one project carried two names (rail: lower-cased, sidecar/pickup: verbatim).
+
+**Root cause:** `lib/rail-identity.sh:189-201` (pre-fix) normalised (lower-case, `_`/space → `-`)
+the label regardless of source, including the basename fallback. The normalisation was meant for
+*typed* labels (999-AEF vs 999-aef, T-2905), but it was also applied to the dir name, which is a single
+source that cannot vary — producing a second spelling of the fleet id that `lib/sidecar/circuit.py:160`
+`project_id()` and `lib/pickup.sh:42` use verbatim.
+
+**Why structurally allowed:** the T-2905 test pinned the lower-cased output
+(`rail_identity_guard.bats` "derived from the project dir"), and the T-3957 parity test only compared
+the rail and the sidecar for the *configured* case — the unconfigured case, where they diverged, had no
+parity assertion.
+
+**Prevention:** two new bats legs in `tests/unit/rail_identity_guard.bats`: the MCP hook's suggestion
+names the verbatim dir name, and the unconfigured rail label equals `circuit.project_id()` (the missing
+parity assertion). Both fail on the pre-fix code.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -360,6 +389,12 @@ canonical form costs them nothing.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-21 — canonical fleet spelling of an unconfigured project label
+- **Chose:** the verbatim project dir name. A configured `RAIL_PROJECT_LABEL` is still normalised, identically on the rail and in the sidecar (unchanged).
+- **Why:** it is already the fleet id everywhere else (sidecar `project_id()`, `lib/pickup.sh`, learning bus), and 832 said that verbatim costs them nothing (msg c4aefa7e). A dir name has one source, so the typed-label drift T-2905 normalised against cannot happen.
+- **Rejected:** (a) lower-casing everywhere, including the sidecar: that renames every sidecar inbox address and breaks 832's exact-match gate; (b) keeping both: that is the split this task reports.
+- **Cost, accepted:** rail posts from unconfigured projects made before this change carry the lower-cased spelling, so a history grouped by label shows the split for old envelopes only.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -376,3 +411,7 @@ canonical form costs them nothing.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4327-check-rail-mcp-label-suggests-a-lower-ca.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:23:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

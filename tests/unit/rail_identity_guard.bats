@@ -132,7 +132,29 @@ _unconfigured_project() {
     run bash -c 'source lib/rail-identity.sh; unset FW_RAIL_PROJECT_LABEL; PROJECT_ROOT=/tmp/999-Agentic-Engineering-Framework rail_project_label'
     [ "$status" -eq 0 ]
     # The point of the fix: the caller never types this, so it cannot vary.
-    [ "$output" = "999-agentic-engineering-framework" ]
+    # T-4327: verbatim dir name, the same id the sidecar and 832's exact-match
+    # gate use — not a lower-cased second spelling of it.
+    [ "$output" = "999-Agentic-Engineering-Framework" ]
+}
+
+@test "rail-label (T-4327): MCP label hook suggests the verbatim dir name" {
+    cd "$FRAMEWORK_ROOT"
+    proj="$TEST_TEMP_DIR/832-Workflow-designer"
+    mkdir -p "$proj/.context/working"
+    run bash -c 'unset FW_RAIL_PROJECT_LABEL; printf "%s" "{\"tool_name\":\"mcp__termlink__termlink_channel_post\",\"tool_input\":{\"metadata\":{}}}" | PROJECT_ROOT="'"$proj"'" bash agents/context/check-rail-mcp-label.sh'
+    [ "$status" -eq 2 ]
+    echo "$output" | grep -qF '"from_project": "832-Workflow-designer"'
+    ! echo "$output" | grep -qF '832-workflow-designer' || false
+}
+
+@test "rail-label (T-4327): unconfigured label equals the sidecar project id" {
+    cd "$FRAMEWORK_ROOT"
+    proj="$TEST_TEMP_DIR/832-Workflow-designer"
+    mkdir -p "$proj"
+    shell=$(bash -c 'source lib/rail-identity.sh; unset FW_RAIL_PROJECT_LABEL; PROJECT_ROOT="'"$proj"'" rail_project_label')
+    side=$(env -u FW_RAIL_PROJECT_LABEL PROJECT_ROOT="$proj" python3 -c 'import sys; sys.path.insert(0, "lib"); from sidecar import circuit; print(circuit.project_id())')
+    [ "$shell" = "$side" ]
+    [ "$shell" = "832-Workflow-designer" ]
 }
 
 @test "rail-label: the label is ATTACHED to the post, not merely computable" {
