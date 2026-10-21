@@ -407,6 +407,35 @@ How expectations are read:
 - an expectation that contradicts the type is an **error**;
 - one already implied by the type is a **warning**.
 
+### C2. Additions from the full-map check (greenfield VZN-T1 v29, TRA-T1 v2; 832 msg 0fbb4509)
+
+**What the check found:**
+
+- VZN-T1 has 43 ios: 20 in style A, 12 in style B, 11 free text. `type="object"` is a placeholder on all 43.
+- Every `dataType` token is covered by "informational only".
+- The minimal migration applies unchanged to the 20 style-A ios.
+- Style B names migrate mechanically:
+  - `Opportunity [StageName=Closed Won]` becomes a postcondition, `aef:expect const`;
+  - `model.id` becomes a path;
+  - `posities (lineNumber, …)` becomes a list path.
+
+**Decisions:**
+
+1. **Empty and absent.** "Empty" is `const=""` (the member is present, with an empty value). "Not there" is
+   `absent="true"`. `null` counts as present.
+2. **No wildcard selection in v1.1.** A selection such as `billing*` must be written as an explicit list of
+   `aef:field`. A wildcard hides which fields actually flow, so neither a generator nor a reviewer can check it. The
+   legacy free-text form stays valid, and a pattern form can come in v1.2 if a producer needs it.
+3. **Upsert as an operation and as structure are both valid, and they relate.**
+   - `operation="upsert"` on a summary step is the **contract**.
+   - A detail map linked from that step (`aef:link targetWorkflow`) may draw it as structure, as TRA-T1 does:
+     exists? → update | create → merge. That is its **expansion**.
+   - The detail map's key should be the summary's `match` field. When both carry ios and the keys differ, that is a
+     lint warning.
+4. **A `match` without `fieldRef` or `path`** means "a key exists but is not yet determined" (TRA-T1's contact key).
+   It is allowed with a **lint warning**. A generator must refuse to produce update, upsert or delete code for that
+   io until the key is named.
+
 ### D. Examples: child `aef:example`
 
 `<aef:example path="Amount" value="12500"/>` is documentation only. It is never a rule and never a fixture.
