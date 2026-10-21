@@ -120,10 +120,10 @@ Reproduced at HEAD 1ff8ea451 (2026-10-21): `diff <(git show HEAD:.secret-scan-al
 - [x] Reproduction checked at HEAD: whether root `.secret-scan-patterns`/`.secret-scan-allowlist` and their `.agentic-framework/` mirrors can drift with `fw vendor self --check` and `fw audit` silent
 - [x] `lib/upgrade.sh` has a `_self_vendor_root_data` helper (sibling of `_self_vendor_libs` …) wired into `fw vendor self`, syncing both root data files; `--check` reports drift in them
 - [x] `agents/audit/audit.sh check_self_vendor_drift` covers the same two root data files (parity)
-- [ ] Regression bats `tests/unit/t2661_self_vendor_root_data.bats` fails without the fix and passes with it
-- [ ] Fresh-machine sim: test asserting the vendored tree ships both data files, and a present-but-patternless case (scanner runs, WARNING fires, `FW_SECRET_SCAN_STRICT=1` blocks)
+- [x] Regression bats `tests/unit/t2661_self_vendor_root_data.bats` fails without the fix and passes with it
+- [x] Fresh-machine sim: test asserting the vendored tree ships both data files, and a present-but-patternless case (scanner runs, WARNING fires, `FW_SECRET_SCAN_STRICT=1` blocks)
 - [x] Installed pre-commit hook passes a passing scan's warning through to stderr (`agents/git/lib/hooks.sh`), so the patternless WARNING is not swallowed in the fail-open default
-- [ ] `bin/fw vendor self --check --task T-2661` clean
+- [x] `bin/fw vendor self --check --task T-2661` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
