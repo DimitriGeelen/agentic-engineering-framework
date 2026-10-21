@@ -49,7 +49,7 @@ origin: {kind: "peer", source: "832"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T23:59:30Z
-last_update: 2026-10-19T13:32:58Z
+last_update: 2026-10-21T18:51:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,7 +105,7 @@ bvp_scores_proposed:
 - [x] The reader(s) named by the profile are warmed at startup in a background daemon thread, so the first request no longer builds them on the request thread
 - [x] After the fix, the first GET of /, /cron and /tasks issued once the warm-up finished is under 3 s on this repo, and the first GET /approvals is at its warm steady state rather than the cold build; before/after numbers in Updates (reworded after measurement — see Decisions)
 - [x] Regression test: a unit test that fails on the pre-fix code shows the startup warm-up is started from both serve entry points and fills the cache off the request thread
-- [ ] `bin/fw vendor self --check` is clean; operator's Watchtower restarted once and `bin/fw watchtower current` exits 0
+- [x] `bin/fw vendor self --check` is clean; operator's Watchtower restarted once and `bin/fw watchtower current` exits 0
 
 ### Human
 - [ ] [REVIEW] The /approvals page looks and behaves unchanged, only the first load is faster
@@ -290,7 +290,7 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 python3 -m pytest tests/unit/test_t4363_startup_warmup.py -q > /tmp/.t4363.out 2>&1 && grep -q passed /tmp/.t4363.out
-bin/fw vendor self --check
+bin/fw vendor self --check --task T-4363
 bin/fw watchtower current
 
 <!-- (RCA section is below, after Evolution) REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
