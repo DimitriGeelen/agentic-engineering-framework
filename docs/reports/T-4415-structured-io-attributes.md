@@ -134,6 +134,59 @@ On an `aef:input` an expectation is a **precondition**: what this step expects t
 6. Prior art we should align names with: BPMN `ioSpecification` and `dataInput`, Camunda/Zeebe input/output mappings,
    the Open Data Contract Standard, and others.
 
+## External review of draft 1 (2026-10-21)
+
+**The seats.** Isolated (outside the repo, tools off, bundle only):
+
+- codex and claude-code answered. Their full texts are in `docs/reports/T-4415-reviews/`.
+- opencode failed on its retired model (T-4506, pending).
+- antigravity has no isolation block in the registry, so it was not run.
+
+**Where both reviewers converge independently:**
+
+1. **C should reuse JSON Schema keyword names and semantics, not an invented op set.**
+   - Use `const`, `enum`, `minimum` / `maximum` / `exclusiveMinimum` / `exclusiveMaximum`, and `pattern`.
+   - The draft's `oneOf` collides with JSON Schema `oneOf`, and `range` hides whether bounds are inclusive.
+   - SHACL comes in through `ruleRef` with a declared profile, for ontology-backed producers.
+   - FEEL is rejected: every generator would need a FEEL parser, and unary tests cannot tell an absent field from a
+     null one.
+2. **B: field selection belongs on the io,** but it needs a stable field reference (`fieldRef`, a field IRI such as
+   `sf:Opportunity.Id`) next to the traversal `path`. Reusable selections go through a named view (`viewRef`).
+3. **The type-rule versus step-expectation line is right.**
+   - Add lint: an expectation that contradicts the type is an error; one implied by the type is a warning.
+   - An output expectation is an assertion to check, not an assignment.
+   - Narrowing may tighten the type, never loosen it.
+4. **Additivity is intended but not yet shown.**
+   - A's closed `type` list must equal v1.0's accepted values exactly.
+   - B must not require a resolvable type on flat maps.
+   - A single-field io (greenfield) needs a home: `typeRef` to a property IRI, or `fieldRef`.
+   - OWL is open-world, so it does not by itself give closed-record validation.
+5. **What must be specified before generation:**
+   - literal typing (taken from the field type);
+   - absent versus null;
+   - one regex dialect (ECMA-262);
+   - AND across multiple `aef:expect`;
+   - list paths;
+   - QName prefix resolution;
+   - version pinning for `typeRef`;
+   - behaviour on a failed precondition;
+   - data-flow linkage between steps (is `ref` the join key?).
+6. **Names:**
+   - `dataType` becomes `conceptRef` / `semanticRef`, because it collides with XSD/OWL datatype.
+   - `aef:attr` becomes `aef:property`.
+   - `role` must be defined or dropped.
+   - E (the inline structure) is deferred to v1.2 or made non-normative: greenfield rejects it and no consumer needs it.
+7. **Prior art:**
+   - Document a mapping to BPMN `itemDefinition` / `structureRef` / `isCollection`, without claiming equivalence.
+   - Never shorten `sourceSystem` to `source`, because that collides with Zeebe mappings.
+   - Align with ODCS `logicalType`, `examples` and quality rules where they fit.
+
+**Draft 2 direction (agent):**
+
+- **Adopt:** points 1, 2 and 3; `dataType` becomes `conceptRef`; E is deferred.
+- **Specify:** the gaps in point 5.
+- **Pending:** 832/greenfield's check against VZN-T1 v26 and WT-01 before draft 2 is fixed.
+
 ## Next step
 
 1. Write the exact attribute names and the v1.1 placement as normative text.
