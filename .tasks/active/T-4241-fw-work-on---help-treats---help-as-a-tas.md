@@ -7,10 +7,10 @@ description: >
   claim 20. Fix: --help/-h print usage and the flag list for work-on (and check other
   fw verbs for the same).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:43:40Z
-last_update: '2026-10-17T13:46:22Z'
+last_update: 2026-10-21T18:54:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw work-on --help` and `fw work-on -h` exit 0 and print usage plus the flag list (--type, --description, --owner, --horizon, --tags, --related, --recommendation, --rationale, --i-am-human, --switch-focus) on stdout
+- [x] `--help`/`-h` never reaches create-task.sh: no task is created and focus is unchanged
+- [x] No-arg `fw work-on` keeps its existing usage + exit 1 (t2859 usage-examples test stays green)
+- [x] Regression bats `tests/unit/t4241_work_on_help.bats` fails before the fix and passes after
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -143,6 +145,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+bash -n bin/fw
+timeout 300 bats tests/unit/t4241_work_on_help.bats > /tmp/.t4241.out 2>&1 && ! grep -q "^not ok" /tmp/.t4241.out
+test "$(grep -c '# skip' /tmp/.t4241.out)" -eq 0
+timeout 300 bats tests/unit/t2859_work_on_usage_examples.bats > /tmp/.t4241b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4241b.out
+out=$(bin/fw work-on --help </dev/null 2>&1); echo "$out" | grep -q -- "--type" && ! echo "$out" | grep -q "Missing required"
+bin/fw vendor self --check --task T-4241
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -275,6 +283,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** `fw work-on --help` (and `-h`) printed `ERROR: Missing required flag(s): --type` and exited 1 instead of showing help (reported by dimitri-mint-dev P-017, claim 20, against v1.8.10; reproduced on bleeding-edge 2026-10-21).
+
+**Root cause:** `bin/fw` `work-on)` branch (~line 9404) takes `$1` as `wo_target` and only special-cases empty and `^T-[0-9]+$`. Anything else, `--help` included, falls into the create path and is passed on as `create-task.sh --name "--help"`, which refuses for missing `--type` off-tty. On a tty it would prompt for a type and could create a task literally named `--help`.
+
+**Why structurally allowed:** the only test of the usage surface (t2859) exercises the no-arg form; nothing asserted that the conventional help flags are recognised before a positional argument is treated as a task name.
+
+**Prevention:** `tests/unit/t4241_work_on_help.bats` pins `--help`/`-h` → exit 0, flag list on stdout, no task file created, focus untouched. Sibling verbs with the same class are recorded under Decisions for their own tasks.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -353,6 +369,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-21 — scope: work-on only
+- **Chose:** fix `fw work-on` only; record siblings found with the same class.
+- **Why:** one bug = one task. Spot-check found `fw inception start --help` (hits the recommendation gate) and `fw context focus --help` ("Task not found: --help") share the class; `fw task create --help` is fine.
+- **Rejected:** fixing all verbs here (separate parsers, separate regressions).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -369,3 +390,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4241-fw-work-on---help-treats---help-as-a-tas.md
 - **Context:** Initial task creation
+
+### 2026-10-21T18:54:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

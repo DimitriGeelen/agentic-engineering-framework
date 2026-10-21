@@ -4950,7 +4950,16 @@ if len(rows) > 5:
             if [ "$_ut_count" -gt 12 ]; then
                 echo -e "         … $((_ut_count - 12)) more"
             fi
-            echo -e "         An untracked completion copy that never got committed is the T-2091 divergence class. Commit it (git add + fw git commit) or remove the orphan. See T-2121 prong 3."
+            # T-4260: init-seeded onboarding tasks are not orphans — never offer removal for them.
+            local _ut_onb _ut_onb_count=0
+            _ut_onb=$(fw_untracked_onboarding_tasks "$PROJECT_ROOT" 2>/dev/null || true)
+            [ -n "$_ut_onb" ] && _ut_onb_count=$(printf '%s\n' "$_ut_onb" | grep -c .)
+            if [ "$_ut_onb_count" -gt 0 ]; then
+                echo -e "         $_ut_onb_count of these are onboarding tasks seeded by fw init — commit them (git add .tasks/ + fw git commit); do not delete them."
+            fi
+            if [ "$_ut_onb_count" -lt "$_ut_count" ]; then
+                echo -e "         An untracked completion copy that never got committed is the T-2091 divergence class. Commit it (git add + fw git commit) or remove the orphan. See T-2121 prong 3."
+            fi
             warnings=$((warnings + 1))
         else
             echo -e "  ${GREEN}OK${NC}  No untracked task files under .tasks/{active,completed}/"
@@ -9409,6 +9418,29 @@ PYREVQ
             echo '  (--type is required off-tty: build, refactor, test, inception, ...)'
             echo '  fw work-on T-042                                         # Resume existing task'
             exit 1
+        fi
+        # T-4241: help flags must not fall through to the create path as a task
+        # named "--help" (off-tty: "Missing --type"; on a tty: a real task).
+        if [ "$wo_target" = "--help" ] || [ "$wo_target" = "-h" ]; then
+            echo "Usage:"
+            echo '  fw work-on "Fix login bug" --type build [options]   # Create new task + start + focus'
+            echo '  fw work-on T-042                                      # Resume existing task'
+            echo ""
+            echo "Options (create form; passed to fw task create):"
+            echo "  --type TYPE              build, refactor, test, inception, ... (required off-tty)"
+            echo "  --description TEXT       Task description (default: the task name)"
+            echo "  --owner OWNER            Owner (default: agent)"
+            echo "  --horizon now|next|later Scheduling horizon (default: now)"
+            echo "  --tags TAGS              Comma-separated tags"
+            echo "  --related IDS            Related task ids"
+            echo "  --recommendation REC     GO|NO-GO|DEFER (required for --type inception under an agent)"
+            echo "  --rationale TEXT         Rationale for --recommendation"
+            echo "  --i-am-human             Operator override for agent-refused gates"
+            echo "  --switch-focus           Acknowledge moving focus away from the current task"
+            echo ""
+            echo "Options (resume form):"
+            echo "  --i-am-demo-orchestrator Resume a demo_target task (or FW_I_AM_DEMO_ORCHESTRATOR=1)"
+            exit 0
         fi
 
         if [[ "$wo_target" =~ ^T-[0-9]+$ ]]; then
