@@ -1,13 +1,20 @@
 ---
 id: T-4569
-name: "T-4515 revives dead project hook lines: a line after 'exit 0' in v1.8.14 pre-commit runs on every commit after upgrade (cloud job 2)"
+name: "T-4515 revives dead project hook lines: a line after 'exit 0' in v1.8.14 pre-commit
+  runs on every commit after upgrade (cloud job 2)"
 description: >
-  Cloud job 2 (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md section 3 step 4-5): an 'echo PROJECT-GATE-RAN' appended to a stock v1.8.14 pre-commit sat after an 'exit 0' and never ran; after fw upgrade the hook is wrapped in the managed block and T-4515 keeps the line ACTIVE, so it now runs on every commit. Preserving project lines must preserve whether they were reachable: a line after an unconditional exit in the old hook must stay inert (commented, with a notice). Regression test.
+  Cloud job 2 (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md
+  section 3 step 4-5): an 'echo PROJECT-GATE-RAN' appended to a stock v1.8.14 pre-commit
+  sat after an 'exit 0' and never ran; after fw upgrade the hook is wrapped in the
+  managed block and T-4515 keeps the line ACTIVE, so it now runs on every commit.
+  Preserving project lines must preserve whether they were reachable: a line after
+  an unconditional exit in the old hook must stay inert (commented, with a notice).
+  Regression test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, git-hook, G-122]
 components: []
 related_tasks: [T-4515]
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:48:13Z
-last_update: 2026-10-21T21:48:13Z
-date_finished: null
+last_update: '2026-10-21T22:00:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-21T21:52:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-21T22:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4569: T-4515 revives dead project hook lines: a line after 'exit 0' in v1.8.14 pre-commit runs on every commit after upgrade (cloud job 2)
@@ -63,8 +98,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Upgrading an old framework hook whose project line sits after a top-level unconditional `exit` keeps that line inert: it is commented out with a T-4569 notice, and a commit does not run it
+- [x] Project lines that were reachable in the old hook (before any top-level exit) stay ACTIVE and run, as T-4515 intends
+- [x] Regression bats under tests/unit/ covers both cases and fails without the fix; existing t4515 hook bats stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +285,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n agents/git/lib/hooks.sh
+timeout 600 bats tests/unit/t4569_install_hooks_dead_lines_stay_inert.bats tests/unit/t4515_install_hooks_keep_gates_active.bats tests/unit/t4403_hook_block_preserve.bats > /tmp/.t4569v.out 2>&1 && ! grep -q "^not ok" /tmp/.t4569v.out
+test "$(grep -c '# skip' /tmp/.t4569v.out)" -eq 0
+bin/fw vendor self --check --task T-4569
 
 ## RCA
 
@@ -265,6 +305,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** cloud job 2 appended `echo PROJECT-GATE-RAN` to a stock v1.8.14 pre-commit, where it sat after the template's final `exit 0` and never ran. After `fw upgrade` the hook is wrapped in the managed block and the line prints on every commit. Reproduced locally: v1.8.14 `git archive` → install-hooks into a throwaway repo → append the line → current install-hooks → the line runs.
+
+**Root cause:** `_fw_hook_compose` (agents/git/lib/hooks.sh, the stock-prefix branch T-4568 is adding and the old-framework `grep -vxF -f "$block"` branch from T-4515) picks out the project lines by *content*: what the template does not contain. That throws away *position*. The old hook's `exit 0` is a template line, so it is dropped, and every line that followed it is put below the block, where the block's `( … ) || exit $?` falls through to it. The consumer-shell branch is not affected: it keeps the whole body, `exit` included.
+
+**Why structurally allowed:** the T-4515 and T-4403 fixtures appended their "consumer gate" after the raw template with `>>`. That is after `exit 0`, so it was dead in the old hook too. The tests pinned "kept and running" for a line that had never run, so nothing could tell "preserved" apart from "revived".
+
+**Prevention:** `_fw_hook_first_exit` finds the old hook's first column-0 unconditional `exit`. Kept lines after it are written commented out under a `# T-4569: … kept INERT` header. That header is deliberately not the T-4403 header, so doctor's "gates do not run" WARN stays quiet. tests/unit/t4569_install_hooks_dead_lines_stay_inert.bats runs the installed hook and counts what executed, in three cases: a dead line after the exit, a reachable line plus a dead one, and the cloud-job v1.8.14 stock hook. The t4515/t4403 fixtures now put their gate before the exit, so they test a gate that actually ran.
 
 ## Evolution
 
@@ -346,3 +394,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4569-t-4515-revives-dead-project-hook-lines-a.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:52:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

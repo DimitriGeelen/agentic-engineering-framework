@@ -76,7 +76,7 @@ _install() {
         inb && ($0 == "(" || $0 == ") || exit $?") {next}
         {print}' "$HOOKS/pre-commit" > "$TEST_TMP/raw"
     ! grep -q "$BEGIN_RE" "$TEST_TMP/raw" || false
-    echo 'echo consumer-migrated-line' >> "$TEST_TMP/raw"
+    sed -i '2i echo consumer-migrated-line' "$TEST_TMP/raw"   # before the old exit 0 (T-4569)
     cp "$TEST_TMP/raw" "$HOOKS/pre-commit"
     run _install
     [ "$status" -eq 0 ]

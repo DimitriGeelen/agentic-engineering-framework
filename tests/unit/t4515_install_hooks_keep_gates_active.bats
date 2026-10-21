@@ -101,7 +101,7 @@ _doctor() {
 @test "T-4515: re-running install-hooks and --force keep the gate active and executing" {
     run _install
     _raw_old_framework_hook "$HOOKS/pre-commit" > "$TEST_TMP/raw"
-    echo "$GATE_LINE" >> "$TEST_TMP/raw"
+    sed -i "2i $GATE_LINE" "$TEST_TMP/raw"   # reachable: before the old exit 0 (T-4569)
     cp "$TEST_TMP/raw" "$HOOKS/pre-commit"
     run _install
     [ "$status" -eq 0 ]
@@ -117,7 +117,7 @@ _doctor() {
 @test "T-4515: install-hooks never writes a commented-out copy of a project line" {
     run _install
     _raw_old_framework_hook "$HOOKS/pre-commit" > "$TEST_TMP/raw"
-    echo "$GATE_LINE" >> "$TEST_TMP/raw"
+    sed -i "2i $GATE_LINE" "$TEST_TMP/raw"   # reachable: before the old exit 0 (T-4569)
     cp "$TEST_TMP/raw" "$HOOKS/pre-commit"
     run _install
     [ "$status" -eq 0 ]
@@ -129,7 +129,8 @@ _doctor() {
     _raw_old_framework_hook "$HOOKS/pre-commit" > "$TEST_TMP/raw"
     # An opener whose closer is a line the template also has (so it is not kept):
     # the kept lines alone cannot parse after the block.
-    printf '%s\ncase x in\n' "$GATE_LINE" >> "$TEST_TMP/raw"
+    # Reachable, before the old exit 0: lines after it stay inert (T-4569).
+    sed -i "2i case x in" "$TEST_TMP/raw"; sed -i "2i $GATE_LINE" "$TEST_TMP/raw"
     cp "$TEST_TMP/raw" "$HOOKS/pre-commit"; chmod +x "$HOOKS/pre-commit"
     cp "$HOOKS/pre-commit" "$TEST_TMP/before"
     run _install
