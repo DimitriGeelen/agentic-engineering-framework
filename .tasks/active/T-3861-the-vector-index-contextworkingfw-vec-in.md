@@ -7,7 +7,7 @@ description: >
   ring20-dashboard T-2462 finding 9 (2026-10-05). Add the index paths to the consumer
   .gitignore that init/upgrade manage, and an audit check.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T07:39:47Z
-last_update: '2026-10-05T07:45:54Z'
+last_update: 2026-10-21T09:05:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced at HEAD: `fw init` writes `.context/working/.gitignore` with no rule for `fw-vec-index.db` or its build/tmp siblings, and `fw upgrade` never adds one to an existing consumer
+- [x] `fw init` writes ignore rules covering the vector index and every sibling the reindex writes (tmp/building/sqlite journal files)
+- [x] `fw upgrade` appends the missing rules to an existing consumer's `.context/working/.gitignore` idempotently (second run adds nothing), creating the file if absent
+- [x] `fw audit` WARNs when the vector index file exists and `git check-ignore` says it is not ignored, or when it is tracked
+- [x] Regression bats under tests/unit/ fails without the fix and passes with it; `bin/fw vendor self --check --task T-3861` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -128,6 +131,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n lib/vec-index-gitignore.sh && bash -n lib/init.sh && bash -n lib/upgrade.sh && bash -n agents/audit/audit.sh
+timeout 500 bats tests/unit/t3861_vec_index_gitignore.bats > /tmp/.t3861.out 2>&1 && ! grep -q "^not ok" /tmp/.t3861.out
+test "$(grep -c '# skip' /tmp/.t3861.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/t3861_vec_index_gitignore.bats > /tmp/.t3861.lint 2>&1 && grep -q clean /tmp/.t3861.lint
+bin/fw vendor self --check --task T-3861
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -271,6 +280,16 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** ring20-dashboard (T-2462 finding 9) had a 1.2 GB unreferenced blob in `.git`: the vector index `.context/working/fw-vec-index.db` was staged by a handover's `git add -A .context`.
+
+**Root cause:** the index and its scratch (`.reindex.<pid>.tmp[-journal]`, `.<pid>.building`, `.manifest.json`, `.reindex.lock`, sqlite `-wal/-shm`) are ignored only by the framework repo's ROOT `.gitignore` (`.gitignore:108-130`), which consumers never inherit. `fw init` writes just `.context/working/.gitignore` (`lib/init.sh:368`, heredoc `WGIT`) and that list named none of them; `fw upgrade` never touched the file, so existing consumers could not be repaired either. Reproduced at HEAD 410c26372: a fresh `fw init` + `touch .context/working/fw-vec-index.db` → `git check-ignore` exits 1 (test 7 of the new bats, run against HEAD's lib/init.sh: `not ok`).
+
+**Why structurally allowed:** every ignore rule for the index was added while testing in the framework repo itself (T-3058, T-3860), where the root `.gitignore` made the gap invisible; no check asked "is the index ignored *in the consumer*". The T-1845 large-file guard only refuses at commit time and only where its hook is installed.
+
+**Prevention:** one rule list in `lib/vec-index-gitignore.sh`, read by init (fresh write), upgrade step [8/10] (append-missing, idempotent) and `fw audit` (`check_vec_index_ignored`: WARN when the live index is tracked or `git check-ignore` misses it). `tests/unit/t3861_vec_index_gitignore.bats` pins the sibling names, idempotency, the tracked case, and a real `fw init` end-to-end.
+
+**Commit note:** the `fw upgrade` hunk (lib/upgrade.sh step 8, both copies) was swept into T-3862's commit 85a9c4368 by a concurrent `git commit -- lib/upgrade.sh`; the rest landed in 3ad19be28. Manual check: a consumer with a stripped working/.gitignore → `fw upgrade` printed `ADDED 3 vector-index ignore rule(s)`, a second run `OK Vector index gitignored`, and `git check-ignore` matched `fw-vec-index.db.7.building`.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -351,3 +370,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3861-the-vector-index-contextworkingfw-vec-in.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:05:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
