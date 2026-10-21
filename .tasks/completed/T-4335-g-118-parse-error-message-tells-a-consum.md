@@ -10,12 +10,12 @@ description: >
   the top) knows FW_BIN_DIR: name the actual path of the file that does not parse,
   relative to PROJECT_ROOT when inside it.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [hooks, consumer, ux]
-components: []
+components: [bin/fw]
 related_tasks: []
 origin: {kind: "peer", source: "832"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,8 +45,8 @@ origin: {kind: "peer", source: "832"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T21:19:51Z
-last_update: 2026-10-21T18:16:07Z
-date_finished:
+last_update: 2026-10-21T18:55:29Z
+date_finished: 2026-10-21T18:55:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -393,3 +393,20 @@ bin/fw vendor self --check --task T-4335
 ### 2026-10-21T18:16:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5a04c131
+- **Timestamp:** 2026-10-21T18:55:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T18:55:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

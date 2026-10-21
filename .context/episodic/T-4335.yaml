@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4335: G-118 parse-error message tells a consumer to run 'bash -n bin/fw' from the framework repo root; in a consumer the file is .agentic-framework/bin/fw
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:56:04Z
+# ============================================================================
+
+task_id: T-4335
+task_name: "G-118 parse-error message tells a consumer to run 'bash -n bin/fw' from the framework repo root; in a consumer the file is .agentic-framework/bin/fw"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T21:19:51Z
+completed: 2026-10-21T18:55:29Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-21T20:21:43+02:00
+last_commit: 2026-10-21T20:21:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  G-118 degraded-hook repair line names the real unparseable file (.agentic-framework/bin/fw in a consumer, bin/fw in the framework repo, absolute when outside the project) and the directory to run it from; regression bats
+
+# Key outcomes
+outcomes:
+  - 'Repair line names the actual unparseable file, relative to PROJECT_ROOT when inside it (consumer: `bash -n .agentic-framework/bin/fw`, framework repo: `bash -n bin/fw`), and absolute otherwise'
+  - 'Repair line says which directory to run it from (PROJECT_ROOT), not "the framework repo root"'
+  - 'Regression bats tests/unit/t4335_g118_repair_path.bats fails before the fix and passes after; t4303 suite still green'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4335` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4335-g-118-parse-error-message-tells-a-consum.md'
+  - 'tests/unit/t4303_hook_routes_when_binfw_unparseable.bats'
+  - 'tests/unit/t4335_g118_repair_path.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T20:21:43'
+    action: 'T-4335: G-118 degraded-hook repair line names the real unparseable file (.agentic-framework/bin/fw in a consumer, bin/fw in the framework repo, absolute when outside the project) and the directory to run it from; regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4175 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [hooks, consumer, ux]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4175
+  commits: 1
+  files_changed: 5
+  lines_added: 117
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4335-g-118-parse-error-message-tells-a-consum.md
+generated_by: context-agent-hybrid
