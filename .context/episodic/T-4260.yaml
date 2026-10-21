@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4260: Untracked-task doctor check miscounts (dir collapsed to 1) and suggests removing init-seeded tasks.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T20:38:39Z
+# ============================================================================
+
+task_id: T-4260
+task_name: "Untracked-task doctor check miscounts (dir collapsed to 1) and suggests removing init-seeded tasks."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:26:18Z
+completed: 2026-10-21T20:38:05Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-21T21:01:54+02:00
+last_commit: 2026-10-21T21:01:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  untracked-task doctor check lists every file project-relative (ls-files --others, not porcelain -unormal) and never offers removal for init-seeded onboarding tasks; regression bats
+
+# Key outcomes
+outcomes:
+  - '`fw_untracked_tasks` lists every untracked file individually when a whole `.tasks/active/` (or `.tasks/`) directory is untracked — N seeded files report N, not 1 (no directory collapse)'
+  - '`fw_untracked_tasks` prints paths relative to the project root even when the project is a subdirectory of an enclosing git repo (no `sub/.tasks/...` prefix)'
+  - 'New `fw_untracked_onboarding_tasks` names the untracked files tagged `onboarding`; `fw doctor`''s untracked-task WARN tells the operator to commit init-seeded onboarding tasks and does not offer removal for them'
+  - 'Regression bats in `tests/unit/t2516_untracked_tasks.bats` fail on the pre-fix code and pass after; existing cases stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - 'lib/branch-hygiene.sh'
+  - '.tasks/active/T-4260-untracked-task-doctor-check-miscounts-di.md'
+  - 'tests/unit/t2516_untracked_tasks.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T21:01:54'
+    action: 'T-4260: untracked-task doctor check lists every file project-relative (ls-files --others, not porcelain -unormal) and never offers removal for init-seeded onboarding tasks; regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6071 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6071
+  commits: 1
+  files_changed: 4
+  lines_added: 106
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4260-untracked-task-doctor-check-miscounts-di.md
+generated_by: context-agent-hybrid
