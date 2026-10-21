@@ -55,12 +55,34 @@ def compute_context_tokens_detail(lines, session_start_ts=""):
     T-1088) excludes entries from before the current session started — e.g.
     pre-compact entries `claude -c` carries over in the same JSONL.
     """
+    return compute_context_tokens_status(lines, session_start_ts)[:2]
+
+
+def compute_context_tokens_status(lines, session_start_ts=""):
+    """Return (tokens, dominant_model, status, provisional) for THIS conversation.
+
+    `tokens` and `dominant_model` are exactly what compute_context_tokens_detail
+    returns. `status` says WHY (T-4174):
+      measured — >= 2 dominant-model entries; tokens is a trusted reading
+      young    — the transcript parses, but fewer than 2 in-scope entries exist
+                 yet (the first tool call of a fresh or restarted session).
+                 `provisional` is the newest in-scope reading (0 if none).
+      empty    — not one parseable JSON line: nothing was measured at all.
+    A young session is a measurement, not a failed scan; before T-4174 the
+    two shared one signal and the gauge read "scan failed" right after every
+    restart. Whether to trust `provisional` is the caller's decision (a lone
+    high reading is the T-2885 foreign-poisoning shape).
+    """
     entries = []  # (model, token_total) since the last compact_boundary, in order
+    parsed = 0
     for line in lines:
         try:
             e = json.loads(line)
         except Exception:
             continue
+        if not isinstance(e, dict):
+            continue
+        parsed += 1
 
         # T-2322: a compact_boundary discards everything before it — pre-compact
         # usage belongs to a conversation that no longer exists in this window.
@@ -87,7 +109,7 @@ def compute_context_tokens_detail(lines, session_start_ts=""):
             entries.append((model, total))
 
     if not entries:
-        return (0, "")
+        return (0, "", "young" if parsed else "empty", 0)
 
     counts = Counter(model for model, _ in entries)
     dominant_model, _ = counts.most_common(1)[0]
@@ -95,9 +117,9 @@ def compute_context_tokens_detail(lines, session_start_ts=""):
 
     # Fail-open, not fail-guess: too few entries to trust a scope decision.
     if len(in_scope) < 2:
-        return (0, "")
+        return (0, "", "young", in_scope[-1])
 
-    return (in_scope[-1], dominant_model)
+    return (in_scope[-1], dominant_model, "measured", in_scope[-1])
 
 
 def main():
@@ -117,9 +139,17 @@ def main():
     # failure, so catching here just makes that outcome deliberate and quiet
     # instead of an accidental crash with the same effect.
     try:
-        tokens, model = compute_context_tokens_detail(sys.stdin, session_start_ts)
+        tokens, model, status, provisional = compute_context_tokens_status(
+            sys.stdin, session_start_ts)
     except Exception:
         sys.exit(1)
+
+    # T-4174: --with-status adds the state and the provisional reading as
+    # fields 3 and 4, so budget-gate.sh can tell a young session from a failed
+    # scan. Opt-in for the same reason --with-model is.
+    if "--with-status" in flags:
+        print(f"{tokens}\t{model}\t{status}\t{provisional}")
+        return
 
     # DEFAULT STDOUT IS A BARE INTEGER AND MUST STAY THAT WAY (T-2885/T-3204
     # pinned contract — tests/unit/t2885_context_tokens_model_scope.bats asserts

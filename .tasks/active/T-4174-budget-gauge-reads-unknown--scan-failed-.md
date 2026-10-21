@@ -10,10 +10,10 @@ description: >
   / session id resolution after -n restart) and make it report a correct low value
   instead of unknown.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T16:39:40Z
-last_update: '2026-10-13T16:46:18Z'
+last_update: '2026-10-21T22:11:33Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:11:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4174: Budget gauge reads 'unknown — scan failed or produced no data' in the session started by a budget restart (blind right after restart) (dimitri-mint-dev P-012, their T-109)
@@ -96,8 +112,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/context_tokens.py --with-status` distinguishes a young session (parseable transcript, <2 in-scope usage entries) from a failed scan, and reports the lone reading as provisional; default and `--with-model` output unchanged
+- [x] budget-gate.sh writes `level: ok`, the real low token count and `"provisional": true` for a young session whose reading is below the warn line, instead of `unknown — scan failed or produced no data`
+- [x] A lone reading at/above the warn line (the T-2885 foreign-poisoning shape), an unparseable/empty transcript and a crashing scan still write `unknown`
+- [x] Regression bats `tests/unit/t4174_budget_young_session.bats` fails before the fix and passes after; t3241/t2885/t3204/t3598 neighbours still green
+- [ ] Vendored copy synced (`bin/fw vendor self --check --task T-4174` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,6 +279,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4174_budget_young_session.bats > /tmp/.t4174.out 2>&1 && ! grep -q "^not ok" /tmp/.t4174.out
+test "$(grep -c '# skip' /tmp/.t4174.out)" -eq 0
+timeout 300 bats tests/unit/t3241_budget_status_unknown_state.bats tests/unit/t2885_context_tokens_model_scope.bats > /tmp/.t4174n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4174n.out
+bin/fw vendor self --check --task T-4174
 
 ## RCA
 
@@ -276,6 +299,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** In the session a budget restart starts (dimitri-mint-dev P-012, new session 43b771a3), `.context/working/.budget-status` read `level: unknown, tokens: null, note: "scan failed or produced no data"` — the gauge was blind right after the restart, when it matters most (the operator wants to see the fresh session start low).
+
+**Root cause:** `lib/context_tokens.py:98-99` returns `(0, "")` whenever fewer than two dominant-model usage entries exist since the last compact boundary (the T-2885 "do not guess" rule). The first PreToolUse call of a fresh session runs after exactly ONE assistant response (often a single tool_use block = one usage entry), so it always lands in that branch. `agents/context/budget-gate.sh:575-581` treats an empty model as `SCAN_OK=0` and writes `unknown — scan failed or produced no data` (line 627). The transcript was found and parsed fine; "young" and "failed" shared one signal. Because the slow path then reruns only every `BUDGET_RECHECK_INTERVAL` (5) calls, the blind reading persists for several calls.
+
+**Why structurally allowed:** T-3241 deliberately pinned the under-filled case to `unknown` (tests/unit/t3241 "underfilled: a single usage entry") to stop it being reported as a fabricated `ok/0`. Fixing that collapse correctly, it collapsed in the other direction: a genuinely measured young session and a crashed scan became the same "unknown". No test exercised the fresh-after-restart shape (one user line + one usage entry) as a *healthy* case.
+
+**Prevention:** `context_tokens.py --with-status` now names the state (`measured` / `young` / `empty`) and carries the lone reading separately; the gate reports a young session below the warn line as `ok` with the real tokens and `"provisional": true`, and keeps `unknown` for empty/unparseable/crashed scans and for a lone reading at/above warn (the foreign-poisoning shape T-2885 guards). `tests/unit/t4174_budget_young_session.bats` pins all four shapes.
 
 ## Evolution
 
@@ -341,6 +372,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — how far to trust a lone young-session reading
+- **Chose:** report it (ok + real tokens + `"provisional": true`) only below the warn line; at/above warn stay `unknown`. Revised the T-3241 "single usage entry → unknown" test to a lone HIGH reading, which is the case it still protects.
+- **Why:** a session with one response cannot have filled its context, so a low reading is a correct low value; a lone high reading is exactly the foreign cache-priming shape T-2885 refuses, and trusting it could false-block at critical. The `provisional` marker keeps T-3241's rule that an unconfirmed number is never indistinguishable from a confirmed one.
+- **Rejected:** always trusting the lone reading (reopens T-2885 poisoning); writing ok/0 (the fabricated zero T-3241 removed); lowering the context_tokens.py `< 2` threshold (changes the pinned default contract for both gauges).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -357,3 +393,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4174-budget-gauge-reads-unknown--scan-failed-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:11:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

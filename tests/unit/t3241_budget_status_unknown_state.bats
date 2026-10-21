@@ -78,9 +78,12 @@ EOF
 
 # --- Trigger path 2 (T-3241 original filing): fewer than 2 in-scope entries ---
 
-@test "underfilled: a single usage entry (only 1 in-scope) writes level=unknown, not ok/0" {
+# T-4174: a lone reading BELOW the warn line is now a provisional young-session
+# reading (tests/unit/t4174_budget_young_session.bats); a lone reading at or above
+# it is the T-2885 poisoning shape and must still be unknown, never ok/0.
+@test "underfilled: a single HIGH usage entry (only 1 in-scope) writes level=unknown, not ok/0" {
     f="$TEST_TEMP_DIR/single.jsonl"
-    printf '%s\n' '{"message":{"model":"claude-opus-5","usage":{"input_tokens":50000,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}' > "$f"
+    printf '%s\n' '{"message":{"model":"claude-opus-5","usage":{"input_tokens":280000,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}' > "$f"
     run_gate "underfilled" "$f"
     [ "$status" -eq 0 ]
     echo "$STATUS_JSON" | grep -q '"level": "unknown"'

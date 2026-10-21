@@ -567,12 +567,26 @@ fi
 # genuine zero-usage session into the same branch below, producing
 # {"level":"ok","tokens":0} in both cases — byte-identical to every reader.
 # SCAN_OK preserves the distinction that fallback erased.
-SCAN_RESULT=$(tail -c 10000000 "$TRANSCRIPT" 2>/dev/null | python3 "$FRAMEWORK_ROOT/lib/context_tokens.py" "$SESSION_START_TS" --with-model 2>/dev/null)
+# T-4174: --with-status adds the scan state and the provisional reading. A
+# young session (first tool call after a start/restart: the transcript parses
+# but holds < 2 in-scope usage entries) is a measurement, not a failed scan —
+# it used to land in the "unknown — scan failed" branch below every time.
+# PROVISIONAL=1 reports its lone reading, but only below the warn line: a lone
+# HIGH reading is the foreign cache-priming shape T-2885 refuses to trust.
+SCAN_RESULT=$(tail -c 10000000 "$TRANSCRIPT" 2>/dev/null | python3 "$FRAMEWORK_ROOT/lib/context_tokens.py" "$SESSION_START_TS" --with-status 2>/dev/null)
 RAW_TOKENS=$(printf '%s' "$SCAN_RESULT" | cut -f1)
 RAW_MODEL=$(printf '%s' "$SCAN_RESULT" | cut -sf2)
+RAW_STATE=$(printf '%s' "$SCAN_RESULT" | cut -sf3)
+RAW_PROVISIONAL=$(printf '%s' "$SCAN_RESULT" | cut -sf4)
+PROVISIONAL=0
 if [[ "$RAW_TOKENS" =~ ^[0-9]+$ ]] && [ -n "$RAW_MODEL" ]; then
     TOKENS="$RAW_TOKENS"
     SCAN_OK=1
+elif [ "$RAW_STATE" = "young" ] && [[ "$RAW_PROVISIONAL" =~ ^[0-9]+$ ]] \
+        && [ "$RAW_PROVISIONAL" -lt "$TOKEN_WARN" ]; then
+    TOKENS="$RAW_PROVISIONAL"
+    SCAN_OK=1
+    PROVISIONAL=1
 else
     TOKENS=0
     SCAN_OK=0
@@ -612,6 +626,11 @@ if [ "$SCAN_OK" -eq 1 ]; then
         HR_JSON=", \"baseline_tokens\": ${BASELINE}, \"headroom_tokens\": ${HEADROOM}, \"headroom_ratio\": ${HEADROOM_RATIO}"
     else
         HR_JSON=', "baseline_tokens": null, "headroom_tokens": null, "headroom_ratio": null'
+    fi
+    # T-4174: mark a young-session reading so no reader mistakes it for a
+    # confirmed measurement (T-3241's honesty rule); the next recheck replaces it.
+    if [ "$PROVISIONAL" -eq 1 ]; then
+        HR_JSON="${HR_JSON}, \"provisional\": true, \"note\": \"young session: fewer than 2 usage entries yet\""
     fi
     # Write status file (fast-path cache for subsequent gate calls)
     printf '{"level": "%s", "tokens": %d, "timestamp": %d, "session_id": "%s", "claude_session_id": "%s", "source": "budget-gate"%s}' \
