@@ -881,6 +881,31 @@ AUDIT_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 AUDIT_DATE=$(date +"%Y-%m-%d")
 AUDIT_DATETIME=$(date +"%Y-%m-%d-%H%M")
 
+# T-4183 (832 OBS-380): finding text says `bin/fw`, which exists only in the
+# framework checkout. A consumer's fw is .agentic-framework/bin/fw, so a pasted
+# mitigation failed. Rewrite a standalone `bin/fw` token to the framework this
+# audit runs from: project-relative when it lives under the project, absolute
+# otherwise, unchanged in the framework repo. An already-qualified
+# `.agentic-framework/bin/fw` is not a standalone token and is left alone.
+_FW_CMD_DISPLAY=""
+_fw_cmd_text() {
+    case "$1" in *bin/fw*) ;; *) printf '%s' "$1"; return 0 ;; esac
+    if [ -z "$_FW_CMD_DISPLAY" ]; then
+        local _fr _pr
+        _fr=$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd) || _fr="$FRAMEWORK_ROOT"
+        _pr=$(cd "$PROJECT_ROOT" 2>/dev/null && pwd) || _pr="$PROJECT_ROOT"
+        case "$_fr" in
+            "$_pr") _FW_CMD_DISPLAY="bin/fw" ;;
+            "$_pr"/*) _FW_CMD_DISPLAY="${_fr#"$_pr"/}/bin/fw" ;;
+            *) _FW_CMD_DISPLAY="$_fr/bin/fw" ;;
+        esac
+    fi
+    if [ "$_FW_CMD_DISPLAY" = "bin/fw" ]; then printf '%s' "$1"; return 0; fi
+    local _d=$'\001' _rep="${_FW_CMD_DISPLAY//\\/\\\\}"
+    _rep="${_rep//&/\\&}"
+    printf '%s' "$1" | sed -E "s${_d}(^|[[:space:]'\"(\`])bin/fw([[:space:]'\"\`)]|\$)${_d}\1${_rep}\2${_d}g"
+}
+
 # Logging functions
 pass() {
     echo -e "${GREEN}[PASS]${NC} $1"
@@ -889,6 +914,7 @@ pass() {
 }
 
 warn() {
+    set -- "$(_fw_cmd_text "$1")" "$2" "$(_fw_cmd_text "$3")"
     echo -e "${YELLOW}[WARN]${NC} $1"
     echo "       Evidence: $2"
     echo "       Mitigation: $3"
@@ -915,6 +941,7 @@ warn() {
 fail() {
     local _scope="${4:-ref}" _reason="${5:-}"
     case "$_scope" in ref|worktree) ;; *) _scope="ref" ;; esac
+    set -- "$(_fw_cmd_text "$1")" "$2" "$(_fw_cmd_text "$3")"
     echo -e "${RED}[FAIL]${NC} $1"
     echo "       Evidence: $2"
     echo "       Mitigation: $3"
@@ -932,6 +959,7 @@ fail() {
 }
 
 info() {
+    set -- "$(_fw_cmd_text "$1")"
     echo -e "${CYAN}[INFO]${NC} $1"
     PASS_COUNT=$((PASS_COUNT + 1))
     FINDINGS+=("INFO|$1|")

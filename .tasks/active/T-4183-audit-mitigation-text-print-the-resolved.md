@@ -9,10 +9,10 @@ description: >
   the audit text was not. 832's fix: print the resolved framework path, which audit.sh
   already computes, or print bare fw.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:07:29Z
-last_update: '2026-10-13T19:16:04Z'
+last_update: 2026-10-21T22:06:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] audit.sh `warn()`/`fail()`/`info()` rewrite a standalone `bin/fw` token in finding text to the resolved framework command when PROJECT_ROOT is not the framework repo: `.agentic-framework/bin/fw` (project-relative) when the framework lives under the project, the absolute `$FRAMEWORK_ROOT/bin/fw` otherwise
+- [x] In the framework repo itself the text is unchanged (`bin/fw`), and an already-qualified `.agentic-framework/bin/fw` is never double-prefixed
+- [x] Regression bats `tests/unit/t4183_audit_fw_path_in_mitigations.bats` fails before the fix and passes after; neighbouring `tests/unit/audit.bats` stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,8 +260,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4183_audit_fw_path_in_mitigations.bats > /tmp/.t4183.out 2>&1 && ! grep -q "^not ok" /tmp/.t4183.out
+test "$(grep -c '# skip' /tmp/.t4183.out)" -eq 0
+bash -n agents/audit/audit.sh
+bin/fw vendor self --check --task T-4183
 
 ## RCA
+
+**Symptom:** in a consumer project, `fw audit` WARN/FAIL mitigations say `Run: bin/fw sidecar inbox`, `bin/fw vendor self`, `bin/fw task archive-eligible` … — pasted, they fail with `bin/fw: No such file or directory` (832 OBS-380, their T-1150). The line numbers in the description had drifted; ~50 such literals exist today (e.g. audit.sh:3126, :4471, :4501, :6941).
+
+**Root cause:** the mitigation literals in `agents/audit/audit.sh` hard-code the framework-repo path `bin/fw`, and the emitters `warn()`/`fail()`/`info()` (audit.sh:891, :915, :934) print the text verbatim. A consumer's fw is `.agentic-framework/bin/fw`, which audit.sh already knows as `$FRAMEWORK_ROOT` (audit.sh:19).
+
+**Why structurally allowed:** the audit is developed and exercised in the framework repo, where `bin/fw` resolves; T-3964 fixed the same class for arc rescore (an *executed* path) and its lint covers executed shell, not printed advice text.
+
+**Prevention:** the rewrite lives in the emitters, so every current and future literal is covered without touching ~50 call sites; pinned by `tests/unit/t4183_audit_fw_path_in_mitigations.bats` (vendored consumer, external framework root, framework repo, no-double-prefix).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -356,3 +369,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4183-audit-mitigation-text-print-the-resolved.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:06:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
