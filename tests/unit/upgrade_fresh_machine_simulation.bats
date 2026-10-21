@@ -166,6 +166,49 @@ TASK
     [[ "$output" == *"Commit blocked"* ]]
 }
 
+# ── T-2661 (T-2656 follow-up): the scanner's DATA, not just its script ──────
+# A vendored scanner with no .secret-scan-patterns is present-but-patternless:
+# it runs and matches nothing. Payload completeness must cover the data files,
+# and the patternless case must be as loud as the missing-scanner case above.
+
+@test "T-2661: vendored tree ships the secret-scan data files (patterns + allowlist)" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/proj"
+    make_upstream_bare "$upstream_bare"
+    make_fresh_consumer "$proj" "$upstream_bare"
+
+    [ -s "$proj/.agentic-framework/.secret-scan-patterns" ]
+    [ -f "$proj/.agentic-framework/.secret-scan-allowlist" ]
+    # Same bytes as the committed source — the consumer gets the live catalogue.
+    cmp -s "$proj/.agentic-framework/.secret-scan-patterns" "$FRAMEWORK_ROOT/.secret-scan-patterns"
+}
+
+@test "T-2661: present-but-patternless scanner is LOUD and strict mode blocks" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/proj"
+    make_upstream_bare "$upstream_bare"
+    make_fresh_consumer "$proj" "$upstream_bare"
+
+    (cd "$proj" && git init --quiet . 2>/dev/null || true)
+    run fresh_run "$proj" git install-hooks
+    [ -f "$proj/.git/hooks/pre-commit" ]
+
+    # Scanner stays; its catalogue goes (the T-2656 field state).
+    [ -f "$proj/.agentic-framework/agents/git/lib/secret-scan.sh" ]
+    rm -f "$proj/.agentic-framework/.secret-scan-patterns" "$proj/.secret-scan-patterns"
+    echo "t2661 staged" > "$proj/t2661.txt"
+    git -C "$proj" add t2661.txt
+
+    run bash -c "cd '$proj' && env -i PATH='/usr/local/bin:/usr/bin:/bin' HOME='$TEST_TEMP_DIR/home' bash .git/hooks/pre-commit"
+    [ "$status" -eq 0 ] || { echo "$output"; return 1; }
+    [[ "$output" == *"SECRET SCAN IS RUNNING WITHOUT PATTERNS"* ]] || { echo "$output"; return 1; }
+    [[ "$output" != *"SECRET SCAN IS NOT RUNNING"* ]]
+
+    run bash -c "cd '$proj' && env -i PATH='/usr/local/bin:/usr/bin:/bin' HOME='$TEST_TEMP_DIR/home' FW_SECRET_SCAN_STRICT=1 bash .git/hooks/pre-commit"
+    [ "$status" -eq 1 ] || { echo "$output"; return 1; }
+    [[ "$output" == *"patterns catalogue missing"* ]]
+}
+
 # NOTE on live (non-dry-run) upgrade: a network-backed upgrade against a real
 # remote (git fetch/clone over the wire, plus docs/component regen) can run
 # minutes long — impractical for a unit test gate. The "framework -> consumer"

@@ -744,6 +744,52 @@ _self_vendor_tools() {
     return 0
 }
 
+# T-2661: self-vendor the framework's ROOT single-file payload — the files
+# do_vendor's includes list names at the repo root rather than as a tree:
+# .secret-scan-patterns / .secret-scan-allowlist (T-2656: the scanner's data,
+# without which a vendored scanner runs patternless), status-transitions.yaml
+# (T-2674) and metrics.sh. No sibling covered them, so the tracked
+# .agentic-framework/.secret-scan-allowlist sat 666 bytes behind its source
+# behind a green --check and a green audit. Same "would sync" wording as the
+# siblings, so --check and the T-2240 pre-push gate pick it up with no new regex.
+# Parity: agents/audit/audit.sh:check_self_vendor_drift scans the same list.
+#
+# Inputs:  $1 — dry_run ("true"/"false")
+# Return:  0 always (nothing to sync, or consumer-skip)
+_SELF_VENDOR_ROOT_DATA=".secret-scan-patterns .secret-scan-allowlist status-transitions.yaml metrics.sh"
+_self_vendor_root_data() {
+    local dry_run="${1:-false}"
+    local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
+    # Consumer-safety mirror of the siblings: a consumer's vendored copy has no
+    # nested .agentic-framework/, so this is the early exit there.
+    [ -d "$_self_vendor" ] || return 0
+    local _svr_updated=0
+    local _svr_rel _svr_src _svr_dst
+    for _svr_rel in $_SELF_VENDOR_ROOT_DATA; do
+        _svr_src="$FRAMEWORK_ROOT/$_svr_rel"
+        _svr_dst="$_self_vendor/$_svr_rel"
+        [ -f "$_svr_src" ] || continue
+        # T-3165: real runs withhold a concurrent task's uncommitted files.
+        [ "$dry_run" = true ] || ! _sv_is_withheld "$_svr_src" || continue
+        _sv_scope_skip "$_svr_src" "$_svr_dst" && continue   # T-4419
+        if [ ! -f "$_svr_dst" ] || ! cmp -s "$_svr_src" "$_svr_dst"; then
+            if [ "$dry_run" != true ]; then
+                cp "$_svr_src" "$_svr_dst"
+                [ -x "$_svr_src" ] && chmod +x "$_svr_dst"
+            fi
+            _svr_updated=$((_svr_updated + 1))
+        fi
+    done
+    if [ "$_svr_updated" -gt 0 ]; then
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svr_updated root data file(s) to .agentic-framework/"
+        else
+            echo -e "  ${GREEN}Self-vendor:${NC} synced $_svr_updated root data file(s) to .agentic-framework/"
+        fi
+    fi
+    return 0
+}
+
 # T-2793 (OBS-151): self-vendor the VERSION file. Seventh sibling of
 # _self_vendor_libs / _templates / _policy / _shim / _agents / _web.
 #
@@ -1724,6 +1770,8 @@ do_upgrade() {
         _self_vendor_web "$dry_run"
         # T-4392: sibling sync — tools/ (the tree do_vendor ships whole).
         _self_vendor_tools "$dry_run"
+        # T-2661: sibling sync — root single-file payload (secret-scan data, …).
+        _self_vendor_root_data "$dry_run"
         # T-3064: sibling sync — pinned Workflow Designer build. Outside the
         # audit drift-scan shape (that scans {bin,lib,agents,web} only), so this
         # class is carried by `fw vendor self --check` and its own bats file.

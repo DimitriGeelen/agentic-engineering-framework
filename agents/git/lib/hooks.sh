@@ -576,6 +576,13 @@ fi
 _hits=$(PROJECT_ROOT="$PROJECT_ROOT" bash "$SCANNER" scan-staged 2>&1)
 _rc=$?
 
+# T-2661: a passing scan can still carry a warning (T-2656's "RUNNING WITHOUT
+# PATTERNS"). The 2>&1 capture above swallowed it on rc=0, so the fail-open
+# default was silent after all. Pass it through.
+if [ "$_rc" -eq 0 ] && [ -n "$_hits" ]; then
+    echo "$_hits" >&2
+fi
+
 if [ "$_rc" -ne 0 ]; then
     echo ""
     echo "ERROR: Commit blocked — secret-scan detected matches:" >&2
