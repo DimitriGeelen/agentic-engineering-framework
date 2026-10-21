@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4553: Worker-contract vectors CC-11/CC-12 answer a question that was never asked; add the append_question step
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T14:41:56Z
+# ============================================================================
+
+task_id: T-4553
+task_name: "Worker-contract vectors CC-11/CC-12 answer a question that was never asked; add the append_question step"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T14:40:25Z
+completed: 2026-10-21T14:41:44Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-21T16:41:43+02:00
+last_commit: 2026-10-21T16:41:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CC-11/CC-12 ask question q1 before answering it (termlink CC-12 finding)
+
+# Key outcomes
+outcomes:
+  - 'CC-11 and CC-12 each append question q1 (worker, attempt 1, nonce n1) before the dispatcher''s `append_answer`'
+  - 'No vector appends an answer whose question_id was not asked earlier in the same vector'
+  - '`check_vectors.py` and the unit test still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4553-worker-contract-vectors-cc-11cc-12-answe.md'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T16:41:43'
+    action: 'T-4553: CC-11/CC-12 ask question q1 before answering it (termlink CC-12 finding)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 2
+  lines_added: 361
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4553-worker-contract-vectors-cc-11cc-12-answe.md
+generated_by: context-agent-hybrid
