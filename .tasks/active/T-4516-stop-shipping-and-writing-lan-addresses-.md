@@ -140,6 +140,13 @@ Step 3 (consumer-written Watchtower URLs) needs an operator decision — options
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] The two rendered strings that lost their LAN address still read right and work
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` — open that URL plus `/settings/` (or look at `.context/visual/T-4516/settings@{1024,1440,1920}.png`)
+  2. Under "Ollama Host", read the help line below the input
+  3. Open the same URL plus `/static/ux-review/index.html` (or `.context/visual/T-4516/uxreview@*.png`); in the third line ("Overall: PASS · … · live page: /settings/appearance") click the `/settings/appearance` link
+  **Expected:** step 2 shows "Full URL including protocol and port (e.g. http://ollama-host:11434)" on one line, nothing clipped, and the example reads as a placeholder, not a real host; step 3's link opens the Appearance settings page on whichever host you are browsing (it is now relative, so it follows the host instead of pointing at 192.168.10.107)
+  **If not:** note the width/browser and what you saw on this task; the strings are `web/templates/settings.html:33` and `web/static/ux-review/index.html:12`
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -299,6 +306,18 @@ test -s docs/reports/T-4516-lan-address-inventory.md && grep -q '^\*\*Total:\*\*
 ! grep -qE '192\.168\.[0-9]+\.[0-9]+:11434' bin/fw tools/t1700-ollama-harness.sh tools/t1703-probe-matrix.sh tools/t1704-hermes3-probe.sh tools/t1706-tool-loop-probe.sh
 timeout 300 bats -f "ollama reachable check" tests/unit/test_doctor_litellm_ollama.bats > /tmp/.t4516-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4516-bats.out
 bin/fw vendor self --check --task T-4516
+bin/fw watchtower current
+
+## Visual Verification
+
+Shots (2026-10-21, live Watchtower restarted at 02:0x so it serves current `web/`, `bin/fw watchtower current` → current): `bin/fw ux shots T-4516 "settings=http://192.168.10.107:3000/settings/" "uxreview=http://192.168.10.107:3000/static/ux-review/index.html"`. Measured with Playwright at each width: document scrollWidth equals viewport width (1024/1440/1920) on both pages; `#ollama-host-help` scrollWidth = clientWidth (918/1168/1418 px), one line, visible; the ux-review `/settings/appearance` link is visible (x 589-749 at 1024) and the route answers 200. `web/blueprints/tasks.py` changed a code comment only, so it has no rendered state.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| settings | Ollama Host help text | ok | ok | ok | reads "e.g. http://ollama-host:11434"; the input above it shows this host's saved setting (runtime value, not shipped) |
+| settings | rest of LLM Engine card | ok | ok | ok | unchanged by this task |
+| uxreview | "live page: /settings/appearance" link | ok | ok | ok | now relative; resolves against the host being browsed |
+| uxreview | header + preset cards | ok | ok | ok | unchanged by this task |
 
 ## RCA
 
@@ -400,6 +419,7 @@ if you want it out of the mirror).
 **Evidence:**
 - `python3 tools/lan-address-lint.py` → clean; with an empty allowlist the only hits are docs/reports, docs/research, designer-pin
 - `tests/unit/test_lan_address_lint.py` 17 passed; `test_doctor_litellm_ollama.bats` 6/6 ok (incl. full `fw doctor`)
+- Render surfaces (`/settings/` help text, ux-review `/settings/appearance` link): screenshots `.context/visual/T-4516/{settings,uxreview}@{1024,1440,1920}.png`, no horizontal overflow at any width (Playwright), link answers 200 — see `## Visual Verification`; the [REVIEW] Human AC asks you to confirm they read right
 
 **Step 3 options — Watchtower URLs that `agents/handover/handover.sh` (lines 383, 1012, 1338) writes into `.context/handovers/*.md`:**
 1. **A — relative links** (`[T-X](/review/T-X)`). Host-neutral and zero config; links stop being clickable in a terminal, GitHub or an editor (they only resolve inside Watchtower's own file viewer).
