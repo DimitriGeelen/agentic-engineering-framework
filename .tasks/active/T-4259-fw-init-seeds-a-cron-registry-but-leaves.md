@@ -7,10 +7,10 @@ description: >
   in installer next steps; make the two cron lines agree. Findings (0909 run aef-install-20261017T144241Z):
   F-15. Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-6.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:26:00Z
-last_update: '2026-10-17T15:31:17Z'
+last_update: 2026-10-21T20:19:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced on bleeding-edge: a fresh `fw init` project's `fw doctor` prints "Cron registry present but not generated" (registry seeded with jobs by lib/cron-seed.sh, no generated crontab)
+- [x] `fw init` generates `.context/cron/agentic-audit.crontab` from the seeded registry (generate only, never install), so doctor's registry→generated leg agrees with the registry
+- [x] `fw init` next steps name `fw cron install` as the step that schedules the seeded jobs
+- [x] Regression bats test fails before the fix and passes after
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,8 +274,26 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 900 bats tests/unit/t4259_init_cron_generated.bats > /tmp/.t4259.out 2>&1 && ! grep -q "^not ok" /tmp/.t4259.out
+test "$(grep -c '# skip' /tmp/.t4259.out)" -eq 0
+grep -q "T-4259" lib/init.sh && grep -q "cron generate" lib/init.sh
+bin/fw vendor self --check --task T-4259
 
 ## RCA
+
+**Symptom:** On a fresh `fw init` project, the first `fw doctor` WARNed "Cron registry present but not generated — run: fw cron install" (F-15, 0909 greenfield run), while the vector-index check printed an OK for the cron job. So the two cron lines disagreed.
+
+**Root cause:** `lib/init.sh:322-346` writes `.context/cron-registry.yaml` and, since T-3673/T-3783, `cron_seed_ensure_jobs` seeds it with two jobs (`sidecar-sweep-5m`, `index-reindex-hourly`). Init never ran `fw cron generate`. The T-2844 SKIP in `bin/fw` doctor (the `jobs: []` branch, ~:4458) was written when init seeded an empty registry. With jobs present, doctor fell through to the `! -f "$cron_source"` branch (`bin/fw` ~:4520): drift that init itself created. The contradicting "OK" half was already fixed by T-4390/T-4413 (`lib/vector_index_health.py:467` now WARNs "cron not installed yet").
+
+**Why structurally allowed:** T-3673 changed what init seeds (empty → jobs) without revisiting T-2844's doctor assumption that a fresh registry is empty. No test ran `fw doctor` on a fresh `fw init` project and checked the cron lines.
+
+**Prevention:** `tests/unit/t4259_init_cron_generated.bats` runs a real `fw init`, then the consumer's own vendored `fw doctor`. It asserts there is no registry→generated WARN, that the generated crontab equals the dry-run, that nothing is installed, and that init names `fw cron install`. A future seed change that skips generation turns it red.
+
+**Fix:** after session init, `lib/init.sh` runs `fw cron generate` through the project's vendored fw (the same entry point as `context init`). It generates only, never installs. The final next-steps block names `fw cron install` as the operator step. Doctor's remaining line on a fresh project is "Cron generated but not installed — Run: fw cron install". That agrees with the vector-index WARN.
+
+**Landing note:** the `lib/init.sh` hunk and its vendored copy were committed inside `cfd8fbe84` (T-4254). A concurrent worker committed the whole file while this edit was in the working tree. The code is in HEAD; this task's commit carries the test and the task file.
+
+**Open (not fixed, separate class):** doctor's dry-run (`bin/fw` ~:4494) renders with `$FRAMEWORK_ROOT/bin/fw`, but `fw cron generate` prefers `$PROJECT_ROOT/.agentic-framework/bin/fw` (T-3835). Running the *framework repo's* fw doctor against a consumer (`PROJECT_ROOT=<consumer>`) therefore reports a false "edited but not generated". Through the consumer's own fw the two agree.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -369,3 +389,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4259-fw-init-seeds-a-cron-registry-but-leaves.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:19:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
