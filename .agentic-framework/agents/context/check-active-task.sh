@@ -1277,11 +1277,14 @@ if [ -n "$ACTIVE_FILE" ]; then
                     exit 0
                 fi
 
+                # T-4334: one name for the rule, used by the title AND the Policy
+                # label — they used to name two different things.
+                G020_RULE="Build readiness gate"
                 echo "" >&2
                 echo "BLOCKED: Task $CURRENT_TASK is a $WORKFLOW_TYPE task with placeholder/missing ACs." >&2
                 echo "" >&2
                 echo "Build tasks require real acceptance criteria before editing source files." >&2
-                echo "This prevents unscoped building. (G-020: Scope-Aware Task Gate)" >&2
+                echo "This prevents unscoped building. (G-020: $G020_RULE)" >&2
                 echo "" >&2
                 echo "To unblock:" >&2
                 echo "  1. Edit the task file with the Write/Edit TOOL: replace the placeholder" >&2
@@ -1296,7 +1299,7 @@ if [ -n "$ACTIVE_FILE" ]; then
                 _bootstrap_shape_hint "${BASH_CMD:-}"
                 echo "" >&2
                 echo "$(_blocked_subject)" >&2
-                echo "Policy: G-020 (Pickup message governance bypass prevention)" >&2
+                echo "Policy: G-020 ($G020_RULE) — origin: pickup messages bypassing scoping (T-469)" >&2
                 exit 2
             fi
             ;;

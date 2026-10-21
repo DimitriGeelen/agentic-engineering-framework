@@ -7,10 +7,10 @@ description: >
   agent cannot tell which rule fired. Align the title and the label (agents/context/check-active-task.sh
   G-020 branch).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [gates, ux]
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T20:45:00Z
-last_update: '2026-10-18T21:01:30Z'
+last_update: 2026-10-21T21:45:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The G-020 block in `agents/context/check-active-task.sh` names one rule: the title line and the `Policy:` line both say "Build readiness gate" (no "Scope-Aware Task Gate", no "Pickup message governance bypass prevention" as the rule's name)
+- [x] Regression bats `tests/unit/t4334_g020_label_parity.bats` drives the real hook and asserts the title and Policy label carry the same rule name; it fails on the pre-fix hook
+- [x] Existing G-020 suites (t2944, t3299) still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,6 +274,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4334_g020_label_parity.bats > /tmp/.t4334.out 2>&1 && ! grep -q "^not ok" /tmp/.t4334.out
+test "$(grep -c '# skip' /tmp/.t4334.out)" -eq 0
+timeout 300 bats tests/unit/t2944_g020_comment_strip.bats tests/unit/t3299_gate_remedy_reachable.bats > /tmp/.t4334b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4334b.out
+! grep -q "Pickup message governance bypass prevention\|Scope-Aware Task Gate" agents/context/check-active-task.sh
+bin/fw vendor self --check --task T-4334
 
 ## RCA
 
@@ -289,6 +295,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** The G-020 block printed `(G-020: Scope-Aware Task Gate)` as its title and `Policy: G-020 (Pickup message governance bypass prevention)` as its label — two different names for one rule, so a first-time agent could not tell which rule fired (dimitri-mint-dev T-133 F-09). Reproduced on bleeding-edge 2026-10-21.
+
+**Root cause:** `agents/context/check-active-task.sh:1284` and `:1299` each paraphrased the rule independently. G-020 is the *gap* id (concerns.yaml:621, "Pickup messages bypass governance"); the Policy line quoted the gap's origin, the title invented a third name, and neither used the name everything else uses — "build readiness gate" (the code comment at :1215, CLAUDE.md, L-147).
+
+**Why structurally allowed:** Block messages are free-text `echo` lines with no single source for the rule name, and no test asserted the title/label pair — the existing G-020 suites check exit codes only.
+
+**Prevention:** Both lines now render from one `G020_RULE` variable, and `tests/unit/t4334_g020_label_parity.bats` drives the real hook and asserts the title and Policy label carry the same rule name.
 
 ## Evolution
 
@@ -370,3 +384,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4334-the-g-020-block-messages-title-and-its-p.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:45:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
