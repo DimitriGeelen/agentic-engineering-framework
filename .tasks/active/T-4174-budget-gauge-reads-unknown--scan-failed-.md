@@ -116,7 +116,7 @@ bvp_scores_proposed:
 - [x] budget-gate.sh writes `level: ok`, the real low token count and `"provisional": true` for a young session whose reading is below the warn line, instead of `unknown — scan failed or produced no data`
 - [x] A lone reading at/above the warn line (the T-2885 foreign-poisoning shape), an unparseable/empty transcript and a crashing scan still write `unknown`
 - [x] Regression bats `tests/unit/t4174_budget_young_session.bats` fails before the fix and passes after; t3241/t2885/t3204/t3598 neighbours still green
-- [ ] Vendored copy synced (`bin/fw vendor self --check --task T-4174` clean)
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4174` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
