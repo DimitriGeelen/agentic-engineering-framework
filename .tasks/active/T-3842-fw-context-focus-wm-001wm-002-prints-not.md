@@ -7,7 +7,7 @@ description: >
   055 msg 01ee2716 (2), measured twice 2026-10-04. Agents then invent a task just
   to send a message. Verify on 1.8.0 and fix or document.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T17:38:22Z
-last_update: '2026-10-04T17:45:52Z'
+last_update: 2026-10-21T08:49:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,14 +87,29 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Not reproducible at HEAD (4d11aad27, vendored 1.8.14+539) — already fixed by
+T-3974 (commit 7f4dee060, 2026-10-07, ring20 report of the same symptom on v1.8.5).
+
+Evidence, 2026-10-21, fresh consumer (`git init` + `bin/fw init .`), run through the
+consumer's own `.agentic-framework/bin/fw` with FRAMEWORK_ROOT and
+FW_SESSION_SCOPED_FOCUS unset:
+
+```
+$ .agentic-framework/bin/fw context focus WM-001   -> "Focus set: WM-001"  ; focus.yaml current_task: WM-001
+$ .agentic-framework/bin/fw context focus WM-002   -> "Focus set: WM-002", rc=0 ; focus.yaml current_task: WM-002
+$ ls .tasks/workflow  -> WM-001-…, WM-002-…, WM-003-…   (seeded by init)
+$ bats tests/unit/t3974_wm_focus_consumer.bats   -> 5/5 ok
+```
+
+(WM-001 showed rc=141 only because the repro piped into `head -1` — SIGPIPE from the
+memory-recall output after "Focus set"; focus.yaml was written. Not an fw failure.)
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction attempted at HEAD on a fresh `fw init` consumer through its vendored `.agentic-framework/bin/fw`: `fw context focus WM-001` and `WM-002` each exit 0, print "Focus set", and write `current_task: WM-00N` to focus.yaml (or the defect is confirmed and fixed with a regression test)
+- [x] Fixing task/commit identified and its regression suite (tests/unit/t3974_wm_focus_consumer.bats) green at HEAD
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -255,6 +270,9 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 900 bats tests/unit/t3974_wm_focus_consumer.bats > /tmp/.t3842.out 2>&1 && ! grep -q "^not ok" /tmp/.t3842.out && grep -q "^ok 2 " /tmp/.t3842.out
+test "$(grep -c '# skip' /tmp/.t3842.out)" -eq 0
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -270,6 +288,27 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on 055 (vendored 1.7.x), `fw context focus WM-001|WM-002` printed nothing,
+exited non-zero and left `current_task: null`, while the active-task gate
+(agents/context/check-active-task.sh:661-662) prints exactly those commands as the remedy.
+
+**Root cause (fixed by T-3974, 7f4dee060):** two defects together. (1) `.tasks/workflow/WM-*.md`
+existed only in the framework repo; `fw init`/`fw upgrade` never seeded them in consumers.
+(2) `fw_find_wm_task` (lib/wm_tasks.sh) ended in `[ -n "$f" ] && echo "$f"`, which returned 1
+when the file was missing, and agents/context/lib/focus.sh runs under `set -euo pipefail`. So
+`task_file=$(fw_find_wm_task …)` killed the script before its own "has no file in
+.tasks/workflow/" diagnostic: exit 1, zero output.
+
+**Why structurally allowed:** the WM tests ran against the framework repo, where the files
+exist. No test used a consumer, so the missing seed and the silent `set -e` death were both
+unreachable from the tests.
+
+**Prevention (already in place):** lib/wm_tasks.sh `fw_find_wm_task` returns 0 and callers test
+the output; lib/init.sh and lib/upgrade.sh seed/recreate `.tasks/workflow/`;
+tests/unit/t3974_wm_focus_consumer.bats builds a fresh consumer and pins all of this (5 tests,
+green at HEAD). Remaining exposure: consumers still pinned at a pre-T-3974 version (055 on 1.7.x)
+need `fw upgrade`. That is a fleet rollout, not a code defect.
 
 ## Evolution
 
@@ -351,3 +390,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3842-fw-context-focus-wm-001wm-002-prints-not.md
 - **Context:** Initial task creation
+
+### 2026-10-21T08:49:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
