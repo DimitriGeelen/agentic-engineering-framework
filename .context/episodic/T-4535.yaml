@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4535: fw inception sweep force-closes a GO-recorded inception by sed even when a close gate still holds it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:53:28Z
+# ============================================================================
+
+task_id: T-4535
+task_name: "fw inception sweep force-closes a GO-recorded inception by sed even when a close gate still holds it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T12:01:41Z
+completed: 2026-10-21T18:52:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T20:12:07+02:00
+last_commit: 2026-10-21T20:12:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception sweep closes GO/NO-GO inceptions through update-task's gates (no sed status edit), reports+exits 1 when a gate holds, recovers captured+GO; regression bats
+
+# Key outcomes
+outcomes:
+  - '`do_inception_sweep` (lib/inception.sh) no longer edits `status:` with sed: a started-work + GO/NO-GO inception is closed through `update-task.sh --status work-completed`, so P-010/P-011 and every other close gate apply'
+  - 'When update-task refuses the close, the sweep leaves the task in active/ with status unchanged, reports it as held with the refusing gate''s output, and exits non-zero'
+  - 'A captured + GO/NO-GO inception is recovered (captured → started-work → work-completed through update-task), matching do_inception_decide'
+  - 'Regression bats `tests/unit/t4535_inception_sweep_gates.bats` (throwaway PROJECT_ROOT, never this repo''s tasks) fails on the pre-fix code and passes after; existing `tests/unit/lib_inception.bats` stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/inception.sh'
+  - 'lib/inception.sh'
+  - '.tasks/active/T-4535-fw-inception-sweep-force-closes-a-go-rec.md'
+  - 'tests/unit/t4535_inception_sweep_gates.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T20:12:07'
+    action: 'T-4535: inception sweep closes GO/NO-GO inceptions through update-task''s gates (no sed status edit), reports+exits 1 when a gate holds, recovers captured+GO; regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 411 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 411
+  commits: 1
+  files_changed: 4
+  lines_added: 676
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4535-fw-inception-sweep-force-closes-a-go-rec.md
+generated_by: context-agent-hybrid
