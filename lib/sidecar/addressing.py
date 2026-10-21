@@ -576,11 +576,25 @@ def orphan_inboxes(*, runner=None) -> list[dict] | None:
     mine = set(inbox.read_topics())
     peer_circuits = {p.get("circuit") for p in load_peers()["peers"].values()}
     prefix = f"{circuit.TOPIC_PREFIX}{own}/"
+    own_project = f"{prefix}{circuit.project_id()}"
+    cursors = inbox.load_state().get("topics", {})
     out = []
     for r in rows:
         topic = str(r.get("name") or "")
         rest = topic[len(prefix):] if topic.startswith(prefix) else ""
         if not rest or "/" in rest or topic in mine or f"{own}/{rest}" in peer_circuits:
+            continue
+        if topic == own_project:
+            # T-4530: our own project address, and this session reads another
+            # topic (a session- or agent-scoped circuit). Judged by our cursor:
+            # the hub's unread_since_ms is cleared by any fetch, a peek included.
+            latest, count = r.get("latest_offset"), r.get("count") or 0
+            cur = (cursors.get(topic) or {}).get("cursor", 0)
+            unread = max(0, min(count, latest + 1 - cur)) if isinstance(latest, int) else 0
+            if unread:
+                out.append({"topic": topic, "count": unread, "own_project": True,
+                            "read_topic": inbox.inbox_topic(),
+                            "last_writer": (r.get("activity") or {}).get("last_writer")})
             continue
         if circuit.is_project_id(rest) or not topic_is_unread(r):
             continue

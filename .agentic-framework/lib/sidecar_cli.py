@@ -329,7 +329,13 @@ def _orphan_lines(orphans) -> list[str]:
     if orphans is None:
         return ["orphan inboxes: NOT CHECKED (the hub could not be asked)"]
     lines = [f"orphan inbox: {o['topic']} holds {o['count']} unread post(s) no known agent reads "
-             f"(a nickname address? tell the senders the real circuit)" for o in orphans]
+             f"(a nickname address? tell the senders the real circuit)" for o in orphans
+             if not o.get("own_project")]
+    # T-4530: this project's own address, unread because this session reads another topic.
+    lines += [f"orphan inbox: {o['topic']} (this project's address) holds {o['count']} post(s) "
+              f"past our cursor; this session reads {o['read_topic']}, not it. Read it with "
+              f"FW_SIDECAR_AGENT_ID, TERMLINK_SESSION and FW_FOCUS_SESSION_KEY unset"
+              for o in orphans if o.get("own_project")]
     return lines
 
 

@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 from datetime import datetime, timezone
@@ -407,6 +408,20 @@ def surface_filter(msgs: list[dict], answered: set[str] | None = None) -> tuple[
     return kept, counts
 
 
+#: Ids the receiver stores messages under (same shape as watcher._ID_OK); a
+#: peer-written id outside it is never used as a path.
+_RECEIVER_ID_OK = re.compile(r"[A-Za-z0-9_:-]{1,128}")
+
+
+def _held_by_receiver(keys: set[str], topic: str, offset) -> bool:
+    """Does the receiver store hold this hub post, under any id the watcher
+    would have stored it as (its client_msg_id, or `hub-<topic|offset>`)?"""
+    from . import receiver
+    ids = {k for k in keys if _RECEIVER_ID_OK.fullmatch(k)}
+    ids.add("hub-" + hashlib.sha256(f"{topic}|{offset}".encode()).hexdigest()[:16])
+    return any(receiver.read_message(i) is not None for i in ids)
+
+
 def pending(agent: str | None = None, *, reader=default_reader,
             advance: bool = True, limit: int = DEFAULT_LIMIT) -> list[dict]:
     """Consults addressed to this agent that have not been shown before.
@@ -482,7 +497,14 @@ def pending(agent: str | None = None, *, reader=default_reader,
                 seen_set.add(seen_key)
                 seen.append(seen_key)
                 keys = seen_mod.keys_for(client_msg_id)
-                if keys & answered or not seen_mod.may_show(keys, shown_table):
+                if keys & answered:
+                    continue
+                # T-4530: a drain moves the cursor past what it skips, so it
+                # may step over a "shown" post only when the receiver already
+                # holds it. Shown by a peek or by alerts alone is not taken
+                # over: skipping it lost the post (never stored, no receipt).
+                if not seen_mod.may_show(keys, shown_table) and (
+                        not advance or _held_by_receiver(keys, topic, offset)):
                     continue
             # T-3855: a sender that told us its circuit is a peer we can answer
             # on its own hub — learn it (the peer directory).
