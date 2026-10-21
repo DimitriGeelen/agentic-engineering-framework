@@ -13,7 +13,7 @@ description: >
   Fix: run the structure section against a fixture project, or assert the section
   RAN (STRUCTURE header, exit in {0,1,2}) and leave verdicts to the gate itself.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T11:15:39Z
-last_update: '2026-10-04T11:30:49Z'
+last_update: 2026-10-21T09:16:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction check at HEAD: no test in tests/unit/audit.bats runs `audit.sh --section structure` against the live repo (every section run goes through `_audit_fixture` / `_synthetic_project` with a private PROJECT_ROOT)
+- [x] tests/unit/audit.bats passes in full at HEAD with no `not ok` and no skips
+- [x] A lint prevents a regression to live-repo sectioned audits (tools/audit-live-repo-lint.py reports clean on tests/)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,6 +261,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+! grep -nE '"\$AUDIT" --section structure|audit\.sh --section structure' tests/unit/audit.bats | grep -v 'PROJECT_ROOT=' | grep -q .
+timeout 900 bats tests/unit/audit.bats > /tmp/.t3812.out 2>&1 && ! grep -q "^not ok" /tmp/.t3812.out
+test "$(grep -c '# skip' /tmp/.t3812.out)" -eq 0
+python3 tools/audit-live-repo-lint.py tests/ > /tmp/.t3812-lint.out 2>&1
 
 ## RCA
 
@@ -276,6 +281,20 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Status at HEAD (2026-10-21, worker w3812): does NOT reproduce — already fixed by sibling tasks; no code change made here.**
+
+**Symptom:** `audit.bats` 'audit runs structure section' went red whenever any other unit test was red (and on self-vendor drift from concurrent tests), and took ~6 min alone.
+
+**Root cause:** the test ran `agents/audit/audit.sh --section structure` against the LIVE repo and required no FAIL. The structure section includes the unit-suite ratchet (reads `.context/audits/unit-suite/LATEST.yaml`) and self-vendor drift, both of which move with unrelated corpus state — a circular, mutable-corpus anchor (T-3326 class).
+
+**Why structurally allowed:** nothing distinguished "the section ran" from "the live repo is clean"; the live repo was the only project the test knew how to point at.
+
+**Fix (landed elsewhere):** T-4383 (69610b126) moved exit-code contracts onto a synthetic project; T-4372 split "live corpus FAIL" from "test red"; T-4401 (6b0cd894d) moved every remaining sectioned run, structure included, onto a fixture `PROJECT_ROOT` (`tests/unit/audit.bats:65-105`, `_section_project`/`_audit_fixture`, one structure run in `setup_file`). The fixture corpus is fixed, so `_assert_fixture_ran` (audit.bats:82) accepts only 0/1 and the unit-suite ratchet cannot see repo reds.
+
+**Evidence:** `bats tests/unit/audit.bats` at HEAD 2979f6c8e: 20/20 ok, 0 skips, 1m12s (was 5m47s for one test). Only `--section structure` call is line 102 via `_audit_fixture`.
+
+**Prevention:** `tools/audit-live-repo-lint.py` (T-4401) refuses new sectioned audits against the real repo in tests; reports clean on `tests/`.
 
 ## Evolution
 
@@ -357,3 +376,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3812-auditbats-audit-runs-structure-section-a.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:16:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
