@@ -8,7 +8,7 @@ description: >
   (not supervised; T-3685 builds that). Sender-side: detect no-receiver for the target,
   report it plainly, stop escalating nudges toward a receipt that cannot come.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T23:14:11Z
-last_update: '2026-10-02T23:15:39Z'
+last_update: 2026-10-21T00:03:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,14 +88,24 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Re-checked at HEAD 20884da63 (2026-10-21). Part of the finding is dissolved by
+T-3684 (filed in the same commit as this task, 7bd0e8471): hub-path consults now
+get RECEIVED / HANDED_OVER receipts from the recipient's drain, peek hook or
+watcher (`lib/sidecar/receipts.py`), so HUB_ACCEPTED is no longer categorically
+the last state a no-receiver send can see. What still reproduces: `fw sidecar
+send` falls back to the hub when the target has no receiver in this host's
+registry (`lib/sidecar_cli.py` `_cmd_send`) and says only `delivered:
+HUB_ACCEPTED` — nothing tells the sender the direct path was not available, or
+that a confirmation now depends on the recipient taking it off the topic.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect re-checked at HEAD: the hub-fallback send output (text and `--json`) carries no receiver information (reproduced by the new test failing before the fix)
+- [x] `fw sidecar send` without `--hub`, to a target with no registered receiver on this host, prints a `receiver:` line naming the absence and that HUB_ACCEPTED is the last state until the recipient sends a hub receipt; `--json` carries `"receiver": "none-registered"`
+- [x] An explicit `--hub` send (registry not consulted) prints no such line and `--json` carries `"receiver": null` — the sender is not told something it never checked
+- [x] Regression test `tests/unit/test_sidecar_no_receiver_t3762.py` passes; neighbouring sidecar send/sweep tests still pass
+- [x] Ladder unchanged by decision (see Decisions): RECEIVED still does not settle a posted message (T-3908 pin `test_t3908_received_only_does_not_settle` still green)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -255,8 +265,31 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_sidecar_no_receiver_t3762.py -q > /tmp/.t3762a 2>&1 && grep -q passed /tmp/.t3762a
+python3 -m pytest tests/unit/test_sidecar_sweep.py tests/unit/test_sidecar_orphan_circuit_t4418.py -q > /tmp/.t3762b 2>&1 && grep -q passed /tmp/.t3762b
+bin/fw vendor self --check --task T-3762
 
 ## RCA
+
+**Symptom:** 055 (@135) reported none of its consults since 1.7.825 reached
+RECEIVED; the sender saw `delivered: HUB_ACCEPTED` and the retry ladder kept
+escalating, with nothing saying why a confirmation was not arriving.
+
+**Root cause:** `lib/sidecar_cli.py` `_cmd_send` (the `lifecycle.lookup(args.to)`
+branch) silently falls through to the hub path when the target has no receiver
+in this host's registry. The fact that decided the path — "no receiver known
+for this target" — was computed and thrown away; the payload/print block
+reported only the hub's acceptance. At filing time the hub path also sent no
+receipts at all (fixed separately by T-3684), so HUB_ACCEPTED really was terminal.
+
+**Why structurally allowed:** the send output reports the transport outcome,
+not the routing decision. Tests pinned the direct and hub branches separately,
+never what the sender is told about which branch it took and why.
+
+**Prevention:** the routing decision is now part of the send payload
+(`receiver` field) and the text output, pinned by
+`tests/unit/test_sidecar_no_receiver_t3762.py` for the no-receiver, explicit-hub
+and JSON cases. The receipt half was closed by T-3684 (hub receipts on every path).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -336,6 +369,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-21 — leave the retry ladder alone
+- **Chose:** report the no-receiver routing at send time; do not stop nudges for no-receiver targets.
+- **Why:** since T-3684 a hub-path consult can still reach RECEIVED/HANDED_OVER (recipient drain, peek hook, watcher ingest), so the receipt is no longer "one that cannot come"; the nudge is a hub post and is the only reminder a receiver-less recipient gets. T-3908 deliberately pins RECEIVED as not settling a posted message.
+- **Rejected:** closing ladder rows on no-receiver targets (would silence the only reminder and the 1-day operator rung); closing on RECEIVED (contradicts T-3908's pinned decision).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -352,3 +390,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3762-sidecar-sender-keeps-retrying-toward-rec.md
 - **Context:** Initial task creation
+
+### 2026-10-21T00:03:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

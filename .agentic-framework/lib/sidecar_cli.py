@@ -177,10 +177,14 @@ def _cmd_send(args) -> int:
     # The hub topic path below stays as the fallback when no receiver was ever
     # registered for the name. A registered-but-down receiver is NOT rerouted:
     # it spends the retry budget and is recorded UNDELIVERABLE.
+    # T-3762: the "no receiver" fact that picks the hub path is reported, not
+    # dropped — None when --hub skipped the registry (nothing was checked).
+    receiver_seen = None
     if not args.hub:
         entry = lifecycle.lookup(args.to)
         if entry is not None:
             return _send_direct(args, entry)
+        receiver_seen = "none-registered"
 
     # Resolve the address HERE rather than carrying a level flag through the
     # outbox: a resolved circuit is used verbatim by transport.topic_for, so
@@ -217,6 +221,7 @@ def _cmd_send(args) -> int:
         "topic": circuit.topic_for_circuit(target),
         "hub": hub or "local",
         "addressed_by": where["how"],
+        "receiver": receiver_seen,
     }
     if args.json:
         print(json.dumps(payload))
@@ -224,6 +229,10 @@ def _cmd_send(args) -> int:
         verdict = "delivered" if result.delivered else "NOT delivered"
         print(f"{verdict}: {result.state}  ->  {payload['topic']}  on hub {payload['hub']}")
         print(f"addressed by: {where['how']}")
+        if receiver_seen:
+            print(f"receiver: no receiver registered for {args.to} on this host — sent via "
+                  f"the hub, so HUB_ACCEPTED is the last state until {args.to} takes it off "
+                  f"the topic and sends a receipt (fw sidecar receipts)")
         print(f"client_msg_id: {result.client_msg_id}")
         if result.reason:
             print(f"reason: {result.reason}")
