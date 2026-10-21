@@ -263,7 +263,10 @@ bvp_scores_proposed:
 bash -n lib/release.sh
 timeout 300 bats tests/unit/t3848_release_pushes_dev_branch.bats > /tmp/.t3848-v.out 2>&1 && ! grep -q "^not ok" /tmp/.t3848-v.out
 test "$(grep -c '# skip' /tmp/.t3848-v.out)" -eq 0
-timeout 600 bats tests/unit/t3822_release_atomic_publish.bats tests/unit/t3819_release_remote_preflight.bats tests/unit/t3820_release_full_rollback.bats tests/unit/t3190_release_master_ff.bats > /tmp/.t3848-r.out 2>&1 && ! grep -q "^not ok" /tmp/.t3848-r.out
+timeout 600 bats tests/unit/t3822_release_atomic_publish.bats > /tmp/.t3848-r1.out 2>&1 && ! grep -q "^not ok" /tmp/.t3848-r1.out
+timeout 600 bats tests/unit/t3819_release_remote_preflight.bats > /tmp/.t3848-r2.out 2>&1 && ! grep -q "^not ok" /tmp/.t3848-r2.out
+timeout 600 bats tests/unit/t3820_release_full_rollback.bats > /tmp/.t3848-r3.out 2>&1 && ! grep -q "^not ok" /tmp/.t3848-r3.out
+timeout 600 bats tests/unit/t3190_release_master_ff.bats > /tmp/.t3848-r4.out 2>&1 && ! grep -q "^not ok" /tmp/.t3848-r4.out
 python3 tools/bats-dead-negation-lint.py tests/unit/t3848_release_pushes_dev_branch.bats > /tmp/.t3848-l.out 2>&1 && grep -q "clean" /tmp/.t3848-l.out
 bin/fw vendor self --check --task T-3848
 
