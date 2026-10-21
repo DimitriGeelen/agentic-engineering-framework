@@ -10,10 +10,10 @@ description: >
   is down answer from the local index and say so. Query embedding uses the same pinned
   model as ingest.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:33:12Z
-last_update: '2026-10-13T15:46:27Z'
+last_update: 2026-10-21T22:19:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,20 +85,44 @@ bvp_scores_proposed:
       (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
       (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=4 
+      (body:cross-machine); F-RECALL=3 (body:fw-recall-or-memory-link); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4164: T-4091 slice 3: read side — fw recall / fw ask --scope own|estate|both, cross-project hits labelled with provenance, local fallback 'estate unavailable'
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Read side of the estate pipe (design: docs/reports/T-4091-estate-push-pipe.md §1 item 7, IW-5;
+requirements: docs/reports/T-4123-estate-knowledge-requirements.md R-12..R-16, R-33..R-36).
+Slices 1 (push, T-4162) and 2 (ingest, T-4163) are in; on bleeding-edge 2026-10-22 neither
+`fw recall` nor `fw ask` accepted any scope option (`grep -- --scope` over memory-recall.py,
+ask.py, bin/fw: no hits), so this slice is open work.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/estate_recall.py` queries the estate main collection with the query embedded by the SAME pinned model ingest uses (`estate_ingest.MODEL`, not a second constant), and returns hits carrying every R-12/R-33 field: project, task id or path, item type, date recorded, date last confirmed, evidence type, status, model id, score, framework version — a field the stored payload lacks renders as `unrecorded`, never blank
+- [x] `fw recall --scope own|estate|both` (default `own`, unchanged output) and `fw ask --scope own|estate|both`; every hit from another project is labelled `[cross-project: <project>]` (R-13)
+- [x] Ranking (R-14): default mode keeps own hits first when scores are within a margin (`--margin`, default 0.05) except a cross-project hit that is newer and evidence `tested`; `--mode solution-finder` puts other projects first; `superseded`/`retired` hits are excluded unless `--include-superseded` (R-14/R-16 desc)
+- [x] A peer-report item never displays evidence `tested` (R-36)
+- [x] Store unreachable, store refusing the token, no read token, or embedder down: recall/ask answer from the local index, print `estate unavailable: <reason>`, exit 0 (R-16)
+- [x] Regression tests `tests/unit/test_estate_recall.py` (fakes for store + embedder, no network) cover all of the above and pass; `tests/unit/t3056_recall_open_tasks.bats` and `tests/unit/test_estate_ingest.py` still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,8 +285,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_estate_recall.py -q > /tmp/.t4164.out 2>&1 && grep -q passed /tmp/.t4164.out
+python3 -m pytest tests/unit/test_estate_ingest.py tests/unit/test_estate_push.py -q > /tmp/.t4164b.out 2>&1 && grep -q passed /tmp/.t4164b.out
+timeout 600 bats tests/unit/t3056_recall_open_tasks.bats > /tmp/.t4164c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4164c.out
+FW_ESTATE_QDRANT_URL=http://127.0.0.1:9 FW_QDRANT_ESTATE_READ_AEF_API_KEY=x FW_RECALL_NO_BANNER=1 bin/fw recall --scope both "context budget" > /tmp/.t4164d.out 2>&1 && grep -q "estate unavailable" /tmp/.t4164d.out
+bin/fw recall --help > /tmp/.t4164e.out 2>&1; grep -q -- "--scope" /tmp/.t4164e.out
+bin/fw vendor self --check --task T-4164
 
 ## RCA
+
+Not a bug: this is a feature slice (the title matches the bug-class regex only via "fallback"/"unavailable"-adjacent wording).
+**Symptom:** none — estate knowledge pushed by slices 1-2 had no read path; `fw recall`/`fw ask` could only see the own-project index.
+**Root cause:** slice 3 of T-4091 was not yet built (memory-recall.py and ask.py have no estate client).
+**Why structurally allowed:** planned sequencing (push → ingest → read), not an omission.
+**Prevention:** tests/unit/test_estate_recall.py pins provenance, scope labelling, ranking and the R-16 fallback.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -333,6 +369,16 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-22 — what `estate` and `both` mean
+- **Chose:** `estate` = the whole estate store, own items included and labelled `[own: …]`, ranked by R-14 over one comparable score; `both` = local index (own, fresher) plus the estate's OTHER projects only (`must_not project == own`), shown as a separate "Estate knowledge" section after the local one (default) or before it (`--mode solution-finder`).
+- **Why:** local hybrid scores and estate cosine scores are not on one scale, so a merged list would rank by noise; own items pushed to the estate would duplicate local hits in `both`.
+- **Rejected:** merging local and estate lists by score (incomparable scales); querying own items from the estate in `both` (duplicates, staler than the local index).
+
+### 2026-10-22 — read token and missing payload fields (open follow-ups, no operator decision needed to ship)
+- **Chose:** read token name `qdrant_estate_read_aef` (env `FW_QDRANT_ESTATE_READ_AEF_API_KEY`), Infisical `QDRANT_ESTATE_TOKEN_READ_AEF`, same convention as the staging/ingest tokens. Until ring20 issues it, every estate query answers locally with `estate unavailable: … no token …` (R-16), exit 0.
+- **Why:** no read-token name existed anywhere in the repo or design docs.
+- **Note:** ingest (T-4163) payloads carry no `evidence`, `status`, `last_confirmed` or `guarded_by`; they render as `unrecorded` (never blank, never guessed). Filling them is ingest-side work, not this slice. The query is embedded with `estate_ingest.MODEL`; the digest is not re-checked on read because the read token is not expected to hold `_manifest:r`.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -358,3 +404,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4164-t-4091-slice-3-read-side--fw-recall--fw-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:19:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -8471,17 +8471,41 @@ EOF
         exec "$AGENTS_DIR/observe/observe.sh" "$@"
         ;;
     recall)
-        RECALL_QUERY="${*}"
-        if [ -z "$RECALL_QUERY" ]; then
-            echo -e "${RED}Usage: fw recall <query>${NC}"
+        # T-4164: estate read side — --scope/--mode/--margin/--include-superseded pass through;
+        # every other word is the query, as before.
+        _recall_opts=()
+        _recall_words=()
+        _recall_help=0
+        while [ $# -gt 0 ]; do
+            case "$1" in
+                -h|--help) _recall_help=1; shift ;;
+                --scope|--mode|--margin)
+                    if [ $# -lt 2 ]; then echo -e "${RED}fw recall: $1 needs a value${NC}" >&2; exit 1; fi
+                    _recall_opts+=("$1" "$2"); shift 2 ;;
+                --scope=*|--mode=*|--margin=*|--include-superseded) _recall_opts+=("$1"); shift ;;
+                *) _recall_words+=("$1"); shift ;;
+            esac
+        done
+        RECALL_QUERY="${_recall_words[*]}"
+        if [ -z "$RECALL_QUERY" ] || [ "$_recall_help" = 1 ]; then
+            echo -e "${RED}Usage: fw recall [--scope own|estate|both] [--mode default|solution-finder] <query>${NC}"
             echo "  Query project memory for relevant learnings, patterns, and decisions."
+            echo ""
+            echo "Options (T-4164, estate read side):"
+            echo "  --scope own|estate|both    own: this project (default); estate: the estate store;"
+            echo "                             both: own plus other projects' estate items, labelled"
+            echo "  --mode default|solution-finder   own first within --margin, or other projects first"
+            echo "  --margin N                 score margin for own-first ranking (default 0.05)"
+            echo "  --include-superseded       keep superseded/retired estate items"
+            echo "  Estate unreachable: answers from the local index and says 'estate unavailable'."
             echo ""
             echo "Examples:"
             echo "  fw recall \"audit enforcement\""
-            echo "  fw recall \"context budget management\""
+            echo "  fw recall --scope both \"context budget management\""
+            [ "$_recall_help" = 1 ] && exit 0
             exit 1
         fi
-        exec python3 "$AGENTS_DIR/context/lib/memory-recall.py" --query "$RECALL_QUERY"
+        exec python3 "$AGENTS_DIR/context/lib/memory-recall.py" --query "$RECALL_QUERY" ${_recall_opts[@]+"${_recall_opts[@]}"}
         ;;
     scan)
         if ! python3 -c "import yaml" 2>/dev/null; then

@@ -150,7 +150,36 @@ def _cloud_fallback(wf: dict, prompt: str, user_message: str) -> tuple:
     return data["choices"][0]["message"]["content"] or "", model, route_name
 
 
-def ask(query: str, limit: int = 10, concise: bool = False, think: bool | None = None) -> dict:
+def estate_context(query: str, chunks: list, scope: str = "own", mode: str = "default",
+                   margin: float | None = None, include_superseded: bool = False,
+                   limit: int = 10, **kw) -> tuple:
+    """T-4164 (T-4091 slice 3): add estate hits to the retrieved chunks for --scope estate|both.
+
+    Returns (chunks, estate) where estate is {"scope", "available", "reason"}. Never raises: when
+    the estate cannot answer, the local chunks stand and the reason is reported (R-16). Under
+    scope estate the local chunks are replaced only when the estate answered."""
+    estate = {"scope": scope, "available": None, "reason": None}
+    if scope == "own":
+        return chunks, estate
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import estate_recall as er
+        hits = er.recall(query, own=er.own_project(PROJECT_ROOT), scope=scope, mode=mode,
+                         margin=er.DEFAULT_MARGIN if margin is None else margin,
+                         include_superseded=include_superseded, limit=limit, **kw)
+    except Exception as exc:  # noqa: BLE001 - EstateUnavailable and anything unforeseen alike
+        estate.update(available=False, reason=str(exc) or type(exc).__name__)
+        return chunks, estate
+    estate["available"] = True
+    extra = [er.as_chunk(h) for h in hits]
+    if scope == "estate":
+        return extra, estate
+    return (extra + chunks if mode == "solution-finder" else chunks + extra), estate
+
+
+def ask(query: str, limit: int = 10, concise: bool = False, think: bool | None = None,
+        scope: str = "own", mode: str = "default", margin: float | None = None,
+        include_superseded: bool = False) -> dict:
     """Synchronous RAG+LLM query.
 
     Args:
@@ -158,12 +187,17 @@ def ask(query: str, limit: int = 10, concise: bool = False, think: bool | None =
         limit: Max chunks to retrieve.
         concise: If True, request brief answers.
         think: Override thinking mode. None = auto-detect.
+        scope/mode/margin/include_superseded: estate read side (T-4164), see estate_context.
 
     Returns:
-        dict with keys: answer, model, sources, thinking_used
+        dict with keys: answer, model, sources, thinking_used, estate
     """
     # Retrieve context
     chunks = rag_retrieve(query, limit=limit)
+    chunks, estate = estate_context(query, chunks, scope=scope, mode=mode, margin=margin,
+                                    include_superseded=include_superseded, limit=limit)
+    if estate["available"] is False:
+        print(f"estate unavailable: {estate['reason']} — answering from the local index", file=sys.stderr)
 
     # Format context
     context = format_rag_context(chunks)
@@ -249,6 +283,9 @@ def ask(query: str, limit: int = 10, concise: bool = False, think: bool | None =
             "path": c.get("path", ""),
             "category": c.get("category", ""),
             "score": c.get("score", 0),
+            "project": c.get("project", ""),
+            "cross_project": bool(c.get("cross_project")),
+            "provenance": c.get("provenance", ""),
         })
 
     return {
@@ -260,6 +297,7 @@ def ask(query: str, limit: int = 10, concise: bool = False, think: bool | None =
         "thinking_used": use_thinking,
         "thinking": thinking,
         "sources": sources,
+        "estate": estate,
     }
 
 
@@ -271,6 +309,14 @@ def main():
     parser.add_argument("--think", action="store_true", default=None, help="Force thinking mode")
     parser.add_argument("--no-think", action="store_true", help="Disable thinking mode")
     parser.add_argument("--limit", type=int, default=10, help="Max chunks to retrieve")
+    parser.add_argument("--scope", choices=("own", "estate", "both"), default="own",
+                        help="own: this project's index (default); estate: the estate store; "
+                             "both: own index plus other projects' estate items (T-4164)")
+    parser.add_argument("--mode", choices=("default", "solution-finder"), default="default",
+                        help="estate ranking: own first within --margin, or other projects first")
+    parser.add_argument("--margin", type=float, default=None, help="own-first score margin (default 0.05)")
+    parser.add_argument("--include-superseded", action="store_true",
+                        help="keep superseded/retired estate items")
     args = parser.parse_args()
 
     # T-3783: say so loudly when semantic recall is degraded, so a thin answer is
@@ -295,7 +341,9 @@ def main():
         think = False
 
     try:
-        result = ask(args.query, limit=args.limit, concise=args.concise, think=think)
+        result = ask(args.query, limit=args.limit, concise=args.concise, think=think,
+                     scope=args.scope, mode=args.mode, margin=args.margin,
+                     include_superseded=args.include_superseded)
     except Exception as exc:  # noqa: BLE001
         from web.embeddings import IndexUnavailable
         if not isinstance(exc, IndexUnavailable):
@@ -312,6 +360,8 @@ def main():
             print(f"\n--- Sources ({len(result['sources'])} chunks) ---")
             for s in result["sources"][:5]:
                 print(f"  [{s['num']}] {s['title']} ({s['path']})")
+                if s.get("provenance"):
+                    print(f"      {s['provenance']}")
 
 
 if __name__ == "__main__":

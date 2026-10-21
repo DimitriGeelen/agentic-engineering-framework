@@ -550,6 +550,16 @@ def main():
     parser.add_argument("--task", "-t", help="Task ID (builds query from task context)")
     parser.add_argument("--limit", "-n", type=int, default=5, help="Max results")
     parser.add_argument("--no-hybrid", action="store_true", help="Skip hybrid search")
+    # T-4164 (T-4091 slice 3): estate read side.
+    parser.add_argument("--scope", choices=("own", "estate", "both"), default="own",
+                        help="own: this project's index (default); estate: the estate store; "
+                             "both: own index plus other projects' estate items")
+    parser.add_argument("--mode", choices=("default", "solution-finder"), default="default",
+                        help="estate ranking: own first within --margin, or other projects first")
+    parser.add_argument("--margin", type=float, default=None,
+                        help="score margin within which own items rank first (default 0.05)")
+    parser.add_argument("--include-superseded", action="store_true",
+                        help="keep superseded/retired estate items in the results")
     args = parser.parse_args()
 
     if args.task:
@@ -568,12 +578,46 @@ def main():
     if not args.no_hybrid and os.environ.get("FW_RECALL_NO_BANNER") != "1":
         _print_degraded_banner()
 
-    if lines:
-        print(f"{BOLD}Related knowledge:{NC}")
-        for line in lines:
-            print(line)
-    else:
+    estate_lines, estate_down = recall_estate(query, args)
+    if args.scope == "estate" and not estate_down:
+        lines = []  # estate only: the local index answers only when the estate cannot (R-16)
+    sections = [("Related knowledge:", lines), ("Estate knowledge:", estate_lines)]
+    if args.mode == "solution-finder":
+        sections.reverse()
+
+    if estate_down:
+        print(f"{YELLOW}estate unavailable: {estate_down} — answering from the local index{NC}")
+    printed = False
+    for title, body in sections:
+        if body:
+            print(f"{BOLD}{title}{NC}")
+            for line in body:
+                print(line)
+            printed = True
+    if not printed:
         print(f"{DIM}No relevant prior knowledge found.{NC}")
+
+
+def recall_estate(query: str, args) -> tuple:
+    """T-4164: estate hits for --scope estate|both, as (lines, unavailable_reason).
+
+    Never raises: anything the estate cannot do becomes the reason, and the local answer
+    stands (R-16)."""
+    if args.scope == "own":
+        return [], None
+    try:
+        sys.path.insert(0, str(FRAMEWORK_ROOT / "lib"))
+        import estate_recall as er
+        margin = er.DEFAULT_MARGIN if args.margin is None else args.margin
+        hits = er.recall(query, own=er.own_project(PROJECT_ROOT), scope=args.scope,
+                         mode=args.mode, margin=margin,
+                         include_superseded=args.include_superseded, limit=args.limit)
+    except Exception as exc:  # noqa: BLE001 - EstateUnavailable and anything unforeseen alike
+        return [], str(exc) or type(exc).__name__
+    out = []
+    for hit in hits:
+        out.extend(er.format_hit(hit))
+    return out, None
 
 
 if __name__ == "__main__":
