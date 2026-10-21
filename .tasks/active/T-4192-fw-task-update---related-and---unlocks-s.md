@@ -9,10 +9,10 @@ description: >
   satisfied through the CLI. 832's fix: fw task update T-XXX --related T-YYY --unlocks
   T-AAA, appending rather than replacing, and refusing ids that do not resolve.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:10:43Z
-last_update: '2026-10-13T19:16:05Z'
+last_update: 2026-10-21T22:06:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw task update T-X --related T-Y[,T-Z]` appends resolving ids to `related_tasks:` (dedup, existing entries kept)
+- [x] `fw task update T-X --unlocks T-A:decision-id` appends to `unlocks_inception_decision:` (dedup, existing kept)
+- [x] An unresolved id (no such task / no such inception decision / malformed) is refused non-zero and the file is unchanged
+- [x] Regression bats `tests/unit/t4192_update_task_related_unlocks.bats` fails before the fix, passes after
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,6 +261,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4192_update_task_related_unlocks.bats > /tmp/.t4192.out 2>&1 && ! grep -q "^not ok" /tmp/.t4192.out
+test "$(grep -c '# skip' /tmp/.t4192.out)" -eq 0
+bash -n agents/task-create/update-task.sh
+bin/fw vendor self --check --task T-4192
 
 ## RCA
 
@@ -275,6 +281,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw task update T-XXX --related T-YYY` / `--unlocks T-AAA:id` exit "Unknown option"; `related_tasks:` and `unlocks_inception_decision:` could only be hand-edited, so the GO-scope close gate (reads `related_tasks`, `agents/task-create/update-task.sh` ~:1256) could not be satisfied through the CLI (832 OBS-453).
+
+**Root cause:** the arg loop in `agents/task-create/update-task.sh` (~:1828-1940) had setters for status/owner/tags/horizon/type only; the two link fields were introduced by T-1984 / the GO-scope gate as consumer-side frontmatter with no producer verb.
+
+**Why structurally allowed:** the fields were added with readers (close gate, PreToolUse hook `check-inception-decisions`) and a hand-edit path (Write/Edit), so nothing exercised a CLI write path; producer/consumer parity (L-399) was not checked for frontmatter fields.
+
+**Prevention:** `lib/task_link_fields.py` gives both fields an append-only, resolve-or-refuse setter (validated before mutation, re-validated under the task lock, reusing `inception_decisions.validate_unlocks_references`); `tests/unit/t4192_update_task_related_unlocks.bats` pins append, dedup, block-list conversion, and byte-identical refusal.
 
 ## Evolution
 
@@ -356,3 +370,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4192-fw-task-update---related-and---unlocks-s.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:06:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

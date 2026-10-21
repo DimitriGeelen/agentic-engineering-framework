@@ -1788,6 +1788,8 @@ NEW_STATUS=""
 NEW_OWNER=""
 NEW_TAGS=""
 ADD_TAGS=""
+ADD_RELATED=""   # T-4192: --related T-YYY[,..] appends to related_tasks:
+ADD_UNLOCKS=""   # T-4192: --unlocks T-AAA:decision-id[,..] appends to unlocks_inception_decision:
 NEW_HORIZON=""
 NEW_TYPE=""
 REASON=""
@@ -1829,6 +1831,8 @@ while [[ $# -gt 0 ]]; do
         --owner|-o) NEW_OWNER="$2"; shift 2 ;;
         --tags) NEW_TAGS="$2"; shift 2 ;;
         --add-tag) ADD_TAGS="$2"; shift 2 ;;
+        --related) ADD_RELATED="${ADD_RELATED:+$ADD_RELATED,}$2"; shift 2 ;;
+        --unlocks) ADD_UNLOCKS="${ADD_UNLOCKS:+$ADD_UNLOCKS,}$2"; shift 2 ;;
         --horizon) NEW_HORIZON="$2"; shift 2 ;;
         --type|-t) NEW_TYPE="$2"; shift 2 ;;
         --reason|-r) REASON="$2"; shift 2 ;;
@@ -1908,6 +1912,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --type, -t    Workflow type ($VALID_TYPES)"
             echo "  --tags        Replace tags (comma-separated)"
             echo "  --add-tag     Add tag(s) to existing (comma-separated)"
+            echo "  --related T-YYY[,..]   Append to related_tasks (refuses ids that do not resolve; T-4192)"
+            echo "  --unlocks T-AAA:id[,..] Append to unlocks_inception_decision (refuses unknown decisions; T-4192)"
             echo "  --horizon     Priority horizon: now, next, later"
             echo "  --reason, -r  Reason for status change (logged in Updates)"
             echo "  --happiness N Retrieval-happiness signal, -5..-1 or +1..+5 (T-1719 A2)"
@@ -2018,6 +2024,15 @@ print(json.dumps(row, sort_keys=True))
     echo -e "${GREEN}Happiness recorded:${NC} $_hv → .context/working/happiness.jsonl"
 fi
 
+# ── T-4192: --related / --unlocks — validated BEFORE any mutation (L-286) ────
+# An id that does not resolve refuses the whole invocation with the file untouched.
+if [ -n "$ADD_RELATED" ] || [ -n "$ADD_UNLOCKS" ]; then
+    if ! python3 "$FRAMEWORK_ROOT/lib/task_link_fields.py" validate "$TASK_FILE" "$PROJECT_ROOT" "$ADD_RELATED" "$ADD_UNLOCKS"; then
+        echo -e "${RED}Refused: nothing written to $TASK_ID (T-4192).${NC}" >&2
+        exit 1
+    fi
+fi
+
 # Acquire per-task lock to prevent concurrent modifications (T-587).
 # T-3306: bounded (120s) — an unguarded reentry path (a child process the
 # close-guard env didn't reach) must degrade to a loud timeout error, never
@@ -2043,6 +2058,21 @@ echo "File:    $TASK_FILE"
 
 # Track what changed
 CHANGES=()
+
+# T-4192: append related_tasks / unlocks_inception_decision before the status
+# gates, so a close in the same invocation sees the links (GO-scope gate reads
+# related_tasks). Re-validated under the task lock.
+if [ -n "$ADD_RELATED" ] || [ -n "$ADD_UNLOCKS" ]; then
+    if ! _link_out=$(python3 "$FRAMEWORK_ROOT/lib/task_link_fields.py" apply "$TASK_FILE" "$PROJECT_ROOT" "$ADD_RELATED" "$ADD_UNLOCKS"); then
+        echo -e "${RED}Refused: nothing written to $TASK_ID (T-4192).${NC}" >&2
+        exit 1
+    fi
+    while IFS= read -r _link_line; do
+        [ -z "$_link_line" ] && continue
+        echo "Links:   $_link_line"
+        CHANGES+=("$_link_line")
+    done <<< "$_link_out"
+fi
 
 # Update status
 if [ -n "$NEW_STATUS" ]; then
