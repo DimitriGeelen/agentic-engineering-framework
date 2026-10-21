@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4548: Mapping standard v1.1 text: structured aef:io attributes, fields and expectations (T-4415 DRAFT 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T16:28:46Z
+# ============================================================================
+
+task_id: T-4548
+task_name: "Mapping standard v1.1 text: structured aef:io attributes, fields and expectations (T-4415 DRAFT 2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-21T14:31:35Z
+completed: 2026-10-21T16:27:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T18:05:17+02:00
+last_commit: 2026-10-21T18:05:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  mapping standard v1.1 normative text for structured aef:io (fields, expectations, prefix map)
+
+# Key outcomes
+outcomes:
+  - 'New file `policy/standards/aef-bpmn-mapping-v1.1-io.md` carries the normative v1.1 text of DRAFT 2 sections A-E, C2, examples and the producer migration note, written as MUST/SHOULD/MAY rules'
+  - 'Every v1.1 construct is marked as gated by `mappingVersion="1.1"` or as additive-without-gate (prefix map), and the file states that no v1.0 rule changes'
+  - 'The frozen v1.0 Part I (`policy/standards/aef-bpmn-mapping-v1-partI.md`) is byte-unchanged, so its sha pin still holds (`tests/unit/standard_pin.bats` green)'
+  - 'The T-4415 report is not edited; key terms (mappingVersion, fieldRef, typeRef, aef:prefix, aef:field, aef:expect, operation, role) are present in the new file'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'mapping standard v1.1 normative text for structured aef:io (fields, expectations, prefix map)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-21 — where the v1.1 text lives'
+    chose: 'a new sibling file `policy/standards/aef-bpmn-mapping-v1.1-io.md`.'
+    rationale: 'the v1.0 text is `policy/standards/aef-bpmn-mapping-v1-partI.md`, 832-authored and sha-pinned (`tests/unit/standard_pin.bats`); appending to it would break the pin and turn the vendored document into a local paraphrase (OBS-190). T-2522 is an inception report, not the standard.'
+    alternatives_rejected: ['editing Part I in place; adding v1.1 to the T-2522 report.']
+  - decision: '2026-10-21 — DRAFT 2 §B example'
+    chose: 'the normative example writes `operation="create"` on the io and `role="write"` on each `aef:field`.'
+    rationale: 'DRAFT 2 §B''s example puts `role="write"` on an io with `typeRef`, which contradicts DRAFT 2''s own later rule (role is field-level, on `fieldRef` ios and `aef:field`; operation is instance-level on `typeRef` ios). The later rule supersedes the earlier example.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'policy/standards/aef-bpmn-mapping-v1.1-io.md'
+  - '.tasks/active/T-4548-mapping-standard-v11-text-structured-aef.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T18:05:17'
+    action: 'T-4548: mapping standard v1.1 normative text for structured aef:io (fields, expectations, prefix map)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 116 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [mapping, aef-io, T-4415]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 116
+  commits: 1
+  files_changed: 2
+  lines_added: 350
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4548-mapping-standard-v11-text-structured-aef.md
+generated_by: context-agent-hybrid
