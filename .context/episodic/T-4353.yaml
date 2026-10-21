@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4353: GH #96: After a fresh auto-restart the new session is told \"Post-Compaction Context Recovery\" — the agent then reports a compaction that never happened
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:55:21Z
+# ============================================================================
+
+task_id: T-4353
+task_name: "GH #96: After a fresh auto-restart the new session is told \"Post-Compaction Context Recovery\" — the agent then reports a compaction that never happened"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T23:03:07Z
+completed: 2026-10-21T18:54:16Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-21T20:20:23+02:00
+last_commit: 2026-10-21T20:20:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  resume hook header names the real SessionStart source — auto-restart/resume no longer told 'Post-Compaction' (GH #96); regression bats
+
+# Key outcomes
+outcomes:
+  - '`agents/context/post-compact-resume.sh` picks its recovery header from SOURCE_TAG: `compact` keeps "Post-Compaction Context Recovery"; `startup` (claude-fw auto-restart) and `resume` (`claude -c`/`/resume`) get headers that do not claim a compaction, and say no compaction happened'
+  - 'Regression bats `tests/unit/t4353_resume_header_by_source.bats` runs the real hook per source and fails on the pre-fix hook (startup/resume emitted "Post-Compaction"), passes after; compact control leg still says Post-Compaction'
+  - 'Neighbouring hook suites (`restart_sentinel_ttl.bats`, `session_start_hook_warning.bats`) stay green; vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - 'agents/context/post-compact-resume.sh'
+  - '.tasks/active/T-4353-gh-96-after-a-fresh-auto-restart-the-new.md'
+  - 'tests/unit/t4353_resume_header_by_source.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T20:20:23'
+    action: 'T-4353: resume hook header names the real SessionStart source — auto-restart/resume no longer told ''Post-Compaction'' (GH #96); regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4071 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4071
+  commits: 1
+  files_changed: 4
+  lines_added: 142
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4353-gh-96-after-a-fresh-auto-restart-the-new.md
+generated_by: context-agent-hybrid
