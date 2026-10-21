@@ -24,6 +24,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -33,7 +34,8 @@ from lib.termlink_worker import TermLinkWorker
 SENTINEL_ENV = "FW_REVIEWER_IN_DISPATCH"
 
 # Temporary dir for worker scripts and verdict files.
-_TMP_DIR = Path("/tmp")
+# T-4526: honour TMPDIR, so a test run can keep these out of the shared /tmp.
+_TMP_DIR = Path(tempfile.gettempdir())
 
 
 def _project_root() -> Path:
@@ -58,7 +60,7 @@ def _write_worker_script(fw: str, task_id: str, session_name: str) -> Path:
        surface a clean error via `fw bus manifest` rather than silently failing.
     """
     script_path = _TMP_DIR / f"fw-reviewer-worker-{session_name}.sh"
-    tmp_verdict = f"/tmp/fw-reviewer-{session_name}-verdict.json"
+    tmp_verdict = str(_TMP_DIR / f"fw-reviewer-{session_name}-verdict.json")
 
     script_content = f"""#!/bin/bash
 # TermLink reviewer worker — T-1951 dispatch mode
@@ -66,6 +68,8 @@ def _write_worker_script(fw: str, task_id: str, session_name: str) -> Path:
 TMP="{tmp_verdict}"
 FW="{fw}"
 TASK="{task_id}"
+# T-4526: the script and its verdict file are single-use; remove both on any exit.
+trap 'rm -f "$TMP" "$0"' EXIT
 
 # Run inline reviewer (captures both stdout and stderr to TMP).
 # T-2330 (termlink): capture RC BEFORE the test — `if ! cmd; then RC=$?`
@@ -188,8 +192,13 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     # ── Fire dispatch (non-blocking) ──────────────────────────────────────────
-    rc, stderr_text = _fire_dispatch(worker, prompt)
+    try:
+        rc, stderr_text = _fire_dispatch(worker, prompt)
+    except BaseException:
+        script_path.unlink(missing_ok=True)  # T-4526: no worker will run it
+        raise
     if rc != 0:
+        script_path.unlink(missing_ok=True)  # T-4526: no worker will run it
         print(
             f"ERROR: dispatch failed (rc={rc}): {stderr_text.strip()}",
             file=sys.stderr,

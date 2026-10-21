@@ -8,6 +8,7 @@ T-237: Phase 1 — BM25 keyword search via tantivy.
 from __future__ import annotations
 
 
+import atexit
 import os
 import shutil
 import tempfile
@@ -63,6 +64,23 @@ def _remove_orphan_dirs() -> None:
             shutil.rmtree(d, ignore_errors=True)
         except OSError:
             pass
+
+
+def _remove_own_dirs() -> None:
+    """T-4526: remove this process's index directories when it exits.
+
+    Without it every exited process left its last generation behind until some
+    other process built an index (and only then if it shared INDEX_PARENT):
+    ~1 GB of /tmp/fw-search-index-* on the shared host. The pid prefix keeps a
+    forked child from removing its parent's live index.
+    """
+    mine = f"{INDEX_PREFIX}{os.getpid()}-"
+    for d in [*_retired_dirs, INDEX_DIR]:
+        if d is not None and Path(d).name.startswith(mine):
+            shutil.rmtree(d, ignore_errors=True)
+
+
+atexit.register(_remove_own_dirs)
 
 
 def build_index() -> tantivy.Index:

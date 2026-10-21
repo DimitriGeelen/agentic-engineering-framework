@@ -23,6 +23,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -31,7 +32,8 @@ from lib.termlink_worker import TermLinkWorker
 # Env-var sentinel that prevents recursive dispatch inside a worker session.
 SENTINEL_ENV = "FW_BVP_JUDGE_IN_DISPATCH"
 
-_TMP_DIR = Path("/tmp")
+# T-4526: honour TMPDIR, so a test run can keep these out of the shared /tmp.
+_TMP_DIR = Path(tempfile.gettempdir())
 
 
 def _project_root() -> Path:
@@ -55,7 +57,7 @@ def _write_worker_script(fw: str, task_id: str, session_name: str) -> Path:
        fix as T-2330 (`if ! cmd; then RC=$?` stores the NEGATED status).
     """
     script_path = _TMP_DIR / f"fw-bvp-judge-worker-{session_name}.sh"
-    tmp_verdict = f"/tmp/fw-bvp-judge-{session_name}-verdict.json"
+    tmp_verdict = str(_TMP_DIR / f"fw-bvp-judge-{session_name}-verdict.json")
 
     script_content = f"""#!/bin/bash
 # TermLink bvp-judge worker — T-3526 dispatch mode (T-1951 shape)
@@ -63,6 +65,8 @@ def _write_worker_script(fw: str, task_id: str, session_name: str) -> Path:
 TMP="{tmp_verdict}"
 FW="{fw}"
 TASK="{task_id}"
+# T-4526: the script and its verdict file are single-use; remove both on any exit.
+trap 'rm -f "$TMP" "$0"' EXIT
 
 "$FW" bvp judge "$TASK" --json > "$TMP" 2>&1
 RC=$?
@@ -148,8 +152,13 @@ def main(argv: list[str] | None = None) -> int:
         fw_bin=fw,
     )
 
-    rc, stderr_text = _fire_dispatch(worker, prompt)
+    try:
+        rc, stderr_text = _fire_dispatch(worker, prompt)
+    except BaseException:
+        script_path.unlink(missing_ok=True)  # T-4526: no worker will run it
+        raise
     if rc != 0:
+        script_path.unlink(missing_ok=True)  # T-4526: no worker will run it
         print(f"ERROR: dispatch failed (rc={rc}): {stderr_text.strip()}", file=sys.stderr)
         return 1
 

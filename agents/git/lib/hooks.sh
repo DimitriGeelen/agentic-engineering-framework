@@ -1500,6 +1500,14 @@ echo ""
 # the whole point of the exit-75 branch below is that the pipeline's exit code must
 # not be substituted for the audit's.
 _t3126_out=$(mktemp -t fw-prepush-audit-XXXXXX 2>/dev/null || echo "")
+# T-4526: an interrupted push (Ctrl-C mid-audit) skipped every rm below and left
+# the capture behind. The rm calls stay; this covers the paths that miss them.
+# $BASHPID, not $$: the hook body runs in a ( ... ) subshell (T-4515).
+if [ -n "$_t3126_out" ]; then
+    trap 'rm -f "$_t3126_out"' EXIT
+    trap 'rm -f "$_t3126_out"; trap - INT; kill -INT $BASHPID' INT
+    trap 'rm -f "$_t3126_out"; trap - TERM; kill -TERM $BASHPID' TERM
+fi
 
 # T-3297: one audit attempt — shared by the first run and the bounded-wait
 # retries below. Sets $audit_exit; captures to $_t3126_out when available.

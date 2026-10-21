@@ -193,6 +193,18 @@ RESULTS="$(mktemp -d)"
 mkdir -p "$RESULTS/bats" "$RESULTS/pytest"
 trap 'rm -rf "$RESULTS"' EXIT
 
+# T-4526: the run must leave no new aef-*/fw-* entry in the temp dir. ~406 of
+# them (1.7 GB) piled up on the shared host, each from a creator that cleaned up
+# on its happy path only. Snapshot before, diff in _finish, name them in the report.
+# Other processes on the host can add entries during the run, so this reports;
+# it does not change the exit code.
+TMP_ROOT="${TMPDIR:-/tmp}"
+_tmp_names() {
+    find "$TMP_ROOT" -mindepth 1 -maxdepth 1 \( -name 'aef-*' -o -name 'fw-*' \) \
+        -printf '%f\n' 2>/dev/null | LC_ALL=C sort
+}
+_tmp_names > "$RESULTS/tmp-before"
+
 # _run_one <leg> <deadline-epoch> <file> — one pool job. Writes
 # $RESULTS/<leg>/<basename>.out (tool output) and .meta, one line:
 #   <status> <rc> <seconds>   status: done | file-timeout | run-ceiling | not-run
@@ -402,6 +414,10 @@ _keep_failures() {
 }
 _keep_failures
 
+# T-4526: new aef-*/fw-* temp entries since the run started.
+_tmp_names | LC_ALL=C comm -13 "$RESULTS/tmp-before" - > "$RESULTS/tmp-new" 2>/dev/null || : > "$RESULTS/tmp-new"
+TMP_LEFTOVERS=$(wc -l < "$RESULTS/tmp-new" | tr -d ' ')
+
 FINISHED="$(date -u +%FT%TZ)"
 
 # ── Report (A2): parse both legs, emit LATEST.yaml + dated sibling ──────────
@@ -421,6 +437,7 @@ T3302_PY_RESERVE="$PY_RESERVE" T3602_JOBS="$JOBS" T3602_FILE_TIMEOUT="$FILE_TIME
 T3302_REPORT_DIR="$REPORT_DIR" T3602_INTERRUPTED="$INTERRUPTED" T3602_WALL=$(( $(date +%s) - START_EPOCH )) \
 T4058_FAILURES="$FAILURES_KEPT" \
 T4381_REV_COMMIT="$REV_COMMIT" T4381_REV_TREE="$REV_TREE" T4377_TIER="$TIER" \
+T4526_TMP_ROOT="$TMP_ROOT" \
 python3 - "$RESULTS" <<'PY'
 import glob, os, re, sys, yaml, datetime
 
@@ -556,6 +573,13 @@ report = {
         "pytest": _leg_report(P, "PY"),
     },
 }
+# T-4526: aef-*/fw-* entries the temp dir gained during the run (first 50 named).
+try:
+    _new = [l.strip() for l in open(os.path.join(results, "tmp-new")) if l.strip()]
+except OSError:
+    _new = []
+report["tmp_leftovers"] = {"dir": env.get("T4526_TMP_ROOT") or "/tmp",
+                           "count": len(_new), "names": _new[:50]}
 
 report_dir = env["T3302_REPORT_DIR"]
 dated = os.path.join(
@@ -586,7 +610,10 @@ if [ "$WRITE_RC" -ne 0 ]; then
     exit 2
 fi
 
-echo "$FINISHED DONE runner_exit=$RUNNER_EXIT bats_rc=$BATS_RC pytest_rc=$PY_RC wall=$(( $(date +%s) - START_EPOCH ))s jobs=$JOBS" >> "$RUN_LOG"
+echo "$FINISHED DONE runner_exit=$RUNNER_EXIT bats_rc=$BATS_RC pytest_rc=$PY_RC wall=$(( $(date +%s) - START_EPOCH ))s jobs=$JOBS tmp_leftovers=$TMP_LEFTOVERS" >> "$RUN_LOG"
+if [ "$TMP_LEFTOVERS" -gt 0 ]; then
+    echo "unit-suite: WARN $TMP_LEFTOVERS new aef-*/fw-* entr(y/ies) left in $TMP_ROOT (T-4526) — see tmp_leftovers in the report" >&2
+fi
 echo "unit-suite: done runner_exit=$RUNNER_EXIT (bats: $BATS_FILES file(s) rc=$BATS_RC; pytest: $PY_FILES file(s) rc=$PY_RC) — report: $REPORT_DIR/LATEST.yaml"
 exit "$RUNNER_EXIT"
 }

@@ -591,6 +591,13 @@ _vendor_excludes_for() {
 # --- Vendor (T-482/T-497, moved before auto-init for T-519) ---
 # Copy complete framework into project/.agentic-framework/ for full isolation.
 # Must be defined before auto-init dialogue because do_init calls do_vendor.
+_FW_VP_TMP=""
+_fw_vp_cleanup() {
+    [ -n "$_FW_VP_TMP" ] && rm -rf "$_FW_VP_TMP"
+    _FW_VP_TMP=""
+    return 0
+}
+
 do_vendor() {
     local dry_run=false
     local target="${PROJECT_ROOT:-.}"
@@ -781,6 +788,13 @@ do_vendor() {
     local _vp_dir=""
     if [ -n "$_vp_py" ] && command -v python3 >/dev/null 2>&1; then
         _vp_dir=$(mktemp -d "${TMPDIR:-/tmp}/fw-vendor-preserve-XXXXXX")
+        # T-4526: removed on every exit, not just the paths that reach an rm
+        # below — a set -e abort or a kill left one dir per run (17 found).
+        # INT/TERM re-raise so the exit status stays the signal's (T-4438 shape).
+        _FW_VP_TMP="$_vp_dir"
+        trap _fw_vp_cleanup EXIT
+        trap '_fw_vp_cleanup; trap - TERM; kill -TERM $BASHPID' TERM
+        trap '_fw_vp_cleanup; trap - INT; kill -INT $BASHPID' INT
         # Run from a private copy: the copy below may replace (or delete) the
         # very lib/ the helper was found in when bin/fw runs from the target.
         cp "$_vp_py" "$_vp_dir/vendor_preserve.py" && _vp_py="$_vp_dir/vendor_preserve.py"

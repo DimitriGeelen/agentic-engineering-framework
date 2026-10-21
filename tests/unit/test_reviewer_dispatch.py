@@ -30,6 +30,15 @@ sys.path.insert(0, str(ROOT))
 import lib.reviewer.dispatch_cli as dispatch_cli
 
 
+@pytest.fixture(autouse=True)
+def _private_tmp(tmp_path, monkeypatch):
+    """T-4526: worker scripts go to the test's own dir, never the shared /tmp."""
+    d = tmp_path / "worker-tmp"
+    d.mkdir()
+    monkeypatch.setattr(dispatch_cli, "_TMP_DIR", d)
+    return d
+
+
 # ─── Helpers ───────────────────────────────────────────────────────────────────
 
 
@@ -284,3 +293,30 @@ def test_session_name_encodes_task_id(tmp_path, monkeypatch):
     suffix = name.split("-")[-1]
     assert len(suffix) == 6
     assert suffix.isalnum()
+
+
+# ─── T-4526: single-use temp files are removed on every exit path ─────────────
+
+
+def test_t4526_failed_dispatch_removes_worker_script(tmp_path, monkeypatch, _private_tmp):
+    """No worker will ever run the script of a failed dispatch: it must not stay behind."""
+    monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
+    _fw_stub(tmp_path)
+    with patch("lib.reviewer.dispatch_cli.TermLinkWorker") as MockWorker, \
+         patch("lib.reviewer.dispatch_cli.subprocess.Popen") as mock_popen:
+        MockWorker.return_value._build_dispatch_argv.return_value = ["false"]
+        mock_popen.return_value = _mock_popen(rc=1, stderr="task T-MISSING not found")
+        assert dispatch_cli.main(["T-MISSING"]) == 1
+    assert list(_private_tmp.iterdir()) == []
+
+
+def test_t4526_worker_script_removes_itself_and_verdict(tmp_path, _private_tmp):
+    """The worker script deletes itself and its verdict file when it exits."""
+    import subprocess as sp
+    fw = tmp_path / "fw"
+    fw.write_text('#!/bin/bash\necho \'{"overall": "PASS", "state": "green"}\'\n')
+    fw.chmod(0o755)
+    script = dispatch_cli._write_worker_script(str(fw), "T-4526", "reviewer-t-4526-abc123")
+    r = sp.run(["bash", str(script)], capture_output=True, text=True, timeout=30)
+    assert r.returncode == 0, r.stderr
+    assert list(_private_tmp.iterdir()) == []
