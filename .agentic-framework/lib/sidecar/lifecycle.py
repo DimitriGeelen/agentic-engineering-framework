@@ -162,7 +162,6 @@ def pid_alive(pid) -> bool:
         return False
     try:
         os.kill(pid, 0)
-        return True
     except PermissionError:
         # T-4216 (055 T-509): EPERM means the process EXISTS under another user.
         # Reading it as dead let a desktop-user session start a second receiver
@@ -170,6 +169,13 @@ def pid_alive(pid) -> bool:
         return True
     except OSError:
         return False
+    # T-4292: kill(0) succeeds on a zombie. A receiver started by this process
+    # (Popen in _start_receiver) and then stopped stays a zombie until reaped.
+    try:
+        with open(f"/proc/{pid}/stat", encoding="utf-8") as fh:
+            return fh.read().rsplit(")", 1)[1].split()[0] != "Z"
+    except (OSError, IndexError):
+        return True
 
 
 def is_receiver_alive(info: dict) -> bool:

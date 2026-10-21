@@ -11,10 +11,10 @@ description: >
   the recorded pid. Find why stop misses it (triple file vs agent-name lookup, monkeypatched
   env undone before stop?), fix stop, and add a test: start then stop leaves no process.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T09:01:34Z
-last_update: '2026-10-18T09:16:37Z'
+last_update: 2026-10-21T20:19:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge: start via `cli._start_receiver` then `cli.cmd_receiver_stop(agent=...)` in the same process — reproduced 3/3, the pid stays "alive" in state Z (unreaped zombie)
+- [x] `lifecycle.pid_alive` reports a zombie as dead, so stop returns promptly without a SIGKILL to a corpse
+- [x] Regression test tests/unit/test_t4292_receiver_stop_same_process.py fails before the fix (2 failed) and passes after (2 passed)
+- [x] Existing tests closest to lifecycle.py / sidecar_cli.py stop path show no new failures (7 files: 86 passed / 2 failed both with and without the fix; the 2 are pre-existing `_orphan` fixture timeouts in test_t4283 `test_ensure_*`, not this task)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,6 +278,8 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 120 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4292_receiver_stop_same_process.py > /tmp/.t4292.out 2>&1 && grep -q "passed" /tmp/.t4292.out && ! grep -q "failed" /tmp/.t4292.out
+bin/fw vendor self --check --task T-4292
 
 ## RCA
 
@@ -292,6 +296,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after `cli._start_receiver(agent, ...)` and `cli.cmd_receiver_stop(agent=agent)` in one process, the receiver pid still read as alive (seen in T-4283's test, which then killed it by pid). Reproduced 3/3 on bleeding-edge 2026-10-21: `pid ... still alive state=Z`.
+
+**Root cause:** two causes stacked. (1) The cross-run leak in T-4283's test was the stop going to the wrong project: `monkeypatch.undo()` dropped the fixture's PROJECT_ROOT before the stop. T-4315 (145761d85) fixed that. (2) What still reproduces: `_start_receiver` (lib/sidecar_cli.py:889) `Popen`s the receiver as a child of the calling process and never reaps it. After the SIGTERM in `cmd_receiver_stop` (lib/sidecar_cli.py:1194) the child is a zombie, and `lifecycle.pid_alive` (lib/sidecar/lifecycle.py:160) uses `os.kill(pid, 0)`, which succeeds on a zombie. So stop waited the full 5 s, sent SIGKILL to a corpse, and every later `pid_alive` check in that process (the test's own, the watcher supervisor's) still saw a live receiver.
+
+**Why structurally allowed:** the CLI path always runs start and stop in separate short-lived processes, so the receiver gets reparented to init and reaped, and the zombie never shows. Only in-process callers (tests, a long-lived supervisor) see it, and no test asserted "start then stop leaves the pid dead" in one process.
+
+**Prevention:** `pid_alive` now reads a zombie (`/proc/<pid>/stat` state Z) as dead, and `tests/unit/test_t4292_receiver_stop_same_process.py` pins start-then-stop-in-process leaving the pid dead and stop returning before the SIGKILL deadline.
 
 ## Evolution
 
@@ -373,3 +385,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4292-fw-sidecar-receiver-stop-cmdreceiverstop.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:19:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
