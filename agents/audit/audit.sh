@@ -3079,7 +3079,9 @@ elif [ -f "$_cron_registry" ]; then
     # T-1944: dry-run logic extracted to lib/cron_dry_run.py per L-332/L-408
     # (single source of truth + bash side stays parse-safe).
     if [ -f "$_cron_source" ]; then
-        _cron_dry_run=$(python3 "$FRAMEWORK_ROOT/lib/cron_dry_run.py" "$PROJECT_ROOT" "$_cron_registry" "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null || echo "__SKIP__")
+        # T-4259: render with the fw path generate writes (cron_fw_path,
+        # lib/cron-registry.sh — sourced by the job-count test above).
+        _cron_dry_run=$(python3 "$FRAMEWORK_ROOT/lib/cron_dry_run.py" "$PROJECT_ROOT" "$_cron_registry" "$(cron_fw_path "$FRAMEWORK_ROOT" "$PROJECT_ROOT")" 2>/dev/null || echo "__SKIP__")
         if [ "$_cron_dry_run" != "__SKIP__" ] && [ -n "$_cron_dry_run" ]; then
             _cron_on_disk=$(cat "$_cron_source" 2>/dev/null)
             if [ "$_cron_dry_run" != "$_cron_on_disk" ]; then

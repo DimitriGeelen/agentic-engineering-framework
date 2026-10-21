@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:26:00Z
-last_update: 2026-10-21T20:19:09Z
+last_update: 2026-10-21T23:06:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -81,6 +81,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4259: fw init seeds a cron registry but leaves it ungenerated; doctor WARNs and also prints cron OK.
@@ -97,6 +113,7 @@ bvp_scores_proposed:
 - [x] `fw init` generates `.context/cron/agentic-audit.crontab` from the seeded registry (generate only, never install), so doctor's registry→generated leg agrees with the registry
 - [x] `fw init` next steps name `fw cron install` as the step that schedules the seeded jobs
 - [x] Regression bats test fails before the fix and passes after
+- [x] (2026-10-22 integration) Doctor/audit registry→generated dry-runs render with the same fw path `fw cron generate` writes — one helper `cron_fw_path` in `lib/cron-registry.sh` used by all three — so a fresh init's doctor run with an inherited FRAMEWORK_ROOT (agent session, bats test_helper) reports no "edited but not generated"; t4259 (c) pins that env explicitly, new leg (e) pins the shared rule; 5/5 green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -145,6 +162,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+timeout 900 bats tests/unit/t4259_init_cron_generated.bats > /tmp/.t4259.out 2>&1 && ! grep -q "^not ok" /tmp/.t4259.out
+test "$(grep -c '# skip' /tmp/.t4259.out)" -eq 0
+bash -n bin/fw && bash -n lib/cron-registry.sh && bash -n agents/audit/audit.sh
+bin/fw vendor self --check --task T-4259
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -295,6 +316,8 @@ bin/fw vendor self --check --task T-4259
 
 **Open (not fixed, separate class):** doctor's dry-run (`bin/fw` ~:4494) renders with `$FRAMEWORK_ROOT/bin/fw`, but `fw cron generate` prefers `$PROJECT_ROOT/.agentic-framework/bin/fw` (T-3835). Running the *framework repo's* fw doctor against a consumer (`PROJECT_ROOT=<consumer>`) therefore reports a false "edited but not generated". Through the consumer's own fw the two agree.
 
+**Closed 2026-10-22 (integration):** the "open" class above is what turned t4259 (c) red on HEAD. It is not limited to the framework repo's fw: the consumer's *vendored* fw honours an inherited `FRAMEWORK_ROOT` (bats `tests/test_helper.bash` exports it; so does every agent session), so doctor dry-ran with `/opt/…/bin/fw` while generate (`bin/fw` cron generate, T-3835 rule) had written `<consumer>/.agentic-framework/bin/fw`. Root cause: the fw-path rule existed only inline in generate; doctor (`bin/fw` ~:4517) and audit (`agents/audit/audit.sh` ~:3084) passed `$FRAMEWORK_ROOT/bin/fw`. Fix: `cron_fw_path` in `lib/cron-registry.sh` is the single rule; generate, doctor and audit all call it. Not T-4555 or T-4231: the renderer output is identical, only the fw path differed (diff showed `"/opt/999-…/bin/fw" sidecar sweep` vs `"<consumer>/.agentic-framework/bin/fw" sidecar sweep`). `web/blueprints/cron.py` has its own `_cron_fw_path` and was left alone (render-surface scope).
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -393,3 +416,7 @@ bin/fw vendor self --check --task T-4259
 ### 2026-10-21T20:19:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-22 — integration: t4259 (c) red on HEAD
+- **Cause:** doctor's registry→generated dry-run used `$FRAMEWORK_ROOT/bin/fw`, generate used the consumer's vendored fw; an inherited FRAMEWORK_ROOT (test_helper, agent sessions) made them differ. Reproduced by hand: clean env → no WARN; `FRAMEWORK_ROOT=/opt/…` → "Cron registry edited but not generated".
+- **Changed:** new `cron_fw_path` in `lib/cron-registry.sh`; `bin/fw` cron generate, `bin/fw` doctor and `agents/audit/audit.sh` use it. t4259 (c) now passes FRAMEWORK_ROOT explicitly; new leg (e) pins the helper and that no dry-run renders with a bare `$FRAMEWORK_ROOT/bin/fw`. t4259 5/5 green.
