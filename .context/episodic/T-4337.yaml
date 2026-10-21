@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4337: Watchtower: remaining silent set -e exits and bare kill -0 liveness checks (status, staleness)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:59:15Z
+# ============================================================================
+
+task_id: T-4337
+task_name: "Watchtower: remaining silent set -e exits and bare kill -0 liveness checks (status, staleness)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T21:23:06Z
+completed: 2026-10-21T18:56:12Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-21T20:30:11+02:00
+last_commit: 2026-10-21T20:33:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  watchtower status survives missing ss (|| true on port pipeline); lib/watchtower.sh + watchtower-staleness.sh use shared zombie-aware fw_pid_alive (new lib/pid-alive.sh) instead of bare kill -0; regression bats. verification ignores comment lines in the kill -0 check
+
+# Key outcomes
+outcomes:
+  - '`bin/watchtower.sh status` with a live PID but `ss` absent from PATH prints the running block (PID/Log lines) instead of exiting silently under set -euo pipefail'
+  - 'The pid liveness checks in `lib/watchtower.sh` and `lib/watchtower-staleness.sh` treat a zombie PID as not alive (no bare `kill -0` remains as the sole test)'
+  - 'Regression bats `tests/unit/t4337_watchtower_status_zombie.bats` covers ss-off-PATH and zombie pid; fails before the fix, passes after'
+  - 'Existing watchtower bats nearest the changed files still pass; vendor sync clean for this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/lib/pid-alive.sh'
+  - '.agentic-framework/lib/watchtower.sh'
+  - '.agentic-framework/lib/watchtower-staleness.sh'
+  - 'bin/watchtower.sh'
+  - '.fabric/components/lib-pid-alive.yaml'
+  - 'lib/pid-alive.sh'
+  - 'lib/watchtower.sh'
+  - 'lib/watchtower-staleness.sh'
+  - '.tasks/active/T-4337-watchtower-remaining-silent-set--e-exits.md'
+  - 'tests/unit/t4337_watchtower_status_zombie.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T20:30:11'
+    action: 'T-4337: watchtower status survives missing ss (|| true on port pipeline); lib/watchtower.sh + watchtower-staleness.sh use shared zombie-aware fw_pid_alive (new lib/pid-alive.sh) instead of bare kill -0; regression bats'
+  - time: '2026-10-21T20:33:22'
+    action: 'T-4337: verification ignores comment lines in the kill -0 check'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4173 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4173
+  commits: 2
+  files_changed: 11
+  lines_added: 243
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4337-watchtower-remaining-silent-set--e-exits.md
+generated_by: context-agent-hybrid
