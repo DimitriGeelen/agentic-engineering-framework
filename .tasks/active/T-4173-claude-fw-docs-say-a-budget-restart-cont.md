@@ -112,10 +112,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Reproduction checked on bleeding-edge: CLAUDE.md §Auto-Restart, bin/claude-fw header and the T-4170 banner already say "fresh session" (fixed by T-4352/T-3166); remaining stale claims located (docs/context-compaction.md:88, agents/context/post-compact-resume.sh header comments)
-- [ ] docs/context-compaction.md no longer says an auto-restart re-injects via `claude -c`; it says the restart is a fresh session that reads the handover (FW_RESTART_MODE=continue = `--resume`)
-- [ ] post-compact-resume.sh header comments attribute auto-restart to SessionStart `startup` of a fresh session, not `claude -c`
-- [ ] Regression bats tests/unit/t4173_restart_fresh_docs.bats fails before the fix and passes after
+- [x] Reproduction checked on bleeding-edge: CLAUDE.md §Auto-Restart, bin/claude-fw header and the T-4170 banner already say "fresh session" (fixed by T-4352/T-3166); remaining stale claims located (docs/context-compaction.md:88, agents/context/post-compact-resume.sh header comments)
+- [x] docs/context-compaction.md no longer says an auto-restart re-injects via `claude -c`; it says the restart is a fresh session that reads the handover (FW_RESTART_MODE=continue = `--resume`)
+- [x] post-compact-resume.sh header comments attribute auto-restart to SessionStart `startup` of a fresh session, not `claude -c`
+- [x] Regression bats tests/unit/t4173_restart_fresh_docs.bats fails before the fix and passes after (2/2 not ok before, 2/2 ok after; t4352 4/4, t4353 4/4)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
