@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4327: check-rail-mcp-label suggests a lower-cased from_project label that exact-match consumers refuse
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T23:06:58Z
+# ============================================================================
+
+task_id: T-4327
+task_name: "check-rail-mcp-label suggests a lower-cased from_project label that exact-match consumers refuse"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-18T19:33:12Z
+completed: 2026-10-21T23:06:03Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-18T21:33:55+02:00
+last_commit: 2026-10-21T23:28:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  832 input — verbatim dir name costs them nothing. unconfigured rail from_project label is the verbatim project dir name (the sidecar/pickup fleet id), not a lower-cased second spelling; configured labels still normalised; MCP label hook hint follows; parity regression bats
+
+# Key outcomes
+outcomes:
+  - '`rail_project_label` with no RAIL_PROJECT_LABEL configured returns the verbatim project dir name (`832-Workflow-designer` stays `832-Workflow-designer`), the same string `lib/sidecar/circuit.py project_id()` returns'
+  - 'A configured RAIL_PROJECT_LABEL is still normalised the same way on the rail and in the sidecar (unchanged behaviour, both sides agree)'
+  - '`check-rail-mcp-label.sh` block message suggests the verbatim dir-name label for an unconfigured project (regression bats fails before the fix)'
+  - 'Every consumer of rail_project_label checked (rail_post_exec, do_rail post, MCP label hook, sidecar mirror) and existing tests updated where they pinned the lower-cased spelling'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4327` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-21 — canonical fleet spelling of an unconfigured project label'
+    chose: 'the verbatim project dir name. A configured `RAIL_PROJECT_LABEL` is still normalised, identically on the rail and in the sidecar (unchanged).'
+    rationale: 'it is already the fleet id everywhere else (sidecar `project_id()`, `lib/pickup.sh`, learning bus), and 832 said that verbatim costs them nothing (msg c4aefa7e). A dir name has one source, so the typed-label drift T-2905 normalised against cannot happen.'
+    alternatives_rejected: ['(a) lower-casing everywhere, including the sidecar: that renames every sidecar inbox address and breaks 832''s exact-match gate; (b) keeping both: that is the split this task reports. - **Cost, accepted:** rail posts from unconfigured projects made before this change carry the lower-cased spelling, so a history grouped by label shows the split for old envelopes only.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/rail-identity.sh'
+  - 'lib/config.sh'
+  - 'lib/rail-identity.sh'
+  - '.tasks/active/T-4327-check-rail-mcp-label-suggests-a-lower-ca.md'
+  - 'tests/unit/rail_identity_guard.bats'
+  - 'tests/unit/t2913_scripts_rail_identity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T21:33:55'
+    action: 'T-4327: 832 input — verbatim dir name costs them nothing'
+  - time: '2026-10-21T23:28:24'
+    action: 'T-4327: unconfigured rail from_project label is the verbatim project dir name (the sidecar/pickup fleet id), not a lower-cased second spelling; configured labels still normalised; MCP label hook hint follows; parity regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4532 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [rail, labels]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4532
+  commits: 2
+  files_changed: 7
+  lines_added: 99
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4327-check-rail-mcp-label-suggests-a-lower-ca.md
+generated_by: context-agent-hybrid
