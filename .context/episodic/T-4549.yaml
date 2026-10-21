@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4549: corpus_spec reads and preserves v1.1 aef:io attributes, aef:field, aef:expect and aef:prefix on round-trip
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:07:21Z
+# ============================================================================
+
+task_id: T-4549
+task_name: "corpus_spec reads and preserves v1.1 aef:io attributes, aef:field, aef:expect and aef:prefix on round-trip"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-21T14:31:44Z
+completed: 2026-10-21T18:06:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T18:27:11+02:00
+last_commit: 2026-10-21T18:27:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  corpus_spec models v1.1 aef:io (attributes, aef:field/when, aef:expect/value, aef:example) and process aef:meta (mappingVersion, aef:prefixes), byte-stable round-trip
+
+# Key outcomes
+outcomes:
+  - '`tools/corpus_spec.py` parses every v1.1 construct of `policy/standards/aef-bpmn-mapping-v1.1-io.md` into the spec (aef:input/aef:output attributes incl. cardinality/role/operation/fieldRef/typeRef/schemaRef/conceptRef/sourceSystem/targetSystem; aef:field with aef:when; aef:expect with aef:value children; aef:example; aef:prefixes/aef:prefix; mappingVersion on aef:meta) instead of only carrying them as opaque strings'
+  - 'Emitting the parsed spec gives back byte-identical XML (parse→emit→parse→emit stable) for every §11 worked example, including the H-042 upsert'
+  - 'A v1.0 map (no mappingVersion, no v1.1 constructs) round-trips with output unchanged from before this task'
+  - 'Regression tests in `tests/unit/test_t4549_aef_io_v11_roundtrip.py` pass, and the existing corpus_spec round-trip tests still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'corpus_spec models v1.1 aef:io (attributes, aef:field/when, aef:expect/value, aef:example) and process aef:meta (mappingVersion, aef:prefixes), byte-stable round-trip'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-21 — how the modelled io is written back'
+    chose: 'build an ET tree from the spec with canonical indentation and serialize with ET; record the io''s slot among `ext_raw` (`io_at` / `process_meta_at`, only when not last).'
+    rationale: 'ET serialization reproduces the exact bytes the verbatim `ext_raw` path wrote (incl. `xmlns:aef` on the io root and ` />`), so v1.0 maps are byte-unchanged; the slot keeps sibling order.'
+    alternatives_rejected: ['keeping io in `ext_raw` plus a read-only parsed view (two sources of truth, edits to the view silently lost); hand-formatted XML strings (would change v1.0 bytes).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/corpus_spec.py'
+  - '.tasks/active/T-4549-corpusspec-reads-and-preserves-v11-aefio.md'
+  - 'tests/unit/test_t4518_ext_unknown_children.py'
+  - 'tests/unit/test_t4549_aef_io_v11_roundtrip.py'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T18:27:11'
+    action: 'T-4549: corpus_spec models v1.1 aef:io (attributes, aef:field/when, aef:expect/value, aef:example) and process aef:meta (mappingVersion, aef:prefixes), byte-stable round-trip'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 215 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [mapping, aef-io, T-4415]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 215
+  commits: 1
+  files_changed: 5
+  lines_added: 627
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4549-corpusspec-reads-and-preserves-v11-aefio.md
+generated_by: context-agent-hybrid
