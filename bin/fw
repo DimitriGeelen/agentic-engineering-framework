@@ -72,9 +72,9 @@ FW_BIN_DIR="$(cd "$(dirname "$FW_REAL_PATH")" && pwd)"
 if [ "${1:-}" = "hook" ] && ! _fw_parse_err="$(bash -n "$FW_REAL_PATH" 2>&1)"; then
     echo "fw hook: bin/fw ($FW_REAL_PATH) does not parse, so hooks run in degraded mode via lib/hook-dispatch.sh." >&2
     echo "  bash: $(printf '%s\n' "$_fw_parse_err" | head -1)" >&2
-    echo "  repair (from the framework repo root): bash -n bin/fw   then   git diff bin/fw   (the unfinished edit)" >&2
     _fw_fb_lib="$FW_BIN_DIR/../lib/hook-dispatch.sh"
     if [ ! -f "$FW_BIN_DIR/../FRAMEWORK.md" ] || [ ! -f "$_fw_fb_lib" ]; then
+        echo "  repair: bash -n $FW_REAL_PATH   then   git -C $FW_BIN_DIR diff ${FW_REAL_PATH##*/}   (the unfinished edit)" >&2
         echo "fw hook: framework tree at $FW_BIN_DIR/.. is incomplete — allowing (hook not run)." >&2
         exit 0
     fi
@@ -93,6 +93,16 @@ if [ "${1:-}" = "hook" ] && ! _fw_parse_err="$(bash -n "$FW_REAL_PATH" 2>&1)"; t
             _fw_fb_dir="$(dirname "$_fw_fb_dir")"
         done
         PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+    fi
+    # T-4335: name the file that does not parse — .agentic-framework/bin/fw in a consumer,
+    # bin/fw in the framework repo — relative to PROJECT_ROOT when inside it, else absolute.
+    _fw_fb_root="$(cd "$PROJECT_ROOT" 2>/dev/null && pwd -P)"
+    _fw_fb_file="$(cd "$FW_BIN_DIR" && pwd -P)/${FW_REAL_PATH##*/}"
+    if [ -n "$_fw_fb_root" ] && [ "${_fw_fb_file#"$_fw_fb_root"/}" != "$_fw_fb_file" ]; then
+        _fw_fb_rel="${_fw_fb_file#"$_fw_fb_root"/}"
+        echo "  repair (from $PROJECT_ROOT): bash -n $_fw_fb_rel   then   git diff $_fw_fb_rel   (the unfinished edit)" >&2
+    else
+        echo "  repair: bash -n $FW_REAL_PATH   then   git -C $FRAMEWORK_ROOT diff bin/${FW_REAL_PATH##*/}   (the unfinished edit)" >&2
     fi
     export FRAMEWORK_ROOT PROJECT_ROOT
     AGENTS_DIR="$FRAMEWORK_ROOT/agents"

@@ -10,10 +10,10 @@ description: >
   the top) knows FW_BIN_DIR: name the actual path of the file that does not parse,
   relative to PROJECT_ROOT when inside it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [hooks, consumer, ux]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ origin: {kind: "peer", source: "832"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T21:19:51Z
-last_update: '2026-10-18T21:31:23Z'
+last_update: 2026-10-21T18:16:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Repair line names the actual unparseable file, relative to PROJECT_ROOT when inside it (consumer: `bash -n .agentic-framework/bin/fw`, framework repo: `bash -n bin/fw`), and absolute otherwise
+- [x] Repair line says which directory to run it from (PROJECT_ROOT), not "the framework repo root"
+- [x] Regression bats tests/unit/t4335_g118_repair_path.bats fails before the fix and passes after; t4303 suite still green
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4335` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,6 +149,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n bin/fw
+timeout 300 bats tests/unit/t4335_g118_repair_path.bats tests/unit/t4303_hook_routes_when_binfw_unparseable.bats > /tmp/.t4335.out 2>&1 && ! grep -q "^not ok" /tmp/.t4335.out
+test "$(grep -c '# skip' /tmp/.t4335.out)" -eq 0
+! grep -q "from the framework repo root" bin/fw
+bin/fw vendor self --check --task T-4335
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -293,6 +301,14 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** In a consumer (832 T-1204, v1.8.11) with an unparseable vendored bin/fw, the degraded-hook message said `repair (from the framework repo root): bash -n bin/fw then git diff bin/fw` — there is no bin/fw at a consumer root; the broken file is `.agentic-framework/bin/fw`.
+
+**Root cause:** `bin/fw:75` (T-4303 fast path) hard-coded the literal `bin/fw` and "the framework repo root", although `$FW_REAL_PATH` already holds the real file and PROJECT_ROOT is resolved a few lines later in the same block.
+
+**Why structurally allowed:** the T-4303 bats asserted the literal string `bash -n bin/fw`, pinning the framework-repo-only wording; no test exercised a consumer (vendored `.agentic-framework/`) layout.
+
+**Prevention:** `tests/unit/t4335_g118_repair_path.bats` runs the fast path in a consumer layout, a framework-repo layout and an outside-project layout, and asserts the repair line names the real path and directory for each.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -373,3 +389,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4335-g-118-parse-error-message-tells-a-consum.md
 - **Context:** Initial task creation
+
+### 2026-10-21T18:16:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -57,8 +57,9 @@ teardown() {
     run env -u PROJECT_ROOT -u FRAMEWORK_ROOT CLAUDE_PROJECT_DIR="$TEST_TREE/proj" "$TEST_TREE/bin/fw" hook probe-hook
     [[ "$output" == *"bin/fw"* ]]
     [[ "$output" == *"does not parse"* ]]
-    [[ "$output" == *"bash -n bin/fw"* ]]
-    [[ "$output" == *"git diff bin/fw"* ]]
+    # T-4335: bin/fw is outside the project here, so the repair names it absolutely.
+    [[ "$output" == *"bash -n $TEST_TREE/bin/fw"* ]]
+    [[ "$output" == *"diff bin/fw"* ]]
 }
 
 @test "T-4303: unparseable bin/fw propagates the hook's exit code (exit 2 blocks, as before)" {
