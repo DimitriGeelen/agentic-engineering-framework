@@ -354,6 +354,13 @@ _tl_sidecar_env_prefix() {
 # on it. The session is declared gone only after CLAUDE_FW_PING_FAILURES
 # consecutive failures (default 3, one per 5 s poll; non-numeric or <1 → 3).
 # A success resets the count. Each tolerated failure goes to stderr.
+# T-4541 (055 T-587): failed pings alone never end a session. Under host
+# overload (load 283-443 on 24 cores, 2026-10-21) the local ping times out for
+# minutes and every --termlink agent on the host was torn down twice. Once the
+# failure limit is reached the session is gone only if a second, independent
+# signal agrees: no exact-name `termlink register --name <session>` process is
+# left (_tl_register_pids, /proc-backed). While one lives, log DEGRADED (at the
+# limit, then once a minute) and keep waiting; the exit marker still ends it.
 # Returns 0 when the session is gone, 1 while it should be treated as alive.
 _TL_PING_FAILS=0
 _tl_session_gone() {
@@ -366,7 +373,13 @@ _tl_session_gone() {
     fi
     _TL_PING_FAILS=$((_TL_PING_FAILS + 1))
     if [ "$_TL_PING_FAILS" -ge "$limit" ]; then
-        echo "claude-fw: termlink ping failed ${_TL_PING_FAILS} times in a row — session $TERMLINK_SESSION is gone." >&2
+        if [ -n "$(_tl_register_pids "$TERMLINK_SESSION")" ]; then
+            if [ $(( (_TL_PING_FAILS - limit) % 12 )) -eq 0 ]; then
+                echo "claude-fw: DEGRADED — termlink ping failed ${_TL_PING_FAILS} times in a row, but session $TERMLINK_SESSION's register process is alive; keeping the session (T-4541)." >&2
+            fi
+            return 1
+        fi
+        echo "claude-fw: termlink ping failed ${_TL_PING_FAILS} times in a row and no register process is left — session $TERMLINK_SESSION is gone." >&2
         return 0
     fi
     echo "claude-fw: termlink ping failed (${_TL_PING_FAILS}/${limit}) — tolerating, session $TERMLINK_SESSION may be under load." >&2
