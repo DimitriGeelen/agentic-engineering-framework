@@ -59,6 +59,7 @@ PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
 SUITE_DIR="${FW_UNIT_SUITE_DIR:-$FRAMEWORK_ROOT/tests/unit}"
 REPORT_DIR="${FW_UNIT_SUITE_REPORT_DIR:-$PROJECT_ROOT/.context/audits/unit-suite}"
 LOCK_FILE="${FW_UNIT_SUITE_LOCK:-$PROJECT_ROOT/.context/locks/unit-suite.lock}"
+TREE_GUARD_REPORT_ROOT="$REPORT_DIR"   # T-4523: the runner's own writes, before tier subdirs
 TOTAL_TIMEOUT="${FW_UNIT_SUITE_TIMEOUT:-7200}"
 PY_RESERVE="${FW_UNIT_SUITE_PY_RESERVE:-1800}"
 # Degenerate configs must not invert the split: never reserve the whole window.
@@ -80,6 +81,14 @@ case "$TIER" in
 esac
 if [ -f "$SUITE_DIR/tiers.yaml" ]; then
     if [ -z "$TIER" ]; then
+        # T-4523: was the tree clean before ANY tier wrote? Each tier grades its own
+        # changes against this, not against what an earlier tier left behind.
+        _tg="$(mktemp)"
+        python3 -I "$SCRIPT_DIR/unit_tree_guard.py" snapshot "$SUITE_DIR" "$_tg" \
+            --exclude "$TREE_GUARD_REPORT_ROOT" --exclude "$LOCK_FILE" 2>/dev/null
+        FW_UNIT_SUITE_TREE_START="$(python3 -I "$SCRIPT_DIR/unit_tree_guard.py" state "$_tg" 2>/dev/null)"
+        export FW_UNIT_SUITE_TREE_START="${FW_UNIT_SUITE_TREE_START:-unknown}"
+        rm -f "$_tg"
         ALL_RC=0
         for _t in fast slow perf; do
             FW_UNIT_SUITE_TIER="$_t" bash "${BASH_SOURCE[0]}"; _rc=$?
@@ -237,9 +246,13 @@ _run_one() {
     # T-4524: nor an agent session's variables. Launched from a Claude Code
     # session (ring20's clean-room run), every test inherited CLAUDECODE=1 and
     # each agent-refusal path took its agent branch. A test that needs one sets it.
+    # T-4523: nor the caller's PROJECT_ROOT. Exported by a session in another
+    # checkout, it sent every test that runs bin/fw from this checkout to write
+    # into THAT project (handovers, arcs, counters landed in the live repo from a
+    # run in a clone). Run alone, a test sees no PROJECT_ROOT.
     local v; for v in $(compgen -e); do
         case "$v" in
-            FW_UNIT_SUITE_*|CLAUDECODE|CLAUDE_*|TERMLINK_SESSION_ID) unset "$v" ;;
+            FW_UNIT_SUITE_*|CLAUDECODE|CLAUDE_*|TERMLINK_SESSION_ID|PROJECT_ROOT) unset "$v" ;;
             FW_DISPATCHED_WORKER|FW_SIDECAR_*|FW_FOCUS_SESSION_KEY) unset "$v" ;;
             FW_SESSION_SCOPED_FOCUS|FW_CLAUDE_FW_*) unset "$v" ;;
         esac
@@ -281,6 +294,10 @@ export RESULTS FRAMEWORK_ROOT FILE_TIMEOUT TIER
 export FW_WATCHTOWER_ENSURE=0
 # T-3933: doctor tests must not sweep the live Watchtower with the smoke probe.
 export FW_DOCTOR_SMOKE=0
+# T-4523: every bin/fw call a test makes from this checkout bumped the TRACKED
+# .context/working/.verb-counter (usage data the BVP usage axis ranks by). A
+# test that measures the counter sets its own (test_bvp_usage_axis.py pops it).
+export FW_VERB_TELEMETRY=0
 
 # _run_leg <leg> <deadline-epoch> <files...> — the pool. Files are fed
 # longest-first when the previous report measured them (LPT scheduling: a
@@ -385,6 +402,19 @@ _leg_rc() {
 [ -z "$BATS_ERROR" ] && BATS_RC=$(_leg_rc "$RESULTS/bats")
 [ -z "$PY_ERROR" ] && PY_RC=$(_leg_rc "$RESULTS/pytest")
 
+# T-4523: what the run changed in the checkout (before the report is written, so
+# the runner's own writes never count). Leaked = enforced red on a clean start.
+TREE_LEAKED=""
+if [ -f "$RESULTS/tree-before.json" ]; then
+    python3 -I "$SCRIPT_DIR/unit_tree_guard.py" snapshot "$SUITE_DIR" "$RESULTS/tree-after.json" \
+        --exclude "$TREE_GUARD_REPORT_ROOT" --exclude "$LOCK_FILE" 2>/dev/null \
+        && python3 -I "$SCRIPT_DIR/unit_tree_guard.py" diff "$RESULTS/tree-before.json" \
+            "$RESULTS/tree-after.json" > "$RESULTS/tree-changed" 2>/dev/null
+fi
+[ -f "$RESULTS/tree-changed" ] || : > "$RESULTS/tree-changed"
+TREE_CHANGED=$(wc -l < "$RESULTS/tree-changed" | tr -d ' ')
+[ "${TREE_START:-unknown}" = clean ] && [ "$TREE_CHANGED" -gt 0 ] && TREE_LEAKED=1
+
 # T-4058: the EXIT trap removes $RESULTS, and with it every per-file .out — the
 # only place a red test's assertion text lives. Keep the output of each red file
 # under failures/<run STARTED>/<leg>/ before that happens. Best effort: a copy or
@@ -426,6 +456,8 @@ FINISHED="$(date -u +%FT%TZ)"
 RUNNER_EXIT=0
 { [ "$BATS_RC" -ne 0 ] || [ "$PY_RC" -ne 0 ]; } && RUNNER_EXIT=1
 { [ "$BATS_ERROR" = "bats not installed" ] || [ "$PY_ERROR" = "pytest not installed" ]; } && RUNNER_EXIT=2
+# T-4523: a run that changed a clean checkout is red even when every test passed.
+[ -n "$TREE_LEAKED" ] && [ "$RUNNER_EXIT" -eq 0 ] && RUNNER_EXIT=1
 
 T3302_STARTED="$STARTED" T3302_FINISHED="$FINISHED" \
 T3302_SUITE_DIR="$SUITE_DIR" T3302_TIMEOUT="$TOTAL_TIMEOUT" \
@@ -437,6 +469,7 @@ T3302_PY_RESERVE="$PY_RESERVE" T3602_JOBS="$JOBS" T3602_FILE_TIMEOUT="$FILE_TIME
 T3302_REPORT_DIR="$REPORT_DIR" T3602_INTERRUPTED="$INTERRUPTED" T3602_WALL=$(( $(date +%s) - START_EPOCH )) \
 T4058_FAILURES="$FAILURES_KEPT" \
 T4381_REV_COMMIT="$REV_COMMIT" T4381_REV_TREE="$REV_TREE" T4377_TIER="$TIER" \
+T4523_TREE_START="${TREE_START:-unknown}" T4523_TREE_LEAKED="$TREE_LEAKED" \
 T4526_TMP_ROOT="$TMP_ROOT" \
 python3 - "$RESULTS" <<'PY'
 import glob, os, re, sys, yaml, datetime
@@ -519,6 +552,15 @@ timed_out = any(B["not_run"] or P["not_run"]) or any(
     t.endswith(("(killed at run ceiling)", "(interrupted)"))
     for t in B["timed_out"] + P["timed_out"])
 
+def _tree_guard():
+    try:
+        changed = [l.rstrip("\n") for l in open(os.path.join(results, "tree-changed")) if l.strip()]
+    except OSError:
+        changed = []
+    return {"start": env.get("T4523_TREE_START") or "unknown",
+            "changed_count": len(changed), "changed": changed[:200],
+            "leaked": env.get("T4523_TREE_LEAKED") == "1"}
+
 def _leg_report(s, leg):
     return {
         "files": _int("T3302_%s_FILES" % leg),
@@ -568,6 +610,10 @@ report = {
         "commit": env.get("T4381_REV_COMMIT") or None,
         "tree": env.get("T4381_REV_TREE") or "unknown",
     },
+    # T-4523: paths the run changed in the checkout (first 200 named, "XY path"
+    # as git status prints them; "->" = restored to the committed state).
+    # leaked is true when the tree was clean at the start: then the suite did it.
+    "tree_guard": _tree_guard(),
     "legs": {
         "bats": _leg_report(B, "BATS"),
         "pytest": _leg_report(P, "PY"),
@@ -614,9 +660,28 @@ echo "$FINISHED DONE runner_exit=$RUNNER_EXIT bats_rc=$BATS_RC pytest_rc=$PY_RC 
 if [ "$TMP_LEFTOVERS" -gt 0 ]; then
     echo "unit-suite: WARN $TMP_LEFTOVERS new aef-*/fw-* entr(y/ies) left in $TMP_ROOT (T-4526) — see tmp_leftovers in the report" >&2
 fi
+if [ -n "$TREE_LEAKED" ]; then
+    echo "$FINISHED TREE-LEAK changed=$TREE_CHANGED (T-4523)" >> "$RUN_LOG"
+    echo "unit-suite: FAIL the run changed $TREE_CHANGED path(s) in the checkout it ran in (T-4523) — tests must write to temp copies; see tree_guard in the report:" >&2
+    head -20 "$RESULTS/tree-changed" | sed 's/^/  /' >&2
+elif [ "${TREE_CHANGED:-0}" -gt 0 ]; then
+    echo "unit-suite: WARN $TREE_CHANGED path(s) changed in the checkout during the run (tree was ${TREE_START:-unknown} at start, so other writers may share the blame; T-4523) — see tree_guard in the report" >&2
+fi
 echo "unit-suite: done runner_exit=$RUNNER_EXIT (bats: $BATS_FILES file(s) rc=$BATS_RC; pytest: $PY_FILES file(s) rc=$PY_RC) — report: $REPORT_DIR/LATEST.yaml"
 exit "$RUNNER_EXIT"
 }
+
+# ── T-4523: tree guard — the checkout's state before any test runs ──────────
+# Tests must write to temp copies, never the tree they run in. A clean-room run
+# left ~146 tracked files changed. The run is graded on what it changed (diffed
+# in _finish): a red when the tree was clean at the start, since nothing but the
+# suite can have changed it; reported only when it was already dirty (a live
+# checkout with other writers). The runner's own report dir and lock are excluded.
+TREE_START="${FW_UNIT_SUITE_TREE_START:-}"
+python3 -I "$SCRIPT_DIR/unit_tree_guard.py" snapshot "$SUITE_DIR" "$RESULTS/tree-before.json" \
+    --exclude "$TREE_GUARD_REPORT_ROOT" --exclude "$LOCK_FILE" 2>/dev/null \
+    || echo '{"git": false}' > "$RESULTS/tree-before.json"
+[ -n "$TREE_START" ] || TREE_START="$(python3 -I "$SCRIPT_DIR/unit_tree_guard.py" state "$RESULTS/tree-before.json" 2>/dev/null || echo unknown)"
 
 # ── Leg 1: bats (tests/unit/*.bats) ─────────────────────────────────────────
 BATS_LIST=()

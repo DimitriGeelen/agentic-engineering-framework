@@ -34,13 +34,25 @@
 # append) and stamps its last_update, so a real-but-disposable file is the only
 # shape that neither deadlocks nor dirties a committed task on every run.
 
+#
+# T-4523: and it lives in a throwaway project, not the framework repo. Against
+# the checkout, every run created .tasks/active/T-0000-*.md and appended rows to
+# the TRACKED .context/working/happiness.jsonl: fake ratings in the real signal.
+
 setup() {
     FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
     UPDATE="$FRAMEWORK_ROOT/agents/task-create/update-task.sh"
     FW="$FRAMEWORK_ROOT/bin/fw"
-    HAPPINESS_FILE="$FRAMEWORK_ROOT/.context/working/happiness.jsonl"
+    PROJECT_ROOT="$BATS_TEST_TMPDIR/proj"
+    mkdir -p "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed" \
+        "$PROJECT_ROOT/.context/working" "$PROJECT_ROOT/.context/project"
+    echo "framework_root: $FRAMEWORK_ROOT" > "$PROJECT_ROOT/.framework.yaml"
+    export PROJECT_ROOT
+    cd "$PROJECT_ROOT"
+    LIVE_HAPPINESS="$(grep -c T-0000 "$FRAMEWORK_ROOT/.context/working/happiness.jsonl" 2>/dev/null || true)"
+    HAPPINESS_FILE="$PROJECT_ROOT/.context/working/happiness.jsonl"
     FIX_ID="T-0000"
-    FIX_FILE="$FRAMEWORK_ROOT/.tasks/active/${FIX_ID}-happiness-fixture.md"
+    FIX_FILE="$PROJECT_ROOT/.tasks/active/${FIX_ID}-happiness-fixture.md"
     cat > "$FIX_FILE" <<'EOF'
 ---
 id: T-0000
@@ -61,7 +73,9 @@ EOF
 }
 
 teardown() {
-    rm -f "$FIX_FILE"
+    # The point of the fixture: no T-0000 rating lands in the framework's own signal file.
+    [ "$(grep -c T-0000 "$FRAMEWORK_ROOT/.context/working/happiness.jsonl" 2>/dev/null || true)" = "$LIVE_HAPPINESS" ]
+    [ ! -e "$FRAMEWORK_ROOT/.tasks/active/${FIX_ID}-happiness-fixture.md" ]
 }
 
 _line_count() {

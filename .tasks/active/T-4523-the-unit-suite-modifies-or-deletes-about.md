@@ -9,7 +9,7 @@ description: >
   each changed path to the test that wrote it, fix each, and add a suite-level guard
   that fails when the tracked tree differs after a run.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T08:59:17Z
-last_update: '2026-10-21T09:00:42Z'
+last_update: 2026-10-21T10:39:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced: the unit suite run in a fresh clone leaves tracked files modified/deleted; each changed path attributed to the test file that wrote it (recorded in ## RCA)
+- [x] Suite-level guard: the unit-suite runner records the tracked-tree state before/after and reports (fails) when a run changed tracked files; regression test pins the guard
+- [x] The runner no longer hands the caller's PROJECT_ROOT to tests, and turns verb telemetry off for the run (FW_VERB_TELEMETRY=0)
+- [x] arc_create_start_flag.bats and t1719_happiness_signal.bats run against a throwaway project and assert the framework tree is untouched
+- [ ] Every attributed leaking test fixed to work on a temp copy (no tracked file under the checkout changes when it runs) — 11 files remain, listed in ## RCA (follow-up)
+- [x] `bin/fw vendor self --check --task T-4523` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -145,6 +149,13 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+out=$(timeout 900 bats tests/unit/t4523_unit_suite_tree_guard.bats 2>&1); echo "$out" | grep -q '^ok 6 ' && ! echo "$out" | grep -q '^not ok'
+out=$(timeout 600 bats tests/unit/arc_create_start_flag.bats tests/unit/t1719_happiness_signal.bats 2>&1); echo "$out" | grep -q '^ok 12 ' && ! echo "$out" | grep -q '^not ok'
+bash -n agents/audit/unit-suite.sh
+python3 -m py_compile agents/audit/unit_tree_guard.py
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4523-lint 2>&1 && grep -q clean /tmp/.t4523-lint
+bin/fw vendor self --check --task T-4523
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -284,6 +295,26 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** ring20's clean-room full-suite run (msg 6685e7f3) left ~146 tracked files modified or deleted in the clone it ran in.
+
+**Root cause:** tests that write into the checkout they run from instead of a temp copy, made worse by two gaps in the runner:
+1. `agents/audit/unit-suite.sh` `_run_one` scrubbed session variables but passed the caller's `PROJECT_ROOT` through. Every test that runs `bin/fw` therefore wrote into whatever project the calling session had exported (handovers, arcs and counters landed in the live repo from a run in a clone).
+2. Every `bin/fw` call bumps the tracked `.context/working/.verb-counter` (`bin/fw:6293`) unless `FW_VERB_TELEMETRY=0`.
+3. Individual tests: `arc_create_start_flag.bats` cd'd into FRAMEWORK_ROOT and created `.context/arcs/t1852-*.yaml`. `t1719_happiness_signal.bats` created `.tasks/active/T-0000-*.md` and appended fake ratings to the tracked `.context/working/happiness.jsonl`.
+
+**Attribution:** each candidate file (155, taken from a live poll of the full run) was run alone in a fresh clone with the runner's env, after the fixes above (logs: /tmp/t4523-tools/res*.log). These still leak and are left for follow-up:
+- `.context/working/.hook-counter`, `.loop-detect.json`: doctor_designer_pin_drift, doctor_duplicate_hook_detection, fw_mode_detection, git_identity_check, t2452_doctor_quick, t2749_doctor_stray_root_tasks (doctor and hook runs against the repo). fw_mode_detection, git_identity_check and t2452_doctor_quick also rewrite the tracked `lib/ts/dist/loop-detect.js`.
+- `.context/working/vector-index-health.json(.lock)`: doctor_duplicate_hook_detection, fw_mode_detection, t2366_discard_manifest
+- `.context/working/.verb-counter`: init_project_shape_detection, t2746_no_auto_init_in_non_project, upgrade_fresh_machine_simulation. These run under `env -i`, so the runner's FW_VERB_TELEMETRY=0 never reaches bin/fw.
+- `.context/working/focus.yaml`, `session.yaml`: resume.bats
+- `.context/working/.session-metrics.yaml`, `.context/sidecar/waiting/epoch`: t2366_discard_manifest
+- `.agentic-framework/**`: lib_upgrade.bats runs vendor self on the repo. This shows up only when the commit's vendored copy is out of date.
+- Seen in the first full run but not reproduced by any file run alone (concurrency, or the writer was not in the candidate list): metrics-history.yaml, full-audit-timing.yaml, go-scope-unpropagated/LATEST.md, audits/<date>.yaml, .bpmn-promote-audit.jsonl, .gate-bypass-log.yaml, feedback-stream.yaml, arcs/t3527-judge-probe-*.yaml, docs/reports/T-9959-*.md, agents/context/.t2880-mutant.sh, bin/hook-enable.sh.
+
+**Why nothing caught it:** the runner graded test outcomes only, never the tree the tests ran against. The live checkout is always dirty, so a test writing into it cannot be seen by eye.
+
+**Prevention:** `agents/audit/unit_tree_guard.py` snapshots `git status` plus blob hashes before and after each tier. A run that changes a clean checkout exits 1 and names the paths (`tree_guard` in the report, `TREE-LEAK` in runs.log). A run that starts on a dirty tree gets a WARN instead. Pinned by `tests/unit/t4523_unit_suite_tree_guard.bats`. Clean-room runs will stay red until the follow-up list is fixed, which is the intent.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -378,3 +409,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4523-the-unit-suite-modifies-or-deletes-about.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:02:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
