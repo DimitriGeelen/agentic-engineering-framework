@@ -10,10 +10,10 @@ description: >
   init/upgrade (consumer .gitignore template or a .context/working/.gitignore), list
   every runtime file 1.8.10+ writes, test in the fresh-machine simulation.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:10:21Z
-last_update: '2026-10-17T13:16:16Z'
+last_update: '2026-10-21T21:30:36Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,23 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T21:30:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 5
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=5 (body:class-neutral); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4231: Consumers get ~16 runtime files under .context/working (.verb-counter, *.lock, .session-baseline, fw-vec-index.db*, recall-telemetry.jsonl, continuous-run.jsonl, watchtower-ensure.log, ...) with no ignore rule, so the audit's uncommitted-changes rail counts them
@@ -96,8 +113,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced on current bleeding-edge: a fresh `fw init` consumer's own bootstrap commit tracks `.context/working/.verb-counter`, `.verb-counter.lock` and `.budget-gate-counter`; its `.context/working/.gitignore` names five files
+- [x] One shared rule list (`lib/working-gitignore.sh`) names the runtime files written there; `fw init` writes it and `fw upgrade` appends the missing rules (idempotent, dry-run aware) and prints the untrack command for runtime files a project already tracks
+- [x] Sidecar runtime state from the 1023 addendum (receiver.pid/port/url, inbox-state.json(+.lock), hub-id, peers.json, waiting/, *.tmp) is ignored; the *.jsonl ledgers stay tracked (recorded in ## Decisions)
+- [ ] Regression bats `tests/unit/t4231_working_runtime_gitignore.bats` fails before the fix and passes after; `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -146,6 +165,13 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4231_working_runtime_gitignore.bats > /tmp/.t4231.out 2>&1 && ! grep -q "^not ok" /tmp/.t4231.out
+test "$(grep -c '# skip' /tmp/.t4231.out)" -eq 0
+timeout 1500 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4231-fm.out 2>&1 && ! grep -q "^not ok" /tmp/.t4231-fm.out
+python3 -m pytest tests/unit/test_t3725_receiver_token_ignored.py -q > /tmp/.t4231-py.out 2>&1 && grep -q passed /tmp/.t4231-py.out
+bash -n lib/working-gitignore.sh && bash -n lib/init.sh && bash -n lib/upgrade.sh
+bin/fw vendor self --check --task T-4231
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -278,6 +304,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** consumers (1023 on vendored 1.8.10) see ~16 runtime files under `.context/working/` (counters, locks, `.session-baseline`, telemetry jsonl, `watchtower-ensure.log`, ...) in `git status`, so the audit's uncommitted-changes rail (agents/audit/audit.sh:5338) counts them; a fresh `fw init` even tracks `.verb-counter`, its lock and `.budget-gate-counter` in its own bootstrap commit. Same for `.context/sidecar/` receiver pid/port/url, inbox cursors and caches.
+
+**Root cause:** `lib/init.sh:369-381` writes a `.context/working/.gitignore` naming only five files; every other runtime writer added since (hooks, budget gate, Watchtower, recall, continuous mode) was ignored only in the framework repo's ROOT `.gitignore`, which no consumer inherits. `fw upgrade` never extended the nested file (T-3861 fixed this for the vector index alone). `lib/sidecar/lifecycle.py:91` `_RUNTIME_IGNORES` likewise listed only the T-3725 token/dirs.
+
+**Why structurally allowed:** the framework repo is its own first consumer but hides the gap with its root `.gitignore`, so nothing here ever saw a dirty working dir; no test created runtime files in a fresh init consumer and asserted git status clean.
+
+**Prevention:** one list (`lib/working-gitignore.sh`) read by init and upgrade; `tests/unit/t4231_working_runtime_gitignore.bats` creates every known runtime file in a fresh `fw init` consumer and asserts `.context/working` stays clean and nothing runtime is tracked, and pins records (gate-bypass log, feedback-stream, ...) as NOT ignored. A new runtime writer still needs its name added; the broad globs (`*.lock`, `*.log`, `*.pid`, `*.cursor`, `.*-counter`, `*.tmp`) cover the common shapes without that.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -347,6 +381,11 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-21 — which files are runtime, which are records
+- **Chose:** ignore host/process state only (counters, locks, pid/url/port, cursors, logs, telemetry jsonl, tier0 pending approvals; sidecar receiver.pid/port/url, inbox-state.json, hub-id, peers.json, waiting/). Keep tracked: `.gate-bypass-log.yaml`, `feedback-stream.yaml`, `reviewer-overrides.yaml`, `delegations.jsonl`, `tier0-action-events.jsonl`, `happiness.jsonl`, `pending-updates.yaml`, `arc-focus.yaml`, and the sidecar ledgers `awaiting-ack.jsonl`, `direct-ack.jsonl`, `receipts.jsonl`, `receipts-sent.jsonl`, `refusals.jsonl`.
+- **Why:** the kept files are audit trails or sovereignty rails other gates read from git history; the ignored ones are regenerated per host/session.
+- **Rejected:** ignoring `.context/working/*` wholesale (loses the records); `git rm --cached` from `fw upgrade` (mutates the consumer's index unasked) — upgrade prints the untrack command instead.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -379,3 +418,7 @@ bvp_scores_proposed:
   waiting/epoch, waiting/escalations.jsonl, direct-ack.jsonl, receipts-sent.jsonl, refusals.jsonl. A bulk
   `git add -A` in a consumer commits pid/port/url and the lock. Decide which of the three .jsonl files are tracked
   audit records (keep) and ignore the rest.
+
+### 2026-10-21T20:59:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -88,8 +88,13 @@ def write_token() -> str:
 #: T-3725: runtime files beside the token that must never reach git. Written by
 #: the receiver itself so every project (vendored consumers included) is covered,
 #: not only repos whose root .gitignore happens to list them.
+#: T-4231: plus the per-host process/cache state (pid/port/url, inbox cursors,
+#: hub-id and peer caches, waiting/ dedupe). The *.jsonl ledgers (awaiting-ack,
+#: direct-ack, receipts, receipts-sent, refusals) are audit records and stay tracked.
 _RUNTIME_IGNORES = ("receiver.token", "receiver.token.tmp", "ready-for-input.yaml", "receiver/",
-                    "sessions/", "watcher/", "liveness.yaml")
+                    "sessions/", "watcher/", "liveness.yaml",
+                    "receiver.pid", "receiver.port", "receiver.url", "inbox-state.json",
+                    "hub-id", "peers.json", "waiting/", "*.lock", "*.tmp")
 
 
 def _ensure_runtime_ignored(sidecar_dir: Path) -> None:

@@ -3115,6 +3115,32 @@ MCPJSON
         echo -e "  ${GREEN}OK${NC}  Vector index gitignored"
     fi
 
+    # T-4231: the same file never named the runtime counters, locks, pid/url,
+    # cursors and logs that hooks write there — append the missing rules.
+    # shellcheck source=lib/working-gitignore.sh
+    source "$FRAMEWORK_ROOT/lib/working-gitignore.sh"
+    local _wk_added _wk_tracked
+    if [ "$dry_run" = true ]; then
+        _wk_added=$(fw_working_ensure_ignored "$target_dir" --dry-run)
+    else
+        _wk_added=$(fw_working_ensure_ignored "$target_dir")
+    fi
+    if [ "${_wk_added:-0}" -gt 0 ]; then
+        changes=$((changes + 1))
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD ADD${NC}  $_wk_added runtime-state ignore rule(s) to .context/working/.gitignore"
+        else
+            echo -e "  ${GREEN}ADDED${NC}  $_wk_added runtime-state ignore rule(s) to .context/working/.gitignore"
+        fi
+    else
+        echo -e "  ${GREEN}OK${NC}  Runtime state under .context/working gitignored"
+    fi
+    _wk_tracked=$(fw_working_tracked_runtime "$target_dir" | wc -l | tr -d ' ')
+    if [ "${_wk_tracked:-0}" -gt 0 ]; then
+        echo -e "  ${YELLOW}NOTE${NC}  $_wk_tracked runtime file(s) under .context/working are already tracked; untrack with:"
+        echo -e "        git -C \"$target_dir\" ls-files -ci --exclude-standard -z -- .context/working | xargs -0 git -C \"$target_dir\" rm --cached --"
+    fi
+
     # ── 9. Version tracking (.framework.yaml) ──
     echo -e "${YELLOW}[9/10] Version tracking${NC}"
 

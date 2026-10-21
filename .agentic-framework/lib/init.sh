@@ -408,6 +408,10 @@ WGIT
     # shellcheck source=lib/vec-index-gitignore.sh
     source "$FRAMEWORK_ROOT/lib/vec-index-gitignore.sh"
     fw_vec_index_ensure_ignored "$target_dir" >/dev/null
+    # T-4231: counters, locks, pid/url, cursors, logs — one list shared with fw upgrade.
+    # shellcheck source=lib/working-gitignore.sh
+    source "$FRAMEWORK_ROOT/lib/working-gitignore.sh"
+    fw_working_ensure_ignored "$target_dir" >/dev/null
 
     echo -e "  ${GREEN}✓${NC}  Task system (.tasks/)"
     echo -e "  ${GREEN}✓${NC}  Context fabric (.context/)"
