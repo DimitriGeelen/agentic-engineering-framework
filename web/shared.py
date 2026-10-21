@@ -637,6 +637,12 @@ def is_viewable_path(filepath: str) -> bool:
         return False
     if filepath in ROOT_FILES or is_root_doc(filepath):
         return True
+    # T-4571: top-level guides (docs/style-guide.md, docs/context-compaction.md)
+    # matched no docs/<subdir>/ prefix, so /file/ answered "Not Served" for
+    # files CLAUDE.md cites. Depth 1 only — docs subdirs stay prefix-listed.
+    if filepath.startswith("docs/") and "/" not in filepath[len("docs/"):]:
+        ext = filepath.rsplit(".", 1)[-1] if "." in filepath else ""
+        return ext in VIEWABLE_EXTENSIONS
     if not any(filepath.startswith(d) for d in VIEWABLE_DIR_PREFIXES):
         return False
     ext = filepath.rsplit(".", 1)[-1] if "." in filepath else ""

@@ -1,13 +1,17 @@
 ---
 id: T-4571
-name: "Watchtower /file/docs/style-guide.md returns 404 although the file exists (cloud run)"
+name: "Watchtower /file/docs/style-guide.md returns 404 although the file exists (cloud
+  run)"
 description: >
-  Cloud follow-up run (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md section 4): GET /file/docs/style-guide.md returns 404 while docs/style-guide.md exists. Reproduce on the live Watchtower, find the path resolution that drops it, fix, test.
+  Cloud follow-up run (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md
+  section 4): GET /file/docs/style-guide.md returns 404 while docs/style-guide.md
+  exists. Reproduce on the live Watchtower, find the path resolution that drops it,
+  fix, test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, watchtower]
 components: []
 related_tasks: [T-4508]
@@ -39,8 +43,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:48:34Z
-last_update: 2026-10-21T21:48:34Z
-date_finished: null
+last_update: 2026-10-21T22:05:38Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T22:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T22:00:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4571: Watchtower /file/docs/style-guide.md returns 404 although the file exists (cloud run)
@@ -63,8 +95,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of the 404 on GET /file/docs/style-guide.md localised to file:line and recorded in ## RCA
+- [x] GET /file/docs/style-guide.md returns 200 with the file's content on the live (restarted) Watchtower
+- [x] Regression test fails without the fix and passes with it
+- [x] Path traversal / non-allowed paths under /file/ still refused (existing tests green)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +283,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -c "from web.shared import is_viewable_path as v; assert v('docs/style-guide.md') and not v('docs/archive/x.md') and not v('docs/../etc/x.md')"
+python3 -m pytest tests/unit/test_t4571_docs_top_level_viewable.py tests/unit/test_file_viewer_unservable.py tests/unit/test_t3649_render_extras_viewable.py tests/unit/test_file_route_extensions.py tests/unit/test_t3587_file_refs.py -q > /tmp/.t4571.out 2>&1 && grep -q passed /tmp/.t4571.out
+curl -s -o /tmp/.t4571.html -w "%{http_code}" "$(bin/fw watchtower url)/file/docs/style-guide.md" | grep -qx 200 && grep -q "Style Guide" /tmp/.t4571.html
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4571
 
 ## RCA
 
@@ -265,6 +304,27 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** GET /file/docs/style-guide.md on the live Watchtower answered 404 with the
+T-3124 "Not Served" page (reproduced 2026-10-22; docs/context-compaction.md the same),
+although the file is tracked and present.
+
+**Root cause:** `web/shared.py:640` `is_viewable_path` admits a path only when it starts
+with one of `VIEWABLE_DIR_PREFIXES` (web/shared.py:559). For docs/ that tuple lists only
+subdirectories (`docs/reports/`, `docs/plans/`, `docs/adr/`, …), so no depth-1 file under
+docs/ could ever match; ROOT_FILES / is_root_doc cover depth 0 only. The route
+(web/blueprints/docs.py:254) then took the tracked-but-unservable branch.
+
+**Why structurally allowed:** the allowlist grew subdir-by-subdir as each surface cited a
+new location (T-1764, T-3587, T-3649); nothing tested the docs pages CLAUDE.md itself cites
+(docs/context-compaction.md, docs/style-guide.md). T-3124's test even relied on bare docs/
+being unservable, which encoded the gap as expected behaviour.
+
+**Prevention:** `is_viewable_path` now admits depth-1 `docs/<name>.<viewable ext>`
+(subdirs stay prefix-listed). `tests/unit/test_t4571_docs_top_level_viewable.py` pins the
+route serving docs/style-guide.md and that the allowance does not widen to unlisted docs
+subdirs; it fails (2 of 3) without the fix. The T-3124 untracked-probe test moved to
+docs/archive/ so its disclosure-boundary check still lands in an unservable directory.
 
 ## Evolution
 
@@ -346,3 +406,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4571-watchtower-filedocsstyle-guidemd-returns.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:05:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

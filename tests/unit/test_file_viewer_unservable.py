@@ -124,14 +124,15 @@ def test_tracked_servable_file_still_renders(client):
 def test_untracked_file_on_disk_is_not_disclosed(client, tmp_path):
     """An untracked file that happens to exist keeps the plain not-found body.
 
-    docs/ (bare) is not in VIEWABLE_DIR_PREFIXES, so this lands in exactly the
-    branch that would otherwise disclose. It must not.
+    docs/archive/ is not in VIEWABLE_DIR_PREFIXES, so this lands in exactly the
+    branch that would otherwise disclose. It must not. (T-4571: top-level docs/
+    files became servable, so the probe moved one level down.)
     """
-    probe = ROUTE_ROOT / "docs" / "t3124-untracked-probe.md"
+    probe = ROUTE_ROOT / "docs" / "archive" / "t3124-untracked-probe.md"
     probe.write_text("secret scratch content\n")
     try:
         assert probe.is_file()
-        rel = "docs/t3124-untracked-probe.md"
+        rel = "docs/archive/t3124-untracked-probe.md"
         assert (
             subprocess.run(
                 ["git", "ls-files", "--error-unmatch", "--", f":(literal){rel}"],
@@ -156,7 +157,7 @@ def test_untracked_file_on_disk_is_not_disclosed(client, tmp_path):
 
 def test_absent_path_is_unchanged(client):
     for rel in (
-        "docs/t3124-no-such-file.md",              # absent, unservable dir
+        "docs/archive/t3124-no-such-file.md",      # absent, unservable dir
         "lib/t3124_no_such_file_anywhere.py",      # absent, servable dir
     ):
         resp = client.get(f"/file/{rel}")
