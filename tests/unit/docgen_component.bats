@@ -54,7 +54,8 @@ COMPONENT="$FRAMEWORK_ROOT/agents/docgen/generate-component.sh"
 @test "component --all starts generation" {
     # --all generates for all components (~99); just verify it starts correctly
     # Full run takes too long for unit test, so we check output begins properly
-    run timeout 10 "$COMPONENT" --all
+    # T-4522: keep the tracked docs/generated tree untouched.
+    DOCGEN_OUTPUT_DIR="$BATS_TEST_TMPDIR/docs-out" run timeout 10 "$COMPONENT" --all
     # timeout exit code 124 means it ran but was killed (expected for large set)
     # exit 0 means it completed (fast enough)
     [[ "$status" -eq 0 ]] || [[ "$status" -eq 124 ]]

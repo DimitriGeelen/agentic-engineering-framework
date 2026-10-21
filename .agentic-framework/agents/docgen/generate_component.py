@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Component Reference Doc Generator — generates markdown from fabric cards."""
 
+import functools
 import yaml
 import os
 import re
@@ -77,11 +78,17 @@ def extract_claude_section(claude_md_path, name, location):
     return ""
 
 
-def find_related_tasks(episodic_dir, location, limit=5):
-    """Find episodic entries mentioning this component's location."""
-    related = []
+@functools.lru_cache(maxsize=None)
+def _load_episodic(episodic_dir):
+    """Parse the last 200 episodic files ONCE per process (T-4522).
+
+    Returns a tuple of (task_id, task_name, artifacts). `--all` calls
+    find_related_tasks once per card; re-parsing 200 YAML files per card made
+    a 1602-card run take ~40 min of CPU and hang the bats suite to its cap.
+    """
+    entries = []
     if not os.path.isdir(episodic_dir):
-        return related
+        return tuple(entries)
     for ep_file in sorted(glob.glob(os.path.join(episodic_dir, "T-*.yaml")))[-200:]:
         # T-2228 (T-2225 Slice 3): skip T-Test-NNN test-sentinel fixtures.
         if os.path.basename(ep_file).startswith("T-Test-"):
@@ -94,28 +101,41 @@ def find_related_tasks(episodic_dir, location, limit=5):
             artifacts = ep.get("artifacts", []) or []
             if isinstance(artifacts, dict):
                 artifacts = list(artifacts.keys())
-            for art in artifacts:
-                if isinstance(art, str) and location and location in art:
-                    tid = ep.get("task_id", "")
-                    tname = ep.get("task_name", "")
-                    related.append(f"{tid}: {tname}")
-                    break
+            entries.append((ep.get("task_id", ""), ep.get("task_name", ""), tuple(artifacts)))
         except Exception:
             continue
+    return tuple(entries)
+
+
+def find_related_tasks(episodic_dir, location, limit=5):
+    """Find episodic entries mentioning this component's location."""
+    related = []
+    for tid, tname, artifacts in _load_episodic(episodic_dir):
+        for art in artifacts:
+            if isinstance(art, str) and location and location in art:
+                related.append(f"{tid}: {tname}")
+                break
     return related[-limit:]
+
+
+@functools.lru_cache(maxsize=None)
+def _load_learnings(learnings_file):
+    """Parse learnings.yaml ONCE per process (T-4522; see _load_episodic)."""
+    if not os.path.isfile(learnings_file):
+        return ()
+    try:
+        with open(learnings_file) as f:
+            data = yaml.safe_load(f)
+    except Exception:
+        return ()
+    return tuple(le for le in (data or []) if isinstance(le, dict))
 
 
 def find_related_learnings(learnings_file, tags, name, limit=5):
     """Find learnings matching this component's tags or name."""
     related = []
-    if not os.path.isfile(learnings_file):
-        return related
     try:
-        with open(learnings_file) as f:
-            data = yaml.safe_load(f)
-        for learning in data or []:
-            if not isinstance(learning, dict):
-                continue
+        for learning in _load_learnings(learnings_file):
             ltags = learning.get("tags", []) or []
             ldesc = str(learning.get("description", ""))
             lid = learning.get("id", "")

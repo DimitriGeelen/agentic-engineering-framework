@@ -17,7 +17,8 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 
 COMPONENTS_DIR="$FRAMEWORK_ROOT/.fabric/components"
-OUTPUT_DIR="$FRAMEWORK_ROOT/docs/generated/components"
+# T-4522: DOCGEN_OUTPUT_DIR lets tests write somewhere other than the tracked tree.
+OUTPUT_DIR="${DOCGEN_OUTPUT_DIR:-$FRAMEWORK_ROOT/docs/generated/components}"
 GENERATOR="$SCRIPT_DIR/generate_component.py"
 
 GREEN='\033[0;32m'

@@ -8,7 +8,7 @@ description: >
   call, an unset env var), make them hermetic with a bounded timeout and a clear skip
   reason when a dependency is absent.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T08:59:05Z
-last_update: '2026-10-21T09:00:42Z'
+last_update: 2026-10-21T09:03:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of each hang localised to a file:line and recorded in ## RCA
+- [x] tests/integration/fw_docs.bats finishes in bounded time (each external call wrapped in `timeout`, or the waited-on dependency removed/guarded with a clear skip reason)
+- [x] tests/unit/handover.bats finishes in bounded time on a clean machine (no unbounded wait on a host service / network / TTY)
+- [x] Regression guard added that fails if the hang returns
+- [ ] `bin/fw vendor self --check --task T-4522` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +284,14 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+python3 -m pytest tests/unit/test_t4522_docgen_parse_once.py tests/unit/test_docgen_dep_resolution.py agents/docgen/test_docgen.py -q > /tmp/.t4522-py 2>&1 && grep -q passed /tmp/.t4522-py
+timeout 600 bats tests/integration/fw_docs.bats > /tmp/.t4522-docs 2>&1 && ! grep -q "^not ok" /tmp/.t4522-docs
+test "$(grep -c '# skip' /tmp/.t4522-docs)" -eq 0
+timeout 600 bats tests/unit/handover.bats > /tmp/.t4522-ho 2>&1 && ! grep -q "^not ok" /tmp/.t4522-ho
+test "$(grep -c '# skip' /tmp/.t4522-ho)" -eq 0
+! grep -q 'FRAMEWORK_ROOT/.context/handovers"' tests/unit/handover.bats
+bin/fw vendor self --check --task T-4522
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -296,6 +307,43 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on ring20's clean-room run (Ubuntu 24.04, 4 vCPU), `tests/integration/fw_docs.bats`
+and `tests/unit/handover.bats` both ran into the 900 s per-file cap every time. Reproduced
+here for fw_docs: `fw docs --all` was still running at 300 s.
+
+**Root cause:** neither file was waiting on a host service, TTY or network call. Both ran
+real framework code over the whole live corpus, and the cost grows with the size of that
+corpus.
+- fw_docs: `agents/docgen/generate_component.py` `find_related_tasks` (:80, old) re-parsed the
+  last 200 episodic YAMLs, and `find_related_learnings` (:108, old) re-parsed the 470 KB
+  `learnings.yaml`, once **per card**. `--all` covers 1602 cards, so that is ~320k YAML parses:
+  74 cards in 120 s, ~40 min of CPU for a full run. The test also wrote into the tracked
+  `docs/generated/components/` tree, because `generate-component.sh:19` hard-wired OUTPUT_DIR
+  under FRAMEWORK_ROOT and ignored the test's PROJECT_ROOT.
+- handover: `tests/unit/handover.bats` ran `agents/handover/handover.sh` against the framework
+  repo itself (`HANDOVER_DIR="$FRAMEWORK_ROOT/.context/handovers"`), 8 times. Each run walks
+  ~3,600 task files with forked `grep|head|tr` per file. Measured here: 74 s per run (34k
+  xtrace lines, dominated by per-file loops, no single gap over 10 s). 8 runs is ~600 s on this
+  many-core host and over 900 s on a fork-slow 4-vCPU VM. It also rewrote the shared checkout's
+  `LATEST.md`, and its teardown ran `rm -f "$HANDOVER_DIR"/CHECKPOINT-*.md` on the live repo,
+  which deleted tracked checkpoint files.
+
+**Why structurally allowed:** both tests passed on the developer host, where the corpus was
+smaller when they were written (T-923/T-944: "~99 cards"). Neither had a per-call `timeout`,
+so "slower than the cap" looked like a hang instead of failing with a reason. Nothing measures
+how a test's runtime grows with corpus size.
+
+**Fix / prevention:**
+- docgen memoises the two loads (`_load_episodic`, `_load_learnings`, `functools.lru_cache`).
+  A full `--all` run now takes 32 s, and spot-checked output is byte-identical.
+  `tests/unit/test_t4522_docgen_parse_once.py` counts parses (contention-invariant, L-542) and
+  fails against the old code.
+- `DOCGEN_OUTPUT_DIR` override. fw_docs.bats and docgen_component.bats write to temp dirs, and
+  every call is under `timeout`, with an explicit message on 124.
+- handover.bats now builds a one-task fixture git project per test and runs handover.sh under
+  `timeout 120` with a T-4522 message on 124. Its teardown asserts the framework's own
+  `LATEST.md` is untouched. The file takes 27 s, down from ~600 s.
 
 ## Evolution
 
@@ -377,3 +425,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4522-testsintegrationfwdocsbats-and-testsunit.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:03:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
