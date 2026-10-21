@@ -3929,6 +3929,9 @@ sys.exit(0 if '$_tl_topic' in names else 1)
                         echo -e "  ${RED}FAIL${NC}  Sidecar inbox with NOTHING to wake it: no watcher running ($_sw_why)"
                         echo "         Run: fw sidecar start (plain sessions start it at SessionStart; claude-fw too)"
                         issues=$((issues + 1))
+                    elif fw_sidecar_watcher_awaiting_first_session "$PROJECT_ROOT"; then
+                        # T-4258: fresh init — the SessionStart hook starts it; not a gap yet.
+                        echo -e "  ${CYAN}INFO${NC}  No sidecar watcher yet — it starts at the first agent session (SessionStart sidecar-autostart); start now: fw sidecar start"
                     else
                         echo -e "  ${YELLOW}WARN${NC}  No sidecar watcher in this project (R14: every agent runs one) — start: fw sidecar start"
                         warnings=$((warnings + 1))

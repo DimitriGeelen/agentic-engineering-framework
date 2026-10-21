@@ -212,6 +212,24 @@ except Exception:
     return 0
 }
 
+# T-4258 (R14). A fresh `fw init` wires the SessionStart hook that starts the
+# watcher (agents/context/sidecar-autostart.sh) but no session has run yet, so
+# an `absent` watcher is the expected state, not a gap. True while the hook is
+# wired in .claude/settings.json and has never fired here (it appends to
+# .context/sidecar/watcher/autostart.log on every run) and the sidecar was never
+# enabled. Once a session has started, an absent watcher is the R14 WARN again.
+#
+#   fw_sidecar_watcher_awaiting_first_session <project_root>
+#     rc 0   : awaiting the first session
+#     rc 1   : a session has run, the sidecar was enabled, or the hook is not wired
+fw_sidecar_watcher_awaiting_first_session() {
+    local root="${1:?fw_sidecar_watcher_awaiting_first_session: project root required}"
+    [ -e "$root/.context/sidecar/watcher/autostart.log" ] && return 1
+    [ -e "$root/.context/sidecar/watcher/enabled.json" ] && return 1
+    grep -q 'hook sidecar-autostart' "$root/.claude/settings.json" 2>/dev/null || return 1
+    return 0
+}
+
 # T-3685 (arc-011 S-LIVE, R7/R14/R15). The watcher's liveness verdict, read by
 # fw doctor and fw audit. Reads .context/sidecar/liveness.yaml through
 # `fw sidecar liveness --json` — our own file, no hub call.

@@ -7,10 +7,10 @@ description: >
   first session. Findings (0909 run aef-install-20261017T144241Z): F-12. Triage: docs/reports/T-4253-greenfield-run-triage.md
   PROPOSED-NEW-5.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:25:44Z
-last_update: '2026-10-17T15:31:17Z'
+last_update: 2026-10-21T20:43:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/sidecar-audit.sh` has `fw_sidecar_watcher_awaiting_first_session <root>`: rc 0 only when no session has run the SessionStart `sidecar-autostart` hook here (no `.context/sidecar/watcher/autostart.log`) and the sidecar was never enabled (no `enabled.json`)
+- [x] `fw doctor` and `fw audit` grade an absent watcher (wake not `none`) as INFO "starts at the first agent session" while that helper says so, and keep the R14 WARN once a session has run; the not-live and nothing-wakes FAILs are unchanged
+- [x] Regression bats `tests/unit/t4258_sidecar_first_session.bats` fails before the fix and passes after, incl. the control leg (autostart.log present → still WARN)
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -246,6 +248,10 @@ bvp_scores_proposed:
 # while the line that actually is broken (`cmd1; cmd2` where cmd1 fails) passes
 # both. Re-derive rather than trust this table — it is pinned, not asserted:
 #     bats tests/unit/t3203_p011_gate_semantics.bats
+timeout 300 bats tests/unit/t4258_sidecar_first_session.bats > /tmp/.t4258 2>&1 && ! grep -q "^not ok" /tmp/.t4258
+test "$(grep -c '# skip' /tmp/.t4258)" -eq 0
+bash -n bin/fw && bash -n lib/sidecar-audit.sh && bash -n agents/audit/audit.sh
+bin/fw vendor self --check --task T-4258
 #
 # ── `cmd1; cmd2` IS JUDGED ONLY ON cmd2 (T-3203) ──────────────────────────────
 #
@@ -288,6 +294,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on a fresh install (0909 run, F-12) `fw doctor` and `fw audit` WARN "No sidecar watcher in this project (R14)", one of the ~31 fresh-install warnings, though the install did nothing wrong. Nothing in init/install starts the watcher or mentions it.
+
+**Root cause:** `fw init` wires the SessionStart hook `sidecar-autostart` (lib/init.sh:1125,1138), which starts the watcher at the first agent session. But the doctor check (bin/fw, `absent` branch of the T-3685 sidecar block) and `check_sidecar_watcher` (agents/audit/audit.sh) graded every `absent` state as the R14 gap. They could not tell "never started because no session has run yet" from "a session ran and still no watcher".
+
+**Why structurally allowed:** the liveness verdict (lib/sidecar/watcher.py:liveness_verdict) has one `absent` state for both cases. The checks were written and tested against a live framework repo where a session had always run. Doctor was never exercised on a fresh, never-opened consumer.
+
+**Prevention:** `fw_sidecar_watcher_awaiting_first_session` (lib/sidecar-audit.sh) checks for the hook's own footprint. It returns true while the hook is wired in .claude/settings.json and has never written `.context/sidecar/watcher/autostart.log`, and the sidecar was never enabled. Doctor and audit report INFO in that window only. Once a session has run, the hook is unwired, or the sidecar was enabled, the R14 WARN applies again. `tests/unit/t4258_sidecar_first_session.bats` pins both sides, including the controls.
 
 ## Evolution
 
@@ -369,3 +383,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4258-initinstall-neither-start-nor-mention-th.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:43:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

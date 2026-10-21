@@ -4583,6 +4583,9 @@ check_sidecar_watcher() {
                 fail "Sidecar inbox with nothing to wake it" \
                      "$_sw_why" \
                      "Start: bin/fw sidecar start — every session's SessionStart hook (sidecar-autostart) and claude-fw start it; stopped or dead means no message is noticed"
+            elif fw_sidecar_watcher_awaiting_first_session "$PROJECT_ROOT"; then
+                # T-4258: fresh init — the SessionStart hook starts it; not a gap yet.
+                info "No sidecar watcher yet — it starts at the first agent session (SessionStart sidecar-autostart)"
             else
                 warn "No sidecar watcher in this project" \
                      "$_sw_why" \
