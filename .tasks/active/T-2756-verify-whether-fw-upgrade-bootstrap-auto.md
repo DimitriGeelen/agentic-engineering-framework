@@ -6,7 +6,7 @@ description: >
   Verify whether fw upgrade bootstrap auto-clone re-invokes upgrade from a clone lacking
   the T-1839 downgrade guard
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T00:16:39Z
-last_update: '2026-08-17T12:36:09Z'
+last_update: 2026-10-21T10:39:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,6 +55,15 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=7 (lines=179,acs=4)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T09:31:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=193,acs=7)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-03T00:30:10Z'
     estimator: bvp-estimator-v1-heuristic
@@ -81,12 +90,17 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Evidence (2026-10-21):** answer is YES. With the guard stashed, `t2756_upgrade_autoclone_downgrade_guard.bats` leg 1 (consumer pins upstream `bleeding-edge` B, default branch `master` at A, guardless stub fw) fails: the clone's fw runs and rewrites the pin to 1.0.0. With the parent-side guard it passes 3/3. Neighbours: fresh_machine_simulation 11/11, upgrade_auto_clone 7/7, t3886 3/3, t4405 4/4, downgrade_guard 9/9, runtime_downgrade_guard 10/10; dead-negation lint clean.
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced against HEAD with a throwaway consumer: a bare-from-consumer `fw upgrade` whose consumer pin (version_sha) is AHEAD of the upstream default branch hands off to the clone's bin/fw without any version check in the (guarded) parent — a clone whose fw lacks the T-1839/T-1912 guard rewrites the pin (evidence recorded below)
+- [x] The parent (`do_upgrade`, auto-clone branch in lib/upgrade.sh) computes the relation of the consumer pin to the CLONE before handoff and refuses ahead/diverged unless `--force-downgrade`, without invoking the clone's bin/fw and without touching the consumer
+- [x] Regression bats `tests/unit/t2756_upgrade_autoclone_downgrade_guard.bats` fails without the fix and passes with it (refuse leg, --force-downgrade leg, behind-consumer control leg)
+- [x] Neighbouring suites stay green: upgrade_fresh_machine_simulation.bats, upgrade_auto_clone.bats, t3886_upgrade_autoclone_history.bats, t4405_upgrade_handoff_forwards_args.bats
+- [x] `bin/fw vendor self --check --task T-2756` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -185,8 +199,21 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/upgrade.sh
+out=$(timeout 600 bats tests/unit/t2756_upgrade_autoclone_downgrade_guard.bats 2>&1); echo "$out" | grep -q '^ok 3 ' && ! echo "$out" | grep -q '^not ok'
+out=$(timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(timeout 900 bats tests/unit/upgrade_auto_clone.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check --task T-2756
 
 ## RCA
+
+**Symptom:** a bare `fw upgrade` run from a consumer (T-1634 auto-clone path) clones the upstream and executes the clone's `bin/fw`. If the upstream's default branch is older than the consumer (release train: `master` lags `bleeding-edge`, or a stale fork/tag) and that clone's fw predates the T-1839/T-1912 guards, the consumer is silently downgraded, even though the fw that started the run has the guard.
+
+**Root cause:** `lib/upgrade.sh` auto-clone branch (`do_upgrade`, the `env FRAMEWORK_ROOT="$_tmpd/fw" … "$_tmpd/fw/bin/fw"` handoff) returns before the T-1912 precheck and never compares the consumer pin with the clone. All downgrade protection was left to the child, whose code is whatever the upstream holds.
+
+**Why structurally allowed:** the guard tests (test_upgrade_downgrade_guard.bats, test_upgrade_runtime_downgrade_guard.bats) exercise `do_upgrade` with a source that *is* guarded; the auto-clone tests (upgrade_auto_clone.bats, t4405) use a stub upstream fw and assert only that it is invoked. No test put a guardless child behind the handoff, so "the child guards itself" was never checked as an assumption.
+
+**Prevention:** the parent now runs the same `fw_version_relation` against the clone (ancestry inside `$_tmpd/fw`) before the handoff and refuses ahead/diverged unless `--force-downgrade`; `tests/unit/t2756_upgrade_autoclone_downgrade_guard.bats` pins it with a guardless stub upstream.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -253,3 +280,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2756-verify-whether-fw-upgrade-bootstrap-auto.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:25:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

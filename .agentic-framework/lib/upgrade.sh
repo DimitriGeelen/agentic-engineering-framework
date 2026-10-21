@@ -1571,6 +1571,38 @@ do_upgrade() {
         fi
         echo "ok"
 
+        # T-2756: the downgrade guards (T-1839 pin, T-1912 runtime) live in the
+        # child, and the child is whatever the upstream holds — a stale fork, an
+        # old tag, or a master that lags the consumer's bleeding-edge commit may
+        # predate them. Decide ahead/diverged here, in the fw that started the
+        # run, against the clone's history, before its code runs at all.
+        # foreign-source/undecidable stay with the child (shallow remedy, T-3886).
+        local _ac_pin _ac_sha _ac_ver
+        _ac_pin=$(grep "^version:" "$target_dir/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
+        _ac_sha=$(grep "^version_sha:" "$target_dir/.framework.yaml" 2>/dev/null | sed 's/^version_sha:[[:space:]]*//' || true)
+        _ac_ver=$(git -C "$_tmpd/fw" describe --tags --match 'v[0-9]*' --exclude '*-be.*' 2>/dev/null) || _ac_ver=""
+        _ac_ver="${_ac_ver#v}"
+        if [ -z "$_ac_ver" ] && [ -f "$_tmpd/fw/VERSION" ]; then
+            _ac_ver=$(head -1 "$_tmpd/fw/VERSION")
+        fi
+        if [ -n "$_ac_pin" ] && [ "$force_downgrade" != true ]; then
+            # Bare call, not $(...) — the reason travels via a global (see lib/version-relation.sh).
+            fw_version_relation "$_ac_pin" "${_ac_ver:-unknown}" "$_ac_sha" "$_tmpd/fw" >/dev/null
+            case "$FW_VERSION_RELATION" in
+                ahead|diverged)
+                    echo -e "${RED}REFUSED${NC}  Consumer v$_ac_pin vs upstream clone v${_ac_ver:-unknown}: ${FW_VERSION_RELATION}." >&2
+                    echo -e "          ${FW_VERSION_RELATION_REASON}." >&2
+                    echo -e "          Handing off to the clone would downgrade the runtime (.agentic-framework/)" >&2
+                    echo -e "          and the pinned version; the clone's own fw may not guard against it." >&2
+                    echo -e "          Nothing was run from the clone and the consumer is unchanged." >&2
+                    echo -e "          To proceed anyway: re-run with ${BOLD}--force-downgrade${NC}." >&2
+                    rm -rf "$_tmpd"
+                    trap - EXIT INT TERM HUP
+                    return 1
+                    ;;
+            esac
+        fi
+
         echo -e "  ${GREEN}Handing off to upstream's bin/fw:${NC} ${_replay_shown% }"
         echo ""
         # T-2099 (fork-bomb fix, SEV-1): explicitly scope FRAMEWORK_ROOT + PROJECT_ROOT
