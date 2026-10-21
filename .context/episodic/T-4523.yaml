@@ -1,0 +1,107 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4523: The unit suite modifies or deletes about 146 tracked files in the checkout it runs in (test isolation leak)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:10:20Z
+# ============================================================================
+
+task_id: T-4523
+task_name: "The unit suite modifies or deletes about 146 tracked files in the checkout it runs in (test isolation leak)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T08:59:17Z
+completed: 2026-10-21T18:09:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T13:06:56+02:00
+last_commit: 2026-10-21T19:09:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unit-suite tree guard — runner snapshots the checkout before/after each tier (unit_tree_guard.py) and a run that changes a clean tree exits 1 naming the paths (tree_guard in LATEST.yaml, TREE-LEAK in runs.log; WARN on a dirty start); runner unsets the caller's PROJECT_ROOT per test and sets FW_VERB_TELEMETRY=0; arc_create_start_flag and t1719_happiness_signal run in a throwaway project; per-file attribution of the remaining 11 leaking tests in RCA; regression bats t4523; vendor synced. remaining unit-test leaks into the checkout fixed — doctor honours FW_DOCTOR_HOOK_EXERCISE=0 (runner + checkout-doctor tests set it), vector-index-health state gitignored, hermetic helper and env -i calls keep verb telemetry off, resume/t2366 run in a throwaway project, lib_upgrade skips self-vendor; regression tests 7-9 in t4523 bats
+
+# Key outcomes
+outcomes:
+  - 'Reproduced: the unit suite run in a fresh clone leaves tracked files modified/deleted; each changed path attributed to the test file that wrote it (recorded in ## RCA)'
+  - 'Suite-level guard: the unit-suite runner records the tracked-tree state before/after and reports (fails) when a run changed tracked files; regression test pins the guard'
+  - 'The runner no longer hands the caller''s PROJECT_ROOT to tests, and turns verb telemetry off for the run (FW_VERB_TELEMETRY=0)'
+  - 'arc_create_start_flag.bats and t1719_happiness_signal.bats run against a throwaway project and assert the framework tree is untouched'
+  - 'Every attributed leaking test fixed to work on a temp copy (no tracked file under the checkout changes when it runs): each of the 13 files run alone in a fresh clone leaves the tree unchanged (## RCA, "Fixed")'
+  - '`fw doctor` honours FW_DOCTOR_HOOK_EXERCISE=0 (SKIP line, no hook run) and the runner exports it; vector-index-health.json(.lock) is gitignored; pinned in t4523_unit_suite_tree_guard.bats (tests 7-9)'
+  - '`bin/fw vendor self --check --task T-4523` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'remaining unit-test leaks into the checkout fixed — doctor honours FW_DOCTOR_HOOK_EXERCISE=0 (runner + checkout-doctor tests set it), vector-index-health state gitignored, hermetic helper and env -i calls keep verb telemetry off, resume/t2366 run in a throwaway project, lib_upgrade skips self-vendor; regression tests 7-9 in t4523 bats'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - '.agentic-framework/agents/audit/unit_tree_guard.py'
+  - '.agentic-framework/bin/fw'
+  - 'agents/audit/unit-suite.sh'
+  - 'agents/audit/unit_tree_guard.py'
+  - 'bin/fw'
+  - '.context/working/.gitignore'
+  - '.tasks/active/T-4523-the-unit-suite-modifies-or-deletes-about.md'
+  - 'tests/unit/arc_create_start_flag.bats'
+  - 'tests/unit/doctor_designer_pin_drift.bats'
+  - 'tests/unit/doctor_duplicate_hook_detection.bats'
+  - 'tests/unit/doctor_hook_counters.bats'
+  - 'tests/unit/doctor_hook_exercise.bats'
+  - 'tests/unit/fw_mode_detection.bats'
+  - 'tests/unit/git_identity_check.bats'
+  - 'tests/unit/helpers/hermetic.bash'
+  - 'tests/unit/init_project_shape_detection.bats'
+  - 'tests/unit/lib_upgrade.bats'
+  - 'tests/unit/resume.bats'
+  - 'tests/unit/t1719_happiness_signal.bats'
+  - 'tests/unit/t2366_discard_manifest.bats'
+  - 'tests/unit/t2452_doctor_quick.bats'
+  - 'tests/unit/t2749_doctor_stray_root_tasks.bats'
+  - 'tests/unit/t4523_unit_suite_tree_guard.bats'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T13:06:56'
+    action: 'T-4523: unit-suite tree guard — runner snapshots the checkout before/after each tier (unit_tree_guard.py) and a run that changes a clean tree exits 1 naming the paths (tree_guard in LATEST.yaml, TREE-LEAK in runs.log; WARN on a dirty start); runner unsets the caller''s PROJECT_ROOT per test and sets FW_VERB_TELEMETRY=0; arc_create_start_flag and t1719_happiness_signal run in a throwaway project; per-file attribution of the remaining 11 leaking tests in RCA; regression bats t4523; vendor synced'
+  - time: '2026-10-21T19:09:18'
+    action: 'T-4523: remaining unit-test leaks into the checkout fixed — doctor honours FW_DOCTOR_HOOK_EXERCISE=0 (runner + checkout-doctor tests set it), vector-index-health state gitignored, hermetic helper and env -i calls keep verb telemetry off, resume/t2366 run in a throwaway project, lib_upgrade skips self-vendor; regression tests 7-9 in t4523 bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 549 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 549
+  commits: 2
+  files_changed: 25
+  lines_added: 722
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4523-the-unit-suite-modifies-or-deletes-about.md
+generated_by: context-agent-hybrid

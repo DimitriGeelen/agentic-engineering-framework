@@ -9,12 +9,12 @@ description: >
   each changed path to the test that wrote it, fix each, and add a suite-level guard
   that fails when the tracked tree differs after a run.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/unit-suite.sh, agents/audit/unit_tree_guard.py, bin/fw, tests/unit/arc_create_start_flag.bats, tests/unit/doctor_designer_pin_drift.bats, tests/unit/doctor_duplicate_hook_detection.bats, tests/unit/doctor_hook_counters.bats, tests/unit/doctor_hook_exercise.bats, tests/unit/git_identity_check.bats, tests/unit/helpers/hermetic.bash, tests/unit/init_project_shape_detection.bats, tests/unit/lib_upgrade.bats, tests/unit/resume.bats, tests/unit/t2452_doctor_quick.bats, tests/unit/t2749_doctor_stray_root_tasks.bats, tests/unit/t4523_unit_suite_tree_guard.bats, tests/unit/upgrade_fresh_machine_simulation.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T08:59:17Z
-last_update: 2026-10-21T16:11:43Z
-date_finished:
+last_update: 2026-10-21T18:09:11Z
+date_finished: 2026-10-21T18:09:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -420,3 +420,20 @@ bin/fw vendor self --check --task T-4523
 
 ### 2026-10-21T09:02:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-878fd04e
+- **Timestamp:** 2026-10-21T18:09:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T18:09:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
