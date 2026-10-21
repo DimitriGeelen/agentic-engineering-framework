@@ -82,13 +82,78 @@ def test_blocked_reason_names_what_unblocks_it(rows):
         )
 
 
+def _admitted(r, threshold=0.80):
+    """The T-3552 predicate: L1 and L2 passed, or (legs uncomputable) the old ratio."""
+    legs = r.get("readiness")
+    if legs is not None:
+        return bool(legs["l1"]["passed"] and legs["l2"]["passed"])
+    return r["completion_ratio"] >= threshold
+
+
 def test_threshold_still_bounds_the_queue(rows):
-    """T-2986 widens by one condition only. An unbounded queue is the T-2038 class."""
+    """T-2986 widens by one condition only. An unbounded queue is the T-2038 class.
+
+    T-4329: the bound is no longer the 80% completion ratio. T-3552 replaced it
+    with quadrant exhaustion (readiness legs L1 + L2); the ratio applies only as
+    the fallback when the legs cannot be computed. This asserted the old ratio
+    and went red once a live arc passed L1+L2 below 80% (dispatch-safety, 0.58).
+    """
     for r in rows:
-        assert r["completion_ratio"] >= 0.80, (
-            f"{r['slug']} is below threshold at {r['completion_ratio']:.2f} — the "
-            f"blocked-arc branch must not have relaxed the completion filter"
+        assert _admitted(r), (
+            f"{r['slug']} is in the queue without passing the readiness bound "
+            f"(readiness={r.get('readiness')!r}, ratio={r['completion_ratio']:.2f})"
         )
+
+
+@pytest.fixture()
+def fake_store(tmp_path, monkeypatch):
+    """A two-arc store whose readiness and ratio the test controls — the live
+    store cannot be relied on to hold an example of each state."""
+    import web.blueprints.approvals as ap
+    import web.blueprints.arcs as arcs
+
+    (tmp_path / ".context" / "arcs").mkdir(parents=True)
+    for slug in ("full", "partial"):
+        (tmp_path / ".context" / "arcs" / f"{slug}.yaml").write_text(
+            f"slug: {slug}\nid: arc-{slug}\nstatus: in-progress\nanchor_task: T-1\n"
+        )
+    ratio = {"full": 1.0, "partial": 0.25}
+    monkeypatch.setattr(ap, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(arcs, "_resolve_constituents", lambda arc: arc["slug"])
+    monkeypatch.setattr(
+        arcs, "_completion_stats",
+        lambda slug: {"ratio": ratio[slug], "completed": 0, "total": 0},
+    )
+    monkeypatch.setattr(
+        arcs, "_anchor_recommendation",
+        lambda arc: {"present": True, "verdict": "CLOSE", "anchor_id": "T-1"},
+    )
+    state = {}
+
+    def legs(arc, constituents):
+        v = state[arc["slug"]]
+        return None if v is None else {"l1": {"passed": v}, "l2": {"passed": v}}
+
+    monkeypatch.setattr(ap, "_arc_readiness_legs", legs)
+    return state
+
+
+def _slugs():
+    from web.blueprints.approvals import _load_close_ready_arcs
+
+    return sorted(r["slug"] for r in _load_close_ready_arcs())
+
+
+def test_ratio_alone_no_longer_admits_an_arc(fake_store):
+    """A 100%-complete arc that fails L1/L2 stays out; a 25% one that passes is in."""
+    fake_store.update({"full": False, "partial": True})
+    assert _slugs() == ["partial"]
+
+
+def test_ratio_is_the_fallback_only_when_readiness_is_uncomputable(fake_store):
+    """legs None: the 80% ratio decides, so the queue is never unbounded."""
+    fake_store.update({"full": None, "partial": None})
+    assert _slugs() == ["full"]
 
 
 def test_blocked_arc_renders_without_a_close_action(client, rows):

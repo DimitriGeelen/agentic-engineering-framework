@@ -9,10 +9,10 @@ description: >
   test assert that; tests/web is outside the nightly unit suite, which is why nothing
   flagged it.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
-horizon: next
+horizon: now
 tags: [tests, web, stale-test]
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ origin: {kind: "agent", source: "T-4320"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T20:42:22Z
-last_update: '2026-10-18T20:46:14Z'
+last_update: 2026-10-21T21:45:41Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,14 +90,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reproduced 2026-10-21 at 758cb1a62: `dispatch-safety is below threshold at 0.58` (1 failed, 5 passed, 1 skipped). The code is right (T-3552 bound); the test was stale. Test-only change.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced on bleeding-edge: `test_threshold_still_bounds_the_queue` fails at HEAD (a live row below 0.80 that passed L1+L2)
+- [x] The test asserts the T-3552 bound instead: every row has readiness L1 and L2 passed, or (readiness uncomputable) ratio >= threshold
+- [x] New live-data-independent tests (monkeypatched `_arc_readiness_legs`) pin that a 100%-complete arc failing L1/L2 is excluded, a low-ratio arc passing L1/L2 is included, and the ratio fallback applies only when legs is None
+- [x] `tests/web/test_approvals_blocked_arcs.py` passes in full; no change to web/ source
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -275,6 +277,8 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 python3 -m pytest tests/web/test_approvals_blocked_arcs.py -q -p no:cacheprovider > /tmp/.t4329.out 2>&1 && grep -q passed /tmp/.t4329.out && ! grep -q failed /tmp/.t4329.out
+grep -q "def test_ratio_alone_no_longer_admits_an_arc" tests/web/test_approvals_blocked_arcs.py
 
 ## RCA
 
@@ -291,6 +295,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/web/test_approvals_blocked_arcs.py::test_threshold_still_bounds_the_queue` fails at HEAD — a live arc row has completion_ratio < 0.80.
+
+**Root cause:** T-3552 changed the predicate in `web/blueprints/approvals.py:_load_close_ready_arcs` (the `legs = _arc_readiness_legs(...)` block, ~line 780) from `ratio >= threshold` to "readiness legs L1 and L2 both passed", keeping the ratio only as the fallback when legs is None. The test (T-2986) still asserted the old ratio bound at `tests/web/test_approvals_blocked_arcs.py:85-91`, so any L1+L2-ready arc below 80% made it red. The code is correct; the test is stale.
+
+**Why structurally allowed:** `tests/web/` is outside the nightly unit suite (`.context/audits/unit-suite`), so no run graded this file after T-3552 landed; and the test reads the live arc store, so it only went red once the corpus held a sub-80% ready arc — later than the change that broke it.
+
+**Prevention:** the live-store assertion now checks the T-3552 predicate, and new monkeypatched tests pin the bound independent of live data (100%-complete arc failing L1/L2 is excluded; low-ratio arc passing L1/L2 is included; ratio only applies when legs is None), so a future predicate change fails deterministically in the same commit rather than whenever the corpus happens to drift.
 
 ## Evolution
 
@@ -372,3 +384,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4329-testapprovalsblockedarcstestthresholdsti.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:45:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
