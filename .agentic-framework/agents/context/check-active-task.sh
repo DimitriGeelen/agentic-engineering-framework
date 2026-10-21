@@ -812,6 +812,40 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
     # cannot disagree about what counts as naming a task.
     TARGET_TASK="$DRIFT_TARGET"
 
+    # T-4182 (832 OBS-375): the closure commit of a JUST-completed task. The
+    # T-2054 exemption covers null focus and T-3179 covers work-completed focus;
+    # neither covers focus already sitting on another active task, so the
+    # task's own closure commit (moved task file, episodic) was refused with
+    # only Tier-2 remedies on offer. Narrow on three counts: the command must be
+    # a plain commit checkpoint (is_commit_checkpoint_command — no write
+    # pattern, no --no-verify, so the commit-msg hook still enforces P-002),
+    # the target must be in completed/, and its date_finished must lie inside
+    # the grace window. An old or undated target still blocks, as does every
+    # non-commit drift shape. Not logged as a bypass: it is no bypass.
+    _t4182_grace_secs=3600
+    _t4182_closure=0
+    if [ -n "$TARGET_TASK" ] && [ "$TARGET_TASK" != "$CURRENT_TASK" ] \
+       && type is_commit_checkpoint_command &>/dev/null \
+       && is_commit_checkpoint_command "$BASH_CMD"; then
+        _t4182_file=$(find_task_file "$TARGET_TASK" completed)
+        if [ -n "$_t4182_file" ]; then
+            _t4182_fin=$({ grep -m1 '^date_finished:' "$_t4182_file" 2>/dev/null || true; } \
+                | sed "s/^date_finished:[[:space:]]*//; s/[\"']//g; s/[[:space:]]*$//")
+            _t4182_epoch=""
+            [ -n "$_t4182_fin" ] && _t4182_epoch=$(date -u -d "$_t4182_fin" +%s 2>/dev/null || true)
+            if [ -n "$_t4182_epoch" ]; then
+                _t4182_age=$(( $(date -u +%s) - _t4182_epoch ))
+                if [ "$_t4182_age" -ge -300 ] && [ "$_t4182_age" -le "$_t4182_grace_secs" ]; then
+                    _t4182_closure=1
+                fi
+            fi
+        fi
+    fi
+    if [ "$_t4182_closure" = "1" ]; then
+        echo "NOTE: $TARGET_TASK completed $(( _t4182_age / 60 ))m ago — allowing its closure commit while focus is $CURRENT_TASK (T-4182). commit-msg hook still enforces T-XXX." >&2
+        TARGET_TASK=""
+    fi
+
     # If a target was identified and differs from focused task: drift
     if [ -n "$TARGET_TASK" ] && [ "$TARGET_TASK" != "$CURRENT_TASK" ]; then
         # T-1890: two bypass mechanisms.
@@ -890,6 +924,10 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
                 echo "    ($TARGET_TASK is not active, so focus cannot point at it —" >&2
                 echo "     'context focus' would refuse it. Use 2 or 3 below; the" >&2
                 echo "     action stays attributed to $TARGET_TASK either way.)" >&2
+                echo "    (A plain 'git commit' for a task completed within the last" >&2
+                echo "     $(( _t4182_grace_secs / 60 )) minutes passes without a bypass — T-4182 closure" >&2
+                echo "     commit. This one is outside that window, not a plain commit," >&2
+                echo "     or not a commit at all.)" >&2
                 echo "" >&2
             fi
             echo "    2. Append --switch-focus to a fw command (logged Tier 2)." >&2

@@ -11,10 +11,10 @@ description: >
   is a narrow exemption for the closure commit of the task that was just completed.
   Bare git commit not checked by 832.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:07:12Z
-last_update: '2026-10-13T19:16:04Z'
+last_update: '2026-10-21T22:14:16Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,6 +85,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:14:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4182: Drift gate: allow the closure commit of a just-completed task, or give a non-Tier-2 remedy (832 OBS-375, their T-1150)
@@ -97,8 +113,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Under agent control, focus on active T-A, a plain `git commit -m "T-B: …"` whose target T-B is in `.tasks/completed/` with `date_finished` inside the grace window is allowed (exit 0) with a NOTE naming T-4182 — no Tier-2 bypass needed
+- [x] The exemption is narrow: still blocked (exit 2, FOCUS-DRIFT) when T-B has no/old `date_finished`, when the commit carries a write pattern or `--no-verify`, and for non-commit drift (`fw task update T-B`)
+- [x] Active-target drift behaviour unchanged (still blocks, still offers `context focus`)
+- [x] Regression bats `tests/unit/t4182_closure_commit_drift.bats` fails without the fix and passes with it; neighbours `focus_drift_remedy_scope.bats`, `focus_drift_gate.bats` stay green
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4182` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,6 +280,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4182_closure_commit_drift.bats > /tmp/.t4182.out 2>&1 && ! grep -q "^not ok" /tmp/.t4182.out
+test "$(grep -c '# skip' /tmp/.t4182.out)" -eq 0
+timeout 300 bats tests/unit/focus_drift_remedy_scope.bats tests/unit/focus_drift_gate.bats > /tmp/.t4182n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4182n.out
+bash -n agents/context/check-active-task.sh
+bin/fw vendor self --check --task T-4182
 
 ## RCA
 
@@ -277,6 +301,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** With focus on active T-A, the closure commit of just-closed T-B (`git commit -m "T-B: close" -- <moved task file, episodic>`) was refused by the focus-drift gate; for a completed target the block offered only options 2/3 (`--switch-focus` / `FW_SWITCH_FOCUS=1`), both logged Tier-2 bypasses. Reproduced on bleeding-edge before the fix: `tests/unit/t4182_closure_commit_drift.bats` legs 1-3 and 10 fail against the unfixed hook.
+
+**Root cause:** `agents/context/check-active-task.sh` focus-drift gate (now ~:850) treats every target ≠ focus as drift. The two closure-commit exemptions sit elsewhere and are keyed on focus state only: T-2054 (`[ -z "$CURRENT_TASK" ]`, ~:661) and T-3179 (`work-completed` status of the *focused* task, ~:985). Neither looks at the target, so "focus already moved to the next task" fell between them.
+
+**Why structurally allowed:** each exemption was written for the deadlock hit at the time (null focus, then partial-complete focus); the third focus state — focus elsewhere — has the same commit to make but no test pinned it. T-2875 even notes the completed target is the *common* drift case, and fixed only the message.
+
+**Fix / prevention:** narrow exemption inside the drift gate: plain commit checkpoint (`is_commit_checkpoint_command` — no write pattern, no `--no-verify`, commit-msg hook still enforces P-002) AND target in `completed/` AND `date_finished` within 60 min → NOTE, no block, no bypass-log entry. Old/undated targets, non-commit drift and active targets still block; the completed-target block message now names the window. Pinned by `tests/unit/t4182_closure_commit_drift.bats` (10 legs; allow legs paired with block legs differing in one property).
 
 ## Evolution
 
@@ -342,6 +374,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — how to recognise "just completed"
+- **Chose:** `date_finished` within 60 minutes (constant in the hook, -5 min clock-skew tolerance), plain commit checkpoint only.
+- **Why:** deterministic from the task file alone; bounds misattribution to the closure window; reuses the T-2054/T-3179 predicate so all three exemptions share one notion of a safe commit.
+- **Rejected:** inspecting the staged index for the moved task file (`git commit -- paths` bypasses the index, so it is unreliable); an unbounded completed-target exemption (would let any later work be attributed to a closed task without a trace); a new FW_ config key (registry/doc parity cost for a value nobody has asked to tune).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -358,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4182-drift-gate-allow-the-closure-commit-of-a.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:14:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
