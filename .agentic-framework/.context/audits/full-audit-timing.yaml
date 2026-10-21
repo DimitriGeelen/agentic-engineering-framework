@@ -1,7 +1,0 @@
-# Full-audit run timing - written by agents/audit/audit.sh (T-3127, T-3451)
-section_runs:
-  - name: "structure"
-    seconds: 23
-    timestamp: "2026-10-18T18:34:53+02:00"
-    timed_out: false
-    excludes_lock_wait: true
