@@ -8,10 +8,10 @@ description: >
   B3 + proposal 1. Fix: install.sh and doctor check import yaml (hard) and web/requirements.txt
   (soft); hint uses apt package names or a project venv that fw then uses.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:42:40Z
-last_update: '2026-10-17T13:46:22Z'
+last_update: 2026-10-21T20:32:59Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] One shared helper (`lib/python-deps.sh`) checks PyYAML (hard) and the Watchtower start modules (soft, same list as `bin/watchtower.sh` T-4304) and builds a PEP 668-safe install hint: apt package names on Debian/Ubuntu/Mint, otherwise a venv, never a bare system `pip install`
+- [x] `install.sh` dependency check FAILs on missing PyYAML and WARNs on a missing Watchtower stack, using that hint (inline copy: install.sh runs before the framework is fetched; parity pinned by the bats)
+- [x] `fw doctor` reports PyYAML (FAIL when missing) and the Watchtower stack (WARN when missing) with that hint
+- [x] `fw preflight` and the `bin/fw` PyYAML error no longer suggest `pip3 install pyyaml` / `pip install -r …` on a PEP 668 system
+- [x] Regression bats `tests/unit/t4238_python_deps_hint.bats` fails before the fix (8/11 red on a HEAD copy; 1-3 test the new helper) and passes after (11/11)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,8 +276,21 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 1200 bats tests/unit/t4238_python_deps_hint.bats > /tmp/.t4238.out 2>&1 && ! grep -q "^not ok" /tmp/.t4238.out
+test "$(grep -c '# skip' /tmp/.t4238.out)" -eq 0
+bash -n bin/fw && bash -n install.sh && bash -n lib/python-deps.sh && bash -n lib/preflight.sh
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4238-lint.out 2>&1 && grep -q "clean" /tmp/.t4238-lint.out
+bin/fw vendor self --check --task T-4238
 
 ## RCA
+
+**Symptom:** On Ubuntu 24.04 / Mint 22 / Debian 12 a greenfield install (dimitri-mint-dev P-017 B3, their T-118 vs v1.8.10) was never told PyYAML or Flask were missing, and the hint it eventually met (`pip install …`) fails with `externally-managed-environment` (PEP 668).
+
+**Root cause:** `install.sh:check_prereqs` (≈line 161) checked only that `python3` exists; `bin/fw` `do_doctor` had no Python-module check at all; `lib/preflight.sh:check_pyyaml` hinted `pip3 install pyyaml` and `bin/fw` `scan` hinted `pip install -r web/requirements.txt` — both refused by a PEP 668 system interpreter. T-4304 had fixed the hint only on the `fw watchtower start` path (`bin/watchtower.sh:_watchtower_check_modules`), so the fix lived in one of four places.
+
+**Why structurally allowed:** each surface carried its own dependency check and its own hint string; nothing shared them, so a fix to one (T-4304) left the others untouched, and no test exercised a host where a module is missing.
+
+**Prevention:** one helper (`lib/python-deps.sh`) owns the module lists and the PEP 668-safe hint for doctor / preflight / bin/fw; install.sh carries a copy (it runs before the framework is fetched) and `tests/unit/t4238_python_deps_hint.bats` pins the three lists (helper, install.sh, watchtower.sh) equal and asserts no surface emits a bare system pip install, using a python3 shim that simulates missing modules.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -370,3 +386,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4238-installer-and-fw-doctor-do-not-check-pyy.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:32:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -1915,6 +1915,25 @@ do_doctor() {
         issues=$((issues + 1))
     fi
 
+    # Check 1a (T-4238): Python dependencies — PyYAML is hard (most fw commands
+    # parse YAML), the Watchtower stack is soft. The hint is PEP 668-safe.
+    source "$FRAMEWORK_ROOT/lib/python-deps.sh"
+    if [ -n "$(fw_pydeps_missing "$FW_PYYAML_MODULE")" ]; then
+        echo -e "  ${RED}FAIL${NC}  PyYAML not installed (required by most fw commands)"
+        echo -e "         Install: $(fw_pydeps_hint_line "$FW_PYYAML_MODULE")"
+        issues=$((issues + 1))
+    else
+        echo -e "  ${GREEN}OK${NC}  PyYAML installed"
+    fi
+    local _wt_missing=()
+    mapfile -t _wt_missing < <(fw_pydeps_missing "${FW_WATCHTOWER_MODULES[@]}")
+    if [ "${#_wt_missing[@]}" -gt 0 ]; then
+        _doctor_warn_host "Watchtower Python stack incomplete — missing: $(fw_pydeps_names "${_wt_missing[@]}")"
+        echo -e "         Install: $(fw_pydeps_hint_line "${_wt_missing[@]}")"
+    else
+        echo -e "  ${GREEN}OK${NC}  Watchtower Python stack installed"
+    fi
+
     # Check 1b (T-1346-B2): Active framework mode disclosure
     local _mode
     _mode=$(_detect_fw_mode)
@@ -8464,7 +8483,8 @@ EOF
     scan)
         if ! python3 -c "import yaml" 2>/dev/null; then
             echo -e "${RED}ERROR: PyYAML is not installed${NC}" >&2
-            echo "  pip install -r $FRAMEWORK_ROOT/web/requirements.txt" >&2
+            source "$FW_LIB_DIR/python-deps.sh"
+            echo "  Install: $(fw_pydeps_hint_line "$FW_PYYAML_MODULE")" >&2
             exit 1
         fi
         cd "$FRAMEWORK_ROOT" && exec python3 -m web.watchtower "$@"

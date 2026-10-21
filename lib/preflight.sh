@@ -144,7 +144,9 @@ check_pyyaml() {
         echo -e "  ${RED}FAIL${NC}  PyYAML not installed"
         echo -e "       ${CYAN}Why:${NC} All context, task, and audit files use YAML format"
         REQUIRED_MISSING+=("PyYAML")
-        REQUIRED_INSTALL_CMDS+=("pip3 install pyyaml")
+        # T-4238: not `pip3 install` — PEP 668 interpreters refuse it.
+        source "$(dirname "${BASH_SOURCE[0]}")/python-deps.sh"
+        REQUIRED_INSTALL_CMDS+=("$(fw_pydeps_install_hint "$FW_PYYAML_MODULE")")
         return 1
     fi
 }

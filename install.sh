@@ -137,6 +137,56 @@ parse_args() {
 }
 
 # --- Prerequisite Checks ---
+# T-4238: this script runs before the framework is fetched, so it cannot source
+# lib/python-deps.sh — the lists below are a copy, pinned equal to it (and to
+# bin/watchtower.sh) by tests/unit/t4238_python_deps_hint.bats.
+# Format: import-name|pip-name|apt-name
+PYYAML_MODULE="yaml|pyyaml|python3-yaml"
+WATCHTOWER_MODULES=(
+    "flask|flask|python3-flask"
+    "flask_socketio|flask-socketio|python3-flask-socketio"
+    "yaml|pyyaml|python3-yaml"
+    "markdown2|markdown2|python3-markdown2"
+)
+
+# The install command for this machine. Never a bare `pip install`: PEP 668
+# interpreters (Debian 12, Ubuntu 24.04, Mint 22, Homebrew) refuse it.
+python_install_hint() {
+    local entry mod pip_name apt_name pips="" apts=""
+    for entry in "$@"; do
+        IFS='|' read -r mod pip_name apt_name <<< "$entry"
+        pips="${pips:+$pips }$pip_name"
+        apts="${apts:+$apts }$apt_name"
+    done
+    if command -v apt-get &>/dev/null && grep -qiE '^ID(_LIKE)?=.*(debian|ubuntu)' "${FW_OS_RELEASE:-/etc/os-release}" 2>/dev/null; then
+        echo "sudo apt-get install -y $apts"
+    else
+        echo "python3 -m venv ~/.venvs/aef-watchtower && ~/.venvs/aef-watchtower/bin/pip install $pips && . ~/.venvs/aef-watchtower/bin/activate  (then re-run fw in that shell)"
+    fi
+}
+
+# PyYAML is required (returns 1); the Watchtower stack is a warning only.
+check_python_modules() {
+    local entry missing=() rc=0
+    if python3 -c "import yaml" 2>/dev/null; then
+        info "PyYAML installed"
+    else
+        error "PyYAML not installed (required by most fw commands) — install: $(python_install_hint "$PYYAML_MODULE")"
+        rc=1
+    fi
+    for entry in "${WATCHTOWER_MODULES[@]}"; do
+        python3 -c "import ${entry%%|*}" 2>/dev/null || missing+=("$entry")
+    done
+    if [[ ${#missing[@]} -eq 0 ]]; then
+        info "Watchtower Python stack installed"
+    else
+        local names="" e
+        for e in "${missing[@]}"; do names="${names:+$names, }${e%%|*}"; done
+        warn "Watchtower Python stack incomplete (missing: $names) — install: $(python_install_hint "${missing[@]}")"
+    fi
+    return $rc
+}
+
 check_prereqs() {
     local ok=true
 
@@ -166,6 +216,7 @@ check_prereqs() {
         local py_ver
         py_ver=$(python3 --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
         info "python3 ${py_ver}"
+        check_python_modules || ok=false
     fi
 
     # Node.js (optional — recommended for TypeScript hooks, Python fallback otherwise)
