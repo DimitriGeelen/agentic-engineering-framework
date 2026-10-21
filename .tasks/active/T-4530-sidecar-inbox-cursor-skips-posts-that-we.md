@@ -102,7 +102,7 @@ bvp_scores_proposed:
 - [x] A draining `inbox.pending(advance=True)` (the CLI drain and `watcher.ingest_hub`) never moves the cursor past a post that was only peeked or alert-marked: it skips only receipts, duplicates, answered posts, and posts the receiver store already holds; a peeked-twice post is returned by the drain (and so ingested and RECEIVED-receipted by the watcher)
 - [x] `addressing.orphan_inboxes()` (so `fw sidecar alerts` and `fw sidecar orphan-inboxes`) names THIS project's own project-level inbox when it holds posts past our cursor and this session does not read it; unread is judged by our own cursor, not by hub `unread_since_ms` (which any fetch, a peek included, clears)
 - [x] Regression tests in tests/unit/ fail without the fix and pass with it; the T-3840 seen-ledger and T-4418 orphan tests still pass
-- [ ] `bin/fw vendor self --check --task T-4530` clean
+- [x] `bin/fw vendor self --check --task T-4530` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
