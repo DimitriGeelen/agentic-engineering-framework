@@ -13,7 +13,7 @@ description: >
   fix: make the health window configurable (FW_WATCHTOWER_START_TIMEOUT) with a larger
   default, and have the test print $output on failure.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T09:20:53Z
-last_update: '2026-10-04T09:30:56Z'
+last_update: 2026-10-21T07:00:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction check at HEAD: `bin/watchtower.sh start` no longer has a fixed 5 s health window (deadline is configurable, default ≥ 30 s); evidence and fixing commit recorded under ## RCA
+- [x] `tests/unit/t3662_watchtower_port_allocation.bats` passes at HEAD with no skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,8 +260,25 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q 'fw_config "WATCHTOWER_START_TIMEOUT" "60"' bin/watchtower.sh && grep -q '^    "WATCHTOWER_START_TIMEOUT|60|' lib/config.sh
+timeout 900 bats tests/unit/t3662_watchtower_port_allocation.bats > /tmp/.t3797.out 2>&1 && ! grep -q "^not ok" /tmp/.t3797.out
+test "$(grep -c '# skip' /tmp/.t3797.out)" -eq 0
 
 ## RCA
+
+**Status: already fixed at HEAD by T-4460 (commit 286fddab8, 2026-10-20). No code change in this task.**
+
+**Symptom:** t3662 test 2 went red in the unit suite (T-3747 round 3): `_wt a start` returned non-zero under the 12-job pool.
+
+**Root cause:** `bin/watchtower.sh` start polled GET / for a fixed 5 × 1 s, and a cold `python3 -m web.app` start under suite load took longer than 5 s.
+
+**Fix (T-4460, 286fddab8):** start now polls the cheap `/api/_identity` for `WATCHTOWER_START_TIMEOUT` seconds (default 60, registered at `lib/config.sh:266`, read at `bin/watchtower.sh:433`). When the deadline passes it stops the server and clears the triple. That is the candidate fix proposed in this task's description. T-4460 also added the regression test `tests/unit/t4460_watchtower_start_slow_home.bats`.
+
+**Evidence (2026-10-21, this worker):** `timeout 900 bats tests/unit/t3662_watchtower_port_allocation.bats` gave 5/5 ok, including `ok 2 allocation skips a foreign holder…`, at load average 67.9 (`uptime`). That is about 7× the load at which the original 5 s window failed.
+
+**Why structurally allowed:** a fixed health window was hard-coded with no config knob, and the unit-suite pool only exposed it intermittently.
+
+**Prevention:** the configurable 60 s deadline plus the T-4460 bats test. Duplicate filings like this one (T-3797 and T-4460 for the same defect) are the reason for the "check it still reproduces first" step in the dispatch.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -357,3 +374,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3797-t3662-allocation-skips-a-foreign-holder-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T07:00:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
