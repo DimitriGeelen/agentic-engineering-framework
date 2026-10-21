@@ -89,7 +89,7 @@ bvp_scores_proposed:
 - [x] Root cause of the t2461 reds (tests 1, 2, 3, 6) identified with the introducing commit and file:line, and recorded in ## RCA as code-regression vs moved-expectation
 - [x] `bats tests/unit/t2461_doctor_mcp_consumer_path.bats` passes in full (0 `not ok`, 0 skips)
 - [x] Nearest neighbouring doctor/MCP suites still pass after the fix
-- [ ] `bin/fw vendor self --check --task T-4543` is clean
+- [x] `bin/fw vendor self --check --task T-4543` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
