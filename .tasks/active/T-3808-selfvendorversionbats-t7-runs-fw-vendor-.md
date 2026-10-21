@@ -12,7 +12,7 @@ description: >
   the tree was clean. Pre-existing (test last changed ebebd305f, before 914326e07).
   Fix: run against a temp vendored fixture, assert only the VERSION class.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T11:12:10Z
-last_update: '2026-10-04T11:15:43Z'
+last_update: 2026-10-21T07:00:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,8 +98,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect still present at HEAD (structural): tests 6/7 `cd "$BATS_TEST_DIRNAME/../.."`, overwrite the live `.agentic-framework/VERSION` and assert exit 0 of a whole-tree `fw vendor self --check`, which exits 1 on any vendored drift (shown by new test 8 in the fixture). Live tree happened to be clean at check time, so not re-reddened live.
+- [x] Tests 6 and 7 run the real `bin/fw vendor self [--check]` against a temp fixture framework root, never the live repo: no line in the file `cd`s to the repo root or writes the live `.agentic-framework/VERSION`
+- [x] Regression test 8: with an unrelated vendored class drifting (root data file), `--check` exits 1 naming that class and never mentions or writes VERSION — test 7's verdict is now VERSION-class only
+- [x] `bats tests/unit/self_vendor_version.bats` 8/8 green, no skips; dead-negation lint clean
+- [x] Live `.agentic-framework/VERSION` is byte-identical before and after the suite runs
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,6 +262,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+! grep -nE '^\s*cd "\$BATS_TEST_DIRNAME/\.\./\.\."' tests/unit/self_vendor_version.bats
+v0=$(md5sum .agentic-framework/VERSION); timeout 600 bats tests/unit/self_vendor_version.bats > /tmp/.t3808.out 2>&1 && ! grep -q "^not ok" /tmp/.t3808.out && test "$(md5sum .agentic-framework/VERSION)" = "$v0"
+timeout 600 bats tests/unit/self_vendor_version.bats > /tmp/.t3808b.out 2>&1; test "$(grep -c '# skip' /tmp/.t3808b.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/self_vendor_version.bats > /tmp/.t3808l.out 2>&1 && grep -q clean /tmp/.t3808l.out
+bin/fw vendor self --check --task T-3808
 
 ## RCA
 
@@ -275,6 +283,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `self_vendor_version.bats` "fw vendor self --check does NOT flag VERSION" went red in the 10:04Z suite with `would sync 1 file(s) to .agentic-framework/policy/ … DRIFT` — an unrelated uncommitted `policy/value-drivers.yaml` edit. Green alone once the tree was clean.
+
+**Root cause:** `tests/unit/self_vendor_version.bats:66-95` (pre-fix) ran `bin/fw vendor self` / `--check` in the LIVE repo (`cd "$BATS_TEST_DIRNAME/../.."`), temporarily overwriting the real `.agentic-framework/VERSION`. The --check test asserted `status -eq 0` of the whole-tree check (`bin/fw:10852` exits 1 on any "would sync"), so its verdict depended on every vendored class, not the VERSION class it is about. Test 6 additionally performed a real mutating sync of the whole live tree.
+
+**Why structurally allowed:** bin/fw derives FRAMEWORK_ROOT from its own real path, so the authors took the shortcut of running the live checkout; the test passed whenever the dev tree was clean, which is the usual state when a single author runs it. Concurrent workers in one checkout made the hidden dependency visible.
+
+**Prevention:** tests 6/7 now run against a temp fixture (copied bin/fw, symlinked lib/agents, `.agentic-framework/` holding only VERSION, so every content class early-exits); test 8 pins that unrelated drift is reported as its own class and VERSION is neither flagged nor written. Verification greps that no test cds to the repo root.
 
 ## Evolution
 
@@ -356,3 +372,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3808-selfvendorversionbats-t7-runs-fw-vendor-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T07:00:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

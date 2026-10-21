@@ -63,16 +63,33 @@ teardown() {
     [ -z "$output" ]
 }
 
+# T-3808: the two CLI tests below used to cd into the LIVE repo, overwrite the
+# real .agentic-framework/VERSION and run a whole-tree `fw vendor self [--check]`.
+# Any unrelated uncommitted vendored drift (another worker's edit) then reddened
+# the --check test, and the plain run synced the live tree as a side effect.
+# They now run the real bin/fw against a minimal fixture root: a COPY of bin/fw
+# (FRAMEWORK_ROOT is derived from its real path), lib/ and agents/ symlinked so it
+# runs, and a .agentic-framework/ holding only VERSION — every content class
+# early-exits on its missing vendored subdirectory, so only VERSION is in play.
+_fixture_root() {
+    local repo="$BATS_TEST_DIRNAME/../.."
+    FIX="$TEST_TEMP_DIR/fix"
+    mkdir -p "$FIX/bin" "$FIX/.agentic-framework"
+    cp "$repo/bin/fw" "$FIX/bin/fw"
+    ln -s "$(cd "$repo" && pwd)/lib" "$FIX/lib"
+    ln -s "$(cd "$repo" && pwd)/agents" "$FIX/agents"
+    cp "$repo/FRAMEWORK.md" "$FIX/FRAMEWORK.md"
+    echo "9.9.9" > "$FIX/VERSION"
+    echo "0.0.0-drift" > "$FIX/.agentic-framework/VERSION"
+    unset FRAMEWORK_ROOT PROJECT_ROOT CLAUDE_PROJECT_DIR
+    cd "$FIX"
+}
+
 @test "fw vendor self SYNCS a drifted VERSION" {
-    cd "$BATS_TEST_DIRNAME/../.."
-    unset FRAMEWORK_ROOT
-    orig="$(cat .agentic-framework/VERSION)"
-    echo "0.0.0-drift" > .agentic-framework/VERSION
+    _fixture_root
     run bin/fw vendor self
-    after="$(cat .agentic-framework/VERSION)"
-    printf '%s' "$orig" > .agentic-framework/VERSION
     [ "$status" -eq 0 ]
-    [ "$after" != "0.0.0-drift" ]
+    [ "$(cat .agentic-framework/VERSION)" = "9.9.9" ]
 }
 
 @test "fw vendor self --check does NOT flag VERSION (sync-only by design)" {
@@ -81,15 +98,24 @@ teardown() {
     # the pre-push gate refuses, the fix re-breaks it. Knowingly the
     # unwitnessable-check shape (T-2726); the alternative is an unsatisfiable
     # gate. This test pins the choice so it cannot be reverted by accident.
-    cd "$BATS_TEST_DIRNAME/../.."
-    unset FRAMEWORK_ROOT
-    orig="$(cat .agentic-framework/VERSION)"
-    echo "0.0.0-drift" > .agentic-framework/VERSION
+    _fixture_root
     run bin/fw vendor self --check
-    after="$(cat .agentic-framework/VERSION)"
-    printf '%s' "$orig" > .agentic-framework/VERSION
     # --check is read-only and must stay so.
-    [ "$after" = "0.0.0-drift" ]
+    [ "$(cat .agentic-framework/VERSION)" = "0.0.0-drift" ]
     [ "$status" -eq 0 ]
     [[ "$output" != *"would sync VERSION"* ]]
+}
+
+@test "T-3808: unrelated vendored drift is reported by --check but never VERSION" {
+    # Regression: the assertion is about the VERSION class only. Another class
+    # drifting (here a root data file) must surface as that class's drift, and
+    # VERSION must still be neither flagged nor written.
+    _fixture_root
+    echo "src" > status-transitions.yaml
+    echo "stale" > .agentic-framework/status-transitions.yaml
+    run bin/fw vendor self --check
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"would sync 1 root data file(s)"* ]]
+    [[ "$output" != *"VERSION"* ]]
+    [ "$(cat .agentic-framework/VERSION)" = "0.0.0-drift" ]
 }
