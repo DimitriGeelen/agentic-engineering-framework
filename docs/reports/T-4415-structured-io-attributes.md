@@ -187,6 +187,23 @@ On an `aef:input` an expectation is a **precondition**: what this step expects t
 - **Specify:** the gaps in point 5.
 - **Pending:** 832/greenfield's check against VZN-T1 v26 and WT-01 before draft 2 is fixed.
 
+## 832 designer-side check of draft 1 (msgs 2f8376d0, 22282fd6, 2026-10-21)
+
+**Their points against our review:**
+
+| 832 point | Status | Detail |
+|---|---|---|
+| 6, 7 | Settled by the review | JSON Schema keywords, with `enum` values as child elements |
+| 2 | Settled by the review | "one field, two ways", resolved by `fieldRef` |
+| 8 | Settled by the review | QName prefixes |
+| 1 | **Blocking**, not raised by the reviewers | A's v1 `type` list is wrong: it drops `ref`, `task_id` and `path`, which 54 designer maps use (`task_id` alone on 97 ios). Draft 2 must carry v1's actual `type` vocabulary unchanged, exactly as the designer and the v1 bridge accept it |
+| 4 | Open | `role` values must be defined |
+| 5 | Open | `cardinality` versus `required` must be reconciled |
+
+**Accepted by the designer:** `conceptRef` for `dataType`, and deferring `aef:attr` to v1.2.
+
+**Still pending:** greenfield's producer check, once their maps (VZN-T1 v26, WT-01) arrive.
+
 ## Next step
 
 1. Write the exact attribute names and the v1.1 placement as normative text.
