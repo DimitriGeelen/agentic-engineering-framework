@@ -23,6 +23,7 @@ setup() {
 }
 
 teardown() {
+    [ -n "${BURNERS:-}" ] && kill $BURNERS 2>/dev/null
     [ -n "${TDIR:-}" ] && rm -rf "$TDIR"
 }
 
@@ -145,19 +146,61 @@ _lockfree_increment() {
 # versus ~2.3ms for the same code outside it. Timing it in-place would measure the
 # harness and report it as the subject's cost — so the benchmark is shelled out and
 # only its verdict is asserted here.
+#
+# T-3810: the verdict is CPU time (user+sys, children included — flock is a fork),
+# not wall clock. A wall-clock mean over sequential fires measures the host's run
+# queue as much as the function: at load ~50 on 24 cores the same code read 4.1ms
+# wall, and 15-50ms with 72 extra busy loops, while CPU time stayed ~2-2.6ms. The
+# budget is a cost budget, so cost is what is asserted. Blind spot, accepted: a
+# regression that SLEEPS (e.g. a lock wait) costs no CPU — but this benchmark is a
+# single uncontended process, where a lock wait is zero by construction.
+#
+# _bench_us <fires> [extra-cpu-loop-iterations]: prints CPU us per fire. The second
+# argument injects a busy loop into every fire, for the control leg only.
+_bench_us() {
+    LC_ALL=C bash -c '
+        source "$1/lib/hook-telemetry.sh"
+        f="$2/.bench-counter"; n="$3"; extra="${4:-0}"
+        if [ "$extra" -gt 0 ]; then
+            eval "$(declare -f _fw_telemetry_rmw | sed "1s/_fw_telemetry_rmw/_orig_rmw/")"
+            _fw_telemetry_rmw() { local j; for ((j=0; j<extra; j++)); do :; done; _orig_rmw "$@"; }
+        fi
+        for i in $(seq 1 20); do _fw_telemetry_increment "$f" "seed$i" 2>/dev/null; done
+        # Per-call 2>/dev/null, as fw_record_hook_fire does: the function'"'"'s
+        # `exec {fd}>>lock 2>/dev/null` would otherwise silence this shell'"'"'s stderr,
+        # which is where `time` reports.
+        TIMEFORMAT="%3U %3S"
+        t=$( { time for i in $(seq 1 "$n"); do _fw_telemetry_increment "$f" seed7 2>/dev/null; done; } 2>&1 )
+        set -- $t
+        echo $(( (10#${1/./} + 10#${2/./}) * 1000 / n ))
+    ' _ "$FRAMEWORK_ROOT" "$TDIR" "$@"
+}
+
 @test "T-3371: per-fire cost stays under the documented 5ms budget" {
     local us
-    us="$(bash -c '
-        source "'"$FRAMEWORK_ROOT"'/lib/hook-telemetry.sh"
-        f="'"$TDIR"'/.bench-counter"
-        for i in $(seq 1 20); do _fw_telemetry_increment "$f" "seed$i"; done
-        n=200
-        t0=$(date +%s%N)
-        for i in $(seq 1 $n); do _fw_telemetry_increment "$f" "seed7"; done
-        t1=$(date +%s%N)
-        echo $(( (t1 - t0) / n / 1000 ))
-    ')"
-
-    echo "measured: ${us}us/fire (budget 5000us, pre-fix lock-free baseline ~632us)"
+    us="$(_bench_us 200)"
+    echo "measured: ${us}us CPU/fire (budget 5000us, pre-fix lock-free baseline ~632us wall)"
     [ "$us" -lt 5000 ]
+}
+
+@test "T-3810: the budget verdict holds with the host CPU oversubscribed" {
+    # 2x nproc busy loops (capped at 48): every core contended for the whole run.
+    local n i
+    n=$(( $(nproc 2>/dev/null || echo 4) * 2 )); [ "$n" -gt 48 ] && n=48
+    BURNERS=""
+    for i in $(seq 1 "$n"); do ( while :; do :; done ) >/dev/null 2>&1 3>&- & BURNERS="$BURNERS $!"; done
+    local us
+    us="$(_bench_us 100)"
+    kill $BURNERS 2>/dev/null; BURNERS=""
+    echo "measured under ${n} burners: ${us}us CPU/fire"
+    [ "$us" -lt 5000 ]
+}
+
+@test "T-3810 CONTROL: an injected per-fire CPU cost IS caught by the budget" {
+    # Without this leg, a green budget test is equally consistent with "cheap" and
+    # "the measurement reads zero". 20k empty iterations is >>5ms of bash CPU.
+    local us
+    us="$(_bench_us 10 20000)"
+    echo "measured with injected cost: ${us}us CPU/fire"
+    [ "$us" -ge 5000 ]
 }

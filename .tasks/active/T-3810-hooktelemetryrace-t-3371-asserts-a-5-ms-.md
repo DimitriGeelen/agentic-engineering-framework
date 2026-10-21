@@ -9,7 +9,7 @@ description: >
   Fix: measure CPU time or take the min/median over N fires, or scale the budget when
   the suite runs parallel.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T11:13:57Z
-last_update: '2026-10-04T11:15:43Z'
+last_update: 2026-10-21T08:49:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked at HEAD: the T-3371 per-fire budget test is shown red under CPU load (or its absence of a defect recorded with evidence)
+- [x] The per-fire budget assertion is robust to host load (no single wall-clock mean over sequential fires decides the verdict) while still catching a real per-fire regression
+- [x] Regression test proves the assertion stays green under synthetic CPU saturation and still fails on an injected slow fire path
+- [x] `bin/fw vendor self --check --task T-3810` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,7 +259,23 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 600 bats tests/unit/hook_telemetry_race.bats > /tmp/.t3810.out 2>&1 && ! grep -q "^not ok" /tmp/.t3810.out
+test "$(grep -c '# skip' /tmp/.t3810.out)" -eq 0
+grep -q 'T-3810: the budget verdict holds with the host CPU oversubscribed' tests/unit/hook_telemetry_race.bats
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t3810-lint.out 2>&1 && grep -q clean /tmp/.t3810-lint.out
+bin/fw vendor self --check --task T-3810
+
 ## RCA
+
+**Symptom:** `T-3371: per-fire cost stays under the documented 5ms budget` went red in the 10:04Z unit-suite run (12 jobs, host load 10-14 on 24 cores) and green when run alone. Reproduced at HEAD 4d11aad27 with the old benchmark body: 4117us/fire wall at ambient load ~50 (already within 20% of the 5000us budget), and 15035 / 35539 / 49756 us/fire with 72 extra busy loops. CPU time (user+sys) over the same runs stayed at ~2-2.6 ms/fire.
+
+**Root cause:** `tests/unit/hook_telemetry_race.bats:148-163` (pre-fix) took the verdict from `date +%s%N` around 200 sequential fires, which is wall-clock time. Wall time includes every scheduler wait, so the measurement tracked the host's run queue rather than the function's cost. The budget in `lib/hook-telemetry.sh:15` is a cost budget, and the test was measuring a quantity the code under test does not control.
+
+**Why structurally allowed:** the test had no load leg. It was only ever validated alone or on a quiet host, so "green" was evidence about an idle machine. Nothing ran it under the conditions the nightly suite creates (parallel jobs).
+
+**Prevention:** the verdict is now CPU time (bash `time` with `%U+%S`, children included, `LC_ALL=C` so the decimal separator parses). A new leg (`T-3810: ... oversubscribed`) runs the benchmark with 2x nproc busy loops (capped at 48) and asserts the budget still holds, measured at 2440us under 48 burners. A control leg injects about 70 ms of CPU per fire and requires the budget to fail, so a measurement that reads zero cannot pass. Accepted blind spot (documented in the test): a regression that sleeps rather than burns CPU is invisible to a CPU-time verdict. The benchmark is a single uncontended process, so a lock wait there is zero by construction.
+
+**Side finding (not fixed, out of scope):** `lib/hook-telemetry.sh:80` `exec {lockfd}>>"${file}.lock" 2>/dev/null` makes the `2>/dev/null` permanent, so a direct caller of `_fw_telemetry_increment` loses its stderr for the rest of the shell. The production caller `fw_record_hook_fire` wraps the call in `2>/dev/null` and is unaffected. The benchmark does the same.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -353,3 +371,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3810-hooktelemetryrace-t-3371-asserts-a-5-ms-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T08:49:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
