@@ -29,6 +29,7 @@ KEYS_FILE = SECRETS_DIR / "api-keys.enc"
 ENV_OVERRIDES = {
     "openrouter": "OPENROUTER_API_KEY",
     "openai": "OPENAI_API_KEY",
+    "mistral": "MISTRAL_API_KEY",
 }
 
 

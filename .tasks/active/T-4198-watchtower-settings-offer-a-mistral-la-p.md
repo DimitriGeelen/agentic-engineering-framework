@@ -10,10 +10,10 @@ description: >
   AC (P-013). Related: T-4151 (vibe worker kind, Mistral subscription — a different
   credential: the CLI's own login, not an API key).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T21:09:49Z
-last_update: '2026-10-13T21:16:07Z'
+last_update: 2026-10-21T22:36:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,22 +84,50 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4198: Watchtower settings: offer a Mistral (La Plateforme) API key — key_name option + ENV_OVERRIDES mistral → MISTRAL_API_KEY (1409 pickup, their T-2003)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reproduced on bleeding-edge 2026-10-22: `web/secrets_store.py:29` ENV_OVERRIDES held only
+openrouter/openai and `web/templates/settings.html:114` offered only those two options, so a
+consumer's local Mistral addition (1409 T-2003) would be dropped by `fw upgrade`. Feature
+upstream, not a bug fix.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `web/secrets_store.py` ENV_OVERRIDES maps `mistral` → `MISTRAL_API_KEY` (so `get_api_key("mistral")` honours the conventional env var, not `FW_MISTRAL_API_KEY`)
+- [x] `web/templates/settings.html` key_name select offers `<option value="mistral">Mistral (La Plateforme)</option>`
+- [x] Regression test `tests/unit/test_t4198_mistral_key.py` pins both (red before the fix, green after), and the existing settings tests stay green
+- [x] Watchtower restarted and current; vendor synced
 
 ### Human
+- [ ] [REVIEW] Mistral option appears in the API-key form
+  **Steps:**
+  1. Open the Watchtower URL printed by `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`, then go to `/settings`
+  2. Open the "Key Name" dropdown in the API key form
+  **Expected:** a "Mistral (La Plateforme)" entry sits below OpenRouter and OpenAI, styled like them
+  **If not:** run `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower current` (restart if stale) and note what the dropdown shows
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -260,6 +288,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t4198_mistral_key.py -q > /tmp/.t4198.out 2>&1 && grep -q passed /tmp/.t4198.out
+grep -q '"mistral": "MISTRAL_API_KEY"' web/secrets_store.py
+grep -q '<option value="mistral">Mistral (La Plateforme)</option>' web/templates/settings.html
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4198
 
 ## RCA
 
@@ -330,6 +363,13 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** Two one-line additions matching 1409's rendered instance; the env-var mapping and the form option are pinned by a regression test (3 of 4 legs red before), and the live Watchtower serves the option. Only the visual check of the dropdown remains.
+**Evidence:**
+- `tests/unit/test_t4198_mistral_key.py` 4 passed (3 failed pre-fix); neighbours test_settings_nav_link, test_estate_ingest/push green
+- `curl -sfL $(bin/fw watchtower url)/settings/` contains "Mistral (La Plateforme)"; `bin/fw watchtower current` rc 0
+- `bin/fw vendor self --check --task T-4198` clean
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -357,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4198-watchtower-settings-offer-a-mistral-la-p.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:36:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
