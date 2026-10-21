@@ -2722,6 +2722,26 @@ def compute_overall(findings: list[Finding], thresholds: dict) -> str:
     return "PASS"
 
 
+# T-4195 (832 OBS-466, their T-1150): Layer 1 matches what a task RUNS or
+# PLANS, not what it describes. A Verification line that is a `#` comment is
+# never executed; an AC's backticked or double-quoted span is a quotation.
+# Shell backticks are NOT stripped from Verification — there they execute.
+_ESC_QUOTED_RE = re.compile(r"`[^`\n]*`|\"[^\"\n]*\"|“[^”\n]*”")
+
+
+def _escalation_verification_text(verif_section: str) -> str:
+    """Verification minus HTML comments and full-line `#` comments."""
+    text = _strip_html_comments(verif_section)
+    return "\n".join(
+        "" if ln.lstrip().startswith("#") else ln for ln in text.split("\n")
+    )
+
+
+def _escalation_ac_text(ac_section: str) -> str:
+    """AC text minus HTML comments and quoted (backtick / double-quote) spans."""
+    return _ESC_QUOTED_RE.sub(" ", _strip_html_comments(ac_section))
+
+
 def evaluate_escalations(
     ac_section: str,
     verif_section: str,
@@ -2731,6 +2751,8 @@ def evaluate_escalations(
     """Layer 1: match Layer-1 escalation patterns against AC + verification text."""
     if not escalation_catalogue:
         return []
+    ac_section = _escalation_ac_text(ac_section or "")
+    verif_section = _escalation_verification_text(verif_section or "")
     triggers: list[EscalationTrigger] = []
     for trig in escalation_catalogue.get("triggers", []):
         for matcher in trig.get("match", []):

@@ -10,10 +10,10 @@ description: >
   kept the rest unconditional. 832's fix: scan only non-comment Verification lines
   for executable commands, and treat prose and backticked quotations as description.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:11:34Z
-last_update: '2026-10-13T19:16:05Z'
+last_update: 2026-10-21T22:27:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4195: reviewer destructive scan: ignore comment lines and backticked or prose mentions in Verification and AC text (832 OBS-466, their T-1150)
@@ -96,8 +112,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `evaluate_escalations` drops full-line `#` comments and `<!-- -->` blocks from the Verification haystack before matching, so `# never rm -rf here` no longer escalates while an executable `rm -rf` line still does
+- [x] AC-text matchers ignore HTML comments, backticked spans and double-quoted spans (quotations are description), while an unquoted "force-push the branch" still escalates
+- [x] Regression test `tests/unit/test_t4195_escalation_description.py` fails on pre-fix code and passes after; neighbouring reviewer escalation tests stay green
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4195` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,8 +278,18 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t4195_escalation_description.py tests/unit/test_t3642_escalation_negation.py tests/unit/test_reviewer_static_scan.py -q > /tmp/.t4195 2>&1 && grep -q passed /tmp/.t4195 && ! grep -q failed /tmp/.t4195
+bin/fw vendor self --check --task T-4195
 
 ## RCA
+
+**Symptom:** a task whose Verification carries a comment like `# never run rm -rf here`, or whose AC quotes `` `force-push` `` as the thing a gate refuses, was escalated by the reviewer's Layer 1 `destructive-action` trigger (needs_human) as if it ran the operation (832 OBS-466).
+
+**Root cause:** `lib/reviewer/static_scan.py` `evaluate_escalations` (was :2725) matched each `policy/escalation-patterns.yaml` regex (:40, :43) against the raw section text: `verif_section` came straight from `extract_section(body, "Verification")` (:2796) with `#` comment lines and HTML comments intact, and the AC text with quotations intact. Nothing distinguished a description from a command.
+
+**Why structurally allowed:** the trigger catalogue's schema has only "text" kinds; T-3642 fixed one false-positive class (negated destroy/wipe/purge) per matcher via `exclude_pattern`, leaving the other matchers unconditional, and no test drove a commented or quoted mention through the real catalogue.
+
+**Prevention:** the haystacks are now normalised in one place before every matcher (`_escalation_verification_text`, `_escalation_ac_text`), so every current and future trigger inherits it; `tests/unit/test_t4195_escalation_description.py` pins both directions (7 of 11 legs red pre-fix — description ignored; executable/unquoted hits still escalate).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -341,6 +369,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — what counts as description
+- **Chose:** Verification: drop full-line `#` comments and HTML comments only. AC: drop HTML comments, backticked and double-quoted spans. Unquoted AC prose ("force-push the branch") still escalates.
+- **Why:** Shell backticks and quoted strings in Verification can execute (`` `rm -rf x` ``, `bash -c "…"`), so stripping them would open a fail-open hole; full-line comments never execute. In AC text the force-push/hard-reset words are the plan (T-3642 kept them unconditional), so only explicit quotation is treated as description.
+- **Rejected:** stripping trailing inline `cmd # comment` (needs shell quote tracking; deferred, rare); a per-matcher `exclude_pattern` (would have to be repeated on every trigger).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -357,3 +390,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4195-reviewer-destructive-scan-ignore-comment.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:27:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
