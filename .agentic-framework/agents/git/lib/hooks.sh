@@ -24,7 +24,7 @@
 # PL-078 still applies: when you change the CONTENT of any hook template below,
 # bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
 # together, so consumers' next install-hooks redeploys all four.
-COMMIT_MSG_HOOK_VERSION="1.21"
+COMMIT_MSG_HOOK_VERSION="1.22"
 
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
@@ -194,7 +194,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.21
+# VERSION=1.22
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -1582,14 +1582,50 @@ _t3297_lock_free() {
         [ ! -f "$_t3297_lock_file" ]
     fi
 }
+# T-4542: name the holder. audit.sh writes pid/since/job to audit.lock.holder when
+# it takes the lock; the record counts only while that pid is alive. Without this
+# a contended push read as a silent hang (field report from 1409-sprind).
+_t4542_holder_desc() {
+    _t4542_hf="$PROJECT_ROOT/.context/locks/audit.lock.holder"
+    _t4542_hpid=$(sed -n 's/^pid=//p' "$_t4542_hf" 2>/dev/null | head -1)
+    case "$_t4542_hpid" in ''|*[!0-9]*) echo "holder unknown (no holder record)"; return 0 ;; esac
+    if ! kill -0 "$_t4542_hpid" 2>/dev/null; then
+        echo "holder unknown (recorded pid $_t4542_hpid has exited)"
+        return 0
+    fi
+    _t4542_hsince=$(sed -n 's/^since=//p' "$_t4542_hf" 2>/dev/null | head -1)
+    _t4542_hjob=$(sed -n 's/^job=//p' "$_t4542_hf" 2>/dev/null | head -1)
+    case "$_t4542_hsince" in ''|*[!0-9]*) _t4542_hage="?" ;; *) _t4542_hage=$(( $(date +%s) - _t4542_hsince )) ;; esac
+    echo "held by pid $_t4542_hpid (${_t4542_hjob:-job unknown}) for ${_t4542_hage}s"
+}
+# T-4542: progress cadence while waiting (seconds); the first line prints at once.
+_t4542_progress="${FW_PREPUSH_LOCK_PROGRESS:-30}"
+case "$_t4542_progress" in ''|*[!0-9]*|0) _t4542_progress=30 ;; esac
+_t4542_waiting_file="$PROJECT_ROOT/.context/locks/push-waiting"
 _t3297_waited=0
 if [ "$audit_exit" -eq 75 ] && [ "$_t3297_wait" -gt 0 ]; then
-    echo ""
-    echo "Audit lock held — waiting up to ${_t3297_wait}s for it to free (FW_PREPUSH_LOCK_WAIT=$_t3297_wait, 0 disables)..."
+    # stderr is unbuffered and is what git shows for a hook; say it there first.
+    echo "" >&2
+    echo "Audit lock held — waiting up to ${_t3297_wait}s for it to free (FW_PREPUSH_LOCK_WAIT=$_t3297_wait, 0 disables)..." >&2
+    echo "  lock $(_t4542_holder_desc)" >&2
+    # T-4542: while this marker names a live pid, cron audits yield instead of
+    # re-taking the lock (agents/audit/audit.sh), so the push cannot be starved by
+    # back-to-back cron runs. Removed when the wait ends, or on any exit.
+    mkdir -p "$PROJECT_ROOT/.context/locks" 2>/dev/null
+    printf 'pid=%s\nsince=%s\n' "$$" "$(date +%s)" > "$_t4542_waiting_file" 2>/dev/null
+    # ($$ is the hook process — alive for the whole push; the body is a subshell.)
+    trap 'rm -f "$_t4542_waiting_file" ${_t3126_out:+"$_t3126_out"}' EXIT
+    trap 'rm -f "$_t4542_waiting_file" ${_t3126_out:+"$_t3126_out"}; trap - INT; kill -INT $BASHPID' INT
+    trap 'rm -f "$_t4542_waiting_file" ${_t3126_out:+"$_t3126_out"}; trap - TERM; kill -TERM $BASHPID' TERM
     _t3297_start=$(date +%s)
     _t3297_deadline=$(( _t3297_start + _t3297_wait ))
+    _t4542_next_note=$(( _t3297_start + _t4542_progress ))
     _t3297_blind=0
     while [ "$audit_exit" -eq 75 ] && [ "$(date +%s)" -lt "$_t3297_deadline" ]; do
+        if [ "$(date +%s)" -ge "$_t4542_next_note" ]; then
+            echo "  still waiting ($(( $(date +%s) - _t3297_start ))s of ${_t3297_wait}s) — lock $(_t4542_holder_desc)" >&2
+            _t4542_next_note=$(( _t4542_next_note + _t4542_progress ))
+        fi
         if _t3297_lock_free; then
             # Lock looks free — retry now. The retry may still lose the
             # re-acquire race and return 75 again; keep waiting if so.
@@ -1609,6 +1645,7 @@ if [ "$audit_exit" -eq 75 ] && [ "$_t3297_wait" -gt 0 ]; then
         [ "$audit_exit" -eq 75 ] && sleep 1
     done
     _t3297_waited=$(( $(date +%s) - _t3297_start ))
+    rm -f "$_t4542_waiting_file"
 fi
 
 # T-3297: Tier-2 log writer for the contention-only bypass (same entry shape as
@@ -1675,6 +1712,7 @@ if [ $audit_exit -eq 75 ]; then
         echo "trigger, so the lock may stay held for many minutes (T-3297); the window"
         echo "is sized from the last measured structure audit, so more than one queued"
         echo "pusher can still outlast it (T-3421)."
+        echo "  Lock: $(_t4542_holder_desc)"
         echo "  Check: ls -l $PROJECT_ROOT/.context/locks/audit.lock; pgrep -af audit.sh"
         echo ""
         echo "What to do — each command works as-is from this blocked state:"

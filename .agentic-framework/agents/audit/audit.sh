@@ -303,6 +303,7 @@ OUTPUT_DIR=""     # Custom output directory (empty = default AUDITS_DIR)
 QUIET=false       # Suppress terminal output
 CHECK_IDS=""      # T-4209: comma-separated check ids (empty = not a single-check run)
 LIST_CHECKS=false # T-4209: print the check ids and exit
+CRON_MODE=false   # T-4542: --cron run (yields to a waiting push)
 _AUDIT_ARGV=("$@") # T-4397: the lock holder re-runs this script with the same arguments
 
 while [[ $# -gt 0 ]]; do
@@ -312,7 +313,7 @@ while [[ $# -gt 0 ]]; do
         --list-checks) LIST_CHECKS=true; shift ;;
         --output) OUTPUT_DIR="$2"; shift 2 ;;
         --quiet) QUIET=true; shift ;;
-        --cron) OUTPUT_DIR="$CONTEXT_DIR/audits/cron"; QUIET=true; shift ;;
+        --cron) OUTPUT_DIR="$CONTEXT_DIR/audits/cron"; QUIET=true; CRON_MODE=true; shift ;;
         -h|--help)
             echo "Usage: audit.sh [options]"
             echo ""
@@ -604,6 +605,40 @@ _audit_record_section_run() {
 # holder dies, whatever the file's age. The mtime-based stale sweep and the
 # rm-on-exit both live only in the fallback arm below, where unlink IS the
 # release mechanism.
+
+# T-4542: who holds the lock, for a waiter to name. Written by the process that
+# took the lock, into a SEPARATE file — `exec 200>` truncates the lock file on
+# every contender's open, so nothing written into it survives. A reader trusts the
+# record only while its pid is alive.
+AUDIT_LOCK_HOLDER_FILE="$AUDIT_LOCK_DIR/audit.lock.holder"
+_audit_write_lock_holder() {
+    {
+        echo "pid=$$"
+        echo "since=$(date +%s)"
+        echo "job=audit.sh ${_AUDIT_ARGV[*]}"
+    } > "$AUDIT_LOCK_HOLDER_FILE.$$" 2>/dev/null \
+        && mv -f "$AUDIT_LOCK_HOLDER_FILE.$$" "$AUDIT_LOCK_HOLDER_FILE" 2>/dev/null
+    return 0
+}
+_audit_clear_lock_holder() {
+    grep -qx "pid=$$" "$AUDIT_LOCK_HOLDER_FILE" 2>/dev/null && rm -f "$AUDIT_LOCK_HOLDER_FILE"
+    return 0
+}
+# T-4542: a pre-push waiting on the lock leaves .context/locks/push-waiting (its
+# pid). Back-to-back cron audits used to re-take the lock the moment it freed, so
+# the push only ever saw it held and failed after its whole window. A cron audit
+# now yields while a live push waits: exit 75 (did not run), silent like any other
+# contended cron run. Foreground and pre-push audits are unaffected.
+AUDIT_PUSH_WAITING_FILE="$AUDIT_LOCK_DIR/push-waiting"
+if [ "$CRON_MODE" = true ] && [ -z "$CHECK_IDS" ] && [ -z "${_FW_AUDIT_LOCK_HOLDER:-}" ] \
+   && [ -f "$AUDIT_PUSH_WAITING_FILE" ]; then
+    _push_waiter=$(sed -n 's/^pid=//p' "$AUDIT_PUSH_WAITING_FILE" 2>/dev/null | head -1)
+    case "$_push_waiter" in
+        ''|*[!0-9]*) ;;
+        *) kill -0 "$_push_waiter" 2>/dev/null && exit 75 ;;
+    esac
+fi
+
 if [ -n "$CHECK_IDS" ]; then
     # T-4209: a single-check run is a read-only probe. It takes no lock, so it
     # neither waits for nor blocks a running full audit; and it starts no
@@ -628,6 +663,7 @@ elif command -v flock >/dev/null 2>&1 && [ -z "${_FW_AUDIT_LOCK_HOLDER:-}" ]; th
         fi
         exit 75
     fi
+    _audit_write_lock_holder
     _FW_AUDIT_LOCK_HOLDER=$$ bash "${BASH_SOURCE[0]}" "${_AUDIT_ARGV[@]}" 200>&- &
     _audit_body_pid=$!
     # TERM to the holder is forwarded to the body, whose own trap runs the section
@@ -640,6 +676,7 @@ elif command -v flock >/dev/null 2>&1 && [ -z "${_FW_AUDIT_LOCK_HOLDER:-}" ]; th
         wait "$_audit_body_pid"
         _audit_rc=$?
     done
+    _audit_clear_lock_holder
     exit "$_audit_rc"
 elif command -v flock >/dev/null 2>&1; then
     # T-4397 — the lock is held by the holder process that launched this body. The
@@ -732,7 +769,8 @@ else
         exit 75
     fi
     echo $$ > "$AUDIT_LOCK_FILE"
-    trap "rm -f '$AUDIT_LOCK_FILE'" EXIT
+    _audit_write_lock_holder
+    trap "rm -f '$AUDIT_LOCK_FILE' '$AUDIT_LOCK_HOLDER_FILE'" EXIT
 fi
 
 # T-4417 — every external read in the section path is bounded. Sections read git and
