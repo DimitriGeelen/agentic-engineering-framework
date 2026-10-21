@@ -10,14 +10,19 @@
 # stays on $PROJECT_ROOT. In the framework repo FRAMEWORK_ROOT==PROJECT_ROOT so
 # this is a no-op (no regression); in a consumer it resolves the vendored path.
 #
-# These are fast checks: a source-pin on bin/fw + a behavioral replay of the
+# These are fast checks: a source-pin on the check + a behavioral replay of the
 # exact resolution snippet against synthetic framework/consumer layouts. We do
 # NOT invoke `fw doctor` (slow, network-coupled) — the path logic is the unit.
+#
+# T-4543: T-3801 moved the check verbatim out of bin/fw into
+# lib/doctor-drift.sh:doctor_check_mcp_manifest (as `local` declarations), so
+# the source pins target that file; t0 pins that doctor still calls it.
 
 load ../test_helper
 
 setup() {
     BIN_FW="$FRAMEWORK_ROOT/bin/fw"
+    CHECK_SRC="$FRAMEWORK_ROOT/lib/doctor-drift.sh"
     TEST_TEMP_DIR="$(mktemp -d -t fw-t2461-XXXXXX)"
     export TEST_TEMP_DIR
 }
@@ -26,20 +31,25 @@ teardown() {
     [ -n "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
+@test "t2461:t0 doctor sources doctor-drift.sh and calls the MCP manifest check" {
+    grep -q 'source "\$FRAMEWORK_ROOT/lib/doctor-drift.sh"' "$BIN_FW"
+    grep -qE '^[[:space:]]+doctor_check_mcp_manifest[[:space:]]*$' "$BIN_FW"
+}
+
 @test "t2461:t1 doctor MCP block resolves asset paths via FRAMEWORK_ROOT fallback" {
-    grep -q '_fw_root="\${FRAMEWORK_ROOT:-\$PROJECT_ROOT}"' "$BIN_FW"
-    grep -q '_mcp_mf="\$_fw_root/agents/mcp/framework-mcp-manifest.json"' "$BIN_FW"
-    grep -q '_mcp_ts="\$_fw_root/policy/capability-overlay/tool-set.yaml"' "$BIN_FW"
+    grep -q 'local _fw_root="\${FRAMEWORK_ROOT:-\$PROJECT_ROOT}"' "$CHECK_SRC"
+    grep -q 'local _mcp_mf="\$_fw_root/agents/mcp/framework-mcp-manifest.json"' "$CHECK_SRC"
+    grep -q 'local _mcp_ts="\$_fw_root/policy/capability-overlay/tool-set.yaml"' "$CHECK_SRC"
 }
 
 @test "t2461:t2 manifest.py emit path uses _fw_root (not PROJECT_ROOT)" {
-    grep -q 'python3 "\$_fw_root/agents/mcp/manifest.py" show' "$BIN_FW"
+    grep -q 'python3 "\$_fw_root/agents/mcp/manifest.py" show' "$CHECK_SRC"
 }
 
 @test "t2461:t3 runtime pid file stays on PROJECT_ROOT (not _fw_root)" {
     # The MCP server pid is per-project runtime state, written into the
     # operating project's .context/working/ — must NOT move to _fw_root.
-    grep -q '_mcp_pid_f="\$PROJECT_ROOT/.context/working/framework-mcp.pid"' "$BIN_FW"
+    grep -q 'local _mcp_pid_f="\$PROJECT_ROOT/.context/working/framework-mcp.pid"' "$CHECK_SRC"
 }
 
 @test "t2461:t4 resolution finds vendored manifest in a consumer layout" {
@@ -82,5 +92,14 @@ teardown() {
 }
 
 @test "t2461:t6 consumer SKIP hint points at fw upgrade (re-vendor), not emit-manifest" {
-    grep -q 'manifest absent in vendored framework — run: fw upgrade' "$BIN_FW"
+    grep -q 'manifest absent in vendored framework — run: fw upgrade' "$CHECK_SRC"
+
+    # Behavioural: call the real check in a consumer layout with no manifest.
+    local proj="$TEST_TEMP_DIR/consumer"
+    mkdir -p "$proj/.agentic-framework/agents/mcp"
+    PROJECT_ROOT="$proj" FRAMEWORK_ROOT="$proj/.agentic-framework" CHECK_SRC="$CHECK_SRC" \
+        run bash -c 'source "$CHECK_SRC"; doctor_check_mcp_manifest'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"manifest absent in vendored framework — run: fw upgrade"* ]]
+    [[ "$output" != *"emit-manifest"* ]]
 }
