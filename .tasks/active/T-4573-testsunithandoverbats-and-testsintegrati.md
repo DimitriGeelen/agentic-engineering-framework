@@ -1,13 +1,17 @@
 ---
 id: T-4573
-name: "tests/unit/handover.bats and tests/integration/fw_docs.bats hang (900 s timeout every run) on a clean machine (cloud run)"
+name: "tests/unit/handover.bats and tests/integration/fw_docs.bats hang (900 s timeout
+  every run) on a clean machine (cloud run)"
 description: >
-  Clean-room run (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md section 1): both files hit the 900 s cap every time (rc=124). Find what they wait on without a live host (cron, termlink, watchtower, network), make them fail fast or skip with a reason, never hang.
+  Clean-room run (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md
+  section 1): both files hit the 900 s cap every time (rc=124). Find what they wait
+  on without a live host (cron, termlink, watchtower, network), make them fail fast
+  or skip with a reason, never hang.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, test]
 components: []
 related_tasks: [T-4508]
@@ -39,8 +43,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:48:55Z
-last_update: 2026-10-21T21:48:55Z
-date_finished: null
+last_update: 2026-10-21T22:05:54Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T22:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T22:00:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4573: tests/unit/handover.bats and tests/integration/fw_docs.bats hang (900 s timeout every run) on a clean machine (cloud run)
@@ -63,8 +95,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of each hang named with file:line in ## RCA (what each suite blocks on without cron/termlink/watchtower/network)
+- [x] tests/unit/handover.bats completes under `timeout 600` with live-host services absent (no rc=124)
+- [x] tests/integration/fw_docs.bats completes under `timeout 600` with live-host services absent (no rc=124)
+- [x] A regression test fails if the blocking call is reintroduced without a timeout/skip
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +283,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/handover.bats > /tmp/.t4573-h.out 2>&1 && ! grep -q "^not ok" /tmp/.t4573-h.out
+test "$(grep -c '# skip' /tmp/.t4573-h.out)" -eq 0
+timeout 600 bats tests/integration/fw_docs.bats > /tmp/.t4573-d.out 2>&1 && ! grep -q "^not ok" /tmp/.t4573-d.out
+test "$(grep -c '# skip' /tmp/.t4573-d.out)" -eq 0
+timeout 600 bats tests/unit/t4573_handover_bats_fail_fast.bats > /tmp/.t4573-r.out 2>&1 && grep -q "^ok 1 " /tmp/.t4573-r.out && ! grep -q "^not ok" /tmp/.t4573-r.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4573-l.out 2>&1 && grep -q clean /tmp/.t4573-l.out
 
 ## RCA
 
@@ -265,6 +305,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** clean-room cloud run (4 vCPU, no cron/termlink/watchtower) hit the 900 s cap (rc=124) on tests/unit/handover.bats and tests/integration/fw_docs.bats every time.
+
+**Root cause:** the cloud run was at 6f60b69 (2026-10-20 22:57), which predates T-4522 (6c48e892f, 2026-10-21 12:02). At that commit neither suite was waiting on a live-host service. Both were CPU-bound against the live repo. handover.bats ran agents/handover/handover.sh eight times against the framework checkout, walking about 3,600 task files with one fork per file (about 75 s per run). fw_docs.bats ran `fw docs --all`, which re-parsed episodic files and learnings.yaml for every one of 1,602 cards (about 40 min). T-4522 fixed both. Re-measured here at HEAD with termlink/crontab/curl/wget/ssh/nc/systemctl/claude/ollama stubbed to exit 127 and the run pinned to 4 CPUs (`taskset -c 0-3`): handover.bats 10/10 in 16 s, fw_docs.bats 2/2 in 12 s. Residual defect: tests/unit/handover.bats:41-47 `_handover` bounds each call at 120 s, but eight tests call it. If handover.sh regresses, the file runs 8×120 = 960 s, which is over the same 900 s cap. So the T-4522 promise ("a regression reads as a failure, not a hang") did not hold at file level.
+
+**Why structurally allowed:** the timeout was sized per call and never checked against the runner's per-file cap. Nothing tested the file's behaviour when handover.sh is slow.
+
+**Prevention:** after the first timeout, `_handover` writes a sentinel in BATS_FILE_TMPDIR, and every later `_handover` call skips with the reason stated. A regression costs one bounded failure, not eight. HANDOVER_TEST_SCRIPT lets a test swap in a stub. tests/unit/t4573_handover_bats_fail_fast.bats runs handover.bats against a sleeping stub and asserts exactly one `not ok`, with the other generation tests skipped.
 
 ## Evolution
 
@@ -346,3 +394,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4573-testsunithandoverbats-and-testsintegrati.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:05:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

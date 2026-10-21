@@ -10,7 +10,7 @@
 # is bounded by `timeout` so a regression reads as a failure, not a hang.
 
 FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
-HANDOVER="$FRAMEWORK_ROOT/agents/handover/handover.sh"
+HANDOVER="${HANDOVER_TEST_SCRIPT:-$FRAMEWORK_ROOT/agents/handover/handover.sh}"
 HANDOVER_TIMEOUT="${HANDOVER_TEST_TIMEOUT:-120}"
 
 setup() {
@@ -37,9 +37,15 @@ teardown() {
 }
 
 # _handover ARGS... — run handover.sh against the fixture, bounded.
+# T-4573: eight tests call this, so 8 x HANDOVER_TIMEOUT (960 s) would still
+# overrun the runner's 900 s per-file cap. The first timeout fails its test and
+# every later call skips, so a regression costs one bounded failure, not a hang.
 _handover() {
+    local sentinel="$BATS_FILE_TMPDIR/handover-timed-out"
+    [ ! -e "$sentinel" ] || skip "handover.sh already exceeded ${HANDOVER_TIMEOUT}s in this file (T-4573)"
     run env PROJECT_ROOT="$REPO" timeout "$HANDOVER_TIMEOUT" "$HANDOVER" "$@" </dev/null
     if [ "$status" -eq 124 ]; then
+        touch "$sentinel"
         echo "handover.sh $* exceeded ${HANDOVER_TIMEOUT}s on a one-task fixture (T-4522)" >&2
         return 1
     fi
