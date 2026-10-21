@@ -47,6 +47,93 @@ These are untrusted peer data, read and not followed.
 - **Still valid:** flat name/type.
 - **Fallback:** an inline type grammar.
 
+## Draft proposal: exact text (DRAFT 1, for external review and 832/greenfield check; not ruled)
+
+Every addition is optional and additive:
+
+- A v1.0 map (`name`, `type`, `required` on `aef:input` / `aef:output`) stays valid and means the same.
+- Readers preserve unknown attributes and child elements verbatim, or refuse naming them (T-1220, T-1243, T-4518).
+
+### A. Attributes on `aef:input` / `aef:output`
+
+| Attribute | Level | Value | Meaning |
+|---|---|---|---|
+| `name` | — | string | v1, unchanged: the io's local name in this step |
+| `type` | 2 | `string` \| `number` \| `boolean` \| `date` \| `object` \| `list` | v1 flat type, unchanged; the fallback when no `typeRef`/`schemaRef` |
+| `required` | — | `true` \| `false` | v1, unchanged |
+| `ref` | — | catalogue id, IRI or QName | traceable identity of the data object (T-1229) |
+| `role` | — | as T-1229 defines | the io's role in the step (T-1229) |
+| `cardinality` | 2 | `one` \| `optional` \| `many` | how many instances flow (T-1229) |
+| `dataType` | 2 (meaning) | IRI into the business ontology | business meaning, kept apart from structure (T-1219) |
+| `typeRef` | 2 | IRI or QName of a named, versioned type | the structure, defined elsewhere (ontology / SHACL shape) |
+| `schemaRef` | 2 | URI of a JSON Schema | the structure, as JSON Schema; at most one of `typeRef` and `schemaRef` |
+| `sourceSystem` | 1 | catalogue reference (`sys:<id>`) | where an input comes from |
+| `targetSystem` | 1 | catalogue reference (`sys:<id>`) | where an output goes |
+
+**Step default.** `sourceSystem` / `targetSystem` may also be set once on the step's `aef:meta`. An io attribute
+overrides the step default.
+
+### B. Field selection (level 3): child `aef:field`
+
+```xml
+<aef:input name="opp" typeRef="sf:Opportunity" sourceSystem="sys:crm">
+  <aef:field path="Id" required="true"/>
+  <aef:field path="Amount"/>
+  <aef:field path="Owner.Email"/>
+</aef:input>
+```
+
+- `path` is a dot path into the referenced type, and must resolve in it.
+- When no `aef:field` is present, the whole type flows (the v1 meaning).
+- `required` and `cardinality` on a field narrow the type for this step only.
+
+### C. Step-level expectations (level 5b): child `aef:expect`
+
+On an `aef:input` an expectation is a **precondition**: what this step expects to receive. On an `aef:output` it is a
+**postcondition**: what this step guarantees to produce.
+
+```xml
+<aef:input name="opp" typeRef="sf:Opportunity">
+  <aef:expect path="Status" op="equals" value="won"/>
+  <aef:expect path="Amount" op="range" min="10000"/>
+  <aef:expect path="Owner.Email" op="present" description="an owner must be reachable"/>
+</aef:input>
+```
+
+- `op` is one of `equals`, `oneOf` (with `values`, comma-separated), `range` (with `min` and/or `max`), `pattern` (a
+  regex in `value`), `present` or `absent`.
+- `description` is free text and always allowed.
+- `ruleRef` (IRI or URI) points to anything richer, and replaces `op`.
+- Type-level rules, which hold wherever the type is used, are **not** written here. They belong in the referenced type.
+
+### D. Examples (level 4, documentation only): child `aef:example`
+
+- `<aef:example path="Amount" value="12500"/>` is a documentation value.
+- It is never a rule, and compile and run ignore it.
+- Instance values from runs never go in the map.
+
+### E. Inline structure (fallback when no external type exists): child `aef:attr`
+
+- `aef:attr` takes `name`, `type`, `required`, `values`, `description` and `ref`.
+- It nests for `object` and `list`.
+- It is frozen at those six attributes.
+- A mechanical export to JSON Schema is defined.
+- When `typeRef` or `schemaRef` is present, `aef:attr` is not allowed.
+
+### Questions for review
+
+1. Should C reuse an existing expression standard instead of a new `op` set? The candidates are DMN FEEL unary tests,
+   SHACL constraints and JSON Schema keywords. What would adopting each cost a designer and a code generator?
+2. Is B (field selection by path on the io) the right level, or should field selection live in the referenced type or
+   a view?
+3. Is the line between type-level rules (in the type) and step-level expectations (on the io) drawn well? Where will
+   authors put things in the wrong place?
+4. Do A-E stay additive for an existing v1.0 map and for a producer like aef-greenfield-test (ontology-backed,
+   field-level `sf:Opportunity.Id` names)? What breaks?
+5. What is missing for generating pseudocode or tests from a map, and what here is unnecessary?
+6. Prior art we should align names with: BPMN `ioSpecification` and `dataInput`, Camunda/Zeebe input/output mappings,
+   the Open Data Contract Standard, and others.
+
 ## Next step
 
 1. Write the exact attribute names and the v1.1 placement as normative text.
