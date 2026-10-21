@@ -602,6 +602,12 @@ vectors:
       evidence: {}
       clock: 20
     steps:
+      - op: append_question
+        writer: worker
+        attempt: 1
+        nonce: n1
+        args: {question_id: q1, body: which branch}
+        expect: {ok: true}
       - op: ask_wait
         writer: worker
         attempt: 1
@@ -655,6 +661,12 @@ vectors:
         E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 30}
       clock: 20
     steps:
+      - op: append_question
+        writer: worker
+        attempt: 1
+        nonce: n1
+        args: {question_id: q1, body: retry or stop}
+        expect: {ok: true}
       - op: append_answer
         writer: dispatcher
         attempt: 1
