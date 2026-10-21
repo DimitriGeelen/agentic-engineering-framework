@@ -140,7 +140,20 @@ if [ -f "$LATEST" ]; then
     SUGGESTED=$(sed -n '/^## Suggested First Action/,/^## /p' "$LATEST" | grep -v "^## " | head -5)
     GOTCHAS=$(sed -n '/^## Gotchas/,/^## /p' "$LATEST" | grep -v "^## " | head -10)
 
-    CONTEXT="# Post-Compaction Context Recovery (automatic)
+    # T-4353 (GH #96): the header names what actually happened. Only `compact`
+    # is a compaction; a claude-fw auto-restart (`startup`) is a fresh session
+    # and `resume` continues a prior one — calling either "Post-Compaction" made
+    # the agent report a compaction that never happened.
+    case "$SOURCE_TAG" in
+        compact) RECOVERY_HEADER="# Post-Compaction Context Recovery (automatic)" ;;
+        startup) RECOVERY_HEADER="# Auto-Restart Context Recovery (automatic)
+
+Fresh session started by claude-fw after the previous one reached its context budget. No compaction happened." ;;
+        *)       RECOVERY_HEADER="# Session Resume Context Recovery (automatic)
+
+Resumed session (claude -c or /resume). No compaction happened." ;;
+    esac
+    CONTEXT="${RECOVERY_HEADER}
 
 ## Where We Are
 ${WHERE}
