@@ -8,7 +8,7 @@ name: "fw upgrade completes without checking the vector index prerequisites (sql
 description: >
   ring20-dashboard T-2462 finding 10 (2026-10-05).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T07:40:39Z
-last_update: '2026-10-05T07:45:54Z'
+last_update: '2026-10-21T09:15:33Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,20 +82,53 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T09:15:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3862: fw upgrade completes without checking the vector index prerequisites (sqlite-vec, a reachable embedding host): only fw doctor reports them afterwards (7 FAILs on ring20-dashboard, which runs no Ollama) — upgrade should check and say what to install or configure, and the index health must say 'not configured on this host' rather than FAIL where semantic recall is deliberately absent
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+ring20-dashboard T-2462 finding 10: `fw upgrade` reported success on a host with no
+Ollama, then `fw doctor` showed 7 vector-index FAILs. Reproduced at HEAD (2026-10-21):
+`lib/vector_index_health.py:evaluate` has no "deliberately absent" state (every missing
+piece is FAIL), and `lib/upgrade.sh` never probes sqlite-vec or the embed host.
+Fix: an explicit opt-out `SEMANTIC_RECALL` (registry default 1). At 0 the health check
+reports one SKIP "semantic recall not configured on this host" (status OK) and
+`fw index reindex` exits 0 without embedding. `fw upgrade` ends with a prerequisite
+check (sqlite-vec importable, embed host reachable) that names what to install or
+configure, or the opt-out. Absence is never inferred: without the opt-out a missing
+prerequisite stays a FAIL.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `SEMANTIC_RECALL` is in `FW_CONFIG_REGISTRY` (default 1) and `_vih_env` exports `FW_SEMANTIC_RECALL`
+- [x] With `FW_SEMANTIC_RECALL=0`, `lib/vector_index_health.py` prints status OK and a single `SKIP|index: semantic recall not configured on this host ...` line, exit 0, on a project with no index at all
+- [x] Without the opt-out, a project with no index still FAILs (absence is never inferred)
+- [x] `vector_recall_prereqs` (lib/vector-index-health.sh) reports sqlite-vec and embed-host state with install/configure hints, and SKIPs both when `SEMANTIC_RECALL=0`
+- [x] `fw upgrade` calls the prerequisite check in its summary (advisory; never changes the exit code)
+- [x] `fw index reindex` exits 0 with `{"status": "disabled"}` when `SEMANTIC_RECALL=0`
+- [x] Regression bats `tests/unit/t3862_semantic_recall_optout.bats` passes; `t3783_vector_index_health.bats` still passes
+- [x] `bin/fw vendor self --check --task T-3862` clean
+- [x] `SEMANTIC_RECALL` mirrored in `web/blueprints/config.py` (config-registry-parity lint green); Watchtower restarted and current
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -255,6 +288,15 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/fw && bash -n lib/vector-index-health.sh && bash -n lib/upgrade.sh && bash -n lib/config.sh
+grep -q '"SEMANTIC_RECALL|1|' lib/config.sh
+timeout 600 bats tests/unit/t3862_semantic_recall_optout.bats > /tmp/.t3862.out 2>&1 && ! grep -q "^not ok" /tmp/.t3862.out
+test "$(grep -c '# skip' /tmp/.t3862.out)" -eq 0
+timeout 900 bats tests/unit/t3783_vector_index_health.bats > /tmp/.t3862b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3862b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t3862_semantic_recall_optout.bats > /tmp/.t3862l.out 2>&1 && grep -q clean /tmp/.t3862l.out
+bin/fw vendor self --check --task T-3862
+timeout 300 bats tests/lint/config-registry-parity.bats > /tmp/.t3862p.out 2>&1 && ! grep -q "^not ok" /tmp/.t3862p.out
+bin/fw watchtower current
 
 ## RCA
 
@@ -271,6 +313,29 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** On ring20-dashboard (no Ollama on the host), `fw upgrade` completed green;
+the next `fw doctor` showed 7 vector-index FAILs. Nothing said what to install, and there
+was no way to declare "this host does not do semantic recall" short of permanent reds.
+
+**Root cause:** `lib/vector_index_health.py:evaluate` (line ~578) knows two states only:
+"not built yet" inside the init window (T-3747/T-4256) and "broken". A host where
+semantic recall is absent on purpose lands in "broken" on every check. Separately,
+`lib/upgrade.sh` (summary, line ~3227) never probes the index's two prerequisites
+(`import sqlite_vec`; a reachable embed host resolved through `web/config.py`); the only
+probe lives in `fw doctor` (`bin/fw` ~3949), which runs after the fact.
+
+**Why structurally allowed:** T-3783 deliberately turned every SKIP into FAIL because
+SKIP had hidden a two-month freeze in 47 of 49 projects. Correct for hosts that should
+have recall, but it left no declared opt-out, so "absent by choice" and "broken" became
+indistinguishable. Upgrade's contract was "files synced", never "this host can run what
+was synced", and no test covered a recall-less host.
+
+**Prevention:** an explicit opt-out (`SEMANTIC_RECALL=0`, a registry key visible in
+`fw config list` and Watchtower /config); absence is never inferred, so a host that
+should have recall still FAILs. `tests/unit/t3862_semantic_recall_optout.bats` pins both
+legs (opt-out SKIPs; no opt-out still FAILs) plus the prerequisite report. `fw upgrade`
+now ends with the prerequisite check, so the gap is named at install time.
 
 ## Evolution
 
@@ -327,6 +392,15 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-21 — how "deliberately absent" is known
+- **Chose:** an explicit registry key `SEMANTIC_RECALL` (default 1); 0 = absent on this host.
+- **Why:** T-3783 turned SKIPs into FAILs because SKIP hid a two-month freeze in 47 of 49
+  projects. Inferring "absent" from an unreachable Ollama would recreate that false green.
+- **Rejected:** auto-detect (no Ollama / no sqlite-vec => SKIP) — indistinguishable from breakage.
+- **Note for close:** `web/blueprints/config.py` gained one registry row (required by the
+  parity lint), which trips the P-013 render-surface gate. It is a data row in an existing
+  table; `--skip-render-review "one registry row, parity-lint driven"` is the operator's call.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -352,3 +426,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3862-fw-upgrade-completes-without-checking-th.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:05:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

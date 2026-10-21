@@ -3031,6 +3031,27 @@ MCPJSON
         echo -e "  ${GREEN}OK${NC}  All context subdirectories present"
     fi
 
+    # T-3861: fw init's .context/working/.gitignore never named the vector index,
+    # and nothing rewrote that file afterwards — append the missing rules.
+    # shellcheck source=lib/vec-index-gitignore.sh
+    source "$FRAMEWORK_ROOT/lib/vec-index-gitignore.sh"
+    local _vec_added
+    if [ "$dry_run" = true ]; then
+        _vec_added=$(fw_vec_index_ensure_ignored "$target_dir" --dry-run)
+    else
+        _vec_added=$(fw_vec_index_ensure_ignored "$target_dir")
+    fi
+    if [ "${_vec_added:-0}" -gt 0 ]; then
+        changes=$((changes + 1))
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD ADD${NC}  $_vec_added vector-index ignore rule(s) to .context/working/.gitignore"
+        else
+            echo -e "  ${GREEN}ADDED${NC}  $_vec_added vector-index ignore rule(s) to .context/working/.gitignore"
+        fi
+    else
+        echo -e "  ${GREEN}OK${NC}  Vector index gitignored"
+    fi
+
     # ── 9. Version tracking (.framework.yaml) ──
     echo -e "${YELLOW}[9/10] Version tracking${NC}"
 
@@ -3286,8 +3307,34 @@ EOF
             # this is the one moment a pull-only propagation model gets to speak.
             _t3113_emit_worktree_advisory "$target_dir"
         fi
+        _t3862_recall_prereqs "$target_dir"
         _t4069_stale_wrapper_notice "$target_dir"
     fi
+}
+
+# T-3862: semantic-recall prerequisites (sqlite-vec, a reachable embed host), checked
+# at upgrade time so the operator learns what to install or configure now, not from
+# 7 FAILs in the next fw doctor. Advisory only: never changes the exit code.
+# $1 = project root. Silent-OK lines are printed too, so "checked" is visible.
+_t3862_recall_prereqs() {
+    local root="${1:-}" out verdict msg hint
+    [ -n "$root" ] && [ -f "${FRAMEWORK_ROOT:-}/lib/vector-index-health.sh" ] || return 0
+    out=$(PROJECT_ROOT="$root" bash -c '
+        source "$FRAMEWORK_ROOT/lib/config.sh" 2>/dev/null
+        source "$FRAMEWORK_ROOT/lib/vector-index-health.sh"
+        vector_recall_prereqs' 2>/dev/null) || true
+    [ -n "$out" ] || return 0
+    echo ""
+    echo -e "  ${BOLD}Semantic recall prerequisites (advisory):${NC}"
+    while IFS='|' read -r verdict msg hint; do
+        case "$verdict" in
+            OK)   echo -e "    ${GREEN}OK${NC}  $msg" ;;
+            SKIP) echo -e "    ${CYAN}SKIP${NC}  $msg" ;;
+            *)    echo -e "    ${YELLOW}${verdict}${NC}  $msg"
+                  [ -n "$hint" ] && echo "          $hint" ;;
+        esac
+    done <<< "$out"
+    return 0
 }
 
 # T-4069: end-of-run notice. A claude-fw wrapper started before bin/claude-fw

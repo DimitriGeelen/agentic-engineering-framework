@@ -11,8 +11,48 @@ _vih_env() {
         FW_INDEX_MAX_AGE_HOURS="$(fw_config INDEX_MAX_AGE_HOURS 2>/dev/null || echo 24)"
         FW_INDEX_MAX_LAG="$(fw_config INDEX_MAX_LAG 2>/dev/null || echo 50)"
         FW_RECALL_FAIL_PCT_WARN="$(fw_config RECALL_FAIL_PCT_WARN 2>/dev/null || echo 10)"
+        FW_SEMANTIC_RECALL="$(fw_config SEMANTIC_RECALL 2>/dev/null || echo 1)"
     fi
-    export FW_INDEX_MAX_AGE_HOURS FW_INDEX_MAX_LAG FW_RECALL_FAIL_PCT_WARN
+    export FW_INDEX_MAX_AGE_HOURS FW_INDEX_MAX_LAG FW_RECALL_FAIL_PCT_WARN FW_SEMANTIC_RECALL
+}
+
+# vector_recall_disabled — true when SEMANTIC_RECALL=0 (deliberately absent, T-3862).
+vector_recall_disabled() {
+    _vih_env
+    [ "${FW_SEMANTIC_RECALL:-1}" = "0" ]
+}
+
+# vector_recall_prereqs — T-3862: can this host run semantic recall at all?
+# Prints one VERDICT|message|hint line per prerequisite (sqlite-vec importable,
+# embed host reachable), the same shape as vector_index_health. Advisory: always
+# returns 0. The embed host is resolved through web/config.py, like fw doctor.
+vector_recall_prereqs() {
+    local optout="Or declare it absent on this host: fw config set SEMANTIC_RECALL 0"
+    if vector_recall_disabled; then
+        echo "SKIP|semantic recall not configured on this host (SEMANTIC_RECALL=0)|Enable: fw config set SEMANTIC_RECALL 1"
+        return 0
+    fi
+    if python3 -c "import sqlite_vec" >/dev/null 2>&1; then
+        echo "OK|sqlite-vec importable|"
+    else
+        echo "WARN|sqlite-vec not importable by python3 — the vector index cannot be built|Install: python3 -m pip install sqlite-vec. $optout"
+    fi
+    local host
+    host="$(PROJECT_ROOT="${PROJECT_ROOT:-$PWD}" PYTHONPATH="$FRAMEWORK_ROOT/web" python3 -c "
+try:
+    from config import Config
+    print(Config.EMBED_HOST or '')
+except Exception:
+    print('')
+" 2>/dev/null)"
+    if [ -z "$host" ]; then
+        echo "WARN|no embed host configured (no embed_host, no ollama_host)|Set ollama_host: <url> in .context/settings.yaml (or FW_EMBED_HOST). $optout"
+    elif curl -sf --max-time "${FW_PREREQ_CURL_TIMEOUT:-3}" "${host%/}/api/tags" >/dev/null 2>&1; then
+        echo "OK|embed host reachable ($host)|"
+    else
+        echo "WARN|embed host not reachable ($host)|Start Ollama there, or set ollama_host/embed_host in .context/settings.yaml. $optout"
+    fi
+    return 0
 }
 
 # vector_index_health [--no-canary]

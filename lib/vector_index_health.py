@@ -30,6 +30,9 @@ WARN-only:
   disk      orphan build/reindex scratch beside the index (dead owner pid), and
             free space below what the next reindex needs: a full copy of the
             index plus max(20%, 500 MB) (T-3860 — the copy filled a disk)
+Opt-out:
+  FW_SEMANTIC_RECALL=0 (config SEMANTIC_RECALL) declares recall deliberately
+  absent on this host: one SKIP "not configured on this host", status OK (T-3862)
 
 Stdlib only — so it runs, and FAILs, exactly where web/ cannot be imported.
 Never raises: a health check that crashes reports nothing.
@@ -582,6 +585,16 @@ def evaluate(project_root: Path, framework_root: Path, canary: bool = True,
     max_lag = int(_env_num("FW_INDEX_MAX_LAG", DEFAULT_MAX_LAG))
     fail_pct = _env_num("FW_RECALL_FAIL_PCT_WARN", DEFAULT_FAIL_PCT)
     timeout = _env_num("FW_INDEX_CANARY_TIMEOUT", 90)
+
+    # T-3862: SEMANTIC_RECALL=0 declares semantic recall deliberately absent on
+    # this host (no sqlite-vec / no embed host by design). One SKIP, status OK —
+    # never inferred from a missing index or an unreachable Ollama, which still FAIL.
+    if os.environ.get("FW_SEMANTIC_RECALL", "1").strip() == "0":
+        return {"status": "OK", "full": canary, "ts": now,
+                "project_root": str(project_root),
+                "checks": [_check("index", "SKIP",
+                                  "semantic recall not configured on this host (SEMANTIC_RECALL=0)",
+                                  "Enable: fw config set SEMANTIC_RECALL 1")]}
 
     path = db_path(project_root)
     manifest = read_manifest(path)
