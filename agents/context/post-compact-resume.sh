@@ -5,7 +5,9 @@
 #
 # Triggers:
 #   - After /compact (manual compaction recovery)
-#   - After claude -c (session continuation, including auto-restart via T-179)
+#   - After claude -c / --resume (session continuation)
+#   - On "startup" of a claude-fw budget auto-restart (T-179) — a fresh session by
+#     default (T-3166); FW_RESTART_MODE=continue relaunches with --resume instead
 #
 # Part of: T-111 (compact-resume), T-179/T-188 (auto-restart)
 
@@ -43,7 +45,7 @@ if [ -f "$FRAMEWORK_ROOT/lib/watchtower-ensure.sh" ] && command -v setsid >/dev/
 fi
 
 # T-2376: this hook now also fires on SessionStart source "startup" (added so the
-# budget-critical auto-restart path — claude-fw → `claude -c`, which emits
+# budget-critical auto-restart path — claude-fw → a fresh `claude` (T-3166), which emits
 # "startup" — advances the continuous loop the way manual /compact does). But a
 # *genuine* cold `claude` start ALSO emits "startup", and this hook never fired
 # on cold starts before T-2376. To preserve that behavior, only proceed on
