@@ -281,7 +281,7 @@ bvp_scores_proposed:
 timeout 600 bats tests/unit/t4337_watchtower_status_zombie.bats > /tmp/.t4337.out 2>&1 && ! grep -q "^not ok" /tmp/.t4337.out
 test "$(grep -c '# skip' /tmp/.t4337.out)" -eq 0
 timeout 600 bats tests/unit/t4306_watchtower_zombie_pid.bats tests/unit/t3661_watchtower_status_exit.bats tests/unit/t2938_watchtower_source_staleness.bats tests/unit/lib_watchtower.bats > /tmp/.t4337n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4337n.out
-! grep -n 'kill -0' lib/watchtower.sh lib/watchtower-staleness.sh
+! grep -nE '^[^#]*kill -0' lib/watchtower.sh lib/watchtower-staleness.sh
 bash -n bin/watchtower.sh && bash -n lib/watchtower.sh && bash -n lib/watchtower-staleness.sh && bash -n lib/pid-alive.sh
 bin/fw vendor self --check --task T-4337
 
