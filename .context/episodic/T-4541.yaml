@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4541: claude-fw ends a LIVE agent after 3 failed local termlink pings, so host overload tears down every --termlink session (twice on 2026-10-21)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T16:33:19Z
+# ============================================================================
+
+task_id: T-4541
+task_name: "claude-fw ends a LIVE agent after 3 failed local termlink pings, so host overload tears down every --termlink session (twice on 2026-10-21)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T12:28:28Z
+completed: 2026-10-21T16:29:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T18:09:16+02:00
+last_commit: 2026-10-21T18:09:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw keeps a --termlink session while its register process lives, even when every ping fails. tick vendor-check AC
+
+# Key outcomes
+outcomes:
+  - '`_tl_session_gone` (bin/claude-fw) no longer ends the session on failed pings alone: after CLAUDE_FW_PING_FAILURES consecutive failures it declares the session gone only when no exact-name `termlink register --name <session>` process is left (`_tl_register_pids`); while one lives it logs DEGRADED and keeps waiting'
+  - 'Regression bats `tests/unit/t4541_claude_fw_ping_needs_second_signal.bats`: ping always fails + live fake register process → wrapper keeps the session past 3 failures and exits 0 on the exit marker; fake process dies → wrapper exits 1. Fails without the fix'
+  - 'Existing `tests/unit/t3648_claude_fw_ping_tolerance.bats` and `t3647_claude_fw_register_leak.bats` still pass (no register process → sustained failure still ends the wait)'
+  - '`bin/fw vendor self --check --task T-4541` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-4541-claude-fw-ends-a-live-agent-after-3-fail.md'
+  - 'tests/unit/t4541_claude_fw_ping_needs_second_signal.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T18:09:16'
+    action: 'T-4541: claude-fw keeps a --termlink session while its register process lives, even when every ping fails'
+  - time: '2026-10-21T18:09:33'
+    action: 'T-4541: tick vendor-check AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 240 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 240
+  commits: 2
+  files_changed: 4
+  lines_added: 540
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4541-claude-fw-ends-a-live-agent-after-3-fail.md
+generated_by: context-agent-hybrid
