@@ -101,7 +101,7 @@ bvp_scores_proposed:
 - [x] `circuit.is_project_id` accepts the fleet's 4-digit numbering (`0909-…`, `1409-…`) as well as 3-digit; agent names (`w4531`, `e2e-<run>-responder`, `reviewer-T-3433-ab12`) still are not project ids
 - [x] A bare `--to <name>` on our own hub also resolves as a project address when `inbox:<own hub>/<name>` exists on the hub AND the hub shows it fetched after its last write (the project reads it), i.e. a registered project that does not match the numbering; a never-read topic (a nickname, T-4418) still is not evidence
 - [x] Regression test in tests/unit/ fails without the fix and passes with it; the T-4418 orphan/addressing tests and circuit tests still pass
-- [ ] `bin/fw vendor self --check --task T-4529` clean
+- [x] `bin/fw vendor self --check --task T-4529` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
