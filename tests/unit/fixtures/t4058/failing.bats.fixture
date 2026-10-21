@@ -1,0 +1,1 @@
+@test "fixture red asserts MARKER-4058" { [ "left-4058" = "right-4058" ]; }

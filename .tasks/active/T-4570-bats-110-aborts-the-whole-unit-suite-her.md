@@ -1,13 +1,19 @@
 ---
 id: T-4570
-name: "bats 1.10 aborts the whole unit suite: heredoc fixtures in t4058_unit_suite_keeps_failures.bats read as duplicate test names (cloud run)"
+name: "bats 1.10 aborts the whole unit suite: heredoc fixtures in t4058_unit_suite_keeps_failures.bats
+  read as duplicate test names (cloud run)"
 description: >
-  Clean-room run (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md section 1): with bats 1.10.0, 'bats tests/unit/' and 'fw test unit' abort before any test because heredoc fixtures in tests/unit/t4058_unit_suite_keeps_failures.bats contain @test lines that bats 1.10 parses as real tests. Move the fixtures out of the .bats file (fixture files) so every bats version >= 1.10 loads it; test on 1.10 if available.
+  Clean-room run (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md
+  section 1): with bats 1.10.0, 'bats tests/unit/' and 'fw test unit' abort before
+  any test because heredoc fixtures in tests/unit/t4058_unit_suite_keeps_failures.bats
+  contain @test lines that bats 1.10 parses as real tests. Move the fixtures out of
+  the .bats file (fixture files) so every bats version >= 1.10 loads it; test on 1.10
+  if available.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, test]
 components: []
 related_tasks: [T-4508]
@@ -39,8 +45,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:48:23Z
-last_update: 2026-10-21T21:48:23Z
-date_finished: null
+last_update: '2026-10-21T21:52:02Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-21T21:52:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4570: bats 1.10 aborts the whole unit suite: heredoc fixtures in t4058_unit_suite_keeps_failures.bats read as duplicate test names (cloud run)
@@ -63,8 +87,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] t4058_unit_suite_keeps_failures.bats contains no heredoc and no `@test`/`@@test` fixture line; its fixture suites live in tests/unit/fixtures/t4058/*.bats.fixture and are copied into $WORK/suite
+- [x] The file loads and passes on bats 1.10.0 (5 tests, no duplicate-name abort) and on the installed bats
+- [x] Regression test: tests/unit/t4570_no_heredoc_test_fixtures.bats fails if any tests/unit/*.bats has @test lines (heredoc bodies) that bats <1.11's source-text count sees but `bats --count` does not (proven red on the pre-T-4521 t4058 file: 8 vs 5)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +274,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+! grep -qE '<<|@@?test "fixture' tests/unit/t4058_unit_suite_keeps_failures.bats
+test -f tests/unit/fixtures/t4058/failing.bats.fixture && test -f tests/unit/fixtures/t4058/passing.bats.fixture
+timeout 600 bats tests/unit/t4058_unit_suite_keeps_failures.bats > /tmp/.t4570a 2>&1 && ! grep -q "^not ok" /tmp/.t4570a && grep -q '^ok 5 ' /tmp/.t4570a
+test "$(grep -c '# skip' /tmp/.t4570a)" -eq 0
+timeout 300 bats tests/unit/t4570_no_heredoc_test_fixtures.bats > /tmp/.t4570b 2>&1 && ! grep -q "^not ok" /tmp/.t4570b && grep -q '^ok 1 ' /tmp/.t4570b
+python3 tools/bats-dead-negation-lint.py tests/unit/t4570_no_heredoc_test_fixtures.bats tests/unit/t4058_unit_suite_keeps_failures.bats > /tmp/.t4570c 2>&1 && grep -q clean /tmp/.t4570c
 
 ## RCA
 
@@ -265,6 +296,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** with bats 1.10.0 (Ubuntu 24.04), `bats tests/unit/` and `fw test unit` abort before running anything: `Duplicate test name(s) in file ".../t4058_unit_suite_keeps_failures.bats": test_fixture_passing_test`. Reproduced here with a v1.10.0 checkout against the pre-T-4521 file (`git show 2eb3c922d^:tests/unit/t4058_unit_suite_keeps_failures.bats`).
+
+**Root cause:** bats <1.11 gathers test names by regex over the file's source text (bats-preprocess), heredoc bodies included. tests/unit/t4058_unit_suite_keeps_failures.bats:19-31 (pre-T-4521) wrote its fixture suites through heredocs that carried real `@test "fixture passing test"` lines, twice, so 1.10 saw two tests with the same name in the enclosing file. T-4521 (2eb3c922d) worked around it by spelling the fixtures `@@test` and restoring them with sed. That loads on 1.10, but it is a spelling trick that the next heredoc fixture can easily miss.
+
+**Why structurally allowed:** the dev host and CI run bats 1.13, which tokenises properly, so the file was green everywhere it was tested. Nothing compared what an older bats would count against what the file really defines.
+
+**Prevention:** the fixtures now live in tests/unit/fixtures/t4058/*.bats.fixture (a non-.bats extension, so no runner collects them) and are copied into place. tests/unit/t4570_no_heredoc_test_fixtures.bats runs on every unit-suite pass. It fails when any tests/unit/*.bats has more lines matching the bats <1.11 `@test` regex than `bats --count` reports. A heredoc scan picks the candidate files first, so the check takes about 2 s.
 
 ## Evolution
 
@@ -346,3 +385,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4570-bats-110-aborts-the-whole-unit-suite-her.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:52:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
