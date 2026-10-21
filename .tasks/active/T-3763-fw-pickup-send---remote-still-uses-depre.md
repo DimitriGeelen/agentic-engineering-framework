@@ -7,7 +7,7 @@ description: >
   would then read the leftover as incoming. Should post via channel (framework:pickup
   / target inbox). Related: T-3758 retires framework:pickup inbound.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T23:14:54Z
-last_update: '2026-10-02T23:30:49Z'
+last_update: 2026-10-21T00:03:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced at HEAD: `lib/pickup.sh` `do_pickup_send` still calls `termlink remote push` for `--remote/--session`
+- [x] `fw pickup send --remote HUB --session ID` no longer calls `termlink remote push`; it delivers the envelope through the one channel (`fw sidecar send --to ID --hub HUB --notice`, T-3631 GO / T-3758), body = the envelope YAML
+- [x] A failed delivery exits non-zero, says NOT delivered, and moves the envelope OUT of this project's inbox (to `.context/pickup/undelivered/`, which `pickup_next_id` counts) so `fw pickup process` never reads our own outbound as incoming
+- [x] A successful delivery archives the envelope to `sent/` (unchanged contract)
+- [x] Regression bats `tests/unit/t3763_pickup_send_remote_channel.bats` fails before the fix and passes after; neighbouring pickup bats still green
+- [x] `bin/fw vendor self --check --task T-3763` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -254,6 +258,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+! grep -q "termlink remote push \"" lib/pickup.sh
+grep -q 'pickup_sidecar_send --to "\$session" --hub "\$remote" --notice' lib/pickup.sh
+timeout 300 bats tests/unit/t3763_pickup_send_remote_channel.bats tests/unit/t3628_pickup_send_delivery.bats tests/unit/t4274_pickup_inbox_filename.bats tests/unit/pickup_send_remote_session.bats tests/unit/lib_pickup.bats > /tmp/.t3763.out 2>&1 && ! grep -q "^not ok" /tmp/.t3763.out
+test "$(grep -c '# skip' /tmp/.t3763.out)" -eq 0
+bin/fw vendor self --check --task T-3763
 
 ## RCA
 
@@ -271,29 +280,19 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `fw pickup send --remote HUB --session S` delivered nothing (055 @135): the hub allowlist refuses `termlink remote push`'s `mkdir -p /tmp/termlink-inbox`, and the envelope stayed in the sender's own `.context/pickup/inbox/`, where `fw pickup process` would ingest it as incoming work.
+
+**Root cause:** `lib/pickup.sh` `do_pickup_send` (was :771) still delivered with the deprecated `termlink remote push`, after T-3631 (GO) named the sidecar as the one cross-agent channel; and its failure branch (T-3628) deliberately left the envelope in `$PICKUP_INBOX` "for resend" — the same directory the processor reads.
+
+**Why structurally allowed:** every test of the remote path (pickup_send_remote_session, t3628, t4274) stubbed `termlink` as a shell function, so the hub-side refusal could never be observed, and they asserted the push transport itself as the contract. T-3758 (retire framework:pickup) was filed for the inbound half but no task owned the sender half until this one.
+
+**Prevention:** `tests/unit/t3763_pickup_send_remote_channel.bats` pins that `--remote` never calls `termlink remote push`, delivers via `fw sidecar send --to/--hub/--notice` with the envelope in the body, and that a failed send lands in `undelivered/` (not the inbox) and stays counted by `pickup_next_id` (4/4 red without the fix). The delivery is one seam (`pickup_sidecar_send`) so it can be swapped once, not per test.
+
+**Out of scope, still open:** the no-`--remote` path still writes to the sender's own inbox (T-4175).
+
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Non-arc tasks may leave this empty. -->
 
 ## Recommendation
 
@@ -351,3 +350,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3763-fw-pickup-send---remote-still-uses-depre.md
 - **Context:** Initial task creation
+
+### 2026-10-21T00:03:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

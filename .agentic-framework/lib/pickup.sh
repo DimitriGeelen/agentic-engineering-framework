@@ -27,6 +27,9 @@ PICKUP_AUTO_DEFERRED="$PICKUP_DIR/auto-deferred"
 # T-3628: envelopes this project pushed to another hub. Kept out of the inbox (an
 # outgoing envelope is not incoming work) but still counted by pickup_next_id.
 PICKUP_SENT="$PICKUP_DIR/sent"
+# T-3763: envelopes whose delivery failed. Not the inbox — `fw pickup process`
+# would read our own outbound as incoming — and counted by pickup_next_id.
+PICKUP_UNDELIVERED="$PICKUP_DIR/undelivered"
 PICKUP_DEDUP_LOG="$PICKUP_DIR/dedup.log"
 
 # --- Directory setup ---
@@ -377,8 +380,9 @@ pickup_next_id() {
     # arriving envelope overwrote the parked one.
     #
     # sent/ for the same reason (T-3628): an id this project already sent is spent.
+    # undelivered/ too (T-3763): it holds outbound envelopes awaiting a resend.
     local dir
-    for dir in "$PICKUP_SENT" "$PICKUP_INBOX" "$PICKUP_PROCESSED" "$PICKUP_REJECTED" "$PICKUP_AUTO_DEFERRED"; do
+    for dir in "$PICKUP_SENT" "$PICKUP_UNDELIVERED" "$PICKUP_INBOX" "$PICKUP_PROCESSED" "$PICKUP_REJECTED" "$PICKUP_AUTO_DEFERRED"; do
         [ -d "$dir" ] || continue
         local f
         for f in "$dir"/*.yaml "$dir"/*.yml; do
@@ -589,6 +593,11 @@ pickup_process_one() {
 
 # --- Send (create envelope) ---
 
+# T-3763: the delivery seam — one function so tests can stand in for the hub.
+pickup_sidecar_send() {
+    "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/bin/fw" sidecar send "$@"
+}
+
 do_pickup_send() {
     local pickup_type="" summary="" detail="" priority="medium"
     local source_project="" task_id="" tags="" remote="" session=""
@@ -619,8 +628,8 @@ do_pickup_send() {
                 echo "  --source-project NAME Project name (default: basename of PROJECT_ROOT)"
                 echo "  --task-id T-NNN       Originating task ID"
                 echo "  --tags TAG1,TAG2      Comma-separated tags"
-                echo "  --remote HUB          Push via termlink remote push to HUB (hub address or profile)"
-                echo "  --session SESSION     Target session name or ID on the remote hub (required with --remote)"
+                echo "  --remote HUB          Deliver via fw sidecar send to HUB (hubs.toml profile or address)"
+                echo "  --session SESSION     Recipient agent id on the remote hub (required with --remote)"
                 echo "  -h, --help            Show this help"
                 return 0
                 ;;
@@ -646,7 +655,7 @@ do_pickup_send() {
     # so a misconfigured invocation doesn't leave a phantom file in the inbox.
     if [ -n "$remote" ] && [ -z "$session" ]; then
         echo -e "${RED}--remote requires --session SESSION (target session on the remote hub)${NC}" >&2
-        echo "  Discover sessions: termlink remote list <HUB>" >&2
+        echo "  SESSION is the recipient's agent id on that hub (fw sidecar send --to)" >&2
         return 1
     fi
 
@@ -753,25 +762,25 @@ PYEOF
     if [ -z "$remote" ]; then
         echo -e "${YELLOW}NOT delivered:${NC} saved locally in this project's inbox only." >&2
         echo "  To deliver: fw pickup send ... --remote HUB --session SESSION" >&2
-    elif ! command -v termlink >/dev/null 2>&1; then
-        echo -e "${YELLOW}NOT delivered:${NC} termlink not installed — envelope saved locally only" >&2
-        echo "  Install: brew install DimitriGeelen/termlink/termlink" >&2
-        echo "$filepath"
-        return 1
     else
-        echo -e "Pushing to ${BOLD}$remote${NC} (session ${BOLD}$session${NC}) via termlink..."
-        # T-4274: the host-shared inbox files by basename, and every project numbers
-        # its own envelopes from P-001 — so the bare name collides across projects.
-        # Push a copy that also carries the source project. The `P-NNN-` prefix is
-        # kept so `P-*.yaml` readers still match; the local name is unchanged.
-        local push_dir push_path push_rc=0
-        push_dir=$(mktemp -d "$PICKUP_DIR/push.XXXXXX")
-        push_path="$push_dir/${pickup_id}-${pickup_type}.${source_project//[^A-Za-z0-9._-]/_}.yaml"
-        cp "$filepath" "$push_path"
-        termlink remote push "$remote" "$session" "$push_path" 2>&1 || push_rc=$?
-        rm -rf "$push_dir"
+        # T-3763: deliver through the one channel (T-3631 GO, T-3758) — a sidecar
+        # notice to the recipient, body = the envelope. `termlink remote push`
+        # is deprecated: the hub allowlist refuses its `mkdir -p
+        # /tmp/termlink-inbox`, so nothing was delivered. The envelope carries
+        # pickup_id and source.project, so no basename can collide (T-4274).
+        echo -e "Sending to ${BOLD}$session${NC} on ${BOLD}$remote${NC} via fw sidecar..."
+        local push_rc=0
+        pickup_sidecar_send --to "$session" --hub "$remote" --notice \
+            --body "fw pickup envelope $pickup_id ($pickup_type) from $source_project
+$(cat "$filepath")" 2>&1 || push_rc=$?
         if [ "$push_rc" -ne 0 ]; then
-            echo -e "${RED}NOT delivered:${NC} termlink remote push exited $push_rc — envelope left in $PICKUP_INBOX" >&2
+            # Out of the inbox: `fw pickup process` would read it as incoming.
+            mkdir -p "$PICKUP_UNDELIVERED"
+            local undelivered_path
+            if undelivered_path=$(pickup_move_preserving "$filepath" "$PICKUP_UNDELIVERED"); then
+                filepath="$undelivered_path"
+            fi
+            echo -e "${RED}NOT delivered:${NC} fw sidecar send exited $push_rc — envelope kept in $PICKUP_UNDELIVERED" >&2
             echo "$filepath"
             return 1
         fi

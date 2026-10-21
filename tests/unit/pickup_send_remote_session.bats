@@ -23,15 +23,14 @@ teardown() {
 }
 
 @test "--remote with --session does not error on the gate" {
-    # Stub termlink so we don't actually push. Capture the args it was called with.
-    termlink() {
-        echo "STUB termlink $*"
+    # Stub the delivery seam (T-3763: fw sidecar send). Capture the args.
+    pickup_sidecar_send() {
+        echo "STUB sidecar send $1 $2 $3 $4"
         return 0
     }
-    export -f termlink
     run do_pickup_send --type bug-report --summary "test" --remote some-hub --session tl-target
     [ "$status" -eq 0 ]
-    [[ "$output" == *"STUB termlink remote push some-hub tl-target"* ]]
+    [[ "$output" == *"STUB sidecar send --to tl-target --hub some-hub"* ]]
 }
 
 @test "--session alone (no --remote) is accepted and ignored" {

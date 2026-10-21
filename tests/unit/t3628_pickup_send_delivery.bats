@@ -34,18 +34,17 @@ teardown() {
 }
 
 @test "a failed remote push says NOT delivered and exits non-zero" {
-    termlink() { echo "hub refused"; return 7; }
-    export -f termlink
+    pickup_sidecar_send() { echo "hub refused"; return 7; }
     run do_pickup_send --type learning --summary "push fails" --remote hub --session s
     [ "$status" -ne 0 ]
     [[ "$output" == *"NOT delivered"* ]]
-    # Undelivered: it stays where the operator can find and resend it.
-    [ -f "$D/inbox/P-001-learning.yaml" ]
+    # Undelivered: kept where the operator can find and resend it — not the
+    # inbox, which `fw pickup process` reads as incoming (T-3763).
+    [ -f "$D/undelivered/P-001-learning.yaml" ]
 }
 
 @test "a successful remote push archives the envelope to sent/, out of the sender's inbox" {
-    termlink() { return 0; }
-    export -f termlink
+    pickup_sidecar_send() { return 0; }
     run do_pickup_send --type learning --summary "delivered" --remote hub --session s
     [ "$status" -eq 0 ]
     [[ "$output" != *"NOT delivered"* ]]
