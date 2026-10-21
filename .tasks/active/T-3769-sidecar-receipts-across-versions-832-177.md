@@ -12,7 +12,7 @@ description: >
   referenced id on the receiving side's nudger), a version-skew e2e test, and a release
   so consumers get it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T14:11:33Z
-last_update: '2026-10-03T14:15:39Z'
+last_update: 2026-10-21T07:00:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,8 +98,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked at HEAD: an old-version (pre-T-3684/T-3804) peer reply — hub post carrying only `conversation_id`/`from_agent` metadata, no receipt, no `in_reply_to_msg_id` — settles our open ladder row; evidence (ledger + test) recorded under ## Updates
+- [x] A current-version reply carrying `in_reply_to_msg_id` (incl. a `-nudge-N` id) settles the referenced row on the receiving side's sweep, without any receipt (the negotiated fallback the description asks for)
+- [x] Release check: the fixing commits (T-3684 e3f76a1e5, T-3804 afe71f16d) are contained in a released tag, so a consumer on 1.7.740 gets them via `fw upgrade`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,6 +261,9 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_sidecar_reply_settles_t3804.py -q > /tmp/.t3769.out 2>&1 && grep -q passed /tmp/.t3769.out
+git merge-base --is-ancestor afe71f16d v1.8.1 && git merge-base --is-ancestor e3f76a1e5 v1.8.1
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -276,29 +280,17 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 2026-10-03, AEF and 832 (on 1.7.740) nudged each other about messages both had already answered with `--in-reply-to`; AEF's 2184bade to 832 reached attempt 10 / rung 4.
+
+**Root cause:** not a wire-format incompatibility; two defects already fixed elsewhere. (1) Before T-3684/T-3693, `--in-reply-to` only did anything on the direct path: a hub-path reply dropped the id (`lib/sidecar_cli.py:78` at e3f76a1e5^), and no REPLIED receipt crossed. (2) The fallback that needs no receipt (a reply on the same `conversation_id` settles the row, T-3462) was there, but `lib/sidecar/retry.py` `reply_signals` read only the first 100 records of the inbox topic. On 832's 493-record topic every reply sat at offset ≥144 and was never seen. T-3804 (afe71f16d) made the walk page through the whole topic, added `in_reply_to_msg_id` on the hub path (`lib/sidecar/termlink_transport.py:110`), resolved `-nudge-N` ids, and let REPLIED receipts settle the row (`retry.py:306-311`). It shipped in v1.8.1, and T-3684 (e3f76a1e5) in v1.8.0.
+
+**Why structurally allowed:** the reply walk's page cap had no test with more than 100 records, and no test covered a reply in the wire shape an older peer sends.
+
+**Prevention:** `tests/unit/test_sidecar_reply_settles_t3804.py`. `test_sweep_settles_a_consult_answered_at_offset_144` builds the old-peer wire shape (conversation_id/from_agent/client_msg_id only: no receipt, no `in_reply_to_msg_id`) and checks that it settles past the first page. `test_reply_naming_a_nudge_id_on_the_topic_settles_by_id` and `test_replied_receipt_*` cover the new-version paths. A peer on 1.7.740 can only send old-shape messages, and conversation settling handles those. A 1.7.740 peer's OWN nudger can only stop once it upgrades to ≥v1.8.1. That fix is on the consumer side, it is already released, and no further code here can reach it.
+
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Non-arc tasks may leave this empty. -->
 
 ## Recommendation
 
@@ -356,3 +348,12 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3769-sidecar-receipts-across-versions-832-177.md
 - **Context:** Initial task creation
+
+### 2026-10-21T07:00:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-21 — does not reproduce at HEAD [w3769]
+- **Ledger:** `.context/sidecar/awaiting-ack.jsonl`, latest row per id: 2184bade → `answered: reply on vendor-divergence-proposal`, next_retry_at null, 2026-10-04T23:33:02Z; 2466a6a9 → same, 2026-10-05T01:23:13Z. Open rows targeting 832: 0. Both rows settled through conversation matching, on the first sweep after T-3804 (afe71f16d, 2026-10-04 16:55) landed. 832 never had to send a receipt.
+- **Tests:** `python3 -m pytest tests/unit/test_sidecar_reply_settles_t3804.py -q` → 11 passed. The old-peer wire shape (no receipt, no in_reply_to_msg_id) settles: `test_sweep_settles_a_consult_answered_at_offset_144`.
+- **Release:** `git tag --contains afe71f16d` → first v1.8.1; `git tag --contains e3f76a1e5` → first v1.8.0. The current release is v1.8.14.
+- **No code change.** A peer still on 1.7.740 keeps nudging on its own side until it runs `fw upgrade`. That is a consumer-side upgrade, not something this repo can change. 832's current version was not checked: the project-boundary gate blocks reading /opt/832*.
