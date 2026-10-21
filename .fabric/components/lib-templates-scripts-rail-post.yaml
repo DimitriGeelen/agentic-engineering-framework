@@ -1,0 +1,21 @@
+id: lib/templates/scripts/rail-post.sh
+name: rail-post
+type: script
+subsystem: termlink-integration
+location: lib/templates/scripts/rail-post.sh
+tags: []
+
+purpose: "T-2913 — shared rail producer for the messaging-toolkit scripts."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-20
+created_by: unknown
