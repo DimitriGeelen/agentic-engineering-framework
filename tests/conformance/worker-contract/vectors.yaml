@@ -91,6 +91,7 @@ vectors:
       requires: []
       n_a_allowed: false
       equivalent: a hubless backend confirms the end with its independent probe (§3.2)
+      # hub: runs directly (no equivalent needed); seen_alive_epoch given. Verdict pass.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA01, backend: under_test}
       attempts:
@@ -157,6 +158,7 @@ vectors:
       rows: [T3, T4, T5]
       requires: []
       n_a_allowed: false
+      # hub: runs directly; both variants confirm via sweep x2 at the seen epoch, then G. Verdict pass.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA03, backend: under_test}
       attempts:
@@ -299,6 +301,7 @@ vectors:
       rows: [T1, T4, T-RECLAIM]
       requires: []
       n_a_allowed: false
+      # hub: runs directly; attempt 1 has seen_alive_epoch, so absence counts (§3.4). Verdict pass.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA06, backend: under_test}
       attempts:
@@ -391,6 +394,7 @@ vectors:
       requires: []
       n_a_allowed: false
       equivalent: a backend without a hub restarts its own authority/sweep writer and confirms with its probe (§6.6 N2)
+      # hub: partly missing. Restart variants run; [undecidable-then-alive] needs op:wait, and the hub has no worker-side wait/collect surface. Not-implemented.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA08, backend: under_test}
       attempts:
@@ -472,6 +476,7 @@ vectors:
       requires: []
       n_a_allowed: false
       equivalent: a backend without a hub loses contact with the worker host by its own means (§6.6 N2)
+      # hub: missing. No model of worker-host contact, so op:partition/heal are not offered (probe_undecided maps to an incomplete sweep only). Not-implemented.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA09, backend: under_test}
       attempts:
@@ -547,6 +552,7 @@ vectors:
       rows: [T3]
       requires: []
       n_a_allowed: false
+      # hub: missing. The inspect surface operator_queue is not exposed. Not-implemented.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA10, backend: under_test, dispatcher_session: S-parent}
       attempts:
@@ -595,6 +601,7 @@ vectors:
       rows: []
       requires: [answer_channel, real_worker]
       n_a_allowed: true
+      # hub: n/a. real_worker is not offered (the case runs against a real agent worker). n/a.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA11, backend: under_test}
       attempts:
@@ -653,6 +660,7 @@ vectors:
       rows: []
       requires: [answer_channel]
       n_a_allowed: true
+      # hub: missing. The store does not expose then.bounced_to_dispatcher. Not-implemented.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA12, backend: under_test}
       attempts:
@@ -716,6 +724,7 @@ vectors:
       rows: [T3, T8]
       requires: []
       n_a_allowed: false
+      # hub: partly missing. Concurrent-writer variants pass; [lock-timeout-fails-closed] needs op:hold_lock, and the lock is SQLite IMMEDIATE with no hook. lease is not offered, so its variants are not run.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA13, backend: under_test}
       attempts:
@@ -818,6 +827,7 @@ vectors:
       rows: [T-RECLAIM, T3]
       requires: []
       n_a_allowed: false
+      # hub: supervisor_gen variants pass; lease is not offered, so lease variants are not run.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA14, backend: under_test}
       attempts:
@@ -899,6 +909,7 @@ vectors:
       rows: [T7d, T1]
       requires: []
       n_a_allowed: false
+      # hub: missing. refusal agent_session: resolve_on_host has no agent-session gate (T7d speed bump). Not-implemented.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA15, backend: under_test}
       attempts:
@@ -1015,6 +1026,7 @@ vectors:
       rows: []
       requires: [registry_epoch]
       n_a_allowed: true
+      # hub: offers registry_epoch; runs, reconciliation_requested is raised on the second absence. Verdict pass.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA17, backend: under_test}
       attempts:
@@ -1090,6 +1102,7 @@ vectors:
       rows: [T3, T1]
       requires: []
       n_a_allowed: false
+      # hub: missing. No consumer surface (op:consume); not_finished_work refusals live outside the store. Not-implemented.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA19, backend: under_test}
       attempts:
@@ -1190,6 +1203,7 @@ vectors:
       rows: [T7d]
       requires: []
       n_a_allowed: false
+      # hub: missing. No op:consume, and resolve carries no material or outcome (T7d binding). Not-implemented.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA22, backend: under_test}
       attempts:
@@ -1296,6 +1310,7 @@ vectors:
       requires: []
       n_a_allowed: false
       equivalent: every backend runs it with its own stop (worker deadline); the case is phrased for an external backend
+      # hub: missing. No backend-initiated stop; transition takes no stop cause. Not-implemented.
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA25, backend: under_test}
       attempts:
