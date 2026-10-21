@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4550: Mapping lint rules for v1.1 aef:io (operation needs match field, contradictions, prefix kinds)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:10:52Z
+# ============================================================================
+
+task_id: T-4550
+task_name: "Mapping lint rules for v1.1 aef:io (operation needs match field, contradictions, prefix kinds)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-21T14:31:55Z
+completed: 2026-10-21T18:10:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T18:39:57+02:00
+last_commit: 2026-10-21T18:39:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  corpus lint rules for mapping v1.1 aef:io (keyed op needs match field, undetermined key, expect vs type, prefix unknown/kind, ref read rule per §2.3); warnings do not fail the run
+
+# Key outcomes
+outcomes:
+  - '`tools/corpus_lint.py` reports `io-operation-no-match` (error) for an aef:io input/output with operation update/upsert/delete and no field with role="match" (v1.1 §4.3)'
+  - '`io-match-undetermined` (warning) for a role="match" aef:field with neither fieldRef nor path (§4.4)'
+  - '`io-expect-contradicts-type` (error) / `io-expect-implied-by-type` (warning) for an aef:expect against the field''s declared type (§8.6), judged only where the type is resolvable in the map (nine-value vocabulary + aliases, enum)'
+  - '`io-prefix-unknown` (error) for an undeclared QName prefix in fieldRef/typeRef/conceptRef (§6.3); `io-prefix-kind` (error) for a prefix whose declared kind contradicts the attribute (fieldRef needs kind=field, typeRef kind=type)'
+  - '`ref` read as fieldRef only when all four §2.3 conditions hold (then it addresses the io''s member for the type rule); otherwise ref is left alone (never prefix-checked)'
+  - 'Warnings are printed but do not by themselves flip the exit code to 1; errors do'
+  - '`tests/unit/test_t4550_aef_io_lint.py`: one test per rule plus a clean-map control, all pass; existing corpus_lint tests still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'corpus lint rules for mapping v1.1 aef:io (keyed op needs match field, undetermined key, expect vs type, prefix unknown/kind, ref read rule per §2.3); warnings do not fail the run'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-21 — which "type" §8.6 judges an expectation against'
+    chose: 'only types the map itself states: a single-field io (fieldRef, or ref read as one per §2.3) with explicit `type` and no typeRef/schemaRef, addressed by that fieldRef or unaddressed; and aef:field narrowed `required="true"` (§5.4: present=true implied → warning, absent=true → error except under operation="delete", where §4.6 makes it the natural postcondition).'
+    rationale: 'a typeRef member''s type lives in an ontology the lint does not load; guessing it would produce phantom findings (the T-2684 lesson). `type` beside typeRef is informational (§2).'
+    alternatives_rejected: ['treating a missing `type` as `string` for judging (§3.3) — it would flag every typeRef/fieldRef io whose real type is unknown.']
+  - decision: '2026-10-21 — warnings and the exit code'
+    chose: 'findings gain `severity`; absent = error. Exit 1 only on errors; warnings print with a `WARN` prefix and still appear in --json.'
+    rationale: '§4.4/§8.6 call these warnings; a warning that fails the gate is an error by another name.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/corpus_lint.py'
+  - '.tasks/active/T-4550-mapping-lint-rules-for-v11-aefio-operati.md'
+  - 'tests/unit/test_t4550_aef_io_lint.py'
+  - 'tools/corpus_lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T18:39:57'
+    action: 'T-4550: corpus lint rules for mapping v1.1 aef:io (keyed op needs match field, undetermined key, expect vs type, prefix unknown/kind, ref read rule per §2.3); warnings do not fail the run'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 218 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [mapping, aef-io, T-4415]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 218
+  commits: 1
+  files_changed: 4
+  lines_added: 600
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4550-mapping-lint-rules-for-v11-aefio-operati.md
+generated_by: context-agent-hybrid
