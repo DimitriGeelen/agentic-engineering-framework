@@ -190,11 +190,39 @@ picklist.
 
 Asked by 832 (msg 98166137, their inception T-1219) for aef-greenfield-test's ontology-generated maps (their T-276). aef:io/aef:input/aef:output are SEMANTIC-class in the frozen v1 standard (policy/standards/aef-bpmn-mapping-v1-partI.md §1), so new attributes are a v1.1 revision, not a designer-local choice. Proposed shape: optional attributes on aef:input/aef:output — ref (IRI or CURIE), role (read|write|create|match), cardinality (1|0..1|0..*), dataType (id|reference|date|datetime|decimal|currency|percent|picklist) kept separate from the existing type — rather than a BPMN itemDefinition link (heavier, and our maps carry no itemDefinitions today). Today tools/bpmn_to_tasks.py does not read aef:io at all and tools/corpus_spec.py round-trips it verbatim (T-4387), so v1.1 is additive and breaks nothing; what v1.1 must decide is validation (closed value sets, CURIE prefix registry) and whether the forward compile starts reading it. Operator decides the standard revision.
 
+**Revised 2026-10-21:** GO on **draft 2** of `docs/reports/T-4415-structured-io-attributes.md` (commit f1f7c30dd).
+Draft 2 supersedes the filing-time shape above.
+
+- **Additive.** Every v1 map keeps its meaning. v1's open nine-value `type` vocabulary is kept.
+- **Read rules for existing maps.** A `ref` holding a field IRI is read as `fieldRef` only behind a declared
+  `kind="field"` prefix; `dataType` tokens are informational only.
+- **Structure and meaning.** `fieldRef` names one field, `typeRef`/`schemaRef` a structure, and `conceptRef` the
+  business meaning.
+- **Two levels.** Field-level `role` (read, write, match, create) is apart from instance-level `operation` (read,
+  create, update, upsert, delete). A keyless update, upsert or delete is a lint error.
+- **Prefix map.** Systems are derived from a declared prefix map.
+- **Lists.** Explicit field lists with list paths and line-kind selection; no wildcards in v1.1.
+- **Expectations.** Step expectations use JSON Schema keywords, with defined empty, absent and failure semantics.
+  Type rules stay in the referenced type.
+- **Deferred.** Inline structure goes to v1.2; transformations stay in the producer's ontology.
+
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- An independent external review of draft 1 (codex, claude-code; isolated) converged on JSON Schema keywords, a
+  separate `fieldRef`, and a lint for the type/step line: `docs/reports/T-4415-reviews/`.
+- 832's designer check: all 8 points answered, plus the exact v1 type vocabulary from the designer code (msgs
+  2f8376d0, 22282fd6, ac157dd5, 339d54e7, fa3579dc).
+- Greenfield's producer check and their answers on `write`/`delete` produced the field/instance split (msgs 6d79d60a,
+  30dcdded).
+- Full-map check on greenfield's real VZN-T1 v29 (43 ios) and TRA-T1 v2. Everything fits or migrates mechanically;
+  the 20 style-A ios use the minimal migration unchanged (msg 0fbb4509).
+- 832 and greenfield both confirm draft 2 is complete (msg 16f9aa56).
+
+**Left for the build tasks, not blocking the ruling:**
+
+- whether `ref` is also the data-flow join key between steps;
+- `typeRef` version pinning;
+- the forward compile reading `aef:io` (`tools/bpmn_to_tasks.py` does not today).
 
 ## Decisions
 
