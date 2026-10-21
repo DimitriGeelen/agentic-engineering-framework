@@ -251,7 +251,8 @@ What draft 2 must address:
 | `type` | v1's vocabulary, **unchanged and open** | The v1 vocabulary is the designer's nine values: `string`, `number`, `boolean`, `ref`, `path`, `task_id`, `arc_id`, `list`, `object` (832, from IO_TYPES). See the reading rules below. **Optional** when `fieldRef` or `typeRef` is present (greenfield c). When both `type` and `typeRef` are present, `typeRef` is authoritative and `type` is informational |
 | `required` | `true` \| `false` | v1, unchanged: whether this step can run without the io |
 | `cardinality` | `one` \| `many` | How many instances flow. **Absence of the value is expressed only by `required`.** So `optional` is not a cardinality value (832 5) |
-| `role` | `read` \| `write` \| `create` \| `delete` \| `match` | What the step does with the data (greenfield d; `delete` added from operator dialogue 2026-10-21). See below |
+| `role` | `read` \| `write` \| `match` \| `create` | **Field-level:** what the step does to one field (on an io with `fieldRef`, and on `aef:field`). See below |
+| `operation` | `read` \| `create` \| `update` \| `upsert` \| `delete` | **Instance-level:** what the step does to the instance (on an io with `typeRef` / `schemaRef`). New in v1.1. See below |
 | `fieldRef` | field IRI / QName | **One field.** The identity of a single attribute, e.g. `sfdc:Opportunity.Id` or `nid:attr-…` (review 2, greenfield a) |
 | `typeRef` | IRI / QName of a class, shape or named type | **A structure.** The fields come from that definition. Allowed to name a property IRI only through `fieldRef`, never here |
 | `schemaRef` | URI of a JSON Schema | Alternative to `typeRef`; at most one of the two |
@@ -284,23 +285,53 @@ The values found in 832's tracked maps were:
 | `int` | 2 |
 | `bool` | 1 |
 
-**`role` values:**
+**Two levels, two attributes (greenfield answer via 832 msg 30dcdded; supersedes the single `role` set of earlier
+draft 2).** Greenfield's `role` is **field-level**: what the step does to one field. Using the same word for an
+**instance-level** operation would make "set this field on create" and "update the record" read the same, and a
+generator could not tell them apart. So:
 
-| Value | Meaning |
+`role` applies on an io with `fieldRef`, and on `aef:field`. It is what the step does to that **field**, and it keeps
+greenfield's existing meaning:
+
+| `role` | Meaning |
 |---|---|
-| `read` | Read existing data |
+| `read` | The step reads the field's value |
+| `write` | The step sets the field's value, on create and update alike |
+| `match` | The field is the key used to find an existing instance (lookup/join). Allowed on inputs and outputs |
+| `create` | The field is a reference whose target is found or created (e.g. `tacton:Opportunity.accountId`) |
+
+`operation` is new, and applies on an io with `typeRef` or `schemaRef`. It is what the step does to the
+**instance**:
+
+| `operation` | Meaning |
+|---|---|
+| `read` | Read existing instance(s) |
 | `create` | Create a new instance |
-| `write` | Update an existing instance. Needs a `match` io on the same step. **To confirm with greenfield:** does their `write` already mean exactly this? |
-| `delete` | Hard-remove the identified instance(s) in the target system. Needs a `match` io (or a `fieldRef` to the identifying field) on the same step |
-| `match` | The io is a lookup/join key used to find an existing instance. Allowed on inputs and outputs |
-| `match` + `create` | **Upsert**: update if it exists, else create (greenfield h) |
+| `update` | Change an existing instance. Needs a field with `role="match"` on the same io |
+| `upsert` | Update if it exists, else create. Needs a field with `role="match"` |
+| `delete` | Hard-remove the identified instance(s). Needs a field with `role="match"` |
+
+**How they combine: greenfield's owner rule H-042.**
+
+```xml
+<aef:output typeRef="tacton:Opportunity" operation="upsert">
+  <aef:field fieldRef="tacton:Opportunity.crmOppExtId" role="match"/>
+  <aef:field fieldRef="tacton:Opportunity.name" role="write"/>
+  <aef:field fieldRef="tacton:Opportunity.accountId" role="create"/>
+</aef:output>
+```
+
+**Re-tagging.** Greenfield will re-tag on the ruling: key fields become `match`, fields the step sets stay `write`,
+and new instances get `operation="create"`. Their current key `crmOppExtId`, tagged `write` today, becomes `match`.
 
 **Rules for `delete`:**
 
-- A `delete` without a key is a **lint error**. A map must never be readable as "delete everything".
-- A **soft delete** (deactivate, archive) is an update, not a delete: `write`, plus an expectation such as
+- An `update`, `upsert` or `delete` without a `match` field is a **lint error**. A map must never be readable as
+  "delete everything" or "update everything".
+- A **soft delete** (deactivate, archive) is an update, not a delete: `operation="update"`, plus an expectation such as
   `<aef:expect path="Status" const="archived"/>`. Keeping the two apart stops a generator from removing data that
   should only be deactivated.
+- Greenfield's flows have no hard deletes or deactivations today. Tacton has Delete transitions, unused.
 - A delete's natural postcondition is that the key is absent afterwards: `<aef:expect fieldRef="…" absent="true"/>`.
   `present` and `absent` take only `true`.
 
