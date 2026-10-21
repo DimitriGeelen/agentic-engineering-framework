@@ -875,8 +875,10 @@ do_inception_sweep() {
             -h|--help)
                 echo "fw inception sweep [--dry-run]"
                 echo ""
-                echo "Finds tasks in .tasks/active/ with status: work-completed AND a"
-                echo "recorded ## Decision block. Ticks Human AC, then finalizes."
+                echo "Finds tasks in .tasks/active/ with a recorded ## Decision block and"
+                echo "status work-completed, or captured/started-work + GO/NO-GO. Ticks the"
+                echo "Human AC, then closes through update-task.sh (every close gate applies;"
+                echo "a task a gate holds is reported and left as is, exit 1)."
                 return 0
                 ;;
         esac
@@ -896,6 +898,8 @@ do_inception_sweep() {
     local moved=0
     local still_pending=0
     local skipped=""
+    local held=0
+    local held_list=""
 
     local promoted=0
     for f in "$active_dir"/T-*.md; do
@@ -924,6 +928,12 @@ do_inception_sweep() {
                 else
                     continue
                 fi
+                ;;
+            captured)
+                # T-4535: GO/NO-GO recorded but never started — same recovery as
+                # class 2 (decide does captured → started-work → work-completed).
+                # captured + DEFER is already parked; leave it.
+                grep -qE '^\*\*Decision\*\*: (GO|NO-GO)' "$f" || continue
                 ;;
             *) continue ;;
         esac
@@ -960,22 +970,47 @@ do_inception_sweep() {
             continue
         fi
 
-        # Class 2 recovery: status stuck at started-work + closing decision.
-        # Promote to work-completed in place — decision is already recorded, so
-        # the transition is just finishing what do_inception_decide started
-        # before T-1491's exit-code propagation fix landed.
-        if [ "$current_status" = "started-work" ]; then
-            local _now
-            _now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-            _sed_i 's/^status: started-work$/status: work-completed/' "$f"
-            _sed_i "s/^last_update:.*/last_update: $_now/" "$f"
-            promoted=$((promoted+1))
-            echo "  $tid: promoted started-work → work-completed (T-1491 class 2 recovery)"
-        fi
-
         # Tick the Human AC
         tick_inception_decide_acs "$f"
         ticked=$((ticked+1))
+
+        # Class 2 recovery: captured/started-work + closing decision. T-4535:
+        # close through update-task.sh, the same path do_inception_decide takes,
+        # never by editing status: — since T-1515 a started-work + GO task
+        # usually means a close gate (P-010, P-011, RCA …) refused, and the
+        # sweep must respect that refusal, not overwrite it. --skip-sovereignty
+        # is consumed only for owner: human and is itself refused for agents.
+        if [ "$current_status" = "captured" ] || [ "$current_status" = "started-work" ]; then
+            local _uts_out _uts_rc=0
+            if [ "$current_status" = "captured" ]; then
+                _uts_out=$("$AGENTS_DIR/task-create/update-task.sh" "$tid" --status started-work --skip-sovereignty --reason "T-4535 sweep: decision recorded, closing" 2>&1) || _uts_rc=$?
+            fi
+            if [ "$_uts_rc" -eq 0 ]; then
+                _uts_out=$("$AGENTS_DIR/task-create/update-task.sh" "$tid" --status work-completed --skip-sovereignty --reason "T-4535 sweep: decision recorded, closing" 2>&1) || _uts_rc=$?
+            fi
+            if [ "$_uts_rc" -ne 0 ]; then
+                held=$((held+1))
+                held_list+="$tid"$'\n'
+                echo "  $tid: decision recorded but a close gate refused (exit $_uts_rc) — held, left as $current_status"
+                # From the gate's ERROR line on (fall back to the tail when none).
+                if printf '%s\n' "$_uts_out" | grep -q 'ERROR'; then
+                    printf '%s\n' "$_uts_out" | sed -n '/ERROR/,$p' | head -12 | sed 's/^/      /'
+                else
+                    printf '%s\n' "$_uts_out" | tail -8 | sed 's/^/      /'
+                fi
+                continue
+            fi
+            promoted=$((promoted+1))
+            if [ ! -f "$f" ]; then
+                moved=$((moved+1))
+                echo "  $tid: closed via update-task (was $current_status)"
+            else
+                still_pending=$((still_pending+1))
+                skipped+="$tid (closed via update-task; Human AC still unchecked)"$'\n'
+                echo "  $tid: closed via update-task (was $current_status) — Human AC still unchecked, stays in active/"
+            fi
+            continue
+        fi
 
         # Recount Human ACs after ticking (grep -c returns exit 1 on zero matches under pipefail)
         # T-1620: strip <!-- ... --> blocks before counting. The default task
@@ -1006,11 +1041,18 @@ do_inception_sweep() {
         echo -e "${BOLD}Dry run:${NC} scanned=$scanned  eligible=$eligible"
         echo "Re-run without --dry-run to apply."
     else
-        echo -e "${BOLD}Sweep complete:${NC} scanned=$scanned  eligible=$eligible  promoted=$promoted  ticked=$ticked  moved=$moved  stays-pending=$still_pending"
+        echo -e "${BOLD}Sweep complete:${NC} scanned=$scanned  eligible=$eligible  promoted=$promoted  ticked=$ticked  moved=$moved  stays-pending=$still_pending  held=$held"
         if [ "$still_pending" -gt 0 ]; then
             echo ""
             echo -e "${YELLOW}Tasks with other Human ACs still pending (tick patterns didn't cover them):${NC}"
             echo "$skipped" | sed 's/^/  /'
+        fi
+        if [ "$held" -gt 0 ]; then
+            echo ""
+            echo -e "${RED}Tasks a close gate is holding (not closed; see the gate output above):${NC}"
+            echo "$held_list" | sed '/^$/d; s/^/  /'
+            echo "  Fix the blocker, then re-run the sweep. See: $(_emit_user_command "task verify <T-XXX>" 2>/dev/null || echo "fw task verify <T-XXX>")"
+            return 1
         fi
     fi
 }
