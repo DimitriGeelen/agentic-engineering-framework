@@ -1,0 +1,21 @@
+id: tests/unit/t4536_literal_var_curl.bats
+name: t4536_literal_var_curl
+type: script
+subsystem: tests
+location: tests/unit/t4536_literal_var_curl.bats
+tags: []
+
+purpose: "T-4536 — T-4512 made the curl/wget check refuse any word that begins with a quoted expansion (\"$X\" could expand to -o FILE). That is right when X comes from the environment, and it turned T-3644's `WURL=x; curl -sf \"$WURL/\"` red."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

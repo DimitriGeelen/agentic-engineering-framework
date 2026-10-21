@@ -154,6 +154,40 @@ _fw_advance_cwd() {
     return 0
 }
 
+# T-4536: _fw_note_literal_vars <segment> <operator that ended it>. T-4512 made
+# the curl/wget check treat a word that begins with "$X" as a possible option,
+# which is right when X comes from the environment and wrong for the T-3644 idiom
+# `WURL=x; curl -sf "$WURL/"`, where the line itself fixed X. _FW_LIT_VARS holds
+# the names a literal assignment set to a value that cannot begin an option
+# (non-empty, no leading -, no $, backtick or backslash). It survives only `&&`
+# and `;`, and only into further literal assignments or a curl/wget clause: any
+# other segment (read, export, printf -v, eval, a loop ...) may reassign, so it
+# empties the set. Unknown stays unknown, which is the blocking direction.
+_fw_note_literal_vars() {
+    local _s="${1#"${1%%[![:space:]]*}"}" _b _n _v
+    _s="${_s%"${_s##*[![:space:]]}"}"
+    case "$2" in '&&'|';'|'') ;; *) _FW_LIT_VARS=" "; return 0 ;; esac
+    if [[ "$_s" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(([^[:space:]\"\'\`\;\&\|\<\>\(\)]|\"[^\"\`]*\"|\'[^\']*\')*)$ ]]; then
+        _n="${BASH_REMATCH[1]}"; _v="${BASH_REMATCH[2]}"
+        _FW_LIT_VARS="${_FW_LIT_VARS// $_n / }"
+        case "$_v" in *'$'*|*'\'*) return 0 ;; esac
+        _v="${_v//\"/}"; _v="${_v//\'/}"
+        [ -n "$_v" ] && [[ "$_v" != -* ]] && _FW_LIT_VARS+="$_n "
+        return 0
+    fi
+    _b="${_s%%[[:space:]]*}"; _b="${_b##*/}"
+    case "$_b" in curl|wget) ;; *) _FW_LIT_VARS=" " ;; esac
+    return 0
+}
+
+# T-4536: is this option word (kind E) an expansion of a name in _FW_LIT_VARS,
+# i.e. `$NAME` or `${NAME}` followed by nothing or a non-name character?
+_fw_word_is_literal_var() {
+    [[ "$1" =~ ^\$(\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*)([^A-Za-z0-9_]|$)) ]] || return 1
+    local _n="${BASH_REMATCH[2]:-${BASH_REMATCH[3]}}"
+    [[ "${_FW_LIT_VARS:- }" == *" $_n "* ]]
+}
+
 # T-4409: the shell's cwd at the start of a command line: the payload cwd when it is
 # absolute; else the hook's $PWD only when it IS PROJECT_ROOT; else empty (unknown).
 _fw_initial_git_cwd() {
@@ -210,6 +244,9 @@ is_bash_safe_command() {
         _c0="$(_fw_initial_git_cwd)"
     fi
     local _FW_GIT_CWD="$_c0"
+    # T-4536: names this line assigned a literal that cannot read as an option
+    # (_fw_note_literal_vars). Never inherited: a nested `X=$(...)` starts empty.
+    local _FW_LIT_VARS=" "
     # T-4409: _FW_SEG_OPS[i] is the operator that ended kept segment i, read by
     # _fw_segments_are_safe to decide whether a cd carries into the next segment.
     local -a _segs=() _kept=() _FW_SEG_OPS=()
@@ -268,6 +305,9 @@ _fw_segments_are_safe() {
             _rest="${_s#"$_kw"}"
             _rest="${_rest#"${_rest%%[![:space:]]*}"}"
             case "$_kw" in
+                for|while|until) _FW_LIT_VARS=" " ;;
+            esac
+            case "$_kw" in
                 for)
                     [ -z "$_expect" ] || return 1
                     _fw_loop_for_header_is_safe "$_rest" || return 1
@@ -299,6 +339,11 @@ _fw_segments_are_safe() {
                     fi
                     _fw_single_command_is_safe "$_s" || return 1
                     _fw_advance_cwd "$_s" "${_FW_SEG_OPS[$_si]:-}"
+                    if [ "$_depth" -gt 0 ]; then
+                        _FW_LIT_VARS=" "
+                    else
+                        _fw_note_literal_vars "$_s" "${_FW_SEG_OPS[$_si]:-}"
+                    fi
                     ;;
             esac
             break
@@ -1804,7 +1849,12 @@ _fw_fetch_writes_file() {
     # stripping turned `curl -'o' F URL` into `curl - F URL`. No value grammar is
     # tracked here, so a word that begins with an expansion counts as a write.
     _fw_option_words "$cmd" || return 0
-    [[ " ${_FW_OWK[*]} " == *" E "* ]] && return 0
+    # T-4536: except an expansion of a literal this line assigned.
+    local _wi
+    for _wi in "${!_FW_OWK[@]}"; do
+        [ "${_FW_OWK[_wi]}" = E ] || continue
+        _fw_word_is_literal_var "${_FW_OW[_wi]}" || return 0
+    done
     set -- "${_FW_OW[@]}"
     [ $# -eq 0 ] && return 1
     base="${1##*/}"
