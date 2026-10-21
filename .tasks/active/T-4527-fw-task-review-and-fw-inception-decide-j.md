@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T09:25:56Z
-last_update: 2026-10-21T09:38:08Z
+last_update: 2026-10-21T18:16:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -390,6 +390,21 @@ Operator choice needed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-21 — OPEN (operator): where the shared hypothesis predicate lives
+- **Question:** The two divergent predicates (review vs decide on `## Hypothesis`
+  success clauses) do not exist in this repo (re-confirmed by w4527b: `git grep
+  "NEEDS YOU|measurable signal|audit_inception_hypothesis"` over lib/ agents/ bin/
+  web/ .tasks/templates/ and the vendored copy returns nothing; lib/task-audit.sh is
+  163 lines with no hypothesis gate). Pick one:
+  1. Fix in 832 — dispatch there; make 832's review and decide call its one predicate.
+  2. Upstream — new inception-sized task to bring 832's hypothesis gate into lib/ as a
+     single predicate used by `lib/review.sh` and `lib/inception.sh`, then close this
+     against it (natural homes: T-4178, T-3753).
+- **Recommendation:** 1 now (Gap Homing: the fix lives where the code is, and it
+  unblocks the operator's batch job today), plus file 2 as `horizon: later` so the
+  gate is not left 832-only. Nothing was built here; this task should close as
+  re-homed once the 832 fix is dispatched.
 
 ## Decision
 
