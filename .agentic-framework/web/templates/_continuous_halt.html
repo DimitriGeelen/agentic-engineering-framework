@@ -6,13 +6,19 @@
 
    hx-target="this" is required: base.html sets a body-level hx-target="#content",
    which would otherwise swap this fragment over the whole page (T-2060).
+
+   T-4269: three states, not two. "Not halted" is only RUNNING when a run is
+   armed (continuous.armed — the driver's own rule); otherwise it is idle.
 #}
 <article id="continuous-halt"
-         class="continuous-halt {{ 'is-halted' if continuous.halted else 'is-running' }}">
+         class="continuous-halt {{ 'is-halted' if continuous.halted else ('is-running' if continuous.armed else 'is-idle') }}">
   <header class="continuous-halt__state">
     {% if continuous.halted %}
       <strong>&#9632; Continuous run HALTED</strong>
       {% if continuous.since %}<small>since {{ continuous.since }}</small>{% endif %}
+    {% elif not continuous.armed %}
+      <strong>No continuous run armed</strong>
+      <small>the agent stops after each turn; engaging the brake now blocks a future run</small>
     {% else %}
       <strong>&#9654; Continuous run is RUNNING</strong>
       <small>the agent may continue on its own after each stop</small>
@@ -25,7 +31,7 @@
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
     <button type="submit"
             class="{{ 'secondary' if continuous.halted else 'contrast' }}">
-      {% if continuous.halted %}Release brake &mdash; let it run{% else %}Halt the run now{% endif %}
+      {% if continuous.halted %}Release brake &mdash; let it run{% elif not continuous.armed %}Engage the brake{% else %}Halt the run now{% endif %}
     </button>
   </form>
 

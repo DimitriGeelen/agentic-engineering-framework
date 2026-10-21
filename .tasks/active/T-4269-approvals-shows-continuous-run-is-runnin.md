@@ -7,10 +7,10 @@ description: >
   run aef-install-20261017T144241Z): F-39. Triage: docs/reports/T-4253-greenfield-run-triage.md
   PROPOSED-NEW-16.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:28:49Z
-last_update: '2026-10-17T15:31:19Z'
+last_update: 2026-10-21T22:27:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -81,6 +81,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4269: /approvals shows "Continuous run is RUNNING" when no continuous run exists.
@@ -93,10 +109,18 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_halt_state()` (web/blueprints/approvals.py) reports `armed` from the same rule stop-driver.sh uses: `.context/working/.continuous-mode.yaml` exists and has `enabled: true` (literal true only)
+- [x] `_continuous_halt.html` renders three states: HALTED (halt file present), RUNNING (armed, no halt file), and "No continuous run armed" (neither) — no state reads as RUNNING without an armed state file
+- [x] Regression tests in tests/unit/test_continuous_halt_control.py: no state file → no "RUNNING"; `enabled: false` → no "RUNNING"; armed → "RUNNING"; halt → "HALTED"; fail before the fix, pass after
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0; vendor sync clean for this task
 
 ### Human
+- [ ] [REVIEW] /approvals brake card reads correctly in the no-run state
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` and open `<url>/approvals`
+  2. With no continuous run armed (`.context/working/.continuous-mode.yaml` absent or `enabled: false`), look at the brake card at the top
+  **Expected:** Card says "No continuous run armed" with a neutral border, not "Continuous run is RUNNING"; the brake button still lets you pre-engage the halt
+  **If not:** Screenshot the card and note what text it shows
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -272,6 +296,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_continuous_halt_control.py -q > /tmp/.t4269.out 2>&1 && grep -q passed /tmp/.t4269.out
+grep -q "continuous.armed" web/templates/_continuous_halt.html
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4269
 
 ## RCA
 
@@ -288,6 +316,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** On a fresh install (0909 greenfield run, F-39) /approvals shows "▶ Continuous run is RUNNING — the agent may continue on its own after each stop" although no continuous run was ever armed.
+
+**Root cause:** `web/templates/_continuous_halt.html:13-19` branches only on `continuous.halted`, and `_halt_state()` (`web/blueprints/approvals.py:67-77`) only looks at the halt file. The card is a two-state model (halted / not halted) of a three-state system: stop-driver.sh (`agents/context/stop-driver.sh:112,144`) continues only when `.continuous-mode.yaml` exists with `enabled: true`, so "not halted" includes the default disarmed state, which was rendered as RUNNING.
+
+**Why structurally allowed:** T-3200's tests armed the loop in the fixture (`_build` always writes `enabled: true`), so every page assertion ran in the armed state; the disarmed default — the state every new install is in — was never rendered under test.
+
+**Prevention:** `_halt_state()` now reads the state file with the driver's literal-true rule and returns `armed`; the template has an explicit third branch. Regression tests render the page with no state file and with `enabled: false` and assert no "RUNNING".
 
 ## Evolution
 
@@ -369,3 +404,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4269-approvals-shows-continuous-run-is-runnin.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:27:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -206,6 +206,58 @@ def test_approvals_page_shows_state_both_ways(env):
     )
 
 
+# --- T-4269: three states, not two ---------------------------------------
+#
+# "Not halted" is not "running". The driver continues only when the state file
+# exists with a literal `enabled: true` (stop-driver.sh:112,144); every other
+# case is the disarmed default, and a fresh install showed it as RUNNING.
+
+def _card(c):
+    page = c.get("/approvals").get_data(as_text=True)
+    start = page.index('id="continuous-halt"')
+    return page[start:page.index("</article>", start)]
+
+
+def test_no_state_file_is_not_running(env):
+    c, tmp_path, halt = env
+    (tmp_path / ".context" / "working" / ".continuous-mode.yaml").unlink()
+    card = _card(c)
+    assert "RUNNING" not in card, "disarmed default rendered as a running loop"
+    assert "No continuous run armed" in card
+    assert "is-idle" in card
+    # The brake can still be engaged in advance.
+    assert "/api/continuous/halt" in card
+
+
+def test_disabled_state_file_is_not_running(env):
+    c, tmp_path, halt = env
+    (tmp_path / ".context" / "working" / ".continuous-mode.yaml").write_text(
+        "enabled: false\n"
+    )
+    card = _card(c)
+    assert "RUNNING" not in card
+    assert "No continuous run armed" in card
+
+
+def test_truthy_non_true_is_not_running(env):
+    """Same literal-true rule as the driver: `enabled: "yes"` does not arm it."""
+    c, tmp_path, halt = env
+    (tmp_path / ".context" / "working" / ".continuous-mode.yaml").write_text(
+        'enabled: "yes"\n'
+    )
+    assert "RUNNING" not in _card(c)
+
+
+def test_armed_is_running_and_halt_wins(env):
+    c, tmp_path, halt = env
+    card = _card(c)
+    assert "RUNNING" in card and "No continuous run armed" not in card
+
+    _post(c, "/api/continuous/halt")
+    card = _card(c)
+    assert "HALTED" in card and "RUNNING" not in card
+
+
 # --- resolution parity ---------------------------------------------------
 
 def test_override_is_honoured_and_the_driver_agrees(env_override):

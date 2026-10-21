@@ -64,6 +64,18 @@ def _halt_file() -> Path:
     return PROJECT_ROOT / ".context" / "working" / ".continuous-halt"
 
 
+def _continuous_armed() -> bool:
+    """T-4269: is a continuous run armed? Same rule as stop-driver.sh:112,144 —
+    the state file exists and `enabled` is a literal true. Anything else is the
+    disarmed default, which must not read as a running loop."""
+    sf = PROJECT_ROOT / ".context" / "working" / ".continuous-mode.yaml"
+    try:
+        state = yaml.safe_load(sf.read_text())
+    except (OSError, yaml.YAMLError):
+        return False
+    return isinstance(state, dict) and state.get("enabled") is True
+
+
 def _halt_state() -> dict:
     """Current brake state, for the /approvals card."""
     hf = _halt_file()
@@ -74,7 +86,7 @@ def _halt_state() -> dict:
             since = datetime.fromtimestamp(hf.stat().st_mtime, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         except OSError:
             since = None
-    return {"halted": halted, "path": str(hf), "since": since}
+    return {"halted": halted, "armed": _continuous_armed(), "path": str(hf), "since": since}
 
 # Approvals older than this are considered expired (seconds)
 EXPIRY_SECONDS = 3600  # 1 hour
