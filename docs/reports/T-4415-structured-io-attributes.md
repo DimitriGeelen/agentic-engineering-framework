@@ -256,8 +256,8 @@ What draft 2 must address:
 | `typeRef` | IRI / QName of a class, shape or named type | **A structure.** The fields come from that definition. Allowed to name a property IRI only through `fieldRef`, never here |
 | `schemaRef` | URI of a JSON Schema | Alternative to `typeRef`; at most one of the two |
 | `conceptRef` | IRI into the business ontology | Business meaning, kept apart from structure. Replaces draft 1's `dataType` |
-| `ref` | as in v1 | **Read rule for existing maps (greenfield a):** when `ref` holds a field IRI and there is no `fieldRef`, a reader treats it as `fieldRef`. Otherwise `ref` keeps its v1 meaning (data-object identity). New maps write `fieldRef` |
-| `dataType` | as in v1 | **Read rule for existing maps (greenfield b):** technical tokens such as `id` and `reference` are read as v1 `type` hints, never as a concept. New maps write `conceptRef` for meaning and `type` / `typeRef` for structure |
+| `ref` | as in v1 | **Read rule for existing maps (greenfield a; made decidable per 832 msg 339d54e7).** A reader treats `ref` as `fieldRef` only when all four hold: (1) the map has no `mappingVersion="1.1"`; (2) the io has no `fieldRef`; (3) the io has no `typeRef`; (4) the IRI's prefix is declared in the prefix map with `kind="field"`. In every other case `ref` keeps its v1 meaning (data-object identity), which is the conservative default. New maps write `fieldRef` |
+| `dataType` | as in v1 | **Read rule for existing maps (greenfield b; per 832).** v1 `dataType` values (e.g. `id`, `reference`) are **informational only**. They map to no `type` and to no concept, and readers preserve them verbatim. New maps write `conceptRef` for meaning and `type` / `typeRef` for structure |
 | `sourceSystem` / `targetSystem` | catalogue reference | Where an input comes from, or where an output goes. If absent, they are **derived from the prefix map**: a declared prefix (`sfdc:`, `tacton:`) can name its system. An explicit attribute overrides the derivation, and a step default on `aef:meta` sits in between (greenfield e) |
 
 **Reading rules for `type`:**
@@ -301,15 +301,18 @@ The values found in 832's tracked maps were:
 - A **soft delete** (deactivate, archive) is an update, not a delete: `write`, plus an expectation such as
   `<aef:expect path="Status" const="archived"/>`. Keeping the two apart stops a generator from removing data that
   should only be deactivated.
-- A delete's natural postcondition is that the key is absent afterwards: `<aef:expect fieldRef="…" present="false"/>`.
+- A delete's natural postcondition is that the key is absent afterwards: `<aef:expect fieldRef="…" absent="true"/>`.
+  `present` and `absent` take only `true`.
 
 **Prefix map.** Prefixes are declared once per map in `aef:prefixes` on the process `aef:meta`:
 
 ```xml
-<aef:prefix name="sfdc" iri="…" system="sys:salesforce"/>
+<aef:prefix name="sfdc" iri="…" system="sys:salesforce" kind="field"/>
 ```
 
-An undeclared prefix is an error.
+- `kind` is optional: `field` \| `type` \| `object`. It tells a reader, without loading the ontology, what IRIs under
+  that prefix name.
+- An undeclared prefix is an error.
 
 ### B. Field selection: child `aef:field`
 
