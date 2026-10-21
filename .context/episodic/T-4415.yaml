@@ -1,0 +1,130 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4415: aef-bpmn-mapping v1.1: traceable aef:io fields (ref, role, cardinality, dataType on aef:input/aef:output)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T14:01:34Z
+# ============================================================================
+
+task_id: T-4415
+task_name: "aef-bpmn-mapping v1.1: traceable aef:io fields (ref, role, cardinality, dataType on aef:input/aef:output)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T17:22:58Z
+completed: 2026-10-21T14:01:24Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-19T19:24:08+02:00
+last_commit: 2026-10-21T16:01:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — mapping v1.1 traceable aef:io fields (832 T-1219). problem statement and 832's input (CURIE prefix -> URL map in v1.1). adopt aef-greenfield-test's input (string/boolean, currencyCode vs amount, role per input/output). record 832's structured io attributes proposal (832 T-1242) as IW-1. IW-1 addendum (greenfield producer wants referenced types); file T-4518. research artefact (inputs, five levels of data description, dialogue log) and IW-2 from operator dialogue 2026-10-21. draft 1 of the exact-text proposal (A attributes, B field selection, C step expectations, D examples, E inline fallback) and review questions. external review of draft 1 (codex, claude-code; opencode failed on its retired model) and synthesis: JSON Schema keywords for expectations, fieldRef beside path, lint for the type/step line, specification gaps, renames, defer inline structure. record 832's designer check of draft 1 (blocking: v1 type list must keep ref/task_id/path; role values; cardinality vs required). record greenfield's producer check of draft 1 via 832 (field-IRI ref, dataType tokens, optional type, role values incl. match, prefix-derived systems, legacy style B, list paths and line kinds, upsert semantics, transforms in ontology). draft 2 of the exact-text proposal (v1 types unchanged and open, fieldRef/typeRef/conceptRef, read rules for existing ref and dataType, role incl. match and upsert, prefix-derived systems, list paths and line kinds, JSON Schema keywords for expectations, failure behaviour, inline structure deferred). draft 2 adds role=delete (hard delete, key required, lint error without one), defines write as update-with-match, soft delete as write plus expectation (operator dialogue 2026-10-21). draft 2 adopts the exact v1 io type vocabulary from 832 (nine designer values, open, int/bool aliases, enum kept, missing reads as string). draft 2 fixes from 832 (decidable ref->fieldRef read rule via prefix kind and no mappingVersion/typeRef; absent=true in the delete example; v1 dataType tokens informational only). draft 2 migration note for producers (prefix map allowed without mappingVersion 1.1; minimal and full migration of field-IRI refs). draft 2 separates field-level role (read|write|match|create, greenfield's meaning kept) from a new instance-level operation (read|create|update|upsert|delete), with the H-042 upsert example; from greenfield's answer via 832. draft 2 additions from greenfield's full-map check (empty vs absent, no wildcard selection in v1.1, upsert operation vs detail-map structure, match without key = undetermined with lint warning). recommendation revised to GO on draft 2 with evidence (external review, designer check, producer check, full-map check). inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'draft 2 migration note for producers (prefix map allowed without mappingVersion 1.1; minimal and full migration of field-IRI refs)'
+    source: git-mined
+  - description: 'draft 2 fixes from 832 (decidable ref->fieldRef read rule via prefix kind and no mappingVersion/typeRef; absent=true in the delete example; v1 dataType tokens informational only)'
+    source: git-mined
+  - description: 'draft 2 adds role=delete (hard delete, key required, lint error without one), defines write as update-with-match, soft delete as write plus expectation (operator dialogue 2026-10-21)'
+    source: git-mined
+  - description: 'draft 2 of the exact-text proposal (v1 types unchanged and open, fieldRef/typeRef/conceptRef, read rules for existing ref and dataType, role incl. match and upsert, prefix-derived systems, list paths and line kinds, JSON Schema keywords for expectations, failure behaviour, inline structure deferred)'
+    source: git-mined
+  - description: 'record greenfield''s producer check of draft 1 via 832 (field-IRI ref, dataType tokens, optional type, role values incl. match, prefix-derived systems, legacy style B, list paths and line kinds, upsert semantics, transforms in ontology)'
+    source: git-mined
+  - description: 'problem statement and 832''s input (CURIE prefix -> URL map in v1.1)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4415-reviews/claude-code.md'
+  - 'docs/reports/T-4415-reviews/codex.md'
+  - 'docs/reports/T-4415-reviews/independence.json'
+  - 'docs/reports/T-4415-structured-io-attributes.md'
+  - '.tasks/active/T-4415-aef-bpmn-mapping-v11-traceable-aefio-fie.md'
+  - '.tasks/active/T-4518-corpusspec-carries-unknown-child-element.md'
+  - '.tasks/completed/T-4415-aef-bpmn-mapping-v11-traceable-aefio-fie.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T19:24:08'
+    action: 'T-4415: file inception — mapping v1.1 traceable aef:io fields (832 T-1219)'
+  - time: '2026-10-19T19:27:34'
+    action: 'T-4415: problem statement and 832''s input (CURIE prefix -> URL map in v1.1)'
+  - time: '2026-10-19T20:11:59'
+    action: 'T-4415: adopt aef-greenfield-test''s input (string/boolean, currencyCode vs amount, role per input/output)'
+  - time: '2026-10-20T23:45:22'
+    action: 'T-4415: record 832''s structured io attributes proposal (832 T-1242) as IW-1'
+  - time: '2026-10-20T23:47:42'
+    action: 'T-4415: IW-1 addendum (greenfield producer wants referenced types); file T-4518'
+  - time: '2026-10-21T14:57:48'
+    action: 'T-4415: research artefact (inputs, five levels of data description, dialogue log) and IW-2 from operator dialogue 2026-10-21'
+  - time: '2026-10-21T15:00:06'
+    action: 'T-4415: draft 1 of the exact-text proposal (A attributes, B field selection, C step expectations, D examples, E inline fallback) and review questions'
+  - time: '2026-10-21T15:06:07'
+    action: 'T-4415: external review of draft 1 (codex, claude-code; opencode failed on its retired model) and synthesis: JSON Schema keywords for expectations, fieldRef beside path, lint for the type/step line, specification gaps, renames, defer inline structure'
+  - time: '2026-10-21T15:10:09'
+    action: 'T-4415: record 832''s designer check of draft 1 (blocking: v1 type list must keep ref/task_id/path; role values; cardinality vs required)'
+  - time: '2026-10-21T15:25:46'
+    action: 'T-4415: record greenfield''s producer check of draft 1 via 832 (field-IRI ref, dataType tokens, optional type, role values incl. match, prefix-derived systems, legacy style B, list paths and line kinds, upsert semantics, transforms in ontology)'
+  - time: '2026-10-21T15:35:05'
+    action: 'T-4415: draft 2 of the exact-text proposal (v1 types unchanged and open, fieldRef/typeRef/conceptRef, read rules for existing ref and dataType, role incl. match and upsert, prefix-derived systems, list paths and line kinds, JSON Schema keywords for expectations, failure behaviour, inline structure deferred)'
+  - time: '2026-10-21T15:38:07'
+    action: 'T-4415: draft 2 adds role=delete (hard delete, key required, lint error without one), defines write as update-with-match, soft delete as write plus expectation (operator dialogue 2026-10-21)'
+  - time: '2026-10-21T15:43:36'
+    action: 'T-4415: draft 2 adopts the exact v1 io type vocabulary from 832 (nine designer values, open, int/bool aliases, enum kept, missing reads as string)'
+  - time: '2026-10-21T15:48:01'
+    action: 'T-4415: draft 2 fixes from 832 (decidable ref->fieldRef read rule via prefix kind and no mappingVersion/typeRef; absent=true in the delete example; v1 dataType tokens informational only)'
+  - time: '2026-10-21T15:49:23'
+    action: 'T-4415: draft 2 migration note for producers (prefix map allowed without mappingVersion 1.1; minimal and full migration of field-IRI refs)'
+  - time: '2026-10-21T15:55:50'
+    action: 'T-4415: draft 2 separates field-level role (read|write|match|create, greenfield''s meaning kept) from a new instance-level operation (read|create|update|upsert|delete), with the H-042 upsert example; from greenfield''s answer via 832'
+  - time: '2026-10-21T15:57:34'
+    action: 'T-4415: draft 2 additions from greenfield''s full-map check (empty vs absent, no wildcard selection in v1.1, upsert operation vs detail-map structure, match without key = undetermined with lint warning)'
+  - time: '2026-10-21T15:59:22'
+    action: 'T-4415: recommendation revised to GO on draft 2 with evidence (external review, designer check, producer check, full-map check)'
+  - time: '2026-10-21T16:01:26'
+    action: 'T-4415: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 19 commit(s), 2678 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2678
+  commits: 19
+  files_changed: 7
+  lines_added: 1396
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4415-aef-bpmn-mapping-v11-traceable-aefio-fie.md
+generated_by: context-agent-hybrid
