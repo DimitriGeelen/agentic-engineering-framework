@@ -1,10 +1,16 @@
 ---
 id: T-4552
-name: "G-122 doctor false positive: old framework hook fragments (VERSION markers, framework echoes) reported as commented project lines"
+name: "G-122 doctor false positive: old framework hook fragments (VERSION markers,
+  framework echoes) reported as commented project lines"
 description: >
-  dimitri-mint-dev on v1.8.15-be.2: doctor WARNs commit-msg(2) pre-commit(2) pre-push(1) commented project lines, but the kept lines are fragments of old framework hooks (# VERSION=1.17, # VERSION=1.5, inception_commit_limit hint echo, .secret-scan-allowlist echo, _version=$(git describe ...)). The T-4515 detector must recognise old framework hook lines and VERSION markers as framework-owned and not WARN; regression test with those exact fragments.
+  dimitri-mint-dev on v1.8.15-be.2: doctor WARNs commit-msg(2) pre-commit(2) pre-push(1)
+  commented project lines, but the kept lines are fragments of old framework hooks
+  (# VERSION=1.17, # VERSION=1.5, inception_commit_limit hint echo, .secret-scan-allowlist
+  echo, _version=$(git describe ...)). The T-4515 detector must recognise old framework
+  hook lines and VERSION markers as framework-owned and not WARN; regression test
+  with those exact fragments.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +45,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "5c5a8309"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T14:32:24Z
-last_update: 2026-10-21T14:32:24Z
-date_finished: null
+last_update: 2026-10-21T15:54:30Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T14:45:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T14:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4552: G-122 doctor false positive: old framework hook fragments (VERSION markers, framework echoes) reported as commented project lines
@@ -63,8 +97,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw doctor` G-122 check does not count `# VERSION=N` markers or lines that belong to a framework hook (any version) as commented project lines
+- [ ] A genuine commented project line under the T-4403 header still produces the G-122 WARN
+- [ ] Regression bats test uses the exact field fragments (`# VERSION=1.17`, `# VERSION=1.5`, inception_commit_limit echo, .secret-scan-allowlist echo, `_version=$(git describe ...)`) plus the project-line control, and fails without the fix
+- [ ] Vendored copy in sync (`bin/fw vendor self --check --task T-4552` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +285,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n bin/fw
+timeout 600 bats tests/unit/t4552_doctor_g122_framework_lines.bats > /tmp/.t4552.out 2>&1 && ! grep -q "^not ok" /tmp/.t4552.out
+test "$(grep -c '# skip' /tmp/.t4552.out)" -eq 0
+grep -qxF "_version=\$(git describe --tags --match 'v[0-9]*' 2>/dev/null) || true" agents/git/lib/framework-hook-lines.txt
+bin/fw vendor self --check --task T-4552
 
 ## RCA
 
@@ -265,6 +306,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on dimitri-mint-dev (v1.8.15-be.2) `fw doctor` WARNed "commit-msg(2) pre-commit(2) pre-push(1)" project lines commented out by install-hooks, but every one of those lines was a fragment of an OLD framework hook: `# VERSION=1.17`, `# VERSION=1.5`, the `inception_commit_limit` Configure echo, the `.secret-scan-allowlist` echo, `_version=$(git describe ...)`.
+
+**Root cause:** `bin/fw` (G-122 doctor check, T-4515) counted every `^# ` line below the `# T-4403: kept from the previous` header. T-4403 (`agents/git/lib/hooks.sh` at 478b7ac40) commented out every line of an old framework hook that the then-current template lacked — mostly lines of OLDER templates plus the old `# VERSION=` marker. The detector had no notion of "framework-owned", so it reported framework text as the consumer's own disabled gates.
+
+**Why structurally allowed:** T-4515's test only exercised kept lines that were genuine consumer lines; no fixture held a real older-template line, so the false-positive class had no test.
+
+**Prevention:** the detector now ignores comments/`VERSION` markers and any line in `agents/git/lib/framework-hook-lines.txt` (every non-comment line of every `HOOK_EOF` template body in the history of `agents/git/lib/hooks.sh`, generated by `tools/gen-framework-hook-lines.sh`). Only T-4403-era hooks carry commented lines, so the catalogue is complete for them. `tests/unit/t4552_doctor_g122_framework_lines.bats` pins the field fragments (no WARN) and a genuine project line (WARN).
 
 ## Evolution
 
@@ -346,3 +395,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4552-g-122-doctor-false-positive-old-framewor.md
 - **Context:** Initial task creation
+
+### 2026-10-21T15:54:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

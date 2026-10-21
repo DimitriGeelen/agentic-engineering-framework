@@ -2064,11 +2064,19 @@ do_doctor() {
     # old framework hook, so a consumer's own gates stopped running while their
     # text stayed in the file. Count those lines under its header. install-hooks
     # does not restore them itself: only the consumer knows which were theirs.
+    # T-4552: most of those lines are an OLDER framework template's, not the
+    # consumer's — a `# VERSION=` marker or other comment, or a line listed in
+    # framework-hook-lines.txt (every hook template ever shipped). Not counted.
     local _dis_hook _dis_n _dis_list=""
+    local _dis_cat="$FRAMEWORK_ROOT/agents/git/lib/framework-hook-lines.txt"
+    [ -f "$_dis_cat" ] || _dis_cat=/dev/null
     for _dis_hook in commit-msg pre-commit pre-merge-commit post-commit pre-push; do
         [ -f "$hooks_dir/$_dis_hook" ] || continue
-        _dis_n=$(awk '/^# T-4403: kept from the previous .*\(commented out/ { on = 1; next }
-                      on && /^# / { n++ } END { print n + 0 }' "$hooks_dir/$_dis_hook" 2>/dev/null)
+        _dis_n=$(awk 'FNR == NR { if ($0 !~ /^#/) fw[$0] = 1; next }
+                      /^# T-4403: kept from the previous .*\(commented out/ { on = 1; next }
+                      on && /^# / { l = substr($0, 3); gsub(/^[ \t]+|[ \t]+$/, "", l)
+                                    if (l != "" && l !~ /^#/ && !(l in fw)) n++ }
+                      END { print n + 0 }' "$_dis_cat" "$hooks_dir/$_dis_hook" 2>/dev/null)
         [ "${_dis_n:-0}" -gt 0 ] 2>/dev/null && _dis_list="$_dis_list $_dis_hook($_dis_n)"
     done
     if [ -n "$_dis_list" ]; then
