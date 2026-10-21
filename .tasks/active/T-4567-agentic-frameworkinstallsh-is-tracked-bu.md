@@ -1,13 +1,18 @@
 ---
 id: T-4567
-name: ".agentic-framework/install.sh is tracked but excluded from self-vendoring, so it goes stale"
+name: ".agentic-framework/install.sh is tracked but excluded from self-vendoring,
+  so it goes stale"
 description: >
-  Found by the T-4263 worker on 2026-10-21: install.sh is excluded from fw vendor self (bin/fw:882), yet .agentic-framework/install.sh is still tracked in the framework repo and is stale against install.sh. Either untrack the vendored copy (if nothing reads it) or include install.sh in self-vendoring; check what consumers and fw upgrade expect first. Regression test that the tracked copy cannot drift silently.
+  Found by the T-4263 worker on 2026-10-21: install.sh is excluded from fw vendor
+  self (bin/fw:882), yet .agentic-framework/install.sh is still tracked in the framework
+  repo and is stale against install.sh. Either untrack the vendored copy (if nothing
+  reads it) or include install.sh in self-vendoring; check what consumers and fw upgrade
+  expect first. Regression test that the tracked copy cannot drift silently.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, vendor]
 components: []
 related_tasks: [T-4263]
@@ -38,8 +43,8 @@ related_tasks: [T-4263]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:04:03Z
-last_update: 2026-10-21T21:04:03Z
-date_finished: null
+last_update: '2026-10-21T21:15:14Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-21T21:04:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-21T21:15:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=323,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4567: .agentic-framework/install.sh is tracked but excluded from self-vendoring, so it goes stale
@@ -62,8 +95,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Readers of `.agentic-framework/install.sh` (fw upgrade, fw vendor, init, consumers, tests) are enumerated in ## Decisions and the chosen fix (untrack vs vendor) follows from them
+- [ ] The tracked `.agentic-framework/install.sh` either no longer exists in the index or is byte-identical to `install.sh`
+- [ ] A regression bats test fails if a file tracked under `.agentic-framework/` is excluded from self-vendoring (the drift class, not just this one file)
+- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +283,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+test -z "$(git ls-files .agentic-framework/install.sh .agentic-framework/tests .agentic-framework/.fabric)"
+timeout 300 bats tests/unit/t4567_vendored_tree_tracked_parity.bats > /tmp/.t4567.out 2>&1 && ! grep -q "^not ok" /tmp/.t4567.out
+test "$(grep -c '# skip' /tmp/.t4567.out)" -eq 0
+timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4567-sim.out 2>&1 && ! grep -q "^not ok" /tmp/.t4567-sim.out
 
 ## RCA
 
@@ -264,6 +303,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `.agentic-framework/install.sh` was tracked in the framework repo and 700+ diff lines stale against `install.sh`. Six other tracked files under `.agentic-framework/` (tests/integration/*.bats, .fabric/components/tests-integration-*.yaml) were stale the same way.
+
+**Root cause:** The files were committed into the self-vendored tree once (install.sh by T-880, baa20575e; the tests/.fabric files by T-744, c3075e5d1). But neither `do_vendor`'s ship set (bin/fw:689 `includes=(`) nor any `fw vendor self` class (bin/fw:~10730) covers them. So nothing ever refreshed them, and nothing removed them.
+
+**Why structurally allowed:** `fw vendor self --check` and audit's self-vendor drift check run per class. They compare only the classes they know, source→copy. No check asked the reverse question: "is every tracked file under `.agentic-framework/` something the vendor actually ships?" A tracked file outside every class is invisible to every drift gate, by construction.
+
+**Prevention:** `tests/unit/t4567_vendored_tree_tracked_parity.bats` reads the ship set from `do_vendor`'s own `includes=(` array plus the files do_vendor writes explicitly (FRAMEWORK.md, VERSION, .gitignore, .fw-not-a-project, .upstream, vendor/designer/). It fails on any tracked `.agentic-framework/` path outside that set. It runs in the unit suite (nightly + pre-push ratchet).
 
 ## Evolution
 
@@ -320,6 +367,17 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-21 — untrack the vendored install.sh, do not vendor it
+- **Chose:** `git rm` `.agentic-framework/install.sh` (plus the six other tracked files in the same class, see below). Nothing that `fw vendor` / `fw vendor self` ships was changed.
+- **Why (readers, from grep):**
+  - `do_vendor` (bin/fw:689 `includes=(`) never lists install.sh. Its dry run says so (bin/fw:882). So no consumer has ever received it, and `fw upgrade` goes through do_vendor.
+  - `fw vendor self` (bin/fw:~10730) has no install.sh class.
+  - install.sh itself only reads a target's `.agentic-framework/{FRAMEWORK.md,VERSION,bin/fw}` (install.sh:304-307, 569-576), never the repo's tracked copy.
+  - Every test that runs install.sh uses `$FRAMEWORK_ROOT/install.sh` with FRAMEWORK_ROOT = repo root (e.g. tests/unit/install_scan.bats:8-9). No reader of `.agentic-framework/install.sh` exists.
+  - So untracking leaves what consumers receive unchanged. Vendoring install.sh would *add* a file consumers have never had, which is a behaviour change with no reader to justify it.
+- **Same class, same fix:** `.agentic-framework/tests/integration/{fw_git,fw_healing,fw_work_on}.bats` and `.agentic-framework/.fabric/components/tests-integration-*.yaml` were tracked by T-744. They sit outside the ship set too and all differ from source. The new regression test covers the class, so they are untracked as well.
+- **Rejected:** adding install.sh to `includes[]` (changes what consumers receive; no reader). Adding a self-vendor sync class for it (that would keep a copy nobody reads).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -345,3 +403,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4567-agentic-frameworkinstallsh-is-tracked-bu.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:04:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
