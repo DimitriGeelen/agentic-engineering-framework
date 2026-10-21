@@ -814,8 +814,12 @@ def _build_basename_index(now: float) -> dict:
     for f in root_docs:
         if f not in ROOT_FILES:
             idx.setdefault(f, []).insert(0, f)
+    import time as _t
     _BASENAME_INDEX["index"] = idx
-    _BASENAME_INDEX["built"] = now
+    # T-4547: age counts from when the walk FINISHED. Stamping `now` (read
+    # before the walk) published an index already past its TTL whenever the
+    # walk took longer than the TTL, so the next miss walked again.
+    _BASENAME_INDEX["built"] = _t.monotonic()
     return idx
 
 
@@ -850,7 +854,7 @@ def _exists_anywhere(name: str) -> bool:
                     dirs[:] = [d for d in dirs if d not in _TREE_SKIP_DIRS]
                     names.update(files)
                 _TREE_NAMES["names"] = frozenset(names)
-                _TREE_NAMES["built"] = now
+                _TREE_NAMES["built"] = _t.monotonic()  # T-4547: after the walk
     return name in _TREE_NAMES["names"]
 
 

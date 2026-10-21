@@ -2,9 +2,13 @@
 id: T-4547
 name: "Flaky under load: test_t3736_basename_index_single_build.py::test_many_misses_build_index_and_walk_tree_at_most_once"
 description: >
-  A count of index builds or tree walks that concurrent processes can disturb. Passes alone; failed once under the unit-suite's 12-way parallel run on a loaded shared host (2026-10-21), blocking a push via the ratchet. Make it deterministic under parallel load (no wall-clock or global-count assumptions, isolate shared state) and prove it with a stress run of the file in parallel.
+  A count of index builds or tree walks that concurrent processes can disturb. Passes
+  alone; failed once under the unit-suite's 12-way parallel run on a loaded shared
+  host (2026-10-21), blocking a push via the ratchet. Make it deterministic under
+  parallel load (no wall-clock or global-count assumptions, isolate shared state)
+  and prove it with a stress run of the file in parallel.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T14:05:13Z
-last_update: 2026-10-21T14:05:13Z
-date_finished: null
+last_update: 2026-10-21T16:11:51Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T14:15:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T14:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4547: Flaky under load: test_t3736_basename_index_single_build.py::test_many_misses_build_index_and_walk_tree_at_most_once
@@ -62,8 +94,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `web/shared.py` stamps `_BASENAME_INDEX["built"]` and `_TREE_NAMES["built"]` with the clock read AFTER the walk, so a walk slower than the 30 s TTL does not produce a cache born stale
+- [x] `tests/unit/test_t3736_basename_index_single_build.py` drives a fake monotonic clock and an empty fake walk instead of wall time and the real tree: the counts cannot be disturbed by host load (file runtime 176 s → ~1 s at load ~100)
+- [x] Regression tests `test_tree_walk_slower_than_ttl_is_not_redone` and `test_index_build_slower_than_ttl_is_not_redone` (fake clock advances 40 s inside the walk) fail on HEAD's `web/shared.py` (2 failed) and pass after
+- [x] The test file passes 20 consecutive foreground iterations while the host is loaded (load avg 43→70, 8 CPU burners + 12 parallel copies per iteration): 260/260 runs passed; neighbours test_t3587_file_refs / test_t3853_producer_text / test_govd_sandbox: 83 passed
+- [ ] `bin/fw vendor self --check --task T-4547` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +283,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_t3736_basename_index_single_build.py -q -p no:cacheprovider > /tmp/.t4547.out 2>&1 && grep -q "4 passed" /tmp/.t4547.out && ! grep -q failed /tmp/.t4547.out
+grep -q '_BASENAME_INDEX\["built"\] = _t.monotonic()' web/shared.py && grep -q '_TREE_NAMES\["built"\] = _t.monotonic()' web/shared.py
+bin/fw vendor self --check --task T-4547
 
 ## RCA
 
@@ -264,6 +302,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `test_many_misses_build_index_and_walk_tree_at_most_once` passes alone and failed once under the unit suite's 12-way parallel run on a loaded host (2026-10-21), blocking a push via the ratchet.
+
+**Root cause:** both caches stamp their age with the monotonic clock read BEFORE the walk: `_basename_index` reads `now` at web/shared.py:784 and `_build_basename_index` stores it at :818; `_exists_anywhere` reads `now` at :846 and stores it at :853. The whole-tree walk of PROJECT_ROOT is the slow one (tens of thousands of files). When a walk takes longer than `_BASENAME_MISS_TTL` (30 s) — which is exactly the loaded-host case T-3736 was about — the cache is already older than its TTL when it is published, so the very next miss walks again. The test assumed the walk plus 400 resolves fit inside a 30 s wall-clock window; under load they did not, and the count reached 2. The code is the racy party: the same defect in production re-introduces the T-3736 "every miss re-walks" behaviour on any host slow enough.
+
+**Why structurally allowed:** the T-3736 tests measured counts against the real wall clock, so they only exercised the fast-host path; nothing simulated a walk longer than the TTL, and a wall-clock dependent assertion passes on an idle host every time.
+
+**Prevention:** the cache stamps now use the clock read after the walk; the tests drive a fake monotonic clock (no wall-time dependence), and `test_tree_walk_slower_than_ttl_is_not_redone` / `test_index_build_slower_than_ttl_is_not_redone` advance the fake clock 40 s inside the walk and assert a single walk/build — both fail on the pre-fix code.
 
 ## Evolution
 
@@ -345,3 +391,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4547-flaky-under-load-testt3736basenameindexs.md
 - **Context:** Initial task creation
+
+### 2026-10-21T16:11:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
