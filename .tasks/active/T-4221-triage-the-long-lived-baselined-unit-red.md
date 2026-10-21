@@ -12,10 +12,10 @@ description: >
   ones and the per-file plan: fix, re-own to a live task, or delete a test that no
   longer measures anything. Results per file from T-4220: .context/scratch/t4220-expired-results.tsv.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T03:04:20Z
-last_update: '2026-10-17T03:16:07Z'
+last_update: 2026-10-21T22:33:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,6 +86,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4221: Triage the long-lived baselined unit reds: 28 tests in 16 files expired 2026-10-15 (4 files untriaged) plus the load-sensitive t1719 latency budget
@@ -98,8 +114,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every file named in `.context/audits/unit-suite/baseline.yaml` was run alone in the foreground on current bleeding-edge and has a per-entry verdict (green-alone / red + cause) in `## Triage` below
+- [x] Each red owned by T-4221 is either fixed here (with a regression test that fails without the fix) or handed to one filed task per independent cause
+- [x] The baseline was not edited by hand and no entry was added (`git diff` on baseline.yaml is empty for this task's commits)
+- [x] `port_in_use` (bin/watchtower.sh) and `_watchtower_port_listening` (lib/watchtower.sh) report a held port as held under pipefail when `ss` output is large; `tests/unit/t4221_port_in_use_sigpipe.bats` fails without the fix and passes with it
+- [x] The T-2888 git-verb scan in `context_safe_commands.bats` reads tracked files only (not gitignored `.context/scratch`); the regression leg in the same file fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -277,6 +296,55 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q '^## Triage' .tasks/active/T-4221-triage-the-long-lived-baselined-unit-red.md
+timeout 300 bats tests/unit/t4221_port_in_use_sigpipe.bats > /tmp/.t4221a 2>&1 && ! grep -q "^not ok" /tmp/.t4221a && test "$(grep -c '# skip' /tmp/.t4221a)" -eq 0
+timeout 300 bats -f 'T-2888|T-4221' tests/unit/context_safe_commands.bats > /tmp/.t4221b 2>&1 && ! grep -q "^not ok" /tmp/.t4221b && grep -q '^ok' /tmp/.t4221b
+timeout 600 bats tests/unit/t3662_watchtower_port_allocation.bats > /tmp/.t4221c 2>&1 && ! grep -q "^not ok" /tmp/.t4221c
+bash -n bin/watchtower.sh && bash -n lib/watchtower.sh
+bin/fw vendor self --check --task T-4221
+# 956f05f36 / e6199c726 are the operator's own runme extensions; nothing after them under T-4221 may touch the baseline
+test -z "$(git log --format=%H --grep='^T-4221' 956f05f36..HEAD -- .context/audits/unit-suite/baseline.yaml)"
+
+## Triage
+
+Every file in `.context/audits/unit-suite/baseline.yaml` (28 files, 43 entries),
+run alone in the foreground on bleeding-edge 2026-10-22, `timeout 280` per file,
+load average 45–70. Raw output: `.context/scratch/t4221/<file>.out`. Every owner
+listed below is a live task in `.tasks/active/`.
+
+| File | Owner | Alone | Verdict / cause |
+|---|---|---|---|
+| approvals_close_ready_arcs.bats (5) | T-3611 | RED 5 | fixture has no `policy/value-drivers.yaml`; loader exits 2 — stays with T-3611 |
+| atomic_yaml_write_lint.bats | T-3612 | RED | `lib/govd_sandbox.py`, `agents/audit/unit_tier.py` truncate-write YAML — stays with T-3612 |
+| audit.bats | T-4325 | green | drops on regenerate |
+| audit_inception_recommendation.bats | T-3609 | RED (#10) | bypass leg exits non-zero — stays with T-3609 |
+| audit_split_root_asset_lint.bats | T-3614 | RED | 28 PROJECT_ROOT asset sites vs baseline 22 — stays with T-3614 |
+| check_render_surface_human_ac_sigpipe.bats | T-4221 | green | drops on regenerate |
+| context_safe_commands.bats | T-4221 | timeout (green in 5 min) | **fixed here** — RCA cause 2 |
+| doctor_hook_counters.bats (3) | T-3615 | RED 3 | doctor no longer prints `Hook configuration valid` — stays with T-3615 |
+| fabric_coverage_single_source.bats (2) | T-4221 | green | drops on regenerate |
+| fw_focus_alias.bats (4) | T-4325 | green | drops on regenerate |
+| fw_mode_detection.bats | T-4038 | RED (#2) + timeout | `fw doctor` exits >1 — stays with T-4038 |
+| handover_push_timeout.bats (3) | T-3556 | green | drops on regenerate |
+| hook_telemetry_race.bats | T-4325 | green | 5 ms budget, load-sensitive — T-3992 class |
+| lib_review.bats (2) | T-3609 | RED 2 | stays with T-3609 |
+| no_root_framework_markers.bats | T-2787 | green | drops on regenerate |
+| review_pipefail.bats | T-3609 | RED | stays with T-3609 |
+| t1719_ask_routing.bats (2) | T-4325 | timeout (#8 live ask hangs) | stays with T-4325 |
+| t1719_index_one_post_write.bats | T-4221 | green | 5 s budget fails only under suite load — T-3992 class (parallel-load flakes) |
+| t2243_doctor_self_vendor_templates.bats | T-3747 | green | drops on regenerate |
+| t2244_audit_self_vendor_drift.bats (2) | T-3604 | green | was TIMEOUT in T-4220; drops on regenerate |
+| t2298_audit_structure_no_perfile_fork.bats (2) | T-3604 | green | drops on regenerate |
+| t2452_doctor_quick.bats | T-3992 | RED (#5) | `doctor --quick` exits 2 — stays with T-3992 |
+| t3662_watchtower_port_allocation.bats | T-4221 | RED 3 | **fixed here** — RCA cause 1; 3/3 green after |
+| t4119_terminator_handover_git_extension.bats | T-4221 | green | drops on regenerate |
+| test_bin_fw_no_heredoc_cmd_sub.bats | T-4221 | RED | bin/fw:2679 and :3143 heredoc in `$(...)` — **filed T-4581** |
+| test_cron_registry_generated_drift.bats | T-4221 | green | drops on regenerate |
+| test_doctor_litellm_ollama.bats | T-4138 | RED (#6) | `fw doctor` exits non-zero — stays with T-4138 |
+| test_operator_facing_stderr.py | T-3605 | RED | unsanitized stderr site — stays with T-3605 |
+
+Baseline not edited; the greens leave it through `unit_suite_baseline.py
+regenerate` after the next full run.
 
 ## RCA
 
@@ -293,6 +361,44 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+### Cause 1 — t3662_watchtower_port_allocation (3 reds)
+
+**Symptom:** `watchtower.sh start` for a second project (or next to a foreign
+listener) picks a port that is already held, Flask dies with "Address already in
+use", start exits 1. Intermittent: depends on where the held port sorts in `ss`.
+
+**Root cause:** `bin/watchtower.sh:75` `port_in_use` is `ss -tlnp | grep -q ":$port "`
+under `set -euo pipefail` (bin/watchtower.sh:11). On this host `ss -tlnp` prints
+~250 KB; when the port's line comes early, `grep -q` exits, `ss` takes SIGPIPE and
+the pipeline returns 141, which `port_in_use` reports as "not in use". Measured:
+5/5 runs rc=141 for the first listed port. `lib/watchtower.sh:314`
+`_watchtower_port_listening` has the same idiom (L-387 class).
+
+**Why structurally allowed:** the test only fails when `ss` output exceeds what it
+writes before grep exits, i.e. on a busy host; on a dev box with a few sockets the
+pipe never breaks, so the allocator test was green where it was written.
+
+**Prevention:** both checks now count with `grep -c` (reads all input, no early
+exit) on `ss -tln`; `tests/unit/t4221_port_in_use_sigpipe.bats` stubs a large
+`ss` output with the port first, under pipefail, for both functions.
+
+### Cause 2 — context_safe_commands.bats T-2888 git-verb scan (timeout)
+
+**Symptom:** the test takes 5 min alone (29 s CPU) and is killed by the suite's
+per-file timeout; green when it is allowed to finish.
+
+**Root cause:** `tests/unit/context_safe_commands.bats:299` scans "our own tooling"
+with `grep -r "$FRAMEWORK_ROOT"`, which walks the gitignored `.context/scratch`
+(22,183 matching files, 202k of 226k matches) inside a 36 GB `.context/`. Those are
+not our tooling, and the walk is I/O-bound.
+
+**Why structurally allowed:** the scratch tree grows by worker output over time;
+the scan was cheap when it was written.
+
+**Prevention:** the scan reads `git ls-files` (tracked files only, falls back to
+`grep -r` outside a git checkout); a regression leg builds a temp repo with an
+untracked script and asserts its verb is not collected.
 
 ## Evolution
 
@@ -374,3 +480,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4221-triage-the-long-lived-baselined-unit-red.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:33:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -271,6 +271,35 @@ setup() {
 # minus an EXPLICIT mutating denylist. Anything left is a verb nobody has
 # classified. It fails asking for a decision, not for a specific answer — adding
 # it to the denylist is an equally valid way to go green.
+# _tooling_git_verbs ROOT — the git sub-verbs our own tooling invokes, one per
+# line. T-4221: "our own tooling" is the TRACKED files. A `grep -r` over ROOT
+# walked the gitignored .context/scratch (22k worker files, 36 GB under
+# .context/), took 5 minutes and was killed by the suite timeout. Outside a git
+# checkout, fall back to the tree walk.
+_tooling_git_verbs() {
+    local root="$1" re='(^|[;&|(`$" ])git +(-C +[^ ]+ +)?[a-z][a-z-]+'
+    if git -C "$root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        (cd "$root" && git ls-files -z -- '*.sh' '*.py' '*.bats' \
+            | xargs -0 -r grep -hoE "$re" 2>/dev/null)
+    else
+        grep -rhoE "$re" --include=*.sh --include=*.py --include=*.bats "$root" 2>/dev/null
+    fi | grep -oE '[a-z][a-z-]+$' | sort -u
+}
+
+@test "safe-commands: the T-2888 verb scan reads tracked files only (T-4221)" {
+    command -v git >/dev/null || skip "git not available"
+    local repo="$TEST_TEMP_DIR/repo"
+    mkdir -p "$repo/scratch"
+    git -C "$repo" init -q
+    printf 'git log --oneline\n' > "$repo/tracked.sh"
+    printf 'git frobnicate-untracked\n' > "$repo/scratch/junk.sh"
+    git -C "$repo" add tracked.sh
+    run _tooling_git_verbs "$repo"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *log* ]]
+    [[ "$output" != *frobnicate-untracked* ]]
+}
+
 @test "safe-commands: no unclassified git verb is used by our own tooling (T-2888)" {
     command -v git >/dev/null || skip "git not available"
     git --list-cmds=main >/dev/null 2>&1 || skip "git too old for --list-cmds"
@@ -296,9 +325,7 @@ setup() {
     denylist=" $(echo $denylist) "
 
     local residue="" verb
-    for verb in $(grep -rhoE '(^|[;&|(`$" ])git +(-C +[^ ]+ +)?[a-z][a-z-]+' \
-                    --include=*.sh --include=*.py --include=*.bats "$FRAMEWORK_ROOT" 2>/dev/null \
-                  | grep -oE '[a-z][a-z-]+$' | sort -u); do
+    for verb in $(_tooling_git_verbs "$FRAMEWORK_ROOT"); do
         git --list-cmds=main | grep -qx "$verb" || continue        # not a real git command
         [[ "$denylist" == *" $verb "* ]] && continue               # classified as mutating
         is_bash_safe_command "git $verb" && continue               # already allowed

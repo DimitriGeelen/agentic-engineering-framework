@@ -71,8 +71,11 @@ is_running() {
 }
 
 port_in_use() {
-    local port="$1"
-    ss -tlnp 2>/dev/null | grep -q ":${port} " 2>/dev/null
+    local port="$1" n
+    # T-4221: grep -c reads all of ss's output. `grep -q` exited at the first
+    # match, ss took SIGPIPE, and under pipefail the 141 read as "free" (L-387).
+    n=$(ss -tln 2>/dev/null | grep -c ":${port} ") || true
+    [ "${n:-0}" -gt 0 ]
 }
 
 # ensure_firewall_open is sourced from lib/firewall.sh (T-888)

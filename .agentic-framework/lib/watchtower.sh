@@ -311,7 +311,11 @@ _watchtower_base_or_placeholder() {
 # bin/watchtower.sh:port_in_use, which lib/ does not source. It says nothing
 # about WHO holds the port: the identity question is _watchtower_identity_matches.
 _watchtower_port_listening() {
-    ss -tln 2>/dev/null | grep -q ":${1} "
+    # T-4221: count, don't `grep -q` — an early exit SIGPIPEs ss and a caller
+    # under pipefail reads the 141 as "not listening" (L-387).
+    local n
+    n=$(ss -tln 2>/dev/null | grep -c ":${1} ") || true
+    [ "${n:-0}" -gt 0 ]
 }
 
 # fw_task_review_url TASK_ID [TASK_FILE]
