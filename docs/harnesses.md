@@ -56,7 +56,9 @@ The panel's criterion satisfied `satisfying_verdict`: three seats, three vendors
 - **Resume:**
   - `claude -c` (most recent conversation);
   - `claude --resume <session-id>`.
-  - `claude-fw` restarts with `claude -c` after a handover signal.
+  - `claude-fw` auto-restarts after a handover signal into a **fresh** session seeded from the
+    handover (`FW_RESTART_MODE=fresh`, the default, T-3166); `FW_RESTART_MODE=continue` resumes
+    the recorded conversation with `--resume <id>` instead (T-4497).
 - **Auth:** Claude subscription login, stored in the user's Claude config directory (`~/.claude/`).
   Reference name only.
 - **Session state:**

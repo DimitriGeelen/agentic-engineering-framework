@@ -872,9 +872,11 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 
 ## Auto-Restart (T-179)
 
-When context budget hits critical, `checkpoint.sh` auto-generates a handover and writes `.context/working/.restart-requested`. If the user started their session via `claude-fw` (instead of `claude`), the wrapper detects this signal on exit and auto-restarts with `claude -c`. The `SessionStart:resume` hook then injects handover context into the fresh session.
+When context budget hits critical, `checkpoint.sh` auto-generates a handover and writes `.context/working/.restart-requested`. If the user started their session via `claude-fw` (instead of `claude`), the wrapper detects this signal on exit and auto-restarts **a fresh session** — not `claude -c` (T-3166). The previous conversation is not restored, because restoring it would hand back the very context the restart exists to free. The wrapper leaves a `.auto-restart-pending` sentinel, and the SessionStart hook (`post-compact-resume.sh`, source `startup`) injects the handover, any armed directive and the loop counter into the new session.
 
-**Flow:** Budget critical → auto-handover → signal file → claude exits → wrapper detects → `sleep 3` → `claude -c` → context injected → `/resume` ready.
+**Flow:** Budget critical → auto-handover → signal file → claude exits → wrapper detects → `sleep 3` → new `claude` session → handover injected → `/resume` ready.
+
+**Restart mode:** `FW_RESTART_MODE=fresh` is the default. `FW_RESTART_MODE=continue` keeps the transcript instead: the wrapper resumes this session's recorded conversation (`--resume <id>`, never a bare `-c`, T-4497). It does not free context, so the next budget check can be critical again. The wrapper prints which mode fired (`Restart mode: …`) on every restart.
 
 **Safety:** 5-minute TTL on signal files, max 5 consecutive restarts, 3-second cancel window, opt-out via `--no-restart`.
 
