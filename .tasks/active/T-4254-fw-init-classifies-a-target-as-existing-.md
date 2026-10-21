@@ -7,10 +7,10 @@ description: >
   `.claude/`) when deciding greenfield vs existing. Findings (0909 run aef-install-20261017T144241Z):
   F-03. Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-1.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:24:34Z
-last_update: '2026-10-17T15:31:17Z'
+last_update: 2026-10-21T20:19:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw init` on a directory holding only a `.context/` (and/or `.tasks/`) dir with foreign files seeds the greenfield onboarding set, not existing-project
+- [x] A directory with real user content (e.g. `main.py`) beside `.context/` is still classified existing-project
+- [x] Regression bats test fails before the fix and passes after; neighbouring init tests stay green
+- [x] `bin/fw vendor self --check --task T-4254` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,8 +274,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/init.sh
+timeout 900 bats -f "T-4254" tests/unit/init_project_shape_detection.bats > /tmp/.t4254.out 2>&1 && ! grep -q "^not ok" /tmp/.t4254.out
+test "$(grep -c '# skip' /tmp/.t4254.out)" -eq 0
+bin/fw vendor self --check --task T-4254
 
 ## RCA
+
+**Symptom:** `fw init` on a target containing only a `.context/` dir (two foreign .md files, no code) printed "existing project mode" and seeded the existing-project onboarding set (F-03, 0909 run aef-install-20261017T144241Z).
+
+**Root cause:** the pre-init census in `lib/init.sh:122-138` excluded framework scaffolding by name (`.agentic-framework`, `.claude`, `.framework.yaml`, …) but not `.context` or `.tasks`, the two directories fw init itself creates. Any such entry landed in `preexisting_entries`, and `lib/init.sh:735` sets `has_code=true` on a non-empty census.
+
+**Why structurally allowed:** `tests/unit/init_project_shape_detection.bats` (T-2723) covered ecosystems with code and a genuinely empty dir, but no fixture with framework-owned dirs and no code — the exclusion list had no test for its completeness.
+
+**Prevention:** two new tests in that file — `.context/`+`.tasks/` only → greenfield (red before the fix), and `.context/`+`main.py` → existing (control so the exclusion cannot widen into "always greenfield"). Prior tasks under `.tasks/` remain handled by the separate `has_existing_tasks` probe.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -369,3 +383,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4254-fw-init-classifies-a-target-as-existing-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:19:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

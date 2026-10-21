@@ -193,3 +193,28 @@ _fixture() {
     [ "$output" != "existing" ]
     [ "$output" != "greenfield" ]
 }
+
+# ── T-4254: framework-owned dirs are scaffolding, not user content ─────────────────
+# F-03 (0909 run aef-install-20261017T144241Z): a target holding only a `.context/` dir
+# with two foreign .md files was seeded existing-project. `.context/` and `.tasks/` are
+# directories fw init itself creates, so their presence is no evidence of code.
+
+@test "T-4254: a directory holding only .context/ and .tasks/ is detected as greenfield" {
+    local p; p=$(_fixture onlyctx)
+    mkdir -p "$p/.context/notes" "$p/.tasks"
+    printf '# a\n' > "$p/.context/notes/a.md"
+    printf '# b\n' > "$p/.context/b.md"
+    run _shape_of "$p"
+    [ "$status" -eq 0 ]
+    [ "$output" = "greenfield" ]
+}
+
+@test "T-4254 control: real code beside .context/ is still an existing project" {
+    local p; p=$(_fixture ctxpluscode)
+    mkdir -p "$p/.context"
+    printf '# a\n' > "$p/.context/a.md"
+    printf 'print(1)\n' > "$p/main.py"
+    run _shape_of "$p"
+    [ "$status" -eq 0 ]
+    [ "$output" = "existing" ]
+}

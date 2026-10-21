@@ -134,6 +134,9 @@ do_init() {
             # .fw-init-incomplete (T-2801) is ours by definition — it only exists
             # because a previous run of THIS function put it there.
             .agentic-framework|.claude|.framework.yaml|CLAUDE.md|FRAMEWORK.md|.mcp.json|.fw-init-incomplete) continue ;;
+            # T-4254: .context/ and .tasks/ are framework-owned too. Prior tasks are
+            # judged separately (has_existing_tasks); loose notes under them are not code.
+            .context|.tasks) continue ;;
         esac
         preexisting_entries+=("$_b")
     done
@@ -686,6 +689,20 @@ CYAML
             echo -e "  ${YELLOW}⚠${NC}  Session init failed — run 'fw context init' manually"
             [ -n "$si_err" ] && echo "$si_err" | sed 's/^/      /' >&2
         fi
+        # T-4259: the registry above is seeded with framework jobs (T-3673), so
+        # leaving it ungenerated made the first `fw doctor` WARN "present but not
+        # generated" — drift init itself created. Generate only; installing writes
+        # root cron and stays a deliberate operator step (`fw cron install`).
+        if [ -f "$target_dir/.context/cron-registry.yaml" ] \
+            && [ ! -f "$target_dir/.context/cron/agentic-audit.crontab" ]; then
+            local cg_err
+            if cg_err="$(PROJECT_ROOT="$target_dir" "$si_fw" cron generate 2>&1 >/dev/null)"; then
+                echo -e "  ${GREEN}✓${NC}  Cron crontab generated (not installed — run: fw cron install)"
+            else
+                echo -e "  ${YELLOW}⚠${NC}  Cron generate failed — run 'fw cron generate' manually"
+                [ -n "$cg_err" ] && echo "$cg_err" | sed 's/^/      /' >&2
+            fi
+        fi
     fi
 
     # --- Copy onboarding task templates (T-460) ---
@@ -947,6 +964,7 @@ CYAML
         echo -e "  Onboarding tasks are ready — ${BOLD}$onboard_count tasks${NC} will guide you through setup."
     fi
     echo ""
+    echo -e "  ${BOLD}Scheduled jobs${NC}: fw cron install  (operator step — writes root cron for the generated crontab)"
     echo -e "  ${BOLD}Dashboard${NC}: fw serve"
     echo -e "  ${BOLD}All commands${NC}: fw help"
 }
