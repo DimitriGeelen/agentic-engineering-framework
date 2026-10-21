@@ -98,7 +98,7 @@ bvp_scores_proposed:
 - [x] tests/integration/fw_docs.bats finishes in bounded time (each external call wrapped in `timeout`, or the waited-on dependency removed/guarded with a clear skip reason)
 - [x] tests/unit/handover.bats finishes in bounded time on a clean machine (no unbounded wait on a host service / network / TTY)
 - [x] Regression guard added that fails if the hang returns
-- [ ] `bin/fw vendor self --check --task T-4522` clean
+- [x] `bin/fw vendor self --check --task T-4522` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
