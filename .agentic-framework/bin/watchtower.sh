@@ -577,6 +577,25 @@ do_status() {
 }
 
 # ---------------------------------------------------------------------------
+# do_reachable — Does THIS project's Watchtower answer at its URL? (T-4562)
+# ---------------------------------------------------------------------------
+# Resolves the URL itself (do_url) and probes /api/_identity, so a caller needs
+# no `WURL=$(cat …); curl "$WURL"` — a shape the no-focus read-only gate refuses
+# (T-4512). Identity, not mere reachability: on a shared host another project's
+# Watchtower answers 200 too (the T-2732 false-green class).
+# rc 0 = ours, answering; 1 = a foreign service answers there; 3 = nothing answers.
+do_reachable() {
+    local url state
+    url=$(do_url)
+    state=$(_watchtower_identity_state "$url")
+    case "$state" in
+        ours)    echo "running at $url" ;;
+        foreign) echo "stopped (something else answers at $url — not this project's Watchtower)"; return 1 ;;
+        *)       echo "stopped"; return 3 ;;
+    esac
+}
+
+# ---------------------------------------------------------------------------
 # do_current — Is the RUNNING process serving the code on disk? (T-3282, G-104)
 # ---------------------------------------------------------------------------
 # rc 0 = current, OR no Watchtower running (nothing can be stale — this keeps
@@ -708,6 +727,7 @@ case "$cmd" in
     stop)    do_stop ;;
     restart) do_restart "$@" ;;
     status)  do_status ;;
+    reachable) do_reachable ;;
     port)    do_port ;;
     url)     do_url ;;
     current) do_current ;;
@@ -719,6 +739,7 @@ case "$cmd" in
         echo "  stop                           Stop Watchtower"
         echo "  restart [--port N] [--debug]  Stop then start"
         echo "  status                         Show current state; exit 0 running, 1 stale PID file, 3 not running (T-3661)"
+        echo "  reachable                      Probe this project's Watchtower at its URL; exit 0 running, 1 foreign, 3 stopped (T-4562)"
         echo "  port                           Print current port (triple-file source of truth; T-1376 B5)"
         echo "  url                            Print current URL (triple-file source of truth; T-1376 B5)"
         echo "  current                        Exit 1 if the running process predates web/ source (T-3282)"

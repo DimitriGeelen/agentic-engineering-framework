@@ -10,8 +10,8 @@ Run these in parallel:
 2. Run `git status --short` and `git log --oneline -5`
 3. List `.tasks/active/` and extract task IDs, names, and statuses from frontmatter
 4. Check tool counter: `cat .context/working/.tool-counter`
-5. Check web server: `WURL=$(cat .context/working/watchtower.url 2>/dev/null || echo "http://localhost:$(bin/fw config get PORT 2>/dev/null || echo 3000)"); curl -sf "$WURL/" > /dev/null && echo "running at $WURL" || echo "stopped"`
-   (Never hard-code `:3000` — the triple file `.context/working/watchtower.{pid,port,url}` is the single source of truth for Watchtower's current port. See `bin/fw doctor` for diagnostics.)
+5. Check web server: `bin/fw watchtower reachable`
+   (Prints `running at <URL>` or `stopped`. It resolves the URL from the triple file `.context/working/watchtower.{pid,port,url}` and checks the answer is this project's Watchtower — never hard-code `:3000`, and never `cat` the URL into a variable and curl it: the read-only gate refuses that with no task in focus. See `bin/fw doctor` for diagnostics.)
 
 ## Step 2: Summarize
 

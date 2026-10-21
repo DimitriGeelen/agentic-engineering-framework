@@ -1400,7 +1400,8 @@ _fw_single_command_is_safe() {
                     return 0
                     ;;
                 watchtower)
-                    case "$fw_sub3" in port|url|status) return 0 ;; esac
+                    # T-4562: reachable = do_url + an identity GET; writes nothing.
+                    case "$fw_sub3" in port|url|status|reachable) return 0 ;; esac
                     ;;
                 config)
                     case "$fw_sub3" in get|list|overrides) return 0 ;; esac

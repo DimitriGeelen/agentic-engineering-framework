@@ -1,13 +1,20 @@
 ---
 id: T-4562
-name: "/resume template's Watchtower check is refused with no focus since T-4512 (curl word starts with a file-read expansion)"
+name: "/resume template's Watchtower check is refused with no focus since T-4512 (curl
+  word starts with a file-read expansion)"
 description: >
-  832 on be.2: lib/templates/resume-md.md step 5 runs WURL=$(cat .context/working/watchtower.url ...); curl -sf "$WURL/" — is_bash_safe_command now refuses it with focus null (the curl word begins with an expansion of a value read from a file). The rule is sound; the template must change. Replace the step with a command the read-only gate accepts with no focus (e.g. bin/fw watchtower status / a reachability verb that resolves the URL itself), regenerate the shipped skill, and add a test that runs the template's commands through is_bash_safe_command.
+  832 on be.2: lib/templates/resume-md.md step 5 runs WURL=$(cat .context/working/watchtower.url
+  ...); curl -sf "$WURL/" — is_bash_safe_command now refuses it with focus null (the
+  curl word begins with an expansion of a value read from a file). The rule is sound;
+  the template must change. Replace the step with a command the read-only gate accepts
+  with no focus (e.g. bin/fw watchtower status / a reachability verb that resolves
+  the URL itself), regenerate the shipped skill, and add a test that runs the template's
+  commands through is_bash_safe_command.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, resume, gate]
 components: []
 related_tasks: [T-4512, T-4536]
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "ecf73284"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T17:37:02Z
-last_update: 2026-10-21T17:37:02Z
-date_finished: null
+last_update: 2026-10-21T18:07:12Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T17:45:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T17:46:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4562: /resume template's Watchtower check is refused with no focus since T-4512 (curl word starts with a file-read expansion)
@@ -63,8 +98,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Step 5 of `lib/templates/resume-md.md` no longer reads `watchtower.url` into a variable and curls it; it runs a single `bin/fw watchtower …` verb that resolves the URL and probes reachability itself
+- [ ] That verb is read-only and `is_bash_safe_command` accepts it with no task in focus (gate not loosened: `agents/context/lib/safe-commands.sh` unchanged in its refusal of expansion-led words)
+- [ ] Every rendered/shipped copy of the template (vendored `.agentic-framework/lib/templates/resume-md.md`, any rendered `.claude/commands/resume.md`) carries the new step
+- [ ] Regression test extracts every inline shell command from the template and asserts `is_bash_safe_command` accepts each; it fails on the old step 5
+- [ ] `bin/fw vendor self --check --task T-4562` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -250,6 +288,14 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 300 bats tests/unit/t4562_resume_template_safe.bats > /tmp/.t4562 2>&1 && ! grep -q "^not ok" /tmp/.t4562
+test "$(grep -c '# skip' /tmp/.t4562)" -eq 0
+timeout 900 bats tests/unit/lib_upgrade.bats > /tmp/.t4562u 2>&1 && ! grep -q "^not ok" /tmp/.t4562u
+bash -c 'source agents/context/lib/safe-commands.sh; is_bash_safe_command "bin/fw watchtower reachable"'
+! grep -q 'WURL' lib/templates/resume-md.md
+cmp -s lib/templates/resume-md.md .claude/commands/resume.md
+bin/fw vendor self --check --task T-4562
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -289,6 +335,14 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+**Symptom:** On 832 (be.2), `/resume` step 5 — `WURL=$(cat .context/working/watchtower.url …); curl -sf "$WURL/" …` — was refused by the task gate when focus was null, i.e. exactly when `/resume` runs.
+
+**Root cause:** `lib/templates/resume-md.md:13` (and the inline fallback copy at `lib/init.sh:1489`) told agents to read the URL into a variable and curl it. Since T-4512, `is_bash_safe_command` (`agents/context/lib/safe-commands.sh`) correctly refuses a command word that begins with an expansion of a file-read value, so the shipped template prescribed a command its own gate refuses. No `fw watchtower` verb resolved the URL *and* probed it, so there was no allowlisted single-command alternative.
+
+**Why structurally allowed:** Templates that ship commands to agents were never run through the gate that judges those commands; T-4512 tightened the gate and nothing re-checked the prose that prescribes commands.
+
+**Prevention:** `tests/unit/t4562_resume_template_safe.bats` extracts every inline command from the template's Step-1 list and asserts the gate accepts each one; pins the old shape as still refused (gate not loosened) and the init.sh fallback in sync with the template. New read-only verb `fw watchtower reachable` (bin/watchtower.sh `do_reachable`) checks identity via `/api/_identity`, not bare 200, so it also avoids the T-2732 foreign-Watchtower false green.
 
 ## Recommendation
 
@@ -346,3 +400,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4562-resume-templates-watchtower-check-is-ref.md
 - **Context:** Initial task creation
+
+### 2026-10-21T18:07:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

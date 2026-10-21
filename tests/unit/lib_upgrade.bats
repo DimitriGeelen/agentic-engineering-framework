@@ -128,7 +128,7 @@ STALE
     run do_upgrade "$proj" --no-self-vendor
     [ "$status" -eq 0 ]
     [[ "$output" == *"UPDATED"*"resume.md"*"stock copy"* ]]
-    grep -q 'watchtower.url' "$proj/.claude/commands/resume.md"
+    grep -q 'watchtower reachable' "$proj/.claude/commands/resume.md"
 }
 
 @test "upgrade: a customised or unrecorded resume.md is KEPT, template beside it as .upstream (T-3956)" {
@@ -140,7 +140,7 @@ STALE
     [ "$status" -eq 0 ]
     [[ "$output" == *"KEPT"*"resume.md"* ]]
     grep -q 'MY CUSTOMISED VERSION' "$proj/.claude/commands/resume.md"
-    grep -q 'watchtower.url' "$proj/.claude/commands/resume.md.upstream"
+    grep -q 'watchtower reachable' "$proj/.claude/commands/resume.md.upstream"
 }
 
 @test "upgrade: resume.md matches template — reports OK, no .bak written" {
@@ -162,7 +162,7 @@ STALE
     [ "$status" -eq 0 ]
     [[ "$output" == *"CREATED"*"resume.md"*"from template"* ]]
     [ -f "$proj/.claude/commands/resume.md" ]
-    grep -q 'watchtower.url' "$proj/.claude/commands/resume.md"
+    grep -q 'watchtower reachable' "$proj/.claude/commands/resume.md"
 }
 
 # T-2759 (target_dir rebind in step 4c's shim migration) has its own
