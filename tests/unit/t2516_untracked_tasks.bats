@@ -59,6 +59,51 @@ setup() {
     [ -z "$output" ]
 }
 
+# T-4260 (F-16): a freshly initialised project has NO tracked task files, so
+# `git status --porcelain` (default -unormal) collapsed the whole directory to
+# one entry and doctor reported "1" for five seeded tasks.
+@test "untracked-tasks: wholly-untracked directory lists every file (T-4260)" {
+    FRESH="$BATS_TEST_TMPDIR/fresh"
+    mkdir -p "$FRESH/.tasks/active"
+    git init -q -b master "$FRESH"
+    for n in 1 2 3; do printf -- '---\nid: T-00%s\n---\n' "$n" > "$FRESH/.tasks/active/T-00$n-x.md"; done
+    run fw_untracked_tasks "$FRESH"
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s\n' "$output" | grep -c .)" -eq 3 ]
+    echo "$output" | grep -q "^.tasks/active/T-002-x.md$"
+}
+
+# T-4260 (F-16): a project nested in an enclosing repo got toplevel-relative
+# paths (sub/.tasks/...), not project-relative ones.
+@test "untracked-tasks: project nested in an enclosing repo → project-relative paths (T-4260)" {
+    mkdir -p "$REPO/sub/.tasks/active"
+    printf -- '---\nid: T-001\n---\n' > "$REPO/sub/.tasks/active/T-001-x.md"
+    run fw_untracked_tasks "$REPO/sub"
+    [ "$status" -eq 0 ]
+    [ "$output" = ".tasks/active/T-001-x.md" ]
+}
+
+# T-4260 (F-16): init-seeded onboarding tasks must not be offered for removal;
+# the doctor needs to know which untracked files they are.
+@test "untracked-onboarding: names only onboarding-tagged untracked tasks (T-4260)" {
+    printf -- '---\nid: T-001\ntags: [onboarding]\n---\n' > .tasks/active/T-001-seed.md
+    printf -- '---\nid: T-002\ntags: [onboarding, inception]\n---\n' > .tasks/active/T-002-seed.md
+    printf -- '---\nid: T-200\ntags: [bug]\n---\n' > .tasks/completed/T-200-orphan.md
+    run fw_untracked_onboarding_tasks "$REPO"
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s\n' "$output" | grep -c .)" -eq 2 ]
+    echo "$output" | grep -q "^.tasks/active/T-001-seed.md$"
+    ! echo "$output" | grep -q "T-200" || false
+}
+
+@test "untracked-onboarding: tracked onboarding task is NOT listed (T-4260)" {
+    printf -- '---\nid: T-001\ntags: [onboarding]\n---\n' > .tasks/active/T-001-seed.md
+    git add -A && git commit -qm seed
+    run fw_untracked_onboarding_tasks "$REPO"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
 @test "untracked-tasks: non-git directory → empty, exit 0 (no crash)" {
     run fw_untracked_tasks "$BATS_TEST_TMPDIR/not-a-repo"
     [ "$status" -eq 0 ]

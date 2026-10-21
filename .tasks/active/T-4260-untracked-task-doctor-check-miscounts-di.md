@@ -7,10 +7,10 @@ description: >
   removal advice for onboarding-tagged tasks. Findings (0909 run aef-install-20261017T144241Z):
   F-16. Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-7.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:26:18Z
-last_update: '2026-10-17T15:31:17Z'
+last_update: 2026-10-21T18:54:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw_untracked_tasks` lists every untracked file individually when a whole `.tasks/active/` (or `.tasks/`) directory is untracked — N seeded files report N, not 1 (no directory collapse)
+- [x] `fw_untracked_tasks` prints paths relative to the project root even when the project is a subdirectory of an enclosing git repo (no `sub/.tasks/...` prefix)
+- [x] New `fw_untracked_onboarding_tasks` names the untracked files tagged `onboarding`; `fw doctor`'s untracked-task WARN tells the operator to commit init-seeded onboarding tasks and does not offer removal for them
+- [x] Regression bats in `tests/unit/t2516_untracked_tasks.bats` fail on the pre-fix code and pass after; existing cases stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,6 +274,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t2516_untracked_tasks.bats > /tmp/.t4260.out 2>&1 && ! grep -q "^not ok" /tmp/.t4260.out
+test "$(grep -c '# skip' /tmp/.t4260.out)" -eq 0
+bash -n bin/fw && bash -n lib/branch-hygiene.sh
+bin/fw vendor self --check --task T-4260
 
 ## RCA
 
@@ -288,6 +294,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** On a freshly initialised consumer (0909 greenfield run, F-16) `fw doctor` reported "Untracked task files: 1" for five untracked seeded onboarding tasks, printed a path prefixed by the enclosing repo's directory, and advised "Commit it … or remove the orphan" for tasks `fw init` had just seeded.
+
+**Root cause:** `lib/branch-hygiene.sh:637` used `git status --porcelain`, whose default `--untracked-files=normal` collapses a wholly-untracked directory to one `?? .tasks/` entry, and whose paths are relative to the repository toplevel rather than to `$repo` (the project). The doctor remedy (`bin/fw:4953`) had a single removal-offering text with no notion of init-seeded (`tags: [onboarding]`) tasks.
+
+**Why structurally allowed:** `tests/unit/t2516_untracked_tasks.bats` seeded tracked files first, so every fixture had already-tracked directories; none covered a fully-untracked directory, a project nested inside another repo, or seeded onboarding tasks.
+
+**Prevention:** Switched to `git ls-files --others --exclude-standard` (per-file, cwd-relative) and added bats cases for each of the three shapes; they fail on the old implementation.
 
 ## Evolution
 
@@ -369,3 +383,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4260-untracked-task-doctor-check-miscounts-di.md
 - **Context:** Initial task creation
+
+### 2026-10-21T18:54:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

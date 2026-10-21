@@ -630,11 +630,27 @@ fw_go_live() {
 # exit 0 on a clean tree. This is the early-detection rail for the active↔
 # completed divergence class (T-2091): an orphaned untracked completion copy
 # that never got committed was invisible for ~7 days because nothing surfaced
-# untracked files under .tasks/. Read-only `git status --porcelain` scan.
+# untracked files under .tasks/. Read-only scan.
+#
+# T-4260: `git ls-files --others`, not `git status --porcelain`. Porcelain's
+# default -unormal collapsed a wholly-untracked directory (a fresh init) to one
+# entry, and printed toplevel-relative paths when the project sits inside an
+# enclosing repo. ls-files lists every file, relative to the project.
 fw_untracked_tasks() {
     local repo="${1:-.}"
     git -C "$repo" rev-parse --git-dir >/dev/null 2>&1 || return 0
-    git -C "$repo" status --porcelain -- .tasks/active/ .tasks/completed/ 2>/dev/null \
-        | sed -n 's/^?? //p'
+    git -C "$repo" ls-files --others --exclude-standard -- .tasks/active/ .tasks/completed/ 2>/dev/null
+    return 0
+}
+
+# T-4260: the subset of fw_untracked_tasks tagged `onboarding` in frontmatter —
+# the tasks `fw init` seeds (lib/seeds/tasks/). The doctor tells the operator to
+# commit these rather than offering to remove them as orphans.
+fw_untracked_onboarding_tasks() {
+    local repo="${1:-.}" _p
+    while IFS= read -r _p; do
+        [ -n "$_p" ] || continue
+        grep -qE '^tags:.*[[:space:],[]onboarding([],[:space:]]|$)' "$repo/$_p" 2>/dev/null && printf '%s\n' "$_p"
+    done < <(fw_untracked_tasks "$repo")
     return 0
 }
