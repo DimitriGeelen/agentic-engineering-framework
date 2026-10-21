@@ -248,7 +248,7 @@ What draft 2 must address:
 | Attribute | Value | Meaning |
 |---|---|---|
 | `name` | string | v1, unchanged. Free text stays valid, including legacy forms like `Account [Name, Phone, …]` (832 f) |
-| `type` | v1's vocabulary, **unchanged and open** | Includes at least `string`, `number`, `boolean`, `ref`, `path`, `task_id`; the exact list is the designer's and the v1 bridge's (832 1). **Optional** when `fieldRef` or `typeRef` is present (greenfield c). When both `type` and `typeRef` are present, `typeRef` is authoritative and `type` is informational |
+| `type` | v1's vocabulary, **unchanged and open** | The v1 vocabulary is the designer's nine values: `string`, `number`, `boolean`, `ref`, `path`, `task_id`, `arc_id`, `list`, `object` (832, from IO_TYPES). See the reading rules below. **Optional** when `fieldRef` or `typeRef` is present (greenfield c). When both `type` and `typeRef` are present, `typeRef` is authoritative and `type` is informational |
 | `required` | `true` \| `false` | v1, unchanged: whether this step can run without the io |
 | `cardinality` | `one` \| `many` | How many instances flow. **Absence of the value is expressed only by `required`.** So `optional` is not a cardinality value (832 5) |
 | `role` | `read` \| `write` \| `create` \| `delete` \| `match` | What the step does with the data (greenfield d; `delete` added from operator dialogue 2026-10-21). See below |
@@ -259,6 +259,30 @@ What draft 2 must address:
 | `ref` | as in v1 | **Read rule for existing maps (greenfield a):** when `ref` holds a field IRI and there is no `fieldRef`, a reader treats it as `fieldRef`. Otherwise `ref` keeps its v1 meaning (data-object identity). New maps write `fieldRef` |
 | `dataType` | as in v1 | **Read rule for existing maps (greenfield b):** technical tokens such as `id` and `reference` are read as v1 `type` hints, never as a concept. New maps write `conceptRef` for meaning and `type` / `typeRef` for structure |
 | `sourceSystem` / `targetSystem` | catalogue reference | Where an input comes from, or where an output goes. If absent, they are **derived from the prefix map**: a declared prefix (`sfdc:`, `tacton:`) can name its system. An explicit attribute overrides the derivation, and a step default on `aef:meta` sits in between (greenfield e) |
+
+**Reading rules for `type`:**
+
+- **Missing type.** A missing `type` reads as `string` (the designer's import rule).
+- **The vocabulary is open.** An unknown value is preserved and never refused. Neither the designer nor AEF's
+  `corpus_spec` validates the value today.
+- **Aliases.** `int` reads as `number`, and `bool` as `boolean`.
+- **`enum` stays.** It is valid as a type value (it appears on 16 ios) until v1.1 expresses it as `string` plus
+  allowed values (an `enum` expectation in C).
+
+The values found in 832's tracked maps were:
+
+| Value | Count |
+|---|---|
+| `string` | 167 |
+| `task_id` | 97 |
+| `ref` | 38 |
+| `list` | 24 |
+| `enum` | 16 |
+| `path` | 7 |
+| `boolean` | 5 |
+| `number` | 2 |
+| `int` | 2 |
+| `bool` | 1 |
 
 **`role` values:**
 
@@ -351,7 +375,7 @@ How expectations are read:
 
 ### Still open for the ruling
 
-1. 832 to give the **exact v1 `type` vocabulary** for the table in A.
+1. ~~832 to give the exact v1 `type` vocabulary~~: given and adopted (832 msg ac157dd5).
 2. Whether `ref` is also the **data-flow join key** between one step's output and the next step's input, or whether
    that needs its own attribute.
 3. **`typeRef` version pinning:** an IRI that includes the version, or a separate attribute? greenfield's OWL classes
