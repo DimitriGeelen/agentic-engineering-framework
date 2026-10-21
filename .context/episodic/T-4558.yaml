@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4558: fw termlink cleanup is not project-scoped and misreads codex/opencode/antigravity workers as finished
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T16:07:09Z
+# ============================================================================
+
+task_id: T-4558
+task_name: "fw termlink cleanup is not project-scoped and misreads codex/opencode/antigravity workers as finished"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T15:41:24Z
+completed: 2026-10-21T16:05:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T17:42:25+02:00
+last_commit: 2026-10-21T18:04:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file 055 worker-lifecycle proposal (T-4558 cleanup scoping bug, T-4559 inception). fw termlink cleanup — project-scoped, live regex from DISPATCH_WORKER_KINDS, uncollected results kept. tick AC 4 (suites green, vendor check clean)
+
+# Key outcomes
+outcomes:
+  - '(a) `cmd_cleanup` only plans/acts on dispatch dirs whose meta.json `project` resolves to this project (`${PROJECT_ROOT:-$(pwd)}`); another project''s finished worker dir and its endpoint are left untouched (bats: `t4558_cleanup_project_scope.bats`)'
+  - '(b) The live-worker regex is derived from `DISPATCH_WORKER_KINDS` (no hardcoded `claude|ollama-tool-loop`); a running codex, opencode or antigravity (`agy`) worker is reported ACTIVE, not orphaned (bats)'
+  - '(c) A finished worker with an uncollected result is KEPT (dir and result survive `--yes`), while its leaked endpoint is still stopped (bats)'
+  - 'Existing cleanup suites (t3595, t3651, t3580_round7, t4152, termlink.bats) stay green after fixture update; `bin/fw vendor self --check --task T-4558` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file 055 worker-lifecycle proposal (T-4558 cleanup scoping bug, T-4559 inception)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - 'agents/termlink/termlink.sh'
+  - '.tasks/active/T-4558-fw-termlink-cleanup-is-not-project-scope.md'
+  - '.tasks/active/T-4559-worker-lifecycle-periodic-own-project-sw.md'
+  - 'tests/unit/t3580_round7_cleanup.bats'
+  - 'tests/unit/t3595_cleanup_scope.bats'
+  - 'tests/unit/t3651_termlink_cleanup_guards.bats'
+  - 'tests/unit/t4152_dispatch_endpoint_leak.bats'
+  - 'tests/unit/t4558_cleanup_project_scope.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T17:42:25'
+    action: 'T-4558: file 055 worker-lifecycle proposal (T-4558 cleanup scoping bug, T-4559 inception)'
+  - time: '2026-10-21T18:03:09'
+    action: 'T-4558: fw termlink cleanup — project-scoped, live regex from DISPATCH_WORKER_KINDS, uncollected results kept'
+  - time: '2026-10-21T18:04:48'
+    action: 'T-4558: tick AC 4 (suites green, vendor check clean)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, termlink, dispatch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24
+  commits: 3
+  files_changed: 9
+  lines_added: 866
+  lines_removed: 50
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4558-fw-termlink-cleanup-is-not-project-scope.md
+generated_by: context-agent-hybrid
