@@ -1,13 +1,18 @@
 ---
 id: T-4548
-name: "Mapping standard v1.1 text: structured aef:io attributes, fields and expectations (T-4415 DRAFT 2)"
+name: "Mapping standard v1.1 text: structured aef:io attributes, fields and expectations
+  (T-4415 DRAFT 2)"
 description: >
-  Write the normative v1.1 section of the mapping standard from DRAFT 2 sections A-E at f1f7c30dd in docs/reports/T-4415-structured-io-attributes.md: open type vocabulary, fieldRef/typeRef/schemaRef/conceptRef/sourceSystem/targetSystem with the aef:prefix map, mappingVersion=1.1, the ref read rule, field role and instance operation, aef:field paths, aef:expect JSON Schema keywords, C2 rules, examples and migration note.
+  Write the normative v1.1 section of the mapping standard from DRAFT 2 sections A-E
+  at f1f7c30dd in docs/reports/T-4415-structured-io-attributes.md: open type vocabulary,
+  fieldRef/typeRef/schemaRef/conceptRef/sourceSystem/targetSystem with the aef:prefix
+  map, mappingVersion=1.1, the ref read rule, field role and instance operation, aef:field
+  paths, aef:expect JSON Schema keywords, C2 rules, examples and migration note.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [mapping, aef-io, T-4415]
 components: []
 related_tasks: [T-4415]
@@ -39,8 +44,8 @@ origin: {kind: "peer", source: "832", ref: "770531b2"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T14:31:35Z
-last_update: 2026-10-21T14:31:35Z
-date_finished: null
+last_update: 2026-10-21T16:00:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T14:45:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T14:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4548: Mapping standard v1.1 text: structured aef:io attributes, fields and expectations (T-4415 DRAFT 2)
@@ -63,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] New file `policy/standards/aef-bpmn-mapping-v1.1-io.md` carries the normative v1.1 text of DRAFT 2 sections A-E, C2, examples and the producer migration note, written as MUST/SHOULD/MAY rules
+- [x] Every v1.1 construct is marked as gated by `mappingVersion="1.1"` or as additive-without-gate (prefix map), and the file states that no v1.0 rule changes
+- [x] The frozen v1.0 Part I (`policy/standards/aef-bpmn-mapping-v1-partI.md`) is byte-unchanged, so its sha pin still holds (`tests/unit/standard_pin.bats` green)
+- [x] The T-4415 report is not edited; key terms (mappingVersion, fieldRef, typeRef, aef:prefix, aef:field, aef:expect, operation, role) are present in the new file
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -250,6 +285,12 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+test "$(grep -oE 'mappingVersion|fieldRef|typeRef|aef:prefix|aef:field|aef:expect|operation|role' policy/standards/aef-bpmn-mapping-v1.1-io.md | sort -u | wc -l)" -eq 8
+grep -q 'mappingVersion="1.1"' policy/standards/aef-bpmn-mapping-v1.1-io.md && grep -q 'v1.1-only' policy/standards/aef-bpmn-mapping-v1.1-io.md
+test "$(sha256sum policy/standards/aef-bpmn-mapping-v1-partI.md | cut -d' ' -f1)" = 970dd530258b1cde1682a3ad9068808efbf3bb9a664b181499d8ee8328b9106f
+timeout 300 bats tests/unit/standard_pin.bats > /tmp/.t4548-pin.out 2>&1 && ! grep -q "^not ok" /tmp/.t4548-pin.out
+bin/fw vendor self --check --task T-4548
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -330,6 +371,15 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-21 — where the v1.1 text lives
+- **Chose:** a new sibling file `policy/standards/aef-bpmn-mapping-v1.1-io.md`.
+- **Why:** the v1.0 text is `policy/standards/aef-bpmn-mapping-v1-partI.md`, 832-authored and sha-pinned (`tests/unit/standard_pin.bats`); appending to it would break the pin and turn the vendored document into a local paraphrase (OBS-190). T-2522 is an inception report, not the standard.
+- **Rejected:** editing Part I in place; adding v1.1 to the T-2522 report.
+
+### 2026-10-21 — DRAFT 2 §B example
+- **Chose:** the normative example writes `operation="create"` on the io and `role="write"` on each `aef:field`.
+- **Why:** DRAFT 2 §B's example puts `role="write"` on an io with `typeRef`, which contradicts DRAFT 2's own later rule (role is field-level, on `fieldRef` ios and `aef:field`; operation is instance-level on `typeRef` ios). The later rule supersedes the earlier example.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -346,3 +396,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4548-mapping-standard-v11-text-structured-aef.md
 - **Context:** Initial task creation
+
+### 2026-10-21T16:00:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
