@@ -1,13 +1,17 @@
 ---
 id: T-4550
-name: "Mapping lint rules for v1.1 aef:io (operation needs match field, contradictions, prefix kinds)"
+name: "Mapping lint rules for v1.1 aef:io (operation needs match field, contradictions,
+  prefix kinds)"
 description: >
-  Lint for T-4415 DRAFT 2: update/upsert/delete without a match field = error; match with no key = warning; aef:expect contradicting the type = error, implied by the type = warning; unknown prefix or wrong prefix kind = error; ref read rule applied only per DRAFT 2.
+  Lint for T-4415 DRAFT 2: update/upsert/delete without a match field = error; match
+  with no key = warning; aef:expect contradicting the type = error, implied by the
+  type = warning; unknown prefix or wrong prefix kind = error; ref read rule applied
+  only per DRAFT 2.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [mapping, aef-io, T-4415]
 components: []
 related_tasks: [T-4415]
@@ -39,8 +43,8 @@ origin: {kind: "peer", source: "832", ref: "770531b2"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T14:31:55Z
-last_update: 2026-10-21T14:31:55Z
-date_finished: null
+last_update: 2026-10-21T16:28:42Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T14:45:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T14:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4550: Mapping lint rules for v1.1 aef:io (operation needs match field, contradictions, prefix kinds)
@@ -63,8 +95,13 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `tools/corpus_lint.py` reports `io-operation-no-match` (error) for an aef:io input/output with operation update/upsert/delete and no field with role="match" (v1.1 §4.3)
+- [x] `io-match-undetermined` (warning) for a role="match" aef:field with neither fieldRef nor path (§4.4)
+- [x] `io-expect-contradicts-type` (error) / `io-expect-implied-by-type` (warning) for an aef:expect against the field's declared type (§8.6), judged only where the type is resolvable in the map (nine-value vocabulary + aliases, enum)
+- [x] `io-prefix-unknown` (error) for an undeclared QName prefix in fieldRef/typeRef/conceptRef (§6.3); `io-prefix-kind` (error) for a prefix whose declared kind contradicts the attribute (fieldRef needs kind=field, typeRef kind=type)
+- [x] `ref` read as fieldRef only when all four §2.3 conditions hold (then it addresses the io's member for the type rule); otherwise ref is left alone (never prefix-checked)
+- [x] Warnings are printed but do not by themselves flip the exit code to 1; errors do
+- [x] `tests/unit/test_t4550_aef_io_lint.py`: one test per rule plus a clean-map control, all pass; existing corpus_lint tests still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +286,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_t4550_aef_io_lint.py -q > /tmp/.t4550 2>&1 && grep -q passed /tmp/.t4550
+grep -q 'io-operation-no-match' tools/corpus_lint.py && grep -q 'io-prefix-kind' tools/corpus_lint.py
+bin/fw vendor self --check --task T-4550
 
 ## RCA
 
@@ -321,6 +361,15 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-21 — which "type" §8.6 judges an expectation against
+- **Chose:** only types the map itself states: a single-field io (fieldRef, or ref read as one per §2.3) with explicit `type` and no typeRef/schemaRef, addressed by that fieldRef or unaddressed; and aef:field narrowed `required="true"` (§5.4: present=true implied → warning, absent=true → error except under operation="delete", where §4.6 makes it the natural postcondition).
+- **Why:** a typeRef member's type lives in an ontology the lint does not load; guessing it would produce phantom findings (the T-2684 lesson). `type` beside typeRef is informational (§2).
+- **Rejected:** treating a missing `type` as `string` for judging (§3.3) — it would flag every typeRef/fieldRef io whose real type is unknown.
+
+### 2026-10-21 — warnings and the exit code
+- **Chose:** findings gain `severity`; absent = error. Exit 1 only on errors; warnings print with a `WARN` prefix and still appear in --json.
+- **Why:** §4.4/§8.6 call these warnings; a warning that fails the gate is an error by another name.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -346,3 +395,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4550-mapping-lint-rules-for-v11-aefio-operati.md
 - **Context:** Initial task creation
+
+### 2026-10-21T16:28:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

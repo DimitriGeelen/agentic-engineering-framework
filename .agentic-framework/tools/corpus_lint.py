@@ -107,7 +107,13 @@ discipline: no speculative rules — each one has a task-traceable origin).
                           prose instead of links. Fix is always the same — move it to
                           aef:meta note="…", encoding newlines as &#10;.
 
-Exit codes: 0 clean, 1 findings, 2 usage/environment error.
+  io-*                    mapping v1.1 aef:io rules (T-4550): io-operation-no-match,
+                          io-match-undetermined (warning), io-expect-contradicts-type,
+                          io-expect-implied-by-type (warning), io-prefix-unknown,
+                          io-prefix-kind. Clauses in io_v11's docstring; origin
+                          policy/standards/aef-bpmn-mapping-v1.1-io.md (T-4415 GO).
+
+Exit codes: 0 clean (warnings allowed), 1 error findings, 2 usage/environment error.
 
 Scans the live store's latest versions by default; pass map ids and/or .bpmn
 file paths to scan a subset, `map@vN` to name a specific stored version
@@ -127,7 +133,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corpus_spec import (  # noqa: E402
-    BPMN_NS, STORE, UUID_RE, _ext, _KNOWN_EXT, _q, parse_map, store_index,
+    BPMN_NS, STORE, UUID_RE, _ext, _KNOWN_EXT, _q, mapping_version, parse_map,
+    prefix_map, store_index,
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -296,6 +303,7 @@ def lint_map(map_name: str, xml_text: str, idx: dict, ghost_uuids: set,
     findings.extend(unread_node_prose(map_name, proc))
     findings.extend(lane_geometry(map_name, xml_text))
     findings.extend(lane_overflow(map_name, xml_text))
+    findings.extend(io_v11(map_name, xml_text))
     return findings, typed
 
 
@@ -345,6 +353,174 @@ def unread_node_prose(map_name: str, proc) -> list:
                           f"attribute value normalises to a space, XML 1.0 §3.3.3)",
                 "origin": "T-2974",
             })
+    return findings
+
+
+#: T-4550: mapping v1.1 aef:io lint (policy/standards/aef-bpmn-mapping-v1.1-io.md).
+#: Findings carry "severity"; a finding without one is an error. Warnings print
+#: but do not on their own make the run exit 1.
+_IO_KEYED_OPS = {"update", "upsert", "delete"}
+_TYPE_ALIASES = {"int": "number", "bool": "boolean"}
+_BOUNDS = ("minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum")
+#: Which declared prefix kind each QName attribute must name (§6.2). conceptRef
+#: points into the business ontology, which no kind describes: unknown-prefix only.
+_PREFIX_KIND = {"fieldRef": "field", "typeRef": "type", "conceptRef": None}
+
+
+def _qname_prefix(value: str):
+    """The prefix of a QName, or None for a full IRI / a bare name."""
+    if not value or ":" not in value or "://" in value or value.startswith("urn:"):
+        return None
+    return value.split(":", 1)[0]
+
+
+def _ref_as_field_ref(attrs: dict, v11: bool, prefixes: dict):
+    """§2.3: `ref` reads as fieldRef only when all four conditions hold; in every
+    other case it keeps its v1 meaning and nothing here judges it."""
+    ref = attrs.get("ref")
+    if (not ref or v11 or "fieldRef" in attrs or "typeRef" in attrs):
+        return None
+    p = prefixes.get(_qname_prefix(ref) or "")
+    return ref if p is not None and p.get("kind") == "field" else None
+
+
+def _is_number(s: str) -> bool:
+    try:
+        float(s)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
+def _expect_vs_type(typ: str, ex: dict) -> tuple:
+    """(contradictions, implications) of one aef:expect against a scalar type
+    from the v1 vocabulary. Unknown types (open vocabulary, §3.2) judge nothing."""
+    a, values = ex.get("attrs", {}), ex.get("values", [])
+    lits = ([a["const"]] if "const" in a else []) + list(values)
+    bad, implied = [], []
+    if typ == "number":
+        bad += [f'value "{v}" is not a number' for v in lits if not _is_number(v)]
+        bad += [f'{k}="{a[k]}" is not a number' for k in _BOUNDS
+                if k in a and not _is_number(a[k])]
+        if "pattern" in a:
+            bad.append("pattern on a number")
+    elif typ == "boolean":
+        bad += [f'value "{v}" is not a boolean' for v in lits if v not in ("true", "false")]
+        bad += [f"{k} on a boolean" for k in _BOUNDS + ("pattern",) if k in a]
+        if values and set(values) >= {"true", "false"}:
+            implied.append("enum lists every boolean value")
+    elif typ == "string":
+        bad += [f"{k} on a string" for k in _BOUNDS if k in a]
+    return bad, implied
+
+
+def io_v11(map_name: str, xml_text: str) -> list:
+    """Mapping v1.1 aef:io lint (T-4550). Rules, each citing its clause:
+
+      io-operation-no-match      error   §4.3 update/upsert/delete with no
+                                         role="match" field ("update everything")
+      io-match-undetermined      warning §4.4 a match field with neither fieldRef
+                                         nor path: key exists, not yet named
+      io-expect-contradicts-type error   §8.6 an expectation the type rules out
+      io-expect-implied-by-type  warning §8.6 an expectation the type already says
+      io-prefix-unknown          error   §6.3 QName prefix not in aef:prefixes
+      io-prefix-kind             error   §6.2 fieldRef/typeRef naming a prefix
+                                         declared with another kind
+
+    The type of an expectation's member is only judged where the map itself
+    states it: a single-field io (fieldRef, or a `ref` read as one under §2.3)
+    with an explicit `type` and no typeRef/schemaRef, addressed by that same
+    fieldRef or by no address; and an aef:field narrowed with required="true"
+    (§5.4). A member of a typeRef structure is resolved by the ontology this
+    lint does not load, so it is never judged.
+    """
+    try:
+        spec = parse_map(xml_text)
+    except (Exception, SystemExit):
+        return []  # malformed XML is reported by lint_map; refusals by the parser
+    v11 = mapping_version(spec) == "1.1"
+    prefixes = prefix_map(spec)
+    findings = []
+
+    def add(rule, node, detail, severity="error"):
+        findings.append({"rule": rule, "map": map_name, "node": node,
+                         "detail": detail, "origin": "T-4550 (mapping v1.1)",
+                         "severity": severity})
+
+    def check_prefixes(nid, where, attrs):
+        for attr, kind in _PREFIX_KIND.items():
+            val = attrs.get(attr)
+            pfx = _qname_prefix(val)
+            if pfx is None:
+                continue
+            decl = prefixes.get(pfx)
+            if decl is None:
+                add("io-prefix-unknown", nid,
+                    f'{where} {attr}="{val}": prefix "{pfx}" is not declared in the '
+                    f"process aef:meta > aef:prefixes (§6.3)")
+            elif kind and decl.get("kind") and decl["kind"] != kind:
+                add("io-prefix-kind", nid,
+                    f'{where} {attr}="{val}": prefix "{pfx}" is declared '
+                    f'kind="{decl["kind"]}", but {attr} needs kind="{kind}" (§6.2)')
+
+    for n in spec.get("nodes") or []:
+        nid = n.get("id")
+        for item in (n.get("io") or {}).get("items", []):
+            ia = item.get("attrs", {})
+            where = f"aef:{item.get('kind')}"
+            check_prefixes(nid, where, ia)
+            fields = item.get("fields", [])
+            for f in fields:
+                fa = f.get("attrs", {})
+                check_prefixes(nid, f"{where} > aef:field", fa)
+                if fa.get("role") == "match" and not (fa.get("fieldRef") or fa.get("path")):
+                    add("io-match-undetermined", nid,
+                        f"{where} > aef:field role=\"match\" names neither fieldRef "
+                        f"nor path: the key exists but is not determined; no "
+                        f"update/upsert/delete code may be generated until it is (§4.4)",
+                        "warning")
+            op = ia.get("operation")
+            if op in _IO_KEYED_OPS and not any(
+                    f.get("attrs", {}).get("role") == "match" for f in fields):
+                add("io-operation-no-match", nid,
+                    f'{where} operation="{op}" has no aef:field role="match" — the '
+                    f'map reads as "{op} everything" (§4.3)')
+
+            field_ref = ia.get("fieldRef") or _ref_as_field_ref(ia, v11, prefixes)
+            typ = ia.get("type")
+            typ = _TYPE_ALIASES.get(typ, typ)
+            scalar = bool(field_ref and typ and "typeRef" not in ia
+                          and "schemaRef" not in ia)
+            required = {}
+            for f in fields:
+                fa = f.get("attrs", {})
+                if fa.get("required") == "true":
+                    for k in ("fieldRef", "path"):
+                        if fa.get(k):
+                            required[(k, fa[k])] = True
+            for ex in item.get("expects", []):
+                ea = ex.get("attrs", {})
+                check_prefixes(nid, f"{where} > aef:expect", ea)
+                addr = (("fieldRef", ea["fieldRef"]) if ea.get("fieldRef")
+                        else ("path", ea["path"]) if ea.get("path") else None)
+                label = f'{where} > aef:expect {addr[0]}="{addr[1]}"' if addr \
+                    else f"{where} > aef:expect"
+                bad, implied = [], []
+                if scalar and (addr is None or addr == ("fieldRef", field_ref)):
+                    bad, implied = _expect_vs_type(typ or "", ex)
+                    label += f' (type="{typ}")'
+                if addr in required:
+                    if ea.get("absent") == "true" and op != "delete":
+                        bad.append('absent="true" on a field narrowed required="true"')
+                    if ea.get("present") == "true":
+                        implied.append('present="true" on a field narrowed required="true"')
+                for b in bad:
+                    add("io-expect-contradicts-type", nid,
+                        f"{label}: {b} — the expectation can never hold (§8.6)")
+                for i in implied:
+                    add("io-expect-implied-by-type", nid,
+                        f"{label}: {i} — already true wherever the type is used; "
+                        f"type-level rules belong in the type (§8.6)", "warning")
     return findings
 
 
@@ -846,7 +1022,8 @@ def main(argv=None):
     else:
         print(f"corpus lint: scanned {len(targets)} map(s)")
         for f in findings:
-            print(f"  [{f['rule']}] {f['map']} :: {f['node']} — {f['detail']} "
+            sev = "WARN " if f.get("severity") == "warning" else ""
+            print(f"  {sev}[{f['rule']}] {f['map']} :: {f['node']} — {f['detail']} "
                   f"(origin {f['origin']})")
         # NOTE lines, deliberately after the findings and outside the count: a skip is
         # an absence of judgement, not a defect. Printed unconditionally rather than
@@ -857,7 +1034,8 @@ def main(argv=None):
                   f"(origin {s['origin']})")
         print(f"{'CLEAN' if not findings else f'{len(findings)} finding(s)'}"
               f"{f' — {len(skips)} lane(s) skipped, not judged' if skips else ''}")
-    return 1 if findings else 0
+    # T-4550: a warning (severity "warning") is reported, never on its own a failure.
+    return 1 if any(f.get("severity") != "warning" for f in findings) else 0
 
 
 if __name__ == "__main__":
