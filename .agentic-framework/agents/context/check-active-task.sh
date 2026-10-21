@@ -1236,6 +1236,8 @@ if [ -n "$ACTIVE_FILE" ] && grep -q "^workflow_type: inception" "$ACTIVE_FILE" 2
                 echo "         confidence: 0-3" >&2
                 echo "         disposition: answered|deferred|dissolved   # filled later" >&2
                 echo "         rationale: <one-line evidence>              # filled later" >&2
+                echo "     Then create the research artifact docs/reports/${CURRENT_TASK}-<topic>.md" >&2
+                echo "     (C-001) — this gate blocks it too, so the order is question first, artifact second." >&2
                 echo "" >&2
                 echo "  2. Or remove the '## Open Questions' section entirely (grandfathered)." >&2
                 echo "" >&2

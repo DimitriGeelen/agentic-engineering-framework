@@ -127,3 +127,24 @@ _run_hook_write() {
     run _run_hook_write "$TEST_TEMP_DIR/.tasks/active/T-9001-test.md"
     [ "$status" -eq 0 ]
 }
+
+# T-4272 (greenfield run 3 F-44): C-001 (artifact first) and this gate used to
+# name opposite first steps. The gate blocks docs/reports/ too, so the order is
+# IW-1 first, research artifact second — and both texts must say so.
+@test "T-4272: a docs/reports/ artifact write is blocked and the message names the artifact as the next step" {
+    _make_inception T-9001 "<!-- empty -->" >/dev/null
+    run _run_hook_write "$TEST_TEMP_DIR/docs/reports/T-9001-research.md"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"docs/reports/T-9001-"* ]]
+    [[ "$output" == *"C-001"* ]]
+}
+
+@test "T-4272: CLAUDE.md and the consumer template put Open Questions before docs/reports/ in C-001" {
+    local f item
+    for f in "$FRAMEWORK_ROOT/CLAUDE.md" "$FRAMEWORK_ROOT/lib/templates/claude-project.md"; do
+        item=$(grep -m1 'Research artifact first (C-001)' "$f")
+        [ -n "$item" ]
+        [[ "$item" == *"IW-1"*"docs/reports/"* ]] || { echo "C-001 item in $f does not put IW-1 before docs/reports/"; false; }
+        [[ "$item" == *"T-2194"* ]] || { echo "C-001 item in $f does not name the T-2194 gate"; false; }
+    done
+}

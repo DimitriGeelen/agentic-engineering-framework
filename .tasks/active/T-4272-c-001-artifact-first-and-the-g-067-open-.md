@@ -7,10 +7,10 @@ description: >
   both name the same first step. Findings (0909 run aef-install-20261017T144241Z):
   F-44. Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-19.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:29:39Z
-last_update: '2026-10-17T15:31:19Z'
+last_update: 2026-10-21T22:32:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -81,20 +81,42 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4272: C-001 (artifact first) and the G-067 open-questions gate prescribe opposite orders for inception start.
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Greenfield run 3 (aef-install-20261017T144241Z) F-44, triaged in docs/reports/T-4253-greenfield-run-triage.md
+(PROPOSED-NEW-19). CLAUDE.md §Inception Discipline item 6 (C-001) says create `docs/reports/T-XXX-*.md` BEFORE
+research; the T-2194 / G-067 gate in agents/context/check-active-task.sh blocks that very write until one
+`- **IW-N:**` Open Question is filed, and its message never mentions the artifact. Reconciled on the gate's
+order (question first, artifact second) — the order the gate enforces and the T-121 v2.1 prompt already adopted.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] CLAUDE.md §Inception Discipline item 6 names filing IW-1 under `## Open Questions` as the step before creating the `docs/reports/` artifact, and names the T-2194 gate as the reason
+- [x] lib/templates/claude-project.md (the consumer CLAUDE.md template) carries the same order
+- [x] The T-2194 block message names the C-001 research artifact (`docs/reports/<task>-*.md`) as the step after filing IW-1
+- [x] Regression bats in tests/unit/inception_open_questions_gate.bats: the block message names the artifact step, and both docs put Open Questions before docs/reports in item 6; red before the fix, green after; the existing 6 tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,6 +294,13 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/inception_open_questions_gate.bats > /tmp/.t4272.out 2>&1 && ! grep -q "^not ok" /tmp/.t4272.out
+test "$(grep -c '# skip' /tmp/.t4272.out)" -eq 0
+grep -q "Research artifact first (C-001).*IW-1" CLAUDE.md
+grep -q "Research artifact first (C-001).*IW-1" lib/templates/claude-project.md
+bash -n agents/context/check-active-task.sh
+python3 tools/bats-dead-negation-lint.py tests/unit/inception_open_questions_gate.bats > /tmp/.t4272.lint 2>&1 && grep -q clean /tmp/.t4272.lint
+bin/fw vendor self --check --task T-4272
 
 ## RCA
 
@@ -288,6 +317,24 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** A greenfield agent starting an inception followed CLAUDE.md item 6 (C-001: create the
+`docs/reports/` artifact first), was blocked by the T-2194 Open Questions gate, and had to work out the real
+order itself (run 3 F-44).
+
+**Root cause:** Two rules written at different times name different first steps. CLAUDE.md:1028 (and
+lib/templates/claude-project.md:657, the consumer copy) say the artifact comes first; the gate at
+agents/context/check-active-task.sh:1194-1250 blocks every non-`.tasks/` write — `docs/reports/` included —
+until an `- **IW-N:**` entry exists, and its unblock text lists only the question, never the artifact. T-2194
+added the gate without revisiting C-001.
+
+**Why structurally allowed:** Nothing ties a gate's remediation text to the prose rule it collides with
+(L-588 class: a gate's remediation text is part of its predicate). The gate's tests checked only block/allow,
+not what it tells the agent to do next.
+
+**Prevention:** Both texts now state one order (IW-1, then artifact), and
+tests/unit/inception_open_questions_gate.bats pins it: the block message must name the artifact step, and
+item 6 in CLAUDE.md and the consumer template must place Open Questions before `docs/reports/`.
 
 ## Evolution
 
@@ -369,3 +416,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4272-c-001-artifact-first-and-the-g-067-open-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:32:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
