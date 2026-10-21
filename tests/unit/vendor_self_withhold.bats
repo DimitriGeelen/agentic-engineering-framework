@@ -104,9 +104,10 @@ setup() {
     # rather than silently re-opening the hole (the T-2711/T-2793 naming lesson).
     # 7 since T-3974: _self_vendor_templates has a second loop, .tasks/workflow/WM-*.md.
     # 8 since T-4392: new _self_vendor_tools helper (tools/), guarded and dry-run-exempt.
+    # 9 since T-2661: new _self_vendor_root_data helper (root data files), same shape.
     run grep -c '_sv_is_withheld "\$' "$FRAMEWORK_SRC/lib/upgrade.sh"
-    [ "$output" -eq 8 ]
+    [ "$output" -eq 9 ]
     # Each call site must be dry-run-exempt: detectors report drift, they do not hide it.
     run grep -c '\[ "\$dry_run" = true \] || ! _sv_is_withheld' "$FRAMEWORK_SRC/lib/upgrade.sh"
-    [ "$output" -eq 8 ]
+    [ "$output" -eq 9 ]
 }
