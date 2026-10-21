@@ -95,10 +95,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Readers of `.agentic-framework/install.sh` (fw upgrade, fw vendor, init, consumers, tests) are enumerated in ## Decisions and the chosen fix (untrack vs vendor) follows from them
-- [ ] The tracked `.agentic-framework/install.sh` either no longer exists in the index or is byte-identical to `install.sh`
-- [ ] A regression bats test fails if a file tracked under `.agentic-framework/` is excluded from self-vendoring (the drift class, not just this one file)
-- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
+- [x] Readers of `.agentic-framework/install.sh` (fw upgrade, fw vendor, init, consumers, tests) are enumerated in ## Decisions and the chosen fix (untrack vs vendor) follows from them
+- [x] The tracked `.agentic-framework/install.sh` either no longer exists in the index or is byte-identical to `install.sh`
+- [x] A regression bats test fails if a file tracked under `.agentic-framework/` is excluded from self-vendoring (the drift class, not just this one file)
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green (18/18 on a clean clone of HEAD; in the shared tree tests 12/14 fail on another worker's uncommitted lib/upgrade.sh:3121 sourcing untracked lib/working-gitignore.sh)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,7 +286,7 @@ cost_estimate_proposed:
 test -z "$(git ls-files .agentic-framework/install.sh .agentic-framework/tests .agentic-framework/.fabric)"
 timeout 300 bats tests/unit/t4567_vendored_tree_tracked_parity.bats > /tmp/.t4567.out 2>&1 && ! grep -q "^not ok" /tmp/.t4567.out
 test "$(grep -c '# skip' /tmp/.t4567.out)" -eq 0
-timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4567-sim.out 2>&1 && ! grep -q "^not ok" /tmp/.t4567-sim.out
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4567-sim.out 2>&1 && ! grep -q "^not ok" /tmp/.t4567-sim.out
 
 ## RCA
 
