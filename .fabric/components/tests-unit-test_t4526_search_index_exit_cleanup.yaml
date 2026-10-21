@@ -1,0 +1,21 @@
+id: tests/unit/test_t4526_search_index_exit_cleanup.py
+name: test_t4526_search_index_exit_cleanup
+type: script
+subsystem: tests
+location: tests/unit/test_t4526_search_index_exit_cleanup.py
+tags: []
+
+purpose: "T-4526: a process that built a search index removes it when it exits."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

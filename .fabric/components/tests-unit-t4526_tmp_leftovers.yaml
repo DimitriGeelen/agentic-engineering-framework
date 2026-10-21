@@ -1,0 +1,21 @@
+id: tests/unit/t4526_tmp_leftovers.bats
+name: t4526_tmp_leftovers
+type: script
+subsystem: tests
+location: tests/unit/t4526_tmp_leftovers.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+purpose_source: none
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

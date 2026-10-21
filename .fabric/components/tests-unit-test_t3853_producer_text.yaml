@@ -1,0 +1,21 @@
+id: tests/unit/test_t3853_producer_text.py
+name: test_t3853_producer_text
+type: script
+subsystem: tests
+location: tests/unit/test_t3853_producer_text.py
+tags: []
+
+purpose: "T-3853 — the delegation classifier reads only what the criterion's producer wrote."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

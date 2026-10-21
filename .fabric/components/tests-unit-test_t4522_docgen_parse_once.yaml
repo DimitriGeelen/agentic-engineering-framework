@@ -1,0 +1,21 @@
+id: tests/unit/test_t4522_docgen_parse_once.py
+name: test_t4522_docgen_parse_once
+type: script
+subsystem: tests
+location: tests/unit/test_t4522_docgen_parse_once.py
+tags: []
+
+purpose: "T-4522 — docgen parses the shared corpus once per run, not once per card."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

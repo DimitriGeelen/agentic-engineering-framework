@@ -1,0 +1,21 @@
+id: tests/lint/bats-heredoc-test.bats
+name: bats-heredoc-test
+type: script
+subsystem: tests
+location: tests/lint/bats-heredoc-test.bats
+tags: []
+
+purpose: "T-4521 — tools/bats-heredoc-test-lint.py."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown
