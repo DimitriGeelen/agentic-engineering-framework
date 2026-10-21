@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4560: Sidecar: 055 send fbed1313 reported success (client_msg_id) but never reached our receiver store
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:12:56Z
+# ============================================================================
+
+task_id: T-4560
+task_name: "Sidecar: 055 send fbed1313 reported success (client_msg_id) but never reached our receiver store"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T15:48:02Z
+completed: 2026-10-21T18:12:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T17:48:22+02:00
+last_commit: 2026-10-21T18:44:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file lost inbound sidecar message from 055 (fbed1313). record 055's sender evidence (401 at receiver, send exited 0); file T-4561 stale worker-dir results. receiver accepts a token rewritten while it runs (rotation + T-4208 refused restart made every send 401); pin send exit code/state for REJECTED/UNDELIVERABLE/RECEIVED/HUB_ACCEPTED
+
+# Key outcomes
+outcomes:
+  - '`fw sidecar send` exits non-zero and prints the delivery state when a direct send is REJECTED (401) or UNDELIVERABLE (receiver down), in text and --json mode'
+  - '`fw sidecar send` exits 0 and prints the state for RECEIVED (direct) and HUB_ACCEPTED/SENT (hub path)'
+  - 'Regression test covers REJECTED, UNDELIVERABLE and RECEIVED exit codes + printed state'
+  - 'Part 1 traced: `## RCA` names, with file:line, how a sender holds a token our receiver rejects after a restart; fixed here or follow-up task filed and named'
+  - 'No token value printed or logged by the change or the test'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/http_server.py'
+  - 'lib/sidecar/http_server.py'
+  - '.tasks/active/T-4560-sidecar-055-send-fbed1313-reported-succe.md'
+  - '.tasks/active/T-4561-fw-termlink-dispatch-reuses-an-existing-.md'
+  - 'tests/unit/test_sidecar_send_state_t4560.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T17:48:22'
+    action: 'T-4560: file lost inbound sidecar message from 055 (fbed1313)'
+  - time: '2026-10-21T18:23:40'
+    action: 'T-4560: record 055''s sender evidence (401 at receiver, send exited 0); file T-4561 stale worker-dir results'
+  - time: '2026-10-21T18:44:44'
+    action: 'T-4560: receiver accepts a token rewritten while it runs (rotation + T-4208 refused restart made every send 401); pin send exit code/state for REJECTED/UNDELIVERABLE/RECEIVED/HUB_ACCEPTED'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 144 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, sidecar, delivery]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 144
+  commits: 3
+  files_changed: 5
+  lines_added: 968
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4560-sidecar-055-send-fbed1313-reported-succe.md
+generated_by: context-agent-hybrid
