@@ -202,7 +202,30 @@ On an `aef:input` an expectation is a **precondition**: what this step expects t
 
 **Accepted by the designer:** `conceptRef` for `dataType`, and deferring `aef:attr` to v1.2.
 
-**Still pending:** greenfield's producer check, once their maps (VZN-T1 v26, WT-01) arrive.
+## Producer check on greenfield's real io (832 msg 6d79d60a, VZN-T1 v27 fragments)
+
+Greenfield's maps contain two styles of io today:
+
+- **Style A, a single field:**
+  `<aef:input name="sfdc:Opportunity.Id" type="object" ref="nid:attr-salesforce-opportunity-id" role="read" dataType="id"/>`
+- **Style B, legacy:**
+  `<aef:output name="Account [Name, Phone, ..., OwnerId]" type="object"/>`
+
+What draft 2 must address:
+
+| | Point | Detail |
+|---|---|---|
+| a | An existing `ref` already holds a field IRI | The reviewers' `fieldRef`. Draft 2 must say how an existing `ref` holding a field IRI is read, or style A changes meaning. |
+| b | Existing `dataType` holds technical tokens | Values are `id` and `reference`, not concept IRIs. `conceptRef` is right going forward, but `dataType="id"` in existing maps needs a stated reading. |
+| c | `type="object"` on a single field is a forced placeholder | `type` becomes optional when `fieldRef` or `typeRef` is present. |
+| d | `role` values | Confirmed: `read`, `write`, `create`, `match`. `match` also appears on an output (tacton currency), so define it as a lookup/join key. |
+| e | Systems come from the path prefix | Today `sfdc:` and `tacton:` imply the system. Allow `sourceSystem` / `targetSystem` to be derived from a prefix-to-system entry in a declared prefix map, with the explicit attribute overriding. Prefixes must be declared: draft 1's example uses `sf:`, greenfield writes `sfdc:`. |
+| f | Style B maps one-to-one onto `typeRef` + `aef:field` | The free-text form must stay valid v1. |
+| g | Lists are a must | Examples: Solution line items (including TradeIn lines), OpportunityContactRole, QuoteLineItem. Draft 2 needs a list-path syntax and a way to select one KIND of line. |
+| h | Their only expectations are behavioural | "Update if exists else create" (their H-039/H-042) is upsert semantics. It is carried by `role` (`match` + `create`) or `ruleRef`, not by C's value checks; draft 2 must say where it goes. |
+| i | Field-to-field transformations stay in the ontology | Their AttributeMapping, consistent with the draft. |
+
+**Full maps:** awaiting greenfield's operator. Draft 2 can be written from these fragments; the full maps confirm it.
 
 ## Next step
 
