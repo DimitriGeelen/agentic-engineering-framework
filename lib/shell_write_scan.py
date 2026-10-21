@@ -1212,6 +1212,28 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
             if a.startswith("of="):
                 _check_target(a[3:], ctx, "dd of=")
         return
+    if verb == "truncate":
+        # T-3838: every operand is rewritten (`truncate -s 0 F` empties it). The value of
+        # -s/-r (also inside a cluster: `-cs 0`) and of an unabbreviated-or-abbreviated
+        # --size/--reference is not a target.
+        k, end = 0, False
+        while k < len(args):
+            a = args[k]
+            if not end and a == "--":
+                end = True
+            elif not end and a.startswith("--"):
+                name = a[2:].partition("=")[0]
+                if "=" not in a and (_is_long(name, "size") or _is_long(name, "reference")):
+                    k += 1
+            elif not end and a.startswith("-") and a != "-":
+                cluster = a[1:]
+                pos = min((cluster.find(c) for c in "sr" if c in cluster), default=-1)
+                if pos == len(cluster) - 1:
+                    k += 1          # value is the next word
+            else:
+                _check_target(a, ctx, "truncate")
+            k += 1
+        return
     if verb == "view" and not any(a in ("-c", "-s", "-es", "-e", "--cmd", "-S") or a.startswith("+") for a in args):
         return  # read-only vim; only its command options can write
     if verb in EDITORS:

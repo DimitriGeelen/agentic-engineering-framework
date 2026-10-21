@@ -5,7 +5,7 @@ description: >
   ring20-dashboard T-2460 msg 6b1ada91 (vendored consumer upgrade 1.7.0 -> 1.8.0);
   they carry local patches for 3-5.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T16:31:01Z
-last_update: '2026-10-04T16:45:42Z'
+last_update: 2026-10-21T09:05:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,14 +85,17 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The Human-AC tick guard's Bash leg (`check-human-ac-tick` → `lib/shell_write_scan.py scan()`) let `truncate -s 0 .tasks/active/T-*.md` through as a non-write.
+
+**Reproduced at HEAD 410c26372 (2026-10-21):** `scan("truncate -s 0 .tasks/active/T-1.md")` → `[]`, and likewise for `--size=0`, `-s0`, `-cs 0`, `-r x`, `sudo truncate …`, `-- PATH`; `tee` on the same path → 2 hits (control). After the fix every spelling returns a `truncate` hit; tests/unit/t3838_write_scan_truncate.bats fails 2/4 with the fix stashed, passes 4/4 with it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked at HEAD: `truncate -s 0 <task file>` is (or is not) classified as a write by lib/shell_write_scan.py, evidence recorded below
+- [x] If it reproduces: shell_write_scan.py classifies `truncate` (all size spellings) as a write to its file operands, with a regression test that fails without the fix
+- [x] Existing shell_write_scan tests stay green; `bin/fw vendor self --check --task T-3838` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -252,10 +255,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3838_write_scan_truncate.bats > /tmp/.t3838.out 2>&1 && ! grep -q "^not ok" /tmp/.t3838.out && grep -q "^ok 4 " /tmp/.t3838.out
+test "$(grep -c '# skip' /tmp/.t3838.out)" -eq 0
+timeout 900 bats tests/unit/t3695_human_ac_tick_bash.bats tests/unit/human_ac_tick_guard.bats > /tmp/.t3838b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3838b.out
+bin/fw vendor self --check --task T-3838
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+<!-- RCA template note: REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
 
@@ -292,6 +297,16 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** under agent control, `truncate -s 0 .tasks/active/T-XXX.md` passed the Human-AC tick guard's Bash leg (reported by ring20-dashboard T-2460, msg 6b1ada91); the guard's contract is that no shell command writes a guarded file.
+
+**Root cause:** `lib/shell_write_scan.py:_segment` (default mode, line ~1095) enumerates write verbs (redirects, sed/perl/awk -i, tee/sponge, sort -o, copy family, dd of=, editors, …) and has no `truncate` branch, so the segment fell through with no hit. `truncate` was only known to the T-4149 boundary mode (`_ALL_OPERANDS`, line ~1338), which `scan()` (used by check-human-ac-tick) never enters — `_boundary_segment` is called only when `ctx.boundary`.
+
+**Why structurally allowed:** the scanner is a verb allowlist of writers — any writing verb not listed fails open, and the two modes keep separate verb tables, so adding `truncate` to the boundary table (T-4149) did not propagate to the tick-guard table. No test enumerated "every verb the boundary mode treats as a writer is also a writer for scan()".
+
+**Prevention:** `_segment` now treats every `truncate` operand as a write target (skipping the -s/-r/--size/--reference value, including clustered `-cs 0` and abbreviated long options); tests/unit/t3838_write_scan_truncate.bats pins vector + guard + controls end-to-end through the hook. Note (not fixed here, out of scope): `rm`/`touch`/`shred`/`unlink` on a task file are likewise not hits in default mode — `rm` deleting a task file is caught by git/audit rather than this guard; whether those belong in the tick guard is a separate question.
 
 ## Recommendation
 
@@ -349,3 +364,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3838-libshellwritescanpy-does-not-treat-trunc.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:05:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
