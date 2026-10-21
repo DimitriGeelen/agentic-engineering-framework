@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4235: fw upgrade from a shallow clone refuses the foreign-source check until --unshallow
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T20:47:05Z
+# ============================================================================
+
+task_id: T-4235
+task_name: "fw upgrade from a shallow clone refuses the foreign-source check until --unshallow"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-17T13:29:04Z
+completed: 2026-10-21T20:45:38Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-21T21:02:11+02:00
+last_commit: 2026-10-21T21:02:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade unshallows a shallow source itself instead of refusing — fw_source_fetch_history fetches --unshallow (announced) when the source cannot see the consumer's version_sha; failed/remote-less fetch keeps the T-3714 refusal; dry-run only announces; regression bats
+
+# Key outcomes
+outcomes:
+  - '`do_upgrade` from a shallow source whose history lacks the consumer''s recorded `version_sha` runs `git fetch --unshallow` on the source itself, says so on stdout, and proceeds past the precheck (no `REFUSED  Consumer`)'
+  - 'When that fetch fails (no reachable remote) the existing foreign-source refusal and its unshallow remedy are unchanged, and the refusal stays side-effect free (T-4498)'
+  - '`--dry-run` does not fetch; it says a real run would fetch the full history first'
+  - 'Regression bats `tests/unit/t4235_upgrade_auto_unshallow.bats` fails before the fix and passes after; t3714, t3886, t4498 stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-21 — dry-run and fetch failure'
+    chose: '`--dry-run` announces the fetch but does not run it; a failed fetch (or one that leaves the repo shallow, e.g. no remote) falls through to the unchanged T-3714 refusal and remedy.'
+    rationale: 'dry-run promises no changes; a failed fetch must not weaken the origin guard.'
+    alternatives_rejected: ['fetching in dry-run too (mutates the source''s .git during a no-change run); an opt-out env var (no evidence anyone needs one; additive history fetch on the source only).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/version-relation.sh'
+  - 'lib/upgrade.sh'
+  - 'lib/version-relation.sh'
+  - '.tasks/active/T-4235-fw-upgrade-from-a-shallow-clone-refuses-.md'
+  - 'tests/unit/t4235_upgrade_auto_unshallow.bats'
+  - 'tests/unit/t4498_refused_upgrade_no_self_vendor.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T21:02:11'
+    action: 'T-4235: fw upgrade unshallows a shallow source itself instead of refusing — fw_source_fetch_history fetches --unshallow (announced) when the source cannot see the consumer''s version_sha; failed/remote-less fetch keeps the T-3714 refusal; dry-run only announces; regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6196 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6196
+  commits: 1
+  files_changed: 7
+  lines_added: 188
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4235-fw-upgrade-from-a-shallow-clone-refuses-.md
+generated_by: context-agent-hybrid

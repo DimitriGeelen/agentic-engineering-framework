@@ -6,12 +6,12 @@ description: >
   4. The shallow clone path fails the foreign-source/ancestry check; fw upgrade should
   fetch enough history itself (or --unshallow automatically) and say so.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade.sh, lib/version-relation.sh, tests/unit/t4498_refused_upgrade_no_self_vendor.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:29:04Z
-last_update: 2026-10-21T18:54:20Z
-date_finished:
+last_update: 2026-10-21T20:45:38Z
+date_finished: 2026-10-21T20:45:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -392,3 +392,20 @@ bin/fw vendor self --check --task T-4235
 ### 2026-10-21T18:54:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4c75f005
+- **Timestamp:** 2026-10-21T20:46:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T20:45:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
