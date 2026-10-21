@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4244: Consumer CLAUDE.md template says 'use bin/fw' but a vendored consumer has only .agentic-framework/bin/fw
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T21:17:45Z
+# ============================================================================
+
+task_id: T-4244
+task_name: "Consumer CLAUDE.md template says 'use bin/fw' but a vendored consumer has only .agentic-framework/bin/fw"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T13:44:38Z
+completed: 2026-10-21T21:16:55Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-21T22:58:02+02:00
+last_commit: 2026-10-21T22:58:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  consumer CLAUDE.md and /resume templates name .agentic-framework/bin/fw (the launcher a vendored consumer has), not bin/fw; regression bats checks templates and a fresh fw init consumer
+
+# Key outcomes
+outcomes:
+  - '`lib/templates/claude-project.md` names no bare `bin/fw` launcher: every launcher reference is `.agentic-framework/bin/fw` (the path a vendored consumer actually has)'
+  - 'The Copy-Pasteable Commands rule in the template tells the consumer agent to use `.agentic-framework/bin/fw`, not `bin/fw`'
+  - 'Regression bats `tests/unit/t4244_consumer_template_fw_path.bats` fails on the pre-fix template and passes after; it also checks a fresh `fw init` consumer''s generated CLAUDE.md has no bare `bin/fw` while `.agentic-framework/bin/fw` exists and `bin/fw` does not'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4244` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - '.agentic-framework/lib/templates/resume-md.md'
+  - '.claude/commands/resume.md'
+  - 'lib/init.sh'
+  - 'lib/templates/claude-project.md'
+  - 'lib/templates/resume-md.md'
+  - '.tasks/active/T-4244-consumer-claudemd-template-says-use-binf.md'
+  - 'tests/unit/t4244_consumer_template_fw_path.bats'
+  - 'tests/unit/t4562_resume_template_safe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T22:58:02'
+    action: 'T-4244: consumer CLAUDE.md and /resume templates name .agentic-framework/bin/fw (the launcher a vendored consumer has), not bin/fw; regression bats checks templates and a fresh fw init consumer'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6212 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6212
+  commits: 1
+  files_changed: 10
+  lines_added: 90
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4244-consumer-claudemd-template-says-use-binf.md
+generated_by: context-agent-hybrid
