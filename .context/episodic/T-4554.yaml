@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4554: fw upgrade pre-flight flags files as locally edited when they match a released tag but not the installed-files record
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:32:30Z
+# ============================================================================
+
+task_id: T-4554
+task_name: "fw upgrade pre-flight flags files as locally edited when they match a released tag but not the installed-files record"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-21T14:44:13Z
+completed: 2026-10-21T18:15:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T16:44:32+02:00
+last_commit: 2026-10-21T20:06:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file be.2 field findings from ring20 (stale installed-files record false positive; T-4555 new WARNs). vendor pre-flight treats files matching a release tag as framework-owned. real ACs, RCA, verification; ACs ticked. vendored copy of the release-tag pre-flight fix (missed in 50c2aae25)
+
+# Key outcomes
+outcomes:
+  - '`lib/vendor_preserve.py` pre-flight treats a vendored file whose bytes equal that path at any `v*` release tag in the source repo as framework-owned (not at-risk), and prints `RELEASED  <path>  — matches <tag>` for it'
+  - 'A file whose bytes match no release tag, no stamp hash and no current source is still listed `edited locally — would be OVERWRITTEN` and the run still refuses'
+  - 'Regression bats `tests/unit/t4554_vendor_released_tag_match.bats`: stale-stamp + tag-equal file passes; edited file refuses (fails without the fix)'
+  - '`tests/unit/t3850_vendor_preserve_locals.bats` and `tests/unit/upgrade_fresh_machine_simulation.bats` stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendored copy of the release-tag pre-flight fix (missed in 50c2aae25)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-21 — which tags count as "released"'
+    chose: 'every `v*` tag in the source repo (not only tags merged into the source HEAD).'
+    rationale: 'a hotfix tag (v1.8.12 here) can sit on master off the source branch; requiring ancestry would miss exactly the case reported. Any `v*` tag is a published framework version, so its bytes are framework-owned.'
+    alternatives_rejected: ['`--merged HEAD` (misses off-branch hotfix tags); refreshing the stamp out-of-band (does not help consumers already holding a stale stamp).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/vendor_preserve.py'
+  - 'lib/vendor_preserve.py'
+  - '.tasks/active/T-4554-fw-upgrade-pre-flight-flags-files-as-loc.md'
+  - '.tasks/active/T-4555-explain-two-new-consumer-warns-after-be2.md'
+  - 'tests/unit/t4554_vendor_released_tag_match.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T16:44:32'
+    action: 'T-4554: file be.2 field findings from ring20 (stale installed-files record false positive; T-4555 new WARNs)'
+  - time: '2026-10-21T18:04:09'
+    action: 'T-4554: vendor pre-flight treats files matching a release tag as framework-owned'
+  - time: '2026-10-21T18:04:57'
+    action: 'T-4554: real ACs, RCA, verification; ACs ticked'
+  - time: '2026-10-21T20:06:23'
+    action: 'T-4554: vendored copy of the release-tag pre-flight fix (missed in 50c2aae25)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 211 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, upgrade, consumer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 211
+  commits: 4
+  files_changed: 5
+  lines_added: 939
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4554-fw-upgrade-pre-flight-flags-files-as-loc.md
+generated_by: context-agent-hybrid
