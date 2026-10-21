@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4530: Sidecar inbox cursor skips posts that were never surfaced: an inbox held 10 unread posts (a consult plus nudges) while status said 0 unread, and fw sidecar inbox showed only offset 10
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:38:50Z
+# ============================================================================
+
+task_id: T-4530
+task_name: "Sidecar inbox cursor skips posts that were never surfaced: an inbox held 10 unread posts (a consult plus nudges) while status said 0 unread, and fw sidecar inbox showed only offset 10"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T10:42:02Z
+completed: 2026-10-21T11:38:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T13:10:54+02:00
+last_commit: 2026-10-21T13:11:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a draining inbox.pending steps over a shown post only when the receiver store holds it (peeked/alert-marked posts were skipped with the cursor moved: never stored, no receipt, status 0 unread); orphan_inboxes names this project's own address when this session reads another topic, judged by our cursor; regression tests; vendor synced. tick vendor-check AC (all Verification lines pass)
+
+# Key outcomes
+outcomes:
+  - 'Every path that advances a consult-inbox cursor is enumerated in ## RCA with file:line, and the one that steps over an unsurfaced, unacknowledged post is named'
+  - 'A draining `inbox.pending(advance=True)` (the CLI drain and `watcher.ingest_hub`) never moves the cursor past a post that was only peeked or alert-marked: it skips only receipts, duplicates, answered posts, and posts the receiver store already holds; a peeked-twice post is returned by the drain (and so ingested and RECEIVED-receipted by the watcher)'
+  - '`addressing.orphan_inboxes()` (so `fw sidecar alerts` and `fw sidecar orphan-inboxes`) names THIS project''s own project-level inbox when it holds posts past our cursor and this session does not read it; unread is judged by our own cursor, not by hub `unread_since_ms` (which any fetch, a peek included, clears)'
+  - 'Regression tests in tests/unit/ fail without the fix and pass with it; the T-3840 seen-ledger and T-4418 orphan tests still pass'
+  - '`bin/fw vendor self --check --task T-4530` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/addressing.py'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - 'lib/sidecar/addressing.py'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/inbox.py'
+  - '.tasks/active/T-4530-sidecar-inbox-cursor-skips-posts-that-we.md'
+  - 'tests/unit/test_sidecar_cursor_skip_t4530.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T13:10:54'
+    action: 'T-4530: a draining inbox.pending steps over a shown post only when the receiver store holds it (peeked/alert-marked posts were skipped with the cursor moved: never stored, no receipt, status 0 unread); orphan_inboxes names this project''s own address when this session reads another topic, judged by our cursor; regression tests; vendor synced'
+  - time: '2026-10-21T13:11:40'
+    action: 'T-4530: tick vendor-check AC (all Verification lines pass)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 56 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 56
+  commits: 2
+  files_changed: 8
+  lines_added: 651
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4530-sidecar-inbox-cursor-skips-posts-that-we.md
+generated_by: context-agent-hybrid

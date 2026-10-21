@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4529: fw sidecar send cannot reach a new project on the same hub: REFUSED 'not a project id on this hub, not in the peer directory' even while its agent is live and after it posted to the sender (one-way path)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:39:05Z
+# ============================================================================
+
+task_id: T-4529
+task_name: "fw sidecar send cannot reach a new project on the same hub: REFUSED 'not a project id on this hub, not in the peer directory' even while its agent is live and after it posted to the sender (one-way path)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T10:41:51Z
+completed: 2026-10-21T11:38:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T13:29:58+02:00
+last_commit: 2026-10-21T13:30:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a same-hub project is resolvable as a bare --to: _PROJECT_ID_RE accepts four-digit fleet ids (0909-, 1409- matched only as a sibling dir of the sender), and a bare name whose inbox on our hub exists and is read resolves as a project; regression test; vendor synced. tick vendor-check AC (all Verification lines pass)
+
+# Key outcomes
+outcomes:
+  - '## RCA names, with file:line, how a bare same-hub name is resolved (`addressing.resolve` step 3: peer directory, `circuit.is_project_id`, sub-agent evidence) and why `0909-boot-into-timeshift-snapshots` fails each'
+  - '`circuit.is_project_id` accepts the fleet''s 4-digit numbering (`0909-…`, `1409-…`) as well as 3-digit; agent names (`w4531`, `e2e-<run>-responder`, `reviewer-T-3433-ab12`) still are not project ids'
+  - 'A bare `--to <name>` on our own hub also resolves as a project address when `inbox:<own hub>/<name>` exists on the hub AND the hub shows it fetched after its last write (the project reads it), i.e. a registered project that does not match the numbering; a never-read topic (a nickname, T-4418) still is not evidence'
+  - 'Regression test in tests/unit/ fails without the fix and passes with it; the T-4418 orphan/addressing tests and circuit tests still pass'
+  - '`bin/fw vendor self --check --task T-4529` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/addressing.py'
+  - '.agentic-framework/lib/sidecar/circuit.py'
+  - 'lib/sidecar/addressing.py'
+  - 'lib/sidecar/circuit.py'
+  - '.tasks/active/T-4529-fw-sidecar-send-cannot-reach-a-new-proje.md'
+  - 'tests/unit/test_sidecar_resolve_project_t4529.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T13:29:58'
+    action: 'T-4529: a same-hub project is resolvable as a bare --to: _PROJECT_ID_RE accepts four-digit fleet ids (0909-, 1409- matched only as a sibling dir of the sender), and a bare name whose inbox on our hub exists and is read resolves as a project; regression test; vendor synced'
+  - time: '2026-10-21T13:30:08'
+    action: 'T-4529: tick vendor-check AC (all Verification lines pass)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 57 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 57
+  commits: 2
+  files_changed: 6
+  lines_added: 517
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4529-fw-sidecar-send-cannot-reach-a-new-proje.md
+generated_by: context-agent-hybrid

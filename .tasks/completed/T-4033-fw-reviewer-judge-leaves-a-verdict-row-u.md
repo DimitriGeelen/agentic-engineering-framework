@@ -1,22 +1,23 @@
 ---
-id: T-4529
-name: "fw sidecar send cannot reach a new project on the same hub: REFUSED 'not a
-  project id on this hub, not in the peer directory' even while its agent is live
-  and after it posted to the sender (one-way path)"
+id: T-4033
+name: "fw reviewer judge leaves a verdict row uncommitted and says nothing when its
+  commit loses the git index.lock race (832 T-1114, T-310 row V-20261010-08c85aa1)"
 description: >
-  0909 can post to others, but others' sends and --in-reply-to replies to 0909 are
-  refused as unresolvable. Find how a same-hub project becomes resolvable (project
-  id registry vs peer directory), why 0909 is not, and make a project that has posted
-  (or is registered on the hub) resolvable; regression test. Reported by dimitri-mint-dev
-  for 0909-boot-into-timeshift-snapshots (their G-002/T-1003), msgs 28085971 and a0588fd1,
-  2026-10-21.
+  832 (msg 885af175, 2026-10-10): the panel commit raced with a commit in their session
+  (index.lock held); lib/verdict_ledger.py _commit_rows retries 5x over ~7.5 s, then
+  returns commit_error, which the judge does not surface: part of the records committed
+  (9e5ace40), the T-310 verdict row stayed uncommitted, final unknown 'uncommitted',
+  and their pre-push audit now FAILs. Fix: wait longer on index.lock (bounded), fail
+  LOUDLY in the judge output and exit code when a row is left uncommitted, and give
+  a sanctioned verb to drop an uncommitted (never-counted) row instead of hand-editing
+  the ledger.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/verdict_ledger.py, tests/unit/test_t4033_judge_uncommitted_loud.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,9 +45,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-21T10:41:51Z
-last_update: 2026-10-21T11:11:42Z
-date_finished:
+created: 2026-10-10T12:38:56Z
+last_update: 2026-10-21T11:43:31Z
+date_finished: 2026-10-21T11:43:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,17 +59,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-21T10:45:24Z'
+  - ts: '2026-10-10T12:45:25Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
+      (workflow:build); effort=8 (lines=272,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-21T10:45:43Z'
+  - ts: '2026-10-10T12:45:55Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -87,7 +88,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4529: fw sidecar send cannot reach a new project on the same hub: REFUSED 'not a project id on this hub, not in the peer directory' even while its agent is live and after it posted to the sender (one-way path)
+# T-4033: fw reviewer judge leaves a verdict row uncommitted and says nothing when its commit loses the git index.lock race (832 T-1114, T-310 row V-20261010-08c85aa1)
 
 ## Context
 
@@ -97,11 +98,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] ## RCA names, with file:line, how a bare same-hub name is resolved (`addressing.resolve` step 3: peer directory, `circuit.is_project_id`, sub-agent evidence) and why `0909-boot-into-timeshift-snapshots` fails each
-- [x] `circuit.is_project_id` accepts the fleet's 4-digit numbering (`0909-…`, `1409-…`) as well as 3-digit; agent names (`w4531`, `e2e-<run>-responder`, `reviewer-T-3433-ab12`) still are not project ids
-- [x] A bare `--to <name>` on our own hub also resolves as a project address when `inbox:<own hub>/<name>` exists on the hub AND the hub shows it fetched after its last write (the project reads it), i.e. a registered project that does not match the numbering; a never-read topic (a nickname, T-4418) still is not evidence
-- [x] Regression test in tests/unit/ fails without the fix and passes with it; the T-4418 orphan/addressing tests and circuit tests still pass
-- [x] `bin/fw vendor self --check --task T-4529` clean
+- [x] Reproduction at HEAD recorded: the discard verb already ships (T-3863, `fw reviewer verdict discard`), but `_commit_rows_once` still gives up on index.lock after 5 tries (~5 s of sleep), and `fw reviewer judge` exits 0 when a seat's row is uncommitted
+- [x] `lib/verdict_ledger.py` `_commit_rows_once` waits on a held `.git/index.lock` against a bounded deadline (`INDEX_LOCK_WAIT_S`, 60 s), not a fixed 5 tries; a non-lock error still fails at once
+- [x] `fw reviewer judge` sets `uncommitted` on its result, prints `ERROR: … uncommitted …` naming the row and the discard verb on stderr, and exits non-zero (4) when any dispatched seat's verdict row is uncommitted
+- [x] Regression pytest `tests/unit/test_t4033_judge_uncommitted_loud.py` covers both legs (lock deadline outlasts 5 tries; judge exit/stderr) and fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -132,21 +132,6 @@ bvp_scores_proposed:
          **If not:** Inspect hook block-message string and add missing mechanism
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
-
-<!--
-  Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
-  web/app.py …) add a section headed "Visual Verification" (level-2 heading) after
-  Verification, with one checklist table — the check-visual-verification gate reads it
-  at commit time (T-4213; T-4202 GO):
-
-    | state | control | 1024 | 1440 | 1920 | note |
-    |-------|---------|------|------|------|------|
-    | toolbar | Load | ok | ok | ok | |
-
-  Cells: ok / clipped / hidden / overlap / unreachable (non-ok needs a note). Each
-  listed state needs screenshots at every UX_SHOT_WIDTHS width:
-  fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
 
 ## Verification
@@ -279,18 +264,24 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-#
-# Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
-# web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
-#     bin/fw vendor self --check --task T-XXXX
-# (your own task id). It checks only the files your commits changed, so another
-# worker's uncommitted edit does not block your close; that drift is listed as
-# "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_sidecar_resolve_project_t4529.py -q > /tmp/.t4529a 2>&1 && grep -q passed /tmp/.t4529a
-python3 -m pytest tests/unit/test_sidecar_circuit.py tests/unit/test_sidecar_orphan_circuit_t4418.py tests/unit/test_sidecar_cross_hub_t3855.py -q > /tmp/.t4529b 2>&1 && grep -q passed /tmp/.t4529b
-bin/fw vendor self --check --task T-4529
+timeout 900 python3 -m pytest tests/unit/test_t4033_judge_uncommitted_loud.py tests/unit/test_t3863_verdict_commit_gitignored_context.py tests/unit/t4010_judge_no_seat_test.py tests/unit/t3580_judge_cli_test.py -q -p no:cacheprovider > /tmp/.t4033.out 2>&1 && grep -q passed /tmp/.t4033.out
+grep -q "INDEX_LOCK_WAIT_S = " lib/verdict_ledger.py && ! grep -q "for attempt in range(5)" lib/verdict_ledger.py
+grep -q "def _flag_uncommitted" lib/reviewer/judge_cli.py
+bin/fw vendor self --check --task T-4033
 
 ## RCA
+
+**Symptom:** on 832 (msg 885af175, T-1114) `fw reviewer judge` finished with the T-310 verdict row V-20261010-08c85aa1 appended but never committed. The judge printed `unknown` and exited 0, and the next pre-push audit FAILed on the uncommitted row.
+
+**Root cause:** two independent gaps.
+1. `lib/verdict_ledger.py:_commit_rows_once` (the `for attempt in range(5)` loop) retried a commit that hit `.git/index.lock` 5 times with 0.5–2 s sleeps, about 5 s in total. A parallel session's commit (pre-commit hooks included) routinely holds the lock longer, so the reviewer's commit gave up and the row stayed uncommitted.
+2. `lib/reviewer/judge_cli.py:judge` set `res["code"] = 0` whatever the seats' rows were. `_collect` did see the `uncommitted` fault (since T-3863 it also names the git error), but only as a per-criterion `ledger-row-invalid` → final `unknown`. Nothing reached the exit code or stderr, so the run read as finished.
+
+The third ask, a sanctioned way to drop the row, already shipped with T-3863 (`fw reviewer verdict discard`, operator-only), so it was not re-done here.
+
+**Why structurally allowed:** the judge's exit code only covered "no seat recorded anything" (T-4010). "A seat recorded, but its row will never count" was a third state with no exit path of its own. The retry count was sized for brief lock contention and was never tested against a lock that is held for a while.
+
+**Prevention:** `tests/unit/test_t4033_judge_uncommitted_loud.py`. Leg 1 holds a real `index.lock` for 7 s, which at HEAD fails with the old 5-try loop. Leg 2 runs a worker whose ledger commit is lost: at HEAD the judge returns `code` 0; with the fix it returns 4 and prints `ERROR: verdict row left uncommitted … fw reviewer verdict discard …`. A committed-row control proves the flag is not always on.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -305,34 +296,6 @@ bin/fw vendor self --check --task T-4529
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** 0909-boot-into-timeshift-snapshots could post to others, but `fw sidecar send --to
-0909-boot-into-timeshift-snapshots` and `--in-reply-to` replies to its consults were REFUSED:
-"recipient '0909-…' is not resolvable".
-
-**Root cause:** a bare same-hub `--to` resolves in `lib/sidecar/addressing.py` `resolve()` step 3
-(~line 430): peer directory → `circuit.is_project_id(name)` → sub-agent evidence → refuse. A reply
-goes the same way, because `inbox.reply_address()` returns the bare sender name for a same-hub
-sender. `is_project_id` (`lib/sidecar/circuit.py`) has three signals: it is us; `_PROJECT_ID_RE`
-`^\d{3}-` (circuit.py:70); or a sibling directory of the SENDER's project holding `.framework.yaml`.
-`0909-…` has four digits, so the regex never matched (measured: `0999-not-a-sibling-x` → False,
-`099-not-a-sibling-x` → True). It passed only for a sender whose project sits in the same parent
-directory (`/opt` here), so every other sender on the hub was refused. The peer directory did not
-rescue it either: `addressing.learn()` keys by `circuit_name(from_circuit)`, and a session-scoped
-0909 circuit (`<hub>/0909-…/<session>`) names the session, not `from_agent`, so it is refused as a
-claim mismatch. A project outside the numbering (no digits at all) had no hub-side evidence path
-on our own hub at all, although the remote-hub branch already checks that the inbox exists.
-
-**Why structurally allowed:** the fleet convention was written down as "three digits" when the
-fleet had already started four-digit ids (`1409-sprind`), and every test of the regex ran from
-`/opt`, where the sibling-directory signal hides a regex miss.
-
-**Prevention:** `_PROJECT_ID_RE` is `^\d{3,4}-`. `resolve()` also accepts a bare name as a project
-on our hub when `inbox:<own>/<name>` exists AND the hub shows it fetched after its last write
-(`_project_inbox_read`, the T-4418 `topic_is_read` evidence), so a never-read nickname topic still
-refuses. `tests/unit/test_sidecar_resolve_project_t4529.py` runs from a tmp dir with no siblings
-(4 of 11 fail before the fix; the rest are control legs). Left open: `learn()` refusing a
-session-scoped from_circuit is a separate gap, not changed here.
 
 ## Evolution
 
@@ -410,10 +373,27 @@ session-scoped from_circuit is a separate gap, not changed here.
 
 ## Updates
 
-### 2026-10-21T10:41:51Z — task-created [task-create-agent]
+### 2026-10-10T12:38:56Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4529-fw-sidecar-send-cannot-reach-a-new-proje.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4033-fw-reviewer-judge-leaves-a-verdict-row-u.md
 - **Context:** Initial task creation
 
-### 2026-10-21T11:11:42Z — status-update [task-update-agent]
+### 2026-10-21T10:39:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d190b50e
+- **Timestamp:** 2026-10-21T11:44:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `lib/verdict_ledger.py` `_commit_rows_once` waits on a held `.git/index.lock` against a bounded deadline (`INDEX_LOCK_WAIT_S`, 60 s), not a fixed 5 tries; a non-lock error still fails at once
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=git/index.lock in: `lib/verdict_ledger.py` `_commit_rows_once` waits on a held `.git/index.lock` against a bounded deadline (`INDEX_LOCK_WAIT_S`, 60 s), not a fixed 5 tr`
+
+### 2026-10-21T11:43:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

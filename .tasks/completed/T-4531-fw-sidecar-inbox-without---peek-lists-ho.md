@@ -1,23 +1,22 @@
 ---
-id: T-4528
-name: "A worker commit (290e149d6, T-3866) deleted six committed files it did not
-  own (T-4520's conformance suite) from a stale shared index"
+id: T-4531
+name: "fw sidecar inbox (without --peek) lists host-wide dm-rail posts addressed to
+  OTHER projects, and may advance their read cursor"
 description: >
-  2026-10-21: commit 290e149d6 (T-3866 worker) removed tests/conformance/worker-contract/*
-  , tests/unit/test_worker_contract_vectors.py and a T-4520 task file, all committed
-  earlier in eac91df2f by a different worker; restored in d33d2dc6e. Find how the
-  deletions entered that commit (a stale index entry from a parallel close or worker,
-  the commit-with-paths form, or a pre-commit hook re-staging), and add a guard: a
-  commit whose subject names one task must not delete files last committed by a different
-  task unless the message says so, or the pre-commit T-4167 stale-index check must
-  cover deletions. Regression test reproducing two workers in one checkout.
+  0909 ran fw sidecar inbox and saw dm-rail posts meant for 055-agentic-fleet-cockpit
+  and 832 (e.g. an aef-greenfield-test post to 832, 9219671e). Determine whether listing
+  is by design (shared rail) and whether reading moves the recipients' cursor or only
+  the reader's; posts addressed to another project must not be listed as this project's
+  mail, and must never mark another recipient's mail as read. Regression test. Reported
+  by dimitri-mint-dev for 0909-boot-into-timeshift-snapshots (their G-002/T-1003),
+  msgs 28085971 and a0588fd1, 2026-10-21.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/dm.py, lib/sidecar_cli.py, tests/unit/test_sidecar_dm_transition_scope_t4531.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,9 +44,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-21T10:39:26Z
-last_update: 2026-10-21T10:44:25Z
-date_finished:
+created: 2026-10-21T10:42:12Z
+last_update: 2026-10-21T11:38:11Z
+date_finished: 2026-10-21T11:38:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,7 +58,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-21T10:44:25Z'
+  - ts: '2026-10-21T10:42:47Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -76,26 +75,33 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-21T10:45:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=300,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4528: A worker commit (290e149d6, T-3866) deleted six committed files it did not own (T-4520's conformance suite) from a stale shared index
+# T-4531: fw sidecar inbox (without --peek) lists host-wide dm-rail posts addressed to OTHER projects, and may advance their read cursor
 
 ## Context
 
-Reproduces at HEAD as a class: nothing refused a commit that deletes another task's
-files. Mechanism traced from the T-3866 worker's own transcript
-(`/tmp/tl-dispatch/w3866/result.jsonl`): it built a scratch index
-(`export GIT_INDEX_FILE=.context/working/t3866/index && git read-tree HEAD && git apply --cached mine.patch`)
-before eac91df2f (T-4520, 11:00:33) landed, then committed from that index at 11:01:17.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Mechanism by which 290e149d6 picked up the six deletions is identified and recorded in ## RCA (with file:line)
-- [x] Commit-time guard refuses a commit whose staged deletion removes a file whose last commit names a different task than the commit subject, unless the message names that task (override FW_ALLOW_FOREIGN_DELETE=1, Tier-2 logged)
-- [x] Regression test reproduces two workers in one checkout (worker A commits new files, worker B commits from a scratch index built before A's commit) and is refused; same-task deletions, named-owner deletions, task-file moves, rebuilt index and override pass
-- [x] Existing stale-index guard and install-hooks tests still pass; vendor self --check --task T-4528 clean
+- [x] Root cause localised with file:line and recorded in ## RCA, including a plain answer whether another project's (055, 832) mail could be marked read by this project's `fw sidecar inbox`
+- [x] Whether `termlink channel subscribe --cursor N` (no `--resume`) moves any hub-side or `~/.termlink/cursors.json` read state is established on a THROWAWAY hub/topic, never a live inbox
+- [x] `dm.pending()` never drains (returns content of, or advances a cursor on) a rail keyed only by the host-shared fingerprint (the T-4311 legacy transition rails); those rails stay visible as read-only summaries in `fw sidecar inbox`
+- [x] Regression test in tests/unit/ fails without the fix and passes with it; existing sidecar dm tests still pass
+- [x] `bin/fw vendor self --check --task T-4531` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,48 +286,11 @@ before eac91df2f (T-4520, 11:00:33) landed, then committed from that index at 11
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-bash -n agents/git/lib/hooks.sh
-grep -q 'foreign-delete-guard.py' agents/git/lib/hooks.sh
-timeout 600 bats tests/unit/t4528_foreign_delete_guard.bats > /tmp/.t4528-v 2>&1 && ! grep -q "^not ok" /tmp/.t4528-v
-test "$(grep -c '# skip' /tmp/.t4528-v)" -eq 0
-timeout 600 bats tests/unit/t4167_stale_index_guard.bats tests/unit/hook_version_marker_parity.bats > /tmp/.t4528-n 2>&1 && ! grep -q "^not ok" /tmp/.t4528-n
-python3 tools/bats-dead-negation-lint.py tests/unit/t4528_foreign_delete_guard.bats > /tmp/.t4528-l 2>&1 && grep -q clean /tmp/.t4528-l
-bin/fw vendor self --check --task T-4528
+python3 -m pytest tests/unit/test_sidecar_dm_transition_scope_t4531.py -q > /tmp/.t4531a 2>&1 && grep -q passed /tmp/.t4531a
+python3 -m pytest tests/unit/test_sidecar_dm.py tests/unit/test_sidecar_dm_host_shared_t4252.py tests/unit/test_sidecar_rail_identity_t4311.py tests/unit/test_sidecar_dm_scope_t3966.py -q > /tmp/.t4531b 2>&1 && grep -q passed /tmp/.t4531b
+bin/fw vendor self --check --task T-4531
 
 ## RCA
-
-**Symptom:** 290e149d6 (subject T-3866) deleted T-4520's six files (conformance vectors,
-schema check, runner, README, unit test, task file) committed 44 s earlier in eac91df2f.
-Restored in d33d2dc6e.
-
-**Root cause:** the T-3866 worker committed from a scratch index built from a stale HEAD.
-It ran `export GIT_INDEX_FILE=.context/working/t3866/index && git read-tree HEAD && git apply --cached …`
-before eac91df2f existed, and `git commit` from that index after it landed. `git commit`
-takes the parent from the live HEAD (eac91df2f) and the tree from the index (old HEAD +
-T-3866's changes), so every file eac91df2f added shows up as a deletion. It was not a race
-on the shared `.git/index`: a test showed `git commit -- <paths>` holds `index.lock`
-through its hooks. The scratch index sidesteps that lock entirely. No framework tool
-builds the scratch index. The worker improvised it to split its own patch out of a
-shared dirty tree.
-
-**Why structurally allowed:** the only stale-index check, T-4167
-(`agents/git/lib/stale-index-guard.py:79-81`), records kind `D` and uses it only to
-pair active↔completed moves. It compares staged blobs against older versions, so a
-deletion, which has no staged blob, is never judged. It also covers only `.tasks/` and
-`.context/episodic/`, and the pre-commit hook cannot see which task the commit claims.
-
-**Prevention:** new `agents/git/lib/foreign-delete-guard.py`, called from the commit-msg
-hook (`agents/git/lib/hooks.sh`, "Foreign-delete guard (T-4528)" block; hook VERSION
-1.20→1.21). It refuses any staged deletion (renames and active↔completed moves excluded)
-of a file whose most recent commit's subject names a task other than this commit's,
-unless the message names that task. Override: `FW_ALLOW_FOREIGN_DELETE=1`, Tier-2
-logged. It inherits GIT_INDEX_FILE, so it judges the scratch index that is actually
-being committed. Pinned end-to-end by `tests/unit/t4528_foreign_delete_guard.bats`
-(two workers in one fixture checkout). Without the guard, tests 1, 5 and 6 fail.
-
-**Residual (not in scope):** the same stale scratch index would also silently revert
-MODIFICATIONS that the other task made to non-governed files. T-4167 covers only
-`.tasks/` and `.context/episodic/`, and this guard covers only deletions.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -336,6 +305,48 @@ MODIFICATIONS that the other task made to non-governed files. T-4167 covers only
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** in 0909, a plain `fw sidecar inbox` printed the full content of dm-rail posts
+addressed to other projects on the host (055-agentic-fleet-cockpit, 832; e.g. an
+aef-greenfield-test post to 832, 9219671e) as if they were 0909's own mail, and advanced
+0909's cursor past them.
+
+**Root cause:** `lib/sidecar/dm.py:pending()` drains every rail `rails_for_key()` returns.
+With no explicit key, `rails_for_key()` (dm.py ~187) adds the host fingerprint from
+`legacy_host_fingerprint()` (T-4311 transition, on by default via
+`SIDECAR_HOST_DM_TRANSITION=1`) to the project's own key. Rails keyed by the host fingerprint
+are the host-shared rails every project on the machine sees. T-4252's guard in `pending()`
+(`identity_is_host_shared()`) only refuses when our OWN key is the host key; once the project
+has its own identity, that check is False and the host rails pulled in by the transition are
+drained with content anyway. So T-4311 re-opened, through a side door, exactly what T-4252
+closed. The old T-4311 test (`test_switch_keeps_old_host_rails_and_their_cursors`) asserted
+the drain as intended behaviour.
+
+**Could 055 or 832 have had mail marked read by another project? No.** Measured on a
+throwaway hub (own `TERMLINK_RUNTIME_DIR` and `HOME`, two throwaway identities, a throwaway
+`dm:<peer>:<host>` rail with 2 posts; no live inbox read): the read `dm.pending()` runs,
+`termlink channel subscribe <rail> --json --cursor 0 --limit N` (no `--resume`), left the
+recipient's `termlink channel unread` at 2 (no receipt is posted, `up_to` stays null), wrote
+nothing under `~/.termlink/` (no `cursors.json`), and the same held when the reader signed
+with a different identity. Our cursor is per-project (`<project>/.context/sidecar/inbox-state.json`,
+`inbox._state_path`), so 0909's drain moved 0909's file only; 055's and 832's own cursors
+cannot be reached from 0909. The drain path sends no receipts for dm posts (`sidecar_cli.cmd_inbox`
+sends receipts and shown-ledger marks only for `messages`, the consults). One hub-side thing
+does change: the topic-wide `activity.unread_since_ms` is cleared by ANY fetch (any reader,
+any identity, a `--peek` included). Nothing in this framework reads that field for `dm:`
+rails (it is read only for `inbox:` topics in `lib/sidecar/addressing.py`), so it marks
+nothing read for 055/832 here; the real harm was disclosure: 0909 saw and could act on
+other projects' DMs.
+
+**Why structurally allowed:** the "is this rail shared?" question was asked about our
+identity (T-4252) instead of about each rail; T-4311 added a second key to the rail set
+without re-asking it, and its test pinned the drain.
+
+**Prevention:** `pending()` with no key now drains only rails on our own key; host-keyed
+transition rails are shown as read-only summaries (`dm.shared_summary()`), the same treatment
+T-4252 gives a host-shared identity. Regression test `tests/unit/test_sidecar_dm_transition_scope_t4531.py`
+(drain refuses the host rail, cursor unchanged, CLI shows it as a summary), and the T-4311
+test now asserts the summary instead of the drain.
 
 ## Evolution
 
@@ -413,10 +424,29 @@ MODIFICATIONS that the other task made to non-governed files. T-4167 covers only
 
 ## Updates
 
-### 2026-10-21T10:39:26Z — task-created [task-create-agent]
+### 2026-10-21T10:42:12Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4528-a-worker-commit-290e149d6-t-3866-deleted.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4531-fw-sidecar-inbox-without---peek-lists-ho.md
 - **Context:** Initial task creation
 
-### 2026-10-21T10:44:25Z — status-update [task-update-agent]
+### 2026-10-21T10:42:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d0229062
+- **Timestamp:** 2026-10-21T11:38:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Whether `termlink channel subscribe --cursor N` (no `--resume`) moves any hub-side or `~/.termlink/cursors.json` read state is established on a THROWAWAY hub/topic, never a live inbox
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=termlink/cursors.json in: Whether `termlink channel subscribe --cursor N` (no `--resume`) moves any hub-side or `~/.termlink/cursors.json` read state is established on a THROWA`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T11:38:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

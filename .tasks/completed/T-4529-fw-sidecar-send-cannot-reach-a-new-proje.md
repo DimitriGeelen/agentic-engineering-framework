@@ -1,26 +1,22 @@
 ---
-id: T-4048
-name: "claude-fw start hygiene: never start claude with an empty argv (agents view),
-  refuse/explain resuming a background job (claude attach), verify claude runs on
-  the pane tty after start, resume by exact id (055 T-491 proposals A-D)"
+id: T-4529
+name: "fw sidecar send cannot reach a new project on the same hub: REFUSED 'not a
+  project id on this hub, not in the peer directory' even while its agent is live
+  and after it posted to the sender (one-way path)"
 description: >
-  055 msg 3f0d69ea (2026-10-10, docs/reports/T-491-session-hops.md in 055): one T-4003
-  test restart cost the operator 7 conversations in a day. Causes: bare claude-fw
-  + defaultToAgentsView opens the agents overview and starts a background conversation
-  in the shared claude daemon (no tty; T-3629 covers restarts only); --resume of a
-  background job becomes 'claude attach' (a viewer; T-4003 cannot reach it, T-4037);
-  T-4036 blocked -c/--resume. Proposals: A never start with empty argv (or warn when
-  defaultToAgentsView), B check ~/.claude/jobs/<id>/state.json before resume and say
-  plainly it is a background job + how to foreground it, C after start verify claude
-  itself is on a tty (not attach) and print PASS/FAIL, D restart guidance: resume
-  by exact id, never fresh, never -c.
+  0909 can post to others, but others' sends and --in-reply-to replies to 0909 are
+  refused as unresolvable. Find how a same-hub project becomes resolvable (project
+  id registry vs peer directory), why 0909 is not, and make a project that has posted
+  (or is registered on the hub) resolvable; regression test. Reported by dimitri-mint-dev
+  for 0909-boot-into-timeshift-snapshots (their G-002/T-1003), msgs 28085971 and a0588fd1,
+  2026-10-21.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/addressing.py, lib/sidecar/circuit.py, tests/unit/test_sidecar_resolve_project_t4529.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,9 +44,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-10T18:11:48Z
-last_update: 2026-10-21T10:48:27Z
-date_finished:
+created: 2026-10-21T10:41:51Z
+last_update: 2026-10-21T11:38:51Z
+date_finished: 2026-10-21T11:38:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,17 +58,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-10T18:15:41Z'
+  - ts: '2026-10-21T10:45:24Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=272,acs=4)
+      (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-10T18:16:29Z'
+  - ts: '2026-10-21T10:45:43Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -91,25 +87,21 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4048: claude-fw start hygiene: never start claude with an empty argv (agents view), refuse/explain resuming a background job (claude attach), verify claude runs on the pane tty after start, resume by exact id (055 T-491 proposals A-D)
+# T-4529: fw sidecar send cannot reach a new project on the same hub: REFUSED 'not a project id on this hub, not in the peer directory' even while its agent is live and after it posted to the sender (one-way path)
 
 ## Context
 
-055 msg 3f0d69ea, docs/reports/T-491-session-hops.md (in 055). Reproduced at HEAD 2379a926b:
-`_name_fresh_relaunch` (bin/claude-fw) returns early when restart_count is 0, so a bare
-`claude-fw` still hands claude an empty argv (agents view under defaultToAgentsView), and
-nothing in bin/claude-fw or lib/conversation-holder.sh reads ~/.claude/jobs/ before a
-`--resume <id>` (grep: zero hits). This task ships proposals A and B; C and D are under
-## Recommendation.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] A: a bare first `claude-fw` launch hands claude `-n fw-<dir>`, never an empty argv; a first launch with the user's own args keeps them untouched (tests/unit/t3629_fresh_relaunch_not_agents_view.bats)
-- [x] B: `claude-fw --resume <id>` (also `-r <id>`, `--resume=<id>`) is REFUSED (exit 3) when ~/.claude/jobs/<id8>/state.json names that sessionId with a live state (not done/failed/stopped); the message says it is a background job and names `claude stop <short>` then `claude-fw --resume <id>`; FW_ALLOW_BACKGROUND_RESUME=1 overrides with a warning; a stopped job or no job passes (tests/unit/t4048_claude_fw_background_resume.bats)
-- [x] Regression tests fail with the fix mutated out (mutation tests inside both bats files)
-- [x] `bin/fw vendor self --check --task T-4048` clean
+- [x] ## RCA names, with file:line, how a bare same-hub name is resolved (`addressing.resolve` step 3: peer directory, `circuit.is_project_id`, sub-agent evidence) and why `0909-boot-into-timeshift-snapshots` fails each
+- [x] `circuit.is_project_id` accepts the fleet's 4-digit numbering (`0909-…`, `1409-…`) as well as 3-digit; agent names (`w4531`, `e2e-<run>-responder`, `reviewer-T-3433-ab12`) still are not project ids
+- [x] A bare `--to <name>` on our own hub also resolves as a project address when `inbox:<own hub>/<name>` exists on the hub AND the hub shows it fetched after its last write (the project reads it), i.e. a registered project that does not match the numbering; a never-read topic (a nickname, T-4418) still is not evidence
+- [x] Regression test in tests/unit/ fails without the fix and passes with it; the T-4418 orphan/addressing tests and circuit tests still pass
+- [x] `bin/fw vendor self --check --task T-4529` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -142,14 +134,22 @@ nothing in bin/claude-fw or lib/conversation-holder.sh reads ~/.claude/jobs/ bef
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+<!--
+  Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
+  web/app.py …) add a section headed "Visual Verification" (level-2 heading) after
+  Verification, with one checklist table — the check-visual-verification gate reads it
+  at commit time (T-4213; T-4202 GO):
+
+    | state | control | 1024 | 1440 | 1920 | note |
+    |-------|---------|------|------|------|------|
+    | toolbar | Load | ok | ok | ok | |
+
+  Cells: ok / clipped / hidden / overlap / unreachable (non-ok needs a note). Each
+  listed state needs screenshots at every UX_SHOT_WIDTHS width:
+  fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
+-->
+
 ## Verification
-timeout 600 bats tests/unit/t3629_fresh_relaunch_not_agents_view.bats > /tmp/.t4048a 2>&1 && ! grep -q "^not ok" /tmp/.t4048a
-test "$(grep -c '# skip' /tmp/.t4048a)" -eq 0
-timeout 600 bats tests/unit/t4048_claude_fw_background_resume.bats > /tmp/.t4048b 2>&1 && ! grep -q "^not ok" /tmp/.t4048b
-test "$(grep -c '# skip' /tmp/.t4048b)" -eq 0
-timeout 600 bats tests/unit/t4497_claude_fw_continue_not_worker.bats > /tmp/.t4048c 2>&1 && ! grep -q "^not ok" /tmp/.t4048c
-bash -n bin/claude-fw && bash -n lib/conversation-holder.sh
-bin/fw vendor self --check --task T-4048
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -279,29 +279,18 @@ bin/fw vendor self --check --task T-4048
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
+# web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
+#     bin/fw vendor self --check --task T-XXXX
+# (your own task id). It checks only the files your commits changed, so another
+# worker's uncommitted edit does not block your close; that drift is listed as
+# "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_sidecar_resolve_project_t4529.py -q > /tmp/.t4529a 2>&1 && grep -q passed /tmp/.t4529a
+python3 -m pytest tests/unit/test_sidecar_circuit.py tests/unit/test_sidecar_orphan_circuit_t4418.py tests/unit/test_sidecar_cross_hub_t3855.py -q > /tmp/.t4529b 2>&1 && grep -q passed /tmp/.t4529b
+bin/fw vendor self --check --task T-4529
 
 ## RCA
-
-**Symptom:** one T-4003 test restart cost the operator 7 conversations in a day (055). A bare
-`claude-fw` opened Claude Code's agents overview and started the conversation as a background
-job in the shared claude daemon (no tty); `claude-fw --resume <id>` of such a job became a
-`claude attach` viewer that the T-4003 tmux typing path cannot reach.
-
-**Root cause:** `bin/claude-fw` `_name_fresh_relaunch` (T-3629) rewrote an empty argv only on
-RELAUNCHES (`[ "$restart_count" -gt 0 ] || return 0`), and its test pinned the bare first
-launch as unchanged ("a bare first launch is not renamed"). Separately, the resume path
-(`_conversation_guard` → lib/conversation-holder.sh `fw_conversation_holder`) knows only the
-live holders the sidecar records, never Claude Code's own background jobs
-(~/.claude/jobs/<short>/state.json), so a resume of a live daemon job went through unexamined.
-
-**Why structurally allowed:** T-3629 was scoped to the restart symptom it was filed for; the
-first launch was treated as "the user's argv", although claude-fw's machinery (hooks, handover
-injection, tmux typing) assumes a foreground conversation. The background-job store is Claude
-Code CLI state outside every check the framework ran.
-
-**Prevention:** bats regressions with mutation legs: t3629 now asserts the bare first launch is
-named; t4048_claude_fw_background_resume.bats asserts the refusal for live jobs, the pass for
-stopped jobs / no job, and that deleting the guard lets the resume through.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -316,6 +305,34 @@ stopped jobs / no job, and that deleting the guard lets the resume through.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 0909-boot-into-timeshift-snapshots could post to others, but `fw sidecar send --to
+0909-boot-into-timeshift-snapshots` and `--in-reply-to` replies to its consults were REFUSED:
+"recipient '0909-…' is not resolvable".
+
+**Root cause:** a bare same-hub `--to` resolves in `lib/sidecar/addressing.py` `resolve()` step 3
+(~line 430): peer directory → `circuit.is_project_id(name)` → sub-agent evidence → refuse. A reply
+goes the same way, because `inbox.reply_address()` returns the bare sender name for a same-hub
+sender. `is_project_id` (`lib/sidecar/circuit.py`) has three signals: it is us; `_PROJECT_ID_RE`
+`^\d{3}-` (circuit.py:70); or a sibling directory of the SENDER's project holding `.framework.yaml`.
+`0909-…` has four digits, so the regex never matched (measured: `0999-not-a-sibling-x` → False,
+`099-not-a-sibling-x` → True). It passed only for a sender whose project sits in the same parent
+directory (`/opt` here), so every other sender on the hub was refused. The peer directory did not
+rescue it either: `addressing.learn()` keys by `circuit_name(from_circuit)`, and a session-scoped
+0909 circuit (`<hub>/0909-…/<session>`) names the session, not `from_agent`, so it is refused as a
+claim mismatch. A project outside the numbering (no digits at all) had no hub-side evidence path
+on our own hub at all, although the remote-hub branch already checks that the inbox exists.
+
+**Why structurally allowed:** the fleet convention was written down as "three digits" when the
+fleet had already started four-digit ids (`1409-sprind`), and every test of the regex ran from
+`/opt`, where the sibling-directory signal hides a regex miss.
+
+**Prevention:** `_PROJECT_ID_RE` is `^\d{3,4}-`. `resolve()` also accepts a bare name as a project
+on our hub when `inbox:<own>/<name>` exists AND the hub shows it fetched after its last write
+(`_project_inbox_read`, the T-4418 `topic_is_read` evidence), so a never-read nickname topic still
+refuses. `tests/unit/test_sidecar_resolve_project_t4529.py` runs from a tmp dir with no siblings
+(4 of 11 fail before the fix; the rest are control legs). Left open: `learn()` refusing a
+session-scoped from_circuit is a separate gap, not changed here.
 
 ## Evolution
 
@@ -370,26 +387,6 @@ stopped jobs / no job, and that deleting the guard lets the resume through.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO (close on A+B); C and D need an operator decision, options below.
-**Rationale:** A and B remove the two mechanisms that created hidden background conversations
-(empty argv on the first launch; resume of a live daemon job). Proposal C (post-start "is
-claude itself on the pane tty, not attach" PASS/FAIL) is mostly made unnecessary by A+B: in
-direct mode claude is the wrapper's foreground child, and the only route to `attach` known
-from 055's report is now refused before launch. Proposal D ("resume by exact id, never fresh,
-never -c") partly ships already (T-4497: every -c becomes `--resume <recorded id>`), but "never
-fresh" would reverse T-3166's default FW_RESTART_MODE=fresh, which frees context on a budget
-restart. That trade is the operator's call.
-**Evidence:**
-- tests/unit/t3629_fresh_relaunch_not_agents_view.bats 7/7 (test 6 was already red at HEAD after T-4497; realigned)
-- tests/unit/t4048_claude_fw_background_resume.bats 6/6 (includes the mutation leg)
-- Neighbour suites t4497, t3358, t4069, t4118, claude_fw_restart_mode, t4003, t4462: all ok
-
-Options for the operator:
-1. C as a tmux-mode-only check: after the inject, poll `tmux list-panes -F '#{pane_current_command}'` and print PASS/FAIL (small follow-up task).
-2. C not built: rely on A+B (recommended unless 055 reports another route to attach).
-3. D: keep FW_RESTART_MODE=fresh as the default (recommended: context is freed; the handover carries state).
-4. D: make `continue` (resume of the recorded id) the default restart mode.
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -413,10 +410,27 @@ Options for the operator:
 
 ## Updates
 
-### 2026-10-10T18:11:48Z — task-created [task-create-agent]
+### 2026-10-21T10:41:51Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4048-claude-fw-start-hygiene-never-start-clau.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4529-fw-sidecar-send-cannot-reach-a-new-proje.md
 - **Context:** Initial task creation
 
-### 2026-10-21T10:48:27Z — status-update [task-update-agent]
+### 2026-10-21T11:11:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e67ac688
+- **Timestamp:** 2026-10-21T11:38:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T11:38:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

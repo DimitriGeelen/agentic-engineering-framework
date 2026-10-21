@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4048: claude-fw start hygiene: never start claude with an empty argv (agents view), refuse/explain resuming a background job (claude attach), verify claude runs on the pane tty after start, resume by exact id (055 T-491 proposals A-D)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:45:21Z
+# ============================================================================
+
+task_id: T-4048
+task_name: "claude-fw start hygiene: never start claude with an empty argv (agents view), refuse/explain resuming a background job (claude attach), verify claude runs on the pane tty after start, resume by exact id (055 T-491 proposals A-D)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-10T18:11:48Z
+completed: 2026-10-21T11:44:40Z
+duration_days: 11
+updates_count: 2
+first_commit: 2026-10-21T12:58:27+02:00
+last_commit: 2026-10-21T12:59:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw never starts claude with an empty argv (bare first launch named -n fw-<dir>) and refuses --resume of a live Claude Code background job (~/.claude/jobs state) with foreground guidance; t3629 realigned (incl. stale T-4497 -c test), new t4048 bats; vendor synced. vendor-check AC ticked (all Verification lines pass)
+
+# Key outcomes
+outcomes:
+  - 'A: a bare first `claude-fw` launch hands claude `-n fw-<dir>`, never an empty argv; a first launch with the user''s own args keeps them untouched (tests/unit/t3629_fresh_relaunch_not_agents_view.bats)'
+  - 'B: `claude-fw --resume <id>` (also `-r <id>`, `--resume=<id>`) is REFUSED (exit 3) when ~/.claude/jobs/<id8>/state.json names that sessionId with a live state (not done/failed/stopped); the message says it is a background job and names `claude stop <short>` then `claude-fw --resume <id>`; FW_ALLOW_BACKGROUND_RESUME=1 overrides with a warning; a stopped job or no job passes (tests/unit/t4048_claude_fw_background_resume.bats)'
+  - 'Regression tests fail with the fix mutated out (mutation tests inside both bats files)'
+  - '`bin/fw vendor self --check --task T-4048` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/lib/conversation-holder.sh'
+  - 'bin/claude-fw'
+  - 'lib/conversation-holder.sh'
+  - '.tasks/active/T-4048-claude-fw-start-hygiene-never-start-clau.md'
+  - 'tests/unit/t3629_fresh_relaunch_not_agents_view.bats'
+  - 'tests/unit/t4048_claude_fw_background_resume.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T12:58:27'
+    action: 'T-4048: claude-fw never starts claude with an empty argv (bare first launch named -n fw-<dir>) and refuses --resume of a live Claude Code background job (~/.claude/jobs state) with foreground guidance; t3629 realigned (incl. stale T-4497 -c test), new t4048 bats; vendor synced'
+  - time: '2026-10-21T12:59:22'
+    action: 'T-4048: vendor-check AC ticked (all Verification lines pass)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 15452 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 15452
+  commits: 3
+  files_changed: 8
+  lines_added: 652
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4048-claude-fw-start-hygiene-never-start-clau.md
+generated_by: context-agent-hybrid

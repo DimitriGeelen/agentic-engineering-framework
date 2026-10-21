@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2756: Verify whether fw upgrade bootstrap auto-clone re-invokes upgrade from a clone lacking the T-1839 downgrade guard
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:43:30Z
+# ============================================================================
+
+task_id: T-2756
+task_name: "Verify whether fw upgrade bootstrap auto-clone re-invokes upgrade from a clone lacking the T-1839 downgrade guard"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-03T00:16:39Z
+completed: 2026-10-21T11:39:07Z
+duration_days: 79
+updates_count: 2
+first_commit: 2026-10-21T12:57:19+02:00
+last_commit: 2026-10-21T12:57:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  auto-clone handoff refuses ahead/diverged consumer pin against the clone before the clone's fw runs (--force-downgrade bypass); regression bats with a guardless upstream stub; ACs, RCA, Verification; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduced against HEAD with a throwaway consumer: a bare-from-consumer `fw upgrade` whose consumer pin (version_sha) is AHEAD of the upstream default branch hands off to the clone''s bin/fw without any version check in the (guarded) parent — a clone whose fw lacks the T-1839/T-1912 guard rewrites the pin (evidence recorded below)'
+  - 'The parent (`do_upgrade`, auto-clone branch in lib/upgrade.sh) computes the relation of the consumer pin to the CLONE before handoff and refuses ahead/diverged unless `--force-downgrade`, without invoking the clone''s bin/fw and without touching the consumer'
+  - 'Regression bats `tests/unit/t2756_upgrade_autoclone_downgrade_guard.bats` fails without the fix and passes with it (refuse leg, --force-downgrade leg, behind-consumer control leg)'
+  - 'Neighbouring suites stay green: upgrade_fresh_machine_simulation.bats, upgrade_auto_clone.bats, t3886_upgrade_autoclone_history.bats, t4405_upgrade_handoff_forwards_args.bats'
+  - '`bin/fw vendor self --check --task T-2756` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2756-verify-whether-fw-upgrade-bootstrap-auto.md'
+  - 'tests/unit/t2756_upgrade_autoclone_downgrade_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T12:57:19'
+    action: 'T-2756: auto-clone handoff refuses ahead/diverged consumer pin against the clone before the clone''s fw runs (--force-downgrade bypass); regression bats with a guardless upstream stub; ACs, RCA, Verification; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 114442 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 114442
+  commits: 1
+  files_changed: 4
+  lines_added: 187
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2756-verify-whether-fw-upgrade-bootstrap-auto.md
+generated_by: context-agent-hybrid

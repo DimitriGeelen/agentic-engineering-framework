@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4531: fw sidecar inbox (without --peek) lists host-wide dm-rail posts addressed to OTHER projects, and may advance their read cursor
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:38:26Z
+# ============================================================================
+
+task_id: T-4531
+task_name: "fw sidecar inbox (without --peek) lists host-wide dm-rail posts addressed to OTHER projects, and may advance their read cursor"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T10:42:12Z
+completed: 2026-10-21T11:38:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T12:59:43+02:00
+last_commit: 2026-10-21T13:38:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sidecar inbox drains only dm rails on this project's own key; host-keyed rails kept in view by the T-4311 transition are read-only summaries (they were drained, so 0909 saw 055/832 mail). Throwaway-hub probe: a read moves no other recipient's cursor or receipts. Regression test; T-4311 test updated; vendor synced. tick vendor-check AC (all Verification lines pass). fabric cards for new tests
+
+# Key outcomes
+outcomes:
+  - 'Root cause localised with file:line and recorded in ## RCA, including a plain answer whether another project''s (055, 832) mail could be marked read by this project''s `fw sidecar inbox`'
+  - 'Whether `termlink channel subscribe --cursor N` (no `--resume`) moves any hub-side or `~/.termlink/cursors.json` read state is established on a THROWAWAY hub/topic, never a live inbox'
+  - '`dm.pending()` never drains (returns content of, or advances a cursor on) a rail keyed only by the host-shared fingerprint (the T-4311 legacy transition rails); those rails stay visible as read-only summaries in `fw sidecar inbox`'
+  - 'Regression test in tests/unit/ fails without the fix and passes with it; existing sidecar dm tests still pass'
+  - '`bin/fw vendor self --check --task T-4531` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/dm.py'
+  - '.fabric/components/agents-audit-unit_tree_guard.yaml'
+  - '.fabric/components/tests-unit-t2756_upgrade_autoclone_downgrade_guard.yaml'
+  - '.fabric/components/tests-unit-t4048_claude_fw_background_resume.yaml'
+  - '.fabric/components/tests-unit-t4523_unit_suite_tree_guard.yaml'
+  - '.fabric/components/tests-unit-t4528_foreign_delete_guard.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_cursor_skip_t4530.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_dm_transition_scope_t4531.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_resolve_project_t4529.yaml'
+  - '.fabric/components/tests-unit-test_t4033_judge_uncommitted_loud.yaml'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/dm.py'
+  - '.tasks/active/T-4531-fw-sidecar-inbox-without---peek-lists-ho.md'
+  - 'tests/unit/test_sidecar_dm_transition_scope_t4531.py'
+  - 'tests/unit/test_sidecar_rail_identity_t4311.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T12:59:43'
+    action: 'T-4531: fw sidecar inbox drains only dm rails on this project''s own key; host-keyed rails kept in view by the T-4311 transition are read-only summaries (they were drained, so 0909 saw 055/832 mail). Throwaway-hub probe: a read moves no other recipient''s cursor or receipts. Regression test; T-4311 test updated; vendor synced'
+  - time: '2026-10-21T13:00:11'
+    action: 'T-4531: tick vendor-check AC (all Verification lines pass)'
+  - time: '2026-10-21T13:38:10'
+    action: 'T-4531: fabric cards for new tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 55 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 55
+  commits: 3
+  files_changed: 16
+  lines_added: 776
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4531-fw-sidecar-inbox-without---peek-lists-ho.md
+generated_by: context-agent-hybrid

@@ -1,23 +1,26 @@
 ---
-id: T-4033
-name: "fw reviewer judge leaves a verdict row uncommitted and says nothing when its
-  commit loses the git index.lock race (832 T-1114, T-310 row V-20261010-08c85aa1)"
+id: T-4048
+name: "claude-fw start hygiene: never start claude with an empty argv (agents view),
+  refuse/explain resuming a background job (claude attach), verify claude runs on
+  the pane tty after start, resume by exact id (055 T-491 proposals A-D)"
 description: >
-  832 (msg 885af175, 2026-10-10): the panel commit raced with a commit in their session
-  (index.lock held); lib/verdict_ledger.py _commit_rows retries 5x over ~7.5 s, then
-  returns commit_error, which the judge does not surface: part of the records committed
-  (9e5ace40), the T-310 verdict row stayed uncommitted, final unknown 'uncommitted',
-  and their pre-push audit now FAILs. Fix: wait longer on index.lock (bounded), fail
-  LOUDLY in the judge output and exit code when a row is left uncommitted, and give
-  a sanctioned verb to drop an uncommitted (never-counted) row instead of hand-editing
-  the ledger.
+  055 msg 3f0d69ea (2026-10-10, docs/reports/T-491-session-hops.md in 055): one T-4003
+  test restart cost the operator 7 conversations in a day. Causes: bare claude-fw
+  + defaultToAgentsView opens the agents overview and starts a background conversation
+  in the shared claude daemon (no tty; T-3629 covers restarts only); --resume of a
+  background job becomes 'claude attach' (a viewer; T-4003 cannot reach it, T-4037);
+  T-4036 blocked -c/--resume. Proposals: A never start with empty argv (or warn when
+  defaultToAgentsView), B check ~/.claude/jobs/<id>/state.json before resume and say
+  plainly it is a background job + how to foreground it, C after start verify claude
+  itself is on a tty (not attach) and print PASS/FAIL, D restart guidance: resume
+  by exact id, never fresh, never -c.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/claude-fw, lib/conversation-holder.sh, tests/unit/t4048_claude_fw_background_resume.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,9 +48,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-10T12:38:56Z
-last_update: 2026-10-21T10:39:29Z
-date_finished:
+created: 2026-10-10T18:11:48Z
+last_update: 2026-10-21T11:44:40Z
+date_finished: 2026-10-21T11:44:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,7 +62,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-10T12:45:25Z'
+  - ts: '2026-10-10T18:15:41Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -69,7 +72,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=272,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-10T12:45:55Z'
+  - ts: '2026-10-10T18:16:29Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -88,20 +91,25 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4033: fw reviewer judge leaves a verdict row uncommitted and says nothing when its commit loses the git index.lock race (832 T-1114, T-310 row V-20261010-08c85aa1)
+# T-4048: claude-fw start hygiene: never start claude with an empty argv (agents view), refuse/explain resuming a background job (claude attach), verify claude runs on the pane tty after start, resume by exact id (055 T-491 proposals A-D)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+055 msg 3f0d69ea, docs/reports/T-491-session-hops.md (in 055). Reproduced at HEAD 2379a926b:
+`_name_fresh_relaunch` (bin/claude-fw) returns early when restart_count is 0, so a bare
+`claude-fw` still hands claude an empty argv (agents view under defaultToAgentsView), and
+nothing in bin/claude-fw or lib/conversation-holder.sh reads ~/.claude/jobs/ before a
+`--resume <id>` (grep: zero hits). This task ships proposals A and B; C and D are under
+## Recommendation.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Reproduction at HEAD recorded: the discard verb already ships (T-3863, `fw reviewer verdict discard`), but `_commit_rows_once` still gives up on index.lock after 5 tries (~5 s of sleep), and `fw reviewer judge` exits 0 when a seat's row is uncommitted
-- [x] `lib/verdict_ledger.py` `_commit_rows_once` waits on a held `.git/index.lock` against a bounded deadline (`INDEX_LOCK_WAIT_S`, 60 s), not a fixed 5 tries; a non-lock error still fails at once
-- [x] `fw reviewer judge` sets `uncommitted` on its result, prints `ERROR: … uncommitted …` naming the row and the discard verb on stderr, and exits non-zero (4) when any dispatched seat's verdict row is uncommitted
-- [x] Regression pytest `tests/unit/test_t4033_judge_uncommitted_loud.py` covers both legs (lock deadline outlasts 5 tries; judge exit/stderr) and fails without the fix
+- [x] A: a bare first `claude-fw` launch hands claude `-n fw-<dir>`, never an empty argv; a first launch with the user's own args keeps them untouched (tests/unit/t3629_fresh_relaunch_not_agents_view.bats)
+- [x] B: `claude-fw --resume <id>` (also `-r <id>`, `--resume=<id>`) is REFUSED (exit 3) when ~/.claude/jobs/<id8>/state.json names that sessionId with a live state (not done/failed/stopped); the message says it is a background job and names `claude stop <short>` then `claude-fw --resume <id>`; FW_ALLOW_BACKGROUND_RESUME=1 overrides with a warning; a stopped job or no job passes (tests/unit/t4048_claude_fw_background_resume.bats)
+- [x] Regression tests fail with the fix mutated out (mutation tests inside both bats files)
+- [x] `bin/fw vendor self --check --task T-4048` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -135,6 +143,13 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+timeout 600 bats tests/unit/t3629_fresh_relaunch_not_agents_view.bats > /tmp/.t4048a 2>&1 && ! grep -q "^not ok" /tmp/.t4048a
+test "$(grep -c '# skip' /tmp/.t4048a)" -eq 0
+timeout 600 bats tests/unit/t4048_claude_fw_background_resume.bats > /tmp/.t4048b 2>&1 && ! grep -q "^not ok" /tmp/.t4048b
+test "$(grep -c '# skip' /tmp/.t4048b)" -eq 0
+timeout 600 bats tests/unit/t4497_claude_fw_continue_not_worker.bats > /tmp/.t4048c 2>&1 && ! grep -q "^not ok" /tmp/.t4048c
+bash -n bin/claude-fw && bash -n lib/conversation-holder.sh
+bin/fw vendor self --check --task T-4048
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -264,24 +279,29 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 900 python3 -m pytest tests/unit/test_t4033_judge_uncommitted_loud.py tests/unit/test_t3863_verdict_commit_gitignored_context.py tests/unit/t4010_judge_no_seat_test.py tests/unit/t3580_judge_cli_test.py -q -p no:cacheprovider > /tmp/.t4033.out 2>&1 && grep -q passed /tmp/.t4033.out
-grep -q "INDEX_LOCK_WAIT_S = " lib/verdict_ledger.py && ! grep -q "for attempt in range(5)" lib/verdict_ledger.py
-grep -q "def _flag_uncommitted" lib/reviewer/judge_cli.py
-bin/fw vendor self --check --task T-4033
 
 ## RCA
 
-**Symptom:** on 832 (msg 885af175, T-1114) `fw reviewer judge` finished with the T-310 verdict row V-20261010-08c85aa1 appended but never committed. The judge printed `unknown` and exited 0, and the next pre-push audit FAILed on the uncommitted row.
+**Symptom:** one T-4003 test restart cost the operator 7 conversations in a day (055). A bare
+`claude-fw` opened Claude Code's agents overview and started the conversation as a background
+job in the shared claude daemon (no tty); `claude-fw --resume <id>` of such a job became a
+`claude attach` viewer that the T-4003 tmux typing path cannot reach.
 
-**Root cause:** two independent gaps.
-1. `lib/verdict_ledger.py:_commit_rows_once` (the `for attempt in range(5)` loop) retried a commit that hit `.git/index.lock` 5 times with 0.5–2 s sleeps, about 5 s in total. A parallel session's commit (pre-commit hooks included) routinely holds the lock longer, so the reviewer's commit gave up and the row stayed uncommitted.
-2. `lib/reviewer/judge_cli.py:judge` set `res["code"] = 0` whatever the seats' rows were. `_collect` did see the `uncommitted` fault (since T-3863 it also names the git error), but only as a per-criterion `ledger-row-invalid` → final `unknown`. Nothing reached the exit code or stderr, so the run read as finished.
+**Root cause:** `bin/claude-fw` `_name_fresh_relaunch` (T-3629) rewrote an empty argv only on
+RELAUNCHES (`[ "$restart_count" -gt 0 ] || return 0`), and its test pinned the bare first
+launch as unchanged ("a bare first launch is not renamed"). Separately, the resume path
+(`_conversation_guard` → lib/conversation-holder.sh `fw_conversation_holder`) knows only the
+live holders the sidecar records, never Claude Code's own background jobs
+(~/.claude/jobs/<short>/state.json), so a resume of a live daemon job went through unexamined.
 
-The third ask, a sanctioned way to drop the row, already shipped with T-3863 (`fw reviewer verdict discard`, operator-only), so it was not re-done here.
+**Why structurally allowed:** T-3629 was scoped to the restart symptom it was filed for; the
+first launch was treated as "the user's argv", although claude-fw's machinery (hooks, handover
+injection, tmux typing) assumes a foreground conversation. The background-job store is Claude
+Code CLI state outside every check the framework ran.
 
-**Why structurally allowed:** the judge's exit code only covered "no seat recorded anything" (T-4010). "A seat recorded, but its row will never count" was a third state with no exit path of its own. The retry count was sized for brief lock contention and was never tested against a lock that is held for a while.
-
-**Prevention:** `tests/unit/test_t4033_judge_uncommitted_loud.py`. Leg 1 holds a real `index.lock` for 7 s, which at HEAD fails with the old 5-try loop. Leg 2 runs a worker whose ledger commit is lost: at HEAD the judge returns `code` 0; with the fix it returns 4 and prints `ERROR: verdict row left uncommitted … fw reviewer verdict discard …`. A committed-row control proves the flag is not always on.
+**Prevention:** bats regressions with mutation legs: t3629 now asserts the bare first launch is
+named; t4048_claude_fw_background_resume.bats asserts the refusal for live jobs, the pass for
+stopped jobs / no job, and that deleting the guard lets the resume through.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -350,6 +370,26 @@ The third ask, a sanctioned way to drop the row, already shipped with T-3863 (`f
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO (close on A+B); C and D need an operator decision, options below.
+**Rationale:** A and B remove the two mechanisms that created hidden background conversations
+(empty argv on the first launch; resume of a live daemon job). Proposal C (post-start "is
+claude itself on the pane tty, not attach" PASS/FAIL) is mostly made unnecessary by A+B: in
+direct mode claude is the wrapper's foreground child, and the only route to `attach` known
+from 055's report is now refused before launch. Proposal D ("resume by exact id, never fresh,
+never -c") partly ships already (T-4497: every -c becomes `--resume <recorded id>`), but "never
+fresh" would reverse T-3166's default FW_RESTART_MODE=fresh, which frees context on a budget
+restart. That trade is the operator's call.
+**Evidence:**
+- tests/unit/t3629_fresh_relaunch_not_agents_view.bats 7/7 (test 6 was already red at HEAD after T-4497; realigned)
+- tests/unit/t4048_claude_fw_background_resume.bats 6/6 (includes the mutation leg)
+- Neighbour suites t4497, t3358, t4069, t4118, claude_fw_restart_mode, t4003, t4462: all ok
+
+Options for the operator:
+1. C as a tmux-mode-only check: after the inject, poll `tmux list-panes -F '#{pane_current_command}'` and print PASS/FAIL (small follow-up task).
+2. C not built: rely on A+B (recommended unless 055 reports another route to attach).
+3. D: keep FW_RESTART_MODE=fresh as the default (recommended: context is freed; the handover carries state).
+4. D: make `continue` (resume of the recorded id) the default restart mode.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -373,10 +413,22 @@ The third ask, a sanctioned way to drop the row, already shipped with T-3863 (`f
 
 ## Updates
 
-### 2026-10-10T12:38:56Z — task-created [task-create-agent]
+### 2026-10-10T18:11:48Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4033-fw-reviewer-judge-leaves-a-verdict-row-u.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4048-claude-fw-start-hygiene-never-start-clau.md
 - **Context:** Initial task creation
 
-### 2026-10-21T10:39:29Z — status-update [task-update-agent]
+### 2026-10-21T10:48:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6a23dcb1
+- **Timestamp:** 2026-10-21T11:45:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-21T11:44:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
