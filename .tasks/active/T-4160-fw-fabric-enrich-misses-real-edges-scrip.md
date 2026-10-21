@@ -14,10 +14,10 @@ description: >
   under-reports the tests that would catch a regression; 172/507 cards edgeless in
   832, 210/1373 here. Each pattern gets a failing-first test on a fixture.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:23:01Z
-last_update: '2026-10-13T15:32:07Z'
+last_update: '2026-10-21T22:12:25Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,6 +89,23 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:12:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4160: fw fabric enrich misses real edges: scripts run by path from a shell suite (bash/python3/node ROOT/x), source files read by teeth/CDP scripts, and Python imports by module name (832 field report: 154 real edges missed)
@@ -101,8 +118,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Pattern 1: a shell suite running a script by path through `python3`/`node` (`python3 "$ROOT/tests/test_x.py"`, `node tools/x.mjs`) or listing it in a `"path|message"` array yields a depends_on edge (bash/sh already did)
+- [x] Pattern 2: a script that reads a source file by literal path (`readFileSync(path.join(ROOT,'designer','app.js'))`, `(ROOT / "designer" / "app.js").read_text()`, any top-level dir) yields a `reads` edge (so the target gets `read_by`); `.mjs`/`.cjs` files are scanned as JS at all
+- [x] Pattern 3: `import designer_console` resolves through a `sys.path.insert/append` of a project dir (`ROOT / "tests"`) to `tests/designer_console.py`
+- [x] Regression test `tests/unit/test_t4160_enrich_missed_edges.py` fails on the pre-fix enrich.py and passes after; existing enrich tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -265,6 +284,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t4160_enrich_missed_edges.py -q > /tmp/.t4160a 2>&1 && grep -q passed /tmp/.t4160a
+python3 -m pytest tests/unit/test_enrich_python_path_refs.py tests/unit/test_enrich_unresolved_targets.py tests/unit/test_enrich_bats_parser.py tests/unit/test_t3430_enrich_describe.py -q > /tmp/.t4160b 2>&1 && grep -q passed /tmp/.t4160b
+bin/fw vendor self --check --task T-4160
 
 ## RCA
 
@@ -281,6 +303,17 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 832 found 154 real edges a fresh `fw fabric enrich` does not produce. Reproduced on current bleeding-edge with a fixture tree: 8 of 12 new tests failed before the fix.
+
+**Root cause:** three detector gaps in `agents/fabric/lib/enrich.py`:
+1. `_iter_shell_invocations` only treated `_SHELL_INTERPRETERS` (sh/bash/...) as "the next word is the script", so `python3 "$ROOT/tests/x.py"` and `node tools/x.mjs` were read as a non-path command word and dropped. `"path|message"` check-table entries had no detector at all.
+2. Nothing modelled a file *opened* by literal path. `detect_python_path_refs` only knows `.sh/.py` suffixes and the fixed `bin|lib|agents|tools|web|prompts|tests` top-level list, so `(ROOT / "designer" / "app.js").read_text()` in a consumer missed. `compute_forward_edges` did not list `.mjs`/`.cjs` as JS, so node teeth/CDP scripts were never scanned.
+3. `detect_generic_python_imports` resolves a bare import only beside the importer, its parent dir and the root. `detect_python_imports` only follows `sys.path` into `lib`, so `sys.path.insert(0, str(ROOT/"tests")); import designer_console` missed.
+
+**Why structurally allowed:** every detector was written and tested against this repo's own idioms (bash-run tests, `lib/` on sys.path, the fixed top-level dir list). No fixture used a consumer layout, so the misses showed up only as edgeless cards (210/1373 here), which look the same as genuinely isolated files.
+
+**Prevention:** `tests/unit/test_t4160_enrich_missed_edges.py` runs `compute_forward_edges` end to end on a consumer-shaped fixture (top-level `designer/`, `.mjs` tools, `tests/` on sys.path), plus negative controls: `python3 -c`, a comment/docstring mention, a missing file. The new detectors key on language grammar (interpreter names, quoted literals, `sys.path` calls), not directory names. Measured on this repo: +111 edges, 0 lost.
 
 ## Evolution
 
@@ -362,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4160-fw-fabric-enrich-misses-real-edges-scrip.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:12:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -254,7 +254,29 @@ _CMD_PREFIX_WORDS = frozenset({
 # argument rather than the command word itself.
 _SHELL_INTERPRETERS = frozenset({'sh', 'bash', 'zsh', 'ksh', 'dash', 'ash'})
 
+# Every interpreter that runs a script FILE named by its first non-option
+# argument, mapped to the short options whose argument is inline code (or a
+# module name) rather than a file — seeing one abandons the command. T-4160: a
+# shell suite running `python3 "$ROOT/tests/test_x.py"` or `node tools/x.mjs`
+# produced no edge, because only shell interpreters were recognised. Version
+# suffixes (`python3`, `python3.12`) are stripped before lookup.
+_SCRIPT_INTERPRETERS = {name: 'c' for name in _SHELL_INTERPRETERS}
+_SCRIPT_INTERPRETERS.update({
+    'python': 'cm', 'node': 'ep', 'deno': 'e', 'bun': 'e',
+    'perl': 'eE', 'ruby': 'e',
+})
+# Long options that take inline code: `node --eval`, `bash --command`.
+_INLINE_LONG_OPTS = frozenset({'eval', 'print', 'command'})
+
+
+def _interpreter_inline_flags(name):
+    """Inline-code short flags for interpreter ``name``, or None if not one."""
+    return _SCRIPT_INTERPRETERS.get(re.sub(r'[0-9.]+$', '', name))
+
 _ENV_ASSIGN_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*=')
+
+# A quoted `"dir/file.ext|message"` check-table entry (T-4160).
+_CHECK_ENTRY_RE = re.compile(r'''["']((?:\./)?[\w@+-][\w@+.-]*(?:/[\w@+.-]+)+\.\w+)\|''')
 
 
 def _mask_comment_lines(content):
@@ -427,6 +449,7 @@ def _iter_shell_invocations(content):
             continue
         i = _skip_blanks(content, m.end())
         via_interpreter = False
+        inline_flags = ''
         # Bounded: a real invocation reaches its script within a few words.
         for _ in range(8):
             word = _read_shell_word(content, i)
@@ -438,8 +461,13 @@ def _iter_shell_invocations(content):
             if via_interpreter:
                 if bare.startswith('-'):
                     # `-c` (alone or bundled, e.g. `-ec`) means the next word is
-                    # a command STRING. Abandon this command entirely.
-                    if 'c' in bare.lstrip('-').split('=', 1)[0]:
+                    # a command STRING (`python3 -m` a module, `node -e` code).
+                    # Abandon this command entirely.
+                    opt = bare.lstrip('-').split('=', 1)[0]
+                    if bare.startswith('--'):
+                        if opt in _INLINE_LONG_OPTS:
+                            break
+                    elif any(ch in inline_flags for ch in opt):
                         break
                     i = nxt
                     continue
@@ -460,8 +488,10 @@ def _iter_shell_invocations(content):
             if name in _CMD_PREFIX_WORDS:
                 i = nxt
                 continue
-            if name in _SHELL_INTERPRETERS:
+            flags = _interpreter_inline_flags(name)
+            if flags is not None:
                 via_interpreter = True
+                inline_flags = flags
                 i = nxt
                 continue
 
@@ -511,6 +541,12 @@ def detect_bash_sources(content, source_location, framework_root):
         target = _resolve_source_path(rel, source_dir, framework_root)
         if target and (via_interpreter or _is_executable(target, framework_root)):
             add(target)
+
+    # Pattern: a check table — `"tools/_t100.sh|t100 guard holds"` entries that
+    # a loop splits on `|` and runs (T-4160). The path half is a literal file
+    # the suite executes; the message half is prose. Existence-guarded.
+    for m in _CHECK_ENTRY_RE.finditer(_mask_comment_lines(content)):
+        add(_resolve_source_path(m.group(1), source_dir, framework_root))
 
     # Pattern: exec "$AGENTS_DIR/agent/script.sh" "$@"
     for m in re.finditer(r'exec\s+"?\$AGENTS_DIR/([^"$\s]+)"?', content):
@@ -1086,6 +1122,133 @@ def detect_ts_js_imports(content, source_location, project_root):
     return edges
 
 
+def _resolve_literal_file(rel, source_dir, project_root):
+    """A project-relative path for literal ``rel``, or None (T-4160).
+
+    Source-dir-relative first, then project-root-relative; must be a FILE
+    inside the project. Never a directory, never outside the root.
+    """
+    if not rel or rel.startswith('/'):
+        return None
+    for cand in (os.path.join(source_dir, rel), rel):
+        cand = os.path.normpath(cand)
+        if os.path.isabs(cand) or cand.startswith('..') or cand == '.':
+            continue
+        if os.path.isfile(os.path.join(project_root, cand)):
+            return cand
+    return None
+
+
+# A quoted literal with at least one `/` and only path characters in it.
+_LITERAL_PATH_RE = re.compile(r'''(["'`])((?:\.{1,2}/)*[\w@+-][\w@+.-]*(?:/[\w@+.-]+)+)\1''')
+# Full-line comments: `# ...` (Python), `// ...` and ` * ...` (JS block bodies).
+_COMMENT_LINE_RE = re.compile(r'^[ \t]*(?:#|//|\*).*$', re.MULTILINE)
+# `path.join(ROOT, 'a', 'b')`, `path.resolve(...)`, `os.path.join(ROOT, "a", "b")`.
+_JOIN_CALL_RE = re.compile(r'\b(?:join|resolve)\(([^()]*)\)')
+# `ROOT / "a" / "b"` (pathlib) — any base: a name, a call or a subscript.
+_SLASH_CHAIN_RE = re.compile(r'''(?:[\w\])])((?:\s*/\s*["'][^"'\n]+["'])+)''')
+_STR_SEG_RE = re.compile(r'''["'`]([^"'`\n]+)["'`]''')
+
+
+def detect_literal_file_reads(content, source_location, project_root):
+    """Files a script names by literal path — and so reads, loads or mutates.
+
+    T-4160 (832 field report): "teeth" scripts read a source file to mutate it
+    and prove a test catches the change; CDP scripts load a page's source. The
+    import detectors see none of that — the file is never imported, it is
+    opened — so the source got no `read_by` and blast-radius under-reported
+    the checks that guard it. Unlike detect_python_path_refs this consults no
+    top-level directory list: a consumer's `designer/app.js` counts the same
+    as this repo's `web/app.py`. Every hit is existence-guarded, and the
+    caller keeps only targets that already have a card.
+    """
+    edges = []
+    seen = set()
+    source_dir = os.path.dirname(source_location)
+
+    def add(rel):
+        target = _resolve_literal_file(rel, source_dir, project_root)
+        if target and target != source_location and target not in seen:
+            seen.add(target)
+            edges.append((target, "reads"))
+
+    # A comment naming a file documents it; it does not read it. Backticks
+    # delimit strings only in JS — in a Python docstring they quote prose.
+    content = _COMMENT_LINE_RE.sub('', content)
+    is_py = source_location.endswith('.py')
+    for m in _LITERAL_PATH_RE.finditer(content):
+        if not (is_py and m.group(1) == '`'):
+            add(m.group(2))
+    for m in _JOIN_CALL_RE.finditer(content):
+        segs = _STR_SEG_RE.findall(m.group(1))
+        if segs:
+            add("/".join(segs))
+    for m in _SLASH_CHAIN_RE.finditer(content):
+        segs = _STR_SEG_RE.findall(m.group(1))
+        if segs:
+            add("/".join(segs))
+    return edges
+
+
+_SYS_PATH_RE = re.compile(r'sys\.path\.(?:insert|append)\(([^\n]*)\)')
+
+
+def detect_sys_path_imports(content, source_location, project_root):
+    """Bare imports resolved through a project dir put on ``sys.path`` (T-4160).
+
+    `sys.path.insert(0, str(ROOT / "tests"))` then `import designer_console`
+    means `tests/designer_console.py`. detect_generic_python_imports only looks
+    beside the importer, its parent and the root, and detect_python_imports
+    only knows the one directory `lib`, so the edge was lost. The directory is
+    whatever the string segments of the call spell, existence-guarded.
+    """
+    source_dir = os.path.dirname(source_location)
+    dirs = []
+    for m in _SYS_PATH_RE.finditer(content):
+        segs = _STR_SEG_RE.findall(m.group(1))
+        if not segs:
+            continue
+        rel = os.path.normpath("/".join(segs))
+        for cand in (os.path.normpath(os.path.join(source_dir, rel)), rel):
+            if cand.startswith('..') or os.path.isabs(cand):
+                continue
+            if os.path.isdir(os.path.join(project_root, cand)) and cand not in dirs:
+                dirs.append(cand)
+                break
+    if not dirs:
+        return []
+
+    names = [m.group(1) for m in re.finditer(
+        r'^[ \t]*from\s+([\w.]+)\s+import\b', content, re.MULTILINE)]
+    for m in re.finditer(r'^[ \t]*import\s+([^\n#;]+)', content, re.MULTILINE):
+        for chunk in m.group(1).split(','):
+            name = chunk.strip().split(' as ')[0].strip()
+            if name and re.fullmatch(r'[\w.]+', name):
+                names.append(name)
+
+    edges = []
+    seen = set()
+    for name in names:
+        parts = name.split('.')
+        if not all(parts):
+            continue
+        subpath = os.path.join(*parts)
+        for d in dirs:
+            hit = None
+            for cand in (os.path.join(d, subpath + '.py'),
+                         os.path.join(d, subpath, '__init__.py')):
+                cand = os.path.normpath(cand)
+                if os.path.isfile(os.path.join(project_root, cand)):
+                    hit = cand
+                    break
+            if hit:
+                if hit != source_location and hit not in seen:
+                    seen.add(hit)
+                    edges.append((hit, "uses"))
+                break
+    return edges
+
+
 # ---------------------------------------------------------------------------
 # Edge resolver
 # ---------------------------------------------------------------------------
@@ -1192,7 +1355,10 @@ def compute_forward_edges(cards, loc_to_id, framework_root, unresolved=None):
         is_bats = location.endswith(".bats")
         is_python = location.endswith(".py")
         is_html = location.endswith(".html")
-        is_ts_js = any(location.endswith(ext) for ext in ('.ts', '.tsx', '.js', '.jsx'))
+        # T-4160: .mjs/.cjs were not scanned at all — a node teeth/CDP script
+        # carded as a component got zero edges whatever it imported or read.
+        is_ts_js = any(location.endswith(ext) for ext in
+                       ('.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'))
         is_rust = location.endswith(".rs")
         if not (is_bash or is_bats or is_python or is_html or is_ts_js or is_rust):
             first_line = content.split("\n", 1)[0] if content else ""
@@ -1216,6 +1382,25 @@ def compute_forward_edges(cards, loc_to_id, framework_root, unresolved=None):
             raw_edges.extend(detect_ts_js_imports(content, location, framework_root))
         elif is_rust:
             raw_edges.extend(detect_rust_deps(content, location, framework_root))
+
+        # T-4160: edges the detectors above cannot see — a module imported
+        # through a sys.path dir, and a file opened by literal path. Added only
+        # for targets no detector above already claimed, so they never turn an
+        # existing edge into two under different relations. Literal reads are
+        # kept only when the target has a card: they are a reference scan, and
+        # an uncarded hit is not coverage loss to report.
+        if is_python or is_ts_js:
+            claimed = {os.path.normpath(t) for t, _ in raw_edges}
+            extra = []
+            if is_python:
+                extra.extend(detect_sys_path_imports(content, location, framework_root))
+            extra.extend((t, e) for t, e in
+                         detect_literal_file_reads(content, location, framework_root)
+                         if t in loc_to_id)
+            for target, etype in extra:
+                if target not in claimed:
+                    claimed.add(target)
+                    raw_edges.append((target, etype))
 
         # T-2511: fw-hook dispatcher edges (`fw hook <name>` → agents/context/<name>.sh)
         # run on EVERY card regardless of type — the primary source is
