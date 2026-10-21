@@ -257,25 +257,57 @@ def _bring_up(agent: Agent, timeout: float = 120) -> None:
                          f"wrapper log: {agent.log.read_text()[-1500:] if agent.log else '-'}")
 
 
-def _teardown(agent: Agent) -> None:
-    if agent.session:
-        for text in ("/exit",):
-            subprocess.run(["termlink", "pty", "inject", agent.session, text, "--enter"],
-                           capture_output=True, timeout=15, env=_clean_env())
+def _receiver_survivors(agent: Agent) -> dict:
+    """Receivers serving `agent` still alive, and its host-registry entry if
+    one is still on disk. Empty means teardown left nothing behind."""
+    from lib.sidecar import lifecycle
+    out: dict = {}
+    pids = lifecycle.live_receiver_pids(agent.name)
+    if pids:
+        out["pids"] = pids
+    if lifecycle._registry_file(agent.name).exists():
+        out["registry"] = str(lifecycle._registry_file(agent.name))
+    return out
+
+
+def _teardown(agent: Agent) -> list[str]:
+    """Stop everything `agent` started. Every step is best-effort and the
+    receiver stop runs whatever the earlier steps did: a termlink call that
+    times out must not skip it (T-3761 — two receivers ran 22 h after a run).
+    Returns the errors the steps raised."""
+    errors: list[str] = []
+
+    def step(label: str, fn) -> None:
+        try:
+            fn()
+        except Exception as exc:  # noqa: BLE001 — teardown must reach the stop
+            errors.append(f"{agent.name} {label}: {type(exc).__name__}: {exc}")
+
+    def stop_wrapper() -> None:
+        if agent.wrapper and agent.wrapper.poll() is None:
+            try:
+                os.killpg(agent.wrapper.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            try:
+                agent.wrapper.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                os.killpg(agent.wrapper.pid, signal.SIGKILL)
+
+    session = agent.session
+    if session:
+        step("/exit", lambda: subprocess.run(
+            ["termlink", "pty", "inject", session, "/exit", "--enter"],
+            capture_output=True, timeout=15, env=_clean_env()))
     time.sleep(3)
-    if agent.wrapper and agent.wrapper.poll() is None:
-        try:
-            os.killpg(agent.wrapper.pid, signal.SIGTERM)
-        except ProcessLookupError:
-            pass
-        try:
-            agent.wrapper.wait(timeout=20)
-        except subprocess.TimeoutExpired:
-            os.killpg(agent.wrapper.pid, signal.SIGKILL)
-    if agent.session:
-        subprocess.run(["termlink", "signal", agent.session, "SIGTERM"],
-                       capture_output=True, timeout=15, env=_clean_env())
-    _run([FW, "sidecar", "receiver", "stop", "--quiet"], cwd=agent.root)
+    step("wrapper", stop_wrapper)
+    if session:
+        step("session signal", lambda: subprocess.run(
+            ["termlink", "signal", session, "SIGTERM"],
+            capture_output=True, timeout=15, env=_clean_env()))
+    step("receiver stop", lambda: _run(
+        [FW, "sidecar", "receiver", "stop", "--quiet"], cwd=agent.root))
+    return errors
 
 
 def run_round_trip(inject_enabled: bool, tmp_base: Path) -> Result:
@@ -367,8 +399,19 @@ def run_round_trip(inject_enabled: bool, tmp_base: Path) -> Result:
                     ev["pty_tail"][label] = _pty(ag.session, 60)[-3000:]
                 except (OSError, subprocess.SubprocessError) as exc:
                     ev["pty_tail"][label] = f"unavailable: {exc}"
+        ev["teardown_errors"] = [e for ag in (a, b) for e in _teardown(ag)]
+        # What teardown left alive is a test failure (asserted by every caller),
+        # never a host leak: anything still serving our agents is stopped here.
+        ev["receivers_surviving_teardown"] = {}
         for ag in (a, b):
-            _teardown(ag)
+            left = _receiver_survivors(ag)
+            if left:
+                ev["receivers_surviving_teardown"][ag.name] = left
+                for pid in left.get("pids", []):
+                    try:
+                        os.kill(pid, signal.SIGTERM)
+                    except ProcessLookupError:
+                        pass
         report = tmp_base / f"t3693-e2e-{run}.json"
         report.write_text(json.dumps(ev, indent=2))
         _log(f"evidence: {report}")
@@ -421,6 +464,7 @@ def test_real_termlink_inject_reaches_the_tagged_session(base):
 @needs_live
 def test_e2e_two_real_agents_nonce_round_trip(base):
     result = run_round_trip(inject_enabled=True, tmp_base=base)
+    assert not result.evidence["receivers_surviving_teardown"], result.evidence  # T-3761
     assert result.passed, (
         "transformed nonce did not reach A's receiver AND A's context: "
         + json.dumps(result.evidence, indent=2)[:4000])
@@ -438,6 +482,7 @@ def test_e2e_two_real_agents_nonce_round_trip(base):
 @needs_live
 def test_e2e_negative_control_injection_disabled_fails_and_escalates(base):
     result = run_round_trip(inject_enabled=False, tmp_base=base)
+    assert not result.evidence["receivers_surviving_teardown"], result.evidence  # T-3761
     assert result.evidence.get("nonce_generated_by_A"), \
         "A's nonce never reached B's receiver — the control did not exercise the path"
     assert not result.passed, "with injection disabled the round trip must FAIL"

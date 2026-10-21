@@ -8,7 +8,7 @@ description: >
   (and the test should assert none survive). Stopped by hand; they deregistered cleanly
   on SIGTERM.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T23:13:29Z
-last_update: '2026-10-02T23:15:39Z'
+last_update: 2026-10-21T00:03:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked at HEAD: the T-3693 e2e teardown path either still leaks a receiver it started (evidence recorded) or does not (evidence recorded)
+- [x] `_teardown` in tests/integration/t3693_sidecar_e2e_test.py stops the receiver even when an earlier teardown step raises (termlink timeout, wrapper wait), and one agent's teardown failure does not skip the other's
+- [x] The e2e test asserts after teardown that no receiver it started is still alive and no registry entry for its agents survives
+- [x] Regression test (no claude/tmux needed) starts a real receiver in a scratch project, makes the earlier teardown steps raise, and asserts the receiver pid is dead and its registry entry gone; fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -255,8 +257,46 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t3761_e2e_teardown.py -q > /tmp/.t3761.out 2>&1 && grep -q "1 passed" /tmp/.t3761.out
+python3 -m pytest tests/integration/t3693_sidecar_e2e_test.py --collect-only -q > /tmp/.t3761c.out 2>&1 && grep -q "3 tests collected" /tmp/.t3761c.out
+grep -q 'receivers_surviving_teardown"\], result.evidence  # T-3761' tests/integration/t3693_sidecar_e2e_test.py
 
 ## RCA
+
+**Symptom:** after a live T-3693 e2e run (2026-10-02 ~03:15, during the T-3693
+review rounds), the two receivers it started (`http_server.py --agent t3693a-…/t3693b-…`)
+ran 22 h and stayed in `~/.local/state/fw-sidecar/receivers/`.
+
+**Reproduced at HEAD (2026-10-21):** a scratch-project probe started a real receiver
+the way `run_round_trip` does and called the HEAD `_teardown`. Clean path: receiver
+stopped, registry empty. With a termlink call raising `TimeoutExpired` (what
+`subprocess.run(..., timeout=15)` does when termlink hangs): `teardown raised
+TimeoutExpired`, receiver pid still alive, `receivers/t3693a-probe.json` still on disk,
+and its watcher supervisor kept restarting the receiver. The new regression test,
+run against the HEAD `_teardown`, fails the same way.
+
+**Root cause:** `tests/integration/t3693_sidecar_e2e_test.py` `_teardown` (HEAD lines
+~255-273) ran `fw sidecar receiver stop` as its LAST statement, after three steps that
+can raise — two `termlink` calls with `timeout=15` and the wrapper `os.killpg`/`wait`.
+Any of them raising skipped the stop; and in `run_round_trip`'s `finally`, the
+`for ag in (a, b): _teardown(ag)` loop meant A's exception also skipped B entirely.
+Nothing afterwards checked for survivors, so the leak was silent (a run interrupted
+by SIGTERM/kill also never reaches `finally` at all; that case is not coverable from
+inside the test).
+
+**Why structurally allowed:** the live e2e is slow and costly so it is run rarely and
+by hand; it asserted the round-trip verdict but never the post-condition "nothing I
+started is still running". The receiver stop itself (`lib/sidecar_cli.py`
+`cmd_receiver_stop`) is correct — the defect was purely ordering/exception scope in
+the harness.
+
+**Fix / prevention:** every teardown step is best-effort and the receiver stop always
+runs; errors are returned into the evidence (`teardown_errors`). After teardown,
+`_receiver_survivors` checks the process table (`lifecycle.live_receiver_pids`) and the
+host registry; anything left is SIGTERMed (never a host leak) and recorded in
+`receivers_surviving_teardown`, which both live tests now assert empty — a future
+leak is a red test, not a silent process. `tests/unit/test_t3761_e2e_teardown.py`
+pins it without claude/tmux/hub (stub `termlink`, isolated `XDG_STATE_HOME`).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -352,3 +392,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3761-t-3693-e2e-test-leaks-its-two-sidecar-re.md
 - **Context:** Initial task creation
+
+### 2026-10-21T00:03:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
