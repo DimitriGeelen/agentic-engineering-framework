@@ -1,0 +1,21 @@
+id: tests/unit/t2661_self_vendor_root_data.bats
+name: t2661_self_vendor_root_data
+type: script
+subsystem: tests
+location: tests/unit/t2661_self_vendor_root_data.bats
+tags: []
+
+purpose: "T-2661: do_vendor ships four ROOT single files (.secret-scan-patterns, .secret-scan-allowlist, status-transitions.yaml, metrics.sh) but no _self_vendor_* class synced or checked them, and the audit's drift scan did not look at them."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

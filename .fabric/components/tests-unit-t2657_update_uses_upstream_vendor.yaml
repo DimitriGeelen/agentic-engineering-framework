@@ -1,0 +1,21 @@
+id: tests/unit/t2657_update_uses_upstream_vendor.bats
+name: t2657_update_uses_upstream_vendor
+type: script
+subsystem: tests
+location: tests/unit/t2657_update_uses_upstream_vendor.bats
+tags: []
+
+purpose: "T-2657 — `fw update` ran the RUNNING (old) bin/fw's do_vendor against the fetched upstream, so an include the new version added (832: policy/) never arrived on the upgrade that introduced it."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown
