@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4234: Consumer 'fw upgrade --dry-run' only prints 'would clone' and shows no diff of what the upgrade would change
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T21:03:33Z
+# ============================================================================
+
+task_id: T-4234
+task_name: "Consumer 'fw upgrade --dry-run' only prints 'would clone' and shows no diff of what the upgrade would change"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T13:28:44Z
+completed: 2026-10-21T20:48:16Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-21T22:42:49+02:00
+last_commit: 2026-10-21T22:42:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  consumer fw upgrade --dry-run fetches upstream into its temp dir and hands off to the clone's --dry-run, so the per-file plan (vendored files, settings hooks, CLAUDE.md) is shown; unreachable upstream warns 'preview unavailable'; self-heal skipped on dry-run; regression bats
+
+# Key outcomes
+outcomes:
+  - 'Bare-from-consumer `fw upgrade --dry-run` fetches the upstream into a temp dir and hands off to the clone''s `fw upgrade --dry-run`, so the operator sees the per-file plan (vendored files, settings hooks, CLAUDE.md) instead of only "would clone"'
+  - 'The dry-run preview writes nothing to the consumer (tree identical before/after, incl. no T-2232 self-heal line in .framework.yaml) and removes the temp clone'
+  - 'An unreachable upstream in dry-run still prints the plan plus an explicit "preview unavailable" warning (no silent omission)'
+  - 'Regression bats `tests/unit/t4234_upgrade_dryrun_preview.bats` fails before the fix, passes after; neighbouring autoclone suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4234-consumer-fw-upgrade---dry-run-only-print.md'
+  - 'tests/unit/t4234_upgrade_dryrun_preview.bats'
+  - 'tests/unit/t4405_upgrade_handoff_forwards_args.bats'
+  - 'tests/unit/upgrade_auto_clone.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T22:42:49'
+    action: 'T-4234: consumer fw upgrade --dry-run fetches upstream into its temp dir and hands off to the clone''s --dry-run, so the per-file plan (vendored files, settings hooks, CLAUDE.md) is shown; unreachable upstream warns ''preview unavailable''; self-heal skipped on dry-run; regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6199 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6199
+  commits: 1
+  files_changed: 6
+  lines_added: 130
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4234-consumer-fw-upgrade---dry-run-only-print.md
+generated_by: context-agent-hybrid
