@@ -12,7 +12,7 @@ description: >
   seconds) or from a cached lint report, not by running the whole lint under a wall
   clock.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T17:55:49Z
-last_update: 2026-10-11T18:03:39Z
+last_update: 2026-10-21T10:39:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction at HEAD measured: wall time of the leg "fw test lint actually reports a silent-skip section" recorded in ## RCA (post-T-4375 shellcheck stub) — 5.1 s at load average 181
+- [x] No-repro established with evidence: last recorded failure predates the T-4375 fix commit (f66df8ac7); no code change made under this task (none needed)
+- [x] tests/lint/bats-silent-skip.bats passes in full (17/17) with zero skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -264,21 +265,11 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+# T-4060: no-repro at HEAD (fixed by T-4375 f66df8ac7); these pin it.
+grep -q "bin/shellcheck" tests/lint/bats-silent-skip.bats
+timeout 120 bats -f "actually reports a silent-skip" tests/lint/bats-silent-skip.bats > /tmp/.t4060-leg 2>&1 && grep -q '^ok 1 ' /tmp/.t4060-leg && ! grep -q '^not ok' /tmp/.t4060-leg
+timeout 300 bats tests/lint/bats-silent-skip.bats > /tmp/.t4060-all 2>&1 && ! grep -q '^not ok' /tmp/.t4060-all
+test "$(grep -c '# skip' /tmp/.t4060-all)" -eq 0
 
 ## Evolution
 
@@ -303,6 +294,35 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** the invariant leg `fw test lint actually reports a silent-skip section`
+(tests/lint/bats-silent-skip.bats:296) FAILed inside the pre-push audit under load
+(2026-10-11, twice; last seen in `.context/scratch/push-be.log`, 2026-10-19 13:59),
+passing alone and on retry.
+
+**Root cause:** the leg ran the whole `bin/fw test lint` under `timeout 600`
+(tests/lint/bats-silent-skip.bats:304). Its dominant cost was real ShellCheck over
+every tracked `.sh` (bin/fw:11045-11100, ~175-180 s alone); under pre-push load the
+run exceeded 600 s, was cut before the Silent-Skip step (bin/fw:11112 ->
+lib/silent-skip-lint.sh:19) printed, and `grep -q 'Silent-Skip'` failed.
+
+**Already fixed at HEAD — no change under this task.** T-4375 (f66df8ac7,
+2026-10-19 22:05) stubbed `shellcheck` with a `exit 0` script on PATH in that leg,
+keeping the real `bin/fw test lint` wiring end to end. Measured 2026-10-21 at load
+average 181: the stubbed `fw test lint` run takes 5.2 s, the bats leg 5.1 s, the
+whole file 7.4 s (17 ok, 0 not ok, 0 skip) — ~115x headroom under the 600 s
+timeout. T-4375's own trace (`.context/scratch/t4375/trace-after.log`) shows the
+leg green on 5 consecutive post-fix runs; no failure recorded after the fix.
+
+**Why structurally allowed:** a wiring assertion was coupled to the cost of the
+thing it wires to (repo-wide ShellCheck), so its pass/fail depended on host load
+rather than on the wiring.
+
+**Prevention:** the stub (T-4375) decouples the leg from ShellCheck cost; the
+Verification lines below run the leg and the whole file and fail if it regresses
+or skips.
 
 ## Recommendation
 
@@ -360,3 +380,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4060-invariant-fw-test-lint-actually-reports-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T10:39:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
