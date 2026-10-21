@@ -4,7 +4,8 @@
 # set; a step the gate refuses is a step that cannot run. Since T-4512 the old
 # step 5 (`WURL=$(cat …watchtower.url …); curl -sf "$WURL/" …`) was refused —
 # its curl word starts with an expansion of a value read from a file — and 832
-# hit it on be.2. The template now calls `bin/fw watchtower reachable`.
+# hit it on be.2. The template now calls `.agentic-framework/bin/fw watchtower reachable`
+# (T-4244: the vendored launcher, which consumers actually have).
 
 load ../test_helper
 
@@ -44,7 +45,7 @@ template_commands() {
 }
 
 @test "resume template: the Watchtower step is the self-resolving verb" {
-    template_commands "$TMPL" | grep -qx 'bin/fw watchtower reachable'
+    template_commands "$TMPL" | grep -qx '.agentic-framework/bin/fw watchtower reachable'
     ! grep -q 'WURL' "$TMPL" || false
 }
 

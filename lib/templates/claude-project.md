@@ -111,7 +111,7 @@ The `## Verification` section contains shell commands that **must pass** before 
 
 **What to verify:**
 - YAML/JSON files parse correctly: `python3 -c "import yaml; yaml.safe_load(open('file'))"`
-- Web pages load: `curl -sf "$(cat .context/working/watchtower.url 2>/dev/null || echo http://localhost:$(bin/fw config get PORT 2>/dev/null || echo 3000))/page"` — never hard-code `:3000`; the triple file `.context/working/watchtower.{pid,port,url}` is the source of truth for Watchtower's port
+- Web pages load: `curl -sf "$(cat .context/working/watchtower.url 2>/dev/null || echo http://localhost:$(.agentic-framework/bin/fw config get PORT 2>/dev/null || echo 3000))/page"` — never hard-code `:3000`; the triple file `.context/working/watchtower.{pid,port,url}` is the source of truth for Watchtower's port
 - Commands succeed: `fw doctor`
 - Output contains expected content: `grep -q "expected" output.txt`
 
@@ -234,7 +234,7 @@ fw handover --commit # Generate and commit handover
 fw task create --name "Fix bug" --type build --owner human
 ```
 
-**Path resolution:** `fw` finds the framework via `bin/fw`'s location (inside framework repo) or via `.framework.yaml` in the project root (shared tooling mode).
+**Path resolution:** in this project the launcher is `.agentic-framework/bin/fw` (the vendored copy — there is no `bin/fw` at the project root). It finds the framework via its own location and `.framework.yaml` in the project root.
 
 ## Agents
 
@@ -644,7 +644,7 @@ When giving the human a command to run (Tier 0 approvals, inception decisions, v
 
 1. **Single-line, copy-pasteable** — works when pasted into any terminal, from any directory
 2. **Prefixed with `cd`** — always include `cd /path/to/project &&` so directory context is explicit
-3. **Use `bin/fw` not `fw`** — the global `fw` may resolve to a different install
+3. **Use `.agentic-framework/bin/fw` not `fw`** — the global `fw` may resolve to a different install, and this project has no `bin/fw` at its root (that path exists only in the framework repo)
 4. **No bare multi-line** — if multiple commands are needed, chain with `&&` on one line
 
 ### Inception Discipline

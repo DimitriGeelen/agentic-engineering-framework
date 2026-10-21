@@ -7,10 +7,10 @@ description: >
   proposal 6. Fix the consumer template (lib/templates/claude-project.md) and init-generated
   text to name the vendored launcher (or a project shim) correctly.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:44:38Z
-last_update: '2026-10-17T13:46:22Z'
+last_update: 2026-10-21T20:53:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/templates/claude-project.md` names no bare `bin/fw` launcher: every launcher reference is `.agentic-framework/bin/fw` (the path a vendored consumer actually has)
+- [x] The Copy-Pasteable Commands rule in the template tells the consumer agent to use `.agentic-framework/bin/fw`, not `bin/fw`
+- [x] Regression bats `tests/unit/t4244_consumer_template_fw_path.bats` fails on the pre-fix template and passes after; it also checks a fresh `fw init` consumer's generated CLAUDE.md has no bare `bin/fw` while `.agentic-framework/bin/fw` exists and `bin/fw` does not
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4244` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,8 +274,21 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4244_consumer_template_fw_path.bats > /tmp/.t4244.out 2>&1 && ! grep -q "^not ok" /tmp/.t4244.out
+test "$(grep -c '# skip' /tmp/.t4244.out)" -eq 0
+timeout 600 bats tests/unit/t4562_resume_template_safe.bats > /tmp/.t4244b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4244b.out
+grep -q 'Use `.agentic-framework/bin/fw` not `fw`' lib/templates/claude-project.md
+bin/fw vendor self --check --task T-4244
 
 ## RCA
+
+**Symptom:** A vendored consumer's generated CLAUDE.md told its agent "Use `bin/fw` not `fw`" (Copy-Pasteable Commands), and its /resume command said `bin/fw watchtower reachable` — but a consumer has no `bin/fw` at its root, only `.agentic-framework/bin/fw` (dimitri-mint-dev P-017 proposal 6).
+
+**Root cause:** `lib/templates/claude-project.md:647` (rule 3), `:114` (port fallback) and `:237` (path-resolution prose) were copied from the framework repo's own CLAUDE.md, where `bin/fw` is correct; the T-1257 consumer/framework split was applied to the framework CLAUDE.md but never back-ported to the consumer template. Same for `lib/templates/resume-md.md:13-14` and its inline fallback in `lib/init.sh:1507-1508`. `fw init` copies the template verbatim (`lib/init.sh:991`, only `__PROJECT_NAME__` substituted).
+
+**Why structurally allowed:** no test compared the launcher path named in consumer-facing templates with what `fw init` actually puts on disk; t4562 even pinned the wrong `bin/fw` string.
+
+**Prevention:** `tests/unit/t4244_consumer_template_fw_path.bats` refuses any bare `bin/fw` in both templates and, end-to-end, in a fresh `fw init` consumer's CLAUDE.md and resume.md (while asserting `.agentic-framework/bin/fw` exists and `bin/fw` does not).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -369,3 +384,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4244-consumer-claudemd-template-says-use-binf.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:53:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
