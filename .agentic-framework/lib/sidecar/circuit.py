@@ -64,10 +64,12 @@ TOPIC_PREFIX = "inbox:"
 #: Read-only transition alias for one release (T-3433). Senders never write it.
 LEGACY_TOPIC_PREFIX = "sidecar:"
 
-#: Fleet project-id convention: three digits, a dash, a name — `010-termlink`,
-#: `999-Agentic-Engineering-Framework`, `003-NTB-ATC-Plugin`. Used to tell a
-#: peer PROJECT id from an AGENT name when `--to` is bare; see `is_project_id`.
-_PROJECT_ID_RE = re.compile(r"^\d{3}-")
+#: Fleet project-id convention: three or four digits, a dash, a name —
+#: `010-termlink`, `999-Agentic-Engineering-Framework`, `0909-boot-into-…`,
+#: `1409-sprind` (T-4529: four digits matched only as a sibling directory, so
+#: senders elsewhere refused them). Used to tell a peer PROJECT id from an
+#: AGENT name when `--to` is bare; see `is_project_id`.
+_PROJECT_ID_RE = re.compile(r"^\d{3,4}-")
 
 _FINGERPRINT_RE = re.compile(r"sha256:([0-9a-f]{16})")
 
