@@ -9,7 +9,12 @@ setup() {
     mkdir -p "$D"
     export FW_DISPATCH_DIR="$D"
     ORPHAN_PID=""
+    # T-4558: cleanup acts only on this project's workers (meta.json "project").
+    export PROJECT_ROOT="$(dirname "$D")/proj"
+    mkdir -p "$PROJECT_ROOT"
 }
+
+meta() { printf '{\n  "name": "%s",\n  "project": "%s",\n  "timeout": 60\n}\n' "$1" "$PROJECT_ROOT" > "$D/$1/meta.json"; }
 
 teardown() {
     [ -n "$ORPHAN_PID" ] && kill "$ORPHAN_PID" 2>/dev/null || true
@@ -17,7 +22,7 @@ teardown() {
 }
 
 mk_finished() {  # name [collected]
-    mkdir -p "$D/$1"
+    mkdir -p "$D/$1"; meta "$1"
     echo 0 > "$D/$1/exit_code"
     echo "result text" > "$D/$1/result.md"
     [ "${2:-}" = collected ] && date > "$D/$1/collected"
@@ -51,8 +56,9 @@ cl() { run bash "$SCRIPT" cleanup "$@" < /dev/null; }
     for f in --dry-run -n; do
         cl "$f"
         [ "$status" -eq 0 ]
-        [[ "$output" == *"remove w1"*"UNCOLLECTED"* ]]
+        [[ "$output" == *"KEPT"*"w1"*"uncollected result"* ]]   # T-4558: never removed
         [[ "$output" == *"remove w2"* ]]
+        if [[ "$output" == *"remove w1"* ]]; then false; fi
         [[ "$output" == *"Dry run"* ]]
     done
     [ -f "$D/w1/result.md" ]
@@ -61,24 +67,26 @@ cl() { run bash "$SCRIPT" cleanup "$@" < /dev/null; }
 
 @test "non-tty without --yes refuses with exit 3 and leaves uncollected results" {
     mk_finished w1
+    mk_finished w2 collected   # T-4558: w1 alone is kept outright, so give consent something to gate
     cl
     [ "$status" -eq 3 ]
     [ -f "$D/w1/result.md" ]
     [ -f "$D/w1/exit_code" ]
+    [ -f "$D/w2/result.md" ]
 }
 
-@test "--yes removes finished workers" {
+@test "--yes removes collected finished workers and keeps uncollected results (T-4558)" {
     mk_finished w1
     mk_finished w2 collected
     cl --yes
     [ "$status" -eq 0 ]
-    [ ! -e "$D/w1" ]
+    [ -f "$D/w1/result.md" ]
     [ ! -e "$D/w2" ]
 }
 
 @test "active/unfinalised worker dir always survives, even with --yes" {
-    mk_finished w1
-    mkdir -p "$D/act"                       # no exit_code, no process: kept (T-3595)
+    mk_finished w1 collected
+    mkdir -p "$D/act"; meta act                       # no exit_code, no process: kept (T-3595)
     mk_finished rev
     touch "$D/rev/finalise_required"        # review worker not yet finalised (T-3580)
     cl --yes
@@ -89,7 +97,7 @@ cl() { run bash "$SCRIPT" cleanup "$@" < /dev/null; }
 }
 
 @test "no SIGTERM before consent: refused and dry runs leave the orphan alive" {
-    mkdir -p "$D/orph"
+    mkdir -p "$D/orph"; meta orph
     bash -c 'sleep 300; :' "$D/orph/" >/dev/null 2>&1 3>&- &
     ORPHAN_PID=$!
     sleep 0.3
@@ -104,7 +112,7 @@ cl() { run bash "$SCRIPT" cleanup "$@" < /dev/null; }
 }
 
 @test "with --yes the orphan is terminated after consent" {
-    mkdir -p "$D/orph"
+    mkdir -p "$D/orph"; meta orph
     bash -c 'sleep 300; :' "$D/orph/" >/dev/null 2>&1 3>&- &
     ORPHAN_PID=$!
     sleep 0.3

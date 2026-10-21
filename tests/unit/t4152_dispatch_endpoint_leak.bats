@@ -108,6 +108,8 @@ cleanup_fixture() {
     D="$T/dispatch"; mkdir -p "$D"
     mk() {  # name kind...
         local n="$1"; shift; mkdir -p "$D/$n"
+        # T-4558: cleanup acts only on this project's workers (meta.json "project").
+        printf '{\n  "name": "%s",\n  "project": "%s",\n  "timeout": 60\n}\n' "$n" "$T/proj" > "$D/$n/meta.json"
         for k in "$@"; do
             case "$k" in
                 run) : > "$D/$n/run.sh" ;;
@@ -148,6 +150,7 @@ EOF
     bash -c 'exec -a "bash '"$D"'/w-stuck/run.sh" sleep 60' &
     STUCK=$!
     export FW_DISPATCH_DIR="$D"
+    export PROJECT_ROOT="$T/proj"; mkdir -p "$PROJECT_ROOT"
 }
 
 @test "cleanup --dry-run lists only the finished dispatch worker's leaked endpoint, signals nothing" {

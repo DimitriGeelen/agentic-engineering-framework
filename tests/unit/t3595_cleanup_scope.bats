@@ -16,7 +16,12 @@ setup() {
     mkdir -p "$DD"
     PIDS_FILE="$BATS_TEST_TMPDIR/pids"
     : > "$PIDS_FILE"
+    # T-4558: cleanup acts only on this project's workers (meta.json "project").
+    export PROJECT_ROOT="$BATS_TEST_TMPDIR/proj"
+    mkdir -p "$PROJECT_ROOT"
 }
+
+meta() { printf '{\n  "name": "%s",\n  "project": "%s",\n  "timeout": 60\n}\n' "$1" "$PROJECT_ROOT" > "$DD/$1/meta.json"; }
 
 teardown() {
     local pid
@@ -31,7 +36,7 @@ teardown() {
 # named `claude` whose args do not (like `claude -p`) — the T-972 shape.
 spawn_active() {
     local w="$DD/$1"
-    mkdir -p "$w"
+    mkdir -p "$w"; meta "$1"
     python3 -c 'import subprocess; subprocess.run(["bash","-c","exec -a claude sleep 300"])' "$w/run.sh" &
     echo $! >> "$PIDS_FILE"
     # wait until the claude-named child exists
@@ -46,14 +51,14 @@ spawn_active() {
 # An orphan: a process holding the wdir in its args, with no worker process under it.
 spawn_orphan() {
     local w="$DD/$1"
-    mkdir -p "$w"
+    mkdir -p "$w"; meta "$1"
     python3 -c 'import time; time.sleep(300)' "$w/run.sh" &
     ORPHAN_PID=$!
     echo "$ORPHAN_PID" >> "$PIDS_FILE"
     sleep 0.3
 }
 
-make_finished() { mkdir -p "$DD/$1" && echo 0 > "$DD/$1/exit_code" && echo r > "$DD/$1/result.md"; }
+make_finished() { mkdir -p "$DD/$1" && meta "$1" && echo 0 > "$DD/$1/exit_code" && echo r > "$DD/$1/result.md" && date > "$DD/$1/collected"; }  # T-4558: collected
 
 run_cleanup() {
     run env FW_DISPATCH_DIR="$DD" bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; [ \"\$DISPATCH_DIR\" = '$DD' ] || exit 99; cmd_cleanup --yes"  # T-3716: consent required since T-3651
@@ -70,11 +75,11 @@ run_cleanup() {
 @test "active worker keeps its dir; finished one is removed; root survives" {
     spawn_active live
     make_finished done
-    echo keep > "$DD/live/meta.json"
+    echo keep > "$DD/live/keep"
     run_cleanup
     [ "$status" -eq 0 ]
     [[ "$output" == *"ACTIVE"*"live"* ]]
-    [ -f "$DD/live/meta.json" ]
+    [ -f "$DD/live/keep" ]
     [ ! -e "$DD/done" ]
     [ -d "$DD" ]
 }
@@ -90,7 +95,7 @@ run_cleanup() {
 }
 
 @test "no exit_code and no process: kept, not removed" {
-    mkdir -p "$DD/starting"
+    mkdir -p "$DD/starting"; meta starting
     run_cleanup
     [ "$status" -eq 0 ]
     [[ "$output" == *"KEPT"*"starting"* ]]
@@ -107,7 +112,7 @@ run_cleanup() {
 
 @test "ollama-loop worker (no claude child) counts as active, not orphan" {
     local w="$DD/ollama"
-    mkdir -p "$w"
+    mkdir -p "$w"; meta ollama
     python3 -c 'import subprocess; subprocess.run(["bash","-c","exec -a \"python3 tools/ollama-tool-loop.py\" sleep 300"])' "$w/run.sh" &
     echo $! >> "$PIDS_FILE"
     sleep 0.5

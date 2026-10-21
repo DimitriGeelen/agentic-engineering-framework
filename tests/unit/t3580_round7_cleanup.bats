@@ -11,7 +11,12 @@ setup() {
     DD="$BATS_TEST_TMPDIR/tl-dispatch"
     mkdir -p "$DD"
     RT_PID=""
+    # T-4558: cleanup acts only on this project's workers (meta.json "project").
+    export PROJECT_ROOT="$BATS_TEST_TMPDIR/proj"
+    mkdir -p "$PROJECT_ROOT"
 }
+
+meta() { printf '{\n  "name": "%s",\n  "project": "%s",\n  "timeout": 60\n}\n' "$1" "$PROJECT_ROOT" > "$DD/$1/meta.json"; }
 
 teardown() {
     [ -n "$RT_PID" ] && kill -KILL "$RT_PID" 2>/dev/null || true
@@ -25,7 +30,7 @@ run_cleanup() {
 # (a process whose args hold <wdir>/run.sh) is still alive and has not written `finalised`.
 paused_review_runtime() {
     local w="$DD/$1"
-    mkdir -p "$w"
+    mkdir -p "$w"; meta "$1"
     : > "$w/finalise_required"
     echo 0 > "$w/exit_code"
     echo '{"type":"result"}' > "$w/result.jsonl"
@@ -44,7 +49,7 @@ paused_review_runtime() {
 }
 
 @test "a review worker whose runtime exited without finalising is kept, not deleted" {
-    mkdir -p "$DD/rv-dead"
+    mkdir -p "$DD/rv-dead"; meta rv-dead
     : > "$DD/rv-dead/finalise_required"
     echo 0 > "$DD/rv-dead/exit_code"
     run_cleanup
@@ -54,13 +59,14 @@ paused_review_runtime() {
 @test "control: once finalised and the runtime has gone, the review dir is removed" {
     paused_review_runtime rv-done
     echo "unsigned:completion-refused" > "$DD/rv-done/finalised"
+    date > "$DD/rv-done/collected"   # T-4558: an uncollected result is never removed
     kill -KILL "$RT_PID"; wait "$RT_PID" 2>/dev/null || true; RT_PID=""
     run_cleanup
     [ ! -d "$DD/rv-done" ]
 }
 
 @test "control: an ordinary finished worker (no finalise_required) is still removed" {
-    mkdir -p "$DD/plain" && echo 0 > "$DD/plain/exit_code"
+    mkdir -p "$DD/plain" && meta plain && echo 0 > "$DD/plain/exit_code"
     run_cleanup
     [ ! -d "$DD/plain" ]
 }

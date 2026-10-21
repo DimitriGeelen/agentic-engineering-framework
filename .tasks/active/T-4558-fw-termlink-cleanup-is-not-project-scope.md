@@ -1,13 +1,20 @@
 ---
 id: T-4558
-name: "fw termlink cleanup is not project-scoped and misreads codex/opencode/antigravity workers as finished"
+name: "fw termlink cleanup is not project-scoped and misreads codex/opencode/antigravity
+  workers as finished"
 description: >
-  agents/termlink/termlink.sh: cleanup walks the shared /tmp/tl-dispatch (:35) without filtering on meta.json project, so one project's cleanup can act on another project's workers; the live-worker regex (:604 'claude|ollama-tool-loop') does not cover the codex/opencode/antigravity kinds accepted at :935, so a live worker of those kinds reads as finished. Fix: filter by meta.json project; derive the live regex from the one worker-kinds list; keep never removing an uncollected result (still stop its finished endpoint). Regression tests for both.
+  agents/termlink/termlink.sh: cleanup walks the shared /tmp/tl-dispatch (:35) without
+  filtering on meta.json project, so one project's cleanup can act on another project's
+  workers; the live-worker regex (:604 'claude|ollama-tool-loop') does not cover the
+  codex/opencode/antigravity kinds accepted at :935, so a live worker of those kinds
+  reads as finished. Fix: filter by meta.json project; derive the live regex from
+  the one worker-kinds list; keep never removing an uncollected result (still stop
+  its finished endpoint). Regression tests for both.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, termlink, dispatch]
 components: []
 related_tasks: []
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "af547837"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T15:41:24Z
-last_update: 2026-10-21T15:41:24Z
-date_finished: null
+last_update: 2026-10-21T15:54:31Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T15:45:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T15:46:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4558: fw termlink cleanup is not project-scoped and misreads codex/opencode/antigravity workers as finished
@@ -63,8 +98,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] (a) `cmd_cleanup` only plans/acts on dispatch dirs whose meta.json `project` resolves to this project (`${PROJECT_ROOT:-$(pwd)}`); another project's finished worker dir and its endpoint are left untouched (bats: `t4558_cleanup_project_scope.bats`)
+- [x] (b) The live-worker regex is derived from `DISPATCH_WORKER_KINDS` (no hardcoded `claude|ollama-tool-loop`); a running codex, opencode or antigravity (`agy`) worker is reported ACTIVE, not orphaned (bats)
+- [x] (c) A finished worker with an uncollected result is KEPT (dir and result survive `--yes`), while its leaked endpoint is still stopped (bats)
+- [ ] Existing cleanup suites (t3595, t3651, t3580_round7, t4152, termlink.bats) stay green after fixture update; `bin/fw vendor self --check --task T-4558` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +286,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4558_cleanup_project_scope.bats > /tmp/.t4558.out 2>&1 && ! grep -q "^not ok" /tmp/.t4558.out
+test "$(grep -c '# skip' /tmp/.t4558.out)" -eq 0
+! grep -q "active_re='claude|ollama-tool-loop'" agents/termlink/termlink.sh
+timeout 600 bats tests/unit/t3595_cleanup_scope.bats tests/unit/t3651_termlink_cleanup_guards.bats tests/unit/t3580_round7_cleanup.bats tests/unit/t4152_dispatch_endpoint_leak.bats tests/unit/termlink.bats > /tmp/.t4558b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4558b.out
+bin/fw vendor self --check --task T-4558
 
 ## RCA
 
@@ -265,6 +307,17 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** (reported by 055-agentic-fleet-cockpit) `fw termlink cleanup` run in one project planned removal of, and endpoint stops for, other projects' dispatch workers; a live codex/opencode/antigravity worker could be classified as an orphan (SIGTERM + dir removal); finished workers with unread results were removed after `--yes`.
+
+**Root cause:** three gaps in `cmd_cleanup` (agents/termlink/termlink.sh):
+1. The scan loop (`for wdir in "$DISPATCH_DIR"/*/`, ~:554) never read meta.json `project`, although `DISPATCH_DIR` (/tmp/tl-dispatch, :35) is shared by every project on the host. `_running_workers` (:431, T-3910) already filtered by project; cleanup was written before and never got the same filter.
+2. The live-worker regex was a hardcoded literal `active_re='claude|ollama-tool-loop'` (:604, T-3595). T-3582 added the codex/opencode/antigravity harness kinds to `DISPATCH_WORKER_KINDS` (:770) and the dispatch case (:935) but nothing tied the regex to that list; antigravity's process is `agy`, not its kind name.
+3. T-3651 detected uncollected results but only labelled them `[UNCOLLECTED result]` in the plan and still added the dir to `$remove`.
+
+**Why structurally allowed:** the two lists (worker kinds vs. live-process pattern) were independent literals with no test pinning one to the other; the cleanup tests' fixtures had no meta.json, so a project filter was never exercised; T-3651 tested only that consent is required, not that an uncollected result survives consent.
+
+**Prevention:** the live regex is now computed from `DISPATCH_WORKER_KINDS` (`_active_worker_re`), so a new kind is covered by default; `tests/unit/t4558_cleanup_project_scope.bats` pins (a) other-project dirs untouched, (b) every kind printed by `fw termlink worker-kinds` is detected ACTIVE via a fake process, (c) uncollected results survive `--yes` while their endpoint is stopped.
 
 ## Evolution
 
@@ -346,3 +399,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4558-fw-termlink-cleanup-is-not-project-scope.md
 - **Context:** Initial task creation
+
+### 2026-10-21T15:54:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

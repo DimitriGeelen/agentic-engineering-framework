@@ -438,11 +438,32 @@ _running_workers() {
         [ -f "$wdir/exit_code" ] && continue
         n=$(basename "$wdir")
         printf '%s\n' "$listed" | grep -qw -- "$n" || continue
-        proj=$(sed -n 's/^  "project": "\(.*\)",$/\1/p' "$wdir/meta.json" 2>/dev/null | head -1)
-        [ -n "$proj" ] || continue
-        [ "$(readlink -f "$proj" 2>/dev/null || echo "$proj")" = "$real" ] || continue
+        _worker_in_project "$wdir" "$real" || continue
         printf '%s\n' "$n"
     done
+}
+
+# T-4558: true when <wdir>/meta.json names the project whose resolved path is <real>.
+# A dir with no meta.json, or naming another project, is not this project's worker.
+_worker_in_project() {
+    local wdir="$1" real="$2" proj
+    proj=$(sed -n 's/^  "project": "\(.*\)",$/\1/p' "$wdir/meta.json" 2>/dev/null | head -1)
+    [ -n "$proj" ] || return 1
+    [ "$(readlink -f "$proj" 2>/dev/null || echo "$proj")" = "$real" ]
+}
+
+# T-4558: the ERE that marks a process as a live worker, derived from DISPATCH_WORKER_KINDS
+# so a new kind is covered by default. A kind whose process is not named after it maps here.
+_active_worker_re() {
+    local k re=""
+    for k in $DISPATCH_WORKER_KINDS; do
+        case "$k" in
+            ollama-loop) k='ollama-tool-loop' ;;       # tools/ollama-tool-loop.py
+            antigravity) k='antigravity|/agy( |$)' ;;  # binary is .../bin/agy (policy/review-backends.yaml)
+        esac
+        re="${re:+$re|}$k"
+    done
+    printf '%s' "$re"
 }
 
 # T-3910 (operator ruling 2026-10-06): at most TERMLINK_MAX_WORKERS (default 5)
@@ -518,7 +539,8 @@ Stop the TermLink endpoint a finished worker left registered (T-4152: workers di
 before the exec fix kept their shell at its prompt, 'ready' forever) — only when the worker
 dir holds a run.sh, its exit_code is final (review workers: finalised) and run.sh is no
 longer running; never any session that is not such a dispatch worker.
-Active workers and unfinalised review workers are never removed.
+Active workers, unfinalised review workers and uncollected results are never removed.
+Only this project's workers (meta.json "project" = PROJECT_ROOT) are considered (T-4558).
 
   --dry-run, -n   print the plan (dirs to remove, PIDs to signal, endpoints to stop, uncollected
                   results); change nothing
@@ -551,10 +573,20 @@ USAGE
     # T-4152: one snapshot of the registered sessions, for the leaked-endpoint check below.
     local tl_json=""
     command -v termlink >/dev/null 2>&1 && tl_json=$(termlink list --json 2>/dev/null || true)
+    # T-4558: DISPATCH_DIR is shared by every project on the host — act only on this project's
+    # workers (meta.json "project"), the same scope _running_workers applies to the cap.
+    local project_dir="${PROJECT_ROOT:-$(pwd)}" real_project other_count=0
+    real_project=$(readlink -f "$project_dir" 2>/dev/null || echo "$project_dir")
+    local active_re
+    active_re=$(_active_worker_re)
     for wdir in "$DISPATCH_DIR"/*/; do
         [ -d "$wdir" ] || continue
         local wname
         wname=$(basename "$wdir")
+        if ! _worker_in_project "$wdir" "$real_project"; then
+            other_count=$((other_count + 1))
+            continue
+        fi
 
         # Finished workers. T-3580 round 7 (codex MEDIUM-3): a REVIEW worker is finished only
         # once its runtime has finalised it — `exit_code` is written BEFORE the completion is
@@ -562,7 +594,6 @@ USAGE
         # `_worker_done` applies for `fw termlink wait`.
         if [ -f "$wdir/exit_code" ]; then
             if _worker_done "$wdir"; then
-                remove+=("$wdir")
                 # T-4152: a finished dispatch worker whose session is still registered leaked
                 # its endpoint. Stop it only when this dir is provably a dispatch worker's
                 # (cmd_dispatch wrote run.sh) and its run.sh is no longer running.
@@ -571,9 +602,14 @@ USAGE
                     sid=$(_dispatch_session_id "$tl_json" "$wname")
                     [ -z "$sid" ] || endpoint_plan+=("$wname|$sid")
                 fi
-                # T-3651: a result nobody has read is the one thing cleanup must not destroy silently.
+                # T-3651/T-4558: a result nobody has read is never removed — the dir is kept
+                # (its endpoint above is still stopped) until `fw termlink result` collects it.
                 if [ ! -f "$wdir/collected" ] && { [ -s "$wdir/result.md" ] || [ -s "$wdir/result.jsonl" ]; }; then
                     uncollected+=("$wdir")
+                    echo -e "${YELLOW}KEPT${NC}    Worker '$wname' has an uncollected result — collect it with: fw termlink result $wname"
+                    kept_count=$((kept_count + 1))
+                else
+                    remove+=("$wdir")
                 fi
             else
                 echo -e "${YELLOW}KEPT${NC}    Worker '$wname' exited but its review completion is not finalised yet — not removed"
@@ -599,9 +635,8 @@ USAGE
         # T-843/T-972: Check if a worker process is actively running — if so, skip (not orphaned)
         # Must check BOTH the matched PIDs AND their child processes, because
         # run.sh (matched by grep $wdir) spawns claude -p as a child process
-        # whose args don't contain $wdir. T-3595: the ollama-loop worker kind runs
-        # tools/ollama-tool-loop.py instead of claude — that is active too.
-        local active_re='claude|ollama-tool-loop'
+        # whose args don't contain $wdir. T-3595/T-4558: every dispatch worker kind counts —
+        # $active_re is derived from DISPATCH_WORKER_KINDS (_active_worker_re), above the loop.
         local has_worker=false
         for pid in $worker_pids; do
             local cmd_line
@@ -638,7 +673,7 @@ USAGE
     # ---- plan ----
     local d
     for d in "${remove[@]}"; do
-        echo "PLAN    remove $(basename "$d")$([[ " ${uncollected[*]-} " == *" $d "* ]] && echo '  [UNCOLLECTED result]')"
+        echo "PLAN    remove $(basename "$d")"
     done
     local entry
     for entry in "${orphan_plan[@]}"; do
@@ -647,7 +682,7 @@ USAGE
     for entry in "${endpoint_plan[@]}"; do
         echo "PLAN    stop endpoint ${entry%%|*} (${entry#*|}) — worker finished, session still registered"
     done
-    echo "Plan: remove ${#remove[@]} dir(s) (${#uncollected[@]} with uncollected results), terminate ${orphan_count} orphan(s), stop ${#endpoint_plan[@]} leaked endpoint(s), keep $kept_count."
+    echo "Plan: remove ${#remove[@]} dir(s), terminate ${orphan_count} orphan(s), stop ${#endpoint_plan[@]} leaked endpoint(s), keep $kept_count (${#uncollected[@]} with uncollected results); ${other_count} other project(s)' worker dir(s) not touched."
 
     if [ "$dry_run" = true ]; then
         echo "Dry run — nothing changed."
