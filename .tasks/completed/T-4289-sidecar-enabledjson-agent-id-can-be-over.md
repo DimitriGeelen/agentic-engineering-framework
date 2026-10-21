@@ -11,10 +11,10 @@ description: >
   not from an inherited env var, or the env var is honoured only when it matches the
   project; test with a polluted env.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T08:37:12Z
-last_update: 2026-10-21T20:19:15Z
-date_finished:
+last_update: 2026-10-21T20:40:03Z
+date_finished: 2026-10-21T20:40:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -397,3 +397,22 @@ python3 -m pytest tests/unit/test_sidecar_agent_persist_t4423.py tests/unit/test
 ### 2026-10-21T20:19:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1ab0fc9e
+- **Timestamp:** 2026-10-21T20:40:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Reproduction checked on current bleeding-edge: a process with an inherited foreign `FW_SIDECAR_AGENT_ID` (and with `FW_DISPATCHED_WORKER=1`) running `fw sidecar start` / `ensure` cannot write a foreig
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/sidecar/enabled.json in: Reproduction checked on current bleeding-edge: a process with an inherited foreign `FW_SIDECAR_AGENT_ID` (and with `FW_DISPATCHED_WORKER=1`) running ``
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T20:40:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

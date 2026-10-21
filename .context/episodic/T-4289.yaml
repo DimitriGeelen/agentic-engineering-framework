@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4289: Sidecar enabled.json agent id can be overwritten by an inherited FW_SIDECAR_AGENT_ID (a worker's id leaks into the parent project's sidecar)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T20:40:35Z
+# ============================================================================
+
+task_id: T-4289
+task_name: "Sidecar enabled.json agent id can be overwritten by an inherited FW_SIDECAR_AGENT_ID (a worker's id leaks into the parent project's sidecar)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T08:37:12Z
+completed: 2026-10-21T20:40:03Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-21T22:22:03+02:00
+last_commit: 2026-10-21T22:22:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  does not reproduce on bleeding-edge — fixed by T-4416/T-4423 (_refuse_persist + project_agent); evidence and RCA recorded, no source change
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked on current bleeding-edge: a process with an inherited foreign `FW_SIDECAR_AGENT_ID` (and with `FW_DISPATCHED_WORKER=1`) running `fw sidecar start` / `ensure` cannot write a foreign agent id into `.context/sidecar/enabled.json`'
+  - 'If it still reproduces: fix + regression test red before / green after; if not: evidence recorded here and no source change'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'does not reproduce on bleeding-edge — fixed by T-4416/T-4423 (_refuse_persist + project_agent); evidence and RCA recorded, no source change'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4289-sidecar-enabledjson-agent-id-can-be-over.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T22:22:03'
+    action: 'T-4289: does not reproduce on bleeding-edge — fixed by T-4416/T-4423 (_refuse_persist + project_agent); evidence and RCA recorded, no source change'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5042 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5042
+  commits: 1
+  files_changed: 1
+  lines_added: 30
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4289-sidecar-enabledjson-agent-id-can-be-over.md
+generated_by: context-agent-hybrid
