@@ -95,7 +95,7 @@ bvp_scores_proposed:
 - [x] `agents/audit/unit-suite.sh` `_run_one` unsets the agent-session variables (CLAUDECODE, CLAUDE_*, TERMLINK_SESSION_ID, FW_DISPATCHED_WORKER, FW_SIDECAR_*, FW_FOCUS_SESSION_KEY, FW_SESSION_SCOPED_FOCUS, FW_CLAUDE_FW_*) before starting each bats/pytest child; the runner's own FW_WATCHTOWER_ENSURE=0 / FW_DOCTOR_SMOKE=0 still reach the child
 - [x] The hermetic helpers (tests/unit/helpers/hermetic.bash and its pytest twin tests/unit/hermetic.py) also strip TERMLINK_SESSION_ID, keeping both contracts the same (they already strip CLAUDE* and FW_*)
 - [x] Regression test tests/unit/t4524_unit_suite_session_env.bats runs the runner on a fixture corpus with CLAUDECODE=1 etc. set and asserts neither the bats nor the pytest child sees them; it fails on the pre-fix runner
-- [ ] Existing neighbours t4450_unit_suite_env_scrub.bats and hermetic_helper.bats stay green; `bin/fw vendor self --check --task T-4524` clean
+- [x] Existing neighbours t4450_unit_suite_env_scrub.bats and hermetic_helper.bats stay green; `bin/fw vendor self --check --task T-4524` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
