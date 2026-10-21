@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4238: Installer and fw doctor do not check PyYAML or the Watchtower Python stack, and the pip hint fails under PEP 668 (externally-managed-environment) on Ubuntu 24.04 / Mint 22 / Debian 12
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T21:11:30Z
+# ============================================================================
+
+task_id: T-4238
+task_name: "Installer and fw doctor do not check PyYAML or the Watchtower Python stack, and the pip hint fails under PEP 668 (externally-managed-environment) on Ubuntu 24.04 / Mint 22 / Debian 12"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T13:42:40Z
+completed: 2026-10-21T21:10:27Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-21T22:43:57+02:00
+last_commit: 2026-10-21T22:43:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  install.sh and fw doctor check PyYAML (hard) and the Watchtower Python stack (soft) with a PEP 668-safe hint (apt names on Debian-likes, else a venv); shared lib/python-deps.sh used by doctor/preflight/scan; regression bats
+
+# Key outcomes
+outcomes:
+  - 'One shared helper (`lib/python-deps.sh`) checks PyYAML (hard) and the Watchtower start modules (soft, same list as `bin/watchtower.sh` T-4304) and builds a PEP 668-safe install hint: apt package names on Debian/Ubuntu/Mint, otherwise a venv, never a bare system `pip install`'
+  - '`install.sh` dependency check FAILs on missing PyYAML and WARNs on a missing Watchtower stack, using that hint (inline copy: install.sh runs before the framework is fetched; parity pinned by the bats)'
+  - '`fw doctor` reports PyYAML (FAIL when missing) and the Watchtower stack (WARN when missing) with that hint'
+  - '`fw preflight` and the `bin/fw` PyYAML error no longer suggest `pip3 install pyyaml` / `pip install -r …` on a PEP 668 system'
+  - 'Regression bats `tests/unit/t4238_python_deps_hint.bats` fails before the fix (8/11 red on a HEAD copy; 1-3 test the new helper) and passes after (11/11)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/preflight.sh'
+  - '.agentic-framework/lib/python-deps.sh'
+  - 'bin/fw'
+  - '.fabric/components/lib-python-deps.yaml'
+  - 'install.sh'
+  - 'lib/preflight.sh'
+  - 'lib/python-deps.sh'
+  - '.tasks/active/T-4238-installer-and-fw-doctor-do-not-check-pyy.md'
+  - 'tests/unit/t4238_python_deps_hint.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T22:43:57'
+    action: 'T-4238: install.sh and fw doctor check PyYAML (hard) and the Watchtower Python stack (soft) with a PEP 668-safe hint (apt names on Debian-likes, else a venv); shared lib/python-deps.sh used by doctor/preflight/scan; regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6207 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6207
+  commits: 1
+  files_changed: 10
+  lines_added: 385
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4238-installer-and-fw-doctor-do-not-check-pyy.md
+generated_by: context-agent-hybrid
