@@ -1,0 +1,21 @@
+id: lib/task_link_fields.py
+name: task_link_fields
+type: script
+subsystem: framework-core
+location: lib/task_link_fields.py
+tags: []
+
+purpose: "T-4192: append-only setters for related_tasks / unlocks_inception_decision."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

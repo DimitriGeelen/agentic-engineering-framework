@@ -1,0 +1,21 @@
+id: tools/gen-framework-hook-lines.sh
+name: gen-framework-hook-lines
+type: script
+subsystem: framework-core
+location: tools/gen-framework-hook-lines.sh
+tags: []
+
+purpose: "T-4552 (G-122): regenerate agents/git/lib/framework-hook-lines.txt — every non-comment line of every git-hook template body (the 'HOOK_EOF' heredocs) that agents/git/lib/hooks.sh has ever held, trimmed, sorted, unique."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

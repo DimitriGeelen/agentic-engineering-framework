@@ -1,0 +1,21 @@
+id: tools/gen-stock-hook-digests.sh
+name: gen-stock-hook-digests
+type: script
+subsystem: framework-core
+location: tools/gen-stock-hook-digests.sh
+tags: []
+
+purpose: "T-4568: regenerate agents/git/lib/stock-hook-digests.txt — \"<lines> <sha256>\" for every git-hook template body (the 'HOOK_EOF' heredocs) that agents/git/lib/hooks.sh held BEFORE the marked block (T-4403), i.e."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown
