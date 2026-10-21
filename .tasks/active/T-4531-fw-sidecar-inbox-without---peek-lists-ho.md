@@ -101,7 +101,7 @@ cost_estimate_proposed:
 - [x] Whether `termlink channel subscribe --cursor N` (no `--resume`) moves any hub-side or `~/.termlink/cursors.json` read state is established on a THROWAWAY hub/topic, never a live inbox
 - [x] `dm.pending()` never drains (returns content of, or advances a cursor on) a rail keyed only by the host-shared fingerprint (the T-4311 legacy transition rails); those rails stay visible as read-only summaries in `fw sidecar inbox`
 - [x] Regression test in tests/unit/ fails without the fix and passes with it; existing sidecar dm tests still pass
-- [ ] `bin/fw vendor self --check --task T-4531` clean
+- [x] `bin/fw vendor self --check --task T-4531` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
