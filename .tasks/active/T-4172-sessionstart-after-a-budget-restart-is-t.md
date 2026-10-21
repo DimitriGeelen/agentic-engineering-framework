@@ -9,10 +9,10 @@ description: >
   believed a compaction ran. The SessionStart hook should read the restart signal
   / handover id and say 'budget restart' (or 'resume', 'compact') accordingly.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T16:39:07Z
-last_update: '2026-10-13T16:46:17Z'
+last_update: '2026-10-21T22:14:13Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,6 +83,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:14:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4172: SessionStart after a budget restart is titled 'Post-Compaction Context Recovery' although no compaction ran: label the actual cause (budget restart, handover id) (dimitri-mint-dev P-010, their T-107)
@@ -95,8 +111,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge: T-4353 already relabels fresh (`startup`) restarts; the continue-mode budget restart (source `resume` + fresh `.auto-restart-pending`) still reads as a plain resume, and no header names the handover
+- [x] A `resume` SessionStart with a fresh `.auto-restart-pending` sentinel is labelled a budget auto-restart (continue mode) and consumes the sentinel; a plain `resume` keeps the resume header
+- [x] The startup/resume recovery header names the handover it restores from (LATEST.md `session_id`)
+- [x] Regression bats `tests/unit/t4172_restart_cause_label.bats` fails without the fix and passes with it; t4353 neighbour still green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -253,6 +271,12 @@ bvp_scores_proposed:
 #
 # The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
+timeout 300 bats tests/unit/t4172_restart_cause_label.bats > /tmp/.t4172.out 2>&1 && ! grep -q "^not ok" /tmp/.t4172.out
+test "$(grep -c '# skip' /tmp/.t4172.out)" -eq 0
+timeout 300 bats tests/unit/t4353_resume_header_by_source.bats > /tmp/.t4353.out 2>&1 && ! grep -q "^not ok" /tmp/.t4353.out
+bash -n agents/context/post-compact-resume.sh
+bin/fw vendor self --check --task T-4172
+#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
@@ -261,6 +285,11 @@ bvp_scores_proposed:
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 ## RCA
+
+**Symptom:** after a budget restart the injected recovery block called itself post-compaction (dimitri-mint-dev P-010), and the operator believed a compaction had run.
+**Root cause:** `agents/context/post-compact-resume.sh` chose the header from the SessionStart `source` alone. T-4353 split it by source (compact / startup / other), but the continue-mode restart (`FW_RESTART_MODE=continue`, `bin/claude-fw:1639` → `--resume <id>`) arrives as source `resume`, with the `.auto-restart-pending` sentinel that claude-fw wrote at `bin/claude-fw:1607`. The hook read that sentinel only in the `startup` branch (`post-compact-resume.sh:60`). So the budget restart was labelled a generic resume and the sentinel was left on disk. No header named the handover either, so nothing told the reader which handover the session restored from.
+**Why structurally allowed:** the cause of a restart is known only to claude-fw (the sentinel). The hook keyed on the harness's `source`, which cannot tell a budget restart from an operator's `claude -c`. t4353's tests covered one source per restart mode and never the continue-mode case.
+**Prevention:** `tests/unit/t4172_restart_cause_label.bats` pins: resume + sentinel → budget auto-restart label with the sentinel consumed, plain resume → resume label, and the header names the handover id.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -356,3 +385,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4172-sessionstart-after-a-budget-restart-is-t.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:14:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

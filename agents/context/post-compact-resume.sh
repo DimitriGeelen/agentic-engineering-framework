@@ -5,9 +5,7 @@
 #
 # Triggers:
 #   - After /compact (manual compaction recovery)
-#   - After claude -c / --resume (session continuation)
-#   - On "startup" of a claude-fw budget auto-restart (T-179) — a fresh session by
-#     default (T-3166); FW_RESTART_MODE=continue relaunches with --resume instead
+#   - After claude -c (session continuation, including auto-restart via T-179)
 #
 # Part of: T-111 (compact-resume), T-179/T-188 (auto-restart)
 
@@ -45,7 +43,7 @@ if [ -f "$FRAMEWORK_ROOT/lib/watchtower-ensure.sh" ] && command -v setsid >/dev/
 fi
 
 # T-2376: this hook now also fires on SessionStart source "startup" (added so the
-# budget-critical auto-restart path — claude-fw → a fresh `claude` (T-3166), which emits
+# budget-critical auto-restart path — claude-fw → `claude -c`, which emits
 # "startup" — advances the continuous loop the way manual /compact does). But a
 # *genuine* cold `claude` start ALSO emits "startup", and this hook never fired
 # on cold starts before T-2376. To preserve that behavior, only proceed on
@@ -70,6 +68,17 @@ if [ "$SOURCE_TAG" = "startup" ]; then
     else
         exit 0                                   # cold start — preserve pre-T-2376 no-op
     fi
+fi
+# T-4172: a budget restart under FW_RESTART_MODE=continue relaunches with
+# `--resume <id>`, so it arrives as source "resume" beside the same sentinel.
+# Consume it here too and remember the cause, so the header can say "budget
+# restart" rather than a plain resume (and the sentinel cannot leak onward).
+BUDGET_RESTART_CONTINUE=0
+if [ "$SOURCE_TAG" = "resume" ] && [ -f "$RESTART_SENTINEL" ]; then
+    _sentinel_mt=$(stat -c %Y "$RESTART_SENTINEL" 2>/dev/null || echo 0)
+    _sentinel_age=$(( $(date +%s) - _sentinel_mt ))
+    rm -f "$RESTART_SENTINEL" 2>/dev/null
+    [ "$_sentinel_age" -lt "$RESTART_SENTINEL_TTL" ] && BUDGET_RESTART_CONTINUE=1
 fi
 
 # T-712/T-713: Clear ALL session-scoped volatile state on session recovery.
@@ -146,14 +155,30 @@ if [ -f "$LATEST" ]; then
     # is a compaction; a claude-fw auto-restart (`startup`) is a fresh session
     # and `resume` continues a prior one — calling either "Post-Compaction" made
     # the agent report a compaction that never happened.
+    # T-4172: name the handover being restored, so the reader can tell which
+    # session this one follows.
+    HANDOVER_ID=$(sed -n '2,10{s/^session_id:[[:space:]]*//p}' "$LATEST" | head -1 | tr -d '"'"'"' ')
+    HANDOVER_LINE="Restoring from handover ${HANDOVER_ID:-unknown} (.context/handovers/LATEST.md)."
     case "$SOURCE_TAG" in
-        compact) RECOVERY_HEADER="# Post-Compaction Context Recovery (automatic)" ;;
+        compact) RECOVERY_HEADER="# Post-Compaction Context Recovery (automatic)
+
+${HANDOVER_LINE}" ;;
         startup) RECOVERY_HEADER="# Auto-Restart Context Recovery (automatic)
 
-Fresh session started by claude-fw after the previous one reached its context budget. No compaction happened." ;;
-        *)       RECOVERY_HEADER="# Session Resume Context Recovery (automatic)
+Fresh session started by claude-fw after the previous one reached its context budget (budget restart). No compaction happened.
+${HANDOVER_LINE}" ;;
+        *)
+            if [ "$BUDGET_RESTART_CONTINUE" = "1" ]; then
+                RECOVERY_HEADER="# Auto-Restart Context Recovery (automatic)
 
-Resumed session (claude -c or /resume). No compaction happened." ;;
+claude-fw relaunched the previous conversation (FW_RESTART_MODE=continue) after it reached its context budget (budget restart). Transcript restored, context not freed. No compaction happened.
+${HANDOVER_LINE}"
+            else
+                RECOVERY_HEADER="# Session Resume Context Recovery (automatic)
+
+Resumed session (claude -c or /resume). No compaction happened.
+${HANDOVER_LINE}"
+            fi ;;
     esac
     CONTEXT="${RECOVERY_HEADER}
 
