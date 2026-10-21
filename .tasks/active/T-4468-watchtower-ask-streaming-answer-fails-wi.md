@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T12:32:51Z
-last_update: 2026-10-20T12:33:26Z
+last_update: 2026-10-21T18:23:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,6 +76,16 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-20T12:45:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=315,acs=6)
     rubric_sha: e4a00f38e801
 ---
 
@@ -362,6 +372,12 @@ bin/fw watchtower current
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+**Recommendation:** GO
+**Rationale:** The one-name import fix landed in 9c039230b. The regression test fails when the old name is restored and passes with the fix. The restarted Watchtower serves the fixed code: a live /search/ask stream gets past the import and emits the `retrieval` status. That leaves the browser check, which confirms the streamed answer renders.
+**Evidence:**
+- `sed s/_db_opened_at/_db_built_at/` on discovery.py → test_t4468_ask_stream_import.py: 1 failed; restored → 12 passed (with test_index_freshness.py)
+- `bin/fw watchtower current` → current (pid newer than every web/ file) after `bin/fw watchtower restart`
+- live `curl $(bin/fw watchtower url)/search/ask?q=...` → `{"type": "status", "phase": "retrieval"}`, no ImportError (the first answer can take over 60 s on a cold vector index)
 
 ## Decisions
 
