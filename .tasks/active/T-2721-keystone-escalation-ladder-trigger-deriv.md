@@ -9,7 +9,7 @@ description: >
   gate bypasses, Tier-0 blocks) instead of asking agents to self-report. Carries the
   arc's closure Recommendation.
 
-status: captured
+status: started-work
 workflow_type: design
 owner: agent
 horizon: now
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T00:35:40Z
-last_update: '2026-08-17T12:36:09Z'
+last_update: '2026-10-21T09:30:56Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -58,6 +58,15 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
       (workflow:design); effort=6 (lines=148,acs=4)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T09:30:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:design); effort=8 (lines=154,acs=5)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-02T00:45:09Z'
     estimator: bvp-estimator-v1-heuristic
@@ -82,14 +91,17 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Design and the operator choice: `docs/reports/T-2721-ladder-trigger-design.md`.
+Re-checked at HEAD 2026-10-21: still applies — nothing in `lib/ agents/ bin/ web/` writes
+`status: issues`; P-011 failures (`update-task.sh:1751`) and Tier-0 blocks are not recorded anywhere.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Gap re-measured at HEAD with evidence (no `status: issues` producer; P-011 failure and Tier-0 block unrecorded; bypass-log flag breakdown) in the design report §1
+- [x] Design report names the three operator questions (what a failure writes, which sources count, counted ladder vs G-019) with options and costs, and gives a recommendation plus build slices
+- [ ] Operator decision on Q1–Q3 recorded under `## Decisions`, and build slices filed as tasks on arc `ladder-trigger-producer` (blocked on the operator — see `## Recommendation`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -154,6 +166,36 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+test -f docs/reports/T-2721-ladder-trigger-design.md
+grep -q "^### Q1" docs/reports/T-2721-ladder-trigger-design.md && grep -q "^### Q2" docs/reports/T-2721-ladder-trigger-design.md && grep -q "^### Q3" docs/reports/T-2721-ladder-trigger-design.md
+grep -q "^## 3. Recommendation" docs/reports/T-2721-ladder-trigger-design.md
+
+## Recommendation
+
+**Recommendation:** GO on option B — witnessed failures go to a new append-only ledger
+(`.context/working/witnessed-failures.jsonl`), healing `diagnose` runs on each entry, Watchtower
+shows them; task status is left alone. Sources: P-011 verification failure at close, plus the
+four failure-shaped gate bypasses (`--skip-verification`, `--skip-acceptance-criteria`,
+`--skip-rca`, `--skip-register-requirements`). Tier-0 blocks come later, recorded but not escalated.
+
+**Rationale:** The gap is still there at HEAD. Nothing writes `status: issues`. A P-011 failure
+(`update-task.sh:1751`) prints and exits, and a Tier-0 block writes nothing. B delivers the arc's
+headline mechanic with the smallest governance change. Option A (flip `status: issues`) would
+have the close gate change the task it just refused. It also collides with the T-1068 status/horizon
+invariants, and every Verification typo would put a task into `issues`. Option C (count recurrences, then flip)
+can be built later on the same ledger. The bypass log can't be taken whole as a source: 1037 of
+its 1780 entries are focus switches, not failures.
+
+**Evidence:**
+- `docs/reports/T-2721-ladder-trigger-design.md` §1: measurements at HEAD, 2026-10-21
+- `agents/healing/lib/diagnose.sh:98` only prints a note when the task isn't in `issues`, so
+  healing can run without a status flip (corrects T-2715's "refuses")
+- `.context/project/patterns.yaml`: 11 FPs, all entered by hand; last changed 2026-04-08
+
+**Options for the operator (reply with the letter):**
+- **A** — flip `status: issues` on a witnessed failure
+- **B** — ledger + healing + Watchtower, status untouched (recommended)
+- **C** — B, plus flip `issues` when the same fingerprint recurs N times on one task
 
 ## RCA
 
@@ -195,6 +237,15 @@ bvp_scores_proposed:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-10-21 — keystone re-measured, design written
+- **What changed:** Healing `diagnose` does not require `status: issues` (it notes and continues),
+  so the ladder can be fed without touching task status. The bypass log is ~58% focus switches,
+  and Tier-0 blocks are not recorded anywhere.
+- **Plan impact:** "Derive the trigger" no longer has to mean "set `issues`". A ledger is the
+  smaller change, and the bypass source has to be filtered to the failure-shaped flags.
+- **Triggered:** operator choice A/B/C (see `## Recommendation`). Build slices are listed in the
+  report §4 and get filed after the decision.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -225,3 +276,6 @@ bvp_scores_proposed:
 
 ### 2026-08-02T00:36:51Z — status-update [task-update-agent]
 - **Change:** tags: +arc:ladder-trigger-producer
+
+### 2026-10-21T09:25:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
