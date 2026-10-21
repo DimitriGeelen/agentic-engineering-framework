@@ -11,7 +11,7 @@ description: >
   they use: .gitignore /.context/* plus !/.context/reviews/. Only a human removing
   the lines unblocked them.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T07:41:33Z
-last_update: '2026-10-05T07:45:54Z'
+last_update: 2026-10-21T09:16:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction at HEAD recorded: in a repo whose `.gitignore` has `/.context/*`, `_commit_rows` on the ledger paths either commits (fixed by T-4008's `git add -f`) or fails — evidence written under ## RCA
+- [x] A failed verdict commit is durable and surfaced: `_commit_rows` callers append `{verdict ids, task, dispatch_id, error}` to `.context/reviews/commit-errors.jsonl`, and the judge's per-criterion `why` for an `uncommitted` row names the git error instead of only "never committed"
+- [x] Logged operator path to discard an uncommitted row: `verdict_ledger.py discard <row-id> --reason "…"` removes ONLY an uncommitted (pending) row plus its `recorded.jsonl` journal entry, refuses a committed row, refuses under `CLAUDECODE=1` without `--i-am-human`, and appends the discarded row to `.context/reviews/discarded.jsonl`; afterwards `audit` no longer FAILs on it
+- [x] Regression tests (pytest) cover: commit under `/.context/*` gitignore succeeds; commit-error surfaced in the uncommitted fault text; discard refuses committed row / agent without --i-am-human, and clears the audit FAIL
+- [x] `bin/fw vendor self --check --task T-3863` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -258,8 +261,23 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 python3 -m pytest tests/unit/test_t3863_verdict_commit_gitignored_context.py -q > /tmp/.t3863.out 2>&1 && grep -q "passed" /tmp/.t3863.out
+timeout 300 python3 -m pytest tests/unit/test_t4008_verdict_commit_ignored_evidence.py tests/unit/test_t3657_acknowledged_refusals.py tests/unit/test_t3581_ledger_integrity.py -q > /tmp/.t3863b.out 2>&1 && grep -q "passed" /tmp/.t3863b.out
+python3 lib/verdict_ledger.py discard --help > /tmp/.t3863c.out 2>&1 && grep -q -- "--i-am-human" /tmp/.t3863c.out
+bin/fw vendor self --check --task T-3863
 
 ## RCA
+
+**Symptom:** 050-email-archive (bug 944e3f91, 1.7.754): with `/.context/*` in `.gitignore`, `fw reviewer judge` appended a verdict row whose worker commit failed. The judge reported only `unknown — never committed`, and from then on the pre-push verdict-ledger audit FAILed every push. Only a human hand-editing files unblocked it.
+
+**Root cause, three legs:**
+1. `lib/verdict_ledger.py:_commit_rows` ran `git add -- <paths>`, and git refuses an ignored path. **Already fixed at HEAD by T-4008** (`git add -f`, commit f0346ec49). Re-checked here: `test_ledger_commits_when_context_is_gitignored` passes for `/.context/*`, `.context/` and `.context` at HEAD, before this task's change.
+2. The git error was carried only in `record_for_worker`'s `commit_error` (into the dispatch wdir's `recorded.json`) or in a worker-side exception. The ledger's `uncommitted` fault (`_row_fault`, formerly two literal "never committed" strings) had no record of it, so the judge (`judge_cli._collect`) and the audit could not name the cause.
+3. There was no exit for a row that is already stranded. Removing it from `verdicts.jsonl` makes `load_ledger` report a "deleted verdict" (it is still in `recorded.jsonl`). `acknowledge` refuses uncommitted rows. So every agent route was a FAIL.
+
+**Why nothing caught it:** T-4008's tests used a `*.png` ignore, never a consumer ignoring `.context/`. Nothing tested the failed-commit state end to end through audit, and the ledger offers no remedy for it.
+
+**Fix / prevention:** `_commit_rows` journals every refused commit to `.context/reviews/commit-errors.jsonl`. The `uncommitted` fault text (`_uncommitted_why`) names the git error and the remedy, and judge and audit both read it. New `verdict_ledger.py discard <row> --reason` (also `fw reviewer verdict discard`) is operator-only (`--i-am-human` under CLAUDECODE). It removes only a pending row, refuses a committed one, and logs it to `.context/reviews/discarded.jsonl`, which `load_ledger` accepts as the reason a recorded row is absent. Regression: `tests/unit/test_t3863_verdict_commit_gitignored_context.py`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -355,3 +373,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3863-verdict-ledger-row-cannot-be-committed-w.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:16:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

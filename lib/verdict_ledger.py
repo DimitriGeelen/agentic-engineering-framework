@@ -152,6 +152,13 @@ COMPLETIONS = Path(".context/reviews/review-completions.jsonl")
 #: only moves that row's audit grade from FAIL to WARN; it never makes the row count.
 ACKS = Path(".context/reviews/acknowledged-refusals.jsonl")
 ACK_KIND = "acknowledged-refusal"
+#: T-3863: every verdict commit that git refused, with git's own error. The judge and the audit
+#: name it on the row's `uncommitted` fault instead of a bare "never committed".
+COMMIT_ERRORS = Path(".context/reviews/commit-errors.jsonl")
+#: T-3863: uncommitted rows an operator discarded (`discard`), each with the row and the reason.
+#: The only excuse `recorded.jsonl` accepts for a row that is gone; a committed row cannot be
+#: discarded — the append-only history check refuses its removal whatever this file says.
+DISCARDED = Path(".context/reviews/discarded.jsonl")
 #: `audit` exit code when every failing row is acknowledged, void or provisional (T-4519): WARN,
 #: never PASS.
 AUDIT_WARN = 3
@@ -256,9 +263,39 @@ def _restore_committed_evidence(root: Path, env: dict) -> list[str]:
 
 
 def _commit_rows(root: Path, paths: list[str], identity: str, message: str,
-                 email: str = "") -> tuple[str, str]:
+                 email: str = "", *, ids: list[str] | None = None, task: str = "",
+                 dispatch_id: str = "") -> tuple[str, str]:
     """Stage and commit exactly `paths` as `identity`. Returns (head_sha, error). Call only under
-    _ledger_lock, after the append, so the commit holds no other writer's row."""
+    _ledger_lock, after the append, so the commit holds no other writer's row. A refusal naming
+    `ids` is journalled to COMMIT_ERRORS with git's error (T-3863)."""
+    sha, err = _commit_rows_once(root, paths, identity, message, email)
+    if err and ids:
+        try:
+            _append(COMMIT_ERRORS, {"ts": _now(), "verdict_ids": list(ids), "task": task,
+                                    "dispatch_id": dispatch_id, "identity": identity,
+                                    "error": err}, root)
+        except OSError:
+            pass
+    return sha, err
+
+
+def commit_error_for(root: Path, verdict_id: str) -> str:
+    """The latest git error journalled for a verdict row's failed commit, or ''."""
+    hits = [r for r in _read(COMMIT_ERRORS, root) if verdict_id in (r.get("verdict_ids") or [])]
+    return str(hits[-1].get("error") or "") if hits else ""
+
+
+def _uncommitted_why(root: Path, row: dict) -> str:
+    why = f"row {row['id']} was never committed (no commit introduces it)"
+    err = commit_error_for(root, str(row["id"]))
+    if err:
+        why += f"; its commit failed: {err}"
+    return why + (" — commit it, or an operator discards it: fw reviewer verdict discard "
+                  f"{row['id']} --reason \"…\"")
+
+
+def _commit_rows_once(root: Path, paths: list[str], identity: str, message: str,
+                      email: str = "") -> tuple[str, str]:
     # T-3655: per-reviewer email, never a shared one.
     email = email or ("reviewer+" + re.sub(r"[^A-Za-z0-9._-]", "-", identity) + "@aef.local")
     env = {**os.environ, "GIT_AUTHOR_NAME": identity, "GIT_COMMITTER_NAME": identity,
@@ -1627,7 +1664,8 @@ def _record_for_worker_locked(root: Path, did: str, drec: dict, kind: str, here:
     if not touched:
         return res
     sha, err = _commit_rows(root, _ledger_paths(root, touched), identity,
-                            f"{task}: reviewer verdict ({kind} seat {seat}, recorded by the runtime)")
+                            f"{task}: reviewer verdict ({kind} seat {seat}, recorded by the runtime)",
+                            ids=[r["id"] for r in res["recorded"]], task=task, dispatch_id=did)
     if err:
         res["commit_error"] = err
     else:
@@ -1645,7 +1683,8 @@ def record_and_commit(task_id: str, ac_index: int, outcome: str, *, identity: st
     with _ledger_lock(root):
         rec = record(task_id, ac_index, outcome, root=root, **kw)
         sha, err = _commit_rows(root, _ledger_paths(root, kw.get("evidence")), identity,
-                                f"{task_id}: reviewer verdict", email=email)
+                                f"{task_id}: reviewer verdict", email=email, ids=[rec["id"]],
+                                task=task_id, dispatch_id=str(kw.get("dispatch_id") or ""))
     if err:
         raise VerdictRefused(f"verdict {rec['id']} appended but NOT committed: {err}")
     return {**rec, "commit": sha}
@@ -2126,6 +2165,8 @@ def load_ledger(root: Path) -> Ledger:
             return led
         led.pending.append(obj)
     have = {r.get("id") for r, _ in led.entries()}
+    # T-3863: an operator-discarded uncommitted row is gone by decision, not deleted.
+    have |= {(d.get("row") or {}).get("id") for d in _read(DISCARDED, root)}
     for j in _read(RECORDED, root):
         if j.get("verdict_id") not in have:
             led.missing.append((str(j.get("verdict_id")), str(j.get("task"))))
@@ -2403,7 +2444,7 @@ def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool 
         if not isinstance(g, str) or not g.strip():
             return "no-guidance", "a non-green verdict needs guidance"
         if need_commit and intro is None:
-            return "uncommitted", f"row {row['id']} was never committed (no commit introduces it)"
+            return "uncommitted", _uncommitted_why(base.root, row)
         return None
     if not row["evidence"] or not all(isinstance(e, str) and e.strip() for e in row["evidence"]):
         return "no-evidence", "a green verdict needs at least one evidence path"
@@ -2437,7 +2478,7 @@ def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool 
             f"{base.task_id}; the reviewer is never the producer")
     if need_commit:
         if intro is None:
-            return "uncommitted", f"row {row['id']} was never committed (no commit introduces it)"
+            return "uncommitted", _uncommitted_why(base.root, row)
         hit = next((p for i in intro["ids"] if (p := is_producer(i, prod))), "")
         if hit:
             return "introduced-by-producer", (
@@ -3825,6 +3866,41 @@ def _ack_for(root: Path, acks: list[dict], row: dict, cls: str, *,
     return a, ""
 
 
+def discard(row_id: str, *, reason: str, root: Path | None = None, i_am_human: bool = False) -> dict:
+    """(operator, T-3863) Remove an UNCOMMITTED row from the working ledger — one whose worker
+    commit failed (050: `.context/*` gitignored) and that otherwise FAILs every audit with no exit:
+    removing it by hand is a 'deleted verdict', and an uncommitted row cannot be acknowledged.
+    The row and the reason are appended to DISCARDED, which is what `recorded.jsonl` accepts for
+    its absence. A committed row is refused: the ledger is append-only against git."""
+    root = root or _root()
+    if os.environ.get("CLAUDECODE") == "1" and not i_am_human:
+        raise VerdictRefused("discarding a verdict row is an operator action (--i-am-human)")
+    if not (reason or "").strip():
+        raise VerdictRefused("--reason is required")
+    with _ledger_lock(root):
+        led = load_ledger(root)
+        if led.faults:
+            raise VerdictRefused(f"the ledger does not verify as a whole ({led.faults[0]}) — "
+                                 f"discard removes one uncommitted row, it does not repair history")
+        if any(r.get("id") == row_id for r, _ in led.committed):
+            raise VerdictRefused(f"{row_id} is committed — the ledger is append-only; "
+                                 f"acknowledge it instead if a fixed defect refuses it")
+        row = next((r for r in led.pending if r.get("id") == row_id), None)
+        if row is None:
+            raise VerdictRefused(f"no uncommitted row {row_id!r} in {VERDICTS}")
+        p = root / VERDICTS
+        kept = [ln for ln in p.read_text(encoding="utf-8", errors="replace").splitlines()
+                if ln.strip() and (_parse(ln) or {}).get("id") != row_id]
+        rec = {"ts": _now(), "row": row, "reason": reason.strip(),
+               "commit_error": commit_error_for(root, row_id),
+               "by": "agent-override" if os.environ.get("CLAUDECODE") == "1" else "operator"}
+        _append(DISCARDED, rec, root)
+        tmp = p.with_name(p.name + ".discard.tmp")
+        tmp.write_text("".join(ln + "\n" for ln in kept), encoding="utf-8")
+        os.replace(tmp, p)
+    return {"discarded": row_id, **rec}
+
+
 def acknowledge(row_id: str, *, fixed_by: str, reason: str, root: Path | None = None) -> dict:
     """Append an acknowledgement for a committed ledger row that does not verify because of a
     framework defect that `fixed_by` (a completed task) has fixed. Never touches the ledger and
@@ -3992,6 +4068,12 @@ def _cli(argv: list[str] | None = None) -> int:
     ak.add_argument("row_id")
     ak.add_argument("--fixed-by", required=True, help="completed task that fixed the defect")
     ak.add_argument("--reason", required=True)
+
+    dc = sub.add_parser("discard", help="(operator) remove an UNCOMMITTED ledger row whose commit "
+                        "failed; logged to " + str(DISCARDED) + " (T-3863)")
+    dc.add_argument("row_id")
+    dc.add_argument("--reason", required=True)
+    dc.add_argument("--i-am-human", action="store_true")
 
     sub.add_parser("audit", help="cross-check every ledger row; exit 2 on any failure, "
                    f"{AUDIT_WARN} when every failing row is acknowledged, void or provisional")
@@ -4173,6 +4255,16 @@ def _cli(argv: list[str] | None = None) -> int:
         print(json.dumps(rec, sort_keys=True))
         print(f"appended to {ACKS} — commit it; audit grades {args.row_id} WARN, and it still "
               f"never counts", file=sys.stderr)
+        return 0
+    if args.cmd == "discard":
+        try:
+            rec = discard(args.row_id, reason=args.reason, i_am_human=args.i_am_human)
+        except VerdictRefused as e:
+            print(f"REFUSED: {e}", file=sys.stderr)
+            return 1
+        print(json.dumps(rec, sort_keys=True))
+        print(f"removed {args.row_id} from {VERDICTS}; logged to {DISCARDED} — commit both "
+              f"(git add -f {VERDICTS} {DISCARDED})", file=sys.stderr)
         return 0
     if args.cmd == "audit":
         code, lines = audit()
