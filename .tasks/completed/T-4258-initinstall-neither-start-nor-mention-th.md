@@ -7,12 +7,12 @@ description: >
   first session. Findings (0909 run aef-install-20261017T144241Z): F-12. Triage: docs/reports/T-4253-greenfield-run-triage.md
   PROPOSED-NEW-5.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, bin/fw, lib/sidecar-audit.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:25:44Z
-last_update: 2026-10-21T20:43:49Z
-date_finished:
+last_update: 2026-10-21T21:15:33Z
+date_finished: 2026-10-21T21:15:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -387,3 +387,22 @@ bin/fw vendor self --check --task T-4258
 ### 2026-10-21T20:43:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-60390035
+- **Timestamp:** 2026-10-21T21:15:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/sidecar-audit.sh` has `fw_sidecar_watcher_awaiting_first_session <root>`: rc 0 only when no session has run the SessionStart `sidecar-autostart` hook here (no `.context/sidecar/watcher/autostart.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/sidecar/watcher/autostart.log in: `lib/sidecar-audit.sh` has `fw_sidecar_watcher_awaiting_first_session <root>`: rc 0 only when no session has run the SessionStart `sidecar-autostart` `
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T21:15:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
