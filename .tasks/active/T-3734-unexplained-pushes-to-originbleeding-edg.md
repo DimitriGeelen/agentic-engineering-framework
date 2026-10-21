@@ -12,7 +12,7 @@ description: >
   pre-push audit logs, unit-suite runs.log timing, process accounting, and every caller
   of git push or fw push (handover, mirror, close paths, workers).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T16:37:13Z
-last_update: '2026-10-02T16:45:44Z'
+last_update: 2026-10-21T07:11:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -106,8 +106,9 @@ Remaining candidates to check: the continuous-run Stop hook (agents/context/stop
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Pusher of the 2026-10-02 14:11Z/14:17Z origin/bleeding-edge updates identified from evidence on disk (reflog, cron logs, push audit logs), recorded under ## RCA with file:line — NOT MET: every in-repo pusher and every agent transcript was eliminated, and no retained record names the actor (see ## RCA). Needs an operator decision (## Recommendation).
+- [x] Whether the pre-push unit ratchet ran for those pushes (and what it graded) is established and recorded — timing shows a full pre-push run (~6-10 min between HEAD-at-push-start and the reflog entry) for all five 2026-10-02 pushes; the verdict itself is not retained anywhere (## RCA)
+- [x] Defect checked at HEAD: the ratchet refuses new/expired reds, incomplete runs and contention at HEAD (t3621 17/17, t3794 12/12, t3297 11/11, 0 skips); not-reproducible evidence recorded
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -268,6 +269,16 @@ Remaining candidates to check: the continuous-run Stop hook (agents/context/stop
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-3734: the pre-push ratchet refuses at HEAD (new/expired reds, incomplete run, lock contention)
+timeout 900 bats tests/unit/t3621_unit_suite_ratchet.bats > /tmp/.t3734a 2>&1 && ! grep -q "^not ok" /tmp/.t3734a
+test "$(grep -c '# skip' /tmp/.t3734a)" -eq 0
+timeout 900 bats tests/unit/t3794_unit_suite_incomplete_prepush.bats > /tmp/.t3734b 2>&1 && ! grep -q "^not ok" /tmp/.t3734b
+test "$(grep -c '# skip' /tmp/.t3734b)" -eq 0
+timeout 900 bats tests/unit/t3297_prepush_lock_wait.bats > /tmp/.t3734c 2>&1 && ! grep -q "^not ok" /tmp/.t3734c
+test "$(grep -c '# skip' /tmp/.t3734c)" -eq 0
+# mirror sync never pushes to origin (it iterates every remote except origin)
+grep -q "grep -vx 'origin'" lib/mirror.sh
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -283,6 +294,28 @@ Remaining candidates to check: the continuous-run Stop hook (agents/context/stop
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** origin/bleeding-edge advanced "by push" from this checkout at 2026-10-02 14:11:27Z (23540f871) and 14:17:55Z (ca2c1c7d9), and later at 16:36:52Z, 17:50:35Z and 19:47:09Z. Over the same period every push the parent session made was refused by the pre-push unit ratchet (T-3621).
+
+**Investigation (worker w3734, 2026-10-21), every lead and its result:**
+- *Pushed SHA lags HEAD by one pre-push run.* 23540f871 was HEAD 13:41:59Z–14:05:38Z and reached origin at 14:11:27Z. ca2c1c7d9 was HEAD 14:10:19Z–14:12:19Z and reached origin at 14:17:55Z. 08c61ee19 was HEAD 17:39:58Z–17:50:02Z and reached origin at 17:50:35Z. Each push is therefore a plain push of the current branch that spent ~6–10 min in the pre-push hook, which is the structure audit's duration (the session's own refused pushes took 6–7 min, e.g. 11:43→11:49Z). Pushes 1 and 2 ran back to back. The hook ran its audit, so this was not `--no-verify`, and that audit let the push through.
+- *Mirror sync (cron, 15 min):* ruled out. `lib/mirror.sh` iterates `git remote | grep -vx 'origin'` and pushes only to github (the `.mirror-sync.log` 14:15:03Z row reads github in-sync).
+- *Agent pushes:* ruled out. A scan of every Claude transcript on the host with activity 13:55Z–14:18Z found no push into this repo. The parent session made no tool call 13:42Z–14:03Z, and its pushes at 11:43, 11:49, 13:25 and 14:26 were all refused. The only other push in the window (055-cockpit, 14:15:01Z) went to its own repo.
+- *Close path / episodic / BVP / learning bus:* ruled out. `update-task.sh` backgrounds only the BVP estimator (`:2297`), `episodic-gen/T-3725.log` shows no git activity, and the learning bus posts to TermLink only.
+- *Watchtower inception decide:* ruled out. The T-3723 GO was recorded at 17:28:41Z, and `web/` contains no push.
+- *Release cron:* ruled out. No tag was cut 2026-10-01..03, and the job is paused (T-4364).
+- *Checkpoint detached push retry* (`agents/context/checkpoint.sh:306`, T-4004): postdates 2026-10-02 and has no log.
+- *Handover --commit, fw sync, fw push, integrate:* no invocation in any transcript in the window. `fw integrate` would also leave a worktree branch, and the 2026-10-02 reflogs show none.
+- *Unit-suite runs on the live checkout:* not supported. Pushes 1–4 do fall inside full-suite runs (13:32–14:26Z, 16:27–17:17Z, 17:41–18:35Z), but over 2026-09-25..10-21, 26 of 285 pushes fall inside one of 68 runs. That is exactly the share expected by chance, since runs cover ~9% of the time. No test was found that pushes from the live checkout or writes the live LATEST.yaml/baseline.yaml (the ratchet tests pass fixtures via `FW_UNIT_SUITE_REPORT`/`FW_UNIT_SUITE_BASELINE`).
+- *Half-written report:* stays disproved. `agents/audit/unit-suite.sh:556-568` writes LATEST.yaml only at the end of a run.
+
+**Root cause:** not determinable from retained evidence. Two facts survive. First, whatever pushed ran `git push` of the current branch through a full pre-push audit that passed. Second, nothing on this host records *who* pushed or *what the hook decided*. The pre-push hook (`agents/git/lib/hooks.sh` → `.git/hooks/pre-push`) logs bypasses to `.gate-bypass-log.yaml` but writes no row for an ordinary allow or refuse. `full-audit-timing.yaml` keeps only the latest run per section. The local reflog carries no actor. The remaining unexamined actor is a human terminal (shell history is outside this project's boundary) or an OneDev-side record (server logs).
+
+**Why structurally allowed:** a push is an outward-facing act, and the gate that governs it leaves no attribution ledger. A refused push is visible only in the pusher's own terminal, and an allowed push only as an anonymous reflog line. So "the ratchet refused every agent push, yet origin moved" cannot be reconciled after the fact. That gap is the reason this task stayed open for 19 days.
+
+**At HEAD:** the gate itself is sound. The ratchet FAILs on new or expired reds and on incomplete runs, and BLOCKs on lock contention (t3621 17/17, t3794 12/12, t3297 11/11, 0 skips). No code defect was reproduced, so no fix or regression test was written.
+
+**Prevention:** proposed, not built. It needs an operator decision; see ## Recommendation.
 
 ## Evolution
 
@@ -337,6 +370,18 @@ Remaining candidates to check: the continuous-run Stop hook (agents/context/stop
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO on option 1: close this investigation as unattributable and file a build task for a pre-push attribution ledger.
+**Rationale:** No retained record names the 2026-10-02 pusher, and the investigation eliminated every in-repo push path (## RCA). The ratchet refuses correctly at HEAD (40/40 tests, 0 skips). What can still be fixed is the reason this question was unanswerable: the push gate keeps no record of who pushed or what it decided. The ledger would be a new behaviour in a hook every consumer receives via `fw upgrade`, so the decision is the operator's and not this worker's.
+**Options:**
+1. **Pre-push attribution ledger (recommended).** The hook appends one JSONL row per run to `.context/working/push-ledger.jsonl`: ts, remote, refs (local sha → remote sha), audit exit and verdict (allow / refuse / contention / bypass), `CLAUDE_CODE_SESSION_ID`, `$PPID` and the parent command line, TTY yes/no, and `FW_UNATTENDED`. A bats test would pin one row per allow and per refuse. The next "who pushed" becomes a single grep.
+2. **Close as not reproducible and do nothing else.** Cheapest option, but the same question stays unanswerable next time.
+3. **Ask OneDev.** The operator checks the OneDev audit log or access log for 2026-10-02 14:04–14:18Z to see which credential pushed. Only the operator can do this, and it may settle the original question. It combines with option 1.
+**Evidence:**
+- reflog lag analysis: each pushed SHA was HEAD ~6–10 min before its push landed, which matches a full pre-push audit
+- 0 pushes into this repo in any Claude transcript on the host 13:55–14:18Z; mirror sync is github-only (`lib/mirror.sh`, `grep -vx 'origin'`)
+- in-run share 26/285 matches chance (~9% time coverage), so the unit-suite correlation is not causal
+- t3621 17/17, t3794 12/12, t3297 11/11 at HEAD
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -364,3 +409,6 @@ Remaining candidates to check: the continuous-run Stop hook (agents/context/stop
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3734-unexplained-pushes-to-originbleeding-edg.md
 - **Context:** Initial task creation
+
+### 2026-10-21T07:11:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
