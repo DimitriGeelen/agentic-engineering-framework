@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4230: fw handover auto-commit is attributed to a session-touched task instead of the focused task (1023: three commits labelled T-122/T-116 while focus was T-126)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T21:18:11Z
+# ============================================================================
+
+task_id: T-4230
+task_name: "fw handover auto-commit is attributed to a session-touched task instead of the focused task (1023: three commits labelled T-122/T-116 while focus was T-126)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T13:09:55Z
+completed: 2026-10-21T21:17:55Z
+duration_days: 4
+updates_count: 3
+first_commit: 2026-10-17T16:01:56+02:00
+last_commit: 2026-10-21T23:02:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record root cause (TASK_PATTERN and commit-msg hook accept only T-IDs, so WM commits borrow a T-task). handover commit label no longer borrows any task whose slug mentions handover; reuse only the active session-handover-maintenance task; regression bats
+
+# Key outcomes
+outcomes:
+  - '`_resolve_commit_task` (agents/handover/handover.sh) no longer picks an arbitrary task whose slug merely contains "handover"; it matches only the dedicated `*-session-handover-maintenance.md` task in `.tasks/active/`'
+  - 'Regression bats `tests/unit/t4230_handover_commit_task.bats` fails on the old lookup (picks a decoy) and passes after the fix'
+  - 'Existing `tests/unit/handover_t012_active_only.bats` still green; vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/handover.sh'
+  - 'agents/handover/handover.sh'
+  - '.tasks/active/T-4230-fw-handover-auto-commit-is-attributed-to.md'
+  - 'tests/unit/t4230_handover_commit_task.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T16:01:56'
+    action: 'T-4230: record root cause (TASK_PATTERN and commit-msg hook accept only T-IDs, so WM commits borrow a T-task)'
+  - time: '2026-10-21T23:02:59'
+    action: 'T-4230: handover commit label no longer borrows any task whose slug mentions handover; reuse only the active session-handover-maintenance task; regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6248 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6248
+  commits: 2
+  files_changed: 4
+  lines_added: 139
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4230-fw-handover-auto-commit-is-attributed-to.md
+generated_by: context-agent-hybrid
