@@ -463,9 +463,11 @@ CORPUS_PROBES: list[Probe] = [
        "S-COND",
        lambda x: x.replace(_C_FLOW, _C_FLOW + "\n      <bpmn:conditionExpression>S-COND</bpmn:conditionExpression>", 1)),
     _p("unsupported-identified-process-child", "a process child we cannot round-trip, WITH an id",
-       # T-4501 made boundaryEvent supported; the probe needs a tag still outside TYPE_TO_TAG.
+       # The probe needs a tag outside TYPE_TO_TAG: T-4501 took boundaryEvent and
+       # T-4505 complexGateway (every BPMN flow node). textAnnotation is an artifact,
+       # not a flow node, and is the same tag as the unidentified probe below.
        "S-UNSUPPORTED",
-       lambda x: x.replace("</bpmn:process>", '  <bpmn:complexGateway id="S-UNSUPPORTED"/>\n  </bpmn:process>', 1)),
+       lambda x: x.replace("</bpmn:process>", '  <bpmn:textAnnotation id="S-UNSUPPORTED"><bpmn:text>S-ANNOT</bpmn:text></bpmn:textAnnotation>\n  </bpmn:process>', 1)),
     _p("unidentified-process-child", "the same class of element, WITHOUT an id",
        "S-ANNOT",
        lambda x: x.replace("</bpmn:process>", "  <bpmn:textAnnotation><bpmn:text>S-ANNOT</bpmn:text></bpmn:textAnnotation>\n  </bpmn:process>", 1)),
