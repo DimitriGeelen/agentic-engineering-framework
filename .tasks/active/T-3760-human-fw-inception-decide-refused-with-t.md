@@ -12,7 +12,7 @@ description: >
   surface shows 'inception ready, review not emitted'. Related: T-3726 F2 readiness
   API (T-3753).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T23:11:56Z
-last_update: '2026-10-02T23:15:39Z'
+last_update: 2026-10-21T00:03:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,8 +98,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction attempted at HEAD: `lib/inception.sh` do_inception_decide no longer refuses when `.context/working/.reviewed-<id>` is absent (prints a NOTE instead); fixing commit identified
+- [x] Existing regression test pinning the no-refusal behaviour passes at HEAD (`tests/unit/inception_decide_atomicity.bats`)
+- [x] Evidence (commands + output, fixing task/commit) recorded in this task; no source change needed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,6 +260,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+! grep -q "exit 1" <(sed -n '/T-973 review marker/,/T-974, hardened/p' lib/inception.sh)
+grep -q "decided without a prior 'fw task review'" lib/inception.sh
+timeout 300 bats tests/unit/inception_decide_atomicity.bats > /tmp/.t3760.out 2>&1 && ! grep -q "^not ok" /tmp/.t3760.out
 
 ## RCA
 
@@ -275,6 +279,32 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Does not reproduce at HEAD (2026-10-21, 20884da63).** Already fixed by T-3991, commit 95241be92 (2026-10-08).
+
+**Symptom:** A human running `fw inception decide T-XXX` from the CLI was refused with "Task review required" because `.context/working/.reviewed-<id>` was missing (832 T-996, 15 hits).
+
+**Root cause:** The T-973 gate in `lib/inception.sh` do_inception_decide treated the marker as mandatory, but its only CLI writer is `emit_review` (`lib/review.sh:548`, agent-side `fw task review`); Watchtower writes its own (`web/blueprints/inception.py:613`). Since the sovereignty gate already refuses every agent before that line, the marker check could only ever block a human.
+
+**Fix (T-3991):** `lib/inception.sh:530-540` — a missing marker now prints `NOTE: <id> decided without a prior 'fw task review' — the decider is the reviewer (T-3991).` to stderr and proceeds. This is exactly 832's proposed direction ("decide satisfies the property itself instead of refusing").
+
+**Why structurally allowed:** the marker was a proxy for "task was presented", and every new handoff route had to remember to write it; no test exercised a human decide without a marker.
+
+**Prevention:** `tests/unit/inception_decide_atomicity.bats` tests 4–5 (T-3991) pin both legs: human decide without marker proceeds with NOTE; agent decide (CLAUDECODE=1) still refused.
+
+**Evidence (this run):**
+```
+$ timeout 300 bats tests/unit/inception_decide_atomicity.bats
+1..5
+ok 1 atomicity: unchecked custom Agent AC blocks decision — task body unmodified
+ok 2 atomicity: checked custom Agent AC allows full success
+ok 3 atomicity: failed decide is retry-safe — second attempt also fails fast (no Updates accumulation)
+ok 4 T-3991: a human decide WITHOUT a review marker proceeds, with a NOTE
+ok 5 T-3991/control: an agent decide (CLAUDECODE=1) is still refused before the marker matters
+```
+`grep -n "Task review required" lib/inception.sh` → no match.
+
+**Not covered here:** the second half of 832's suggestion (an agent-facing "inception ready, review not emitted" surface) is moot once the marker no longer gates anything. Separate observation: test 1 prints "Task body was modified despite gate failure" (md5 differs on a refused decide) but does not assert on it — out of this task's scope, worth its own task.
 
 ## Evolution
 
@@ -356,3 +386,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3760-human-fw-inception-decide-refused-with-t.md
 - **Context:** Initial task creation
+
+### 2026-10-21T00:03:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
