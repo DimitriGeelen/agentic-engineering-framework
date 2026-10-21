@@ -14,7 +14,7 @@ description: >
   Fix: run the drift check against a temp vendored fixture (the check is a pure source-vs-copy
   comparison), not the live repo and not whole fw doctor.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T09:35:14Z
-last_update: '2026-10-04T09:45:44Z'
+last_update: 2026-10-21T07:00:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Defect re-checked at HEAD: tests/unit/fw_doctor_vendored_drift.bats no longer runs live `fw doctor` and no longer writes the live `.agentic-framework/lib/colors.sh` (already fixed by T-3950, commit 4ee603957)
+- [x] The suite passes 4/4 with no skips, and the live vendored colors.sh is byte-identical before and after the run
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,8 +261,26 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/fw_doctor_vendored_drift.bats > /tmp/.t3800.out 2>&1 && grep -q '^ok 4 ' /tmp/.t3800.out && ! grep -q '^not ok' /tmp/.t3800.out
+test "$(grep -c '# skip' /tmp/.t3800.out)" -eq 0
+! grep -qE 'FRAMEWORK_ROOT/\.agentic-framework|PROJECT_ROOT/\.agentic-framework|bin/fw" doctor|fw doctor 2>' tests/unit/fw_doctor_vendored_drift.bats
+a=$(md5sum < .agentic-framework/lib/colors.sh); bats tests/unit/fw_doctor_vendored_drift.bats >/dev/null 2>&1; test "$a" = "$(md5sum < .agentic-framework/lib/colors.sh)"
 
 ## RCA
+
+**Not reproducible at HEAD — already fixed by T-3950 (commit 4ee603957, 2026-10).** Re-checked 2026-10-21:
+`bats tests/unit/fw_doctor_vendored_drift.bats` → `ok 1..4`, 18.8 s wall (0.45 s user), live
+`.agentic-framework/lib/colors.sh` md5 identical before/after. Every `>>` in the file targets
+`$FIX/.agentic-framework/lib/colors.sh` (a `mktemp -d` fixture); no test runs `fw doctor`.
+
+**Symptom:** test 1 red whenever the live working tree had transient vendored drift; tests 2/3
+appended to the live vendored colors.sh, so a concurrent `fw audit` reported Self-vendor drift.
+**Root cause:** the test ran whole `fw doctor` against the live repo (mutable-corpus anchor, OBS-377
+class) and mutated the real `.agentic-framework/lib/colors.sh` to provoke drift.
+**Why structurally allowed:** nothing flags a unit test that writes into the live repo or greps live doctor output.
+**Prevention (T-3950):** the test now lifts Check 2b out of `bin/fw` (awk on its marker comment) and runs it
+with FRAMEWORK_ROOT=PROJECT_ROOT=a temp fixture; test 1 asserts the lift still finds the check, so a renamed
+marker fails loudly instead of silently testing nothing. No new code needed under T-3800.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -358,3 +376,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3800-fwdoctorvendoreddriftbats-asserts-the-li.md
 - **Context:** Initial task creation
+
+### 2026-10-21T07:00:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
