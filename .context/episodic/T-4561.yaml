@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4561: fw termlink dispatch reuses an existing worker dir without clearing exit_code/finished_at/close_state from the previous run
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:11:55Z
+# ============================================================================
+
+task_id: T-4561
+task_name: "fw termlink dispatch reuses an existing worker dir without clearing exit_code/finished_at/close_state from the previous run"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T16:15:08Z
+completed: 2026-10-21T18:10:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T18:38:13+02:00
+last_commit: 2026-10-21T18:39:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  dispatch into a reused worker dir refuses a live/uncollected previous run, else moves its files to prev-<ts>/. tick vendor-check AC
+
+# Key outcomes
+outcomes:
+  - '`cmd_dispatch` refuses a name whose existing dir holds a live run (no exit_code, runtime alive) or a finished run with an uncollected result, naming `fw termlink result <name>` as the way out'
+  - 'Otherwise the previous run''s state files (exit_code, finished_at, close_state, result.md, result.jsonl, …) are moved into `prev-<timestamp>/` before the new run is written, so none of them are visible at the top level of the reused dir'
+  - 'Bats regression `tests/unit/t4561_dispatch_reused_dir.bats`: a dir with an old exit_code is dispatched into again and exit_code is absent until the new run ends; uncollected-result and live-run refusals covered; fails without the fix'
+  - '`bin/fw vendor self` run and `--check --task T-4561` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - 'agents/termlink/termlink.sh'
+  - '.tasks/active/T-4561-fw-termlink-dispatch-reuses-an-existing-.md'
+  - 'tests/unit/t4561_dispatch_reused_dir.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T18:38:13'
+    action: 'T-4561: dispatch into a reused worker dir refuses a live/uncollected previous run, else moves its files to prev-<ts>/'
+  - time: '2026-10-21T18:39:11'
+    action: 'T-4561: tick vendor-check AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 115 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, termlink, dispatch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 115
+  commits: 2
+  files_changed: 4
+  lines_added: 231
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4561-fw-termlink-dispatch-reuses-an-existing-.md
+generated_by: context-agent-hybrid
