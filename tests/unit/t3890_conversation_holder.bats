@@ -74,6 +74,12 @@ _live_claude() { bash -c 'exec -a claude sleep 60' & HOLDER=$!; sleep 0.2; }
     eval "$(awk '/^_conversation_guard\(\) \{/{p=1} p{print} p&&/^\}/{exit}' "$f")"
     # T-3954: the guard finds its lib through _cfw_lib / _cfw_framework_dir
     eval "$(awk '/^_cfw_framework_dir\(\) \{/,/^}/; /^_cfw_lib\(\) \{/,/^}/' "$f")"
+    # T-4544: T-4048 made the guard call _background_job_guard first; without it the
+    # guard "refused" on command-not-found before ever checking the holder.
+    eval "$(awk '/^_background_job_guard\(\) \{/,/^}/' "$f")"
+    for fn in _conversation_guard _cfw_framework_dir _cfw_lib _background_job_guard; do
+        declare -F "$fn" >/dev/null || { echo "helper $fn not extracted from claude-fw" >&2; false; }
+    done
     _conv c1; _live_claude; _record c1 "$HOLDER"
     cd "$PROJ"; export PROJECT_ROOT="$PROJ"
     CLAUDE_ARGS=(-c)
