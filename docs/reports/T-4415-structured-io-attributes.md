@@ -251,7 +251,7 @@ What draft 2 must address:
 | `type` | v1's vocabulary, **unchanged and open** | Includes at least `string`, `number`, `boolean`, `ref`, `path`, `task_id`; the exact list is the designer's and the v1 bridge's (832 1). **Optional** when `fieldRef` or `typeRef` is present (greenfield c). When both `type` and `typeRef` are present, `typeRef` is authoritative and `type` is informational |
 | `required` | `true` \| `false` | v1, unchanged: whether this step can run without the io |
 | `cardinality` | `one` \| `many` | How many instances flow. **Absence of the value is expressed only by `required`.** So `optional` is not a cardinality value (832 5) |
-| `role` | `read` \| `write` \| `create` \| `match` | What the step does with the data (greenfield d). `match` = the io is a lookup/join key used to find an existing instance. It is allowed on inputs and outputs. `match` + `create` on the same step = **upsert** ("update if exists, else create", greenfield h) |
+| `role` | `read` \| `write` \| `create` \| `delete` \| `match` | What the step does with the data (greenfield d; `delete` added from operator dialogue 2026-10-21). See below |
 | `fieldRef` | field IRI / QName | **One field.** The identity of a single attribute, e.g. `sfdc:Opportunity.Id` or `nid:attr-…` (review 2, greenfield a) |
 | `typeRef` | IRI / QName of a class, shape or named type | **A structure.** The fields come from that definition. Allowed to name a property IRI only through `fieldRef`, never here |
 | `schemaRef` | URI of a JSON Schema | Alternative to `typeRef`; at most one of the two |
@@ -259,6 +259,25 @@ What draft 2 must address:
 | `ref` | as in v1 | **Read rule for existing maps (greenfield a):** when `ref` holds a field IRI and there is no `fieldRef`, a reader treats it as `fieldRef`. Otherwise `ref` keeps its v1 meaning (data-object identity). New maps write `fieldRef` |
 | `dataType` | as in v1 | **Read rule for existing maps (greenfield b):** technical tokens such as `id` and `reference` are read as v1 `type` hints, never as a concept. New maps write `conceptRef` for meaning and `type` / `typeRef` for structure |
 | `sourceSystem` / `targetSystem` | catalogue reference | Where an input comes from, or where an output goes. If absent, they are **derived from the prefix map**: a declared prefix (`sfdc:`, `tacton:`) can name its system. An explicit attribute overrides the derivation, and a step default on `aef:meta` sits in between (greenfield e) |
+
+**`role` values:**
+
+| Value | Meaning |
+|---|---|
+| `read` | Read existing data |
+| `create` | Create a new instance |
+| `write` | Update an existing instance. Needs a `match` io on the same step. **To confirm with greenfield:** does their `write` already mean exactly this? |
+| `delete` | Hard-remove the identified instance(s) in the target system. Needs a `match` io (or a `fieldRef` to the identifying field) on the same step |
+| `match` | The io is a lookup/join key used to find an existing instance. Allowed on inputs and outputs |
+| `match` + `create` | **Upsert**: update if it exists, else create (greenfield h) |
+
+**Rules for `delete`:**
+
+- A `delete` without a key is a **lint error**. A map must never be readable as "delete everything".
+- A **soft delete** (deactivate, archive) is an update, not a delete: `write`, plus an expectation such as
+  `<aef:expect path="Status" const="archived"/>`. Keeping the two apart stops a generator from removing data that
+  should only be deactivated.
+- A delete's natural postcondition is that the key is absent afterwards: `<aef:expect fieldRef="…" present="false"/>`.
 
 **Prefix map.** Prefixes are declared once per map in `aef:prefixes` on the process `aef:meta`:
 
