@@ -16,6 +16,9 @@ setup() {
     export FRAMEWORK_ROOT
     export FW_VERSION="1.5.0"
     export NO_COLOR=1
+    # T-4234: a dry run now fetches to preview; keep the URL-resolution probes
+    # below offline (https upstreams fail fast; file:// fixtures still clone).
+    export GIT_ALLOW_PROTOCOL=file
     source "$FRAMEWORK_ROOT/lib/colors.sh"
     source "$FRAMEWORK_ROOT/lib/upgrade.sh"
 }

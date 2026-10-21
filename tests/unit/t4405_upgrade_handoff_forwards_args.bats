@@ -78,5 +78,7 @@ _bare_upgrade() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"would re-invoke:"*"--allow-delete-locals"* ]]
     [[ "$output" == *"--dry-run"* ]]
-    [ ! -f "$ARGV_LOG" ]
+    # T-4234: the dry run hands off to preview the changes — with --dry-run in argv.
+    grep -qx -- '--dry-run' "$ARGV_LOG"
+    grep -qx -- '--allow-delete-locals' "$ARGV_LOG"
 }

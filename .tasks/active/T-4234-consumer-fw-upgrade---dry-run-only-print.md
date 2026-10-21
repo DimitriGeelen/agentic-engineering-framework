@@ -8,10 +8,10 @@ description: >
   fetch into a temp location and print the file-level diff (vendored files, settings
   hooks, CLAUDE.md sections) without writing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:28:44Z
-last_update: '2026-10-17T13:31:29Z'
+last_update: 2026-10-21T20:19:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,13 +89,16 @@ bvp_scores_proposed:
 ## Context
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reproduced on bleeding-edge a681ded30: `lib/upgrade.sh:1542` returned before cloning on `--dry-run`. Fix lets the dry run clone into its temp dir and hand off to the clone's `fw upgrade --dry-run`. Note: `tests/unit/t4453_upgrade_from_framework_checkout.bats` tests 1-2 fail on HEAD *without* this change (pre-existing, out of scope; not in Verification).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Bare-from-consumer `fw upgrade --dry-run` fetches the upstream into a temp dir and hands off to the clone's `fw upgrade --dry-run`, so the operator sees the per-file plan (vendored files, settings hooks, CLAUDE.md) instead of only "would clone"
+- [x] The dry-run preview writes nothing to the consumer (tree identical before/after, incl. no T-2232 self-heal line in .framework.yaml) and removes the temp clone
+- [x] An unreachable upstream in dry-run still prints the plan plus an explicit "preview unavailable" warning (no silent omission)
+- [x] Regression bats `tests/unit/t4234_upgrade_dryrun_preview.bats` fails before the fix, passes after; neighbouring autoclone suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,6 +276,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/upgrade.sh
+timeout 600 bats tests/unit/t4234_upgrade_dryrun_preview.bats > /tmp/.t4234.out 2>&1 && ! grep -q "^not ok" /tmp/.t4234.out
+test "$(grep -c '# skip' /tmp/.t4234.out)" -eq 0
+timeout 900 bats tests/unit/upgrade_auto_clone.bats tests/unit/t2232_durable_in_consumer_upgrade.bats tests/unit/t4405_upgrade_handoff_forwards_args.bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4234n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4234n.out
+bin/fw vendor self --check --task T-4234
 
 ## RCA
 
@@ -289,6 +297,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** On a vendored consumer, `fw upgrade --dry-run` printed only "[dry-run] would clone <url>" and "would re-invoke …", then exited 0. No file-level change was shown, so the operator could not decide (1409 msg eb27d14e, finding 3).
+
+**Root cause:** `lib/upgrade.sh:1542-1548` (bare-from-consumer auto-clone leg of `do_upgrade`) returned early on `dry_run=true` *before* cloning. Every per-file dry-run report lives in the upstream's own `do_upgrade` (the child), which the dry run therefore never reached. The dry-run was a plan of the handoff, not of the upgrade.
+
+**Why structurally allowed:** The tests for this leg (`upgrade_auto_clone.bats`, `t2232…`, `upgrade_fresh_machine_simulation.bats`) used `--dry-run` as an offline probe of URL resolution and asserted only `"would clone"` — they pinned the absence of a preview as the expected behaviour. Nothing asserted that a consumer dry-run names any file.
+
+**Prevention:** `tests/unit/t4234_upgrade_dryrun_preview.bats` builds a real file:// upstream and asserts the consumer dry-run reaches the child's DRY RUN report, leaves the consumer byte-identical, and warns when the preview cannot be fetched. Suites that probe URL resolution now set `GIT_ALLOW_PROTOCOL=file` so they stay offline rather than relying on dry-run not fetching.
 
 ## Evolution
 
@@ -370,3 +385,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4234-consumer-fw-upgrade---dry-run-only-print.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:19:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

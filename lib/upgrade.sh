@@ -1539,12 +1539,15 @@ do_upgrade() {
         local _replay_shown
         _replay_shown=$(printf '%q ' "${_replay_args[@]}")
 
+        # T-4234: a dry run still fetches. Every per-file report (vendored files,
+        # settings hooks, CLAUDE.md) lives in the upstream's own do_upgrade, so a
+        # dry run that stops at the plan shows the operator nothing to decide on.
+        # The clone lands in the temp dir only; the child runs with --dry-run
+        # (it is in the replay) and writes nothing to the consumer.
         if [ "$dry_run" = true ]; then
             echo "  [dry-run] would clone $_upstream_url into $_tmpd/fw"
             echo "  [dry-run] would re-invoke: $_tmpd/fw/bin/fw ${_replay_shown% }"
-            rm -rf "$_tmpd"
-            trap - EXIT INT TERM HUP
-            return 0
+            echo "  [dry-run] fetching upstream into the temp dir to preview the changes (consumer untouched)"
         fi
 
         echo -n "  Cloning... "
@@ -1563,8 +1566,15 @@ do_upgrade() {
             _clone_filter=()
             _clone_from="$_clone_src"
         fi
-        if ! git clone ${_clone_filter[@]+"${_clone_filter[@]}"} --quiet "$_clone_from" "$_tmpd/fw" 2>"$_tmpd/clone.err"; then
+        if ! GIT_TERMINAL_PROMPT=0 git clone ${_clone_filter[@]+"${_clone_filter[@]}"} --quiet "$_clone_from" "$_tmpd/fw" 2>"$_tmpd/clone.err"; then
             echo "FAILED"
+            if [ "$dry_run" = true ]; then
+                echo -e "${YELLOW}WARN${NC}  [dry-run] preview unavailable: could not fetch $_upstream_url — the plan above is all this dry run can show." >&2
+                sed 's/^/    /' "$_tmpd/clone.err" >&2 2>/dev/null || true
+                rm -rf "$_tmpd"
+                trap - EXIT INT TERM HUP
+                return 0
+            fi
             echo -e "${RED}ERROR: git clone failed${NC}" >&2
             sed 's/^/    /' "$_tmpd/clone.err" >&2 2>/dev/null || true
             return 1
@@ -1623,9 +1633,10 @@ do_upgrade() {
         # .upstream sentinel (precedence-3 leg) and the auto-clone succeeded,
         # persist the URL to .framework.yaml so the next upgrade skips the
         # sentinel fallback. Operator gets a clean .framework.yaml without
-        # having to remediate by hand. Skipped on dry-run (handled above) and
+        # having to remediate by hand. Skipped on dry-run (T-4234: the preview
+        # hands off too, so the guard is explicit) and
         # on failure (we only want to durably commit a known-good URL).
-        if [ "$_rc" -eq 0 ] \
+        if [ "$_rc" -eq 0 ] && [ "$dry_run" != true ] \
            && [ "$_upstream_source" = "vendored .agentic-framework/.upstream sentinel (T-2232)" ] \
            && [ -f "$target_dir/.framework.yaml" ] \
            && ! grep -q "^upstream_repo:" "$target_dir/.framework.yaml" 2>/dev/null; then
