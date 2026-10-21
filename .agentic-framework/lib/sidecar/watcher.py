@@ -135,7 +135,18 @@ def _events_path() -> Path:
     return _dir() / "events.jsonl"
 
 
+def project_gone() -> bool:
+    """T-3777: the project this sidecar serves was deleted (a removed worktree, a
+    test's tmpdir). Every path below mkdirs <root>/.context/sidecar/watcher, so
+    without this check a write recreated the tree, kept the receiver's own
+    project-gone check (http_server._watch_project) from ever firing, and left
+    teardown 'Directory not empty'."""
+    return not (receiver._root() / ".context").is_dir()
+
+
 def record_event(event: str, **detail) -> None:
+    if project_gone():
+        return
     row = {"ts": _now().isoformat(), "event": event}
     row.update({k: v for k, v in detail.items() if v is not None})
     with open(_events_path(), "a", encoding="utf-8") as fh:
@@ -698,6 +709,8 @@ def follower_path() -> Path:
 
 
 def _write_follower(state: dict) -> None:
+    if project_gone():   # T-3777: never recreate a deleted project
+        return
     try:
         tmp = follower_path().with_suffix(f".json.{os.getpid()}.tmp")
         tmp.write_text(json.dumps(dict(state, updated_at=_now().isoformat())), encoding="utf-8")
@@ -814,6 +827,8 @@ def _start_follower(wake, stop):
 def run_forever(tick_s: float | None = None) -> int:
     """The watcher process body: tick until SIGTERM."""
     import threading
+    if project_gone():   # T-3777
+        return 0
     tick = tick_seconds(tick_s)
     lock = _single_instance("watcher")
     if lock is None:
@@ -833,6 +848,9 @@ def run_forever(tick_s: float | None = None) -> int:
     record_event("WATCHER_STARTED", pid=os.getpid(), tick_s=tick, resumed_seq=seq)
     _start_follower(wake, stop_follow)
     while not stop["flag"]:
+        if project_gone():
+            print(f"watcher: project gone ({receiver._root()}) — exiting", file=sys.stderr)
+            break
         started = time.monotonic()
         seq += 1
         try:
@@ -882,7 +900,9 @@ def _restart_receiver(cfg: dict) -> None:
 def supervise() -> int:
     """Run the watcher as a child; restart it when it exits or stalls; restart
     the receiver when its process is gone. Exits when disabled or on SIGTERM
-    (taking the watcher with it)."""
+    (taking the watcher with it), and when the project is gone (T-3777)."""
+    if project_gone():
+        return 0
     stop = {"flag": False}
 
     def _term(*_):
@@ -910,6 +930,9 @@ def supervise() -> int:
     last_receiver_check = 0.0
     try:
         while not stop["flag"]:
+            if project_gone():
+                print(f"supervisor: project gone ({receiver._root()}) — exiting", file=sys.stderr)
+                break
             cfg = read_enabled()
             if cfg is None:
                 record_event("SUPERVISOR_DISABLED")
@@ -949,7 +972,7 @@ def supervise() -> int:
             except subprocess.TimeoutExpired:
                 child.kill()
         record_event("SUPERVISOR_STOPPED", pid=os.getpid())
-        if read_pid("supervisor") == os.getpid():
+        if not project_gone() and read_pid("supervisor") == os.getpid():
             try:
                 _pidfile("supervisor").unlink()
             except FileNotFoundError:

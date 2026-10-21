@@ -14,7 +14,7 @@ description: >
   kill was refused by the permission classifier, so this needs the operator; (3) claude-fw's
   sidecar_start hook has no test of its own.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: [T-3747]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T17:03:51Z
-last_update: '2026-10-03T17:15:40Z'
+last_update: 2026-10-21T00:04:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked at HEAD: does the sidecar supervisor (watcher supervise loop) keep respawning the receiver after its PROJECT_ROOT is deleted? Evidence recorded below.
+- [x] If it reproduces: the supervisor and the receiver exit (without recreating PROJECT_ROOT state) once PROJECT_ROOT no longer exists
+- [x] Regression test under tests/unit/ fails without the fix and passes with it
+- [x] claude-fw sidecar_start hook has a test of its own (opt-out CLAUDE_FW_NO_SIDECAR=1 honoured)
+- [x] `bin/fw vendor self --check --task T-3777` clean
+
+**Evidence (2026-10-21):** at HEAD 20884da63, `tests/unit/test_sidecar_project_gone_t3777.py` (start a real sidecar, `rmtree` the root) failed: supervisor and watcher exited, but the receiver stayed alive and the root was recreated as `.context/sidecar/watcher/events.jsonl`. With the fix: 3 passed ×3 runs; reverting only the two lib files: 2 failed. Neighbours (t3684 watcher, t3693 receiver, t4416, t4423, t4494, t4315, status): 126 passed. Host leak (item 2): 61 live sidecar processes, 0 with a `/tmp/tmp.*` PROJECT_ROOT and 0 with a missing root, so the ~65 leaked processes are already gone and no operator cleanup is needed. Item 3: `test_sidecar_watcher_t3684.py::test_claude_fw_really_starts_the_sidecar` already runs the real wrapper's sidecar_start. This task adds the opt-out leg.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,8 +266,19 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 400 python3 -m pytest tests/unit/test_sidecar_project_gone_t3777.py -q -p no:cacheprovider > /tmp/.t3777v.out 2>&1 && grep -q "3 passed" /tmp/.t3777v.out
+python3 -c "import sys; sys.path.insert(0,'.'); from lib.sidecar import watcher; assert callable(watcher.project_gone)"
+bin/fw vendor self --check --task T-3777
 
 ## RCA
+
+**Symptom:** fixture sidecars (supervisor, watcher, receiver) outlived their deleted `/tmp/tmp.*` PROJECT_ROOT, and teardown failed with 'Directory not empty'.
+
+**Root cause:** every sidecar state path mkdirs its parent: `lib/sidecar/watcher.py:_dir()` (`mkdir(parents=True)`, reached by `read_enabled`, `record_event`, `read_pid` and `_write_follower`) and `lib/sidecar/lifecycle.py:_sidecar_dir()` (reached by `read_triple_file` in the receiver's shutdown, `http_server.py` serve `finally`). After the root was deleted, the supervisor's next poll (`supervise()`, `read_enabled()`) and its `SUPERVISOR_STOPPED` event recreated `<root>/.context/sidecar/watcher`. That brought `<root>/.context` back, so the receiver's own orphan check (`http_server._watch_project`, T-3959, which tests `<root>/.context`) never fired, and the receiver ran on indefinitely. Neither the supervisor nor the watcher loop ever asked whether the project still existed.
+
+**Why structurally allowed:** T-3959 added the project-gone exit to the receiver only. The supervisor/watcher tests (t3684) cover kill, hang and stop, never a deleted root. Lazy mkdir-on-read helpers make "the tree is gone" invisible to any caller.
+
+**Prevention:** `watcher.project_gone()` is checked at both process entries and on every loop iteration. Event and follower writes are no-ops once the project is gone, and the receiver skips its triple-file cleanup when `<root>/.context` is gone. `tests/unit/test_sidecar_project_gone_t3777.py` pins the end-to-end shape (real processes, rmtree, everything exits, root stays gone), the supervise() unit leg, and the claude-fw `CLAUDE_FW_NO_SIDECAR=1` opt-out.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -358,3 +374,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3777-sidecar-supervisor-respawns-receivers-fo.md
 - **Context:** Initial task creation
+
+### 2026-10-21T00:04:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

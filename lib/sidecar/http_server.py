@@ -203,7 +203,9 @@ def serve(port: int, agent: str) -> int:
         server.serve_forever()
     finally:
         server.server_close()
-        info = lifecycle.read_triple_file()
+        # T-3777: the triple-file paths mkdir <root>/.context/sidecar — a project
+        # that is gone has no triple file to clear, and must not be recreated.
+        info = lifecycle.read_triple_file() if (receiver._root() / ".context").is_dir() else None
         if info and info.get("pid") == os.getpid():
             lifecycle.clear_triple_file()
         lifecycle.unregister(agent, os.getpid())
