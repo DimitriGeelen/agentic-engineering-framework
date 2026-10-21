@@ -13,7 +13,7 @@ description: >
   (Tier-0 approvals, audit failures, T-2438 deep links) is dropped silently. Check
   whether 999 itself is affected.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T08:28:26Z
-last_update: '2026-10-05T08:31:04Z'
+last_update: 2026-10-21T08:50:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,14 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced at HEAD: `lib/notify.sh` ran `python3 <dispatcher>.py` as a script; the skills-manager dispatcher on this host (`/opt/150-skills-manager/skills/alerts/alert_dispatcher.py:15`) opens with `from .alert_config import …` (relative import → ImportError as a script) and has NO `__main__` block, so even `python3 -m` would import and exit 0 sending nothing. 999 itself is affected.
+- [x] New `lib/notify_dispatch.py` invokes the dispatcher as a package module (sys.path = first ancestor without `__init__.py`, module name derived from the path) and calls its `dispatch_alert()` API; exit 0 = dispatched or deduplicated, non-zero + stderr reason otherwise; `check` subcommand does a dry import
+- [x] `fw_notify` stays fire-and-forget but appends dispatcher stderr to `.context/working/notify.log` instead of `/dev/null`; new foreground `fw_notify_send` returns the dispatcher's exit code
+- [x] `fw notify test` runs in the foreground and fails (exit 1, reason shown) when the dispatcher fails; `fw notify status`/`setup` report the dry-import result, not just file existence
+- [x] `fw doctor` WARNs when notifications are enabled and the dry import fails (`fw_notify_doctor_check` in lib/notify.sh)
+- [x] Sidecar waiting-push (`lib/sidecar/waiting.py:default_notifier`) — same script-mode defect — routes through the same helper
+- [x] Regression tests (`tests/unit/lib_notify.bats`) use a fixture package dispatcher with a relative import: fail at the old script invocation, pass now; existing notify + sidecar waiting tests green
+- [x] `bin/fw vendor self --check --task T-3866` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,8 +266,22 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/fw && bash -n lib/notify.sh && python3 -m py_compile lib/notify_dispatch.py
+timeout 300 bats tests/unit/lib_notify.bats > /tmp/.t3866-bats 2>&1 && ! grep -q "^not ok" /tmp/.t3866-bats
+test "$(grep -c '# skip' /tmp/.t3866-bats)" -eq 0
+python3 -m pytest tests/unit/test_sidecar_waiting_t3782.py -q > /tmp/.t3866-py 2>&1 && grep -q passed /tmp/.t3866-py
+grep -q "notify_dispatch.py" lib/notify.sh && ! grep -q 'python3 "$_SKILLS_DISPATCHER"' lib/notify.sh
+bin/fw vendor self --check --task T-3866
 
 ## RCA
+
+**Symptom:** no framework push (Tier-0 approval, audit failure, T-2438 deep link, sidecar waiting push) has ever reached a phone from a host using the skills-manager dispatcher; `fw notify test` prints "Test notification sent" regardless.
+
+**Root cause:** `lib/notify.sh:112-122` ran `python3 "$_SKILLS_DISPATCHER" --trigger …` — the dispatcher as a top-level script. `alert_dispatcher.py:15` uses `from .alert_config import …`, which raises `ImportError: attempted relative import with no known parent package` in script mode. On this host the file also has no `__main__`/argparse block at all, so the CLI the framework assumed does not exist; only the `dispatch_alert()` library API does. `lib/sidecar/waiting.py:603` copied the same script invocation.
+
+**Why structurally allowed:** the call was backgrounded with `2>/dev/null &`, so the ImportError went nowhere; `fw notify test` slept 1 s and printed success unconditionally; `fw notify status`/`setup` only tested `[ -f "$dispatcher" ]`; `fw doctor` had no notify check; the bats tests only covered the disabled/missing-file paths, never a dispatcher that exists but cannot run. Every surface measured "file present", none measured "dispatcher runs".
+
+**Prevention:** `lib/notify_dispatch.py check` (dry import of the module + `dispatch_alert` attribute) now backs `fw notify status`, `setup` and a `fw doctor` WARN; `fw notify test` is foreground and returns the dispatcher's own exit code; background stderr lands in `.context/working/notify.log`; regression bats use a fixture package with a relative import, which the old invocation cannot run.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -357,3 +377,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3866-fw-notify-has-never-delivered-on-consume.md
 - **Context:** Initial task creation
+
+### 2026-10-21T08:50:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

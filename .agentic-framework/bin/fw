@@ -2770,6 +2770,11 @@ PY
     # (T-3801) so its tests can run it on a fixture without a whole doctor run.
     doctor_check_mcp_manifest
 
+    # Check: notify dispatcher importable (T-3866). Silent unless notifications are
+    # enabled; then a dispatcher that cannot import means every push is dropped.
+    source "$FRAMEWORK_ROOT/lib/notify.sh"
+    fw_notify_doctor_check
+
     _doctor_phase "port3000 hygiene ratchet"  # T-3452
     # Check: port-3000 hygiene ratchet (T-2894, set-level sibling of T-2732's
     # per-item close gate). T-2732's P-011 gate fires once per task close and
@@ -11383,8 +11388,17 @@ PYPREDICT
                 enabled=$(python3 -c "import yaml; d=yaml.safe_load(open('$_notify_config')); print(str(d.get('enabled','false')).lower())" 2>/dev/null || echo "false")
             fi
             local dispatcher="${SKILLS_DISPATCHER:-/opt/150-skills-manager/skills/alerts/alert_dispatcher.py}"
-            local dispatcher_ok="missing"
-            [ -f "$dispatcher" ] && dispatcher_ok="found"
+            local dispatcher_ok="missing" _dispatch_why=""
+            # T-3866: "found" used to mean the file exists — it never could run.
+            # Report the dry-import result instead.
+            if [ -f "$dispatcher" ]; then
+                source "$FRAMEWORK_ROOT/lib/notify.sh"
+                if _dispatch_why=$(fw_notify_check); then
+                    dispatcher_ok="${GREEN}importable${NC}"
+                else
+                    dispatcher_ok="${RED}NOT importable${NC}"
+                fi
+            fi
 
             echo -e "${BOLD}Notification Status${NC}"
             echo ""
@@ -11395,6 +11409,7 @@ PYPREDICT
             fi
             echo -e "  Config:     $_notify_config"
             echo -e "  Dispatcher: $dispatcher ($dispatcher_ok)"
+            [ -n "$_dispatch_why" ] && echo -e "              $(echo "$_dispatch_why" | tail -1)"
             # T-2439: show the RESOLVED ntfy server so the target is visible
             # before any push — a configured URL forces that instance; an unset
             # one falls back to the dispatcher's own (possibly host-local) default.
@@ -11475,14 +11490,18 @@ YAMLEOF
                 echo -e "Target ntfy server: ${YELLOW}<dispatcher default>${NC} (set with: ${CYAN}fw config set NTFY_URL <url>${NC})"
             fi
             echo -e "Sending test notification..."
-            NTFY_ENABLED=true fw_notify \
+            # T-3866: foreground, and the dispatcher's exit code is the verdict —
+            # the old background call printed "sent" over an ImportError.
+            local _test_rc=0
+            fw_notify_send "manual" \
                 "Framework Test" \
-                "Test notification from $(basename "$PROJECT_ROOT") at $(date '+%H:%M:%S')" \
-                "manual" \
-                "framework"
-            # Wait briefly for background process
-            sleep 1
-            echo -e "${GREEN}Test notification sent${NC}"
+                "Test notification from $(basename "$PROJECT_ROOT") at $(date '+%H:%M:%S')" || _test_rc=$?
+            if [ "$_test_rc" -ne 0 ]; then
+                echo -e "${RED}Test notification FAILED${NC} (dispatcher exit $_test_rc) — see the reason above"
+                echo -e "  Diagnose: ${CYAN}fw notify status${NC}"
+                exit 1
+            fi
+            echo -e "${GREEN}Test notification dispatched${NC}"
             echo "  Check your ntfy app for the notification"
         }
 
@@ -11495,7 +11514,16 @@ YAMLEOF
             echo -e "${BOLD}Prerequisites:${NC}"
             local dispatcher="${SKILLS_DISPATCHER:-/opt/150-skills-manager/skills/alerts/alert_dispatcher.py}"
             if [ -f "$dispatcher" ]; then
-                echo -e "  ${GREEN}OK${NC}  Skills-manager alert dispatcher found"
+                # T-3866: existence is not enough — the dispatcher must import.
+                source "$FRAMEWORK_ROOT/lib/notify.sh"
+                local _setup_why
+                if _setup_why=$(fw_notify_check); then
+                    echo -e "  ${GREEN}OK${NC}  Skills-manager alert dispatcher found and importable"
+                else
+                    echo -e "  ${RED}BROKEN${NC}  Alert dispatcher found but cannot run:"
+                    echo "         $(echo "$_setup_why" | tail -1)"
+                    exit 1
+                fi
             else
                 echo -e "  ${RED}MISSING${NC}  Alert dispatcher not found at:"
                 echo "         $dispatcher"

@@ -597,8 +597,13 @@ def default_notifier(title: str, message: str, click_url: str = "") -> str:
     if url:
         env["NTFY_URL"] = url
     body = f"{message}\n{click_url}" if click_url else message
+    # T-3866: the dispatcher is a package module with a relative import, so it
+    # cannot run as `python3 <file>`; lib/notify_dispatch.py imports it from
+    # its package root and calls dispatch_alert(), the same path fw_notify uses.
+    helper = str(Path(__file__).resolve().parent.parent / "notify_dispatch.py")
     try:
-        proc = subprocess.run([sys.executable, dispatcher, "--trigger", "manual",
+        proc = subprocess.run([sys.executable, helper, "send", dispatcher,
+                               "--trigger", "manual",
                                "--title", title, "--message", body or title],
                               capture_output=True, text=True, timeout=60, env=env)
     except (OSError, subprocess.SubprocessError) as e:

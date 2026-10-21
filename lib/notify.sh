@@ -13,7 +13,9 @@
 #   NTFY_ENABLED — set to "true" to enable (default: disabled)
 #
 # Design: Fire-and-forget, backgrounded, never blocks the calling script.
-# If skills-manager is unreachable, fails silently. Notifications are advisory.
+# Notifications are advisory, but failures are not silent (T-3866): background
+# stderr is appended to .context/working/notify.log, `fw notify test` runs in
+# the foreground, and `fw doctor` WARNs when the dispatcher cannot be imported.
 #
 # Related: T-707 (deep-dive), T-708 (this file), L-128 (cross-project coordination)
 
@@ -100,25 +102,66 @@ fw_notify() {
     # Check dispatcher exists
     [ -f "$_SKILLS_DISPATCHER" ] || return 0
 
+    # Fire-and-forget — backgrounded. T-3866: stderr goes to a log, never
+    # /dev/null; that is where the ImportError hid for the life of this file.
+    local _log="/dev/null"
+    if [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT/.context" ]; then
+        mkdir -p "$PROJECT_ROOT/.context/working" 2>/dev/null && _log="$PROJECT_ROOT/.context/working/notify.log"
+    fi
+    fw_notify_send "$trigger" "$title" "${message:-$title}" </dev/null >/dev/null 2>>"$_log" &
+}
+
+# fw_notify_send — dispatch in the FOREGROUND and return the dispatcher's own
+# exit status (T-3866). Reasons go to stderr. No enabled check: callers decide.
+#
+# The dispatcher is a package module with a relative import (and on some hosts
+# no __main__), so it cannot be run as `python3 <file>`; lib/notify_dispatch.py
+# imports it from its package root and calls dispatch_alert().
+#
+# Args: $1 trigger, $2 title, $3 message
+fw_notify_send() {
+    local trigger="${1:-manual}" title="${2:-}" message="${3:-}"
+    [ -n "$title" ] || { echo "notify: no title" >&2; return 1; }
+    [ -f "$_SKILLS_DISPATCHER" ] || { echo "notify: no alert dispatcher at $_SKILLS_DISPATCHER" >&2; return 1; }
     # T-2439: resolve the configured ntfy server and export it to the dispatcher
     # so the framework publishes to the chosen instance — never a host-local
     # fallback. Empty = dispatcher's own default (backward-compatible). The
     # dispatcher reads os.environ.get("NTFY_URL"); we only prefix when non-empty.
     local _ntfy_url
     _ntfy_url=$(fw_notify_url)
-
-    # Fire-and-forget — backgrounded, stderr suppressed
+    local _helper
+    _helper="$(dirname "${BASH_SOURCE[0]}")/notify_dispatch.py"
     if [ -n "$_ntfy_url" ]; then
-        NTFY_URL="$_ntfy_url" python3 "$_SKILLS_DISPATCHER" \
-            --trigger "$trigger" \
-            --title "$title" \
-            --message "${message:-$title}" \
-            2>/dev/null &
+        NTFY_URL="$_ntfy_url" python3 "$_helper" send "$_SKILLS_DISPATCHER" \
+            --trigger "$trigger" --title "$title" --message "${message:-$title}"
     else
-        python3 "$_SKILLS_DISPATCHER" \
-            --trigger "$trigger" \
-            --title "$title" \
-            --message "${message:-$title}" \
-            2>/dev/null &
+        python3 "$_helper" send "$_SKILLS_DISPATCHER" \
+            --trigger "$trigger" --title "$title" --message "${message:-$title}"
+    fi
+}
+
+# fw_notify_check — dry import of the dispatcher; sends nothing (T-3866).
+# Exit 0 when it can run, 1 otherwise; prints the reason (stdout+stderr merged).
+fw_notify_check() {
+    [ -f "$_SKILLS_DISPATCHER" ] || { echo "missing: $_SKILLS_DISPATCHER"; return 1; }
+    python3 "$(dirname "${BASH_SOURCE[0]}")/notify_dispatch.py" check "$_SKILLS_DISPATCHER" 2>&1
+}
+
+# fw_notify_doctor_check — fw doctor block (T-3866). Silent unless notifications
+# are enabled for the project; then WARN when the dispatcher cannot be imported,
+# because every push would be dropped. Uses the caller's colours and `warnings`.
+fw_notify_doctor_check() {
+    local _cfg="${PROJECT_ROOT:-}/.context/notify-config.yaml" _en="${NTFY_ENABLED:-}"
+    if [ -z "$_en" ] && [ -f "$_cfg" ]; then
+        _en=$(python3 -c "import yaml; d=yaml.safe_load(open('$_cfg')) or {}; print(str(d.get('enabled','false')).lower())" 2>/dev/null || echo "false")
+    fi
+    [ "${_en:-false}" = "true" ] || return 0
+    local _why
+    if _why=$(fw_notify_check); then
+        echo -e "  ${GREEN:-}OK${NC:-}  Notify dispatcher importable"
+    else
+        echo -e "  ${YELLOW:-}WARN${NC:-}  Notifications enabled but the alert dispatcher cannot run — every push is dropped: $(echo "$_why" | tail -1)"
+        echo -e "         Check: fw notify status"
+        warnings=$((${warnings:-0} + 1))
     fi
 }
