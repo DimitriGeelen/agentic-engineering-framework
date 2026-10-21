@@ -1,13 +1,20 @@
 ---
 id: T-4568
-name: "fw upgrade leaves commit-msg and pre-push un-updated when the project lines do not parse after the framework block (cloud job 2)"
+name: "fw upgrade leaves commit-msg and pre-push un-updated when the project lines
+  do not parse after the framework block (cloud job 2)"
 description: >
-  Cloud job 2 (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md section 3): upgrading a fresh v1.8.14 consumer to cc094b509 printed 'WARN Git hook installation failed' (lib/upgrade.sh:2226); install-hooks REFUSED commit-msg (marker 1.17 vs template 1.20; pre-push 1.9) because lines outside the template do not parse after the framework block. A stock v1.8.14 hook has no project lines, so the refusal is a false parse failure on the old framework's own lines. Reproduce in a throwaway consumer, fix, regression test in the fresh-machine simulation.
+  Cloud job 2 (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md
+  section 3): upgrading a fresh v1.8.14 consumer to cc094b509 printed 'WARN Git hook
+  installation failed' (lib/upgrade.sh:2226); install-hooks REFUSED commit-msg (marker
+  1.17 vs template 1.20; pre-push 1.9) because lines outside the template do not parse
+  after the framework block. A stock v1.8.14 hook has no project lines, so the refusal
+  is a false parse failure on the old framework's own lines. Reproduce in a throwaway
+  consumer, fix, regression test in the fresh-machine simulation.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, upgrade, git-hook]
 components: []
 related_tasks: [T-4508]
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:48:03Z
-last_update: 2026-10-21T21:48:03Z
-date_finished: null
+last_update: '2026-10-21T22:00:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-21T21:50:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-21T22:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=305,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4568: fw upgrade leaves commit-msg and pre-push un-updated when the project lines do not parse after the framework block (cloud job 2)
@@ -63,8 +98,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced: install-hooks from bleeding-edge over a stock v1.8.14 hook set REFUSES commit-msg/pre-push (throwaway repo under /tmp, never this repo's hooks)
+- [x] A stock hook from any released framework version (exactly, or with project lines appended) installs cleanly: only the appended lines are kept, no old template lines carried
+- [x] Genuine project lines are still protected: an unknown hook body (not a known stock template) is merged or REFUSED as before
+- [x] Regression bats test fails without the fix and passes with it; upgrade_fresh_machine_simulation.bats stays green
+- [ ] Vendored copy synced (`bin/fw vendor self --check --task T-4568` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +287,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t4568_stock_hook_upgrade.bats > /tmp/.t4568.out 2>&1 && ! grep -q "^not ok" /tmp/.t4568.out
+test "$(grep -c '# skip' /tmp/.t4568.out)" -eq 0
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4568fm.out 2>&1 && ! grep -q "^not ok" /tmp/.t4568fm.out
+bin/fw vendor self --check --task T-4568
 
 ## RCA
 
@@ -265,6 +307,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw upgrade` of a fresh v1.8.14 consumer printed `WARN Git hook installation failed`; `git.sh install-hooks` REFUSED commit-msg and pre-push ("lines outside the framework template do not parse after the framework block"), and kept 2 stale v1.8.14 template lines ACTIVE in pre-commit. Reproduced 2026-10-22 in /tmp/t4568 (v1.8.14 `git archive` → its install-hooks → current install-hooks): same two REFUSALs, exit 1.
+
+**Root cause:** `agents/git/lib/hooks.sh` `_fw_hook_compose`, old-framework branch (was :104-107): for an unmarked framework hook it kept every line of the installed file that the CURRENT template lacks (`grep -vxF -f "$block"`). For a stock older hook those are just the old template's own lines — `else`/`fi` fragments and removed blocks — which cannot parse on their own, so the T-4515 parse check (:118-125) refused. Line-set difference cannot tell an older template's line from a project line; nothing told the installer which template the file was.
+
+**Why structurally allowed:** T-4403/T-4515 tests (t4403, t4515) build the "old" hook by unwrapping the CURRENT template, so the old-vs-new line difference was always empty; no test ever used a real released template. The fresh-machine simulation installs hooks fresh rather than upgrading released ones.
+
+**Fix / prevention:** `agents/git/lib/stock-hook-digests.txt` (generated by `tools/gen-stock-hook-digests.sh` from every pre-block hooks.sh in history; closed set, 85 digests) lists `<lines> <sha256>` of every template body ever written verbatim. `_fw_hook_stock_prefix` finds the longest shipped template the installed hook starts with; that prefix is replaced whole and only lines appended after it are kept. Anything else (an edit inside a template) falls through to the old protective path. `tests/unit/t4568_stock_hook_upgrade.bats` upgrades the real v1.8.14 templates (read from commit 2328ae76b) — 4 of 6 tests fail without the digests.
 
 ## Evolution
 
@@ -346,3 +396,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4568-fw-upgrade-leaves-commit-msg-and-pre-pus.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:50:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -68,11 +68,44 @@ _fw_hook_installed_block() {
         $0 == b { inb = 1 } inb { print } $0 == e { inb = 0 }' "$1"
 }
 
+# T-4568: digests of every template body a pre-block install-hooks wrote verbatim
+# (tools/gen-stock-hook-digests.sh). A stock old hook is recognised whole, so its
+# own lines are never mistaken for project lines (they did not parse after the
+# block, and the upgrade REFUSED a hook nobody had edited).
+_FW_STOCK_HOOK_DIGESTS="$(dirname "${BASH_SOURCE[0]}")/stock-hook-digests.txt"
+
+_fw_sha256() {
+    if command -v sha256sum >/dev/null 2>&1; then sha256sum; else shasum -a 256; fi | cut -d' ' -f1
+}
+
+# _fw_hook_stock_prefix FILE — line count of the longest shipped template that
+# FILE starts with, line for line (0 when none does).
+_fw_hook_stock_prefix() {
+    local file="$1" total n sha best=0
+    [ -f "$_FW_STOCK_HOOK_DIGESTS" ] || { echo 0; return 0; }
+    total=$(wc -l < "$file" | tr -d ' ')
+    while read -r n sha; do
+        case "$n" in ''|\#*) continue ;; esac
+        { [ "$n" -le "$total" ] && [ "$n" -gt "$best" ]; } || continue
+        [ "$(head -n "$n" "$file" | _fw_sha256)" = "$sha" ] && best=$n
+    done < "$_FW_STOCK_HOOK_DIGESTS"
+    echo "$best"
+}
+
+# _fw_hook_first_exit FILE — line number of FILE's first unconditional top-level
+# `exit` (column 0, as every template writes its final `exit 0`), 0 when none.
+# T-4569: nothing after it ever ran.
+_fw_hook_first_exit() {
+    awk '/^exit([[:space:]]|;|$)/ { print NR; found = 1; exit } END { if (!found) print 0 }' "$1"
+}
+
 # _fw_hook_compose INSTALLED BLOCK OUT — write the new hook to OUT: the block,
 # with everything the installed file held outside it kept in place. An unmarked
 # installed hook is migrated (backed up to INSTALLED.pre-fw-block first):
-#   - an old framework hook keeps only the lines the template does not contain,
-#     after the block — the template lines are never duplicated;
+#   - a stock old framework hook (T-4568: a shipped template, per its digest) is
+#     replaced whole; lines appended after it are kept, after the block;
+#   - any other old framework hook keeps only the lines the template does not
+#     contain, after the block — the template lines are never duplicated;
 #   - a consumer's own sh/bash hook keeps its whole body, after the block;
 #   - a hook in another language, or a merge that does not parse, is REFUSED:
 #     the installed file is left as it is and the function returns 2.
@@ -94,10 +127,17 @@ _fw_hook_compose() {
             !skip { print }' "$installed" > "$out"
         return 0
     fi
-    local name backup="$installed.pre-fw-block" kept="$out.kept" first note=""
+    local name backup="$installed.pre-fw-block" kept="$out.kept" first note="" stock
     name=$(basename "$installed")
     first=$(head -n 1 "$installed")
-    if grep -qE 'Agentic Engineering Framework|agents/git/git\.sh install-hooks|^# [<>]{3} agentic-framework hook' "$installed"; then
+    stock=$(_fw_hook_stock_prefix "$installed")
+    if [ "$stock" -gt 0 ]; then
+        # T-4568: a stock old framework hook, possibly with lines appended. The
+        # template is replaced whole; only the appended lines are kept.
+        tail -n +"$((stock + 1))" "$installed" > "$kept"
+        grep -q '[^[:space:]]' "$kept" || : > "$kept"
+        note="appended to a stock framework hook — they now run after the framework checks pass"
+    elif grep -qE 'Agentic Engineering Framework|agents/git/git\.sh install-hooks|^# [<>]{3} agentic-framework hook' "$installed"; then
         # An old framework hook: lines the current template lacks are either the
         # consumer's or an OLDER template's, and nothing tells them apart. Keep
         # them all ACTIVE (T-4515): a consumer gate must keep running.

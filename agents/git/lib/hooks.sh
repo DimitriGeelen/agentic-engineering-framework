@@ -68,11 +68,44 @@ _fw_hook_installed_block() {
         $0 == b { inb = 1 } inb { print } $0 == e { inb = 0 }' "$1"
 }
 
+# T-4568: digests of every template body a pre-block install-hooks wrote verbatim
+# (tools/gen-stock-hook-digests.sh). A stock old hook is recognised whole, so its
+# own lines are never mistaken for project lines (they did not parse after the
+# block, and the upgrade REFUSED a hook nobody had edited).
+_FW_STOCK_HOOK_DIGESTS="$(dirname "${BASH_SOURCE[0]}")/stock-hook-digests.txt"
+
+_fw_sha256() {
+    if command -v sha256sum >/dev/null 2>&1; then sha256sum; else shasum -a 256; fi | cut -d' ' -f1
+}
+
+# _fw_hook_stock_prefix FILE — line count of the longest shipped template that
+# FILE starts with, line for line (0 when none does).
+_fw_hook_stock_prefix() {
+    local file="$1" total n sha best=0
+    [ -f "$_FW_STOCK_HOOK_DIGESTS" ] || { echo 0; return 0; }
+    total=$(wc -l < "$file" | tr -d ' ')
+    while read -r n sha; do
+        case "$n" in ''|\#*) continue ;; esac
+        { [ "$n" -le "$total" ] && [ "$n" -gt "$best" ]; } || continue
+        [ "$(head -n "$n" "$file" | _fw_sha256)" = "$sha" ] && best=$n
+    done < "$_FW_STOCK_HOOK_DIGESTS"
+    echo "$best"
+}
+
+# _fw_hook_first_exit FILE — line number of FILE's first unconditional top-level
+# `exit` (column 0, as every template writes its final `exit 0`), 0 when none.
+# T-4569: nothing after it ever ran.
+_fw_hook_first_exit() {
+    awk '/^exit([[:space:]]|;|$)/ { print NR; found = 1; exit } END { if (!found) print 0 }' "$1"
+}
+
 # _fw_hook_compose INSTALLED BLOCK OUT — write the new hook to OUT: the block,
 # with everything the installed file held outside it kept in place. An unmarked
 # installed hook is migrated (backed up to INSTALLED.pre-fw-block first):
-#   - an old framework hook keeps only the lines the template does not contain,
-#     after the block — the template lines are never duplicated;
+#   - a stock old framework hook (T-4568: a shipped template, per its digest) is
+#     replaced whole; lines appended after it are kept, after the block;
+#   - any other old framework hook keeps only the lines the template does not
+#     contain, after the block — the template lines are never duplicated;
 #   - a consumer's own sh/bash hook keeps its whole body, after the block;
 #   - a hook in another language, or a merge that does not parse, is REFUSED:
 #     the installed file is left as it is and the function returns 2.
@@ -94,41 +127,66 @@ _fw_hook_compose() {
             !skip { print }' "$installed" > "$out"
         return 0
     fi
-    local name backup="$installed.pre-fw-block" kept="$out.kept" first note=""
+    local name backup="$installed.pre-fw-block" kept="$out.kept" inert="$out.inert" first note="" stock dead
     name=$(basename "$installed")
     first=$(head -n 1 "$installed")
-    if grep -qE 'Agentic Engineering Framework|agents/git/git\.sh install-hooks|^# [<>]{3} agentic-framework hook' "$installed"; then
+    stock=$(_fw_hook_stock_prefix "$installed")
+    : > "$inert"
+    if [ "$stock" -gt 0 ]; then
+        # T-4568: a stock old framework hook, possibly with lines appended. The
+        # template is replaced whole; only the appended lines are kept.
+        awk -v s="$stock" 'NR > s { print NR "\t" $0 }' "$installed" > "$kept.n"
+        grep -q '[^[:space:]]' "$kept.n" || : > "$kept.n"
+        note="appended to a stock framework hook — they now run after the framework checks pass"
+    elif grep -qE 'Agentic Engineering Framework|agents/git/git\.sh install-hooks|^# [<>]{3} agentic-framework hook' "$installed"; then
         # An old framework hook: lines the current template lacks are either the
         # consumer's or an OLDER template's, and nothing tells them apart. Keep
         # them all ACTIVE (T-4515): a consumer gate must keep running.
-        tail -n +2 "$installed" | grep -vxF -f "$block" | grep -v '^[[:space:]]*$' \
-            | grep -v '^# [<>]\{3\} agentic-framework hook' > "$kept" || true
+        awk 'FNR == NR { t[$0] = 1; next }
+             FNR > 1 && !($0 in t) && $0 !~ /^[[:space:]]*$/ && $0 !~ /^# [<>][<>][<>] agentic-framework hook/ {
+                 print FNR "\t" $0 }' "$block" "$installed" > "$kept.n"
         note="still active — delete any that came from an older framework hook"
     elif [[ "$first" =~ ^#!(/usr)?/bin/(env[[:space:]]+)?(ba)?sh([[:space:]]|$) ]]; then
         tail -n +2 "$installed" > "$kept"
         note="unchanged — they now run after the framework checks pass"
     else
-        rm -f "$kept"
+        rm -f "$kept" "$inert"
         echo -e "${RED}REFUSED: $name is not a shell script ($first) — it cannot be merged with the framework block, and replacing it would disable it. Left unchanged.${NC}" >&2
         echo "  Fix: call your hook from a shell $name, then re-run fw git install-hooks." >&2
         return 2
+    fi
+    if [ -f "$kept.n" ]; then
+        # T-4569: keeping a line must keep whether it ran. A line after the old
+        # hook's unconditional top-level exit never ran; kept ACTIVE below the
+        # block it would start running on every commit. It stays inert.
+        dead=$(_fw_hook_first_exit "$installed")
+        awk -F '\t' -v d="$dead" -v k="$kept" -v i="$inert" '{
+            n = $1; sub(/^[0-9]+\t/, "")
+            if (d > 0 && n > d) print > i; else print > k }' "$kept.n"
+        touch "$kept"
+        rm -f "$kept.n"
     fi
     { echo '#!/bin/bash'; cat "$block"
       if [ -s "$kept" ]; then
           echo "# T-4515: project lines kept ACTIVE from the previous $name by fw git install-hooks ($note); original: $(basename "$backup")"
           cat "$kept"
+      fi
+      if [ -s "$inert" ]; then
+          echo "# T-4569: project lines kept INERT from the previous $name by fw git install-hooks — they sat after its unconditional exit (line $dead) and never ran; uncomment any that should run; original: $(basename "$backup")"
+          sed 's/^/# /' "$inert"
       fi; } > "$out"
     if [ -s "$kept" ] && ! bash -n "$out" 2>/dev/null; then
         echo -e "${RED}REFUSED: the lines of $name outside the framework template do not parse after the framework block — installing would disable them. $name left unchanged (its checks still run).${NC}" >&2
         echo "  Lines:" >&2
         sed 's/^/    | /' "$kept" | head -20 >&2
         echo "  Fix: delete the lines that came from an older framework hook (or make the rest parse on its own), then re-run fw git install-hooks." >&2
-        rm -f "$kept" "$out"
+        rm -f "$kept" "$inert" "$out"
         return 2
     fi
-    [ -s "$kept" ] || [ -z "$note" ] && cp -p "$installed" "$backup" 2>/dev/null
+    [ -s "$kept" ] || [ -s "$inert" ] || [ -z "$note" ] && cp -p "$installed" "$backup" 2>/dev/null
     [ -s "$kept" ] && echo -e "${YELLOW}$name: kept $(wc -l < "$kept") line(s) of the previous hook below the framework block ($note); previous file: $backup${NC}" >&2
-    rm -f "$kept"
+    [ -s "$inert" ] && echo -e "${YELLOW}$name: kept $(wc -l < "$inert") line(s) commented out — they sat after the previous hook's unconditional exit (line $dead) and never ran; previous file: $backup${NC}" >&2
+    rm -f "$kept" "$inert"
     return 0
 }
 
