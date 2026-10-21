@@ -116,7 +116,7 @@ bvp_scores_proposed:
 - [x] Reproduced on current bleeding-edge: a fresh `fw init` consumer's own bootstrap commit tracks `.context/working/.verb-counter`, `.verb-counter.lock` and `.budget-gate-counter`; its `.context/working/.gitignore` names five files
 - [x] One shared rule list (`lib/working-gitignore.sh`) names the runtime files written there; `fw init` writes it and `fw upgrade` appends the missing rules (idempotent, dry-run aware) and prints the untrack command for runtime files a project already tracks
 - [x] Sidecar runtime state from the 1023 addendum (receiver.pid/port/url, inbox-state.json(+.lock), hub-id, peers.json, waiting/, *.tmp) is ignored; the *.jsonl ledgers stay tracked (recorded in ## Decisions)
-- [ ] Regression bats `tests/unit/t4231_working_runtime_gitignore.bats` fails before the fix and passes after; `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
+- [x] Regression bats `tests/unit/t4231_working_runtime_gitignore.bats` fails before the fix and passes after; `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
