@@ -957,7 +957,17 @@ CYAML
         echo -e "  (Drop ${BOLD}--global${NC} in, or set it on this repo only as above.)"
         echo ""
     fi
-    echo -e "  ${BOLD}Next step:${NC} Start your AI agent (e.g. Claude Code) in this directory."
+    # T-4240: Claude Code loads CLAUDE.md and .claude/settings.json hooks at session
+    # START, so a session that ran this init (or was open before it) stays ungoverned
+    # until restarted in the project. Say so where the eye lands, not "active".
+    case "$provider" in
+        cursor)
+            echo -e "  ${BOLD}Next step:${NC} Start your AI agent (e.g. Cursor) in this directory." ;;
+        *)
+            echo -e "  ${YELLOW}${BOLD}Restart Claude Code in $target_dir with claude-fw${NC} — governance is"
+            echo -e "  not active in this session (CLAUDE.md and hooks load at session start)."
+            echo -e "    cd \"$target_dir\" && claude-fw" ;;
+    esac
     if [ "$has_existing_tasks" = false ] && [ -d "$target_dir/.tasks/active" ] && ls "$target_dir/.tasks/active/"T-*.md >/dev/null 2>&1; then
         local onboard_count
         onboard_count=$(ls "$target_dir/.tasks/active/"T-*.md 2>/dev/null | wc -l)

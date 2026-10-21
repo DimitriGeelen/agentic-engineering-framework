@@ -7,10 +7,10 @@ description: >
   B2 + proposal 3. Fix: init/installer end with 'Restart Claude Code in <dir> with
   claude-fw — governance is not active in this session'.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:43:20Z
-last_update: '2026-10-17T13:46:22Z'
+last_update: 2026-10-21T21:06:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw init --provider claude` (and generic, which also writes Claude Code hooks) ends with a restart notice naming the target dir and `claude-fw`, stating governance is not active in the current session
+- [x] `fw init --provider cursor` does NOT print the Claude Code restart notice (negative control)
+- [x] `install.sh` closing block for a project install prints the same restart notice when the provider is claude/generic
+- [x] Regression bats `tests/unit/t4240_init_restart_notice.bats` fails before the fix and passes after; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -143,6 +145,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+timeout 900 bats tests/unit/t4240_init_restart_notice.bats > /tmp/.t4240.out 2>&1 && ! grep -q "^not ok" /tmp/.t4240.out
+test "$(grep -c '# skip' /tmp/.t4240.out)" -eq 0
+bash -n lib/init.sh && bash -n install.sh
+bin/fw vendor self --check --task T-4240
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -275,6 +281,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** after `fw init --provider claude` (or the installer) the output ends "Done! Governance is active. Next step: Start your AI agent". An operator who ran init from inside a running Claude Code session keeps working there, ungoverned — CLAUDE.md and `.claude/settings.json` hooks load only at session start (dimitri-mint-dev P-017 B2).
+
+**Root cause:** `lib/init.sh` closing block (`Next step: Start your AI agent`, ~line 960) and `install.sh` final block (~line 712) never say the *current* session must be restarted in the project; "Governance is active" reads as true for the session that ran the command.
+
+**Why structurally allowed:** no test pinned the closing lines for the session-start dependency; T-2818 pinned only the git-identity blocker there.
+
+**Prevention:** `tests/unit/t4240_init_restart_notice.bats` pins the notice in the tail of real `fw init` output for claude, its absence for cursor, and the installer's closing block.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -369,3 +383,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4240-fw-init---provider-claude-prints-no-rest.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:53:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -714,8 +714,17 @@ print_completion_banner() {
         echo "    fw doctor       # verify health"
         echo "    fw serve        # start the dashboard"
         echo ""
-        echo "  Onboarding tasks were seeded to guide your first session — start your AI"
-        echo "  agent (e.g. Claude Code) in the project directory."
+        echo "  Onboarding tasks were seeded to guide your first session."
+        # T-4240: Claude Code loads CLAUDE.md and hooks at session start; a session
+        # that ran this installer stays ungoverned until restarted in the project.
+        if [[ "$PROVIDER" != "cursor" ]]; then
+            echo ""
+            echo -e "  ${BOLD}Restart Claude Code in ${TARGET_DIR} with claude-fw${NC} — governance is"
+            echo "  not active in this session (CLAUDE.md and hooks load at session start)."
+            echo "    cd \"${TARGET_DIR}\" && claude-fw"
+        else
+            echo "  Start your AI agent (e.g. Cursor) in the project directory."
+        fi
         # T-4263 (F-23): an agent that ran this installer from inside its own
         # session would otherwise carry on ungoverned — Claude Code reads
         # .claude/settings.json (the hooks just installed) at session start only.
