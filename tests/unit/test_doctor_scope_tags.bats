@@ -24,6 +24,22 @@ setup() {
     [ -x "$FW_BIN" ]
 }
 
+# T-3778: the four behavioural tests read the SAME live doctor output, so they
+# share one run instead of paying four (~50 s quiet, up to 600 s under the
+# unit-suite pool each — the file hit 757 s against the 900 s cap on the
+# 2026-10-21 nightly). Each test loads the captured output and status.
+setup_file() {
+    export FW_DOCTOR_SMOKE=0
+    local rc=0
+    "$FRAMEWORK_ROOT/bin/fw" doctor > "$BATS_FILE_TMPDIR/doctor.out" 2>&1 || rc=$?
+    echo "$rc" > "$BATS_FILE_TMPDIR/doctor.rc"
+}
+
+_doctor_output() {
+    output="$(cat "$BATS_FILE_TMPDIR/doctor.out")"
+    status="$(cat "$BATS_FILE_TMPDIR/doctor.rc")"
+}
+
 # ── Source-level pins (cheap, fast) ──
 
 @test "do_doctor defines _doctor_warn_host helper" {
@@ -60,7 +76,7 @@ setup() {
 @test "fw doctor exits cleanly on this project" {
     # bin/fw doctor exits 2 if there are FAILs; this project should be
     # clean (warnings only). Mirrors the no-regression check.
-    run bash -c "$FW_BIN doctor 2>&1"
+    _doctor_output
     # Accept 0 (clean) or 1 (warnings); 2 means a real FAIL slipped in
     [ "$status" -ne 2 ]
     echo "$output" | grep -q "fw doctor"
@@ -70,7 +86,7 @@ setup() {
     # The framework repo on the test host typically has at least one
     # host-level finding (large global install, bats/shellcheck missing,
     # or unconfigured git identity). If none fire, skip rather than fail.
-    run bash -c "$FW_BIN doctor 2>&1"
+    _doctor_output
     if echo "$output" | grep -q "\[host\]"; then
         echo "$output" | grep -q "host-level — handle from a session at that root"
     else
@@ -79,7 +95,7 @@ setup() {
 }
 
 @test "fw doctor summary shows host-level count when nonzero" {
-    run bash -c "$FW_BIN doctor 2>&1"
+    _doctor_output
     if echo "$output" | grep -q "\[host\]"; then
         # Summary line should include "host-level)" suffix
         echo "$output" | tail -3 | grep -E "warning\(s\) \([0-9]+ host-level\)"
@@ -91,7 +107,7 @@ setup() {
 @test "no-regression: project-scope WARN emits keep their leading 2 spaces" {
     # _doctor_warn_host preserves the "  WARN  " indentation contract.
     # If a refactor changes the indent, this catches it.
-    run bash -c "$FW_BIN doctor 2>&1"
+    _doctor_output
     # Every non-empty line that contains WARN should start with whitespace
     # (output never has WARN at column 0 — preserves existing layout).
     if echo "$output" | grep -E "^WARN\b"; then

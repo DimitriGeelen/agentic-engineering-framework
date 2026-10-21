@@ -18,8 +18,20 @@
 # pin in place + restored in teardown; interrupted runs corrupted the working copy —
 # hit live twice during the T-2546 0.3.0 re-pin.) vendored_path still resolves against
 # PROJECT_ROOT, so the real vendored build is used regardless of which pin is read.
+#
+# COST (T-3778): the check lives in lib/doctor-drift.sh. Only t1 runs a real doctor
+# (`--quick`, which still runs this check) to prove the wiring; t2-t5 call
+# doctor_check_designer_pin directly. Five full doctor runs per file crossed the
+# 900 s per-file cap under the unit-suite pool (900 s on the 2026-10-21 nightly).
 
 load ../test_helper
+
+# Run the drift check alone, the way doctor runs it, against the temp pin.
+_pin_check() {
+    run bash -c 'GREEN= YELLOW= CYAN= NC= warnings=0; PROJECT_ROOT="$1"
+        source "$1/lib/doctor-drift.sh"; doctor_check_designer_pin; echo "warnings=$warnings"' \
+        _ "$FRAMEWORK_ROOT"
+}
 
 setup() {
     export FW_DOCTOR_SMOKE=0  # T-3933: never sweep the live Watchtower from a test
@@ -35,10 +47,14 @@ teardown() {
 
 @test "t1: vendored build matches pin sha256 → OK" {
     # Temp pin is a verbatim copy of the live (synced) pin → vendored build matches.
+    # The one real doctor run in this file: proves doctor calls the lib check.
     cd "$FRAMEWORK_ROOT"
-    run bin/fw doctor
+    run bin/fw doctor --quick
     [[ "$output" == *"designer vendored build matches pin"* ]]
     [[ "$output" != *"designer vendored build drifted from pin"* ]]
+    # Same run proves the sibling lib check is wired (t2243 tests it on a fixture):
+    # one of its two verdict lines must appear, whichever state the live tree is in.
+    [[ "$output" == *"No vendored-source drift"* || "$output" == *"Vendored-source drift:"* ]]
 }
 
 @test "t2: vendored build sha256 != pin sha256 → WARN" {
@@ -50,10 +66,11 @@ d = yaml.safe_load(open(p))
 d['sha256'] = '0'*64
 yaml.safe_dump(d, open(p,'w'), sort_keys=False)
 "
-    cd "$FRAMEWORK_ROOT"
-    run bin/fw doctor
+    _pin_check
     [[ "$output" == *"designer vendored build drifted from pin"* ]]
     [[ "$output" == *"fw designer sync --from"* ]]
+    # The WARN reaches doctor's counter (dynamic scope through the lib function).
+    [[ "$output" == *"warnings=1"* ]]
 }
 
 @test "t3: vendored file absent per pin path → WARN (T-3064)" {
@@ -71,8 +88,7 @@ d = yaml.safe_load(open(p))
 d['vendored_path'] = 'vendor/designer/does-not-exist-t2524.html'
 yaml.safe_dump(d, open(p,'w'), sort_keys=False)
 "
-    cd "$FRAMEWORK_ROOT"
-    run bin/fw doctor
+    _pin_check
     [[ "$output" == *"designer pinned but not vendored"* ]]
     # The verdict word on THAT line, not merely somewhere in the output. The whole
     # point of T-3064 is which of SKIP/WARN this line carries, so the assertion has
@@ -98,8 +114,7 @@ d = yaml.safe_load(open(p))
 d.pop('sha256', None)
 yaml.safe_dump(d, open(p,'w'), sort_keys=False)
 "
-    cd "$FRAMEWORK_ROOT"
-    run bin/fw doctor
+    _pin_check
     [[ "$output" == *"designer pin present but missing sha256/vendored_path"* ]]
 }
 
@@ -113,8 +128,8 @@ d = yaml.safe_load(open(p))
 d['sha256'] = '0'*64
 yaml.safe_dump(d, open(p,'w'), sort_keys=False)
 "
+    _pin_check
     cd "$FRAMEWORK_ROOT"
-    run bin/fw doctor
     run git diff --quiet -- policy/designer-pin.yaml
     [ "$status" -eq 0 ]
 }

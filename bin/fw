@@ -1996,67 +1996,11 @@ do_doctor() {
     # Check 2b (T-1434): Vendored-source drift — framework repo only.
     # Consumer projects don't have both copies; their .agentic-framework IS the framework.
     # Drift = consumers pulling via `fw upgrade` get stale hooks/libs (T-1432, T-1433).
-    if [ "$PROJECT_ROOT" = "$FRAMEWORK_ROOT" ] && [ -d "$FRAMEWORK_ROOT/.agentic-framework" ]; then
-        # T-2243: count libs and templates classes separately so each class
-        # always gets visibility in the WARN list — pre-T-2243 the global
-        # "first 5" bucket let large libs drift bury small templates drift
-        # (4-test exploration found 64 libs drifts could mask 1 templates
-        # drift entirely). Per-class lists mirror the pre-push gate's
-        # "would sync N <class>(s)" shape from T-2240/T-2241.
-        local _vdrift_libs=0 _vdrift_tpl=0
-        local _vdrift_libs_list="" _vdrift_tpl_list=""
-        local _f _vf _rel
-        # T-1521: Walk the vendored tree itself, not a hand-curated source glob.
-        # T-1434's original glob list missed agents/handover, agents/audit,
-        # agents/git, lib/reviewer, web/blueprints — all synced by `fw vendor`.
-        # Walking the vendor tree guarantees coverage of whatever vendor put there.
-        while IFS= read -r _vf; do
-            _rel="${_vf#$FRAMEWORK_ROOT/.agentic-framework/}"
-            _f="$FRAMEWORK_ROOT/$_rel"
-            [ -f "$_f" ] || continue
-            if ! diff -q "$_f" "$_vf" >/dev/null 2>&1; then
-                _vdrift_libs=$((_vdrift_libs + 1))
-                if [ "$_vdrift_libs" -le 5 ]; then
-                    _vdrift_libs_list="$_vdrift_libs_list\n           - $_rel"
-                fi
-            fi
-        done < <(find "$FRAMEWORK_ROOT/.agentic-framework"/{bin,lib,agents,web} -type f \
-                    \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "*.html" \) \
-                    -not -path "*/__pycache__/*" \
-                    2>/dev/null)
-        # T-2243: templates class (T-2241 sibling). _self_vendor_templates()
-        # syncs .tasks/templates/*.md into .agentic-framework/.tasks/templates/.
-        # Separate find — adding `.md` to the libs find pattern above would
-        # also flag lib/templates/*.md and agents/*/AGENT.md files, which
-        # aren't part of the self-vendor scope.
-        if [ -d "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" ]; then
-            while IFS= read -r _vf; do
-                _rel="${_vf#$FRAMEWORK_ROOT/.agentic-framework/}"
-                _f="$FRAMEWORK_ROOT/$_rel"
-                [ -f "$_f" ] || continue
-                if ! diff -q "$_f" "$_vf" >/dev/null 2>&1; then
-                    _vdrift_tpl=$((_vdrift_tpl + 1))
-                    if [ "$_vdrift_tpl" -le 5 ]; then
-                        _vdrift_tpl_list="$_vdrift_tpl_list\n           - $_rel"
-                    fi
-                fi
-            done < <(find "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" \
-                          "$FRAMEWORK_ROOT/.agentic-framework/.tasks/workflow" -type f -name "*.md" 2>/dev/null)
-        fi
-        local _vdrift=$((_vdrift_libs + _vdrift_tpl))
-        if [ "$_vdrift" -eq 0 ]; then
-            echo -e "  ${GREEN}OK${NC}  No vendored-source drift"
-        else
-            echo -e "  ${YELLOW}WARN${NC}  Vendored-source drift: $_vdrift file(s) out of sync"
-            echo -e "         Run: fw vendor  (sync .agentic-framework/ with source)"
-            if [ "$_vdrift_libs" -gt 0 ]; then
-                echo -e "         libs ($_vdrift_libs) — first $([ $_vdrift_libs -gt 5 ] && echo 5 || echo $_vdrift_libs):$_vdrift_libs_list"
-            fi
-            if [ "$_vdrift_tpl" -gt 0 ]; then
-                echo -e "         templates ($_vdrift_tpl) — first $([ $_vdrift_tpl -gt 5 ] && echo 5 || echo $_vdrift_tpl):$_vdrift_tpl_list"
-            fi
-            warnings=$((warnings + 1))
-        fi
+    # The check lives in lib/doctor-drift.sh (T-3778) so its tests can call it on a
+    # fixture without a whole doctor run; sourced here for both drift checks.
+    source "$FRAMEWORK_ROOT/lib/doctor-drift.sh"
+    if [ "$PROJECT_ROOT" = "$FRAMEWORK_ROOT" ]; then
+        doctor_check_vendored_drift "$FRAMEWORK_ROOT"
     fi
 
     # Check 3: Task directories
@@ -2986,49 +2930,9 @@ PY
     esac
 
 
-    # Check: designer pin ↔ vendored build drift (T-2524, T-2521 integration hardening)
-    # Sibling of the MCP manifest + cron registry→generated drift classes. Content-compares
-    # (sha256, never mtime — T-2290/T-2432) the vendored Workflow Designer build against
-    # policy/designer-pin.yaml. Catches a pin bump without re-sync, or an edit to the
-    # (read-only) vendored HTML. Designer is an AEF-specific feature → PROJECT_ROOT; SKIPs
-    # gracefully when the pin is absent (consumers) or the vendored file isn't present yet.
-    # FW_DESIGNER_PIN_FILE lets tests point the check at a temp pin copy so the live
-    # tracked policy/designer-pin.yaml is never mutated (T-2547 hermetic-test fix).
-    # vendored_path below still resolves against PROJECT_ROOT, so the real vendor dir
-    # is used regardless of which pin file is read.
-    local _dz_pin="${FW_DESIGNER_PIN_FILE:-$PROJECT_ROOT/policy/designer-pin.yaml}"
-    if [ -f "$_dz_pin" ]; then
-        local _dz_want _dz_vp _dz_file _dz_have
-        _dz_want=$(python3 -c "import yaml;d=yaml.safe_load(open('$_dz_pin'));print(d.get('sha256','') or '')" 2>/dev/null)
-        _dz_vp=$(python3 -c "import yaml;d=yaml.safe_load(open('$_dz_pin'));print(d.get('vendored_path','') or '')" 2>/dev/null)
-        _dz_file="$PROJECT_ROOT/$_dz_vp"
-        if [ -z "$_dz_want" ] || [ -z "$_dz_vp" ]; then
-            echo -e "  ${CYAN}SKIP${NC}  designer pin present but missing sha256/vendored_path"
-        elif [ ! -f "$_dz_file" ]; then
-            # T-3064 A1: WARN, not SKIP. A pin that names a build the project does
-            # not have is an actionable condition, not an inapplicable check — the
-            # designer IS wanted here, that is what the pin says. SKIP reads as "not
-            # applicable to this project", so the state needing attention rendered as
-            # unremarkable while mere pin-drift (the *less* serious condition, below)
-            # got the louder verdict. Same false-green shape as T-3062.
-            #
-            # Consumers without a pin are unaffected: the enclosing `if [ -f "$_dz_pin" ]`
-            # means no pin ⇒ no check at all, so this WARN only reaches a project that
-            # has declared it wants the designer.
-            echo -e "  ${YELLOW}WARN${NC}  designer pinned but not vendored — /designer will render an error page"
-            echo -e "         Run: fw designer sync --from-tag   (or --from <build> for a delivered file)"
-            warnings=$((warnings + 1))
-        else
-            _dz_have=$(sha256sum "$_dz_file" 2>/dev/null | cut -d' ' -f1)
-            if [ "$_dz_have" = "$_dz_want" ]; then
-                echo -e "  ${GREEN}OK${NC}  designer vendored build matches pin (${_dz_want:0:12}...)"
-            else
-                echo -e "  ${YELLOW}WARN${NC}  designer vendored build drifted from pin"
-                echo -e "         pin=${_dz_want:0:12}... vendored=${_dz_have:0:12}... — run: fw designer sync --from <build>"
-                warnings=$((warnings + 1))
-            fi
-        fi
-    fi
+    # Check: designer pin ↔ vendored build drift (T-2524). Lives in lib/doctor-drift.sh
+    # (T-3778) so its tests can call it without a whole doctor run.
+    doctor_check_designer_pin
 
     # Check: designer pin CURRENCY — is a newer release available upstream? (T-3119,
     # T-3158 extraction). Sibling of, but distinct from, the pin<->vendored drift check

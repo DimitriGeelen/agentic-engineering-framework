@@ -16,7 +16,7 @@ description: >
   pages, or have test doctors skip the HTTP smoke (doctor quick-skip) since the suites
   do not assert on it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -50,7 +50,7 @@ related_tasks: [T-3747]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T17:04:34Z
-last_update: '2026-10-03T17:15:40Z'
+last_update: 2026-10-21T07:00:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,8 +102,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Each named doctor-calling bats file is measured at HEAD (post-T-4386) — nightly slow-tier `file_durations` plus an alone run where the nightly is ambiguous — and the seconds are recorded under ## Updates
+- [x] Every named file that still exceeds the 900 s per-file cap is fixed with a regression test (or, if none exceeds it, the evidence that the defect no longer reproduces is recorded with the fixing commit)
+- [x] The three fixed files (doctor_designer_pin_drift, t2243, test_doctor_scope_tags) plus fw_doctor_vendored_drift (whose awk lift the move broke) pass, 0 skips, each well inside 900 s at load ≥ 90 (timings under ## Updates; the next slow-tier nightly is the pool-load confirmation)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -263,8 +264,30 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/fw && bash -n lib/doctor-drift.sh
+timeout 300 bats tests/unit/t3778_doctor_test_cost.bats > /tmp/.t3778a 2>&1 && ! grep -q "^not ok" /tmp/.t3778a
+test "$(grep -c '# skip' /tmp/.t3778a)" -eq 0
+timeout 300 bats tests/unit/t2243_doctor_self_vendor_templates.bats > /tmp/.t3778b 2>&1 && ! grep -q "^not ok" /tmp/.t3778b
+test "$(grep -c '# skip' /tmp/.t3778b)" -eq 0
+timeout 900 bats tests/unit/doctor_designer_pin_drift.bats > /tmp/.t3778c 2>&1 && ! grep -q "^not ok" /tmp/.t3778c
+test "$(grep -c '# skip' /tmp/.t3778c)" -eq 0
+timeout 300 bats tests/unit/fw_doctor_vendored_drift.bats > /tmp/.t3778d 2>&1 && ! grep -q "^not ok" /tmp/.t3778d
+timeout 900 bats tests/unit/test_doctor_scope_tags.bats > /tmp/.t3778e 2>&1 && ! grep -q "^not ok" /tmp/.t3778e
+test "$(grep -c '# skip' /tmp/.t3778e)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/ 2>&1 | grep -q clean
+bin/fw vendor self --check --task T-3778
 
 ## RCA
+
+**Symptom:** the nightly slow tier kept listing doctor-calling bats files in `files_timed_out` (900 s per-file cap). Re-measured at HEAD after T-4386 had made doctor ~3x faster: the 2026-10-20 nightly (8cba8884c) had every file under the cap, but the 2026-10-21 nightly (1ff8ea451, higher load) had `doctor_designer_pin_drift.bats` 900 s (timed out), `t2243_doctor_self_vendor_templates.bats` 848 s and `test_doctor_scope_tags.bats` 757 s. Alone at load 170 on 2026-10-21: one plain `FW_DOCTOR_SMOKE=0 bin/fw doctor` took 10m09s and `--quick` took 4m31s.
+
+**Root cause:** the tests, not doctor: each of these files ran a whole `bin/fw doctor` once per test in order to assert on a single line (5 runs in doctor_designer_pin_drift.bats, 4 in t2243, 4 in test_doctor_scope_tags). The checks they covered were inline in `do_doctor` (bin/fw:1996-2060 vendored-source drift, bin/fw:2989-3031 designer-pin drift), so there was nothing smaller to call. Per-file cost = N × (doctor cost under pool load), and doctor cost varies 3-10x with host load, so no doctor speed-up gives the files a stable margin. t2243 also appended to the LIVE `.agentic-framework/.tasks/templates/default.md`, which raced concurrent `fw vendor self` workers (the fedc2ffd1 flake).
+
+**Why structurally allowed:** nothing budgets how many doctor runs a test file may make; the per-file timeout is the only signal, and it fires only under load, so the files passed alone and failed in the nightly (T-4386's report named this "test-design change, out of scope").
+
+**Fix:** both checks moved verbatim into `lib/doctor-drift.sh` (`doctor_check_designer_pin`, `doctor_check_vendored_drift <root>`); doctor sources the lib and calls them in the same place. pin_drift t2-t5 and all of t2243 call the functions directly (t2243 on a temp fixture, so it no longer touches the live tree); pin_drift t1 is the one real (`--quick`) doctor run and proves the wiring. test_doctor_scope_tags shares one doctor run through `setup_file`.
+
+**Prevention:** `tests/unit/t3778_doctor_test_cost.bats` fails if any of the three files invokes doctor more than once, or if an inline copy of either check reappears in bin/fw.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -360,3 +383,14 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3778-doctor-calling-unit-suites-exceed-the-90.md
 - **Context:** Initial task creation
+
+### 2026-10-21T07:00:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-21 — re-measured after T-4386 (doctor ~3x faster) [w3778]
+- **Source:** `.context/audits/unit-suite/slow/2026-10-2{0,1}.yaml` `legs.bats.file_durations` (both nightlies include T-4386: `git merge-base --is-ancestor 80a17b283 8cba8884c`).
+- **2026-10-20 nightly (8cba8884c), seconds:** upgrade_fresh_machine_simulation 315, t2243 254, doctor_designer_pin_drift 249, handover_digest 248, test_doctor_scope_tags 208, t2290 170, t3119 140, fabric_coverage_single_source 63, fw_mode_detection 60, audit 4 — none timed out.
+- **2026-10-21 nightly (1ff8ea451 = HEAD at start), seconds:** doctor_designer_pin_drift **900 (files_timed_out)**, t2243 848, test_doctor_scope_tags 757, upgrade_fresh_machine_simulation 710, t2290 558, t3119 546, upgrade_fresh_machine_simulation_vendored 235, fw_mode_detection 227, fabric_coverage_single_source 58, handover_digest 38, audit 14.
+- **Alone, 2026-10-21 09:06-09:21 (load 170→185):** `FW_DOCTOR_SMOKE=0 bin/fw doctor` 10m09s; `--quick` 4m31s.
+- **Verdict:** still reproduces at HEAD; doctor cost swings 3-10x with load, so files paying N doctor runs have no stable margin. Fixed here for the three files over 80% of the cap; t2290/t3119/fw_mode_detection (≤62%) go to T-3801. upgrade_fresh_machine_simulation (710 s) runs no doctor and is out of scope for both.
+- **After the fix (load 90-160):** t2243 5/5 in 8.8 s (was 848); doctor_designer_pin_drift 5/5 in 4m01s and, final version, 2m47s (was 900, one `--quick` doctor now); test_doctor_scope_tags 14/14, 0 skips, 4m06s (was 757, one shared doctor now); fw_doctor_vendored_drift 4/4 in ~2 s; t3778_doctor_test_cost 3/3 (and its budget test reads 5/4/4 doctor invocations against the HEAD versions of the three files, so it fails without the fix).
