@@ -1,0 +1,21 @@
+id: tests/unit/t3798_handover_fixture_no_push.bats
+name: t3798_handover_fixture_no_push
+type: script
+subsystem: tests
+location: tests/unit/t3798_handover_fixture_no_push.bats
+tags: []
+
+purpose: "T-3798 — handover.sh must not commit or push when HANDOVER_DIR lies outside the git repo at PROJECT_ROOT."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

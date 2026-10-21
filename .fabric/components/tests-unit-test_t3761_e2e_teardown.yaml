@@ -1,0 +1,21 @@
+id: tests/unit/test_t3761_e2e_teardown.py
+name: test_t3761_e2e_teardown
+type: script
+subsystem: tests
+location: tests/unit/test_t3761_e2e_teardown.py
+tags: []
+
+purpose: "T-3761 — the T-3693 e2e teardown must stop the receivers it started."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

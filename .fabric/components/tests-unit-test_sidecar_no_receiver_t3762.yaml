@@ -1,0 +1,21 @@
+id: tests/unit/test_sidecar_no_receiver_t3762.py
+name: test_sidecar_no_receiver_t3762
+type: script
+subsystem: tests
+location: tests/unit/test_sidecar_no_receiver_t3762.py
+tags: []
+
+purpose: "T-3762: a send that falls back to the hub because the target has no receiver must say so."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

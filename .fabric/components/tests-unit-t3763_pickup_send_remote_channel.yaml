@@ -1,0 +1,21 @@
+id: tests/unit/t3763_pickup_send_remote_channel.bats
+name: t3763_pickup_send_remote_channel
+type: script
+subsystem: tests
+location: tests/unit/t3763_pickup_send_remote_channel.bats
+tags: []
+
+purpose: "T-3763 — `fw pickup send --remote` must deliver through the one channel (fw sidecar send, T-3631 GO / T-3758), not the deprecated `termlink remote push`, and a failed delivery must not leave the envelope in the sender's own inbox, where…"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown
