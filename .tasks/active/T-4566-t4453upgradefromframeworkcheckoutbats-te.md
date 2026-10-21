@@ -96,7 +96,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Root cause of t4453 tests 1-2 failing on HEAD localised to a file:line and recorded in ## RCA
 - [x] Cause fixed in source (not the assertion); tests/unit/t4453_upgrade_from_framework_checkout.bats fully green, no skips
-- [ ] tests/unit/upgrade_fresh_machine_simulation.bats stays green
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green (re-run by the parent 2026-10-22 ~00:04 after T-4231's working-gitignore.sh was committed: 18 ok / 0 not ok; t4453 4/4)
   <!-- 2026-10-21 w4566: tests 12/14 red in the working tree because of ANOTHER worker's in-flight lib/upgrade.sh hunk @3115 sourcing untracked lib/working-gitignore.sh (absent from the git-built upstream fixture); not this change. Re-run once that lands. -->
 - [x] Vendored copy synced (`bin/fw vendor self --check --task T-4566` clean)
 
