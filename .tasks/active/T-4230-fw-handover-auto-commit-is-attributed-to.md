@@ -8,10 +8,10 @@ description: >
   Fix: attribute the handover commit to the focus (or the handover's own task), not
   to whichever task the session touched.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:09:55Z
-last_update: '2026-10-18T13:31:10Z'
+last_update: 2026-10-21T20:58:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -112,8 +112,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_resolve_commit_task` (agents/handover/handover.sh) no longer picks an arbitrary task whose slug merely contains "handover"; it matches only the dedicated `*-session-handover-maintenance.md` task in `.tasks/active/`
+- [x] Regression bats `tests/unit/t4230_handover_commit_task.bats` fails on the old lookup (picks a decoy) and passes after the fix
+- [x] Existing `tests/unit/handover_t012_active_only.bats` still green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -162,6 +163,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+timeout 300 bats tests/unit/t4230_handover_commit_task.bats > /tmp/.t4230 2>&1 && ! grep -q "^not ok" /tmp/.t4230
+test "$(grep -c '# skip' /tmp/.t4230)" -eq 0
+timeout 300 bats tests/unit/handover_t012_active_only.bats > /tmp/.t4230b 2>&1 && ! grep -q "^not ok" /tmp/.t4230b
+bin/fw vendor self --check --task T-4230
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -294,6 +299,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** handover commits were labelled with unrelated tasks (1023: T-122/T-116 while focus T-126; AEF: T-3090, T-4169, T-4119, T-3923, T-4121 on successive handovers).
+
+**Root cause:** `agents/handover/handover.sh:63-68` (`_resolve_commit_task`) fell back to `find .tasks/active .tasks/completed -name '*handover*.md' | head -1` — any task whose *title* mentions handover (bug reports about handover, open or closed), in directory order. AEF has 69 such files. The auto-created "Session handover maintenance" task (the intended home, line 73) was never reached in any repo that had ever filed a handover-related task.
+
+**Why structurally allowed:** the only test (handover_t012_active_only.bats) re-implemented the T-012 branch inline instead of running the function, so the slug glob had no behavioural coverage; the wrong label passes the commit-msg hook because it is a valid T-ID.
+
+**Prevention:** the lookup matches only the exact slug the auto-create branch produces (`*-session-handover-maintenance.md`, active only); t4230 bats extracts and runs the real function against a fixture containing decoy handover-titled tasks.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -398,3 +411,7 @@ bvp_scores_proposed:
 - Fix direction: accept WM-00[1-3] in TASK_PATTERN and the commit-msg hook (traceability to a workflow task), and
   have handover commit as WM-003 (session lifecycle); check every consumer of TASK_PATTERN (episodic mining,
   blast radius, audit traceability) handles WM IDs.
+
+### 2026-10-21T20:58:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

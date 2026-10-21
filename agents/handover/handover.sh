@@ -59,9 +59,12 @@ _resolve_commit_task() {
         COMMIT_TASK="T-012"
         return
     fi
-    # Look for any task with "handover" in its slug
+    # Reuse the dedicated handover task: the exact slug the auto-create below
+    # produces, in active/ only (T-1477). T-4230: the old '*handover*' glob over
+    # active+completed matched any task whose title mentions handover (bug
+    # reports about it), so commits were labelled with an unrelated task.
     local handover_task
-    handover_task=$(find "$TASKS_DIR/active" "$TASKS_DIR/completed" -maxdepth 1 -name '*handover*.md' -type f 2>/dev/null | head -1)
+    handover_task=$(find "$TASKS_DIR/active" -maxdepth 1 -name 'T-*-session-handover-maintenance.md' -type f 2>/dev/null | sort | head -1)
     if [ -n "$handover_task" ]; then
         COMMIT_TASK=$(basename "$handover_task" | grep -oE "T-[0-9]+" | head -1)
         if [ -n "$COMMIT_TASK" ]; then return; fi
