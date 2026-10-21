@@ -533,6 +533,7 @@ do_project_init() {
     init_log=$(mktemp -t agentic-fw-init-XXXXXX)
     (cd "$INSTALL_DIR" && env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR \
         -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM FW_INIT_OWN_REPO="$own_repo_env" \
+        FW_INIT_NO_RESTART_NOTICE=1 \
         "$INSTALL_DIR/bin/fw" init "$TARGET_DIR" --provider "$PROVIDER") > "$init_log" 2>&1 || init_rc=$?
     cat "$init_log"
     if [[ "$init_rc" -eq 0 ]] && ! grep -q '\[x\]' "$init_log"; then
@@ -717,24 +718,24 @@ print_completion_banner() {
         echo "  Onboarding tasks were seeded to guide your first session."
         # T-4240: Claude Code loads CLAUDE.md and hooks at session start; a session
         # that ran this installer stays ungoverned until restarted in the project.
+        # T-4263 (F-23): when that session is an agent's own (CLAUDECODE set), say
+        # so in the SAME notice — one restart notice, not two (fw init's is
+        # suppressed with FW_INIT_NO_RESTART_NOTICE=1 for the same reason).
         if [[ "$PROVIDER" != "cursor" ]]; then
             echo ""
+            if [[ -n "${CLAUDECODE:-}" ]]; then
+                warn "This installer ran inside a Claude Code session (CLAUDECODE is set)."
+            fi
             echo -e "  ${BOLD}Restart Claude Code in ${TARGET_DIR} with claude-fw${NC} — governance is"
-            echo "  not active in this session (CLAUDE.md and hooks load at session start)."
-            echo "    cd \"${TARGET_DIR}\" && claude-fw"
+            echo "  not active in this session (CLAUDE.md and ${TARGET_DIR}/.claude/settings.json"
+            echo "  hooks load at session start)."
+            if [[ -n "${CLAUDECODE:-}" ]]; then
+                echo "    exit this session, then: cd \"${TARGET_DIR}\" && claude-fw"
+            else
+                echo "    cd \"${TARGET_DIR}\" && claude-fw"
+            fi
         else
             echo "  Start your AI agent (e.g. Cursor) in the project directory."
-        fi
-        # T-4263 (F-23): an agent that ran this installer from inside its own
-        # session would otherwise carry on ungoverned — Claude Code reads
-        # .claude/settings.json (the hooks just installed) at session start only.
-        if [[ -n "${CLAUDECODE:-}" ]]; then
-            echo ""
-            warn "This installer ran inside a Claude Code session (CLAUDECODE is set)."
-            echo "  The hooks just written to ${TARGET_DIR}/.claude/settings.json are read only"
-            echo "  at session start, so THIS session runs without them. Restart the agent there:"
-            echo ""
-            echo "    exit this session, then: cd ${TARGET_DIR} && claude-fw"
         fi
     else
         echo "  fw router + claude-fw are installed onto PATH."

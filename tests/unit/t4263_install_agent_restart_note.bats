@@ -4,7 +4,8 @@
 # and nothing telling it that its OWN session has none of the hooks it just
 # installed — Claude Code reads .claude/settings.json at session start only.
 # The success banner now says so when CLAUDECODE is set and a project was
-# installed.
+# installed — inside the T-4240 restart notice, so the operator reads ONE notice
+# (2026-10-22 integration: the two used to print back to back).
 #
 # Confirmed RED against the pre-T-4263 install.sh: print_completion_banner did
 # not exist (the banner was inline in main), so every test fails.
@@ -35,9 +36,25 @@ run_banner() {
     run run_banner /srv/proj 1
     [ "$status" -eq 0 ]
     [[ "$output" == *"Installation complete!"* ]]
-    [[ "$output" == *"Restart the agent there"* ]]
+    [[ "$output" == *"CLAUDECODE is set"* ]]
+    [[ "$output" == *"Restart Claude Code in /srv/proj with claude-fw"* ]]
     [[ "$output" == *"/srv/proj/.claude/settings.json"* ]]
-    [[ "$output" == *"cd /srv/proj && claude-fw"* ]]
+    [[ "$output" == *'exit this session, then: cd "/srv/proj" && claude-fw'* ]]
+}
+
+@test "T-4263 + T-4240: ONE restart notice in the banner, with or without CLAUDECODE" {
+    run run_banner /srv/proj 1
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s\n' "$output" | grep -c 'Restart Claude Code')" -eq 1 ]
+    [ "$(printf '%s\n' "$output" | grep -c 'claude-fw$')" -eq 1 ]
+    run run_banner /srv/proj ""
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s\n' "$output" | grep -c 'Restart Claude Code')" -eq 1 ]
+}
+
+@test "T-4263: install.sh suppresses fw init's own restart notice (the banner carries it)" {
+    grep -q 'FW_INIT_NO_RESTART_NOTICE=1' "$INSTALL"
+    grep -q 'FW_INIT_NO_RESTART_NOTICE' "$FRAMEWORK_ROOT/lib/init.sh"
 }
 
 @test "T-4263: no restart note outside an agent session" {
@@ -45,7 +62,7 @@ run_banner() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"Installation complete!"* ]]
     [[ "$output" == *"Project ready: /srv/proj"* ]]
-    [[ "$output" != *"Restart the agent"* ]]
+    [[ "$output" != *"exit this session"* ]]
     [[ "$output" != *"CLAUDECODE is set"* ]]
 }
 
@@ -53,7 +70,7 @@ run_banner() {
     run run_banner "" 1
     [ "$status" -eq 0 ]
     [[ "$output" == *"fw router + claude-fw are installed"* ]]
-    [[ "$output" != *"Restart the agent"* ]]
+    [[ "$output" != *"Restart Claude Code"* ]]
     [[ "$output" != *"CLAUDECODE is set"* ]]
 }
 

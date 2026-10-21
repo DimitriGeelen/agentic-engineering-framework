@@ -7,10 +7,10 @@ description: >
   after restart. Findings (0909 run aef-install-20261017T144241Z): F-23. Triage: docs/reports/T-4253-greenfield-run-triage.md
   PROPOSED-NEW-10.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:27:09Z
-last_update: 2026-10-21T21:51:58Z
-date_finished:
+last_update: 2026-10-21T22:09:07Z
+date_finished: 2026-10-21T22:09:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -398,3 +398,27 @@ grep -q 'T-4263 follow-up' tests/unit/t4263_install_agent_restart_note.bats
 ### 2026-10-21T20:53:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-22 — integration with T-4240 (one restart notice, landed under T-4240)
+- **Found:** with CLAUDECODE set the install banner printed T-4240's restart notice and then this task's separate warning, back to back (plus `fw init`'s own: three in a project install).
+- **Changed:** `print_completion_banner` prints ONE notice carrying this task's content: a `CLAUDECODE is set` warn line, the `<dir>/.claude/settings.json` path, and `exit this session, then: cd "<dir>" && claude-fw`. install.sh runs `fw init` with `FW_INIT_NO_RESTART_NOTICE=1`, so init does not print its own copy.
+- **Tests:** `tests/unit/t4263_install_agent_restart_note.bats` updated to that wording, plus legs counting exactly one `Restart Claude Code` line and pinning the suppression wiring: 6/6 green.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a3eef473
+- **Timestamp:** 2026-10-21T22:09:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — install.sh's success banner, when `CLAUDECODE` is set and a target project was installed, prints a restart instruction naming the target directory (hooks in `.claude/settings.json` load only at sessio
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: install.sh's success banner, when `CLAUDECODE` is set and a target project was installed, prints a restart instruction naming the target directory (ho`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T22:09:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

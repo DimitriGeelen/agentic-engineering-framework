@@ -984,13 +984,25 @@ CYAML
     # T-4240: Claude Code loads CLAUDE.md and .claude/settings.json hooks at session
     # START, so a session that ran this init (or was open before it) stays ungoverned
     # until restarted in the project. Say so where the eye lands, not "active".
+    # T-4263: install.sh runs this init and then prints the same notice in its own
+    # closing banner (FW_INIT_NO_RESTART_NOTICE=1), so the operator reads it once.
     case "$provider" in
         cursor)
             echo -e "  ${BOLD}Next step:${NC} Start your AI agent (e.g. Cursor) in this directory." ;;
         *)
-            echo -e "  ${YELLOW}${BOLD}Restart Claude Code in $target_dir with claude-fw${NC} — governance is"
-            echo -e "  not active in this session (CLAUDE.md and hooks load at session start)."
-            echo -e "    cd \"$target_dir\" && claude-fw" ;;
+            if [ "${FW_INIT_NO_RESTART_NOTICE:-0}" != "1" ]; then
+                if [ -n "${CLAUDECODE:-}" ]; then
+                    echo -e "  ${YELLOW}This ran inside a Claude Code session (CLAUDECODE is set).${NC}"
+                fi
+                echo -e "  ${YELLOW}${BOLD}Restart Claude Code in $target_dir with claude-fw${NC} — governance is"
+                echo -e "  not active in this session (CLAUDE.md and $target_dir/.claude/settings.json"
+                echo -e "  hooks load at session start)."
+                if [ -n "${CLAUDECODE:-}" ]; then
+                    echo -e "    exit this session, then: cd \"$target_dir\" && claude-fw"
+                else
+                    echo -e "    cd \"$target_dir\" && claude-fw"
+                fi
+            fi ;;
     esac
     if [ "$has_existing_tasks" = false ] && [ -d "$target_dir/.tasks/active" ] && ls "$target_dir/.tasks/active/"T-*.md >/dev/null 2>&1; then
         local onboard_count

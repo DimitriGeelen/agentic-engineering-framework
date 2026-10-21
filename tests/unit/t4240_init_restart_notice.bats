@@ -46,6 +46,7 @@ tail_of() {
     run tail_of generic
     [ "$status" -eq 0 ]
     [[ "$output" == *"Restart Claude Code in $RDIR/generic with claude-fw"* ]]
+    [[ "$output" == *"$RDIR/generic/.claude/settings.json"* ]]
 }
 
 @test "cursor (no Claude Code config): no Claude Code restart notice" {
@@ -74,4 +75,7 @@ tail_of() {
     local tail
     tail=$(printf '%s\n' "$output" | sed 's/\x1b\[[0-9;]*m//g' | tail -15)
     [[ "$tail" == *"Restart Claude Code in $target with claude-fw"* ]]
+    # T-4263 integration: install.sh runs fw init and then prints its own banner;
+    # the operator must read the restart notice ONCE in the whole output.
+    [ "$(printf '%s\n' "$output" | grep -c 'Restart Claude Code')" -eq 1 ]
 }
