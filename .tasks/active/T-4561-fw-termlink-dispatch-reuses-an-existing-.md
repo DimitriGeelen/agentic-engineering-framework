@@ -99,7 +99,7 @@ bvp_scores_proposed:
 - [x] `cmd_dispatch` refuses a name whose existing dir holds a live run (no exit_code, runtime alive) or a finished run with an uncollected result, naming `fw termlink result <name>` as the way out
 - [x] Otherwise the previous run's state files (exit_code, finished_at, close_state, result.md, result.jsonl, …) are moved into `prev-<timestamp>/` before the new run is written, so none of them are visible at the top level of the reused dir
 - [x] Bats regression `tests/unit/t4561_dispatch_reused_dir.bats`: a dir with an old exit_code is dispatched into again and exit_code is absent until the new run ends; uncollected-result and live-run refusals covered; fails without the fix
-- [ ] `bin/fw vendor self` run and `--check --task T-4561` clean
+- [x] `bin/fw vendor self` run and `--check --task T-4561` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
