@@ -313,6 +313,16 @@ The values found in 832's tracked maps were:
 - `kind` is optional: `field` \| `type` \| `object`. It tells a reader, without loading the ontology, what IRIs under
   that prefix name.
 - An undeclared prefix is an error.
+- A map **without** `mappingVersion="1.1"` may carry `aef:prefixes`. It is additive, and v1.0 readers preserve unknown
+  elements.
+
+**Migration note for producers (832 msg fa3579dc).** An existing map has no `aef:prefixes`, so the `ref` read rule's
+condition (4) never holds for it. A style-A `ref` therefore stays a v1 data-object identity, which is the safe
+default. A producer carries field intent in one of two ways:
+
+- **Minimal:** add an `aef:prefixes` block declaring its field prefixes with `kind="field"`. Existing `ref` values are
+  then read as `fieldRef`, with no other edit.
+- **Full:** rewrite those `ref`s as `fieldRef` and declare `mappingVersion="1.1"`.
 
 ### B. Field selection: child `aef:field`
 
