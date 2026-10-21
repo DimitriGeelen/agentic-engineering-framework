@@ -1,13 +1,19 @@
 ---
 id: T-4561
-name: "fw termlink dispatch reuses an existing worker dir without clearing exit_code/finished_at/close_state from the previous run"
+name: "fw termlink dispatch reuses an existing worker dir without clearing exit_code/finished_at/close_state
+  from the previous run"
 description: >
-  2026-10-21: dispatching w4523 again reused /tmp/tl-dispatch/w4523 from a 12:32 run; meta.json, prompt.md and run.sh were rewritten at 18:11 but exit_code (143), finished_at and close_state from the old run stayed, so anything watching exit_code saw the live worker as already finished. Dispatch must remove (or archive) the previous run's result files before spawning into a reused dir, or refuse a name whose dir holds an uncollected result. Regression test.
+  2026-10-21: dispatching w4523 again reused /tmp/tl-dispatch/w4523 from a 12:32 run;
+  meta.json, prompt.md and run.sh were rewritten at 18:11 but exit_code (143), finished_at
+  and close_state from the old run stayed, so anything watching exit_code saw the
+  live worker as already finished. Dispatch must remove (or archive) the previous
+  run's result files before spawning into a reused dir, or refuse a name whose dir
+  holds an uncollected result. Regression test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, termlink, dispatch]
 components: []
 related_tasks: []
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T16:15:08Z
-last_update: 2026-10-21T16:15:08Z
-date_finished: null
+last_update: 2026-10-21T16:33:34Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T16:30:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T16:32:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4561: fw termlink dispatch reuses an existing worker dir without clearing exit_code/finished_at/close_state from the previous run
@@ -62,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `cmd_dispatch` refuses a name whose existing dir holds a live run (no exit_code, runtime alive) or a finished run with an uncollected result, naming `fw termlink result <name>` as the way out
+- [x] Otherwise the previous run's state files (exit_code, finished_at, close_state, result.md, result.jsonl, …) are moved into `prev-<timestamp>/` before the new run is written, so none of them are visible at the top level of the reused dir
+- [x] Bats regression `tests/unit/t4561_dispatch_reused_dir.bats`: a dir with an old exit_code is dispatched into again and exit_code is absent until the new run ends; uncollected-result and live-run refusals covered; fails without the fix
+- [ ] `bin/fw vendor self` run and `--check --task T-4561` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +284,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n agents/termlink/termlink.sh
+timeout 300 bats tests/unit/t4561_dispatch_reused_dir.bats > /tmp/.t4561.out 2>&1 && ! grep -q "^not ok" /tmp/.t4561.out
+test "$(grep -c '# skip' /tmp/.t4561.out)" -eq 0
+bin/fw vendor self --check --task T-4561
 
 ## RCA
 
@@ -264,6 +304,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** re-dispatching w4523 reused /tmp/tl-dispatch/w4523; meta.json, prompt.md and run.sh were rewritten but exit_code (143), finished_at and close_state from the 12:32 run stayed, so every watcher keyed on exit_code (`fw termlink wait/status`, `_worker_done`, `_running_workers`) saw the live worker as finished.
+
+**Root cause:** `cmd_dispatch` (agents/termlink/termlink.sh, `local wdir="$DISPATCH_DIR/$name"; mkdir -p "$wdir"`) treated the worker dir as fresh. It overwrites only the files a new run writes at setup; the end-of-run files (exit_code, finished_at, close_state, result.md, result.jsonl, collected, completion.json, finalised) are written by run.sh at the end, so a reused name inherited the previous run's end state until the new run finished.
+
+**Why structurally allowed:** "finished" is defined by the presence of a file in a dir keyed only by the worker name, with no run identity in it; nothing asserted that a dispatch starts from an empty state, and every dispatch test used a fresh name.
+
+**Prevention:** `_clear_reused_wdir` runs before every dispatch: it refuses while the previous run is live (run.sh running, or no exit_code and session listed), unfinalised (review), or holds an uncollected result, and otherwise moves every top-level file into `prev-<timestamp>/`. Pinned by `tests/unit/t4561_dispatch_reused_dir.bats` (4 of 5 tests fail without the fix).
 
 ## Evolution
 
@@ -345,3 +392,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4561-fw-termlink-dispatch-reuses-an-existing-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T16:33:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

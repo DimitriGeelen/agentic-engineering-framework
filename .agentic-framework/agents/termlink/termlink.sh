@@ -876,6 +876,37 @@ _runtime_alive() {
     pgrep -f -- "${1%/}/run.sh" >/dev/null 2>&1
 }
 
+# T-4561: a dispatch into an existing worker dir must not inherit the previous run's
+# state. Re-dispatching w4523 rewrote meta.json/prompt.md/run.sh but left exit_code,
+# finished_at and close_state, so watchers saw the live worker as already finished.
+# Refuse while the previous run is live, unfinalised, or holds an uncollected result;
+# otherwise move every top-level file of it into prev-<timestamp>/.
+_clear_reused_wdir() {
+    local wdir="$1" name="$2" f prev moved=0
+    [ -d "$wdir" ] || return 0
+    if _runtime_alive "$wdir"; then
+        die "dispatch '$name': the previous run's run.sh in $wdir is still running. Wait for it (fw termlink wait $name) or pick another --name."
+    fi
+    if [ ! -f "$wdir/exit_code" ]; then
+        if { termlink list 2>/dev/null || true; } | grep -qw -- "$name"; then
+            die "dispatch '$name': a worker of that name is still running ($wdir has no exit_code). Wait for it (fw termlink wait $name) or pick another --name."
+        fi
+    elif ! _worker_done "$wdir"; then
+        die "dispatch '$name': the previous review run in $wdir exited but is not finalised yet. Wait for it (fw termlink wait $name) or pick another --name."
+    fi
+    if [ ! -f "$wdir/collected" ] && { [ -s "$wdir/result.md" ] || [ -s "$wdir/result.jsonl" ]; }; then
+        die "dispatch '$name': $wdir holds an uncollected result from the previous run. Collect it first: fw termlink result $name (or pick another --name)."
+    fi
+    prev="$wdir/prev-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+    for f in "$wdir"/* "$wdir"/.[!.]*; do
+        [ -e "$f" ] || [ -L "$f" ] || continue
+        case "$(basename "$f")" in prev-*) continue ;; esac
+        [ "$moved" -eq 1 ] || { mkdir -p "$prev" || die "dispatch '$name': cannot create $prev"; moved=1; }
+        mv -- "$f" "$prev/" || die "dispatch '$name': cannot move $f aside into $prev"
+    done
+    [ "$moved" -eq 0 ] || echo "Previous run of '$name' moved aside: $prev" >&2
+}
+
 cmd_dispatch() {
     ensure_termlink
     local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind="" permission_mode="" mcp_config="" strict_mcp="" allowed_tools="" review_revision="" review_run="" review_seat=""
@@ -1057,6 +1088,7 @@ cmd_dispatch() {
     project_dir="${project_dir:-$(pwd)}"
     _enforce_worker_cap "$project_dir" "$name"
     local wdir="$DISPATCH_DIR/$name"
+    _clear_reused_wdir "$wdir" "$name"
     mkdir -p "$wdir"
 
     # T-3580 round 7: a review worker runs the binary resolved HERE, by absolute path (run.sh
