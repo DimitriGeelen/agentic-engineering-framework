@@ -1,10 +1,15 @@
 ---
 id: T-4545
-name: "Flaky under load: t3298_audit_lock_integrity.bats 'no watchdog sleep survives a normal audit exit'"
+name: "Flaky under load: t3298_audit_lock_integrity.bats 'no watchdog sleep survives
+  a normal audit exit'"
 description: >
-  Timing-dependent watchdog check. Passes alone; failed once under the unit-suite's 12-way parallel run on a loaded shared host (2026-10-21), blocking a push via the ratchet. Make it deterministic under parallel load (no wall-clock or global-count assumptions, isolate shared state) and prove it with a stress run of the file in parallel.
+  Timing-dependent watchdog check. Passes alone; failed once under the unit-suite's
+  12-way parallel run on a loaded shared host (2026-10-21), blocking a push via the
+  ratchet. Make it deterministic under parallel load (no wall-clock or global-count
+  assumptions, isolate shared state) and prove it with a stress run of the file in
+  parallel.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T14:04:53Z
-last_update: 2026-10-21T14:04:53Z
-date_finished: null
+last_update: 2026-10-21T16:11:47Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +55,50 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T14:15:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T14:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4545: Flaky under load: t3298_audit_lock_integrity.bats 'no watchdog sleep survives a normal audit exit'
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The watchdog-leak test judged "leak" by any host-wide `sleep 1` orphan; it now tracks only its own run's processes via an env marker (RCA below).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The t3298 watchdog test identifies the audit run's OWN processes (a per-run marker), not any host-wide `sleep 1` with PPID 1, so an unrelated orphan cannot fail it
+- [x] The test waits for the watchdog subtree to exit against a deadline that tolerates a loaded host, and still fails when a watchdog sleep genuinely survives (proved by a negative control)
+- [x] The watchdog TERM trap in agents/audit/audit.sh reaps the current sleep even if TERM lands between `sleep 1 &` and the pid assignment
+- [x] The test passes 20/20 runs in a foreground loop while the host is busy, with the whole file passing under `bats --jobs`; it is not added to the unit-suite baseline
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,10 +283,16 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t3298_audit_lock_integrity.bats > /tmp/.t4545.out 2>&1 && ! grep -q "^not ok" /tmp/.t4545.out && test "$(grep -c '^ok' /tmp/.t4545.out)" -eq 12
+test "$(grep -c '# skip' /tmp/.t4545.out)" -eq 0
+timeout 300 bats --jobs 12 tests/unit/t3298_audit_lock_integrity.bats > /tmp/.t4545j.out 2>&1 && ! grep -q "^not ok" /tmp/.t4545j.out && test "$(grep -c '^ok' /tmp/.t4545j.out)" -eq 12
+! grep -q "awk '\$1 == 1 && \$2 == \"sleep\"" tests/unit/t3298_audit_lock_integrity.bats
+grep -q "trap 'kill \$! 2>/dev/null; exit 0' TERM" agents/audit/audit.sh
+! grep -q "t3298_audit_lock_integrity" .context/audits/unit-suite/baseline.yaml
+python3 tools/bats-dead-negation-lint.py tests/unit/t3298_audit_lock_integrity.bats > /tmp/.t4545l.out 2>&1 && grep -q "clean" /tmp/.t4545l.out
+bin/fw vendor self --check --task T-4545
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+<!-- RCA guidance — REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
 
@@ -288,6 +329,16 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** `t3298: no watchdog sleep survives a normal audit exit` passed alone and failed once in the unit suite's 12-way parallel run on the shared host (2026-10-21), blocking a push via the ratchet.
+
+**Root cause:** the test (tests/unit/t3298_audit_lock_integrity.bats:138-141 before the fix) decided "leak" by shape, host-wide: any process `sleep 1` whose PPID is 1. That is a global-state assumption. On a shared host at load 40-70 with other workers, scripts and test files running, unrelated `sleep 1` orphans come and go, and the final check is a single snapshot taken after the poll loop, so one unrelated transient orphan at that instant fails the test. Reproduced: with a background loop creating unmarked `( sleep 1 & )` orphans, the old test failed (it listed the foreign orphans) and the new test passed. A second, smaller defect sat in the code: agents/audit/audit.sh's watchdog TERM trap killed `$_watchdog_sleep_pid`, copied *after* `sleep 1 &`. A TERM arriving between the fork and the copy killed the previous, already-dead tick and orphaned the live one for up to 1 s.
+
+**Why structurally allowed:** the test was written and checked on a quiet host where it is the only producer of `sleep 1` orphans. Nothing in a single-file run exercises a shared host. Only the parallel suite on a loaded host does, and there a failure looks like a one-off flake.
+
+**Prevention:** the test now tracks only its own run. A per-run `T3298_RUN_MARK` environment marker is inherited by every process the audit forks, and the test finds survivors with one `grep -lz` over `/proc/*/environ`, waiting against a 30 s deadline instead of taking a fixed-count snapshot. A negative-control test proves the scan sees a marked survivor, so the check cannot pass vacuously. The watchdog trap now kills `$!`, after a no-op fork so that `$!` is the subshell's own child rather than the inherited audit `$!`. A source pin locks that in. Learning: a leak check must identify its own processes (marker or pid), never a process shape that other tenants of the host can also produce.
 
 ## Recommendation
 
@@ -345,3 +396,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4545-flaky-under-load-t3298auditlockintegrity.md
 - **Context:** Initial task creation
+
+### 2026-10-21T16:11:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

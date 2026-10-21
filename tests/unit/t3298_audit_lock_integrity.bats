@@ -122,27 +122,73 @@ _run_audit() {
 
 # ── Defect 2: no orphaned watchdog sleep after a normal exit ─────────────────
 
+# T-4545: a run's own processes are found by an environment marker that only
+# that run carries, never by shape. The previous check matched ANY `sleep 1`
+# whose parent is init, host-wide; under the unit suite's parallel run on a
+# shared host an unrelated orphan was enough to fail it.
+_marked_pids() {
+    # One grep over every environ (NUL-separated entries, -z), not a process per
+    # pid: a per-pid scan is slow enough on a busy host to distort the polling.
+    grep -lzxF "T3298_RUN_MARK=$1" /proc/[0-9]*/environ 2>/dev/null \
+        | sed 's#^/proc/\([0-9]*\)/environ$#\1#'
+    return 0
+}
+
+# Poll until no process carries the marker, up to a deadline generous enough
+# for a loaded host. Returns at once when the subtree is gone.
+_wait_marked_gone() {
+    local mark="$1" deadline=$(( SECONDS + ${2:-30} ))
+    while [ -n "$(_marked_pids "$mark")" ]; do
+        [ "$SECONDS" -lt "$deadline" ] || return 1
+        sleep 0.2
+    done
+}
+
 @test "t3298: no watchdog sleep survives a normal audit exit" {
     command -v flock >/dev/null 2>&1 || skip "flock not available"
     # T-4397: the watchdog ticks in one-second sleeps (so it can notice a dead lock
-    # holder), not one AUDIT_TIMEOUT-long sleep. A tick's parent is the watchdog
-    # subshell; an orphaned tick is one reparented to init (PPID 1).
-    run env FW_AUDIT_TIMEOUT=5417 PROJECT_ROOT="$PROJ" \
+    # holder), not one AUDIT_TIMEOUT-long sleep. Every process the audit forks
+    # inherits the marker; once the audit has exited, none may remain.
+    local mark="t3298-$$-$BATS_TEST_NUMBER-$RANDOM"
+    run env T3298_RUN_MARK="$mark" FW_AUDIT_TIMEOUT=5417 PROJECT_ROOT="$PROJ" \
         FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
         bash "$AUDIT" --section t3298-no-such-section --quiet
     [ "$status" -eq 0 ]
-    # The EXIT trap's TERM is asynchronous — give the subshell a moment to
-    # trap it and kill its sleep child, then require the subtree gone.
-    local i
-    for i in 1 2 3 4 5 6 7 8 9 10; do
-        ps -e -o ppid=,args= | awk '$1 == 1 && $2 == "sleep" && $3 == "1"' | grep -q . || break
-        sleep 0.5
-    done
-    if ps -e -o ppid=,args= | awk '$1 == 1 && $2 == "sleep" && $3 == "1"' | grep -q .; then
-        echo "FAIL: watchdog sleep outlived the audit (reparented orphan)" >&2
-        ps -e -o pid,ppid,args | awk '$2 == 1 && $3 == "sleep"' >&2
+    # The EXIT trap's TERM is asynchronous; a tick lives one second, so a
+    # survivor at the deadline is a real leak, not scheduling delay.
+    if ! _wait_marked_gone "$mark" 30; then
+        echo "FAIL: watchdog process outlived the audit" >&2
+        local pid
+        for pid in $(_marked_pids "$mark"); do ps -o pid=,ppid=,args= -p "$pid" >&2; done
         return 1
     fi
+}
+
+@test "t3298: watchdog survivor check is not vacuous (negative control)" {
+    # A marked process that outlives its parent must be seen, or the test above
+    # passes no matter what the watchdog does.
+    local mark="t3298-ctl-$$-$RANDOM" pids="" deadline=$(( SECONDS + 30 ))
+    ( env T3298_RUN_MARK="$mark" sleep 60 </dev/null >/dev/null 2>&1 & )
+    # Wait for the survivor to exist (exec may be slow under load) — the control
+    # is that the scan sees it, not that it appears within a fixed time.
+    while [ -z "$pids" ] && [ "$SECONDS" -lt "$deadline" ]; do
+        pids=$(_marked_pids "$mark"); [ -n "$pids" ] || sleep 0.2
+    done
+    [ -n "$pids" ] || { echo "marked survivor never seen by _marked_pids" >&2; return 1; }
+    run _wait_marked_gone "$mark" 1
+    kill $(_marked_pids "$mark") 2>/dev/null || true
+    [ "$status" -ne 0 ]
+}
+
+@test "t3298: source pin — watchdog TERM trap kills \$! (the live tick), after a no-op fork resets \$!" {
+    # T-4545: a pid copied into a variable after `sleep 1 &` leaves a window in
+    # which TERM kills the previous, dead tick and orphans the live one.
+    grep -q "trap 'kill \$! 2>/dev/null; exit 0' TERM" "$AUDIT"
+    ! grep -q '_watchdog_sleep_pid' "$AUDIT" || false
+    local noop_line trap_line
+    noop_line=$(grep -n '^      : &$' "$AUDIT" | head -1 | cut -d: -f1)
+    trap_line=$(grep -n "trap 'kill \$! 2>/dev/null; exit 0' TERM" "$AUDIT" | head -1 | cut -d: -f1)
+    [ -n "$noop_line" ] && [ "$noop_line" -lt "$trap_line" ]
 }
 
 # ── Fallback arm keeps its own stale sweep (relocated, not lost) ─────────────

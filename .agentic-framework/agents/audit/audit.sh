@@ -667,7 +667,13 @@ elif command -v flock >/dev/null 2>&1; then
           _n="${_fd##*/}"
           case "$_n" in 0|1|2) ;; *) eval "exec $_n>&-" 2>/dev/null ;; esac
       done
-      trap 'kill "${_watchdog_sleep_pid:-}" 2>/dev/null; exit 0' TERM
+      # T-4545: the trap kills $!, not a pid copied into a variable. A TERM that
+      # lands between `sleep 1 &` and the copy would kill the previous, dead tick
+      # and orphan the live one. A subshell inherits the audit's own $!, so fork a
+      # no-op first: from here on $! names a child of this subshell.
+      : &
+      wait $!
+      trap 'kill $! 2>/dev/null; exit 0' TERM
       # T-4397: tick once a second rather than sleeping AUDIT_TIMEOUT in one piece,
       # so the watchdog also notices its lock holder has died. An orphaned body must
       # not carry on unlocked alongside a new audit; it stops, and that stop is the
@@ -675,8 +681,7 @@ elif command -v flock >/dev/null 2>&1; then
       _watchdog_left="$AUDIT_TIMEOUT"
       while [ "$_watchdog_left" -gt 0 ]; do
           sleep 1 &
-          _watchdog_sleep_pid=$!
-          wait "$_watchdog_sleep_pid"
+          wait $!
           kill -0 "$_audit_lock_holder" 2>/dev/null || break
           _watchdog_left=$(( _watchdog_left - 1 ))
       done
