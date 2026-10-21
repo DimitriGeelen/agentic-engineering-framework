@@ -17,10 +17,10 @@ description: >
   .tasks/active && sed -i … T-1.md, and the ledger still refused. Note: T-4149 just
   rewrote this shared scanner — build on its lexer.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -51,7 +51,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:20:46Z
-last_update: '2026-10-13T15:32:07Z'
+last_update: 2026-10-21T22:20:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,6 +91,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal);
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4159: Human-AC tick guard false positive: lib/shell_write_scan.py MENTION_RE treats any T-NNNN-*.md as a task file, so shell writes to docs/reports/T-XXX-*.md (the C-001 artefact convention) are refused (832 field finding; seen here 3x on 2026-10-13)
@@ -103,8 +119,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Shell writes to a task-named file outside `.tasks/` (`docs/reports/T-NNNN-*.md`, `.context/working/dispatch-T-NNNN-prompt.md`), via redirect, `sed -i`, and inline python, are no longer refused by `lib/shell_write_scan.py scan()`
+- [x] Still refused: a write to `.tasks/active/T-1.md`, `cd .tasks/active && sed -i … T-1.md`, a write to the tick ledger, and inline code naming a `.tasks/` path
+- [x] Regression test in tests/unit fails before the fix and passes after; neighbouring shell_write_scan tests stay green
+- [x] `bin/fw vendor self --check --task T-4159` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -267,8 +285,22 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4159_task_name_mention_anchor.bats > /tmp/.t4159.out 2>&1 && ! grep -q "^not ok" /tmp/.t4159.out
+test "$(grep -c '# skip' /tmp/.t4159.out)" -eq 0
+timeout 900 bats tests/unit/t3695_human_ac_tick_bash.bats > /tmp/.t4159b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4159b.out
+bin/fw vendor self --check --task T-4159
 
 ## RCA
+
+**Symptom:** check-human-ac-tick refused shell commands (inline python, heredocs, a script handed a path) that wrote `docs/reports/T-NNNN-*.md` (the C-001 artefact convention) or `.context/working/dispatch-T-NNNN-prompt.md`. 832 field finding (T-1147, refused twice); seen here 3x on 2026-10-13 and again 2026-10-15..17.
+
+**Root cause:** `lib/shell_write_scan.py:61-64` MENTION_RE carried the alternative `\bT-\d+[-\w]*\.md\b`, which matched ANY task-shaped file name regardless of the directory in front of it. Opaque writers (inline code `_inline`, `_script_form`, unresolvable targets) refuse whenever the command "mentions" a guarded path, so any such name anywhere in the command was treated as a task file. Resolvable writes (`sed -i docs/reports/T-1-x.md`, a redirect) were already judged on the resolved path and were fine; only the mention leg over-matched.
+
+**Why structurally allowed:** the bare-name alternative exists for `cd .tasks/active && … T-1.md`, and every test (t3695) only asserted refusals plus non-task-named controls; no test put a task-shaped name under a non-`.tasks` directory, so the over-match was invisible to the suite. Fail direction was toward blocking, so nothing went red — agents just routed around it (renamed files, split commands).
+
+**Fix:** the name alternative moved out of MENTION_RE into `TASK_NAME_RE` + `_mentions()`, which also captures the path word in front of the name. It is a mention only when nothing anchors it elsewhere: a bare name, or a directory that normalises to `.`/`..` (`./T-1.md`, `docs/../T-1.md`). A name embedded in a longer word (`dispatch-T-1-prompt.md`) or under a real directory (`docs/reports/`) is not. `.tasks/…` paths and the ledger still match through MENTION_RE. All four MENTION_RE call sites use `_mentions()`.
+
+**Prevention:** `tests/unit/t4159_task_name_mention_anchor.bats` pins both directions through the real hook (4 allowed cases that failed before the fix, 5 refusals that must stay). Residual (unchanged, documented scope boundary): a path assembled at run time (`os.chdir('.ta'+'sks/active'); open('sub/T-1.md')`) is not seen by a text gate; `fw audit` catches committed unprovenanced Human ticks.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -371,3 +403,7 @@ bvp_scores_proposed:
   message-store helper, a `glob` print). Workaround each time: rename the output file or split the command.
 - 1023 (msg cc1a5259, item 7, their T-119): the focus-drift gate and check-human-ac-tick match command TEXT, so
   they refuse commands aimed at a scratch clone outside the repo whose paths look like task files.
+
+### 2026-10-21T22:20:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
