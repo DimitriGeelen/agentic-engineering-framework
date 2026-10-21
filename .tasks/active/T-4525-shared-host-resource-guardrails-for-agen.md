@@ -8,7 +8,7 @@ description: >
   host section, fw run-heavy, FW_PROJECT/FW_TASK attribution, host PSI canary, cleanup
   on every path)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -16,7 +16,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-21T08:59:47Z
-last_update: '2026-10-21T09:00:42Z'
+last_update: 2026-10-21T09:07:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,6 +82,19 @@ bvp_scores_proposed:
      §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
+
+- **IW-1: Which of P1-P5 does AEF take, in what order?**
+  confidence: 2
+  disposition: answered
+  rationale: P1 (Shared host section in the CLAUDE.md template) and P3 (FW_PROJECT/FW_TASK exported into agent-run commands) first: small, no new mechanism, field-testable at once by dimitri-mint-dev; then P2 (fw run-heavy, systemd-run scope with CPUQuota/MemoryMax/IOWeight/RuntimeMaxSec and an attributable unit name) and P5 (EXIT-trap cleanup generalised, doctor reports this project's old /tmp entries); P4 (host PSI canary naming the owning project) last, since attribution comes from P3. Source: docs/reports/T-4525-inputs/dimitri-mint-dev-T-162-message.txt.
+- **IW-2: Is the nproc/4 default cap right for every host, or should it be a config key with that default?**
+  confidence: 1
+  disposition: deferred
+  rationale: A config key (default nproc/4) keeps single-tenant hosts unrestricted by choice; to settle in the P1 build task.
+- **IW-3: Does P2 work where systemd user scopes are unavailable (containers, macOS, root without a user session)?**
+  confidence: 1
+  disposition: deferred
+  rationale: Needs a fallback (nice/ionice/timeout/prlimit) and an honest message when quotas cannot be applied; to settle in the P2 build task.
 
 ## Exploration Plan
 
@@ -174,3 +187,6 @@ Six incidents of one class on the shared host (latest 2026-10-21: an 832 load te
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-21T09:07:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
