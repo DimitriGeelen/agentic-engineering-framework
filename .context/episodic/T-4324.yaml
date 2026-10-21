@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4324: No supported way to correct a mis-clicked Watchtower inception decision
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T23:14:52Z
+# ============================================================================
+
+task_id: T-4324
+task_name: "No supported way to correct a mis-clicked Watchtower inception decision"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-18T18:44:08Z
+completed: 2026-10-21T23:14:19Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-21T23:50:36+02:00
+last_commit: 2026-10-21T23:50:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw inception correct re-records a mistaken GO/NO-GO in place (active or completed), operator-only, --reason required, logged to .context/inception-corrections.jsonl + Updates, committed with the decision subject the pending view reads; regression bats 9/9 (9/9 fail pre-fix); vendor synced
+
+# Key outcomes
+outcomes:
+  - '`fw inception correct T-XXX go|no-go --reason "..."` re-records the verdict on a decided inception, including one already moved to `.tasks/completed/`: the `## Decision` block shows the new verdict, the reason, and `**Corrected**: from <OLD>`; an Updates entry and a line in `.context/inception-corrections.jsonl` record old/new verdict, reason and who'
+  - 'It refuses (nothing written) when: no reason; target is not an inception; no decision is recorded yet (use `decide`); the new verdict equals the recorded one; called under `CLAUDECODE=1` without `--i-am-human`/`--from-watchtower` (same sovereignty gate as `decide`)'
+  - 'After a correction, `lib/operator_pending.py inception_decision()` reports the corrected verdict, including when the latest `inception decision` commit still names the old verdict'
+  - 'Regression bats `tests/unit/t4324_inception_correct.bats` fails on the pre-fix tree (verb absent) and passes after'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw inception correct re-records a mistaken GO/NO-GO in place (active or completed), operator-only, --reason required, logged to .context/inception-corrections.jsonl + Updates, committed with the decision subject the pending view reads; regression bats 9/9 (9/9 fail pre-fix); vendor synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-21 — which of the two filed options to build'
+    chose: 'the operator-only `fw inception correct` CLI path (option 2): it re-records GO↔NO-GO in place on an active or completed inception, requires `--reason`, logs to `.context/inception-corrections.jsonl` and the task''s Updates, and commits as `T-XXX: inception decision <NEW> (corrected from <OLD>)` so every git-reading decision checker (operator_pending, watchtower_decision_revert) agrees with the file.'
+    rationale: 'it fixes the real gap (no recovery after a mistake) without editing web/. A confirm step only lowers the odds of a mis-click and leaves no recovery when one happens anyway. - **Rejected/deferred:** the Watchtower confirm step on the decide form (option 1). It is a render-surface change that needs a [REVIEW] criterion. Worth a separate task if the operator wants it. Correcting *to* DEFER is not offered, because that reopens the exploration and is a different act.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/inception.sh'
+  - 'lib/inception.sh'
+  - '.tasks/active/T-4324-no-supported-way-to-correct-a-mis-clicke.md'
+  - 'tests/unit/t4324_inception_correct.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T23:50:36'
+    action: 'T-4324: fw inception correct re-records a mistaken GO/NO-GO in place (active or completed), operator-only, --reason required, logged to .context/inception-corrections.jsonl + Updates, committed with the decision subject the pending view reads; regression bats 9/9 (9/9 fail pre-fix); vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4590 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, inception, usability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4590
+  commits: 1
+  files_changed: 4
+  lines_added: 435
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4324-no-supported-way-to-correct-a-mis-clicke.md
+generated_by: context-agent-hybrid
