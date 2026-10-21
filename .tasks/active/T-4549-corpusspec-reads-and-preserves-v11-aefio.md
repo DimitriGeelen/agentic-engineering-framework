@@ -1,13 +1,16 @@
 ---
 id: T-4549
-name: "corpus_spec reads and preserves v1.1 aef:io attributes, aef:field, aef:expect and aef:prefix on round-trip"
+name: "corpus_spec reads and preserves v1.1 aef:io attributes, aef:field, aef:expect
+  and aef:prefix on round-trip"
 description: >
-  Extend the corpus reader/writer so every v1.1 attribute and child element from the T-4415 DRAFT 2 standard is parsed and written back byte-stable; v1.0 maps unchanged. Round-trip tests on the DRAFT 2 examples (incl. H-042 upsert).
+  Extend the corpus reader/writer so every v1.1 attribute and child element from the
+  T-4415 DRAFT 2 standard is parsed and written back byte-stable; v1.0 maps unchanged.
+  Round-trip tests on the DRAFT 2 examples (incl. H-042 upsert).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [mapping, aef-io, T-4415]
 components: []
 related_tasks: [T-4415]
@@ -39,8 +42,8 @@ origin: {kind: "peer", source: "832", ref: "770531b2"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T14:31:44Z
-last_update: 2026-10-21T14:31:44Z
-date_finished: null
+last_update: 2026-10-21T16:11:42Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +54,54 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T14:45:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T14:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4549: corpus_spec reads and preserves v1.1 aef:io attributes, aef:field, aef:expect and aef:prefix on round-trip
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Normative text: `policy/standards/aef-bpmn-mapping-v1.1-io.md` (T-4548). Before this task `aef:io` and a
+process-level `aef:meta` rode `ext_raw` as opaque verbatim strings, so nothing (T-4550 lint included) could read a
+v1.1 attribute. Now `node["io"]` and `spec["process_meta"]` are structured (`attrs` / child lists / `raw`), with
+`mapping_version(spec)` and `prefix_map(spec)` helpers; an unknown `mappingVersion` is refused (rule 1.5).
+Evidence of v1.0 byte-stability: emit sha256 of all 76 store+fixture maps identical before and after the change.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `tools/corpus_spec.py` parses every v1.1 construct of `policy/standards/aef-bpmn-mapping-v1.1-io.md` into the spec (aef:input/aef:output attributes incl. cardinality/role/operation/fieldRef/typeRef/schemaRef/conceptRef/sourceSystem/targetSystem; aef:field with aef:when; aef:expect with aef:value children; aef:example; aef:prefixes/aef:prefix; mappingVersion on aef:meta) instead of only carrying them as opaque strings
+- [x] Emitting the parsed spec gives back byte-identical XML (parse→emit→parse→emit stable) for every §11 worked example, including the H-042 upsert
+- [x] A v1.0 map (no mappingVersion, no v1.1 constructs) round-trips with output unchanged from before this task
+- [x] Regression tests in `tests/unit/test_t4549_aef_io_v11_roundtrip.py` pass, and the existing corpus_spec round-trip tests still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +286,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_t4549_aef_io_v11_roundtrip.py -q > /tmp/.t4549a 2>&1 && grep -q passed /tmp/.t4549a
+python3 -m pytest tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_t4518_ext_unknown_children.py -q > /tmp/.t4549b 2>&1 && grep -q passed /tmp/.t4549b
+bin/fw vendor self --check --task T-4549
 
 ## RCA
 
@@ -330,6 +370,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-21 — how the modelled io is written back
+- **Chose:** build an ET tree from the spec with canonical indentation and serialize with ET; record the io's slot among `ext_raw` (`io_at` / `process_meta_at`, only when not last).
+- **Why:** ET serialization reproduces the exact bytes the verbatim `ext_raw` path wrote (incl. `xmlns:aef` on the io root and ` />`), so v1.0 maps are byte-unchanged; the slot keeps sibling order.
+- **Rejected:** keeping io in `ext_raw` plus a read-only parsed view (two sources of truth, edits to the view silently lost); hand-formatted XML strings (would change v1.0 bytes).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -346,3 +391,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4549-corpusspec-reads-and-preserves-v11-aefio.md
 - **Context:** Initial task creation
+
+### 2026-10-21T16:11:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -335,6 +335,144 @@ def _io_mapping(el) -> dict:
     return out
 
 
+#: T-4549: structured aef:io and the process-level aef:meta of mapping v1.1
+#: (policy/standards/aef-bpmn-mapping-v1.1-io.md). Each modelled element is
+#: {"attrs": {…verbatim, in source order}, <child list>: […], "raw": […]}: the
+#: children it knows go to the named list, anything else rides "raw" verbatim
+#: (rule 1.4). Lists are emitted in the order given here, so a source that
+#: interleaves e.g. aef:field and aef:expect settles after one pass.
+_IO_SCHEMA = {
+    "io": {"input": "items", "output": "items"},
+    "input": {"field": "fields", "expect": "expects", "example": "examples"},
+    "field": {"when": "when"},
+    "expect": {"value": "values"},
+    "when": {"value": "values"},
+    "example": {},
+    "meta": {"prefixes": "prefixes"},
+    "prefixes": {"prefix": "prefix"},
+    "prefix": {},
+}
+_IO_SCHEMA["output"] = _IO_SCHEMA["input"]
+#: Lists holding more than one element name record each entry's name.
+_IO_MIXED = {"items"}
+#: Mapping versions this reader knows (rule 1.5: anything else is refused).
+MAPPING_VERSIONS = ("1.1",)
+
+
+def _io_where(path) -> str:
+    return " > ".join(f"aef:{p}" for p in path)
+
+
+def _io_parse(el, local, owner, path=()) -> dict:
+    """One modelled aef element → its spec entry (T-4549). Text outside
+    aef:value has no slot and is refused naming the element, never dropped."""
+    path = path + (local,)
+    entry = {}
+    if el.attrib:
+        entry["attrs"] = dict(el.attrib)
+    if (el.text or "").strip() or any((c.tail or "").strip() for c in el):
+        raise SystemExit(
+            f"parse: {owner} {_io_where(path)} carries text outside mapping v1.1 — "
+            f"refusing rather than dropping it (T-4549, rule 1.4)")
+    kids = _IO_SCHEMA[local]
+    for c in el:
+        clocal = c.tag.split("}")[-1] if isinstance(c.tag, str) else None
+        key = kids.get(clocal) if isinstance(c.tag, str) and c.tag == _q(clocal, AEF_NS) else None
+        if key is None:
+            entry.setdefault("raw", []).append(_raw_xml(c))
+        elif clocal == "value":
+            if c.attrib or len(c):
+                raise SystemExit(
+                    f"parse: {owner} {_io_where(path)} > aef:value carries attributes "
+                    f"or children — a value is text only (rule 8); refusing rather "
+                    f"than dropping them (T-4549)")
+            entry.setdefault(key, []).append(c.text or "")
+        else:
+            sub = _io_parse(c, clocal, owner, path)
+            if key in _IO_MIXED:
+                sub = {"kind": clocal, **sub}
+            entry.setdefault(key, []).append(sub)
+    return entry
+
+
+def _io_element(entry, local, indent: int):
+    """Spec entry → ET element laid out at `indent` spaces (T-4549). Built as a
+    tree and serialized by ET, so the bytes match the verbatim ext_raw form
+    aef:io rode before it was modelled (v1.0 maps unchanged)."""
+    el = ET.Element(_q(local, AEF_NS), entry.get("attrs", {}))
+    kids = []
+    names = {}
+    for clocal, key in _IO_SCHEMA[local].items():
+        names.setdefault(key, clocal)
+    for key, clocal in names.items():
+        for sub in entry.get(key, []):
+            if key == "values":
+                kid = ET.Element(_q("value", AEF_NS))
+                kid.text = sub
+            else:
+                sub = dict(sub)
+                kid = _io_element(sub, sub.pop("kind") if key in _IO_MIXED else clocal,
+                                  indent + 2)
+            kids.append(kid)
+    for raw in entry.get("raw", []):
+        if raw.startswith("<!--"):
+            kids.append(ET.Comment(raw[4:-3]))
+        else:
+            kids.append(ET.fromstring(
+                raw, parser=ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))))
+    if kids:
+        el.text = "\n" + " " * (indent + 2)
+        for k in kids:
+            k.tail = "\n" + " " * (indent + 2)
+            el.append(k)
+        kids[-1].tail = "\n" + " " * indent
+    return el
+
+
+def _io_xml(entry, local, indent: int) -> str:
+    return ET.tostring(_io_element(entry, local, indent), encoding="unicode")
+
+
+def _io_take(el, local, known):
+    """The one aef:<local> child of el's extensionElements, parsed, and how many
+    ext_raw entries precede it (so emit puts it back in place) — or (None, None).
+    `known` is the context's structured set, i.e. what is NOT in ext_raw."""
+    ee = el.find(_q("extensionElements"))
+    if ee is None:
+        return None, None
+    found = [c for c in ee if isinstance(c.tag, str) and c.tag == _q(local, AEF_NS)]
+    if not found:
+        return None, None
+    owner = _ext_owner(el)
+    if len(found) > 1:
+        raise SystemExit(
+            f"parse: {owner} carries aef:{local} more than once — the spec holds one, "
+            f"so the others would be dropped (T-4549)")
+    at = 0
+    for c in ee:
+        if c is found[0]:
+            break
+        if isinstance(c.tag, str) and not _is_read(c, known):
+            at += 1
+    return _io_parse(found[0], local, owner), at
+
+
+def mapping_version(spec: dict) -> str | None:
+    """The map's declared mappingVersion (rule 1.1), None for a v1.0 map."""
+    return spec.get("process_meta", {}).get("attrs", {}).get("mappingVersion")
+
+
+def prefix_map(spec: dict) -> dict:
+    """{prefix name: its aef:prefix attributes} from the process aef:meta (§6)."""
+    out = {}
+    for group in spec.get("process_meta", {}).get("prefixes", []):
+        for p in group.get("prefix", []):
+            attrs = p.get("attrs", {})
+            if "name" in attrs:
+                out.setdefault(attrs["name"], attrs)
+    return out
+
+
 def _raw_xml(el) -> str:
     """Verbatim-stable serialization of an element (T-2614 passthrough).
 
@@ -471,9 +609,21 @@ def parse_map(xml_text: str) -> dict:
         "tier_default": int(wm.get("tier_default", "1")),
     }
     # T-4518: unknown aef:/foreign siblings of aef:workflowMeta, verbatim.
-    proc_raw = _ext_raw(proc, _PROCESS_EXT)
+    proc_raw = _ext_raw(proc, _PROCESS_EXT | {"meta"})
     if proc_raw:
         spec["ext_raw"] = proc_raw
+    # T-4549: process-level aef:meta (mappingVersion, aef:prefixes — v1.1 §1, §6).
+    pmeta, at = _io_take(proc, "meta", _PROCESS_EXT)
+    if pmeta is not None:
+        spec["process_meta"] = pmeta
+        if at < len(proc_raw):
+            spec["process_meta_at"] = at
+        mv = mapping_version(spec)
+        if mv is not None and mv not in MAPPING_VERSIONS:
+            raise SystemExit(
+                f"parse: process aef:meta declares mappingVersion={mv!r}; this reader "
+                f"knows {', '.join(MAPPING_VERSIONS)} (v1.0 = no attribute) — refusing "
+                f"the map rather than misreading it (rule 1.5, T-4549)")
     if _ext_attrs(proc_ext):
         spec["ext_attrs"] = _ext_attrs(proc_ext)
     collab = root.find(_q("collaboration"))
@@ -576,9 +726,15 @@ def parse_map(xml_text: str) -> dict:
                     n["io_mapping"] = io
             if _ext_attrs(ext):
                 n["ext_attrs"] = _ext_attrs(ext)
-            raw = _ext_raw(el, known)
+            raw = _ext_raw(el, known | {"io"})
             if raw:
                 n["ext_raw"] = raw
+            # T-4549: aef:io modelled (mapping v1.1 attributes and children).
+            io_, at = _io_take(el, "io", known)
+            if io_ is not None:
+                n["io"] = io_
+                if at < len(raw):
+                    n["io_at"] = at
             # T-4388: unmodelled node children (loop characteristics,
             # ioSpecification, documentation, …) verbatim, as flows do.
             # incoming/outgoing are derived from flows on emit.
@@ -765,6 +921,15 @@ def call_findings(spec: dict, idx: dict | None = None) -> list:
     return out
 
 
+def _with_modelled(raws: list, owner: dict, key: str, local: str, indent: int) -> list:
+    """ext_raw with owner[key] (T-4549 modelled aef:io / process aef:meta)
+    serialized back into the slot it was read from (owner[key + "_at"])."""
+    if owner.get(key) is None:
+        return list(raws)
+    at = owner.get(f"{key}_at", len(raws))
+    return raws[:at] + [_io_xml(owner[key], local, indent)] + raws[at:]
+
+
 def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> str:
     # T-2615: compat_alias None → derived from the pin capability flag (emit the
     # targetWorkflow alias only while the pinned editor cannot auto-resolve
@@ -842,7 +1007,7 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
       f'title={quoteattr(spec.get("title") or mid)} '
       f'tier_default="{spec.get("tier_default", 1)}"'
       f'{_attrs_xml(spec.get("ext_attrs", {}).get("workflowMeta"))}/>')
-    for raw in spec.get("ext_raw", []):
+    for raw in _with_modelled(spec.get("ext_raw", []), spec, "process_meta", "meta", 6):
         a(f"      {raw}")
     a("    </bpmn:extensionElements>")
 
@@ -940,7 +1105,7 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
                         a(f'          <aef:{kind} source={quoteattr(e["source"])} '
                           f'target={quoteattr(e["target"])}/>')
                 a("        </aef:ioMapping>")
-        for raw in n.get("ext_raw", []):
+        for raw in _with_modelled(n.get("ext_raw", []), n, "io", "io", 8):
             a(f"        {raw}")
         a("      </bpmn:extensionElements>")
         for fid in incoming.get(n["id"], []):

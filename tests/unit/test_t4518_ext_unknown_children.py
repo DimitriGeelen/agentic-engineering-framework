@@ -72,12 +72,16 @@ def test_nested_unknown_child_of_aef_io_round_trips_verbatim():
     node = ('<bpmn:task id="n1"><bpmn:extensionElements><aef:uid value="u"/>'
             f"{NESTED_IO}</bpmn:extensionElements></bpmn:task>")
     spec, out = _round_trip(_doc(node=node))
-    raw = _raw_for(next(n for n in spec["nodes"] if n["id"] == "n1"), "aef:io")
+    # T-4549: aef:io is modelled now; the unknown child rides its input's raw.
+    io = next(n for n in spec["nodes"] if n["id"] == "n1")["io"]
+    assert io["attrs"] == {"kind": "call"}
+    assert [i["kind"] for i in io["items"]] == ["input", "output"]
+    assert 'q="1">deep <z:leaf' in io["items"][0]["raw"][0]
     # namespace, attributes, text, tail text and child order all survive
     for part in ('kind="call"', '<aef:input name="x">', '<aef:nested q="1">deep ',
                  '<z:leaf z:a="2">leaf</z:leaf> tail', '<aef:output name="y"'):
-        assert part in raw and part in out, part
-    assert raw.index("aef:input") < raw.index("aef:output")
+        assert part in out, part
+    assert out.index("aef:input") < out.index("aef:output")
 
 
 def test_unknown_siblings_at_process_and_lane_level_round_trip():
