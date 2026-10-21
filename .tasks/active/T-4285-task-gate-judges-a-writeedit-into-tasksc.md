@@ -16,10 +16,10 @@ description: >
   @ 9e48825e). Tests: focus T-A started, Edit completed/T-B => refused; route for
   Updates append => allowed and logged.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -50,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T23:13:38Z
-last_update: '2026-10-17T23:16:11Z'
+last_update: 2026-10-21T21:23:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,14 +96,20 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reported by 832 (OBS-437/T-1199). `agents/context/check-active-task.sh` exempts all of
+`.tasks/*` for Write/Edit before focus is even read, so a closed record in
+`.tasks/completed/` is writable under any focus. Fix: judge such writes by the file's own
+(closed) task, with a narrow sanctioned route for appending to `## Updates`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Under agent control, a Write or a non-append Edit to `.tasks/completed/T-*.md` is refused (exit 2) whatever the focus (T-A started, edit completed/T-B), and the block message names the closed task and the routes
+- [x] An Edit that only appends text inside the closed record's `## Updates` section (new_string starts with old_string, old_string located in Updates, no new `## ` heading, not replace_all) is allowed and logged to `.context/working/.gate-bypass-log.yaml`
+- [x] `FW_ALLOW_CLOSED_RECORD_EDIT=1` in the hook environment allows the write (logged Tier-2); writes to `.tasks/active/` and outside agent control are unchanged
+- [x] Regression bats `tests/unit/t4285_closed_record_gate.bats` fails on the pre-fix hook and passes after; existing check_active_task bats stay green
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4285` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +287,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4285_closed_record_gate.bats > /tmp/.t4285.out 2>&1 && ! grep -q "^not ok" /tmp/.t4285.out
+test "$(grep -c '# skip' /tmp/.t4285.out)" -eq 0
+timeout 600 bats tests/unit/check_active_task_memory_exempt.bats tests/unit/check_active_task_switch_focus.bats tests/unit/check_active_task_fp_fix.bats > /tmp/.t4285b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4285b.out
+bash -n agents/context/check-active-task.sh
+bin/fw vendor self --check --task T-4285
 
 ## RCA
 
@@ -297,6 +308,25 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** under agent control, a Write/Edit to `.tasks/completed/T-NNN-*.md` succeeded
+whatever was focused (reproduced on bleeding-edge 2026-10-21: the new bats tests 1-7 failed,
+the hook exited 0 for an AC rewrite in a closed record).
+
+**Root cause:** `agents/context/check-active-task.sh:490` (pre-fix) — the exempt-path `case`
+`"$PROJECT_ROOT"/.tasks/*) exit 0` covers `completed/` as well as `active/`, and it runs
+before focus is read. Nothing judged a closed record by its own status.
+
+**Why structurally allowed:** the `.tasks/` exemption was written so task management can
+edit task files without a task; "task files" was never split into live vs closed. The
+completed-task protection (P-002, ~line 963) only ever applied to the *focused* task, and
+`fw context focus` refuses completed tasks (T-2874), so a closed record was never covered.
+
+**Prevention:** path-keyed gate before the exemption (`check-active-task.sh`, T-4285 block):
+closed record => refused under agent control with named routes (Updates-append Edit, or
+`FW_ALLOW_CLOSED_RECORD_EDIT=1` on the hook process, both logged). Pinned by
+`tests/unit/t4285_closed_record_gate.bats` (9 tests incl. controls). Boundary unchanged:
+shell/script writes are not inspected by this text gate (T-2742); 832 guards its writer.
 
 ## Evolution
 
@@ -378,3 +408,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4285-task-gate-judges-a-writeedit-into-tasksc.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:23:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

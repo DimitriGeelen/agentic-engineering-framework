@@ -485,6 +485,87 @@ case "$FILE_PATH" in
         ;;
 esac
 
+# Agent-control detection (T-1739) — see the fuller note at the focus-drift gate.
+_under_agent_control() {
+    [ "${CLAUDECODE:-}" = "1" ] && return 0
+    [ -n "${AI_AGENT:-}" ] && return 0
+    return 1
+}
+
+# T-4285 (832 OBS-437/T-1199): a closed record is judged by ITS OWN task, not by
+# focus. The .tasks/* exemption below runs before focus is even read, so without
+# this block a Write/Edit to .tasks/completed/T-*.md passed under any focus — the
+# protection of a closed record was an accident. Sanctioned routes:
+#   1. an Edit/MultiEdit that only APPENDS inside the record's ## Updates section
+#      (new_string starts with old_string, old_string lies in Updates, adds no
+#      "## " heading, not replace_all) — allowed and logged;
+#   2. FW_ALLOW_CLOSED_RECORD_EDIT=1 in the hook's environment (Tier-2, logged).
+# update-task.sh's own close-path writes are shell writes, which this Write/Edit
+# text gate never inspects (same boundary as T-2742).
+case "$FILE_PATH" in
+    "$PROJECT_ROOT"/.tasks/completed/*.md)
+        if _under_agent_control; then
+            _cr_task=$(basename "$FILE_PATH" | grep -oE '^T-[0-9]+' || true)
+            _cr_route=""
+            if [ "${FW_ALLOW_CLOSED_RECORD_EDIT:-0}" = "1" ]; then
+                _cr_route="FW_ALLOW_CLOSED_RECORD_EDIT"
+            elif [ -f "$FILE_PATH" ] && echo "$INPUT" | python3 -c "
+import json, re, sys
+try:
+    ti = json.load(sys.stdin).get('tool_input', {})
+    text = open(sys.argv[1], encoding='utf-8').read()
+except Exception:
+    sys.exit(1)
+edits = ti.get('edits') if isinstance(ti.get('edits'), list) else [ti]
+m = re.search(r'^## Updates[ \t]*$', text, re.M)
+if not m or not edits:
+    sys.exit(1)
+nxt = re.search(r'^## ', text[m.end():], re.M)
+lo, hi = m.end(), (m.end() + nxt.start()) if nxt else len(text)
+for e in edits:
+    old, new = e.get('old_string') or '', e.get('new_string')
+    if not isinstance(new, str) or not old or e.get('replace_all'):
+        sys.exit(1)
+    if not new.startswith(old) or re.search(r'^#{1,2} ', new[len(old):], re.M):
+        sys.exit(1)
+    if text.count(old) != 1:
+        sys.exit(1)
+    i = text.index(old)
+    if i < lo or i + len(old) > hi:
+        sys.exit(1)
+sys.exit(0)
+" "$FILE_PATH" 2>/dev/null; then
+                _cr_route="closed-record-updates-append"
+            fi
+            if [ -n "$_cr_route" ]; then
+                mkdir -p "$PROJECT_ROOT/.context/working" 2>/dev/null || true
+                {
+                    echo "- timestamp: '$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+                    echo "  task: '${_cr_task}'"
+                    echo "  flag: '${_cr_route}'"
+                    echo "  caller: 'check-active-task:closed-record'"
+                    echo "  file: '$(printf '%s' "$FILE_PATH" | tr -d "'")'"
+                } >> "$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml" 2>/dev/null || true
+                echo "NOTE: $_cr_task is a closed record — allowing via $_cr_route (T-4285). Logged." >&2
+                exit 0
+            fi
+            echo "" >&2
+            echo "BLOCKED: $FILE_PATH is the closed record of ${_cr_task:-a completed task}." >&2
+            echo "" >&2
+            echo "A write under .tasks/completed/ is judged by that task, not by focus, and" >&2
+            echo "${_cr_task:-the task} is closed. Routes:" >&2
+            echo "  1. Append a dated entry to its ## Updates section with the Edit tool:" >&2
+            echo "     old_string = the last lines of ## Updates, new_string = the same text" >&2
+            echo "     followed by your entry (no new '## ' heading). Allowed and logged." >&2
+            echo "  2. For any other change, ask the operator; FW_ALLOW_CLOSED_RECORD_EDIT=1" >&2
+            echo "     set on the Claude process (not a command prefix) allows it, logged Tier-2." >&2
+            echo "" >&2
+            echo "Policy: T-4285 (closed-record gate, 832 OBS-437)" >&2
+            exit 2
+        fi
+        ;;
+esac
+
 # Exempt paths — framework operations that are part of task management itself
 # Anchored to PROJECT_ROOT to prevent matching arbitrary paths (e.g., /root/.claude/)
 case "$FILE_PATH" in
@@ -716,11 +797,7 @@ fi
 # because tests/dev environments legitimately pipe JSON to the script and
 # would degrade to blocking. If both env vars get stripped by the host
 # runtime, the advisory log entry surfaces it via .gate-bypass-log.yaml.
-_under_agent_control() {
-    [ "${CLAUDECODE:-}" = "1" ] && return 0
-    [ -n "${AI_AGENT:-}" ] && return 0
-    return 1
-}
+# (Defined above the exempt-path check — T-4285's closed-record gate uses it there.)
 
 # --- Focus-target drift detection (T-1730, closes G3 from T-1729 meta-RCA) ---
 # When a Bash command targets a specific task that differs from the focused task,
