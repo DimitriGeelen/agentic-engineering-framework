@@ -395,6 +395,12 @@ DM_SHARED_NOTE = ("this project has no TermLink identity of its own, so it is si
                   "summaries only and no cursor moved. Consults on this agent's own inbox topic "
                   "are drained as usual.")
 
+#: T-4531: the same refusal for the host-keyed rails an identity transition (T-4311) keeps in view.
+DM_TRANSITION_NOTE = ("the dm rails listed as summaries are keyed by this host's shared TermLink "
+                      "identity (kept in view while SIDECAR_HOST_DM_TRANSITION is on). Every "
+                      "project on this host reads them, so they are not drained and no cursor "
+                      "moved; dm rails on this project's own identity are drained as usual.")
+
 
 def _print_inbox(args, messages) -> int:
     # T-3442: `--peek` shows DM rail SUMMARIES (count/cursor/unread, no hub
@@ -404,20 +410,26 @@ def _print_inbox(args, messages) -> int:
     # T-4252: ...unless our identity is the host-shared one. Every project on
     # the host sees those rails, so draining marks other projects' DMs read
     # (198 lost). Read-only summaries, the same shape --peek already uses.
+    # T-4531: with our own identity, the host-keyed rails a T-4311 transition
+    # keeps in view are just as shared — summaries too, only our key drains.
     shared = False if args.peek else dm.identity_is_host_shared()
     readonly = args.peek or shared
-    dm_rows = dm.summary() if readonly else []
+    dm_rows = dm.summary() if readonly else dm.shared_summary()
     dm_posts = [] if readonly else dm.pending(advance=True)
     if shared and not args.json:
         print(f"NOTE: {DM_SHARED_NOTE}", file=sys.stderr)
+    elif dm_rows and not readonly and not args.json:
+        print(f"NOTE: {DM_TRANSITION_NOTE}", file=sys.stderr)
 
     if args.json:
         payload = {"consults": messages}
         if shared:
             payload["dm_drain_refused"] = DM_SHARED_NOTE
-        if readonly:
+        elif dm_rows and not readonly:
+            payload["dm_drain_refused"] = DM_TRANSITION_NOTE
+        if readonly or dm_rows:
             payload["dm_rails"] = dm_rows
-        else:
+        if not readonly:
             payload["dm_posts"] = dm_posts
         if dm_rows or dm_posts:
             payload["dm_scope"] = "host-identity"
@@ -439,11 +451,10 @@ def _print_inbox(args, messages) -> int:
     if dm_rows or dm_posts:
         print(f"NOTE: {DM_SCOPE_NOTE}")
         print()
-    if readonly:
-        for row in dm_rows:
-            print(f"dm rail {_meta(row['topic'])}: count={row['count']} "
-                  f"cursor={row['cursor']} unread={row['unread']}")
-    else:
+    for row in dm_rows:
+        print(f"dm rail {_meta(row['topic'])}: count={row['count']} "
+              f"cursor={row['cursor']} unread={row['unread']}")
+    if not readonly:
         for msg in dm_posts:
             sender = msg.get("from") or inbox.UNATTRIBUTED
             print(f"--- dm @{_meta(msg.get('offset'))} on {_meta(msg.get('topic'))} "

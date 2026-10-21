@@ -227,6 +227,22 @@ def summary(key: str | None = None, *, lister=default_lister, state=None) -> lis
     return rows
 
 
+def shared_summary(*, lister=default_lister, state=None) -> list[dict]:
+    """`summary()` rows for the host-keyed rails a T-4311 transition keeps in
+    view but that are not on our own key (T-4531). Every project on the host
+    reads them, so `fw sidecar inbox` shows them read-only, as T-4252 does for
+    a host-shared identity. [] when no transition is on."""
+    host = legacy_host_fingerprint()
+    if not host:
+        return []
+    ours = identity_fingerprint()
+    rows = summary(host, lister=lister, state=state)
+    if ours:
+        own = {t.get("name") for t in rails_for_key(ours, lister=lister)}
+        rows = [r for r in rows if r["topic"] not in own]
+    return rows
+
+
 def pending(key: str | None = None, *, reader=inbox.default_reader,
             lister=default_lister, advance: bool = True,
             limit: int = inbox.DEFAULT_LIMIT) -> list[dict]:
@@ -245,6 +261,11 @@ def pending(key: str | None = None, *, reader=inbox.default_reader,
     if advance and key is None and identity_is_host_shared():
         # T-4252: never consume rails every project on the host can see.
         return []
+    if key is None:
+        # T-4531: our own key only. The host key rails_for_key() adds during a
+        # T-4311 transition are the host-shared rails every project sees, so
+        # they are summaries (shared_summary), never drained.
+        key = identity_fingerprint() or ""
     state = inbox.load_state()
     fresh = []
     for topic in rails_for_key(key, lister=lister):

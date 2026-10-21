@@ -181,14 +181,18 @@ def test_switch_keeps_old_host_rails_and_their_cursors(project):
     state = inbox.load_state()
     state["topics"][HOST_RAIL["name"]] = {"cursor": 3}   # read before the switch
     inbox.save_state(state)
+    # T-4531: the host rail stays in view as a summary (keeps its cursor) but is
+    # host-shared, so only the rail on our own key is drained.
+    assert [(r["topic"], r["cursor"], r["unread"]) for r in dm.shared_summary(lister=LISTER)] \
+        == [(HOST_RAIL["name"], 3, 2)]
     got = dm.pending(lister=LISTER, advance=True)
     by_topic = {}
     for p in got:
         by_topic.setdefault(p["topic"], []).append(p["offset"])
-    assert by_topic[HOST_RAIL["name"]] == [3, 4]          # resumes where it was
+    assert HOST_RAIL["name"] not in by_topic
     assert by_topic[OWN_RAIL["name"]] == [0, 1, 2, 3, 4]  # new rail, fresh cursor
     topics = inbox.load_state()["topics"]
-    assert topics[HOST_RAIL["name"]]["cursor"] == 5
+    assert topics[HOST_RAIL["name"]]["cursor"] == 3
     assert topics[OWN_RAIL["name"]]["cursor"] == 5
 
 
