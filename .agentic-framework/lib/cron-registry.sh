@@ -81,3 +81,23 @@ cron_install_target() {
     slug=$(basename "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
     echo "${FW_CRON_INSTALL_DIR:-/etc/cron.d}/agentic-audit-${slug}"
 }
+
+# cron_fw_path <framework_root> <project_root>
+#
+# T-4259: the fw path a generated cron line names. T-3835: it must outlive the
+# process — a consumer's vendored copy is its durable fw; the framework repo
+# itself (FRAMEWORK_ROOT == PROJECT_ROOT) keeps bin/fw. ONE definition for
+# `fw cron generate` and the doctor/audit registry→generated dry-runs: when the
+# dry-runs rendered with "$FRAMEWORK_ROOT/bin/fw" instead, any FRAMEWORK_ROOT
+# other than the vendored copy (inherited from the shell, or the framework
+# repo's fw run against a consumer) reported "edited but not generated" on a
+# registry nobody edited.
+cron_fw_path() {
+    local fr="$1" pr="$2"
+    if [ "$(cd "$fr" 2>/dev/null && pwd -P)" != "$(cd "$pr" 2>/dev/null && pwd -P)" ] \
+        && [ -x "$pr/.agentic-framework/bin/fw" ]; then
+        echo "$pr/.agentic-framework/bin/fw"
+    else
+        echo "$fr/bin/fw"
+    fi
+}

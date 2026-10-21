@@ -4513,7 +4513,8 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
         # (heredoc-in-$() in bin/fw is the canonical self-lockout shape).
         if [ -f "$cron_source" ]; then
             local _cron_dry_run
-            _cron_dry_run=$(python3 "$FRAMEWORK_ROOT/lib/cron_dry_run.py" "$PROJECT_ROOT" "$cron_registry" "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null || echo "__SKIP__")
+            # T-4259: render with the fw path generate writes (cron_fw_path).
+            _cron_dry_run=$(python3 "$FRAMEWORK_ROOT/lib/cron_dry_run.py" "$PROJECT_ROOT" "$cron_registry" "$(cron_fw_path "$FRAMEWORK_ROOT" "$PROJECT_ROOT")" 2>/dev/null || echo "__SKIP__")
             if [ "$_cron_dry_run" != "__SKIP__" ] && [ -n "$_cron_dry_run" ]; then
                 local _cron_on_disk
                 _cron_on_disk=$(cat "$cron_source" 2>/dev/null)
@@ -6901,12 +6902,11 @@ EOF
                 # (/tmp/fw-upstream-XXXXXX/fw) that is deleted at exit, so
                 # $FRAMEWORK_ROOT is the wrong answer there. A consumer's own
                 # vendored copy is its durable fw; the framework repo itself
-                # (FRAMEWORK_ROOT == PROJECT_ROOT) keeps bin/fw.
-                _cron_fw="$FRAMEWORK_ROOT/bin/fw"
-                if [ "$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd -P)" != "$(cd "$PROJECT_ROOT" && pwd -P)" ] \
-                    && [ -x "$PROJECT_ROOT/.agentic-framework/bin/fw" ]; then
-                    _cron_fw="$PROJECT_ROOT/.agentic-framework/bin/fw"
-                fi
+                # (FRAMEWORK_ROOT == PROJECT_ROOT) keeps bin/fw. T-4259: the
+                # choice lives in lib/cron-registry.sh so doctor/audit dry-run
+                # with the same path.
+                source "$FRAMEWORK_ROOT/lib/cron-registry.sh"
+                _cron_fw=$(cron_fw_path "$FRAMEWORK_ROOT" "$PROJECT_ROOT")
                 FW_CRON_FW_PATH="$_cron_fw" FW_CRON_LIB_DIR="$FRAMEWORK_ROOT/lib" python3 -c "
 import yaml, os, re, sys, tempfile
 
