@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T06:58:24Z
-last_update: '2026-10-21T07:00:55Z'
+last_update: 2026-10-21T08:48:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -403,7 +403,8 @@ its dispatch is still running (signed start, no completion, inside `complete_by`
 
 **Consumer command (832, for V-20261020-6ba9cb1c and V-20261020-5a4ff53f)** — no acknowledge needed,
 once this fix has reached them (bleeding-edge now; master at the next release):
-`cd /path/to/832 && .agentic-framework/bin/fw upgrade && PROJECT_ROOT="$PWD" python3 .agentic-framework/lib/verdict_ledger.py audit; echo "rc=$?"`
+`cd /path/to/832 && .agentic-framework/bin/fw upgrade && .agentic-framework/bin/fw reviewer verdict audit; echo "rc=$?"`
+(equivalent raw form: `PROJECT_ROOT="$PWD" python3 .agentic-framework/lib/verdict_ledger.py audit`)
 Expected: two `WARN void: V-20261020-... worker failed — the worker exited 143 ...` lines, no FAIL,
 `rc=3`; `fw audit` reports the ledger as WARN and pre-push passes. To get the criterion actually
 judged, re-run `fw reviewer judge T-209` without an outer `timeout` shorter than the dispatch TTL;
