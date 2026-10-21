@@ -1,0 +1,21 @@
+id: lib/notify_dispatch.py
+name: notify_dispatch
+type: script
+subsystem: framework-core
+location: lib/notify_dispatch.py
+tags: []
+
+purpose: "Run the skills-manager alert dispatcher the way it can actually run (T-3866)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown
