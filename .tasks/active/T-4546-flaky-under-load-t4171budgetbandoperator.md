@@ -1,10 +1,15 @@
 ---
 id: T-4546
-name: "Flaky under load: t4171_budget_band_operator_visible.bats 'warn: first call emits a lighter operator message; urgent is still announced after warn'"
+name: "Flaky under load: t4171_budget_band_operator_visible.bats 'warn: first call
+  emits a lighter operator message; urgent is still announced after warn'"
 description: >
-  Possibly reads shared budget or session state. Passes alone; failed once under the unit-suite's 12-way parallel run on a loaded shared host (2026-10-21), blocking a push via the ratchet. Make it deterministic under parallel load (no wall-clock or global-count assumptions, isolate shared state) and prove it with a stress run of the file in parallel.
+  Possibly reads shared budget or session state. Passes alone; failed once under the
+  unit-suite's 12-way parallel run on a loaded shared host (2026-10-21), blocking
+  a push via the ratchet. Make it deterministic under parallel load (no wall-clock
+  or global-count assumptions, isolate shared state) and prove it with a stress run
+  of the file in parallel.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T14:05:03Z
-last_update: 2026-10-21T14:05:03Z
-date_finished: null
+last_update: 2026-10-21T16:11:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T14:15:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T14:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4546: Flaky under load: t4171_budget_band_operator_visible.bats 'warn: first call emits a lighter operator message; urgent is still announced after warn'
@@ -62,8 +95,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause localised: the urgent-band push (`fw_notify`, lib/notify.sh:111) runs in the background by design and was still writing into the test's TEST_TEMP_DIR when teardown ran `rm -rf` (failure log: "rm: cannot remove ... Directory not empty" in teardown of test 4)
+- [x] tests/unit/t4171_budget_band_operator_visible.bats waits for every background push started by `_gate` to exit (lock inherited by the push) before teardown removes the temp dir; no sleep-based polling remains in the file
+- [x] Regression test: a slow fake dispatcher (sleeps, then writes) is fully drained by the wait helper before the test asserts, and the file passes
+- [x] The file passes 20 consecutive foreground runs while the host is loaded with parallel bats runs of the same file; it is NOT added to the unit-suite baseline (2026-10-21: PASS=20 FAIL=0 with 12 parallel bats loops + 4 busy loops, load average 38→65 on 24 cores)
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` reports clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +284,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+grep -q "_wait_pushes" tests/unit/t4171_budget_band_operator_visible.bats && ! grep -qE '^[[:space:]]*(for .*)?sleep |; sleep ' tests/unit/t4171_budget_band_operator_visible.bats
+timeout 300 bats tests/unit/t4171_budget_band_operator_visible.bats > /tmp/.t4546.out 2>&1 && ! grep -q "^not ok" /tmp/.t4546.out
+test "$(grep -c '# skip' /tmp/.t4546.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4546.lint 2>&1 && grep -qi clean /tmp/.t4546.lint
+! grep -q "t4171_budget_band_operator_visible" .context/audits/unit-suite/baseline.yaml
 
 ## RCA
 
@@ -264,6 +305,32 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** under the 12-way parallel unit-suite run (2026-10-21T13:51:37Z), test 4 of
+t4171_budget_band_operator_visible.bats failed in *teardown*, not in its body:
+`rm: cannot remove '/tmp/tmp.yjzXQsQ8tt': Directory not empty`. Every assertion passed.
+
+**Root cause:** the urgent band sends one push through `fw_notify`, which backgrounds the
+dispatch on purpose (lib/notify.sh:111, fire-and-forget so the hook never blocks). In the
+test the fake dispatcher lives in TEST_TEMP_DIR, so the background job writes there:
+python's `__pycache__/` from importing it, `dispatch.log`, and the hook's
+`.context/working/notify.log`. Test 4 ends on an urgent `_gate` and returns at once, so
+teardown's `rm -rf` (tests/unit/t4171_budget_band_operator_visible.bats:31) races the
+still-starting python process; under load the process is slow enough to create an entry
+inside a directory `rm` has already emptied, and `rmdir` fails. Tests 1 and 3 had the same
+race; tests 5 and 6 used `sleep 0.2..2`-style polling for the same background job, which
+is a wall-clock assumption of its own.
+
+**Why nothing caught it:** alone, python starts in tens of milliseconds, far inside the
+gap between the test body returning and teardown — the race only opens when the host is
+saturated. The test assumed the hook's work ends when the hook exits; for the push it
+does not, by design.
+
+**Prevention:** `_gate` now runs the hook holding a shared lock on an fd that every
+background child inherits; `_wait_pushes` (called by teardown and in place of every sleep)
+takes the exclusive lock, so it returns only after the last push process has exited —
+no wall clock involved. A regression test drives a deliberately slow dispatcher through
+the helper and asserts its write landed.
 
 ## Evolution
 
@@ -345,3 +412,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4546-flaky-under-load-t4171budgetbandoperator.md
 - **Context:** Initial task creation
+
+### 2026-10-21T16:11:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

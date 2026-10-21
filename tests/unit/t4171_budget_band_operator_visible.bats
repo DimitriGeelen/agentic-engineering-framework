@@ -28,7 +28,23 @@ setup() {
 }
 
 teardown() {
-    [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
+    [ -d "${TEST_TEMP_DIR:-}" ] || return 0
+    _wait_pushes
+    rm -rf "$TEST_TEMP_DIR"
+}
+
+# T-4546: the urgent push is fire-and-forget (lib/notify.sh backgrounds it), so it
+# outlives the hook and writes into TEST_TEMP_DIR (dispatch.log, the fake dispatcher's
+# __pycache__, notify.log). Under parallel load it was still writing when teardown ran
+# rm -rf ("Directory not empty"). _gate runs the hook holding a shared flock on fd 9,
+# which every background child inherits; _wait_pushes takes the exclusive lock, so it
+# returns only once the last of them has exited. No wall-clock guess anywhere.
+_wait_pushes() {
+    [ -f "$TEST_TEMP_DIR/push.lock" ] || return 0
+    python3 -c '
+import fcntl, signal, sys
+signal.alarm(120)
+fcntl.flock(open(sys.argv[1], "a"), fcntl.LOCK_EX)' "$TEST_TEMP_DIR/push.lock"
 }
 
 _transcript() {
@@ -47,9 +63,12 @@ _gate() {
     local sid="$1" tr="${2:-/nonexistent}"
     echo "${3:-2}" > "$PROJ/.context/working/.budget-gate-counter"
     local input="{\"hook_event_name\":\"PreToolUse\",\"session_id\":\"$sid\",\"transcript_path\":\"$tr\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"make build\"}}"
-    printf '%s' "$input" | PROJECT_ROOT="$PROJ" CONTEXT_DIR="$PROJ/.context" HOME="$TEST_TEMP_DIR/home" \
-        FW_CONTEXT_WINDOW=300000 NTFY_ENABLED=true SKILLS_DISPATCHER="$FAKE_DISPATCHER" \
-        bash "$BUDGET_GATE" > "$TEST_TEMP_DIR/out" 2> "$TEST_TEMP_DIR/err" && rc=0 || rc=$?
+    {
+        python3 -c 'import fcntl; fcntl.flock(9, fcntl.LOCK_SH)'   # T-4546: see _wait_pushes
+        printf '%s' "$input" | PROJECT_ROOT="$PROJ" CONTEXT_DIR="$PROJ/.context" HOME="$TEST_TEMP_DIR/home" \
+            FW_CONTEXT_WINDOW=300000 NTFY_ENABLED=true SKILLS_DISPATCHER="$FAKE_DISPATCHER" \
+            bash "$BUDGET_GATE" > "$TEST_TEMP_DIR/out" 2> "$TEST_TEMP_DIR/err" && rc=0 || rc=$?
+    } 9>> "$TEST_TEMP_DIR/push.lock"
     echo "$rc" > "$TEST_TEMP_DIR/rc"
 }
 
@@ -106,19 +125,30 @@ _json() {  # _json EXPR — evaluate a python expression over the hook's stdout 
     _cache urgent 265000 "$ME"
     _gate "$ME"
     _json "d['systemMessage']" >/dev/null   # stdout parses as JSON
-    for _ in 1 2 3 4 5 6 7 8 9 10; do [ -s "$DISPATCH_LOG" ] && break; sleep 0.2; done
+    _wait_pushes
     [ "$(wc -l < "$DISPATCH_LOG")" -eq 1 ]
     grep -qi "budget" "$DISPATCH_LOG"
     _gate "$ME"
-    sleep 0.5
+    _wait_pushes
     [ "$(wc -l < "$DISPATCH_LOG")" -eq 1 ]
 }
 
 @test "warn: no push (urgent only)" {
     _cache warn 250000 "$ME"
     _gate "$ME"
-    sleep 0.5
+    _wait_pushes
     [ ! -s "$DISPATCH_LOG" ]
+}
+
+@test "T-4546: a slow background push is drained before the test goes on (no teardown race)" {
+    # Dispatcher that is still running well after the hook returns, then writes.
+    printf 'import sys, time\ntime.sleep(1.5)\nopen("%s","a").write("late\\n")\n' \
+        "$DISPATCH_LOG" > "$FAKE_DISPATCHER"
+    _cache urgent 265000 "$ME"
+    _gate "$ME"
+    [ "$(cat "$TEST_TEMP_DIR/rc")" -eq 0 ]
+    _wait_pushes
+    grep -qx "late" "$DISPATCH_LOG"
 }
 
 @test "ok and critical are unchanged: ok silent, critical still blocks with no announcement JSON" {
