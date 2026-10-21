@@ -312,6 +312,14 @@ bin/fw vendor self --check --task T-4562
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** after a compaction (focus usually null), the `/resume` skill's step 5 — `WURL=$(cat .context/working/watchtower.url ...); curl -sf "$WURL/"` — was refused by the task gate in 832 on v1.8.15-be.2.
+
+**Root cause:** T-4512/T-4536 tightened `is_bash_safe_command` (agents/context/lib/safe-commands.sh) so a command word that begins with an expansion of file content is not provably read-only. The shipped template (lib/templates/resume-md.md) still prescribed exactly that shape, so the skill told every agent to run a command the gate refuses in the state the skill is used in.
+
+**Why structurally allowed:** the template's commands were never run through the gate. The gate change had tests for the gate; nothing tied the shipped skill text to the gate, so the two drifted with no signal until a consumer hit it.
+
+**Prevention:** the regression bats added in 1be1f6921 extracts every shell command from the resume template and asserts the read-only gate accepts it with no focus, so a future gate tightening (or template edit) that breaks the skill goes red at test time. The step now uses the read-only verb `fw watchtower reachable`, which resolves the URL itself.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
