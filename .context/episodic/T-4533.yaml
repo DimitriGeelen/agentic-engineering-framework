@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4533: Direct-path sidecar sends to AEF were rejected with HTTP 401 around a session restart (832, 2026-10-21 ~11:05Z)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T20:37:00Z
+# ============================================================================
+
+task_id: T-4533
+task_name: "Direct-path sidecar sends to AEF were rejected with HTTP 401 around a session restart (832, 2026-10-21 ~11:05Z)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-21T12:00:22Z
+completed: 2026-10-21T20:34:46Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T20:55:28+02:00
+last_commit: 2026-10-21T20:55:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  prove T-4560 covers 832's restart-window 401s — CLI replay test (3 sends after a failed-restart token rotation) fails on ba9eaa5f9^ with REJECTED, passes now; RCA + decision, no code change
+
+# Key outcomes
+outcomes:
+  - 'Root cause of the 401 around a session restart traced with file:line in `## RCA` (which credential, which side was stale)'
+  - 'Regression test reproduces this task''s scenario (receiver running with the startup token, receiver.token rewritten by a restart, sender reads the new token) against current code and the send is accepted (not 401)'
+  - 'If T-4560 (ba9eaa5f9) already covers the scenario: no code change here, coverage recorded in `## Decisions`; otherwise minimal fix with the test failing before / passing after'
+  - 'Sender reports a REJECTED send (401) with a non-zero exit and named state, not a bare success (covered by T-4560 tests, re-run here)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-21 — no code change; T-4560 covers this task'
+    chose: 'prove coverage with a reproduction test (`tests/unit/test_sidecar_restart_401_t4533.py`) and change no code.'
+    rationale: 'the 11:05Z evidence falls in the exact window T-4560 traced (10:52:15Z failed restart → 11:15:06Z). Both asks in the description are already met. (1) A restart that rotates the token no longer invalidates it for senders, because the live receiver accepts the current file token. (2) The sender names the cause: `fw sidecar send` prints `NOT delivered: REJECTED` with the `HTTP 401` reason and exits non-zero, pinned by `test_sidecar_send_state_t4560.py`.'
+    alternatives_rejected: ['re-announcing the token on restart. The registry already points senders at the token file, so the gap was on the receiver side only. A sender-side hub fallback on 401 was also rejected: it would mask an auth refusal behind a different path, so it is a policy change, not a bug fix.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4533-direct-path-sidecar-sends-to-aef-were-re.md'
+  - 'tests/unit/test_sidecar_restart_401_t4533.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T20:55:28'
+    action: 'T-4533: prove T-4560 covers 832''s restart-window 401s — CLI replay test (3 sends after a failed-restart token rotation) fails on ba9eaa5f9^ with REJECTED, passes now; RCA + decision, no code change'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 514 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 514
+  commits: 1
+  files_changed: 2
+  lines_added: 490
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4533-direct-path-sidecar-sends-to-aef-were-re.md
+generated_by: context-agent-hybrid
