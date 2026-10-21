@@ -13,11 +13,16 @@ FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
 INSTALL="$FRAMEWORK_ROOT/install.sh"
 
 # Extract print_completion_banner into a shim and call it (install_scan.bats pattern).
+# T-4263 follow-up: the banner also reads the global PROVIDER (T-4240). The shim
+# takes install.sh's own default line for it, so an unset global can't make the
+# function die under set -u again; pass a third arg to override the provider.
 run_banner() {
-    local target="$1" claudecode="$2"
-    env -u CLAUDECODE ${claudecode:+CLAUDECODE="$claudecode"} bash -c "
+    local target="$1" claudecode="$2" provider="${3:-}"
+    env -u CLAUDECODE -u PROVIDER ${claudecode:+CLAUDECODE="$claudecode"} \
+        ${provider:+PROVIDER="$provider"} bash -c "
         set -euo pipefail
         TARGET_DIR='$target'
+        $(grep -m1 '^PROVIDER=' "$INSTALL")
         BOLD=''; NC=''; GREEN=''; YELLOW=''; RED=''
         info() { echo \"[+] \$*\"; }
         warn() { echo \"[!] \$*\"; }
@@ -50,4 +55,15 @@ run_banner() {
     [[ "$output" == *"fw router + claude-fw are installed"* ]]
     [[ "$output" != *"Restart the agent"* ]]
     [[ "$output" != *"CLAUDECODE is set"* ]]
+}
+
+@test "T-4263 follow-up: PROVIDER reaches the banner (cursor gets no claude-fw restart line)" {
+    grep -q '^PROVIDER="${PROVIDER:-' "$INSTALL"
+    run run_banner /srv/proj "" cursor
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Start your AI agent (e.g. Cursor)"* ]]
+    [[ "$output" != *"Restart Claude Code in"* ]]
+    run run_banner /srv/proj ""
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Restart Claude Code in /srv/proj with claude-fw"* ]]
 }

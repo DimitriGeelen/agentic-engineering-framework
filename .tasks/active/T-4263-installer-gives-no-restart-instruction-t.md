@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:27:09Z
-last_update: 2026-10-21T20:53:19Z
+last_update: 2026-10-21T21:51:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,6 +96,9 @@ Greenfield run aef-install-20261017T144241Z finding F-23 (triage: docs/reports/T
 - [x] install.sh's success banner, when `CLAUDECODE` is set and a target project was installed, prints a restart instruction naming the target directory (hooks in `.claude/settings.json` load only at session start)
 - [x] Without `CLAUDECODE` the banner carries no restart note
 - [x] Regression bats `tests/unit/t4263_install_agent_restart_note.bats` fails on the pre-fix install.sh and passes after
+- [x] Follow-up (2026-10-21): t4263 tests 1-2 green again on HEAD — the banner shim defines every install.sh global the banner reads (`PROVIDER`), taken from install.sh's own default line rather than a hard-coded copy
+- [x] A cursor-provider case pins that the shim really passes PROVIDER through (cursor gets "Start your AI agent", not the T-4240 claude-fw line)
+- [x] `tests/unit/t4567_vendored_tree_tracked_parity.bats` stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,6 +281,8 @@ timeout 900 bats tests/unit/t4263_install_agent_restart_note.bats > /tmp/.t4263.
 test "$(grep -c '# skip' /tmp/.t4263.out)" -eq 0
 grep -q 'CLAUDECODE' install.sh
 bin/fw vendor self --check --task T-4263
+timeout 900 bats tests/unit/t4567_vendored_tree_tracked_parity.bats > /tmp/.t4567.out 2>&1 && ! grep -q "^not ok" /tmp/.t4567.out
+grep -q 'T-4263 follow-up' tests/unit/t4263_install_agent_restart_note.bats
 
 ## RCA
 
@@ -302,6 +307,12 @@ bin/fw vendor self --check --task T-4263
 **Why structurally allowed:** install.sh had no test of its closing banner. The existing install bats tests check verify/doctor steps and exit codes, and all of them run under `env -i`, which strips `CLAUDECODE`. So the agent-run path was never exercised.
 
 **Prevention:** The banner is now a separate function, `print_completion_banner`, and prints the restart note when `CLAUDECODE` is set and a target was installed. `tests/unit/t4263_install_agent_restart_note.bats` extracts that function and pins three cases: agent session with a target gets the note; no `CLAUDECODE` gets no note; no target gets no note. All three were RED on the pre-fix install.sh.
+
+**Follow-up RCA (2026-10-21, tests 1-2 red on HEAD):**
+- **Symptom:** `t4263_install_agent_restart_note.bats` tests 1 and 2 fail at `[ "$status" -eq 0 ]`; test 3 passes. Output: `PROVIDER: unbound variable`.
+- **Root cause:** T-4240 (68fc1e575) added `if [[ "$PROVIDER" != "cursor" ]]` inside `print_completion_banner` (install.sh:720, only in the non-empty `TARGET_DIR` branch, which is why test 3 survives). install.sh itself is correct: `PROVIDER="${PROVIDER:-generic}"` is a global at install.sh:32. The test shim extracts only the function body and runs it under `set -u` with a hand-written list of globals that lacked PROVIDER. The test was wrong, not install.sh. T-4567 (3d503bfc6) only untracked `.agentic-framework/install.sh` and is unrelated.
+- **Why nothing caught it:** the shim's globals were a hand-maintained copy of install.sh's top-level state; T-4240 widened the function's inputs and nothing tied the two together (T-4240's own bats tests the banner by other means).
+- **Prevention:** the shim now takes PROVIDER's default from install.sh's own `PROVIDER="${PROVIDER:-…}"` line, so a changed default follows automatically, and a cursor case proves the value reaches the function.
 
 ## Evolution
 
