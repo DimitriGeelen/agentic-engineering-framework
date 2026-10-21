@@ -59,7 +59,7 @@ vocabulary:
     start: supervisor confirms the agent child started (T2)
     complete: completion write with evidence; the backend takes T3, T3b, T5, T7b or answers T8 from the attempt's state (§3.3 fence is per attempt)
     reclaim: restarted supervisor claims supervisor_gen+1, or takes the lease over (T-RECLAIM)
-    confirm_end: the sweep writer confirms the attempt's end by the backend's own evidence (hub two sweeps at the last-seen epoch then G; hubless independent probe, evidence read first) and acts on it
+    confirm_end: the sweep writer confirms the attempt's end by the backend's own evidence (hub two sweeps at the last-seen epoch then G; hubless independent probe, evidence read first) and acts on it; G elapses inside the op. Precondition (hub) - the attempt has a seen_alive_epoch in given; an attempt never seen alive leaves only through the deadlines (T6b/T6), never T4 (§3.4)
     sweep: one sweep with an explicit observation (alive or absent) at an explicit registry epoch
     probe_undecided: the sweep cannot confirm or refute the end (partition, worker on another hub, reused pid)
     hub_restart: the authority restarts; registry_epoch is bumped where it exists
@@ -94,7 +94,7 @@ vectors:
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA01, backend: under_test}
       attempts:
-        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
+        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1, seen_alive_epoch: E1}
       evidence:
         E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
       clock: 20
@@ -127,7 +127,7 @@ vectors:
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA02, backend: under_test}
       attempts:
-        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
+        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1, seen_alive_epoch: E1}
       evidence:
         E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
       clock: 20
@@ -160,7 +160,7 @@ vectors:
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA03, backend: under_test}
       attempts:
-        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
+        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1, seen_alive_epoch: E1}
       clock: 20
     steps:
       - op: kill_supervisor
@@ -302,7 +302,7 @@ vectors:
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA06, backend: under_test}
       attempts:
-        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
+        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1, seen_alive_epoch: E1}
       evidence: {}
       clock: 20
     steps:
@@ -475,7 +475,7 @@ vectors:
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA09, backend: under_test}
       attempts:
-        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
+        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1, seen_alive_epoch: E1}
       evidence:
         E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 50}
       clock: 20
@@ -1299,7 +1299,7 @@ vectors:
     given:
       dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA25, backend: under_test}
       attempts:
-        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
+        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1, seen_alive_epoch: E1}
       clock: 20
     steps: []
     then: {judged_by: variants}
