@@ -10,10 +10,10 @@ description: >
   wrote. 832's fix: strip the template comment block and any bvp_scores_proposed rationale
   before the body is scored.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:08:21Z
-last_update: '2026-10-13T19:16:04Z'
+last_update: 2026-10-21T22:06:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced on current bleeding-edge: a template-only stub body scores D1>0 from text inside `<!-- -->` comments / template `#` guidance lines
+- [x] `estimate_task` strips HTML comment blocks and template guidance before body scoring, so a template-only stub scores D1=D2=D3=D4=0
+- [x] Prior estimator rationale (`bvp_scores_proposed` / `cost_estimate_proposed` rationale text) cannot reach the scored body, even when it appears below the frontmatter
+- [x] Real authored text still scores (a body sentence naming a "completion gate" outside comments keeps D1=4)
+- [x] Regression test in tests/unit fails before the fix and passes after; neighbouring estimator tests pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,8 +263,19 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t4185_estimator_strip_unauthored.py -q > /tmp/.t4185 2>&1 && grep -q "4 passed" /tmp/.t4185
+python3 -m pytest tests/unit/test_bvp_estimator.py tests/unit/test_t3428_declarative_scoring.py tests/unit/test_estimator_inception.py -q > /tmp/.t4185n 2>&1 && grep -q passed /tmp/.t4185n
+bin/fw vendor self --check --task T-4185
 
 ## RCA
+
+**Symptom:** stub tasks (template body, nothing authored) all got the same proposed vector — this task itself was proposed D1=4 (body:structural-gate) D2=4 D3=3 D4=2 F-RECALL=2 on 2026-10-13. Reproduced on bleeding-edge 41aec13c6 with the live `.tasks/templates/default.md`.
+
+**Root cause:** `estimate_task` (agents/termlink/bvp-estimator/estimator.py:2717, pre-fix 2683) passed the raw body from `parse_task` to every heuristic handler. The template's HTML comments and `#` guidance lines in `## Verification` contain "completion gate", "fw doctor", etc., which match the D1 gate regex (estimator.py:302-307) and the D2-D4/F-RECALL keyword lists. A `_strip_template` already existed (T-3428) but only `score_declarative` used it; no path stripped HTML comments or the estimator's own rationale (which reaches the body whenever the frontmatter does not parse as a closed block).
+
+**Why structurally allowed:** the handler tests use hand-written body strings, never the real template, so no test ever scored a stub; template prose grew trigger words over time with nothing noticing.
+
+**Prevention:** `_strip_unauthored` (comments + prior rationale) for every scorer and `_strip_template` for the handlers, in `estimate_task`; `tests/unit/test_t4185_estimator_strip_unauthored.py` scores the LIVE default template as a stub and requires all core drivers 0, so a future template edit that reintroduces trigger words fails the test.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -357,3 +371,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4185-bvp-estimator-strip-template-comments-an.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:06:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
