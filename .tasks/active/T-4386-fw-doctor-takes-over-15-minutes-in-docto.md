@@ -43,7 +43,7 @@ arc_id: test-suite-health
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T12:29:28Z
-last_update: 2026-10-19T20:19:58Z
+last_update: 2026-10-20T23:54:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -301,6 +301,14 @@ bin/fw vendor self --check --task T-4386
 **Why structurally allowed:** nothing measures doctor's run time. `_doctor_phase` (T-3452) records phases only for a killed run. Each check was cheap when written and grew linearly with the corpus (930 active tasks, 4.4k tasks, 1.5 GB of transcripts). Doctor is run interactively, where 3 minutes reads as "slow" rather than as a defect, so the cost surfaced only as slow tests, where the tempting fix is to exclude the tests.
 
 **Prevention:** `tests/unit/test_t4386_doctor_perf.py` pins each fixed hot spot to its fast shape (newest-transcript-only, one git log per stall scan, no whole-file regex, concurrent probes, one classifier process, lazy owner lookup, libyaml, overlapped child). 8 of its 9 tests fail on the pre-fix code; the 9th pins task-debt parity with the old loop. The profile and the remaining cost centres are in docs/reports/T-4386-doctor-profile.md. A doctor wall-clock budget check would be the structural rail; it is not built here (it would need a stable threshold on a host whose load swings 20-54).
+
+**Close-gate red on `t2243_doctor_self_vendor_templates.bats` (2026-10-21): a flake, not a T-4386 regression.** Evidence:
+- Run alone, the exact Verification line passes: `timeout 1500 bats tests/unit/t2243_doctor_self_vendor_templates.bats` → `ok 1..4`, rc=0, no skips, 917 s wall at load average 85 → 50 (four `fw doctor` runs, ~230 s each).
+- T-4386 did not touch the code the file asserts on. Its only `bin/fw` hunk (80a17b283, `@@ -4113`) is the task-debt loop; the per-class vendored-drift block the four tests read (`bin/fw:1995-2060`, T-2243) is unchanged, and none of its other files feed that block.
+- The file is not isolated from concurrent workers: setup/teardown mutate the LIVE `.agentic-framework/.tasks/templates/default.md`, and t1/t3 assert on drift counts in the shared vendored tree. Any parallel worker's `bin/fw vendor self` (which re-syncs templates) between a test's sentinel append and its `fw doctor` erases the drift t2-t4 expect, and a worker's uncommitted `.tasks/templates/` edit adds drift that breaks t1 (`templates (1)` absent) or t3 (`first 1:`). Five workers were vendoring in this checkout during the close attempt.
+- The 1500 s timeout leaves ~40 % headroom at load 50-85; a load spike with concurrent doctors can also hit it (exit 124 reads as a red line).
+- The criterion "each well under the old 15-minute run" holds per doctor run (~230 s vs ~900 s), not for this file's wall-clock under this load: four doctors took 917 s.
+Not fixed here: making the t2243 file use a fixture copy instead of the live vendored tree is a separate test-isolation change. Re-run the line when the checkout is quiet (no concurrent `fw vendor self`).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
