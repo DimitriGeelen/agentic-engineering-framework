@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4552: G-122 doctor false positive: old framework hook fragments (VERSION markers, framework echoes) reported as commented project lines
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T16:05:20Z
+# ============================================================================
+
+task_id: T-4552
+task_name: "G-122 doctor false positive: old framework hook fragments (VERSION markers, framework echoes) reported as commented project lines"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T14:32:24Z
+completed: 2026-10-21T16:04:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T18:01:46+02:00
+last_commit: 2026-10-21T18:03:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  G-122 doctor check ignores old framework hook lines (VERSION markers, comments, any line of a shipped hook template via framework-hook-lines.txt); genuine project lines still WARN; regression bats with the field fragments. tick Agent ACs (verification green)
+
+# Key outcomes
+outcomes:
+  - '`fw doctor` G-122 check does not count `# VERSION=N` markers or lines that belong to a framework hook (any version) as commented project lines'
+  - 'A genuine commented project line under the T-4403 header still produces the G-122 WARN'
+  - 'Regression bats test uses the exact field fragments (`# VERSION=1.17`, `# VERSION=1.5`, inception_commit_limit echo, .secret-scan-allowlist echo, `_version=$(git describe ...)`) plus the project-line control, and fails without the fix'
+  - 'Vendored copy in sync (`bin/fw vendor self --check --task T-4552` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/git/lib/framework-hook-lines.txt'
+  - 'bin/fw'
+  - '.tasks/active/T-4552-g-122-doctor-false-positive-old-framewor.md'
+  - 'tests/unit/t4552_doctor_g122_framework_lines.bats'
+  - 'tools/gen-framework-hook-lines.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T18:01:46'
+    action: 'T-4552: G-122 doctor check ignores old framework hook lines (VERSION markers, comments, any line of a shipped hook template via framework-hook-lines.txt); genuine project lines still WARN; regression bats with the field fragments'
+  - time: '2026-10-21T18:03:29'
+    action: 'T-4552: tick Agent ACs (verification green)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 92 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, doctor, hooks, G-122]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 92
+  commits: 2
+  files_changed: 5
+  lines_added: 944
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4552-g-122-doctor-false-positive-old-framewor.md
+generated_by: context-agent-hybrid

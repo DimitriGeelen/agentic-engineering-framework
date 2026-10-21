@@ -10,12 +10,12 @@ description: >
   hook lines and VERSION markers as framework-owned and not WARN; regression test
   with those exact fragments.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, doctor, hooks, G-122]
-components: []
+components: [bin/fw]
 related_tasks: [T-4515]
 origin: {kind: "peer", source: "dimitri-mint-dev", ref: "5c5a8309"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,8 +45,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "5c5a8309"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T14:32:24Z
-last_update: 2026-10-21T15:54:30Z
-date_finished:
+last_update: 2026-10-21T16:04:41Z
+date_finished: 2026-10-21T16:04:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -398,3 +398,20 @@ bin/fw vendor self --check --task T-4552
 
 ### 2026-10-21T15:54:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9fd75f43
+- **Timestamp:** 2026-10-21T16:05:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T16:04:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
