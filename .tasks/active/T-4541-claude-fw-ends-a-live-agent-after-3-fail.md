@@ -105,7 +105,7 @@ bvp_scores_proposed:
 - [x] `_tl_session_gone` (bin/claude-fw) no longer ends the session on failed pings alone: after CLAUDE_FW_PING_FAILURES consecutive failures it declares the session gone only when no exact-name `termlink register --name <session>` process is left (`_tl_register_pids`); while one lives it logs DEGRADED and keeps waiting
 - [x] Regression bats `tests/unit/t4541_claude_fw_ping_needs_second_signal.bats`: ping always fails + live fake register process → wrapper keeps the session past 3 failures and exits 0 on the exit marker; fake process dies → wrapper exits 1. Fails without the fix
 - [x] Existing `tests/unit/t3648_claude_fw_ping_tolerance.bats` and `t3647_claude_fw_register_leak.bats` still pass (no register process → sustained failure still ends the wait)
-- [ ] `bin/fw vendor self --check --task T-4541` clean
+- [x] `bin/fw vendor self --check --task T-4541` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
