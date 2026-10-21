@@ -114,7 +114,7 @@ Attribution, largest first:
 - [x] Regression bats under tests/unit/ that runs the fixed creators and fails if a new /tmp/fw-* or /tmp/aef-* remains
 - [x] Suite-level check: unit-suite runner reports new /tmp/aef-* / /tmp/fw-* left behind by the run
 - [x] Cleanup of existing leftovers written as a runme for the operator (no recursive delete by the agent)
-- [ ] `bin/fw vendor self --check --task T-4526` clean
+- [x] `bin/fw vendor self --check --task T-4526` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
