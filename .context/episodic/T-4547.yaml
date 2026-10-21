@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4547: Flaky under load: test_t3736_basename_index_single_build.py::test_many_misses_build_index_and_walk_tree_at_most_once
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:49:38Z
+# ============================================================================
+
+task_id: T-4547
+task_name: "Flaky under load: test_t3736_basename_index_single_build.py::test_many_misses_build_index_and_walk_tree_at_most_once"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T14:05:13Z
+completed: 2026-10-21T18:49:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T18:32:30+02:00
+last_commit: 2026-10-21T18:32:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  basename/tree caches age from walk end; T-3736 tests use a fake clock and empty walk. tick vendor-check AC
+
+# Key outcomes
+outcomes:
+  - '`web/shared.py` stamps `_BASENAME_INDEX["built"]` and `_TREE_NAMES["built"]` with the clock read AFTER the walk, so a walk slower than the 30 s TTL does not produce a cache born stale'
+  - '`tests/unit/test_t3736_basename_index_single_build.py` drives a fake monotonic clock and an empty fake walk instead of wall time and the real tree: the counts cannot be disturbed by host load (file runtime 176 s → ~1 s at load ~100)'
+  - 'Regression tests `test_tree_walk_slower_than_ttl_is_not_redone` and `test_index_build_slower_than_ttl_is_not_redone` (fake clock advances 40 s inside the walk) fail on HEAD''s `web/shared.py` (2 failed) and pass after'
+  - 'The test file passes 20 consecutive foreground iterations while the host is loaded (load avg 43→70, 8 CPU burners + 12 parallel copies per iteration): 260/260 runs passed; neighbours test_t3587_file_refs / test_t3853_producer_text / test_govd_sandbox: 83 passed'
+  - '`bin/fw vendor self --check --task T-4547` is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/shared.py'
+  - '.tasks/active/T-4547-flaky-under-load-testt3736basenameindexs.md'
+  - 'tests/unit/test_t3736_basename_index_single_build.py'
+  - 'web/shared.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T18:32:30'
+    action: 'T-4547: basename/tree caches age from walk end; T-3736 tests use a fake clock and empty walk'
+  - time: '2026-10-21T18:32:51'
+    action: 'T-4547: tick vendor-check AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 283 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 283
+  commits: 2
+  files_changed: 4
+  lines_added: 131
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4547-flaky-under-load-testt3736basenameindexs.md
+generated_by: context-agent-hybrid
