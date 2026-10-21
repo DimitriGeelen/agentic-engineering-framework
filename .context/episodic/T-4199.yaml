@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4199: Dead end: the sovereignty gate sends the operator to /review/T-XXX for a human-owned task with 0 Human ACs, but that page has no close/approve control — name the real route (fw task delegate → reviewer, T-4156) or add a control (dimitri-mint-dev P-014, their T-114)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T23:16:05Z
+# ============================================================================
+
+task_id: T-4199
+task_name: "Dead end: the sovereignty gate sends the operator to /review/T-XXX for a human-owned task with 0 Human ACs, but that page has no close/approve control — name the real route (fw task delegate → reviewer, T-4156) or add a control (dimitri-mint-dev P-014, their T-114)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T21:43:02Z
+completed: 2026-10-21T23:15:23Z
+duration_days: 8
+updates_count: 2
+first_commit: 2026-10-13T23:43:59+02:00
+last_commit: 2026-10-21T23:50:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — sovereignty gate sends the operator to a review page with no control for 0-Human-AC tasks (dimitri-mint-dev P-014). R-033 sovereignty gate names the working route for a human-owned task with no Human criteria (fw task delegate -> fw reviewer judge, T-4156) or the operator CLI close for carve-outs, instead of only the 0/0 /review page; lib/unclosable_misfiled.py route subcommand; regression bats; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduced on bleeding-edge: closing a human-owned task with 0 Human ACs prints only the Watchtower review link, naming no route that can actually close it'
+  - 'Sovereignty gate message, for a human-owned task with 0 Human ACs, names the working route(s) (`fw task delegate T-XXX` → reviewer path, or the operator CLI close) instead of only the review page'
+  - 'Regression test fails before the fix and passes after'
+  - 'Existing tests nearest the changed code still pass; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-21 — fix the gate message, not the /review page'
+    chose: 'name the real route in the R-033 refusal (the task title''s first option). Reuse `lib/unclosable_misfiled.py` predicate + `carve_out` via a new `route` subcommand so the gate, `fw review-queue` and doctor share one definition.'
+    rationale: 'the brief forbids nothing in web/, but a /review page change is a render surface (P-013 needs a `[REVIEW]` Human AC, a Watchtower restart, operator taste review). The message fix removes the dead end on its own: whoever hits the gate now gets a command that works. - **Left open (operator''s call):** should `/review/<id>` for a 0-Human-AC human-owned task also show this route (or a close control)? Recommendation: yes, as a separate small render task, showing the same two commands — a close button would need a new Watchtower→close path, which is a sovereignty change, not a chore.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/unclosable_misfiled.py'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/unclosable_misfiled.py'
+  - '.tasks/active/T-4199-dead-end-the-sovereignty-gate-sends-the-.md'
+  - 'tests/unit/t4199_sovereignty_gate_names_route.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T23:43:59'
+    action: 'T-4199: file — sovereignty gate sends the operator to a review page with no control for 0-Human-AC tasks (dimitri-mint-dev P-014)'
+  - time: '2026-10-21T23:50:42'
+    action: 'T-4199: R-033 sovereignty gate names the working route for a human-owned task with no Human criteria (fw task delegate -> fw reviewer judge, T-4156) or the operator CLI close for carve-outs, instead of only the 0/0 /review page; lib/unclosable_misfiled.py route subcommand; regression bats; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11612 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11612
+  commits: 2
+  files_changed: 6
+  lines_added: 521
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4199-dead-end-the-sovereignty-gate-sends-the-.md
+generated_by: context-agent-hybrid
