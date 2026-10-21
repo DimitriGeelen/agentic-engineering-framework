@@ -330,6 +330,11 @@ bin/fw vendor self --check --task T-4352
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-10-21 — the docs were wrong, not the wrapper
+- **What changed:** GH #95 read as a wrapper bug (auto-restart should continue the conversation). The code has defaulted to a fresh session since T-3166 (`FW_RESTART_MODE=fresh`); `claude -c`/`--resume` is the opt-in. Only the docs still described the old continue behaviour.
+- **Plan impact:** no code change; the fix is documentation (713d2df30) plus a test that pins the docs to the default.
+- **Triggered:** nothing new; the related wrong SessionStart header was fixed separately in T-4353.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
