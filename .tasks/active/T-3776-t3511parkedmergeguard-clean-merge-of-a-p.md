@@ -11,7 +11,7 @@ description: >
   for another reason under contention. Suite keeps no per-test output; capture it
   under load to diagnose.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ related_tasks: [T-3747]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T17:03:09Z
-last_update: '2026-10-03T17:15:40Z'
+last_update: 2026-10-21T00:03:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,16 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction status at HEAD established with recorded evidence (suite run under load / latest unit-suite record for t3511 test 3)
+- [x] If it reproduces: root cause named and fixed with a regression test; if not: the fixing commit cited, or stated plainly that none was identified (see RCA: none identified)
+- [x] `tests/unit/t3511_parked_merge_guard.bats` passes 13/13 with no skips
+
+**Does not reproduce at HEAD (20884da63..e82fa2099, 2026-10-21):**
+- 3 rounds × 8 concurrent runs of the file: 312 ok, 0 not ok, 0 skip.
+- 1 round × 8 concurrent runs with `PROJECT_ROOT` exported to the live repo (the only condition T-3976 ever reproduced under): 104 ok, 0 not ok.
+- Nightly reports `.context/audits/unit-suite/2026-10-14.yaml` … `2026-10-19.yaml`: t3511 completed in all six (17–24 s) with no t3511 entry in `failed:`. (2026-10-20 ran 598/860 files and did not reach it.)
+- Last t3511 red on record: 2026-10-13 (tests 5, 8, 9 — not test 3). Test 3 itself was red only on 2026-10-03.
+- The reds were never confined to test 3: 2026-10-03…10-13 show 8 different t3511 tests red at random, which is T-3976's symptom (fixture `git commit` exiting non-zero with empty output under the parallel suite). This task is a single instance of that class.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -258,8 +266,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3511_parked_merge_guard.bats > /tmp/.t3776.tap 2>&1 && ! grep -q "^not ok" /tmp/.t3776.tap && grep -q "^ok 13 " /tmp/.t3776.tap
+test "$(grep -c '# skip' /tmp/.t3776.tap)" -eq 0
 
 ## RCA
+
+**Symptom:** 2026-10-03 nightly unit suite recorded t3511 test 3 ("clean merge of a PARKED branch is refused") red, while test 4 in the same file passed.
+
+**Root cause:** Not localised; the defect no longer reproduces (evidence under Acceptance Criteria). The red belongs to the wider random-red class across 8 t3511 tests from 2026-10-03 to 10-13, tracked in T-3976: fixture `git commit` in the temp repo exiting non-zero with empty output under the parallel suite. In this test that would make `_task`/`_feature_branch` fail and the test go red without a guard verdict. No guard defect was found: `agents/git/lib/parked-merge-guard.sh` has no timeout or fail-open path (T-3976 findings).
+
+**Fixing commit:** None identified. No commit between the last red (2026-10-13) and the first clean run (2026-10-14) touches `agents/git/` apart from ff447472f (T-4167 pre-commit stale-index guard), and nothing ties it to this failure. 3a4fa5b33 (T-3976, 2026-10-07) only added diagnostics: GIT_TRACE plus rc on a fixture commit failure.
+
+**Why nothing caught it:** The suite keeps no per-test output for the file, so a one-off red leaves only its test name behind.
+
+**Prevention:** 3a4fa5b33 makes `_commit_all` print rc and a GIT_TRACE dump on failure, so a recurrence names the failing hook. The investigation stays open under T-3976, which owns the class, and this task is not a separate defect.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -355,3 +375,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3776-t3511parkedmergeguard-clean-merge-of-a-p.md
 - **Context:** Initial task creation
+
+### 2026-10-21T00:03:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
