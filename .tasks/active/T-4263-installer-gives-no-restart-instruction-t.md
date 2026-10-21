@@ -7,10 +7,10 @@ description: >
   after restart. Findings (0909 run aef-install-20261017T144241Z): F-23. Triage: docs/reports/T-4253-greenfield-run-triage.md
   PROPOSED-NEW-10.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:27:09Z
-last_update: '2026-10-17T15:31:18Z'
+last_update: 2026-10-21T20:53:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,14 +87,15 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Greenfield run aef-install-20261017T144241Z finding F-23 (triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-10). An agent that ran install.sh from inside a live Claude Code session was told "start your AI agent" but not that its own running session has none of the newly installed hooks.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] install.sh's success banner, when `CLAUDECODE` is set and a target project was installed, prints a restart instruction naming the target directory (hooks in `.claude/settings.json` load only at session start)
+- [x] Without `CLAUDECODE` the banner carries no restart note
+- [x] Regression bats `tests/unit/t4263_install_agent_restart_note.bats` fails on the pre-fix install.sh and passes after
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,6 +274,11 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 900 bats tests/unit/t4263_install_agent_restart_note.bats > /tmp/.t4263.out 2>&1 && ! grep -q "^not ok" /tmp/.t4263.out
+test "$(grep -c '# skip' /tmp/.t4263.out)" -eq 0
+grep -q 'CLAUDECODE' install.sh
+bin/fw vendor self --check --task T-4263
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -288,6 +294,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** In greenfield run aef-install-20261017T144241Z (F-23), an agent ran install.sh from inside its own Claude Code session. The success banner said "start your AI agent in the project directory" and nothing else, so the agent carried on in a session that had none of the hooks it had just installed.
+
+**Root cause:** The banner in install.sh `main()` (was install.sh:704-715 at HEAD d038e2385) had a single audience: a human about to launch an agent. It never checked `CLAUDECODE`, the variable Claude Code sets in every session it runs. Claude Code reads `.claude/settings.json` only at session start, so a running session has to restart before the newly written hooks apply, and nothing said so.
+
+**Why structurally allowed:** install.sh had no test of its closing banner. The existing install bats tests check verify/doctor steps and exit codes, and all of them run under `env -i`, which strips `CLAUDECODE`. So the agent-run path was never exercised.
+
+**Prevention:** The banner is now a separate function, `print_completion_banner`, and prints the restart note when `CLAUDECODE` is set and a target was installed. `tests/unit/t4263_install_agent_restart_note.bats` extracts that function and pins three cases: agent session with a target gets the note; no `CLAUDECODE` gets no note; no target gets no note. All three were RED on the pre-fix install.sh.
 
 ## Evolution
 
@@ -369,3 +383,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4263-installer-gives-no-restart-instruction-t.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:53:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

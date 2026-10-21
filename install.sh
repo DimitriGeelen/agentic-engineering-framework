@@ -701,6 +701,10 @@ main() {
         exit 1
     fi
 
+    print_completion_banner
+}
+
+print_completion_banner() {
     echo -e "${GREEN}${BOLD}Installation complete!${NC}"
     echo ""
     if [[ -n "$TARGET_DIR" ]]; then
@@ -712,6 +716,17 @@ main() {
         echo ""
         echo "  Onboarding tasks were seeded to guide your first session — start your AI"
         echo "  agent (e.g. Claude Code) in the project directory."
+        # T-4263 (F-23): an agent that ran this installer from inside its own
+        # session would otherwise carry on ungoverned — Claude Code reads
+        # .claude/settings.json (the hooks just installed) at session start only.
+        if [[ -n "${CLAUDECODE:-}" ]]; then
+            echo ""
+            warn "This installer ran inside a Claude Code session (CLAUDECODE is set)."
+            echo "  The hooks just written to ${TARGET_DIR}/.claude/settings.json are read only"
+            echo "  at session start, so THIS session runs without them. Restart the agent there:"
+            echo ""
+            echo "    exit this session, then: cd ${TARGET_DIR} && claude-fw"
+        fi
     else
         echo "  fw router + claude-fw are installed onto PATH."
         echo ""
