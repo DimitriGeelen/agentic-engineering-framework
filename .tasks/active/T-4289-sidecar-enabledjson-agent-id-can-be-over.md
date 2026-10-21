@@ -11,10 +11,10 @@ description: >
   not from an inherited env var, or the env var is honoured only when it matches the
   project; test with a polluted env.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T08:37:12Z
-last_update: '2026-10-18T08:46:03Z'
+last_update: 2026-10-21T20:19:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,14 +91,28 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Does not reproduce on bleeding-edge (2026-10-21, worker w4289b).** Already fixed by
+T-4416 (4bc847cda) and T-4423 (21c890561), both filed after this task:
+- The only writer of enabled.json is `watcher.enable()` (lib/sidecar/watcher.py:249), reached
+  only via `_start_watcher` (lib/sidecar_cli.py:932) from `cmd_start` / `cmd_receiver_start`,
+  both guarded by `_refuse_persist` (lib/sidecar_cli.py:967): refuses outright under
+  `FW_DISPATCHED_WORKER=1`, and refuses any agent id ≠ `watcher.project_agent()` (the project
+  id, never the env var) without `--force`/`--i-am-human`.
+- `cmd_ensure` skips foreign sessions (`foreign_session_reason`, watcher.py:213) and restarts
+  the receiver as the project agent even when enabled.json holds a foreign id
+  (`receiver_agent`, watcher.py:235; ENSURE_AGENT_MISMATCH event + doctor/audit WARN).
+- Live check: `env FW_SIDECAR_AGENT_ID=w4289 [FW_DISPATCHED_WORKER=1|0] bin/fw sidecar start`
+  → both rc=2 with the T-4423 refusal; no enabled.json written.
+- Regression coverage already exists: `test_start_refuses_foreign_agent_from_session_env`
+  (tests/unit/test_sidecar_agent_persist_t4423.py:90) is exactly this task's polluted-env case;
+  the T-4423 + T-4416 suites run 27 passed. No source change made.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge: a process with an inherited foreign `FW_SIDECAR_AGENT_ID` (and with `FW_DISPATCHED_WORKER=1`) running `fw sidecar start` / `ensure` cannot write a foreign agent id into `.context/sidecar/enabled.json`
+- [x] If it still reproduces: fix + regression test red before / green after; if not: evidence recorded here and no source change
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,6 +290,7 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_sidecar_agent_persist_t4423.py tests/unit/test_sidecar_worker_hijack_t4416.py -q > /tmp/.t4289.out 2>&1 && grep -q passed /tmp/.t4289.out
 
 ## RCA
 
@@ -292,6 +307,11 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a process inheriting FW_SIDECAR_AGENT_ID (dispatched worker, leaked test fixture) could rewrite `.context/sidecar/enabled.json`'s `agent`, so the project receiver served the worker's id.
+**Root cause:** at filing, `fw sidecar start` persisted `args.agent or circuit.agent_name()` (env-derived) via `watcher.enable()` (lib/sidecar/watcher.py:249) with no check against the project's own id; ensure replayed the persisted id.
+**Why structurally allowed:** identity had one channel (env) for both "who am I addressed as" and "who owns this project's sidecar" — G-116 inherited-env family.
+**Prevention:** already shipped by T-4416/T-4423 — `_refuse_persist` (lib/sidecar_cli.py:967) refuses a non-project agent and any start under FW_DISPATCHED_WORKER=1; ensure/supervisor always use `watcher.project_agent()`; doctor/audit WARN on a persisted mismatch; pinned by tests/unit/test_sidecar_agent_persist_t4423.py (incl. :90, the polluted-env case). Re-verified here; no further change needed.
 
 ## Evolution
 
@@ -373,3 +393,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4289-sidecar-enabledjson-agent-id-can-be-over.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:19:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
