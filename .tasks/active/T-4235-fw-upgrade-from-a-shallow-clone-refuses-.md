@@ -6,10 +6,10 @@ description: >
   4. The shallow clone path fails the foreign-source/ancestry check; fw upgrade should
   fetch enough history itself (or --unshallow automatically) and say so.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:29:04Z
-last_update: '2026-10-17T13:31:29Z'
+last_update: 2026-10-21T18:54:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,14 +86,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reproduced on bleeding-edge 2026-10-21: the T-1912 precheck in `do_upgrade` (lib/upgrade.sh) computes the relation against a shallow `$FRAMEWORK_ROOT`, gets `foreign-source`, and refuses with a "run fetch --unshallow" remedy — it never fetches the history itself.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `do_upgrade` from a shallow source whose history lacks the consumer's recorded `version_sha` runs `git fetch --unshallow` on the source itself, says so on stdout, and proceeds past the precheck (no `REFUSED  Consumer`)
+- [x] When that fetch fails (no reachable remote) the existing foreign-source refusal and its unshallow remedy are unchanged, and the refusal stays side-effect free (T-4498)
+- [x] `--dry-run` does not fetch; it says a real run would fetch the full history first
+- [x] Regression bats `tests/unit/t4235_upgrade_auto_unshallow.bats` fails before the fix and passes after; t3714, t3886, t4498 stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -271,8 +273,21 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4235_upgrade_auto_unshallow.bats > /tmp/.t4235.out 2>&1 && ! grep -q "^not ok" /tmp/.t4235.out
+test "$(grep -c '# skip' /tmp/.t4235.out)" -eq 0
+timeout 900 bats tests/unit/t3714_shallow_source.bats tests/unit/t4498_refused_upgrade_no_self_vendor.bats tests/unit/t3886_upgrade_autoclone_history.bats > /tmp/.t4235n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4235n.out
+bash -n lib/upgrade.sh && bash -n lib/version-relation.sh
+bin/fw vendor self --check --task T-4235
 
 ## RCA
+
+**Symptom:** 1409 (msg eb27d14e, 1.8.3 → 1.8.10): `fw upgrade` run from a `--depth` clone refused as foreign-source; the operator had to run `git fetch --unshallow` by hand and re-run.
+
+**Root cause:** `do_upgrade`'s T-1912 precheck (lib/upgrade.sh, `fw_version_relation "$project_version" … "$FRAMEWORK_ROOT"`) resolves the consumer's `version_sha` inside the source's truncated history. T-3714 (lib/version-relation.sh:132) only improved the refusal *message* to name the remedy; nothing in the upgrade path ever applied the remedy, even though it is one non-destructive, additive command on the source (not the consumer).
+
+**Why structurally allowed:** T-3714 and T-4500 treated "say the remedy" as the fix; the tests pinned the message (t3714) and the refusal (t4498), so a path that performs the remedy had no test asking for it.
+
+**Prevention:** `tests/unit/t4235_upgrade_auto_unshallow.bats` pins that a shallow, fetchable source proceeds past the precheck after an announced unshallow, that an unfetchable one still refuses with the remedy, and that `--dry-run` does not fetch.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -352,6 +367,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-21 — dry-run and fetch failure
+- **Chose:** `--dry-run` announces the fetch but does not run it; a failed fetch (or one that leaves the repo shallow, e.g. no remote) falls through to the unchanged T-3714 refusal and remedy.
+- **Why:** dry-run promises no changes; a failed fetch must not weaken the origin guard.
+- **Rejected:** fetching in dry-run too (mutates the source's .git during a no-change run); an opt-out env var (no evidence anyone needs one; additive history fetch on the source only).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -368,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4235-fw-upgrade-from-a-shallow-clone-refuses-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T18:54:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

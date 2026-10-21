@@ -61,6 +61,34 @@ fw_source_is_shallow() {
     [ "$(git -C "${1:-.}" rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]
 }
 
+# T-4235: apply the T-3714 remedy instead of only naming it. When the source is
+# shallow and cannot see the consumer's recorded sha, fetch its full history and
+# say so. Additive on the SOURCE's .git only; the consumer is untouched.
+#   fw_source_fetch_history <root> <consumer_sha> [dry_run]
+#   exit 0 = fetched (or dry-run announced), 1 = fetch failed, 2 = nothing to do
+fw_source_fetch_history() {
+    local froot="$1" csha="$2" dry="${3:-false}"
+    [ -n "$csha" ] || return 2
+    fw_source_is_shallow "$froot" || return 2
+    git -C "$froot" rev-parse -q --verify "${csha}^{commit}" >/dev/null 2>&1 && return 2
+    if [ "$dry" = true ]; then
+        echo "  [dry-run] source is a shallow clone that cannot see the consumer's version_sha ${csha:0:12};"
+        echo "            a real run fetches its full history first (git -C $froot fetch --unshallow)"
+        return 0
+    fi
+    echo -n "  Source is a shallow clone without the consumer's version_sha ${csha:0:12} — fetching full history (git -C $froot fetch --unshallow)... "
+    local err
+    # A repo with no remote exits 0 here and stays shallow, so judge by the result.
+    if err=$(git -C "$froot" fetch --quiet --unshallow 2>&1) && ! fw_source_is_shallow "$froot"; then
+        echo "ok"
+        return 0
+    fi
+    echo "FAILED"
+    [ -z "$err" ] && err="still shallow after fetch (no remote to fetch from?)"
+    [ -n "$err" ] && printf '%s\n' "$err" | sed 's/^/    /' >&2
+    return 1
+}
+
 fw_version_relation() {
     local cversion="$1"
     local fversion="$2"

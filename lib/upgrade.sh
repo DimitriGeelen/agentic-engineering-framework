@@ -1710,6 +1710,10 @@ do_upgrade() {
         # unchanged in intent; it is simply no longer fed a fabricated direction.
         local _precheck_direction _precheck_sha
         _precheck_sha=$(grep "^version_sha:" "$target_dir/.framework.yaml" 2>/dev/null | sed 's/^version_sha:[[:space:]]*//' || true)
+        # T-4235: a shallow source cannot see the recorded sha; fetch its history
+        # ourselves rather than refusing with "run fetch --unshallow". On failure
+        # the relation below still refuses with that remedy (T-3714).
+        fw_source_fetch_history "$FRAMEWORK_ROOT" "$_precheck_sha" "$dry_run" || true
         # Bare call, not $(...) — the reason travels via a global (see lib/version-relation.sh).
         fw_version_relation "$project_version" "$fw_version" "$_precheck_sha" "$FRAMEWORK_ROOT" >/dev/null
         _precheck_direction="$FW_VERSION_RELATION"

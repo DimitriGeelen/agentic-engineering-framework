@@ -75,6 +75,9 @@ _tree_hash() {
     local proj_before src_before
     proj_before=$(_tree_hash "$PROJ")
     src_before=$(_tree_hash "$SRC")
+    # T-4235: upgrade now unshallows a fetchable source itself; drop the remote
+    # so the shallow source stays unverifiable and the refusal path is exercised.
+    git -C "$SRC" remote remove origin
 
     run do_upgrade "$PROJ"
     [ "$status" -ne 0 ]
