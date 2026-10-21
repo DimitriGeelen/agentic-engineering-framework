@@ -76,7 +76,13 @@ rail_identity_fingerprint() {
     if [ -n "$idfile" ]; then
         out="$(TERMLINK_IDENTITY_FILE="$idfile" termlink agent identity --resolve --json 2>/dev/null)"
     else
-        out="$(termlink agent identity --resolve --json 2>/dev/null)"
+        # T-4326: strip every identity selector, or a session that already
+        # exports TERMLINK_IDENTITY_FILE=<project key> measures the project key
+        # as "the host" and compares it with itself (lib/sidecar/dm.py
+        # _host_fingerprint does the same). unset inside the $(...) subshell,
+        # not `env -u`, so a `termlink` shell function still resolves.
+        out="$(unset TERMLINK_IDENTITY_FILE TERMLINK_AGENT_ID TERMLINK_IDENTITY_DIR
+            termlink agent identity --resolve --json 2>/dev/null)"
     fi
     [ -n "$out" ] || return 1
     printf '%s' "$out" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("fingerprint",""))' 2>/dev/null

@@ -12,10 +12,10 @@ description: >
   identity_is_host_shared already does. Test: exported project key + RAIL_IDENTITY_FILE
   to the same key reads state: project.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [rail, identity, bug]
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ origin: {kind: "peer", source: "832"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T19:32:54Z
-last_update: '2026-10-18T19:46:09Z'
+last_update: 2026-10-21T21:29:59Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced on current bleeding-edge: with TERMLINK_IDENTITY_FILE exported to a project key and RAIL_IDENTITY_FILE to the same key, `fw rail status` reports `state: host`
+- [x] `rail_identity_status` resolves the host fingerprint with TERMLINK_IDENTITY_FILE, TERMLINK_AGENT_ID and TERMLINK_IDENTITY_DIR unset (same as `lib/sidecar/dm.py` identity_is_host_shared)
+- [x] Regression bats test: exported project key + RAIL_IDENTITY_FILE to the same key reads `state: project`; fails before the fix, passes after
+- [x] Existing rail-identity tests stay green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -149,6 +151,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/t4326_rail_status_ambient_identity.bats > /tmp/.t4326v.out 2>&1 && ! grep -q "^not ok" /tmp/.t4326v.out
+test "$(grep -c '# skip' /tmp/.t4326v.out)" -eq 0
+bash -n lib/rail-identity.sh
+bin/fw vendor self --check --task T-4326
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -295,6 +302,14 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** with `TERMLINK_IDENTITY_FILE=<project key>` exported in the session and `RAIL_IDENTITY_FILE` pointing at the same key, `fw rail status` reported `state: host` (832, msg 34fd848e). Reproduced on bleeding-edge by the new bats (legs 1-2 red before the fix).
+
+**Root cause:** `lib/rail-identity.sh` `rail_identity_fingerprint` (no-arg form, was line 79) ran `termlink agent identity --resolve` in the ambient env. Its comment promised "no env override applied", but termlink selects the key by env precedence, so the exported project key was measured as "the host"; `rail_identity_status` (line ~97) then compared the project key with itself and took the `proj_fp = host_fp` → host branch.
+
+**Why structurally allowed:** every existing leg (`rail_identity_guard.bats`) ran with no identity selector exported, i.e. only the pre-rollout state. The Python twin (`lib/sidecar/dm.py _host_fingerprint`, T-4252) already stripped the env, but the two implementations were never pinned to the same contract.
+
+**Prevention:** host fingerprint now resolved under `env -u TERMLINK_IDENTITY_FILE -u TERMLINK_AGENT_ID -u TERMLINK_IDENTITY_DIR`. `tests/unit/t4326_rail_status_ambient_identity.bats` pins it with a stub termlink whose fingerprint is a function of the selectors only, covering each selector plus an unconfigured control.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -375,3 +390,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4326-fw-rail-status-reports-state-host-when-t.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:29:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
