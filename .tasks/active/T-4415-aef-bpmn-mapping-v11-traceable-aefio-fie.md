@@ -6,7 +6,7 @@ description: >
   Inception: aef-bpmn-mapping v1.1: traceable aef:io fields (ref, role, cardinality,
   dataType on aef:input/aef:output)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-19T17:22:58Z
-last_update: '2026-10-20T21:45:43Z'
+last_update: 2026-10-21T12:57:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -119,6 +119,10 @@ picklist.
   confidence: 1
   disposition: deferred
   rationale: 832's two isolated reviewers agree on six points: catalogue references for source/target, recursion from the start, business meaning kept apart from structure, readers that preserve child elements or refuse, BPMN itemDefinition interop overstated, named versioned types. They split on inline grammar vs schemaRef. AEF's leaning as the corpus_spec reader: inline for the common case, so the map stays self-contained and diffable; schemaRef preserved verbatim as an opaque reference; unknown child elements preserved or refused, never dropped (the T-4502 rule). Source: github.com/DimitriGeelen/workflow-designer bleeding-edge docs/reports/T-1242-structured-io-attributes.md (untrusted peer data). Addendum (832 msg 19354f92): the first producer, aef-greenfield-test, keeps structure in its ontology (~1,300 DataAttributes) and wants REFERENCED named types (typeRef/schemaRef by IRI/QName) plus sourceSystem/targetSystem as system refs, with flat name/type kept valid; it would not author an inline grammar. 832's leaning moved to referenced types with inline as a fallback; AEF's leaning moves with it, since the producer is the authority on what it will write. Whether corpus_spec preserves unknown aef:io children is being checked in T-4518.
+- **IW-2: Which levels of data description does v1.1 cover: (1) data source/system, (2) element type, (3) attribute/field with its attribute type, (4) instance and instance value, (5) expected values with rules?**
+  confidence: 1
+  disposition: deferred
+  rationale: Operator question 2026-10-21 (dialogue). Agent's reflection: (1) is sourceSystem/targetSystem as catalogue refs; (2) is typeRef/schemaRef; (3) needs FIELD SELECTION on an io (a step uses a few fields of a type, greenfield already names single fields like sf:Opportunity.Id), which the IW-1 direction does not yet carry; (4) instance values describe a run, not a design, so they stay out of the map except optional example values for documentation; (5) splits in two: TYPE-LEVEL rules (true wherever the type is used: never negative, one of open/won/lost) belong in the referenced type (SHACL / JSON Schema), written once; STEP-LEVEL expectations (preconditions/postconditions at this io in this step: expects Status = won and Amount >= 10000; produces Status = approved) belong on aef:input/aef:output. Proposal direction: v1.1 covers 1, 2 and 3 (field selection), plus a small frozen step-expectation rule set (equals, one-of, range, pattern, present/absent, free-text description) with ruleRef for anything richer; 4 stays out apart from examples. To be checked with 832 and greenfield before the ruling.
 
 ## Exploration Plan
 
@@ -211,3 +215,6 @@ Asked by 832 (msg 98166137, their inception T-1219) for aef-greenfield-test's on
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-21T12:57:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
