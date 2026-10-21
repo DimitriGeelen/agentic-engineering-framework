@@ -15,7 +15,7 @@ description: >
   fails with a pathspec outside the repo, yet the push still runs), and/or a tests/lint
   check should refuse a .bats that executes handover.sh without --no-commit.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T09:21:43Z
-last_update: 2026-10-17T14:30:08Z
+last_update: 2026-10-21T00:04:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,8 +101,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduces at HEAD: both auto-commit sites in `agents/handover/handover.sh` (checkpoint ~L429, normal ~L1694) run `git add`/commit/`_push_to_remotes` on `$PROJECT_ROOT` with no check that `$HANDOVER_DIR` lies inside it
+- [x] handover.sh refuses commit AND push (prints a skip notice, exits 0) when `$HANDOVER_DIR` resolves outside `$PROJECT_ROOT`, in both normal and `--checkpoint` mode
+- [x] Regression bats `tests/unit/t3798_handover_fixture_no_push.bats`: a fixture repo with a bare `origin` remote and HANDOVER_DIR outside it — origin receives no ref (fails without the fix); a control leg with HANDOVER_DIR inside the repo still commits and pushes
+- [x] `bin/fw vendor self --check --task T-3798` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -262,6 +264,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/handover/handover.sh
+grep -q "_handover_dir_in_project" agents/handover/handover.sh
+timeout 300 bats tests/unit/t3798_handover_fixture_no_push.bats > /tmp/.t3798.out 2>&1 && ! grep -q "^not ok" /tmp/.t3798.out
+test "$(grep -c '# skip' /tmp/.t3798.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/t3798_handover_fixture_no_push.bats
+bin/fw vendor self --check --task T-3798
 
 ## RCA
 
@@ -278,6 +286,16 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/unit/handover_digest.bats` ran `handover.sh` with only TASKS_DIR/CONTEXT_DIR/HANDOVER_DIR pointed at a fixture; the unit suite pushed the real repo's `bleeding-edge` to origin twice (a89ddc6ca, 68643a1de) and fired a "Session Ended" notification.
+
+**Root cause:** `agents/handover/handover.sh` auto-commit legs (checkpoint, now L451; normal, now L1718) trusted that `$HANDOVER_DIR` lives in `$PROJECT_ROOT`. HANDOVER_DIR became env-overridable for hermetic tests (T-2366, L8-10) but nothing tied it back to PROJECT_ROOT. With a fixture HANDOVER_DIR, `git add`/commit failed on a pathspec outside the repo, and `_push_to_remotes` ran unconditionally afterwards, pushing whatever HEAD the real repo had. AUTO_COMMIT defaults to true (L274-ish), so omitting `--no-commit` was enough.
+
+**Re-checked at HEAD 20884da63 before the fix:** the new regression test's two outside-dir legs fail against `git show HEAD:agents/handover/handover.sh` with origin's master moved (`[ rev-parse master = REMOTE_BEFORE ]` failed). The bug was still present.
+
+**Why structurally allowed:** the override was added for tests without an invariant linking it to the commit target, and the push leg does not depend on the commit succeeding. The only fix was in the test (27613a681); any other caller could repeat it.
+
+**Fix / prevention:** `_handover_dir_in_project` (L118) resolves HANDOVER_DIR (`pwd -P`) and PROJECT_ROOT's git toplevel; both auto-commit legs skip commit **and** push with a visible notice when the handover is outside the repo. Pinned by `tests/unit/t3798_handover_fixture_no_push.bats` (normal + checkpoint + in-repo control). Not done: the optional tests/lint rule refusing `.bats` that run handover.sh without `--no-commit`. The runtime guard covers the reported case. A test that overrides PROJECT_ROOT to a real repo is still allowed by design.
 
 ## Evolution
 
@@ -359,3 +377,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3798-handoversh-pushes-the-real-repos-head-wh.md
 - **Context:** Initial task creation
+
+### 2026-10-21T00:04:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

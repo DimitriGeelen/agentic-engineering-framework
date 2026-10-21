@@ -110,6 +110,28 @@ _push_summary() {
     fi
 }
 
+# T-3798: commit and push only when the handover lands inside PROJECT_ROOT.
+# HANDOVER_DIR is env-overridable for hermetic tests (T-2366); a test that set
+# it to a fixture but left PROJECT_ROOT on the real repo made the commit fail
+# (pathspec outside the repo) while _push_to_remotes still pushed the real
+# repo's HEAD to origin — twice, from inside the unit suite (T-3747 round 3).
+_handover_dir_in_project() {
+    local _hd _pr
+    _hd=$(cd "$HANDOVER_DIR" 2>/dev/null && pwd -P) || return 1
+    _pr=$(git -C "$PROJECT_ROOT" rev-parse --show-toplevel 2>/dev/null) || return 1
+    _pr=$(cd "$_pr" 2>/dev/null && pwd -P) || return 1
+    case "$_hd/" in
+        "$_pr"/*) return 0 ;;
+    esac
+    return 1
+}
+
+_refuse_out_of_project_commit() {
+    echo ""
+    echo -e "${YELLOW}Skipping auto-commit and push (T-3798):${NC} HANDOVER_DIR=$HANDOVER_DIR is not inside the git repo at PROJECT_ROOT=$PROJECT_ROOT."
+    echo "  The handover was written; nothing was committed or pushed. Set PROJECT_ROOT to the repo that holds HANDOVER_DIR, or pass --no-commit."
+}
+
 # T-2588: Shared push leg for both normal handovers and --checkpoint commits.
 # Checkpoint commits previously accumulated locally with no push — exactly the
 # state a checkpoint exists to protect gets stranded if the session dies or
@@ -426,7 +448,9 @@ CHECKPOINT_EOF
     fi
 
     # Auto-commit
-    if [ "$AUTO_COMMIT" = true ]; then
+    if [ "$AUTO_COMMIT" = true ] && ! _handover_dir_in_project; then
+        _refuse_out_of_project_commit
+    elif [ "$AUTO_COMMIT" = true ]; then
         _resolve_commit_task
         GIT_AGENT=""
         if [ -f "$FRAMEWORK_ROOT/agents/git/git.sh" ]; then
@@ -1691,7 +1715,9 @@ if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
 fi
 
 # Handle auto-commit
-if [ "$AUTO_COMMIT" = true ]; then
+if [ "$AUTO_COMMIT" = true ] && ! _handover_dir_in_project; then
+    _refuse_out_of_project_commit
+elif [ "$AUTO_COMMIT" = true ]; then
     _resolve_commit_task
 
     echo ""
