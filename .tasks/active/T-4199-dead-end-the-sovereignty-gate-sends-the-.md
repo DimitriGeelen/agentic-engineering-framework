@@ -15,10 +15,10 @@ description: >
   task shows that route (or a close control for the operator). Render surface: [REVIEW]
   Human AC.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T21:43:02Z
-last_update: '2026-10-13T21:46:36Z'
+last_update: 2026-10-21T21:45:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,8 +101,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced on bleeding-edge: closing a human-owned task with 0 Human ACs prints only the Watchtower review link, naming no route that can actually close it
+- [x] Sovereignty gate message, for a human-owned task with 0 Human ACs, names the working route(s) (`fw task delegate T-XXX` → reviewer path, or the operator CLI close) instead of only the review page
+- [x] Regression test fails before the fix and passes after
+- [x] Existing tests nearest the changed code still pass; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -265,6 +267,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/task-create/update-task.sh
+timeout 300 bats tests/unit/t4199_sovereignty_gate_names_route.bats > /tmp/.t4199.out 2>&1 && ! grep -q "^not ok" /tmp/.t4199.out
+test "$(grep -c '# skip' /tmp/.t4199.out)" -eq 0
+python3 -m pytest tests/unit/test_unclosable_misfiled.py tests/unit/test_t4156_ready_to_close_route.py -q > /tmp/.t4199py.out 2>&1 && grep -q passed /tmp/.t4199py.out
+bin/fw vendor self --check --task T-4199
 
 ## RCA
 
@@ -281,6 +288,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw task update T-XXX --status work-completed` on an `owner: human` task with zero Human criteria and every Agent AC ticked refused with "approve via Watchtower" + the /review link; that page shows "Human ACs: 0/0" and no control, so the only exit anyone found was `--skip-sovereignty` (dimitri-mint-dev P-014 / their T-110). Reproduced on bleeding-edge 2026-10-21 (new bats leg 1 red before the fix).
+
+**Root cause:** `agents/task-create/update-task.sh` `check_human_sovereignty` (≈line 212) printed one fixed message for every human-owned task: "The human must review and approve via Watchtower" + `emit_review`. It never asked whether there was anything on the review page to approve. T-4156 built the working route for exactly this class (`fw task delegate` adds a reviewer-judged close criterion, `fw reviewer judge` records the verdict, the next close applies it) but only wired it into `fw review-queue` (bin/fw READY TO CLOSE section), not into the gate that the agent and operator actually hit.
+
+**Why structurally allowed:** the class predicate (`lib/unclosable_misfiled.py:is_unclosable_misfiled`) and its route lived in the queue/doctor surfaces; the refusal message at the close gate was untested for this shape. No test asserted that a refusal names a route that can succeed.
+
+**Prevention:** the gate now reads the same predicate (`python3 -m lib.unclosable_misfiled route <file>`, new subcommand) and prints `bin/fw task delegate T-XXX && bin/fw reviewer judge T-XXX`, or, for a carve-out (tier-0/act-in-the-world/sovereignty/inception), the operator's own CLI close. `tests/unit/t4199_sovereignty_gate_names_route.bats` pins all three shapes (route named; not named when a real Human criterion exists; carve-out stays with the operator).
 
 ## Evolution
 
@@ -346,6 +361,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-21 — fix the gate message, not the /review page
+- **Chose:** name the real route in the R-033 refusal (the task title's first option). Reuse `lib/unclosable_misfiled.py` predicate + `carve_out` via a new `route` subcommand so the gate, `fw review-queue` and doctor share one definition.
+- **Why:** the brief forbids nothing in web/, but a /review page change is a render surface (P-013 needs a `[REVIEW]` Human AC, a Watchtower restart, operator taste review). The message fix removes the dead end on its own: whoever hits the gate now gets a command that works.
+- **Left open (operator's call):** should `/review/<id>` for a 0-Human-AC human-owned task also show this route (or a close control)? Recommendation: yes, as a separate small render task, showing the same two commands — a close button would need a new Watchtower→close path, which is a sovereignty change, not a chore.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -362,3 +382,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4199-dead-end-the-sovereignty-gate-sends-the-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:45:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

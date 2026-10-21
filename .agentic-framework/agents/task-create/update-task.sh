@@ -211,6 +211,21 @@ check_human_sovereignty() {
         else
             echo -e "${RED}ERROR: Cannot complete human-owned task${NC}" >&2
             echo "Sovereignty gate (R-033): owner is human." >&2
+            # T-4199: with no Human criteria, /review/<id> shows 0/0 and has no close
+            # control — name the route that closes this class (T-4156) instead.
+            local _route=""
+            _route=$(PYTHONPATH="$FRAMEWORK_ROOT" python3 -m lib.unclosable_misfiled route "$TASK_FILE" 2>/dev/null || true)
+            if [ "$_route" = "delegate" ]; then
+                echo "This task has no Human criteria and every Agent AC is ticked, so the" >&2
+                echo "review page has nothing to approve. Route it to the reviewer ladder (T-4156):" >&2
+                echo "  cd $PROJECT_ROOT && bin/fw task delegate $TASK_ID && bin/fw reviewer judge $TASK_ID" >&2
+                echo "A green verdict closes it on the next --status work-completed (owner unchanged)." >&2
+                exit 1
+            elif [ "${_route%%$'\t'*}" = "operator" ]; then
+                echo "This task has no Human criteria, but it stays with the operator (${_route#*$'\t'})." >&2
+                echo "Operator, from your own terminal:" >&2
+                echo "  cd $PROJECT_ROOT && bin/fw task update $TASK_ID --status work-completed --skip-sovereignty --reason \"<why it is done>\"" >&2
+            fi
             echo "The human must review and approve via Watchtower:" >&2
             # T-1156: Show Watchtower review link instead of bare commands (PL-007)
             source "$FRAMEWORK_ROOT/lib/review.sh" 2>/dev/null

@@ -207,7 +207,7 @@ def scan_active(project_root: Path) -> list[Member]:
     return out
 
 
-# ── CLI: `python3 -m lib.unclosable_misfiled scan [--json] [--facts]` ────────
+# ── CLI: `python3 -m lib.unclosable_misfiled scan [--json] [--facts]` | `route FILE` ──
 #
 # --facts emits one TSV line for the audit/doctor rails, same shape as
 # lib/fabric_doctor_facts.py and lib/delegation_cli.py's `surface --facts` —
@@ -224,7 +224,22 @@ def main(argv=None) -> int:
     s.add_argument("--json", action="store_true")
     s.add_argument("--facts", action="store_true",
                     help="one TSV line: count<TAB>comma-joined ids (first 10)")
+    r = sub.add_parser("route", help="closure route for one task file (T-4199): "
+                       "'delegate', 'operator<TAB>reason', or nothing when not in the class")
+    r.add_argument("file")
     args = p.parse_args(argv)
+
+    if args.cmd == "route":
+        try:
+            text = Path(args.file).read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            return 0
+        meta = frontmatter(text)
+        if not is_unclosable_misfiled(meta, text):
+            return 0
+        why = carve_out(meta, text)
+        print(f"operator\t{why}" if why else "delegate")
+        return 0
 
     root = Path(os.environ.get("PROJECT_ROOT") or os.getcwd())
     members = scan_active(root)
