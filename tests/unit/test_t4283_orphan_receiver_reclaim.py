@@ -28,7 +28,10 @@ from lib.sidecar import lifecycle  # noqa: E402
 
 @pytest.fixture
 def proj(tmp_path, monkeypatch):
-    root = tmp_path / "t4283"
+    # Unique basename: ensure starts the receiver as the project's own agent (the
+    # root's basename, T-4423), and a receiver leaked by an earlier run would
+    # otherwise still serve that name and refuse this run's start (T-4565).
+    root = tmp_path / f"t4283-{time.monotonic_ns()}"
     (root / ".context" / "sidecar").mkdir(parents=True)
     (root / ".framework.yaml").write_text("project_name: t4283\n", encoding="utf-8")
     monkeypatch.setenv("PROJECT_ROOT", str(root))
@@ -36,7 +39,19 @@ def proj(tmp_path, monkeypatch):
     monkeypatch.setenv("FW_SIDECAR_REGISTRY_DIR", str(tmp_path / "registry"))
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "state"))
     monkeypatch.setenv("TERMLINK_RUNTIME_DIR", str(tmp_path / "no-hub"))
+    # T-4565: run from a dispatched worker, the session's identity made cmd_ensure
+    # skip by design (T-4416) and both test_ensure_* tests failed. Not ours here.
+    for var in ("FW_DISPATCHED_WORKER", "FW_SIDECAR_AGENT_ID", "FW_REVIEW_WORKER",
+                "TERMLINK_SESSION_ID"):
+        monkeypatch.delenv(var, raising=False)
     return root
+
+
+def test_fixture_is_not_a_foreign_session(proj):
+    """T-4565: the suite may run inside a dispatched worker; the fixture must not
+    inherit its identity, or every ensure path here takes the worker skip."""
+    from lib.sidecar import watcher
+    assert watcher.foreign_session_reason() is None
 
 
 def _orphan(agent: str, cwd: Path, tmp: Path) -> subprocess.Popen:
@@ -108,7 +123,7 @@ def test_ensure_restarts_a_receiver_the_watcher_reports_as_not_running(proj, tmp
     from argparse import Namespace
     from lib.sidecar import watcher
 
-    agent = "t4283-ensure"
+    agent = watcher.project_agent()   # T-4565: ensure always starts the project's own id (T-4423)
     monkeypatch.setattr(cli, "ORPHAN_MIN_AGE_S", 0.0)
     orphan = _orphan(agent, proj, tmp_path)
     watcher.enable(agent, None, inject_on=False)
@@ -133,7 +148,7 @@ def test_ensure_reports_a_refused_receiver_start_as_refused(proj, tmp_path, monk
     from argparse import Namespace
     from lib.sidecar import watcher
 
-    agent = "t4283-refused"
+    agent = watcher.project_agent()   # T-4565: ensure always starts the project's own id (T-4423)
     elsewhere = tmp_path / "elsewhere"
     elsewhere.mkdir()
     foreign = _orphan(agent, elsewhere, tmp_path)

@@ -2,12 +2,16 @@
 id: T-4565
 name: "test_t4283 test_ensure_* fail: helper process times out, then KeyError 'receiver'"
 description: >
-  Found by the T-4292 worker on 2026-10-21: in tests/unit/test_t4283*.py the two test_ensure_* tests fail both with and without the T-4292 fix; the test's helper process times out and a KeyError: 'receiver' follows. Find whether the test or the receiver ensure path is wrong, fix, prove green 10 runs in a row. Never add them to the unit-suite baseline.
+  Found by the T-4292 worker on 2026-10-21: in tests/unit/test_t4283*.py the two test_ensure_*
+  tests fail both with and without the T-4292 fix; the test's helper process times
+  out and a KeyError: 'receiver' follows. Find whether the test or the receiver ensure
+  path is wrong, fix, prove green 10 runs in a row. Never add them to the unit-suite
+  baseline.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, sidecar, test]
 components: []
 related_tasks: [T-4283, T-4292]
@@ -38,8 +42,8 @@ related_tasks: [T-4283, T-4292]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T20:32:40Z
-last_update: 2026-10-21T20:32:40Z
-date_finished: null
+last_update: '2026-10-21T20:45:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-21T20:39:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-21T20:45:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4565: test_t4283 test_ensure_* fail: helper process times out, then KeyError 'receiver'
@@ -62,8 +94,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of the two failing test_ensure_* tests localised to file:line and written in ## RCA
+- [x] Fix applied; tests/unit/test_t4283_orphan_receiver_reclaim.py passes 10 runs in a row (none added to the unit-suite baseline)
+- [x] Regression guard exists that fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +281,22 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+# Forced worker identity: before the fix this failed 2/6 (ensure took the T-4416 worker skip).
+FW_DISPATCHED_WORKER=1 FW_SIDECAR_AGENT_ID=wX timeout 300 python3 -m pytest tests/unit/test_t4283_orphan_receiver_reclaim.py -q > /tmp/.t4565a 2>&1 && grep -q "7 passed" /tmp/.t4565a
+env -u FW_DISPATCHED_WORKER -u FW_SIDECAR_AGENT_ID -u TERMLINK_SESSION_ID timeout 300 python3 -m pytest tests/unit/test_t4283_orphan_receiver_reclaim.py -q > /tmp/.t4565b 2>&1 && grep -q "7 passed" /tmp/.t4565b
+! grep -q t4283 .context/audits/unit-suite/baseline.yaml
 
 ## RCA
+
+**Symptom:** run from a dispatched worker (the T-4292 worker), both `test_ensure_*` tests failed: the restart test timed out in `orphan.wait(timeout=10)`, and the refused test raised `KeyError: 'receiver'`. They failed with and without the T-4292 fix.
+
+**Root cause:** the test, not the receiver. Two layers:
+1. The `proj` fixture (`tests/unit/test_t4283_orphan_receiver_reclaim.py:30`) scrubbed neither `FW_DISPATCHED_WORKER` nor `FW_SIDECAR_AGENT_ID`. `cmd_ensure` (`lib/sidecar_cli.py:1063`) asks `watcher.foreign_session_reason()` (`lib/sidecar/watcher.py:218`) and, by design (T-4416), returns early with `{"enabled", "action": "skipped: FW_DISPATCHED_WORKER=1 ..."}`. That row has no `receiver` key (hence the KeyError) and ensure starts no receiver (hence the orphan never stopped, hence the timeout). The sibling `test_sidecar_watcher_t3684.py:53` already scrubs these variables; this file was written before T-4416 landed.
+2. With the env scrubbed, the tests were still wrong. Since T-4423, `watcher.receiver_agent()` (`lib/sidecar/watcher.py:235`) makes ensure start the receiver under the project's own id (the root's basename, `t4283`), not under the agent passed to `enable()`. The tests used `t4283-ensure` / `t4283-refused`. So the orphan the test built never blocked anything, a real `t4283` receiver was started, and the cleanup (`cmd_receiver_stop(agent="t4283-ensure")`) leaked it. The leaked receiver then refused the next run's start, because every run's fixture root had the same `t4283` basename.
+
+**Why structurally allowed:** the nightly unit suite strips session variables before it runs any test (T-4524), so the gap only shows when the file is run directly from an agent session. After T-4416 and T-4423 changed the ensure path, the tests never ran in the context that exposes it.
+
+**Prevention:** the fixture now drops the worker or session identity variables. A new test, `test_fixture_is_not_a_foreign_session`, asserts `foreign_session_reason() is None` inside the fixture, so it fails fast if the scrub regresses. The ensure tests use `watcher.project_agent()`. The fixture root gets a unique basename, so a leaked receiver cannot serve the next run's agent. The ## Verification lines run the file under a forced worker identity and again under a scrubbed one. Receiver code is unchanged: the T-4416 and T-4423 behaviour is correct.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +392,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4565-testt4283-testensure-fail-helper-process.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:39:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
