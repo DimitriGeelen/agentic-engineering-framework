@@ -110,6 +110,9 @@ teardown() {
 # ─────────────────────────────────────────────────────────────────────────────
 # G-056 / T-1383: resume.md drift-refresh invariants
 # ─────────────────────────────────────────────────────────────────────────────
+# --no-self-vendor (T-4523): a real do_upgrade also refreshes the framework's own
+# .agentic-framework/ from its working tree, which rewrote the checkout's vendored
+# copy on every run. These tests are about the consumer, so that step is skipped.
 
 @test "upgrade: a STOCK resume.md (the framework wrote it, unchanged since) is refreshed (T-3955)" {
     local proj="$TEST_TEMP_DIR/drift-proj"
@@ -122,7 +125,7 @@ teardown() {
 STALE
     sha=$(sha256sum "$proj/.claude/commands/resume.md" | cut -d' ' -f1)
     printf '{".claude/commands/resume.md": "%s"}\n' "$sha" > "$proj/.context/upgrade-template-stamp.json"
-    run do_upgrade "$proj"
+    run do_upgrade "$proj" --no-self-vendor
     [ "$status" -eq 0 ]
     [[ "$output" == *"UPDATED"*"resume.md"*"stock copy"* ]]
     grep -q 'watchtower.url' "$proj/.claude/commands/resume.md"
@@ -133,7 +136,7 @@ STALE
     mkdir -p "$proj/.claude/commands"
     echo "framework_root: $FRAMEWORK_ROOT" > "$proj/.framework.yaml"
     echo "# /resume - MY CUSTOMISED VERSION" > "$proj/.claude/commands/resume.md"
-    run do_upgrade "$proj"
+    run do_upgrade "$proj" --no-self-vendor
     [ "$status" -eq 0 ]
     [[ "$output" == *"KEPT"*"resume.md"* ]]
     grep -q 'MY CUSTOMISED VERSION' "$proj/.claude/commands/resume.md"
@@ -145,7 +148,7 @@ STALE
     mkdir -p "$proj/.claude/commands"
     echo "framework_root: $FRAMEWORK_ROOT" > "$proj/.framework.yaml"
     cp "$FRAMEWORK_ROOT/lib/templates/resume-md.md" "$proj/.claude/commands/resume.md"
-    run do_upgrade "$proj"
+    run do_upgrade "$proj" --no-self-vendor
     [ "$status" -eq 0 ]
     [[ "$output" == *"resume.md matches template"* ]]
     [ ! -f "$proj/.claude/commands/resume.md.bak" ]
@@ -155,7 +158,7 @@ STALE
     local proj="$TEST_TEMP_DIR/create-proj"
     mkdir -p "$proj"
     echo "framework_root: $FRAMEWORK_ROOT" > "$proj/.framework.yaml"
-    run do_upgrade "$proj"
+    run do_upgrade "$proj" --no-self-vendor
     [ "$status" -eq 0 ]
     [[ "$output" == *"CREATED"*"resume.md"*"from template"* ]]
     [ -f "$proj/.claude/commands/resume.md" ]

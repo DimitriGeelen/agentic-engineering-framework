@@ -2369,7 +2369,12 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
     # L-332: helper lives in lib/doctor-hook-exercise.py, NOT inline heredoc
     # — heredoc-in-$() inside bin/fw is unrecoverable on parse error.
     local exercise_script="$FW_LIB_DIR/doctor-hook-exercise.py"
-    if [ -f "$settings_file" ] && [ -f "$exercise_script" ]; then
+    # T-4523: the probe really runs every hook against this project, which bumps
+    # .hook-counter and rewrites .loop-detect.json. Unit tests that run doctor on
+    # the checkout set FW_DOCTOR_HOOK_EXERCISE=0 (same shape as FW_DOCTOR_SMOKE).
+    if [ "${FW_DOCTOR_HOOK_EXERCISE:-1}" = "0" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  Hook exercise from /tmp (FW_DOCTOR_HOOK_EXERCISE=0)"
+    elif [ -f "$settings_file" ] && [ -f "$exercise_script" ]; then
         local hook_exercise
         hook_exercise=$(SETTINGS_FILE="$settings_file" python3 "$exercise_script" 2>/dev/null)
         if [ -n "$hook_exercise" ]; then

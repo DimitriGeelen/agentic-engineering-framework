@@ -9,6 +9,7 @@ FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
 FW="$FRAMEWORK_ROOT/bin/fw"
 
 setup() {
+    export FW_DOCTOR_HOOK_EXERCISE=0  # T-4523: the probe runs every hook against this checkout
     TMP_PROJ=$(mktemp -d)
     cd "$TMP_PROJ"
     git init -q

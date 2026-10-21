@@ -36,6 +36,22 @@ setup() {
 JSONL
     # An agent- transcript that MUST be ignored.
     echo '{"message":{"role":"assistant","model":"claude-opus-4-8","content":[{"type":"tool_result"}]}}' > "$FIX/agent-ignored.jsonl"
+    # T-4523: t7/t8 run the full handover. Against the checkout it wrote
+    # .session-metrics.yaml, the sidecar epoch and vector-index-health.json into
+    # the framework repo, so it runs in a throwaway project instead.
+    PROJ="$TEST_TEMP_DIR/proj"
+    mkdir -p "$PROJ/.context/working" "$PROJ/.context/handovers" \
+        "$PROJ/.tasks/active" "$PROJ/.tasks/completed"
+    echo "framework_root: $FRAMEWORK_ROOT" > "$PROJ/.framework.yaml"
+    git -C "$PROJ" init -q
+    git -C "$PROJ" -c user.name=t -c user.email=t@t commit -q --allow-empty -m init
+}
+
+# run_handover <args...> — handover.sh against the throwaway project.
+run_handover() {
+    cd "$PROJ"
+    run env -u CLAUDE_PROJECT_DIR PROJECT_ROOT="$PROJ" FW_VERB_TELEMETRY=0 \
+        HANDOVER_DIR="$TEST_TEMP_DIR" "$HANDOVER" "$@"
 }
 
 teardown() {
@@ -118,7 +134,7 @@ print('ok')
 }
 
 @test "t7: handover.sh normal path writes manifest + body reference line" {
-    run env HANDOVER_DIR="$TEST_TEMP_DIR" "$HANDOVER" --no-commit --session S-T7
+    run_handover --no-commit --session S-T7
     [ "$status" -eq 0 ]
     [ -f "$TEST_TEMP_DIR/S-T7.discard-manifest.yaml" ]
     run grep -q "Discard Manifest:" "$TEST_TEMP_DIR/S-T7.md"
@@ -126,7 +142,7 @@ print('ok')
 }
 
 @test "t8: deprecated --emergency alias still produces the manifest (D-028 normal path)" {
-    run env HANDOVER_DIR="$TEST_TEMP_DIR" "$HANDOVER" --emergency --no-commit --session S-T8
+    run_handover --emergency --no-commit --session S-T8
     [ "$status" -eq 0 ]
     [ -f "$TEST_TEMP_DIR/S-T8.discard-manifest.yaml" ]
 }

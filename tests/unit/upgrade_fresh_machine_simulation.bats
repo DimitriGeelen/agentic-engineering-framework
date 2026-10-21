@@ -255,7 +255,9 @@ d["files"]["bin/fw"] = hashlib.sha256(open(fw, "rb").read()).hexdigest()
 json.dump(d, open(stamp, "w"))
 PY
 
-    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" "$fw_bin" upgrade "$proj"
+    # FW_VERB_TELEMETRY=0 (T-4523): env -i drops the runner's, and `upgrade` run from
+    # the checkout's cwd counted into its tracked .verb-counter.
+    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" FW_VERB_TELEMETRY=0 "$fw_bin" upgrade "$proj"
     [ "$status" -eq 0 ]
 
     # The file the process executed from must now be different (marker gone)
@@ -292,19 +294,19 @@ YAML
     printf -- '---\nid: T-004\ntags: [onboarding]\n---\n' > "$proj/.tasks/completed/T-004-done.md"
 
     local fw_bin="$proj/.agentic-framework/bin/fw"
-    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" "$fw_bin" upgrade "$proj" --dry-run
+    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" FW_VERB_TELEMETRY=0 "$fw_bin" upgrade "$proj" --dry-run
     [ "$status" -eq 0 ]
     # dry-run from a vendored consumer prints the handoff plan; either way it writes nothing
     [ -z "$(ls "$proj/.tasks/active/")" ]
 
-    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" "$fw_bin" upgrade "$proj"
+    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" FW_VERB_TELEMETRY=0 "$fw_bin" upgrade "$proj"
     [ "$status" -eq 0 ]
     [ -f "$proj/.tasks/active/T-005-define-project-objectives.md" ]
     grep -qE '^tags:.*objectives-authoring' "$proj/.tasks/active/T-005-define-project-objectives.md"
     [ ! -e "$proj/.context/project/objectives.yaml" ]
 
     # idempotent: a second upgrade seeds nothing more
-    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" "$fw_bin" upgrade "$proj"
+    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" FW_VERB_TELEMETRY=0 "$fw_bin" upgrade "$proj"
     [ "$status" -eq 0 ]
     [ "$(ls "$proj"/.tasks/active/*define-project-objectives.md | wc -l)" -eq 1 ]
     [ ! -e "$proj/.context/project/objectives.yaml" ]

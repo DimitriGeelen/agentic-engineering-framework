@@ -111,3 +111,36 @@ _guard() { python3 -c 'import sys,yaml; print(yaml.safe_load(open(sys.argv[1]))[
     grep -q '^T4523_ENV_DIR=' "$WORK/env/bats.env"
     ! grep -q '^PROJECT_ROOT=' "$WORK/env/bats.env" || false
 }
+
+@test "the runner turns doctor's hook exercise and verb telemetry off for the tests" {
+    run _run_tier fast clean.bats
+    [ "$status" -eq 0 ]
+    grep -q '^FW_DOCTOR_HOOK_EXERCISE=0$' "$WORK/env/bats.env"
+    grep -q '^FW_VERB_TELEMETRY=0$' "$WORK/env/bats.env"
+}
+
+# The exercise really runs every configured hook against the project: on the
+# checkout that bumped .hook-counter and rewrote .loop-detect.json. A fixture hook
+# that touches a marker shows whether it ran; the control leg proves it would.
+@test "doctor skips the hook exercise under FW_DOCTOR_HOOK_EXERCISE=0 (control: it runs without)" {
+    local proj="$WORK/proj" mark="$WORK/hook-ran"
+    mkdir -p "$proj/.claude" "$proj/.context/working" "$proj/.tasks/active" \
+        "$proj/.tasks/completed" "$proj/.tasks/templates"
+    echo "framework_root: $REPO_ROOT" > "$proj/.framework.yaml"
+    git -C "$proj" init -q
+    printf '{"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"type":"command","command":"touch %s"}]}]}}\n' \
+        "$mark" > "$proj/.claude/settings.json"
+    cd "$proj"
+    run env PROJECT_ROOT="$proj" FW_DOCTOR_SMOKE=0 FW_VERB_TELEMETRY=0 FW_DOCTOR_HOOK_EXERCISE=0 \
+        NO_COLOR=1 "$REPO_ROOT/bin/fw" doctor --quick
+    [[ "$output" == *"SKIP"*"Hook exercise from /tmp (FW_DOCTOR_HOOK_EXERCISE=0)"* ]]
+    [ ! -e "$mark" ]
+    run env -u FW_DOCTOR_HOOK_EXERCISE PROJECT_ROOT="$proj" FW_DOCTOR_SMOKE=0 FW_VERB_TELEMETRY=0 \
+        NO_COLOR=1 "$REPO_ROOT/bin/fw" doctor --quick
+    [ -e "$mark" ]
+}
+
+@test "doctor's per-host vector-index-health state is gitignored" {
+    git -C "$REPO_ROOT" check-ignore -q .context/working/vector-index-health.json
+    git -C "$REPO_ROOT" check-ignore -q .context/working/vector-index-health.json.lock
+}

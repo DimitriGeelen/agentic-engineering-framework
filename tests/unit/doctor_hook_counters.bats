@@ -33,6 +33,8 @@ setup() {
     export TEST_TEMP_DIR
     FIXTURE="$TEST_TEMP_DIR/proj"
     export FIXTURE
+    # T-4523: the unit-suite runner turns the exercise off; this file tests it on a fixture.
+    unset FW_DOCTOR_HOOK_EXERCISE
     mkdir -p "$FIXTURE/.claude"
     # Symlink the real bin/ so ${CLAUDE_PROJECT_DIR}/bin/fw hook <name> resolves —
     # otherwise every hook reports as a missing binary, doctor emits FAIL, and the

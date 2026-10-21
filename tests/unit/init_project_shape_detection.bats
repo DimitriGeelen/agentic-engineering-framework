@@ -43,12 +43,15 @@ teardown() {
 # Runs under `env -i` (L-009/L-020, T-1633): an inherited PROJECT_ROOT/FRAMEWORK_ROOT
 # makes `fw` in a fresh directory silently operate on the WRONG project, and the whole
 # point of this suite is what a user with no framework state sees on their first run.
+# FW_VERB_TELEMETRY=0 (T-4523): env -i drops the runner's, and `fw init` from the
+# checkout's cwd counted into its tracked .verb-counter.
 _shape_of() {
     local proj="$1"
     local out
     if ! out=$(env -i \
             PATH="/usr/local/bin:/usr/bin:/bin" \
             HOME="$TEST_TEMP_DIR/home" \
+            FW_VERB_TELEMETRY=0 \
             "$FRAMEWORK_ROOT/bin/fw" init "$proj" 2>&1); then
         echo "INIT_FAILED"
         return 1

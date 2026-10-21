@@ -4,3 +4,6 @@
 session.yaml
 focus.yaml
 tier0-approval
+# T-4523: per-host index-health state (lib/vector_index_health.py); fw doctor writes it
+vector-index-health.json
+vector-index-health.json.lock

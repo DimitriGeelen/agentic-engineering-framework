@@ -21,6 +21,7 @@
 load ../test_helper
 
 setup() {
+    export FW_DOCTOR_HOOK_EXERCISE=0  # T-4523: the probe runs every hook against this checkout
     TEST_TEMP_DIR="$(mktemp -d)"     # test_helper's setup, re-stated because
     export TEST_TEMP_DIR             # defining setup() here overrides it
     LIB="$FRAMEWORK_ROOT/lib/git-identity.sh"

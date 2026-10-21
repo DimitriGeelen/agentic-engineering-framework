@@ -6,6 +6,7 @@
 load ../test_helper
 
 setup() {
+    export FW_DOCTOR_HOOK_EXERCISE=0  # T-4523: the probe runs every hook against this checkout
     export FW_DOCTOR_SMOKE=0  # T-3933: never sweep the live Watchtower from a test
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR

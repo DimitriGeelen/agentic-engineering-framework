@@ -10,6 +10,7 @@
 load ../test_helper
 
 setup() {
+    export FW_DOCTOR_HOOK_EXERCISE=0  # T-4523: the probe runs every hook against this checkout
     STRAY="$(mktemp -d)"
     export STRAY
     export NO_COLOR=1

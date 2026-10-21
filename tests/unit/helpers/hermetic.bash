@@ -20,6 +20,7 @@
 #   PROJECT_ROOT, FRAMEWORK_ROOT, CLAUDE*, FW_*, TERMLINK_SESSION_ID (T-4524) are
 #   unset in the test shell, so
 #   nothing inherited from a worker or the nightly cron routes a call to the checkout.
+#   FW_VERB_TELEMETRY=0 is then set, so no verb is counted into the checkout (T-4523).
 #   hermetic_project DIR   add the project markers to DIR
 #   hermetic_run CMD...    `run` CMD with stdin=/dev/null
 #
@@ -99,6 +100,9 @@ hermetic_setup() {
     [ -e "$HERMETIC_SIDECAR_STOPPED" ] && HERMETIC_SIDECAR_WAS_STOPPED=1
 
     hermetic_strip_env
+    # T-4523: the strip removes the runner's FW_VERB_TELEMETRY=0, and fw run outside
+    # a project still counts its verb into the checkout's tracked .verb-counter.
+    export FW_VERB_TELEMETRY=0
     TMPDIR="$HERMETIC_ROOT/tmp"
     export TMPDIR
     fence_git_discovery

@@ -5,6 +5,20 @@
 FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
 RESUME="$FRAMEWORK_ROOT/agents/resume/resume.sh"
 
+# T-4523: resume runs in a throwaway project. Against the checkout, `sync`
+# rewrote its tracked .context/working/focus.yaml and session.yaml.
+setup() {
+    PROJ="$BATS_TEST_TMPDIR/proj"
+    mkdir -p "$PROJ/.context/working" "$PROJ/.context/handovers" \
+        "$PROJ/.tasks/active" "$PROJ/.tasks/completed"
+    echo "framework_root: $FRAMEWORK_ROOT" > "$PROJ/.framework.yaml"
+    git -C "$PROJ" init -q
+    git -C "$PROJ" -c user.name=t -c user.email=t@t commit -q --allow-empty -m init
+    export PROJECT_ROOT="$PROJ" FW_VERB_TELEMETRY=0
+    unset CLAUDE_PROJECT_DIR
+    cd "$PROJ"
+}
+
 # --- Help and routing ---
 
 @test "resume --help shows usage" {

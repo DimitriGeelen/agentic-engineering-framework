@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T08:59:17Z
-last_update: 2026-10-21T10:39:26Z
+last_update: 2026-10-21T16:11:43Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,7 +99,8 @@ bvp_scores_proposed:
 - [x] Suite-level guard: the unit-suite runner records the tracked-tree state before/after and reports (fails) when a run changed tracked files; regression test pins the guard
 - [x] The runner no longer hands the caller's PROJECT_ROOT to tests, and turns verb telemetry off for the run (FW_VERB_TELEMETRY=0)
 - [x] arc_create_start_flag.bats and t1719_happiness_signal.bats run against a throwaway project and assert the framework tree is untouched
-- [ ] Every attributed leaking test fixed to work on a temp copy (no tracked file under the checkout changes when it runs) — 11 files remain, listed in ## RCA (follow-up)
+- [x] Every attributed leaking test fixed to work on a temp copy (no tracked file under the checkout changes when it runs): each of the 13 files run alone in a fresh clone leaves the tree unchanged (## RCA, "Fixed")
+- [x] `fw doctor` honours FW_DOCTOR_HOOK_EXERCISE=0 (SKIP line, no hook run) and the runner exports it; vector-index-health.json(.lock) is gitignored; pinned in t4523_unit_suite_tree_guard.bats (tests 7-9)
 - [x] `bin/fw vendor self --check --task T-4523` clean
 
 ### Human
@@ -150,7 +151,10 @@ bvp_scores_proposed:
 
 ## Verification
 
-out=$(timeout 900 bats tests/unit/t4523_unit_suite_tree_guard.bats 2>&1); echo "$out" | grep -q '^ok 6 ' && ! echo "$out" | grep -q '^not ok'
+out=$(timeout 900 bats tests/unit/t4523_unit_suite_tree_guard.bats 2>&1); echo "$out" | grep -q '^ok 9 ' && ! echo "$out" | grep -q '^not ok'
+out=$(timeout 600 bats tests/unit/resume.bats tests/unit/t2366_discard_manifest.bats 2>&1); echo "$out" | grep -q '^ok 20 ' && ! echo "$out" | grep -q '^not ok'
+bash -n bin/fw
+git check-ignore -q .context/working/vector-index-health.json
 out=$(timeout 600 bats tests/unit/arc_create_start_flag.bats tests/unit/t1719_happiness_signal.bats 2>&1); echo "$out" | grep -q '^ok 12 ' && ! echo "$out" | grep -q '^not ok'
 bash -n agents/audit/unit-suite.sh
 python3 -m py_compile agents/audit/unit_tree_guard.py
@@ -302,18 +306,22 @@ bin/fw vendor self --check --task T-4523
 2. Every `bin/fw` call bumps the tracked `.context/working/.verb-counter` (`bin/fw:6293`) unless `FW_VERB_TELEMETRY=0`.
 3. Individual tests: `arc_create_start_flag.bats` cd'd into FRAMEWORK_ROOT and created `.context/arcs/t1852-*.yaml`. `t1719_happiness_signal.bats` created `.tasks/active/T-0000-*.md` and appended fake ratings to the tracked `.context/working/happiness.jsonl`.
 
-**Attribution:** each candidate file (155, taken from a live poll of the full run) was run alone in a fresh clone with the runner's env, after the fixes above (logs: /tmp/t4523-tools/res*.log). These still leak and are left for follow-up:
+4. `fw doctor`'s hook exercise (`bin/fw` Check 6c, `lib/doctor-hook-exercise.py:82`) really runs every configured hook with PROJECT_ROOT set to the project, so a doctor run on the checkout bumped `.hook-counter` and rewrote `.loop-detect.json` (and, in a fresh clone where src/dist mtimes are arbitrary, loop-detect.sh's stale-guard recompiled `lib/ts/dist/loop-detect.js`). Doctor also writes `.context/working/vector-index-health.json(.lock)`, per-host state that was never gitignored.
+
+**Attribution:** each candidate file (155, taken from a live poll of the full run) was run alone in a fresh clone with the runner's env, after fixes 1-3 (logs: /tmp/t4523-tools/res*.log). These still leaked:
 - `.context/working/.hook-counter`, `.loop-detect.json`: doctor_designer_pin_drift, doctor_duplicate_hook_detection, fw_mode_detection, git_identity_check, t2452_doctor_quick, t2749_doctor_stray_root_tasks (doctor and hook runs against the repo). fw_mode_detection, git_identity_check and t2452_doctor_quick also rewrite the tracked `lib/ts/dist/loop-detect.js`.
 - `.context/working/vector-index-health.json(.lock)`: doctor_duplicate_hook_detection, fw_mode_detection, t2366_discard_manifest
 - `.context/working/.verb-counter`: init_project_shape_detection, t2746_no_auto_init_in_non_project, upgrade_fresh_machine_simulation. These run under `env -i`, so the runner's FW_VERB_TELEMETRY=0 never reaches bin/fw.
 - `.context/working/focus.yaml`, `session.yaml`: resume.bats
 - `.context/working/.session-metrics.yaml`, `.context/sidecar/waiting/epoch`: t2366_discard_manifest
 - `.agentic-framework/**`: lib_upgrade.bats runs vendor self on the repo. This shows up only when the commit's vendored copy is out of date.
+
+**Fixed (second pass):** `bin/fw` doctor skips the exercise under `FW_DOCTOR_HOOK_EXERCISE=0` (SKIP line, like FW_DOCTOR_SMOKE); the runner exports it and the six checkout-doctor tests set it in setup; doctor_hook_exercise / doctor_hook_counters unset it (they probe fixtures). `vector-index-health.json(.lock)` added to `.context/working/.gitignore`. `tests/unit/helpers/hermetic.bash` sets FW_VERB_TELEMETRY=0 after stripping FW_* (t2746); init_project_shape_detection and upgrade_fresh_machine_simulation pass it inside `env -i`. resume.bats and t2366 (t7/t8) run against a throwaway git project. lib_upgrade's four real `do_upgrade` runs pass `--no-self-vendor`. Re-run alone in a fresh clone (/tmp/t4523-tools/r4.log, attrib3.sh snapshots status+blob hashes before/after each file): all 13 leave the tree unchanged. Pre-existing failures seen only in the clone, unchanged by this task: fw_mode_detection #2 and t2452 #5 (doctor FAILs on the clone's missing vector index; both pass in the live checkout), doctor_hook_counters #2-4 (fail identically at HEAD).
 - Seen in the first full run but not reproduced by any file run alone (concurrency, or the writer was not in the candidate list): metrics-history.yaml, full-audit-timing.yaml, go-scope-unpropagated/LATEST.md, audits/<date>.yaml, .bpmn-promote-audit.jsonl, .gate-bypass-log.yaml, feedback-stream.yaml, arcs/t3527-judge-probe-*.yaml, docs/reports/T-9959-*.md, agents/context/.t2880-mutant.sh, bin/hook-enable.sh.
 
 **Why nothing caught it:** the runner graded test outcomes only, never the tree the tests ran against. The live checkout is always dirty, so a test writing into it cannot be seen by eye.
 
-**Prevention:** `agents/audit/unit_tree_guard.py` snapshots `git status` plus blob hashes before and after each tier. A run that changes a clean checkout exits 1 and names the paths (`tree_guard` in the report, `TREE-LEAK` in runs.log). A run that starts on a dirty tree gets a WARN instead. Pinned by `tests/unit/t4523_unit_suite_tree_guard.bats`. Clean-room runs will stay red until the follow-up list is fixed, which is the intent.
+**Prevention:** `agents/audit/unit_tree_guard.py` snapshots `git status` plus blob hashes before and after each tier. A run that changes a clean checkout exits 1 and names the paths (`tree_guard` in the report, `TREE-LEAK` in runs.log). A run that starts on a dirty tree gets a WARN instead. Pinned by `tests/unit/t4523_unit_suite_tree_guard.bats`. If a clean-room run still goes red, it is on the writers in the "not reproduced" list above; the guard names the paths, which is the intent.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

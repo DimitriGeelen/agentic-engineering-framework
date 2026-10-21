@@ -15,6 +15,7 @@
 load ../test_helper
 
 setup() {
+    export FW_DOCTOR_HOOK_EXERCISE=0  # T-4523: the probe runs every hook against this checkout
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     FW_BIN="$FRAMEWORK_ROOT/bin/fw"

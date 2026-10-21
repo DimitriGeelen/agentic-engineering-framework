@@ -294,6 +294,9 @@ export RESULTS FRAMEWORK_ROOT FILE_TIMEOUT TIER
 export FW_WATCHTOWER_ENSURE=0
 # T-3933: doctor tests must not sweep the live Watchtower with the smoke probe.
 export FW_DOCTOR_SMOKE=0
+# T-4523: doctor's hook exercise runs every hook against the checkout, bumping the
+# tracked .hook-counter and .loop-detect.json. doctor_hook_exercise.bats unsets it.
+export FW_DOCTOR_HOOK_EXERCISE=0
 # T-4523: every bin/fw call a test makes from this checkout bumped the TRACKED
 # .context/working/.verb-counter (usage data the BVP usage axis ranks by). A
 # test that measures the counter sets its own (test_bvp_usage_axis.py pops it).

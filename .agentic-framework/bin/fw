@@ -2064,11 +2064,19 @@ do_doctor() {
     # old framework hook, so a consumer's own gates stopped running while their
     # text stayed in the file. Count those lines under its header. install-hooks
     # does not restore them itself: only the consumer knows which were theirs.
+    # T-4552: most of those lines are an OLDER framework template's, not the
+    # consumer's — a `# VERSION=` marker or other comment, or a line listed in
+    # framework-hook-lines.txt (every hook template ever shipped). Not counted.
     local _dis_hook _dis_n _dis_list=""
+    local _dis_cat="$FRAMEWORK_ROOT/agents/git/lib/framework-hook-lines.txt"
+    [ -f "$_dis_cat" ] || _dis_cat=/dev/null
     for _dis_hook in commit-msg pre-commit pre-merge-commit post-commit pre-push; do
         [ -f "$hooks_dir/$_dis_hook" ] || continue
-        _dis_n=$(awk '/^# T-4403: kept from the previous .*\(commented out/ { on = 1; next }
-                      on && /^# / { n++ } END { print n + 0 }' "$hooks_dir/$_dis_hook" 2>/dev/null)
+        _dis_n=$(awk 'FNR == NR { if ($0 !~ /^#/) fw[$0] = 1; next }
+                      /^# T-4403: kept from the previous .*\(commented out/ { on = 1; next }
+                      on && /^# / { l = substr($0, 3); gsub(/^[ \t]+|[ \t]+$/, "", l)
+                                    if (l != "" && l !~ /^#/ && !(l in fw)) n++ }
+                      END { print n + 0 }' "$_dis_cat" "$hooks_dir/$_dis_hook" 2>/dev/null)
         [ "${_dis_n:-0}" -gt 0 ] 2>/dev/null && _dis_list="$_dis_list $_dis_hook($_dis_n)"
     done
     if [ -n "$_dis_list" ]; then
@@ -2361,7 +2369,12 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
     # L-332: helper lives in lib/doctor-hook-exercise.py, NOT inline heredoc
     # — heredoc-in-$() inside bin/fw is unrecoverable on parse error.
     local exercise_script="$FW_LIB_DIR/doctor-hook-exercise.py"
-    if [ -f "$settings_file" ] && [ -f "$exercise_script" ]; then
+    # T-4523: the probe really runs every hook against this project, which bumps
+    # .hook-counter and rewrites .loop-detect.json. Unit tests that run doctor on
+    # the checkout set FW_DOCTOR_HOOK_EXERCISE=0 (same shape as FW_DOCTOR_SMOKE).
+    if [ "${FW_DOCTOR_HOOK_EXERCISE:-1}" = "0" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  Hook exercise from /tmp (FW_DOCTOR_HOOK_EXERCISE=0)"
+    elif [ -f "$settings_file" ] && [ -f "$exercise_script" ]; then
         local hook_exercise
         hook_exercise=$(SETTINGS_FILE="$settings_file" python3 "$exercise_script" 2>/dev/null)
         if [ -n "$hook_exercise" ]; then

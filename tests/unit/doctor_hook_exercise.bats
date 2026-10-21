@@ -32,6 +32,8 @@ EOF
     # real consumer is (a non-git project aborts doctor early — T-3625).
     export PROJECT_ROOT="$TEST_TEMP_DIR"
     git -C "$TEST_TEMP_DIR" init -q
+    # T-4523: the unit-suite runner turns the exercise off; this file tests it on a fixture.
+    unset FW_DOCTOR_HOOK_EXERCISE
 }
 
 teardown() {
