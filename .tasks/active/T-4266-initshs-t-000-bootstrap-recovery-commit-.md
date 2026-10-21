@@ -6,10 +6,10 @@ description: >
   advice to use the focused task. Findings (0909 run aef-install-20261017T144241Z):
   F-30. Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-13.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:27:59Z
-last_update: '2026-10-17T15:31:18Z'
+last_update: 2026-10-21T21:12:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,6 +80,23 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T21:00:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 4
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=4
+      (body:framework-level-ux); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4266: init.sh's T-000 bootstrap recovery commit is refused by the focus-drift gate.
@@ -92,8 +109,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/init.sh` has a helper `fw_init_bootstrap_task_ref` that returns the focused task of the Claude Code session (`$CLAUDE_PROJECT_DIR/.context/working/focus.yaml`, the same root the PreToolUse hook gates) and `T-000` only when no task is focused
+- [x] Both bootstrap recovery advice lines in `lib/init.sh` (empty-tree warning, commit-failed warning) print `git commit -m "<that id>: …"` instead of a hard-coded `T-000`
+- [x] Regression bats `tests/unit/t4266_init_bootstrap_advice_focus.bats`: with focus set, the advised commit command passes the focus-drift gate (exit 0) under `CLAUDECODE=1`; with no focus it is `T-000`; fails before the fix
+- [ ] The focus-drift gate itself is unchanged (no T-000 exemption); `tests/unit/focus_drift_gate.bats`, `tests/unit/init_head_bootstrap.bats` and `tests/unit/upgrade_fresh_machine_simulation.bats` stay green
+  (2026-10-21: drift 22/22 ok, init_head_bootstrap ok. The simulation had 2 reds (tests 12, 14) and a 900 s timeout, caused by ANOTHER worker's uncommitted `lib/upgrade.sh:3121` sourcing the untracked `lib/working-gitignore.sh`, which is absent from the upstream clone. Not this diff. Re-run the simulation once that lands.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -271,6 +291,13 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4266_init_bootstrap_advice_focus.bats > /tmp/.t4266.out 2>&1 && ! grep -q "^not ok" /tmp/.t4266.out
+test "$(grep -c '# skip' /tmp/.t4266.out)" -eq 0
+bash -n lib/init.sh
+! grep -n 'git commit -m \\"T-000:' lib/init.sh
+timeout 600 bats tests/unit/focus_drift_gate.bats > /tmp/.t4266b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4266b.out
+timeout 600 bats tests/unit/init_head_bootstrap.bats > /tmp/.t4266c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4266c.out
+bin/fw vendor self --check --task T-4266
 
 ## RCA
 
@@ -287,6 +314,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** greenfield run aef-install-20261017T144241Z (F-30): `fw init` printed the recovery advice `git add -A && git commit -m "T-000: bootstrap"`; the agent ran it and the focus-drift gate refused it (FOCUS-DRIFT: target T-000 ≠ focus).
+
+**Root cause:** `lib/init.sh:913` (empty-tree warning) and `lib/init.sh:917` (commit-failed warning) hard-code `T-000` in a command meant to be run later by whoever reads the init output, usually an agent in a Claude Code session with focus set. The focus-drift gate (`agents/context/check-active-task.sh` pattern 3 in `_fw_extract_drift_target`, block at the drift branch) refuses any `git commit -m "T-N:"` whose id differs from focus. `T-000` is right for init's OWN commit (run in-process, never through the hook) and wrong for advice handed to a gated session.
+
+**Why structurally allowed:** the advice strings were never run through the hook. `init_head_bootstrap.bats` checks the in-process bootstrap commit only; no test runs the printed recovery command through the gate it will meet.
+
+**Prevention:** the advice now comes from `fw_init_bootstrap_task_ref`, which reads the same focus file the hook reads (`$CLAUDE_PROJECT_DIR`). `tests/unit/t4266_init_bootstrap_advice_focus.bats` runs the advised command through `check-active-task.sh` with focus set and requires exit 0. The gate keeps no T-000 exemption, so drift attribution is not loosened.
 
 ## Evolution
 
@@ -352,6 +387,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-21 — fix the advice, not the gate
+- **Chose:** init's recovery advice names the session's focused task (read from `$CLAUDE_PROJECT_DIR/.context/working/focus.yaml`), falling back to `T-000` when nothing is focused.
+- **Why:** the drift gate is about attribution, and `T-000` means "no task". Exempting it would let any focused session commit unattributed work as `T-000` with no log. Fixing the advice changes no governance.
+- **Rejected:** a T-000 special case in the focus-drift gate (that loosens governance and would be the operator's call); a `T-XXX` placeholder in the advice (not copy-pasteable, against §Copy-Pasteable Commands).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -368,3 +408,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4266-initshs-t-000-bootstrap-recovery-commit-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T20:58:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

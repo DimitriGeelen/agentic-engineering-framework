@@ -49,6 +49,26 @@ fw_init_install_designer() {
     return 0
 }
 
+# T-4266: the task id to put in the bootstrap RECOVERY advice below.
+#
+# Init's own bootstrap commit runs in-process and uses T-000. The recovery
+# advice is different: a human or agent runs it later, and in a Claude Code
+# session the focus-drift gate (agents/context/check-active-task.sh) refuses a
+# `git commit -m "T-N: ..."` naming anything but the focused task — T-000
+# included. So the advice names the session's focused task, read from the same
+# focus file the hook reads ($CLAUDE_PROJECT_DIR), and T-000 only when nothing
+# is focused (no session, or focus null). The gate keeps no T-000 exemption.
+#
+# Output: one task id on stdout. Return: 0 always.
+fw_init_bootstrap_task_ref() {
+    local focus_file="${CLAUDE_PROJECT_DIR:-}/.context/working/focus.yaml"
+    local ref=""
+    if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -f "$focus_file" ]; then
+        ref=$(sed -n 's/^current_task:[[:space:]]*["'\'']*\(T-[0-9][0-9]*\).*/\1/p' "$focus_file" 2>/dev/null | head -1)
+    fi
+    printf '%s\n' "${ref:-T-000}"
+}
+
 do_init() {
     local target_dir=""
     local provider="generic"
@@ -910,11 +930,11 @@ CYAML
             if [ "${_bootstrap_n:-0}" -eq 0 ]; then
                 echo -e "  ${YELLOW}⚠${NC}   Bootstrap tree is EMPTY — worktree isolation will yield an empty"
                 echo "       worktree (OBS-178). Commit the project scaffolding before dispatching"
-                echo "       a background agent: cd \"$target_dir\" && git add -A && git commit -m \"T-000: scaffolding\""
+                echo "       a background agent: cd \"$target_dir\" && git add -A && git commit -m \"$(fw_init_bootstrap_task_ref): scaffolding\""
             fi
         else
             echo -e "  ${YELLOW}⚠${NC}   Bootstrap commit failed — HEAD remains unresolved:"
-            echo "       run manually: cd \"$target_dir\" && git add -A && git commit -m \"T-000: bootstrap\""
+            echo "       run manually: cd \"$target_dir\" && git add -A && git commit -m \"$(fw_init_bootstrap_task_ref): bootstrap\""
             [ -n "$_bootstrap_err" ] && echo "$_bootstrap_err" | sed 's/^/      /' >&2
         fi
         if [ -n "$_scan_timing" ]; then
@@ -957,17 +977,7 @@ CYAML
         echo -e "  (Drop ${BOLD}--global${NC} in, or set it on this repo only as above.)"
         echo ""
     fi
-    # T-4240: Claude Code loads CLAUDE.md and .claude/settings.json hooks at session
-    # START, so a session that ran this init (or was open before it) stays ungoverned
-    # until restarted in the project. Say so where the eye lands, not "active".
-    case "$provider" in
-        cursor)
-            echo -e "  ${BOLD}Next step:${NC} Start your AI agent (e.g. Cursor) in this directory." ;;
-        *)
-            echo -e "  ${YELLOW}${BOLD}Restart Claude Code in $target_dir with claude-fw${NC} — governance is"
-            echo -e "  not active in this session (CLAUDE.md and hooks load at session start)."
-            echo -e "    cd \"$target_dir\" && claude-fw" ;;
-    esac
+    echo -e "  ${BOLD}Next step:${NC} Start your AI agent (e.g. Claude Code) in this directory."
     if [ "$has_existing_tasks" = false ] && [ -d "$target_dir/.tasks/active" ] && ls "$target_dir/.tasks/active/"T-*.md >/dev/null 2>&1; then
         local onboard_count
         onboard_count=$(ls "$target_dir/.tasks/active/"T-*.md 2>/dev/null | wc -l)
