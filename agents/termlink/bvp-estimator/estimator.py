@@ -85,12 +85,23 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
-def _atomic_write_text(path: Path, text: str) -> None:
+def _atomic_write_text(path: Path, text: str, expected: str | None = None) -> bool:
     """T-100191: same-dir temp + os.replace — a kill mid-write must not truncate
-    task frontmatter (L-493 non-atomic-YAML-write class)."""
+    task frontmatter (L-493 non-atomic-YAML-write class).
+
+    T-4534: when `expected` is given (the text the caller's read-modify-write
+    started from), skip the replace and return False if the file changed since —
+    another writer's edit (a status change) must not be reverted by ours."""
+    if expected is not None:
+        try:
+            if path.read_text() != expected:
+                return False
+        except OSError:
+            return False
     tmp = Path(str(path) + ".tmp")
     tmp.write_text(text)
     os.replace(tmp, path)
+    return True
 
 
 def _rubric_sha() -> str:
@@ -2825,7 +2836,8 @@ def write_proposed(task_path: Path, scores: dict[str, int],
     new_text = f"---\n{new_fm_text}\n---\n{body_text}"
     if dry_run:
         return False, "dry-run"
-    _atomic_write_text(task_path, new_text)
+    if not _atomic_write_text(task_path, new_text, expected=text):
+        return False, "file-changed-since-read"
     return True, "wrote"
 
 
@@ -3176,7 +3188,8 @@ def write_proposed_cost(task_path: Path, cost_estimate: dict,
     new_text = f"---\n{new_fm_text}\n---\n{body_text}"
     if dry_run:
         return False, "dry-run"
-    _atomic_write_text(task_path, new_text)
+    if not _atomic_write_text(task_path, new_text, expected=text):
+        return False, "file-changed-since-read"
     return True, "wrote"
 
 

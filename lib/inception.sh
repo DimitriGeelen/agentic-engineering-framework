@@ -820,6 +820,17 @@ EOF
                 echo "  $(_emit_user_command "task verify $task_id")" >&2
                 return "$_uts_rc"
             fi
+            # T-4534: verify the write stuck — update-task can exit 0 while another
+            # writer of the task file reverts its status line (lost write).
+            _current_status=$( { grep '^status:' "$task_file" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
+            if [ "$_current_status" != "started-work" ]; then
+                echo "" >&2
+                echo -e "${RED}ERROR: captured→started-work reported success but the task file says status: ${_current_status:-<none>} (lost write, T-4534)${NC}" >&2
+                echo -e "${YELLOW}Decision was recorded but status is stuck. Recover with:${NC}" >&2
+                echo "  $(_emit_user_command "task update $task_id --status started-work")" >&2
+                echo "  $(_emit_user_command "inception sweep")" >&2
+                return 1
+            fi
         fi
         # T-3586: --i-am-human — decide already refused agents (T-1259) before reaching here,
         # and a Watchtower-driven decide inherits CLAUDECODE=1 from the Flask process.

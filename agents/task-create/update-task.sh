@@ -2284,24 +2284,8 @@ PY
             fi
         fi
 
-        # === BVP Estimator Trigger (T-1922) ===
-        # On transition to started-work ("ready"), fire the BVP estimator
-        # in the background. Heuristic engine is ~10ms so the update latency
-        # impact is negligible, but we background it anyway in case a future
-        # v2-LLM engine lands and goes over the budget. Failures are silent —
-        # the estimator's output is advisory; a missing proposed score does
-        # not block any downstream gate.
-        if [ "$NEW_STATUS" = "started-work" ] && [ -n "$TASK_ID" ]; then
-            # T-3051: -f + bash, not -x — git tracks this estimator as 100644.
-            if [ -f "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" ]; then
-                (
-                    PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
-                    bash "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" \
-                        one "$TASK_ID" >/dev/null 2>&1
-                ) &
-                disown 2>/dev/null || true
-            fi
-        fi
+        # BVP Estimator Trigger (T-1922) moved below the Updates append (T-4534):
+        # it used to fire here, in the background, BEFORE the status sed.
 
         # === Concurrent Started-Work Advisory (T-554) ===
         # Warn when starting work if other tasks are already started-work.
@@ -2670,6 +2654,27 @@ if [ ${#CHANGES[@]} -gt 0 ]; then
             echo "- **Reason:** $REASON"
         fi
     } >> "$TASK_FILE"
+fi
+
+# === BVP Estimator Trigger (T-1922) ===
+# On transition to started-work ("ready"), run the BVP estimator. Failures are
+# silent — the output is advisory; a missing proposed score blocks nothing.
+#
+# T-4534: FOREGROUND, and AFTER this invocation's last write to the task file.
+# The estimator does a whole-file read-modify-write; backgrounded before the
+# status sed it read `status: captured` and its later os.replace reverted the
+# started-work write, so `fw inception decide` on a captured inception left the
+# task at captured and the closing update refused captured → work-completed.
+# Here it runs under our keylock with no concurrent writer in this process.
+if [ "$NEW_STATUS" = "started-work" ] && [ "$OLD_STATUS" != "$NEW_STATUS" ] && [ -n "$TASK_ID" ]; then
+    # T-3051: -f + bash, not -x — git tracks this estimator as 100644.
+    if [ -f "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" ]; then
+        _t4534_timeout=""
+        command -v timeout >/dev/null 2>&1 && _t4534_timeout="timeout 60"
+        PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            $_t4534_timeout bash "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" \
+            one "$TASK_ID" >/dev/null 2>&1 || true
+    fi
 fi
 
 # === AUTO-TRIGGERS ===
