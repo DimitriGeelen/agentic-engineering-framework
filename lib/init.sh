@@ -381,6 +381,10 @@ tier0-approval
 # Unanchored on purpose: also covers the copy under .agentic-framework/.
 .fw-secret-key
 WGIT
+    # T-3861: vector index + scratch — one list shared with fw upgrade and fw audit.
+    # shellcheck source=lib/vec-index-gitignore.sh
+    source "$FRAMEWORK_ROOT/lib/vec-index-gitignore.sh"
+    fw_vec_index_ensure_ignored "$target_dir" >/dev/null
 
     echo -e "  ${GREEN}✓${NC}  Task system (.tasks/)"
     echo -e "  ${GREEN}✓${NC}  Context fabric (.context/)"

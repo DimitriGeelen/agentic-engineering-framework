@@ -4338,6 +4338,23 @@ check_gitignore_register() {
 }
 check_gitignore_register
 
+# T-3861: the vector index is GiB-sized and lives in .context/working/, the
+# directory handovers commit from. A consumer whose ignore rules predate T-3861
+# commits it (ring20-dashboard: 1.2 GB blob in .git). WARN, never FAIL.
+check_vec_index_ignored() {
+    [ -f "$FRAMEWORK_ROOT/lib/vec-index-gitignore.sh" ] || return 0
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/vec-index-gitignore.sh"
+    local _why
+    if _why=$(fw_vec_index_unignored "$PROJECT_ROOT"); then
+        return 0
+    fi
+    warn "Vector index can be committed: $_why" \
+         "git check-ignore .context/working/fw-vec-index.db finds no rule (index is GiB-sized)" \
+         "Run: fw upgrade (adds the rules to .context/working/.gitignore); if tracked: git rm --cached .context/working/fw-vec-index.db (T-3861)"
+}
+check_vec_index_ignored
+
 # T-2680 (T-2679 Slice 1). A grep that pins a YAML key at an exact indent, or a
 # `grep -c` on a .context/ store whose failure is folded into 0, reads "none"
 # when the store is reshaped — exit 0, plausible output. T-2676 (harvest.sh) and

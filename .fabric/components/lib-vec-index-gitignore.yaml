@@ -1,0 +1,21 @@
+id: lib/vec-index-gitignore.sh
+name: vec-index-gitignore
+type: script
+subsystem: framework-core
+location: lib/vec-index-gitignore.sh
+tags: []
+
+purpose: "T-3861 — keep the vector index out of a consumer's git history."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown
