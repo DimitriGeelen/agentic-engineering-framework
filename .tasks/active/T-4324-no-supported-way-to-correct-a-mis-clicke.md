@@ -12,10 +12,10 @@ description: >
   (operator-only, logged) that re-records the verdict on a completed inception with
   a reason, which the pending view then honours.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [watchtower, inception, usability]
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T18:44:08Z
-last_update: '2026-10-18T18:46:45Z'
+last_update: 2026-10-21T21:45:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw inception correct T-XXX go|no-go --reason "..."` re-records the verdict on a decided inception, including one already moved to `.tasks/completed/`: the `## Decision` block shows the new verdict, the reason, and `**Corrected**: from <OLD>`; an Updates entry and a line in `.context/inception-corrections.jsonl` record old/new verdict, reason and who
+- [x] It refuses (nothing written) when: no reason; target is not an inception; no decision is recorded yet (use `decide`); the new verdict equals the recorded one; called under `CLAUDECODE=1` without `--i-am-human`/`--from-watchtower` (same sovereignty gate as `decide`)
+- [x] After a correction, `lib/operator_pending.py inception_decision()` reports the corrected verdict, including when the latest `inception decision` commit still names the old verdict
+- [x] Regression bats `tests/unit/t4324_inception_correct.bats` fails on the pre-fix tree (verb absent) and passes after
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -149,6 +151,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 600 bats tests/unit/t4324_inception_correct.bats > /tmp/.t4324.out 2>&1 && ! grep -q "^not ok" /tmp/.t4324.out
+test "$(grep -c '# skip' /tmp/.t4324.out)" -eq 0
+bash -n lib/inception.sh && bash -n bin/fw
+python3 tools/bats-dead-negation-lint.py tests/unit/t4324_inception_correct.bats
+bin/fw vendor self --check --task T-4324
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -295,6 +303,14 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 2026-10-18 the operator pressed GO on T-2899 instead of NO-GO in Watchtower. The only way back was a hand `git revert` of the two decide commits (15704c4ef); afterwards `fw task review` / `fw operator pending` still said "already decided: GO".
+
+**Root cause:** `do_inception_decide` resolves the task with `find_task_file "$task_id" active` (lib/inception.sh:471) and a GO/NO-GO moves the task to `completed/` in the same call (lib/inception.sh:837), so a decision can never be re-recorded once made. No other verb writes the `## Decision` block. With the file reverted, `inception_decision()` (lib/operator_pending.py:79-90) falls back to the newest `inception decision` commit, which still names the mistaken verdict.
+
+**Why structurally allowed:** decide was designed as a one-way transition. No test exercised a second decision on a decided inception, and the Watchtower button commits immediately with no confirm step, so one mis-click becomes the record.
+
+**Prevention:** `fw inception correct` is the supported path: operator-only (same sovereignty gate as decide), reason required, logged to `.context/inception-corrections.jsonl` and the task's Updates. It rewrites the file's Decision block, which `inception_decision()` reads first. `tests/unit/t4324_inception_correct.bats` pins the refusals and the pending-view result.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -350,6 +366,11 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-21 — which of the two filed options to build
+- **Chose:** the operator-only `fw inception correct` CLI path (option 2): it re-records GO↔NO-GO in place on an active or completed inception, requires `--reason`, logs to `.context/inception-corrections.jsonl` and the task's Updates, and commits as `T-XXX: inception decision <NEW> (corrected from <OLD>)` so every git-reading decision checker (operator_pending, watchtower_decision_revert) agrees with the file.
+- **Why:** it fixes the real gap (no recovery after a mistake) without editing web/. A confirm step only lowers the odds of a mis-click and leaves no recovery when one happens anyway.
+- **Rejected/deferred:** the Watchtower confirm step on the decide form (option 1). It is a render-surface change that needs a [REVIEW] criterion. Worth a separate task if the operator wants it. Correcting *to* DEFER is not offered, because that reopens the exploration and is a different act.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -375,3 +396,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4324-no-supported-way-to-correct-a-mis-clicke.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:45:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

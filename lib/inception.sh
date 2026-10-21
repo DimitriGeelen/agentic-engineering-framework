@@ -23,6 +23,9 @@ do_inception() {
         decide)
             do_inception_decide "$@"
             ;;
+        correct)
+            do_inception_correct "$@"
+            ;;
         sweep)
             do_inception_sweep "$@"
             ;;
@@ -47,6 +50,9 @@ show_inception_help() {
     echo "  start <name>                      Create inception task + set focus"
     echo "  status                            Show all inception tasks"
     echo "  decide <T-XXX> go|no-go|defer     Record go/no-go decision"
+    echo "  correct <T-XXX> go|no-go --reason '<why>'"
+    echo "                                    Re-record a mistaken decision, also on a"
+    echo "                                    completed inception (operator-only, logged, T-4324)"
     echo "  sweep [--dry-run]                 Retroactively finalize inceptions with"
     echo "                                    recorded decisions but unchecked Human ACs"
     echo "  retrofit-rec [--apply]            T-1716 retrofit: scan active inceptions"
@@ -873,6 +879,135 @@ EOF
     else
         echo -e "${YELLOW}Next: Continue exploration and decide when ready${NC}"
     fi
+}
+
+# T-4324: correct a mistaken GO/NO-GO. `decide` only finds active tasks, and a GO/NO-GO
+# moves the task to completed/ in the same call, so a mis-clicked verdict could only be
+# undone by hand-reverting commits (T-2899, 2026-10-18). This re-records the verdict in
+# place, active or completed, with a mandatory reason. Same sovereignty gate as decide.
+# The task stays where it is: GO and NO-GO both complete an inception. A correction to
+# DEFER is not offered — that reopens the exploration, which is a different act.
+do_inception_correct() {
+    local task_id="${1:-}"
+    local decision="${2:-}"
+    shift 2 2>/dev/null || true
+
+    if [ -z "$task_id" ] || [ -z "$decision" ]; then
+        echo -e "${RED}Usage: fw inception correct T-XXX go|no-go --reason 'why the recorded verdict was wrong'${NC}" >&2
+        exit 1
+    fi
+    case "$decision" in
+        go|no-go) ;;
+        *)
+            echo -e "${RED}Correction must be: go or no-go${NC}" >&2
+            echo "  To reopen an exploration (DEFER), move the task back and decide again." >&2
+            exit 1
+            ;;
+    esac
+
+    local reason="" i_am_human=false from_watchtower=false
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --reason|--rationale) reason="${2:-}"; shift 2 ;;
+            --i-am-human) i_am_human=true; shift ;;
+            --from-watchtower) from_watchtower=true; shift ;;
+            *) shift ;;
+        esac
+    done
+    if [ -z "$reason" ]; then
+        echo -e "${RED}Reason required: --reason 'why the recorded verdict was wrong'${NC}" >&2
+        exit 1
+    fi
+
+    # Target validation before the sovereignty gate (T-2964 ordering).
+    local task_file
+    task_file=$(find_task_file "$task_id")
+    if [ -z "$task_file" ]; then
+        echo -e "${RED}Task $task_id not found in active or completed tasks${NC}" >&2
+        exit 1
+    fi
+    if ! grep -q "^workflow_type: inception" "$task_file"; then
+        echo -e "${RED}ERROR: $task_id is not an inception task — nothing to correct${NC}" >&2
+        exit 1
+    fi
+    local old_upper new_upper
+    old_upper=$(grep -m1 -E '^\*\*Decision\*\*:' "$task_file" | sed -E 's/^\*\*Decision\*\*:[[:space:]]*//' | grep -oE '^(NO-GO|GO|DEFER)' || true)
+    new_upper=$(echo "$decision" | tr '[:lower:]' '[:upper:]')
+    if [ -z "$old_upper" ]; then
+        echo -e "${RED}ERROR: $task_id has no recorded decision — use 'fw inception decide', not correct${NC}" >&2
+        exit 1
+    fi
+    if [ "$old_upper" = "$new_upper" ]; then
+        echo -e "${RED}ERROR: $task_id is already recorded as $new_upper — nothing to correct${NC}" >&2
+        exit 1
+    fi
+
+    if [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ] && [ "$from_watchtower" = false ]; then
+        echo -e "${RED}ERROR: Agents must not correct inception decisions (T-4324, T-1259)${NC}" >&2
+        echo "  The verdict belongs to the human. Ask the operator to run:" >&2
+        echo "    $(_emit_user_command "inception correct $task_id $decision --reason '<why>'")" >&2
+        exit 1
+    fi
+
+    local who="cli"
+    [ "$from_watchtower" = true ] && who="watchtower"
+    [ "$i_am_human" = true ] && who="i-am-human"
+    local timestamp
+    timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    local ledger="$PROJECT_ROOT/.context/inception-corrections.jsonl"
+
+    python3 - "$task_file" "$task_id" "$old_upper" "$new_upper" "$reason" "$timestamp" "$who" "$ledger" << 'PYCORRECT'
+import json, os, re, sys
+
+task_file, tid, old, new, reason, ts, who, ledger = sys.argv[1:9]
+with open(task_file) as f:
+    lines = f.read().split('\n')
+
+block = ['## Decision', '', f'**Decision**: {new}', '', f'**Rationale**: {reason}', '',
+         f'**Date**: {ts}', '', f'**Corrected**: from {old} ({who}, T-4324)']
+out, in_dec, written = [], False, False
+for line in lines:
+    if line.strip() == '## Decision':
+        in_dec = True
+        if not written:
+            out.extend(block)
+            written = True
+        continue
+    if in_dec:
+        if re.match(r'^#{2,} ', line):
+            in_dec = False
+            out.extend(['', line])
+        continue
+    out.append(line)
+if not written:
+    sys.exit(f"ERROR: {tid} has a **Decision** line but no '## Decision' section; nothing written")
+if out and out[-1] != '':
+    out.append('')
+out.extend([f'### {ts} — inception-decision-correction [inception-workflow]',
+            f'- **Action:** Corrected inception decision {old} → {new}',
+            f'- **Reason:** {reason}', f'- **By:** {who}', ''])
+with open(task_file, 'w') as f:
+    f.write('\n'.join(out))
+
+os.makedirs(os.path.dirname(ledger), exist_ok=True)
+with open(ledger, 'a') as f:
+    f.write(json.dumps({"ts": ts, "task": tid, "from": old, "to": new,
+                        "reason": reason, "by": who}) + '\n')
+PYCORRECT
+
+    # Commit with the subject the decision readers grep (operator_pending._commit_decision,
+    # watchtower_decision_revert.ANY_DECISION), so git history agrees with the file.
+    # Only these two paths are committed, whatever else is staged.
+    local _msg="$task_id: inception decision $new_upper (corrected from $old_upper)"
+    if git -C "$PROJECT_ROOT" add -- "$task_file" "$ledger" 2>/dev/null && \
+       git -C "$PROJECT_ROOT" commit -q -m "$_msg" -- "$task_file" "$ledger" >/dev/null 2>&1; then
+        echo "Committed: $_msg"
+    else
+        echo -e "${YELLOW}WARN: correction written but not committed. Commit it with:${NC}" >&2
+        echo "  cd $PROJECT_ROOT && git commit -m \"$_msg\" -- $task_file $ledger" >&2
+    fi
+
+    echo -e "${GREEN}Inception decision corrected${NC}: $task_id $old_upper → $new_upper"
 }
 
 # T-1423: Retroactive sweep — tick Human AC + finalize inceptions stuck in active/
