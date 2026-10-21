@@ -34,6 +34,14 @@ fi
 # shellcheck source=agent-identity.sh
 . "$IDENTITY_LIB"
 
+# T-2913 — every channel post goes through rail_post (rail-post.sh), which
+# applies the project's rail signing identity and from_project label via the
+# framework's lib/rail-identity.sh instead of posting bare (host-signed).
+RAIL_POST_LIB="${RAIL_POST_LIB:-$(cd "$(dirname "$0")" && pwd)/rail-post.sh}"
+[ -f "$RAIL_POST_LIB" ] || die "rail-post lib not found: $RAIL_POST_LIB (set RAIL_POST_LIB to override)"
+# shellcheck source=rail-post.sh
+. "$RAIL_POST_LIB"
+
 usage() {
     cat <<'EOF'
 Usage: agent-respond.sh (--topic <dm-topic> | --peer-fp <fp>)
@@ -99,7 +107,7 @@ fi
 agent_id="$(resolve_agent_id)"
 
 # 1. Post the receipt (the load-bearing ack agent-send.sh waits for).
-"$TERMLINK" channel post "$topic" --msg-type receipt \
+rail_post "$topic" --msg-type receipt \
     --metadata conversation_id="$cid" --metadata up_to="$up_to" \
     --metadata agent_id="$agent_id" \
     --ensure-topic --json >/dev/null \
@@ -108,7 +116,7 @@ echo "agent-respond: receipt posted to '$topic' (cid=$cid, up_to=$up_to)"
 
 # 2. Optionally post the reply turn (the content).
 if [ -n "$reply" ]; then
-    reply_json="$("$TERMLINK" channel post "$topic" --msg-type turn --payload "$reply" \
+    reply_json="$(rail_post "$topic" --msg-type turn --payload "$reply" \
                     --metadata conversation_id="$cid" --metadata agent_id="$agent_id" \
                     --ensure-topic --json)" \
         || die "reply post failed for topic '$topic'"

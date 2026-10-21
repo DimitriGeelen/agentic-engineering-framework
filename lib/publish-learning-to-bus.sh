@@ -91,6 +91,16 @@ fi
 # available, idempotent topic auto-create heals across hub-restart topic
 # loss (G-051). When absent (older binaries), empty flag preserves
 # pre-T-1445 behavior.
+# T-2913: post through lib/rail-identity.sh's rail_post_exec so the mirror
+# carries the project's rail signing identity and from_project label, not a
+# bare host-signed post. Missing lib → plain post (the bridge is non-fatal).
+: "${FRAMEWORK_ROOT:=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+export FRAMEWORK_ROOT
+# shellcheck source=rail-identity.sh
+[ -f "$FRAMEWORK_ROOT/lib/rail-identity.sh" ] && . "$FRAMEWORK_ROOT/lib/rail-identity.sh" 2>/dev/null
+declare -F rail_post_exec >/dev/null 2>&1 \
+    || rail_post_exec() { local tl="$1"; shift; "$tl" channel post "$@"; }
+
 ENSURE_TOPIC_FLAG=""
 if termlink channel post --help 2>/dev/null | grep -q -- '--ensure-topic'; then
     ENSURE_TOPIC_FLAG="--ensure-topic"
@@ -100,9 +110,9 @@ if termlink channel post --help >/dev/null 2>&1; then
     TMP_PAY=$(mktemp 2>/dev/null || echo /tmp/pub-learning-$$.json)
     printf '%s' "$PAYLOAD" > "$TMP_PAY" 2>/dev/null || true
 
-    if termlink channel post "$TOPIC" $ENSURE_TOPIC_FLAG --msg-type "$MSG_TYPE" \
+    if rail_post_exec termlink "$TOPIC" $ENSURE_TOPIC_FLAG --msg-type "$MSG_TYPE" \
            --payload-from-file "$TMP_PAY" >/dev/null 2>&1 \
-       || termlink channel post "$TOPIC" $ENSURE_TOPIC_FLAG --msg-type "$MSG_TYPE" \
+       || rail_post_exec termlink "$TOPIC" $ENSURE_TOPIC_FLAG --msg-type "$MSG_TYPE" \
            --payload "$PAYLOAD" >/dev/null 2>&1; then
         _log "posted via=channel.post topic=$TOPIC msg_type=$MSG_TYPE id=$L_ID origin=$ORIGIN"
         rm -f "$TMP_PAY" 2>/dev/null || true
