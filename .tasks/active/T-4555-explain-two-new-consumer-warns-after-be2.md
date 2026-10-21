@@ -1,13 +1,17 @@
 ---
 id: T-4555
-name: "Explain two new consumer WARNs after be.2 upgrade: task debt 31->258 and 'cron registry edited but not generated'"
+name: "Explain two new consumer WARNs after be.2 upgrade: task debt 31->258 and 'cron
+  registry edited but not generated'"
 description: >
-  ring20 after upgrading 1.8.12 -> v1.8.15-be.2: doctor task-debt count jumped 31 -> 258 and a new WARN 'Cron registry edited but not generated' appeared. Find whether either is a counting/definition change or a real upgrade side-effect (upgrade touching the consumer's cron registry without regenerating), and fix or document.
+  ring20 after upgrading 1.8.12 -> v1.8.15-be.2: doctor task-debt count jumped 31
+  -> 258 and a new WARN 'Cron registry edited but not generated' appeared. Find whether
+  either is a counting/definition change or a real upgrade side-effect (upgrade touching
+  the consumer's cron registry without regenerating), and fix or document.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [upgrade, consumer, doctor]
 components: []
 related_tasks: []
@@ -39,8 +43,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "f506e892"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T14:44:22Z
-last_update: 2026-10-21T14:44:22Z
-date_finished: null
+last_update: 2026-10-21T16:36:22Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-21T14:45:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T14:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4555: Explain two new consumer WARNs after be.2 upgrade: task debt 31->258 and 'cron registry edited but not generated'
@@ -63,8 +95,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Task-debt jump classified (definition change vs upgrade side effect) with the commit that changed it named in ## RCA
+- [x] Cron "edited but not generated" WARN classified (registry edit vs generator change vs upgrade write) with file:line in ## RCA
+- [x] Doctor's task-debt line says what it counts (last_update older than 7 days, or unreadable)
+- [x] Any real upgrade/version side effect in the cron check is fixed, with a bats regression test that fails without the fix
+- [x] `bin/fw vendor self --check --task T-4555` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +284,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n bin/fw && bash -n lib/upgrade.sh
+timeout 900 bats tests/unit/t4555_upgrade_regenerates_stale_cron_source.bats > /tmp/.t4555.out 2>&1 && ! grep -q "^not ok" /tmp/.t4555.out
+test "$(grep -c '# skip' /tmp/.t4555.out)" -eq 0
+timeout 600 bats tests/unit/t3673_consumer_sidecar_sweep_seed.bats tests/unit/test_cron_registry_generated_drift.bats > /tmp/.t4555b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4555b.out
+bin/fw vendor self --check --task T-4555
 
 ## RCA
 
@@ -265,6 +305,18 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** ring20 after `fw upgrade` 1.8.12 -> v1.8.15-be.2: doctor `Task debt` 31 -> 258, and a new WARN `Cron registry edited but not generated`.
+
+**Finding 1 — task debt: definition change, not an upgrade side effect.** `lib/task_debt.py` (T-4430, commit 46fa94d40, first in 1.8.13+) parses `last_update:` as a YAML scalar. The 1.8.12 loop (`git show v1.8.12:bin/fw`, ~line 4075) stripped only double quotes, so single-quoted values (`'2026-…Z'`, the form most task files carry) failed `date -d`, became epoch 0 and were skipped as fresh; missing/unparseable values were also skipped. Now both count. Our own repo moved 63 -> 778 on the same commit. Upgrade touches no task file. Fix: doctor's line now says what it counts — `active tasks with last_update older than 7 days or unreadable` (bin/fw, Task debt block) — instead of "stale tasks (no updates in 7+ days)".
+
+**Finding 2 — cron WARN: real upgrade side effect.** The registry was not edited. The doctor check (bin/fw ~4478) compares `lib/cron_dry_run.py`'s render of the registry against the on-disk `.context/cron/agentic-audit.crontab`. The renderer changed between 1.8.12 and be.2: T-3162 (e4973d412, first tag v1.8.15-be.2) appends `; exit ${PIPESTATUS[0]}` to every line, and T-4351 (8d8909fe8) staggers the reindex minute. `fw upgrade` (lib/upgrade.sh:2227 before the fix) ran `fw cron generate` only when `cron_seed_ensure_jobs` ADDED a job, so a consumer whose framework jobs were already present kept the 1.8.12-rendered crontab, which no longer matches. Doctor then called this "registry edited".
+
+**Why structurally allowed:** the regenerate-on-upgrade trigger was keyed to registry content changes (job added), not to renderer changes; no test upgraded a consumer whose crontab was rendered by an older generator. The doctor wording names only one of two causes of the same diff.
+
+**Fix / prevention:** lib/upgrade.sh now regenerates any existing cron source on upgrade (not only on job add) and reports `REGENERATED Cron source (framework cron renderer changed)` only when the content actually changed; the doctor WARN adds the second cause. Regression: `tests/unit/t4555_upgrade_regenerates_stale_cron_source.bats` (init consumer, strip the PIPESTATUS suffix to simulate a 1.8.12 render, upgrade, assert dry-run == on-disk). It fails on the pre-fix lib/upgrade.sh and passes after. The deployed `/etc/cron.d` copy still needs `fw cron install` (upgrade says so; doctor's generated->deployed check reports it).
+
+**Ring20 remedy now:** `.agentic-framework/bin/fw cron generate && .agentic-framework/bin/fw cron install` clears the WARN; the task-debt number is real (run `fw task stale`).
 
 ## Evolution
 
@@ -346,3 +398,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4555-explain-two-new-consumer-warns-after-be2.md
 - **Context:** Initial task creation
+
+### 2026-10-21T16:36:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

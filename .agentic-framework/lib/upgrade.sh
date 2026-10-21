@@ -2224,13 +2224,25 @@ CRONREGEOF
                 PRESENT\ *) echo -e "  ${GREEN}OK${NC}  cron job ${_cs_line#PRESENT } already present" ;;
             esac
         done <<< "$_cs_out"
-        if [ "$_cs_added" -gt 0 ] && [ "$dry_run" != true ]; then
+        # T-4555: also regenerate an existing source when no job was added. The
+        # renderer itself changes between releases (T-3162 '; exit ${PIPESTATUS[0]}',
+        # T-4351 reindex stagger), so a crontab the old framework generated no
+        # longer matches what the unchanged registry renders to, and doctor/audit
+        # report "registry edited but not generated" on a registry nobody edited.
+        local _cg_src="$target_dir/.context/cron/agentic-audit.crontab" _cg_before=""
+        if [ "$dry_run" != true ] && { [ "$_cs_added" -gt 0 ] || [ -f "$_cg_src" ]; }; then
+            [ -f "$_cg_src" ] && _cg_before=$(cat "$_cg_src")
             # T-3835: $FRAMEWORK_ROOT may be the temp upstream clone; generate
             # resolves the consumer's durable fw itself and refuses a temp one.
             # Its refusal is shown, not swallowed.
             local _cg_out
             if _cg_out=$(cd "$target_dir" && PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" cron generate 2>&1); then
-                echo -e "  ${GREEN}OK${NC}  Cron source regenerated — run 'fw cron install' to deploy"
+                if [ "$_cs_added" -gt 0 ]; then
+                    echo -e "  ${GREEN}OK${NC}  Cron source regenerated — run 'fw cron install' to deploy"
+                elif [ "$(cat "$_cg_src" 2>/dev/null)" != "$_cg_before" ]; then
+                    changes=$((changes + 1))
+                    echo -e "  ${GREEN}REGENERATED${NC}  Cron source (framework cron renderer changed) — run 'fw cron install' to deploy"
+                fi
             else
                 echo -e "  ${YELLOW}WARN${NC}  'fw cron generate' failed — run it manually, then 'fw cron install'"
                 printf '%s\n' "$_cg_out" | sed 's/^/        /'

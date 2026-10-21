@@ -4093,12 +4093,16 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
                 warnings=$((warnings + 1))
             fi
         fi
+        # T-4555: say what is counted — T-4430 began counting quoted and
+        # unreadable last_update values the pre-1.8.13 loop skipped, so the
+        # number jumps on upgrade with no task having changed.
+        local debt_what="active tasks with last_update older than 7 days or unreadable"
         if [ "$stale_count" -gt 10 ]; then
-            echo -e "  ${YELLOW}WARN${NC}  Task debt: $stale_count stale tasks (no updates in 7+ days)"
+            echo -e "  ${YELLOW}WARN${NC}  Task debt: $stale_count $debt_what"
             echo -e "         Run: fw task stale"
             warnings=$((warnings + 1))
         elif [ "$stale_count" -gt 0 ]; then
-            echo -e "  ${CYAN}INFO${NC}  Task debt: $stale_count stale tasks (no updates in 7+ days)"
+            echo -e "  ${CYAN}INFO${NC}  Task debt: $stale_count $debt_what"
         fi
     fi
 
@@ -4470,6 +4474,8 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
                 _cron_on_disk=$(cat "$cron_source" 2>/dev/null)
                 if [ "$_cron_dry_run" != "$_cron_on_disk" ]; then
                     echo -e "  ${YELLOW}WARN${NC}  Cron registry edited but not generated: $cron_registry is ahead of $cron_source"
+                    # T-4555: the other cause — a framework upgrade changed the renderer.
+                    echo -e "        (or the framework's cron renderer changed since the last generate)"
                     echo -e "        Run: fw cron generate"
                     warnings=$((warnings + 1))
                 fi
