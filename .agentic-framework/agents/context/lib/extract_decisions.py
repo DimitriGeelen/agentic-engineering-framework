@@ -127,17 +127,79 @@ def to_yaml(entries) -> str:
     return "\n".join(lines)
 
 
+def _norm(value) -> str:
+    return " ".join(str(value or "").split()).casefold()
+
+
+def register_entries(path: str, task_id: str, task_entries):
+    """T-4193: decisions.yaml entries for task_id that the task file lacks.
+
+    The register is joined by task id. An entry counts as already present when
+    its decision text equals, or is a prefix of, a task-file `Chose:` value —
+    update-task.sh auto-captures only the first physical line of a Chose, so a
+    wrapped value reaches the register truncated. A missing or unreadable
+    register is not an error: there is nothing to join.
+    """
+    try:
+        import yaml
+        with open(path, encoding="utf-8") as handle:
+            data = yaml.safe_load(handle) or {}
+    except Exception:  # noqa: BLE001 — best-effort join; absent register = nothing to join
+        return []
+    known = [_norm(e.get("chose")) for e in task_entries if e.get("chose")]
+    out = []
+    for entry in data.get("decisions") or []:
+        if not isinstance(entry, dict) or str(entry.get("task", "")) != task_id:
+            continue
+        text = _norm(entry.get("decision"))
+        if not text or any(k == text or k.startswith(text) for k in known):
+            continue
+        out.append(entry)
+    return out
+
+
+def register_yaml(entries) -> str:
+    lines = [
+        f"  # {len(entries)} decision(s) below are recorded in the register"
+        " (.context/project/decisions.yaml) for this task"
+        " but absent from the task file's Decisions section (T-4193)."
+    ]
+    for entry in entries:
+        lines.append(f"  - decision: {_q(str(entry.get('id') or '(register)'))}")
+        lines.append(f"    chose: {_q(str(entry.get('decision')))}")
+        if entry.get("rationale"):
+            lines.append(f"    rationale: {_q(str(entry['rationale']))}")
+        rejected = entry.get("alternatives_rejected")
+        if rejected:
+            if isinstance(rejected, list):
+                rejected = "; ".join(str(r) for r in rejected)
+            lines.append(f"    alternatives_rejected: [{_q(str(rejected))}]")
+        lines.append(f"    id: {_q(str(entry.get('id') or ''))}")
+        lines.append("    source: register")
+    return "\n".join(lines)
+
+
 def main() -> int:
-    if len(sys.argv) != 2:
-        sys.stderr.write("usage: extract_decisions.py <task-file>\n")
+    args = sys.argv[1:]
+    register = task_id = None
+    if len(args) == 5 and args[1] == "--register" and args[3] == "--task":
+        register, task_id = args[2], args[4]
+    elif len(args) != 1:
+        sys.stderr.write(
+            "usage: extract_decisions.py <task-file> [--register <decisions.yaml> --task <T-XXX>]\n")
         return 2
     try:
-        with open(sys.argv[1], encoding="utf-8") as handle:
+        with open(args[0], encoding="utf-8") as handle:
             text = handle.read()
     except OSError as exc:
-        sys.stderr.write(f"extract_decisions.py: cannot read {sys.argv[1]}: {exc}\n")
+        sys.stderr.write(f"extract_decisions.py: cannot read {args[0]}: {exc}\n")
         return 1
-    body = to_yaml(parse(text))
+    entries = parse(text)
+    body = to_yaml(entries)
+    if register:
+        extra = register_entries(register, task_id, entries)
+        if extra:
+            body = "\n".join(part for part in (body, register_yaml(extra)) if part)
     if body:
         print(body)
     return 0

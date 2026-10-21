@@ -11,10 +11,10 @@ description: >
   and where the register has an entry the task file lacks, say so instead of concluding
   absence.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:11:00Z
-last_update: '2026-10-13T19:16:05Z'
+last_update: 2026-10-21T22:26:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,6 +85,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-21T22:15:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4193: episodic: join decisions.yaml by task id; say so when the register has an entry the task lacks (832 OBS-458, their T-1150)
@@ -97,8 +113,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduces on bleeding-edge: a task with an empty `## Decisions` section but a `.context/project/decisions.yaml` entry `task: <id>` yields an episodic with no decisions and `enrichment_status: auto-complete` ("no decisions to record")
+- [x] `generate-episodic` joins `decisions.yaml` by task id: register entries for the task appear under `decisions:` with `source: register`, and enrichment is not `auto-complete`
+- [x] When the register has an entry the task file lacks, the episodic says so (a comment naming the register), rather than concluding absence; register entries already present in the task file (same chose text) are not duplicated
+- [x] Regression bats test fails before the fix and passes after; neighbouring episodic tests still pass; generated YAML parses
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -134,6 +152,10 @@ bvp_scores_proposed:
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
+timeout 300 bats tests/unit/t4193_episodic_register_join.bats > /tmp/.t4193.out 2>&1 && ! grep -q "^not ok" /tmp/.t4193.out
+test "$(grep -c '# skip' /tmp/.t4193.out)" -eq 0
+python3 -m pytest tests/unit/test_extract_decisions.py -q > /tmp/.t4193p.out 2>&1 && grep -q passed /tmp/.t4193p.out
+bin/fw vendor self --check --task T-4193
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
@@ -264,6 +286,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** A decision recorded through the register (`fw context add-decision --task T-XXX`, i.e. `.context/project/decisions.yaml`) but not written into the task file's `## Decisions` section was missing from the task's episodic. The episodic then said `# No decisions recorded` and `enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record`, which is a false statement of absence. Reproduced on bleeding-edge 2026-10-22: 3 of 6 legs of `tests/unit/t4193_episodic_register_join.bats` red before the fix.
+
+**Root cause:** `agents/context/lib/episodic.sh:145-149` (pre-fix) set `has_decisions` only from `extract_decisions.py "$task_file"`, and that parses nothing except the task file. Nothing in the generator ever opened `decisions.yaml`. Two stores hold decisions (the task file and the register), and the episodic read one of them while its output claimed to cover both.
+
+**Why structurally allowed:** T-3015 fixed *how* the task-file section was parsed, and T-4168 fixed the worktree loss. Both tests assumed the task file is the only source. The register gets written on close (update-task.sh T-236 auto-capture, task file → register), so the common path never diverges. The direct `add-decision` path was never exercised against the episodic.
+
+**Prevention:** `extract_decisions.py --register <decisions.yaml> --task <id>` joins the register by task id. Register-only entries are emitted with `source: register` and `id`, under a comment saying they are absent from the task file. An entry whose text matches, or is a prefix of, a task-file `Chose:` is not repeated (auto-capture stores only the first line of a Chose). `tests/unit/t4193_episodic_register_join.bats` pins six legs: register-only shown, absence not claimed, no cross-task leak, no duplicate, both sources together, missing register tolerated.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -358,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4193-episodic-join-decisionsyaml-by-task-id-s.md
 - **Context:** Initial task creation
+
+### 2026-10-21T22:26:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

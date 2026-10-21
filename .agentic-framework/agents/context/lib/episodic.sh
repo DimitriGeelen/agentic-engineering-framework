@@ -144,9 +144,18 @@ do_generate_episodic() {
     # here — `tests/unit/test_extract_decisions.py` pins all three.
     local decisions_raw=""
     local has_decisions=false
-    decisions_raw=$(python3 "$(dirname "${BASH_SOURCE[0]}")/extract_decisions.py" "$task_file" 2>/dev/null)
+    # T-4193 (832 OBS-458): join .context/project/decisions.yaml by task id. A
+    # decision recorded through the register (`fw context add-decision --task`)
+    # but not in the task file used to be invisible here, and the episodic then
+    # concluded "no decisions to record". The extractor appends register-only
+    # entries (`source: register`) under a comment that says where they came
+    # from; entries already in the task file are not repeated.
+    decisions_raw=$(python3 "$(dirname "${BASH_SOURCE[0]}")/extract_decisions.py" "$task_file" \
+        --register "$CONTEXT_DIR/project/decisions.yaml" --task "$task_id" 2>/dev/null)
+    local register_decisions=0
     if [ -n "$decisions_raw" ]; then
         has_decisions=true
+        register_decisions=$(printf '%s\n' "$decisions_raw" | grep -c '^    source: register$' || true)
     fi
 
     # =========================================================================
@@ -345,7 +354,7 @@ HEREDOC
 
     # Decisions section — from task file
     echo "" >> "$episodic_file"
-    echo "# Decisions (from task file Decisions section)" >> "$episodic_file"
+    echo "# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)" >> "$episodic_file"
     echo "decisions:" >> "$episodic_file"
     if [ "$has_decisions" = true ]; then
         # T-3015: already YAML, already escaped. extract_decisions.py emits
@@ -517,7 +526,13 @@ HEREDOC
     [ -n "$outcomes" ] && echo "  Outcomes: $(echo "$outcomes" | wc -l | tr -d ' ') AC checked"
     [ -n "$git_challenges" ] && echo "  Challenges: $(echo "$git_challenges" | wc -l | tr -d ' ') detected from git"
     [ -n "$git_artifacts" ] && echo "  Artifacts: $(echo "$git_artifacts" | wc -l | tr -d ' ') files tracked"
-    [ "$has_decisions" = true ] && echo "  Decisions: recorded from task file"
+    if [ "$has_decisions" = true ]; then
+        if [ "$register_decisions" -gt 0 ]; then
+            echo "  Decisions: recorded ($register_decisions from decisions.yaml, absent from the task file)"
+        else
+            echo "  Decisions: recorded from task file"
+        fi
+    fi
     echo ""
     echo "Source: $task_file"
 }
