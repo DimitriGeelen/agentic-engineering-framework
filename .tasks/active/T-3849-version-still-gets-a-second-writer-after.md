@@ -9,7 +9,7 @@ description: >
   now reads HEAD's committed VERSION) but the double-writer class is not closed. Related
   T-3821, T-3785 RCA.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T07:09:19Z
-last_update: '2026-10-05T07:15:46Z'
+last_update: 2026-10-21T08:50:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,8 +105,9 @@ Lead: the comment above `_self_vendor_version` says the per-commit rewrite was "
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked at HEAD: the deployed `.git/hooks/pre-push` carries the T-3821 tracked-VERSION skip, and the working-tree VERSION equals HEAD's committed VERSION after commits and pushes since the release
+- [x] The remaining stamper is identified (file:line) and either removed here or named with the fixing task/commit
+- [x] No other writer of the root VERSION exists in bin/fw, lib/, agents/ besides `fw release` and the guarded pre-push branch (grep evidence recorded)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -266,8 +267,31 @@ Lead: the comment above `_self_vendor_version` says the per-commit rewrite was "
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q "VERSION is tracked — not stamped" "$(git rev-parse --git-path hooks)/pre-push"
+test "$(tr -d '[:space:]' < VERSION)" = "$(git show HEAD:VERSION | tr -d '[:space:]')"
+timeout 600 bats tests/unit/t3821_version_single_writer.bats tests/unit/t3998_install_hooks_content_compare.bats > /tmp/.t3849.out 2>&1 && ! grep -q "^not ok" /tmp/.t3849.out
+test "$(grep -c '# skip' /tmp/.t3849.out)" -eq 0
+test "$(grep -rlE '> *"\$(PROJECT_ROOT|root)/VERSION"' bin/fw lib agents | sort | tr '\n' ' ')" = "agents/git/lib/hooks.sh lib/release.sh "
 
 ## RCA
+
+**Does not reproduce at HEAD (2026-10-21, checked by the T-3849 worker).**
+
+**Symptom:** after the v1.8.1/v1.8.2 releases the working-tree VERSION was rewritten, uncommitted, to `1.8.<commits since tag>` (1.8.1, 1.8.4, 1.8.11) and then copied into `.agentic-framework/VERSION` by `fw vendor self`.
+
+**Root cause:** the stamper was the deployed pre-push hook's "Stamp VERSION from git describe" block (template now at `agents/git/lib/hooks.sh:1456-1486`). T-3821 (fc5a2d74f) added the tracked-VERSION skip to the template, but `fw git install-hooks` decided whether to reinstall by comparing only the commit-msg `# VERSION=` marker. T-3821 did not bump that marker, so the fixed pre-push never deployed, and the old hook went on stamping on every push. The evidence shape fits: the value rose with every push. The task's "handover push" lead was the same hook, fired by `fw handover --commit`'s push.
+
+**Fixed by:** T-3998 (completed), where install-hooks compares content byte for byte through a staging dir (`agents/git/lib/hooks.sh:165-170`), plus T-3821. Sibling T-3196 reached the same conclusion (2646a4e26).
+
+**Evidence at HEAD 4d11aad27:**
+- `.git/hooks/pre-push:492` holds `VERSION is tracked — not stamped (fw release is its only writer, T-3821)`.
+- VERSION and `.agentic-framework/VERSION` both read 1.8.14, which is the same as `git show HEAD:VERSION`, and `git status --porcelain VERSION .agentic-framework/VERSION` is empty. That holds after 539 commits since the v1.8.14 VERSION commit (2328ae76b, 2026-10-20 18:45) and 26 `update by push` reflog entries on origin/bleeding-edge since then. Under the old hook, every one of those pushes would have stamped.
+- Root-VERSION writers in bin/fw, lib/, agents/: `lib/release.sh:140` (release reconcile) and `agents/git/lib/hooks.sh:1482` (guarded; it runs only for an UNTRACKED VERSION). `bin/fw:980` writes `$dest/VERSION` (the vendor target), and `lib/update.sh:310` writes `$vendored_dir/VERSION`, so neither touches the root file. No handover writer exists.
+- `bats tests/unit/t3821_version_single_writer.bats tests/unit/t3998_install_hooks_content_compare.bats`: 13/13 ok, 0 skipped.
+
+**Why structurally allowed:** a hook template fix could sit undeployed, because install-hooks trusted a hand-bumped marker instead of the content.
+
+**Prevention:** T-3998's content compare (pinned by `t3998_install_hooks_content_compare.bats`), and T-3821's hook skip and release grading (pinned by `t3821_version_single_writer.bats`). Nothing new is needed.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -363,3 +387,6 @@ Lead: the comment above `_self_vendor_version` says the per-commit rewrite was "
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3849-version-still-gets-a-second-writer-after.md
 - **Context:** Initial task creation
+
+### 2026-10-21T08:50:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
