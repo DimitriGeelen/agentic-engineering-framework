@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4534: fw inception decide on a CAPTURED inception loses the started-work status write and then refuses to close (NO-GO written, task left open, exit 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T19:00:07Z
+# ============================================================================
+
+task_id: T-4534
+task_name: "fw inception decide on a CAPTURED inception loses the started-work status write and then refuses to close (NO-GO written, task left open, exit 1)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T12:01:23Z
+completed: 2026-10-21T18:59:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T20:34:39+02:00
+last_commit: 2026-10-21T20:34:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception decide on a captured inception no longer loses the started-work write — update-task runs the BVP estimator in the foreground after its last write (was backgrounded before the status sed; its whole-file rewrite reverted status), estimator skips a write when the file changed since its read, decide verifies the status it set; regression bats
+
+# Key outcomes
+outcomes:
+  - 'Reproduction in a throwaway project confirms (or refutes) the lost-write mechanism, recorded in ## RCA with file:line'
+  - 'update-task.sh no longer runs a background whole-file writer (BVP estimator) that can race its own later writes or the caller''s next update-task call'
+  - 'do_inception_decide verifies the status after the captured→started-work transition and refuses with a clear error if it did not stick'
+  - 'Regression bats test fails without the fix and passes with it; neighbouring inception/update-task tests still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'inception decide on a captured inception no longer loses the started-work write — update-task runs the BVP estimator in the foreground after its last write (was backgrounded before the status sed; its whole-file rewrite reverted status), estimator skips a write when the file changed since its read, decide verifies the status it set; regression bats'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/agents/termlink/bvp-estimator/estimator.py'
+  - '.agentic-framework/lib/inception.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - 'lib/inception.sh'
+  - '.tasks/active/T-4534-fw-inception-decide-on-a-captured-incept.md'
+  - 'tests/unit/t4534_estimator_lost_write.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T20:34:39'
+    action: 'T-4534: inception decide on a captured inception no longer loses the started-work write — update-task runs the BVP estimator in the foreground after its last write (was backgrounded before the status sed; its whole-file rewrite reverted status), estimator skips a write when the file changed since its read, decide verifies the status it set; regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 417 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 417
+  commits: 1
+  files_changed: 8
+  lines_added: 682
+  lines_removed: 44
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4534-fw-inception-decide-on-a-captured-incept.md
+generated_by: context-agent-hybrid
