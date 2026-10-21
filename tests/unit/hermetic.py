@@ -11,7 +11,8 @@ What a test gets:
   .home      an empty directory; HOME is NOT redirected (git and ~/.claude read it)
   .project   a project carrying the markers fw needs (.tasks/, .context/), so fw never
              auto-inits; PROJECT_ROOT in os.environ points at it for in-process code
-  .env(**extra)       os.environ minus PROJECT_ROOT/FRAMEWORK_ROOT/CLAUDE*/FW_*, with
+  .env(**extra)       os.environ minus PROJECT_ROOT/FRAMEWORK_ROOT/CLAUDE*/FW_*/
+                      TERMLINK_SESSION_ID (T-4524), with
                       PROJECT_ROOT=.project, the decoy FW_PORT, then `extra`
   .clean(env, keep=)  the same stripping applied to an env dict a test built itself
   .run(argv, **kw)    subprocess.run with .env(), cwd=.project, captured text, stdin closed
@@ -40,7 +41,8 @@ SIDECAR_STOPPED = REPO / ".context" / "sidecar" / "watcher" / "stopped"
 
 
 def stripped(name: str) -> bool:
-    return name in ("PROJECT_ROOT", "FRAMEWORK_ROOT") or name.startswith(("CLAUDE", "FW_"))
+    return (name in ("PROJECT_ROOT", "FRAMEWORK_ROOT", "TERMLINK_SESSION_ID")
+            or name.startswith(("CLAUDE", "FW_")))
 
 
 def make_project(root: Path) -> Path:

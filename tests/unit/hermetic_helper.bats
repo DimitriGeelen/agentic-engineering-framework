@@ -8,7 +8,7 @@ load helpers/hermetic
 setup() {
     # What a worker shell or the nightly cron hands a test.
     export PROJECT_ROOT=/nonexistent/inherited FRAMEWORK_ROOT=/nonexistent/fw
-    export FW_T4378_PROBE=1 CLAUDECODE=1 CLAUDE_T4378_PROBE=1
+    export FW_T4378_PROBE=1 CLAUDECODE=1 CLAUDE_T4378_PROBE=1 TERMLINK_SESSION_ID=tl-t4524
     hermetic_setup --project
 }
 
@@ -22,6 +22,7 @@ teardown() {
     [ -z "${FW_T4378_PROBE+x}" ]
     [ -z "${CLAUDECODE+x}" ]
     [ -z "${CLAUDE_T4378_PROBE+x}" ]
+    [ -z "${TERMLINK_SESSION_ID+x}" ]
     run env
     [[ "$output" != *"/nonexistent/"* ]]
 }

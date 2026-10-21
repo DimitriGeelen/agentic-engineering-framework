@@ -21,12 +21,14 @@ FW = Path(__file__).resolve().parents[2] / "bin" / "fw"
 def inherited(monkeypatch):
     """What a worker shell or the nightly cron hands a test; applied before `hermetic`."""
     for k, v in {"PROJECT_ROOT": "/nonexistent/inherited", "FRAMEWORK_ROOT": "/nonexistent/fw",
-                 "FW_T4378_PROBE": "1", "CLAUDECODE": "1", "CLAUDE_T4378_PROBE": "1"}.items():
+                 "FW_T4378_PROBE": "1", "CLAUDECODE": "1", "CLAUDE_T4378_PROBE": "1",
+                 "TERMLINK_SESSION_ID": "tl-t4524"}.items():
         monkeypatch.setenv(k, v)
 
 
 def test_inherited_env_is_stripped_in_process_and_in_subprocess_env(inherited, hermetic):
-    for k in ("FRAMEWORK_ROOT", "FW_T4378_PROBE", "CLAUDECODE", "CLAUDE_T4378_PROBE"):
+    for k in ("FRAMEWORK_ROOT", "FW_T4378_PROBE", "CLAUDECODE", "CLAUDE_T4378_PROBE",
+              "TERMLINK_SESSION_ID"):
         assert k not in os.environ
         assert k not in hermetic.env()
     assert os.environ["PROJECT_ROOT"] == str(hermetic.project)

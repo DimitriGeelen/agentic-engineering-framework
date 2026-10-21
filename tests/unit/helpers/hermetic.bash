@@ -17,7 +17,8 @@
 #   HERMETIC_PROJECT  $HERMETIC_ROOT/project and the cwd. With --project it carries the
 #                     markers fw needs to accept it (.tasks/, .context/), so fw never
 #                     auto-inits; without, it is empty
-#   PROJECT_ROOT, FRAMEWORK_ROOT, CLAUDE*, FW_* are unset in the test shell, so
+#   PROJECT_ROOT, FRAMEWORK_ROOT, CLAUDE*, FW_*, TERMLINK_SESSION_ID (T-4524) are
+#   unset in the test shell, so
 #   nothing inherited from a worker or the nightly cron routes a call to the checkout.
 #   hermetic_project DIR   add the project markers to DIR
 #   hermetic_run CMD...    `run` CMD with stdin=/dev/null
@@ -39,7 +40,7 @@ hermetic_strip_env() {
     local v
     for v in $(compgen -e); do
         case "$v" in
-            PROJECT_ROOT|FRAMEWORK_ROOT|CLAUDE*|FW_*) unset "$v" ;;
+            PROJECT_ROOT|FRAMEWORK_ROOT|CLAUDE*|FW_*|TERMLINK_SESSION_ID) unset "$v" ;;
         esac
     done
 }

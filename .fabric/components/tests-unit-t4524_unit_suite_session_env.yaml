@@ -1,0 +1,21 @@
+id: tests/unit/t4524_unit_suite_session_env.bats
+name: t4524_unit_suite_session_env
+type: script
+subsystem: tests
+location: tests/unit/t4524_unit_suite_session_env.bats
+tags: []
+
+purpose: "T-4524: the unit-suite runner must not hand an agent session's variables (CLAUDECODE=1, CLAUDE_*, TERMLINK_SESSION_ID, FW_DISPATCHED_WORKER, ...) to the tests it runs."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown

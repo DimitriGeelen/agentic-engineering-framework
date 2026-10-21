@@ -6,7 +6,7 @@ description: >
   into tests, which changes the behaviour of every agent-refusal path. Unset it (and
   other session-only variables) in the runner and the hermetic helper, with a test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T08:59:28Z
-last_update: '2026-10-21T09:00:42Z'
+last_update: 2026-10-21T09:03:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,8 +92,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `agents/audit/unit-suite.sh` `_run_one` unsets the agent-session variables (CLAUDECODE, CLAUDE_*, TERMLINK_SESSION_ID, FW_DISPATCHED_WORKER, FW_SIDECAR_*, FW_FOCUS_SESSION_KEY, FW_SESSION_SCOPED_FOCUS, FW_CLAUDE_FW_*) before starting each bats/pytest child; the runner's own FW_WATCHTOWER_ENSURE=0 / FW_DOCTOR_SMOKE=0 still reach the child
+- [x] The hermetic helpers (tests/unit/helpers/hermetic.bash and its pytest twin tests/unit/hermetic.py) also strip TERMLINK_SESSION_ID, keeping both contracts the same (they already strip CLAUDE* and FW_*)
+- [x] Regression test tests/unit/t4524_unit_suite_session_env.bats runs the runner on a fixture corpus with CLAUDECODE=1 etc. set and asserts neither the bats nor the pytest child sees them; it fails on the pre-fix runner
+- [ ] Existing neighbours t4450_unit_suite_env_scrub.bats and hermetic_helper.bats stay green; `bin/fw vendor self --check --task T-4524` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,6 +280,10 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4524_unit_suite_session_env.bats > /tmp/.t4524.out 2>&1 && ! grep -q "^not ok" /tmp/.t4524.out && grep -q "^ok 2 " /tmp/.t4524.out
+timeout 300 bats tests/unit/t4450_unit_suite_env_scrub.bats tests/unit/hermetic_helper.bats > /tmp/.t4524b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4524b.out
+grep -q "TERMLINK_SESSION_ID" tests/unit/helpers/hermetic.bash && grep -q "TERMLINK_SESSION_ID" tests/unit/hermetic.py
+bin/fw vendor self --check --task T-4524
 
 ## RCA
 
@@ -294,6 +300,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** ring20's clean-room cloud run (msg 6685e7f3) launched the unit suite from inside a Claude Code session; every test inherited `CLAUDECODE=1`, so every agent-refusal path (`--i-am-human` gates, `fw inception decide`, `fw arc close`, Human-AC tick gates …) took its agent branch, and tests written for the operator path failed or passed for the wrong reason.
+
+**Root cause:** `agents/audit/unit-suite.sh:225-227` (`_run_one`) scrubs only the runner's own `FW_UNIT_SUITE_*` knobs (T-4450) before handing the environment to each bats/pytest child. Agent-session variables (`CLAUDECODE`, `CLAUDE_*`, `TERMLINK_SESSION_ID`, `FW_DISPATCHED_WORKER`, `FW_SIDECAR_AGENT_ID`, `FW_FOCUS_SESSION_KEY`, …) pass straight through. The hermetic helpers (`tests/unit/helpers/hermetic.bash:41`, `tests/unit/hermetic.py:42`) strip `CLAUDE*`/`FW_*` but only for the files that opt in, and neither strips `TERMLINK_SESSION_ID`.
+
+**Why structurally allowed:** the nightly normally runs from cron, where none of these variables exist, so the leak never showed there. Each scrub was added for the one leak its author had just hit (T-4450: runner knobs), and no test ran the runner from a session-shaped environment.
+
+**Prevention:** the runner now unsets the session variables per child, and `tests/unit/t4524_unit_suite_session_env.bats` runs the runner on a fixture corpus with those variables set and fails if either leg's child sees any of them, so dropping the scrub turns the suite red.
 
 ## Evolution
 
@@ -375,3 +389,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4524-the-unit-suite-runner-leaks-claudecode1-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T09:03:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

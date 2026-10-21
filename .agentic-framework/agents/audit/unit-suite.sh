@@ -222,8 +222,15 @@ _run_one() {
     # read into its variables at startup; a test must see the environment it gets
     # when run alone. Leaked, a nested runner on a fixture corpus inherited
     # tier=fast and refused (no tiers.yaml) — t4058 red 5/5 every nightly.
+    # T-4524: nor an agent session's variables. Launched from a Claude Code
+    # session (ring20's clean-room run), every test inherited CLAUDECODE=1 and
+    # each agent-refusal path took its agent branch. A test that needs one sets it.
     local v; for v in $(compgen -e); do
-        case "$v" in FW_UNIT_SUITE_*) unset "$v" ;; esac
+        case "$v" in
+            FW_UNIT_SUITE_*|CLAUDECODE|CLAUDE_*|TERMLINK_SESSION_ID) unset "$v" ;;
+            FW_DISPATCHED_WORKER|FW_SIDECAR_*|FW_FOCUS_SESSION_KEY) unset "$v" ;;
+            FW_SESSION_SCOPED_FOCUS|FW_CLAUDE_FW_*) unset "$v" ;;
+        esac
     done
     t0=$(date +%s); rc=0
     if [ "$leg" = bats ]; then
