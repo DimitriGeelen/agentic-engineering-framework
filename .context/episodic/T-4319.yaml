@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4319: Dispatched TermLink workers persist after their result is collected (141 idle tmux sessions on ring20)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T20:39:52Z
+# ============================================================================
+
+task_id: T-4319
+task_name: "Dispatched TermLink workers persist after their result is collected (141 idle tmux sessions on ring20)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-18T18:19:06Z
+completed: 2026-10-21T20:38:49Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-21T21:00:05+02:00
+last_commit: 2026-10-21T21:00:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  does not reproduce on bleeding-edge — leak fixed by T-4152 exec inject; host leftovers are pre-T-4152 vendored consumers
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked on current bleeding-edge (post T-4152 exec, T-4558, T-4561): evidence recorded in ## Context whether a finished, collected dispatch worker still leaves a tmux session / TermLink registration behind'
+  - 'It does not reproduce: the existing regression pin for the root-cause fix (`tests/unit/t4152_dispatch_endpoint_leak.bats`, asserts the `exec bash $wdir/run.sh` inject) passes with no skips, and the inject line is present in `agents/termlink/termlink.sh`'
+  - '## RCA filled (symptom, root cause, why nothing caught it, prevention)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'does not reproduce on bleeding-edge — leak fixed by T-4152 exec inject; host leftovers are pre-T-4152 vendored consumers'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-21 — scope: no source change'
+    chose: 'record that the bug does not reproduce and stop. The leak is already fixed by T-4152 (v1.8.11).'
+    rationale: '0 of 64 recent finished workers from this project leaked. Every leaked session on the host traces to a pre-T-4152 vendored copy.'
+    alternatives_rejected: ['a TTL reaper or a `fw doctor` WARN for idle finished-worker endpoints. That is the leftover half of the ring20 proposal and a new feature, not this bug. If the parent wants it, file a separate build task. Upgrading the affected consumers (050-email-archive, 1409-sprind, /home/dimitri-mint-dev) and running `fw termlink cleanup --yes` in each is operator or consumer work and is not done here.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4319-dispatched-termlink-workers-persist-afte.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T21:00:05'
+    action: 'T-4319: does not reproduce on bleeding-edge — leak fixed by T-4152 exec inject; host leftovers are pre-T-4152 vendored consumers'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4459 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, dispatch, resource-leak]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4459
+  commits: 1
+  files_changed: 1
+  lines_added: 68
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4319-dispatched-termlink-workers-persist-afte.md
+generated_by: context-agent-hybrid
