@@ -109,7 +109,7 @@ nothing in bin/claude-fw or lib/conversation-holder.sh reads ~/.claude/jobs/ bef
 - [x] A: a bare first `claude-fw` launch hands claude `-n fw-<dir>`, never an empty argv; a first launch with the user's own args keeps them untouched (tests/unit/t3629_fresh_relaunch_not_agents_view.bats)
 - [x] B: `claude-fw --resume <id>` (also `-r <id>`, `--resume=<id>`) is REFUSED (exit 3) when ~/.claude/jobs/<id8>/state.json names that sessionId with a live state (not done/failed/stopped); the message says it is a background job and names `claude stop <short>` then `claude-fw --resume <id>`; FW_ALLOW_BACKGROUND_RESUME=1 overrides with a warning; a stopped job or no job passes (tests/unit/t4048_claude_fw_background_resume.bats)
 - [x] Regression tests fail with the fix mutated out (mutation tests inside both bats files)
-- [ ] `bin/fw vendor self --check --task T-4048` clean
+- [x] `bin/fw vendor self --check --task T-4048` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
