@@ -8,16 +8,16 @@ description: >
   host section, fw run-heavy, FW_PROJECT/FW_TASK attribution, host PSI canary, cleanup
   on every path)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-21T08:59:47Z
-last_update: 2026-10-21T09:07:45Z
-date_finished:
+last_update: 2026-10-21T09:10:53Z
+date_finished: 2026-10-21T09:10:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -116,15 +116,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -181,7 +181,11 @@ Six incidents of one class on the shared host (latest 2026-10-21: an 832 load te
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Six incidents of one class on the shared host (latest 2026-10-21: an 832 load test took all 24 cores for 39 minutes, found only by process cwd). Root causes are structural: each agent sees only its project, nothing caps CPU/IO/memory/time by default, processes are not attributable, detection is a human feeling lag. Recommend GO on P1 (Shared host section in the CLAUDE.md template) and P3 (FW_PROJECT/FW_TASK exported into agent-run commands) first: small, no new mechanism, field-testable on the host at once; then P2 (fw run-heavy as a systemd-run scope with quotas, deadline and an attributable unit name) and P5 (EXIT-trap cleanup generalised, doctor reports this project's old /tmp entries); P4 (host PSI canary naming the owning project) last, as it needs P3's attribution. Operator of the proposing project rates it high priority and high value.
+
+**Date**: 2026-10-21T09:10:53Z
 
 ## Updates
 
@@ -190,3 +194,29 @@ Six incidents of one class on the shared host (latest 2026-10-21: an 832 load te
 
 ### 2026-10-21T09:07:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-21T09:10:53Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Six incidents of one class on the shared host (latest 2026-10-21: an 832 load test took all 24 cores for 39 minutes, found only by process cwd). Root causes are structural: each agent sees only its project, nothing caps CPU/IO/memory/time by default, processes are not attributable, detection is a human feeling lag. Recommend GO on P1 (Shared host section in the CLAUDE.md template) and P3 (FW_PROJECT/FW_TASK exported into agent-run commands) first: small, no new mechanism, field-testable on the host at once; then P2 (fw run-heavy as a systemd-run scope with quotas, deadline and an attributable unit name) and P5 (EXIT-trap cleanup generalised, doctor reports this project's old /tmp entries); P4 (host PSI canary naming the owning project) last, as it needs P3's attribution. Operator of the proposing project rates it high priority and high value.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a5e6193b
+- **Timestamp:** 2026-10-21T09:10:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-34b50b1a
+- **Timestamp:** 2026-10-21T09:10:55Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-10-21T09:10:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
