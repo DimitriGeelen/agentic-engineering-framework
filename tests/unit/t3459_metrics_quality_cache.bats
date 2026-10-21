@@ -121,6 +121,29 @@ print("ZERO_CACHED" if out == (0, 0) and M._quality_cache["ts"] > 0 else "NOT_CA
     [[ "$output" == *"ZERO_CACHED"* ]]
 }
 
+@test "a task file that vanishes between glob and read is skipped, not raised (T-3811)" {
+    # The live corpus moves under the scan: a task closed by another session is
+    # git-mv'd active/ -> completed/ after glob() listed it and before
+    # read_text() opens it. Under the parallel suite that raised
+    # FileNotFoundError, so status != 0 and the "expired timestamp" test went
+    # red only under load. A dangling symlink is that window, held open.
+    _py '
+from pathlib import Path
+import tempfile
+root = Path(tempfile.mkdtemp())
+act = root / ".tasks" / "active"
+act.mkdir(parents=True)
+(act / "T-1-kept.md").write_text("---\nid: T-1\ndescription: " + "d" * 60 + "\n---\n## Acceptance Criteria\n")
+(act / "T-2-gone.md").symlink_to(root / "moved-away.md")
+M._quality_cache["value"] = None; M._quality_cache["ts"] = 0.0
+M.PROJECT_ROOT = root
+out = M._quality_scores()
+print("SKIPPED_VANISHED" if out == (100, 100) else "WRONG %r" % (out,))
+'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"SKIPPED_VANISHED"* ]]
+}
+
 @test "the TTL never outlives the task-metadata cache's safety net" {
     # 30 was chosen to match _TASK_CACHE_TTL when both were plain freshness
     # windows. T-3575 (a04b21822) made the task cache change-driven (stat

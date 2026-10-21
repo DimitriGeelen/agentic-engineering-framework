@@ -77,8 +77,13 @@ def _quality_scores():
         if not d.exists():
             continue
         for f in d.glob("T-*.md"):
+            # T-3811: a task closed mid-scan is moved active/ -> completed/
+            # after glob() listed it; skip it rather than 500 the page.
+            try:
+                content = f.read_text(errors="replace")
+            except FileNotFoundError:
+                continue
             total += 1
-            content = f.read_text(errors="replace")
             fm, _ = parse_frontmatter(content)
             if fm:
                 desc = fm.get("description", "")

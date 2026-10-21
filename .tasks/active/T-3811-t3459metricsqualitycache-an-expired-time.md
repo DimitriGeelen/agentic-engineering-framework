@@ -10,7 +10,7 @@ description: >
   unknown — next step: capture with --print-output-on-failure under load. Unchanged
   in 914326e07..HEAD (lib metrics not touched).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T11:14:38Z
-last_update: '2026-10-04T11:30:48Z'
+last_update: 2026-10-21T08:49:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause localised and confirmed by one deterministic test (recorded in ## RCA)
+- [x] `_quality_scores()` (web/blueprints/metrics.py) survives a task file vanishing between glob and read (a task closed/moved mid-scan) — skips it, no exception
+- [x] Regression test in tests/unit/t3459_metrics_quality_cache.bats deterministically removes a file between glob and read; fails before the fix, passes after
+- [x] Whole t3459_metrics_quality_cache.bats suite green; vendor self --check clean for this task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +259,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t3459_metrics_quality_cache.bats > /tmp/.t3811.out 2>&1 && ! grep -q "^not ok" /tmp/.t3811.out
+test "$(grep -c '# skip' /tmp/.t3811.out)" -eq 0
+grep -q "vanishes between glob and read" /tmp/.t3811.out
+bin/fw vendor self --check --task T-3811
+bin/fw watchtower current
 
 ## RCA
 
@@ -273,6 +280,15 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** `t3459_metrics_quality_cache.bats` "an expired timestamp forces a recompute" went red in the 12-job parallel suite and stayed green when run alone.
+
+**Root cause:** `web/blueprints/metrics.py:79-81` (pre-fix): `_quality_scores()` globbed `.tasks/{active,completed}/T-*.md`, then called `f.read_text()` on each entry with no guard. The test recomputes over the LIVE corpus. A task closed by another session or worker is `git mv`'d from active/ to completed/ after `glob()` lists it and before `read_text()` opens it, so the call raises `FileNotFoundError`, the python exits non-zero, and `[ "$status" -eq 0 ]` fails. The longer the scan (~4000 files, slower under suite load), the wider that window. Only the recompute tests scan, and test 4 is the one guaranteed to take the full scan, which is why that test went red.
+
+**Confirmed:** the new test 8 holds the window open with a dangling symlink in the globbed directory. Before the fix it failed with `FileNotFoundError: ... T-2-gone.md` raised at `metrics.py line 81, in _quality_scores`; after the fix it passes. The original suite output was not retained, so this is the confirmed mechanism, not a captured trace of the 10:04Z run.
+
+**Why structurally allowed:** every test in the file runs against the live corpus, so none of them could reproduce a file disappearing mid-scan. The same gap reaches production: a `/metrics` request that lands during a task close would get a 500.
+
+**Prevention:** the vanished file is skipped and not counted in `total` (`except FileNotFoundError: continue`). Regression test 8 pins the vanishing-file case deterministically, without depending on suite load.
 
 ## Evolution
 
@@ -354,3 +370,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3811-t3459metricsqualitycache-an-expired-time.md
 - **Context:** Initial task creation
+
+### 2026-10-21T08:49:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
