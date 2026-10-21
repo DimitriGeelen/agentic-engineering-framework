@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T23:02:38Z
-last_update: 2026-10-21T07:00:25Z
+last_update: 2026-10-21T08:48:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -415,3 +415,7 @@ change host behaviour, so they are the operator's call, not the agent's.
 
 ### 2026-10-20T22:02:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-21T09:40Z — re-verified [w3689c]
+- Every ## Verification line passes: T-3689 bats 1/1 (0 skips), dead-negation lint clean, `vendor self --check --task T-3689` clean.
+- Whole file `upgrade_fresh_machine_simulation_vendored.bats`: 5/5 on the second run. The first run failed once at `make_vendored_consumer` (`fw init` exit 2) and has not come back in 3 more runs (alone, T-3671→T-3689, whole file). The helper sends init output to /dev/null, so the cause was not captured. Likely a race with another worker editing the shared tree that init vendors from. Left open, not fixed here.
