@@ -34,6 +34,21 @@ _fw_version_cmp() {
     if [ "$(printf '%s\n%s\n' "$pa" "$pb" | sort -V | head -1)" = "$pa" ]; then echo -1; else echo 1; fi
 }
 
+# T-2657: vendor <upstream> into <project_root> with the upstream's own bin/fw,
+# so its includes list applies. Falls back to the running do_vendor (with a WARN)
+# when the upstream bin/fw does not define one.
+_update_vendor() {
+    local upstream="$1" project_root="$2"
+    shift 2
+    if [ -f "$upstream/bin/fw" ] && grep -q '^do_vendor()' "$upstream/bin/fw" 2>/dev/null; then
+        ( cd "$project_root" && env -u FRAMEWORK_ROOT -u FW_LIB_DIR PROJECT_ROOT="$project_root" \
+            bash "$upstream/bin/fw" vendor --source "$upstream" --target "$project_root" "$@" )
+        return $?
+    fi
+    echo "WARN: upstream bin/fw defines no do_vendor — vendoring with the running fw's includes list (new top-level includes may be missed)" >&2
+    do_vendor --source "$upstream" --target "$project_root" "$@"
+}
+
 do_update() {
     local check_only=false
     local allow_downgrade=false  # T-3135
@@ -275,8 +290,15 @@ SENTINEL
     echo -e "${YELLOW}Applying update...${NC}"
     # T-3850: do_vendor refuses when local files would be lost; stop here
     # rather than stamping a new VERSION over a vendor that did not happen.
-    do_vendor --source "$tmpdir/upstream" --target "$project_root" ${_vendor_extra[@]+"${_vendor_extra[@]}"} 2>&1 | sed 's/^/  /'
-    if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+    # T-2657: the includes list must be the NEW version's. do_vendor here is the
+    # running (old) bin/fw's, so an include the new version adds never arrived on
+    # the upgrade that introduced it. Run the fetched upstream's own vendor.
+    # Capture, not `| sed` + PIPESTATUS: under bin/fw's `set -euo pipefail` a failing
+    # pipeline exited fw before the abort message below could run.
+    local _vendor_out _vendor_rc=0
+    _vendor_out=$(_update_vendor "$tmpdir/upstream" "$project_root" ${_vendor_extra[@]+"${_vendor_extra[@]}"} 2>&1) || _vendor_rc=$?
+    [ -n "$_vendor_out" ] && printf '%s\n' "$_vendor_out" | sed 's/^/  /'
+    if [ "$_vendor_rc" -ne 0 ]; then
         echo -e "${RED}Update aborted — vendor step refused or failed (see above).${NC}" >&2
         echo -e "  Previous copy kept at .agentic-framework.rollback/ (fw update --rollback)." >&2
         rm -rf "$tmpdir"

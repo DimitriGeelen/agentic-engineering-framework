@@ -9,7 +9,7 @@ description: >
   upstream clone's do_vendor after fetch (update.sh:188 comment already names bin/fw's
   list canonical).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T10:22:07Z
-last_update: '2026-08-17T12:36:08Z'
+last_update: 2026-10-21T07:00:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -58,6 +58,15 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=6 (lines=145,acs=4)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-20T22:15:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=181,acs=7)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-07-28T10:30:09Z'
     estimator: bvp-estimator-v1-heuristic
@@ -82,14 +91,21 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Re-checked at HEAD 348d298db (2026-10-21): still reproduces. `lib/update.sh:278` calls
+`do_vendor` — the function defined by the RUNNING (old, vendored) bin/fw — with
+`--source $tmpdir/upstream`, so the includes list applied is the old version's, not the
+new one's. Fix: run the fetched upstream's own `bin/fw vendor` instead, falling back to
+the in-process do_vendor (with a WARN) only when the upstream bin/fw has no do_vendor.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw update` vendors through the fetched upstream's `bin/fw vendor` (the new includes list), not the running process's do_vendor
+- [x] Fallback: when the upstream bin/fw defines no do_vendor, the in-process do_vendor runs and a WARN names the reason
+- [x] A vendor refusal from the upstream bin/fw still aborts the update (VERSION not stamped; T-3850 behaviour kept)
+- [x] Regression bats `tests/unit/t2657_update_uses_upstream_vendor.bats` passes, and its upstream-dispatch test fails on the pre-fix lib/update.sh
+- [x] Existing update tests (lib_update, t3136, update_mode_routing) and upgrade_fresh_machine_simulation stay green; vendor self --check clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,6 +156,14 @@ bvp_scores_proposed:
 #     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
 # Or:
 #     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
+bats tests/unit/t2657_update_uses_upstream_vendor.bats
+bats tests/unit/t3136_vendor_base_commit.bats
+bats tests/unit/lib_update.bats
+bats tests/unit/update_mode_routing.bats
+bats tests/unit/upgrade_fresh_machine_simulation.bats
+bash -n lib/update.sh
+python3 tools/bats-dead-negation-lint.py tests/unit/t2657_update_uses_upstream_vendor.bats
+bin/fw vendor self --check --task T-2657
 # Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
 #
 # Single pipe only — no intermediate tail/awk/sed stages between capture and grep
@@ -170,6 +194,24 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 832 (their T-276 finding 3): `fw update` to a version that added a new
+vendored include (`policy/`) did not deliver it; 832 hand-copied it from a sha-verified
+clone.
+
+**Root cause:** `lib/update.sh:278` (pre-fix) invoked `do_vendor`, a function of the
+*running* bin/fw (`bin/fw:594`). On a consumer that is the OLD vendored copy, so the
+includes/excludes list used to copy the new upstream is the old one. `--source` only
+changes where files come from, not which paths are copied. The comment above the call
+already named bin/fw's list canonical — but never pinned *which* bin/fw.
+
+**Why structurally allowed:** every update test sources the current repo's lib/update.sh
+and bin/fw, so "running fw" and "upstream fw" were always the same version — the
+version-skew case could not appear in any fixture.
+
+**Prevention:** the update now runs `$tmpdir/upstream/bin/fw vendor` (the new list), and
+`tests/unit/t2657_update_uses_upstream_vendor.bats` builds an upstream whose bin/fw
+differs from the running one, so a regression to the in-process call fails a test.
 
 ## Evolution
 
@@ -222,3 +264,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2657-fw-update-chicken-and-egg-old-dovendor-m.md
 - **Context:** Initial task creation
+
+### 2026-10-20T22:00:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
