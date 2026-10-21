@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4525: Shared-host resource guardrails for agents (dimitri-mint-dev T-162: Shared host section, fw run-heavy, FW_PROJECT/FW_TASK attribution, host PSI canary, cleanup on every path)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T09:11:15Z
+# ============================================================================
+
+task_id: T-4525
+task_name: "Shared-host resource guardrails for agents (dimitri-mint-dev T-162: Shared host section, fw run-heavy, FW_PROJECT/FW_TASK attribution, host PSI canary, cleanup on every path)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T08:59:47Z
+completed: 2026-10-21T09:10:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T11:02:19+02:00
+last_commit: 2026-10-21T11:10:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception (shared-host guardrails, dimitri-mint-dev T-162); file clean-room suite findings T-4521..T-4524 from ring20's cloud run. research artefact, proposal inputs (sha verified), open questions IW-1..IW-3. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4525-inputs/dimitri-mint-dev-T-162-message.txt'
+  - 'docs/reports/T-4525-inputs/T-162-shared-host-resource-etiquette.md'
+  - 'docs/reports/T-4525-shared-host-guardrails.md'
+  - '.tasks/active/T-4521-unit-suite-aborts-under-ubuntus-bats-110.md'
+  - '.tasks/active/T-4522-testsintegrationfwdocsbats-and-testsunit.md'
+  - '.tasks/active/T-4523-the-unit-suite-modifies-or-deletes-about.md'
+  - '.tasks/active/T-4524-the-unit-suite-runner-leaks-claudecode1-.md'
+  - '.tasks/active/T-4525-shared-host-resource-guardrails-for-agen.md'
+  - '.tasks/completed/T-4525-shared-host-resource-guardrails-for-agen.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T11:02:19'
+    action: 'T-4525: inception (shared-host guardrails, dimitri-mint-dev T-162); file clean-room suite findings T-4521..T-4524 from ring20''s cloud run'
+  - time: '2026-10-21T11:09:40'
+    action: 'T-4525: research artefact, proposal inputs (sha verified), open questions IW-1..IW-3'
+  - time: '2026-10-21T11:10:57'
+    action: 'T-4525: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 3
+  files_changed: 9
+  lines_added: 1981
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4525-shared-host-resource-guardrails-for-agen.md
+generated_by: context-agent-hybrid
