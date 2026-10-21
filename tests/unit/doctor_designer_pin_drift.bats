@@ -55,6 +55,11 @@ teardown() {
     # Same run proves the sibling lib check is wired (t2243 tests it on a fixture):
     # one of its two verdict lines must appear, whichever state the live tree is in.
     [[ "$output" == *"No vendored-source drift"* || "$output" == *"Vendored-source drift:"* ]]
+    # ...and the MCP manifest check (T-3801; t2290 tests it on a fixture).
+    [[ "$output" == *"framework MCP "* ]]
+    # ...and the currency check (T-3801; under --quick it prints its own SKIP line,
+    # which also proves it reached do_doctor's _doctor_quick_skip).
+    [[ "$output" == *"designer pin currency"* ]]
 }
 
 @test "t2: vendored build sha256 != pin sha256 → WARN" {

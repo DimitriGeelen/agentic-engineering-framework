@@ -2766,55 +2766,9 @@ PY
         fi
     fi
 
-    # Check: framework MCP manifest (T-2265, arc-010 Slice 2)
-    # T-2461: framework ASSETS (manifest, tool-set, manifest.py) live under
-    # FRAMEWORK_ROOT — which equals PROJECT_ROOT in the framework repo, but is
-    # the vendored .agentic-framework/ in a consumer. Using PROJECT_ROOT made
-    # doctor SKIP misleadingly on every consumer (manifest IS present, vendored;
-    # and "fw mcp emit-manifest" can't run there — no tool-set.yaml). The pid
-    # file below is RUNTIME state → stays on PROJECT_ROOT.
-    local _fw_root="${FRAMEWORK_ROOT:-$PROJECT_ROOT}"
-    local _mcp_mf="$_fw_root/agents/mcp/framework-mcp-manifest.json"
-    local _mcp_ts="$_fw_root/policy/capability-overlay/tool-set.yaml"
-    if [ -f "$_mcp_mf" ]; then
-        local _mcp_tools _mcp_gated _mcp_msg
-        _mcp_tools=$(python3 -c "import json; m=json.load(open('$_mcp_mf')); print(len(m.get('tools',[])))" 2>/dev/null || echo "?")
-        _mcp_gated=$(python3 -c "import json; m=json.load(open('$_mcp_mf')); print(sum(1 for t in m.get('tools',[]) if t.get('gated')))" 2>/dev/null || echo "?")
-        local _mcp_pid_f="$PROJECT_ROOT/.context/working/framework-mcp.pid"
-        if [ -f "$_mcp_pid_f" ] && kill -0 "$(cat "$_mcp_pid_f" 2>/dev/null)" 2>/dev/null; then
-            _mcp_msg="running (pid $(cat "$_mcp_pid_f"))"
-        else
-            _mcp_msg="stopped (manifest ready; start: fw mcp start --background)"
-        fi
-        # T-2290: mtime is a cheap fast-path that triggers a content check.
-        # Touch/checkout/vendor-sync update mtime without changing content; the
-        # mtime-only test produced operator-facing WARN false positives. When
-        # mtime suggests staleness, re-emit the manifest in-memory and md5 it
-        # against the on-disk file — content match → still OK, content diff → WARN.
-        if [ -f "$_mcp_ts" ] && [ "$_mcp_ts" -nt "$_mcp_mf" ]; then
-            local _mcp_emitted_md5 _mcp_ondisk_md5
-            _mcp_emitted_md5=$(python3 "$_fw_root/agents/mcp/manifest.py" show 2>/dev/null | md5sum 2>/dev/null | cut -d' ' -f1)
-            _mcp_ondisk_md5=$(md5sum "$_mcp_mf" 2>/dev/null | cut -d' ' -f1)
-            if [ -n "$_mcp_emitted_md5" ] && [ "$_mcp_emitted_md5" = "$_mcp_ondisk_md5" ]; then
-                echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
-            else
-                echo -e "  ${YELLOW}WARN${NC}  framework MCP manifest stale relative to tool-set.yaml"
-                echo -e "         Run: fw mcp emit-manifest"
-                warnings=$((warnings + 1))
-            fi
-        else
-            echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
-        fi
-    else
-        # Genuinely absent. In the framework repo: emit it. In a consumer
-        # (FRAMEWORK_ROOT vendored under .agentic-framework) the manifest ships
-        # vendored, so absence means a broken/stale vendor → re-vendor via upgrade.
-        if [ "$_fw_root" != "$PROJECT_ROOT" ]; then
-            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent in vendored framework — run: fw upgrade"
-        else
-            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent — run: fw mcp emit-manifest"
-        fi
-    fi
+    # Check: framework MCP manifest (T-2265, arc-010 Slice 2). Lives in lib/doctor-drift.sh
+    # (T-3801) so its tests can run it on a fixture without a whole doctor run.
+    doctor_check_mcp_manifest
 
     _doctor_phase "port3000 hygiene ratchet"  # T-3452
     # Check: port-3000 hygiene ratchet (T-2894, set-level sibling of T-2732's
@@ -2934,54 +2888,9 @@ PY
     # (T-3778) so its tests can call it without a whole doctor run.
     doctor_check_designer_pin
 
-    # Check: designer pin CURRENCY — is a newer release available upstream? (T-3119,
-    # T-3158 extraction). Sibling of, but distinct from, the pin<->vendored drift check
-    # above. That one measures EXPOSURE (does what we run match what we pinned); this
-    # one measures CURRENCY (is what we pinned still the newest thing the origin
-    # publishes). Only both-green means "consistent AND up to date" — designer-v0.9.0
-    # through v0.11.0 sat unconsumed for three releases with every instrument reporting
-    # OK, because nothing on either side ever looked at the origin's tag list.
-    #
-    # The probe itself (resolve the newest `designer-v*` tag at `source_origin:` by
-    # INTEGER-TUPLE version compare — never lexical, T-3158 AC-1/AC-4 — WARN when
-    # behind, OK when current, SKIP with its own distinct line when the origin cannot
-    # be read) lives in ONE place: `agents/designer/designer.sh do_check_currency`,
-    # also reachable standalone as `fw designer check-currency`. Doctor shells out to it
-    # rather than duplicating the comparison, so there is exactly one implementation to
-    # keep correct. See that function's header for the full advisory-only rationale
-    # (001-CashWeb's `scripts/check-designer-currency.py` — no such file was ever
-    # received on this rail, so this is an independent implementation of the same
-    # contract, not a port).
-    #
-    # An unreachable origin gets its OWN state and never reads as "current"
-    # (L-575 / T-2916: a guard that cannot read its input must not report the same
-    # thing as a guard that read it and found nothing). It does not count as a warning.
-    #
-    # The probe is bounded by `timeout` and runs with GIT_TERMINAL_PROMPT=0 plus ssh
-    # BatchMode=yes, so an unreachable or credential-prompting origin cannot hang
-    # `fw doctor`. It is a network probe, so --quick skips it like the other host
-    # probes; FW_SKIP_DESIGNER_CURRENCY=1 skips it in full mode (offline / CI runs).
-    # Both skips print a line — never silence, which would read as "current".
-    # FW_DESIGNER_PIN_FILE points the check at a temp pin copy for tests (T-2547),
-    # exactly as the drift check above does — forwarded to the delegate verb so both
-    # sides of a hermetic test read the same pin.
-    local _dc_pin="${FW_DESIGNER_PIN_FILE:-$PROJECT_ROOT/policy/designer-pin.yaml}"
-    if [ -f "$_dc_pin" ]; then
-        if [ "${FW_SKIP_DESIGNER_CURRENCY:-0}" = "1" ]; then
-            echo -e "  ${CYAN}SKIP${NC}  designer pin currency probe disabled (FW_SKIP_DESIGNER_CURRENCY=1)"
-        elif _doctor_quick_skip "designer pin currency (origin ls-remote)"; then
-            :
-        else
-            local _dc_out _dc_line
-            _dc_out=$(FW_DESIGNER_PIN_FILE="$_dc_pin" PROJECT_ROOT="$PROJECT_ROOT" "$AGENTS_DIR/designer/designer.sh" check-currency 2>&1) || true
-            while IFS= read -r _dc_line; do
-                echo -e "  $_dc_line"
-            done <<< "$_dc_out"
-            if printf '%s\n' "$_dc_out" | sed 's/\x1b\[[0-9;]*m//g' | grep -q '^WARN'; then
-                warnings=$((warnings + 1))
-            fi
-        fi
-    fi
+    # Check: designer pin CURRENCY (T-3119, T-3158) — newer designer release upstream?
+    # Lives in lib/doctor-drift.sh (T-3801), delegating to designer.sh check-currency.
+    doctor_check_designer_currency
 
     # Check: proxy-policy emitted-but-not-installed drift (T-2432, arc-013)
     # Sibling of the MCP manifest + cron registry→generated drift classes. Compares the

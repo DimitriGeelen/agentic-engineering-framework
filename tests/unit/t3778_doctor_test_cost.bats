@@ -9,8 +9,12 @@
 # drift checks now live in lib/doctor-drift.sh so the tests call them directly;
 # scope_tags shares one run via setup_file.
 #
+# T-3801 extended it to t2290_doctor_mcp_content_check.bats (558 s) and
+# t3119_designer_currency.bats (546 s): the MCP manifest and designer-currency
+# checks moved to the same lib.
+#
 # This file pins the budget (at most ONE doctor invocation per file) and the
-# extraction (no inline copy of either check left in bin/fw).
+# extraction (no inline copy of any of the four checks left in bin/fw).
 
 load ../test_helper
 
@@ -23,28 +27,34 @@ _doctor_runs() {
 @test "T-3778: each previously over-cap doctor file runs doctor at most once" {
     local f n
     for f in doctor_designer_pin_drift.bats t2243_doctor_self_vendor_templates.bats \
-             test_doctor_scope_tags.bats; do
+             test_doctor_scope_tags.bats t2290_doctor_mcp_content_check.bats \
+             t3119_designer_currency.bats; do
         n=$(_doctor_runs "$f")
         echo "$f: $n doctor invocation(s)"
         [ "$n" -le 1 ]
     done
 }
 
-@test "T-3778: bin/fw sources lib/doctor-drift.sh and keeps no inline copy of either check" {
+@test "T-3778: bin/fw sources lib/doctor-drift.sh and keeps no inline copy of any check" {
     run grep -c 'doctor_check_designer_pin$' "$FRAMEWORK_ROOT/bin/fw"
     [ "$output" -eq 1 ]
     run grep -c 'doctor_check_vendored_drift "$FRAMEWORK_ROOT"' "$FRAMEWORK_ROOT/bin/fw"
     [ "$output" -eq 1 ]
+    run grep -cx '    doctor_check_mcp_manifest' "$FRAMEWORK_ROOT/bin/fw"
+    [ "$output" -eq 1 ]
+    run grep -cx '    doctor_check_designer_currency' "$FRAMEWORK_ROOT/bin/fw"
+    [ "$output" -eq 1 ]
     # The inline blocks' own variables must be gone, or the two copies can drift.
-    run grep -cE '_dz_want|_vdrift_libs' "$FRAMEWORK_ROOT/bin/fw"
+    run grep -cE '_dz_want|_vdrift_libs|_mcp_emitted_md5|_dc_pin' "$FRAMEWORK_ROOT/bin/fw"
     [ "$output" -eq 0 ]
 }
 
-@test "T-3778: lib/doctor-drift.sh parses and defines both checks" {
+@test "T-3778: lib/doctor-drift.sh parses and defines all four checks" {
     run bash -n "$FRAMEWORK_ROOT/lib/doctor-drift.sh"
     [ "$status" -eq 0 ]
-    run bash -c 'source "$1/lib/doctor-drift.sh"; declare -F doctor_check_designer_pin doctor_check_vendored_drift' \
+    run bash -c 'source "$1/lib/doctor-drift.sh"; declare -F doctor_check_designer_pin doctor_check_vendored_drift \
+        doctor_check_mcp_manifest doctor_check_designer_currency' \
         _ "$FRAMEWORK_ROOT"
     [ "$status" -eq 0 ]
-    [ "$(echo "$output" | wc -l)" -eq 2 ]
+    [ "$(echo "$output" | wc -l)" -eq 4 ]
 }

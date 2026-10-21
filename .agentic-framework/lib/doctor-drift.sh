@@ -59,6 +59,105 @@ doctor_check_designer_pin() {
     fi
 }
 
+# doctor_check_designer_currency
+#
+# Designer pin CURRENCY — is a newer release available upstream? (T-3119, T-3158
+# extraction; moved here by T-3801 so t3119_designer_currency.bats calls it without
+# a whole doctor per test). Sibling of, but distinct from, the drift check above:
+# that one measures EXPOSURE (does what we run match what we pinned); this one
+# measures CURRENCY (is what we pinned still the newest thing the origin publishes).
+# Only both-green means "consistent AND up to date" — designer-v0.9.0 through
+# v0.11.0 sat unconsumed for three releases with every instrument reporting OK.
+#
+# The probe itself (newest `designer-v*` tag at `source_origin:` by INTEGER-TUPLE
+# version compare — never lexical — WARN when behind, OK when current, SKIP with its
+# own distinct line when the origin cannot be read) lives in ONE place:
+# `agents/designer/designer.sh do_check_currency` (`fw designer check-currency`).
+# This shells out to it rather than duplicating the comparison.
+#
+# An unreachable origin gets its OWN state and never reads as "current" (L-575 /
+# T-2916). It does not count as a warning. The probe is bounded by `timeout`, with
+# GIT_TERMINAL_PROMPT=0 and ssh BatchMode=yes, so it cannot hang doctor. It is a
+# network probe: --quick skips it (via do_doctor's _doctor_quick_skip, which must be
+# defined by the caller) and FW_SKIP_DESIGNER_CURRENCY=1 skips it in full mode. Both
+# skips print a line — never silence, which would read as "current".
+# FW_DESIGNER_PIN_FILE points the check at a temp pin copy for tests (T-2547),
+# forwarded to the delegate verb so both sides of a hermetic test read the same pin.
+doctor_check_designer_currency() {
+    local _dc_pin="${FW_DESIGNER_PIN_FILE:-$PROJECT_ROOT/policy/designer-pin.yaml}"
+    [ -f "$_dc_pin" ] || return 0
+    if [ "${FW_SKIP_DESIGNER_CURRENCY:-0}" = "1" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  designer pin currency probe disabled (FW_SKIP_DESIGNER_CURRENCY=1)"
+    elif _doctor_quick_skip "designer pin currency (origin ls-remote)"; then
+        :
+    else
+        local _dc_out _dc_line
+        _dc_out=$(FW_DESIGNER_PIN_FILE="$_dc_pin" PROJECT_ROOT="$PROJECT_ROOT" "$AGENTS_DIR/designer/designer.sh" check-currency 2>&1) || true
+        while IFS= read -r _dc_line; do
+            echo -e "  $_dc_line"
+        done <<< "$_dc_out"
+        if printf '%s\n' "$_dc_out" | sed 's/\x1b\[[0-9;]*m//g' | grep -q '^WARN'; then
+            warnings=$((warnings + 1))
+        fi
+    fi
+}
+
+# doctor_check_mcp_manifest
+#
+# Framework MCP manifest (T-2265, arc-010 Slice 2) — moved here by T-3801 so
+# t2290_doctor_mcp_content_check.bats runs it on a fixture instead of a whole
+# doctor per test (and no longer mutates the live tool-set.yaml / manifest).
+# T-2461: framework ASSETS (manifest, tool-set, manifest.py) live under
+# FRAMEWORK_ROOT — which equals PROJECT_ROOT in the framework repo, but is
+# the vendored .agentic-framework/ in a consumer. Using PROJECT_ROOT made
+# doctor SKIP misleadingly on every consumer (manifest IS present, vendored;
+# and "fw mcp emit-manifest" can't run there — no tool-set.yaml). The pid
+# file below is RUNTIME state → stays on PROJECT_ROOT.
+doctor_check_mcp_manifest() {
+    local _fw_root="${FRAMEWORK_ROOT:-$PROJECT_ROOT}"
+    local _mcp_mf="$_fw_root/agents/mcp/framework-mcp-manifest.json"
+    local _mcp_ts="$_fw_root/policy/capability-overlay/tool-set.yaml"
+    if [ -f "$_mcp_mf" ]; then
+        local _mcp_tools _mcp_gated _mcp_msg
+        _mcp_tools=$(python3 -c "import json; m=json.load(open('$_mcp_mf')); print(len(m.get('tools',[])))" 2>/dev/null || echo "?")
+        _mcp_gated=$(python3 -c "import json; m=json.load(open('$_mcp_mf')); print(sum(1 for t in m.get('tools',[]) if t.get('gated')))" 2>/dev/null || echo "?")
+        local _mcp_pid_f="$PROJECT_ROOT/.context/working/framework-mcp.pid"
+        if [ -f "$_mcp_pid_f" ] && kill -0 "$(cat "$_mcp_pid_f" 2>/dev/null)" 2>/dev/null; then
+            _mcp_msg="running (pid $(cat "$_mcp_pid_f"))"
+        else
+            _mcp_msg="stopped (manifest ready; start: fw mcp start --background)"
+        fi
+        # T-2290: mtime is a cheap fast-path that triggers a content check.
+        # Touch/checkout/vendor-sync update mtime without changing content; the
+        # mtime-only test produced operator-facing WARN false positives. When
+        # mtime suggests staleness, re-emit the manifest in-memory and md5 it
+        # against the on-disk file — content match → still OK, content diff → WARN.
+        if [ -f "$_mcp_ts" ] && [ "$_mcp_ts" -nt "$_mcp_mf" ]; then
+            local _mcp_emitted_md5 _mcp_ondisk_md5
+            _mcp_emitted_md5=$(python3 "$_fw_root/agents/mcp/manifest.py" show 2>/dev/null | md5sum 2>/dev/null | cut -d' ' -f1)
+            _mcp_ondisk_md5=$(md5sum "$_mcp_mf" 2>/dev/null | cut -d' ' -f1)
+            if [ -n "$_mcp_emitted_md5" ] && [ "$_mcp_emitted_md5" = "$_mcp_ondisk_md5" ]; then
+                echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
+            else
+                echo -e "  ${YELLOW}WARN${NC}  framework MCP manifest stale relative to tool-set.yaml"
+                echo -e "         Run: fw mcp emit-manifest"
+                warnings=$((warnings + 1))
+            fi
+        else
+            echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
+        fi
+    else
+        # Genuinely absent. In the framework repo: emit it. In a consumer
+        # (FRAMEWORK_ROOT vendored under .agentic-framework) the manifest ships
+        # vendored, so absence means a broken/stale vendor → re-vendor via upgrade.
+        if [ "$_fw_root" != "$PROJECT_ROOT" ]; then
+            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent in vendored framework — run: fw upgrade"
+        else
+            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent — run: fw mcp emit-manifest"
+        fi
+    fi
+}
+
 # doctor_check_vendored_drift <framework_root>
 #
 # Check 2b (T-1434): vendored-source drift between <root>/{bin,lib,agents,web,

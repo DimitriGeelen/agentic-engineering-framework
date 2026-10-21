@@ -7,7 +7,9 @@
 # let designer-v0.9.0 → v0.11.0 sit unconsumed for three releases with every
 # instrument green. This suite pins the CURRENCY half.
 #
-# Surface under test: bin/fw doctor, designer-pin-currency block.
+# Surface under test: lib/doctor-drift.sh doctor_check_designer_currency (bin/fw doctor
+# calls it). T-3801: called directly — a whole doctor per test cost 546 s against the
+# 900 s per-file cap on the 2026-10-21 nightly; t4 pins the doctor call.
 # States:
 #   pin behind newest origin tag   → WARN, names BOTH versions + the tag  — t1
 #   pin == newest origin tag       → OK, no WARN                          — t2
@@ -28,6 +30,15 @@
 # this one already kills that mutant.
 
 load ../test_helper
+
+# Run the currency check the way doctor runs it in full mode (no --quick).
+_currency_check() {
+    run env PROJECT_ROOT="$FRAMEWORK_ROOT" AGENTS_DIR="$FRAMEWORK_ROOT/agents" bash -c '
+        GREEN= YELLOW= CYAN= NC= warnings=0
+        _doctor_quick_skip() { return 1; }   # full mode, as plain `fw doctor`
+        source "$1/lib/doctor-drift.sh"; doctor_check_designer_currency; rc=$?
+        echo "warnings=$warnings"; exit $rc' _ "$FRAMEWORK_ROOT"
+}
 
 setup() {
     export FW_DOCTOR_SMOKE=0  # T-3933: never sweep the live Watchtower from a test
@@ -84,8 +95,7 @@ _line() {
 
 @test "t1: pin behind newest origin tag → WARN naming both versions and the tag" {
     _pin 0.8.0 "$ORIGIN"
-    cd "$FRAMEWORK_ROOT"
-    run bin/fw doctor
+    _currency_check
 
     local vline
     vline=$(_line "designer pin is behind its origin")
@@ -102,12 +112,12 @@ _line() {
     [[ "$output" == *"designer-v0.11.0"* ]]
     [[ "$output" == *"fw designer sync --from-tag"* ]]
     [[ "$output" != *"designer pin current with origin"* ]]
+    [[ "$output" == *"warnings=1"* ]]
 }
 
 @test "t2: pin == newest origin tag → OK, no currency WARN" {
     _pin 0.11.0 "$ORIGIN"
-    cd "$FRAMEWORK_ROOT"
-    run bin/fw doctor
+    _currency_check
 
     local vline
     vline=$(_line "designer pin current with origin")
@@ -121,8 +131,7 @@ _line() {
 
 @test "t3: unreachable origin → distinct non-failing state, never reads as current" {
     _pin 0.8.0 "$BATS_TEST_TMPDIR/no-such-origin.git"
-    cd "$FRAMEWORK_ROOT"
-    run bin/fw doctor
+    _currency_check
 
     local vline
     vline=$(_line "could not reach origin")
@@ -136,7 +145,14 @@ _line() {
     # Distinct from BOTH of the other two states.
     [[ "$output" != *"designer pin current with origin"* ]]
     [[ "$output" != *"designer pin is behind its origin"* ]]
-    # Non-failing: an unreadable origin is not a doctor failure, and the bounded
-    # probe returns rather than hanging (a hang would time this test out, not fail it).
+    # Non-failing: an unreadable origin is not a doctor failure and adds no warning,
+    # and the bounded probe returns rather than hanging (a hang would time this test
+    # out, not fail it).
     [ "$status" -eq 0 ]
+    [[ "$output" == *"warnings=0"* ]]
+}
+
+@test "t4: doctor calls the lib currency check right after the pin drift check" {
+    run grep -A4 -x '    doctor_check_designer_pin' "$FRAMEWORK_ROOT/bin/fw"
+    [[ "$output" == *"    doctor_check_designer_currency"* ]]
 }

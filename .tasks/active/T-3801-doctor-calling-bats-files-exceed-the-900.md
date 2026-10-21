@@ -16,7 +16,7 @@ description: >
   run per file via setup_file); doctor's smoke test runs endpoints concurrently or
   with a total budget; port3000_hygiene doctor-line profiled.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -50,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T09:52:43Z
-last_update: '2026-10-04T10:01:12Z'
+last_update: 2026-10-21T07:33:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,8 +102,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Each of the seven named files is measured at HEAD (2026-10-21 slow-tier nightly, post-T-4386) and the per-file seconds and the task that fixed each are recorded under ## Updates
+- [x] t2290_doctor_mcp_content_check.bats and t3119_designer_currency.bats (the two not fixed by T-3778) call their doctor check directly instead of one whole doctor per test, with no mutation of live tracked files, and pass with 0 skips
+- [x] The T-3778 budget test (tests/unit/t3778_doctor_test_cost.bats) covers both files and fails against their HEAD versions
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -263,8 +264,29 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/fw && bash -n lib/doctor-drift.sh
+timeout 300 bats tests/unit/t2290_doctor_mcp_content_check.bats > /tmp/.t3801a 2>&1 && ! grep -q "^not ok" /tmp/.t3801a
+test "$(grep -c '# skip' /tmp/.t3801a)" -eq 0
+timeout 300 bats tests/unit/t3119_designer_currency.bats > /tmp/.t3801b 2>&1 && ! grep -q "^not ok" /tmp/.t3801b
+test "$(grep -c '# skip' /tmp/.t3801b)" -eq 0
+timeout 300 bats tests/unit/t3778_doctor_test_cost.bats > /tmp/.t3801c 2>&1 && ! grep -q "^not ok" /tmp/.t3801c
+timeout 900 bats tests/unit/doctor_designer_pin_drift.bats > /tmp/.t3801d 2>&1 && ! grep -q "^not ok" /tmp/.t3801d
+test "$(grep -c '# skip' /tmp/.t3801d)" -eq 0
+git diff --quiet HEAD -- policy/capability-overlay/tool-set.yaml agents/mcp/framework-mcp-manifest.json
+python3 tools/bats-dead-negation-lint.py tests/ 2>&1 | grep -q clean
+bin/fw vendor self --check --task T-3801
 
 ## RCA
+
+**Symptom:** seven doctor-calling bats files appeared in the slow tier's `files_timed_out` (900 s per-file cap) on 2026-10-01/02. At HEAD after T-4386 (2026-10-21 nightly, 1ff8ea451) one still timed out and the rest ran at 1-100% of the cap depending on host load (see ## Updates).
+
+**Root cause:** same as T-3778: the files ran a whole `bin/fw doctor` per test to assert on one check's line, so their cost was N × doctor cost under pool load, which varies 3-10x with load. Here, `t2290_doctor_mcp_content_check.bats` (3 doctor runs; the check was inline at bin/fw:2769-2817 at 1ff8ea451 + T-3778) and `t3119_designer_currency.bats` (3 runs; inline at the `# Check: designer pin CURRENCY` block). t2290 also mutated the live `policy/capability-overlay/tool-set.yaml` and `agents/mcp/framework-mcp-manifest.json` and restored them in teardown, so an interrupted run dirtied the tree.
+
+**Why structurally allowed:** no budget on doctor runs per test file; the per-file timeout only fires under nightly load, so each file passed when run alone.
+
+**Fix:** both blocks moved verbatim into `lib/doctor-drift.sh` (`doctor_check_mcp_manifest`, `doctor_check_designer_currency`), the lib T-3778 created; doctor calls them in place. t2290 runs the check on a fixture framework root (copied tool-set.yaml + manifest.py, manifest emitted there); t3119 calls the currency check in full mode against its real bare-repo origin. Real-doctor wiring for both is asserted by `doctor_designer_pin_drift.bats` t1 (one `--quick` run), plus a source pin in each file.
+
+**Prevention:** `tests/unit/t3778_doctor_test_cost.bats` now covers both files (≤1 doctor invocation each; 3 and 3 at HEAD) and fails if an inline copy of either check reappears in bin/fw.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -360,3 +382,12 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3801-doctor-calling-bats-files-exceed-the-900.md
 - **Context:** Initial task creation
+
+### 2026-10-21T07:33:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-21 — re-measured at HEAD after T-4386 and T-3778 [w3778]
+- **2026-10-21 slow-tier nightly (1ff8ea451, includes T-4386), seconds per file:** doctor_designer_pin_drift 900 (timed out), t2243_doctor_self_vendor_templates 848, test_doctor_scope_tags 757, t2290_doctor_mcp_content_check 558, t3119_designer_currency 546, fw_doctor_vendored_drift ≤1 (already hermetic since T-3950, no doctor run), audit 14. 2026-10-20 nightly: all seven under 260 s, so they swing with load.
+- **Fixed by T-3778 (e6c7073cf):** doctor_designer_pin_drift, t2243, test_doctor_scope_tags, plus fw_doctor_vendored_drift's awk lift of Check 2b, which that move would have broken.
+- **Fixed here:** t2290 (3 doctor runs → 0; 4/4 in 2.6 s) and t3119 (3 → 0; 4/4 in 0.7 s).
+- **No action:** audit.bats (14 s on the nightly) and fw_doctor_vendored_drift (no doctor run).
