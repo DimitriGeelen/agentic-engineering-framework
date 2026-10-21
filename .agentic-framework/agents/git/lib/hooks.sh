@@ -24,7 +24,7 @@
 # PL-078 still applies: when you change the CONTENT of any hook template below,
 # bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
 # together, so consumers' next install-hooks redeploys all four.
-COMMIT_MSG_HOOK_VERSION="1.20"
+COMMIT_MSG_HOOK_VERSION="1.21"
 
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
@@ -194,7 +194,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.20
+# VERSION=1.21
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -276,6 +276,17 @@ if [ -f "$FRAMEWORK_ROOT/lib/paths.sh" ]; then
     source "$FRAMEWORK_ROOT/lib/paths.sh"
 fi
 INCEPTION_COMMIT_LIMIT=$(fw_config "INCEPTION_COMMIT_LIMIT" 2 2>/dev/null || echo 2)
+
+# --- Foreign-delete guard (T-4528) ---
+# Refuse a commit that deletes files last committed by a DIFFERENT task unless the
+# message names that task: the signature of a stale scratch index built before
+# another worker's commit (290e149d6 deleted T-4520's suite). Here, not in
+# pre-commit, because only this hook sees the message. Inherits GIT_INDEX_FILE.
+# Override: FW_ALLOW_FOREIGN_DELETE=1 (Tier-2, logged).
+FOREIGN_DELETE_GUARD="$FRAMEWORK_ROOT/agents/git/lib/foreign-delete-guard.py"
+if [ -f "$FOREIGN_DELETE_GUARD" ] && command -v python3 >/dev/null 2>&1; then
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "$FOREIGN_DELETE_GUARD" "$COMMIT_MSG_FILE" || exit 1
+fi
 
 # --- Inception commit classifier (T-2195) ---
 # An inception commit is "exploration" (counts toward budget) if its diff touches

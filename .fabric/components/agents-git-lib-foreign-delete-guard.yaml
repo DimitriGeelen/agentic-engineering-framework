@@ -1,0 +1,21 @@
+id: agents/git/lib/foreign-delete-guard.py
+name: foreign-delete-guard
+type: script
+subsystem: git-traceability
+location: agents/git/lib/foreign-delete-guard.py
+tags: []
+
+purpose: "Foreign-delete guard (T-4528) — refuse a commit that deletes another task's files."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown
