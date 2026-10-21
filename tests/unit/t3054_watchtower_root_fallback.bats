@@ -78,11 +78,28 @@ _resolve() {
     [[ "$output" == "$FAKE_FW||" ]]
 }
 
-@test "A2 — neither identity site still spells the fallback inline" {
-    cd "$FRAMEWORK_ROOT"
-    if grep -n 'PROJECT_ROOT:-${FRAMEWORK_ROOT:-}' lib/watchtower.sh; then false; fi
-    # both sites now go through the shared resolver
-    [ "$(grep -c '_our_root=$(_watchtower_our_root)' lib/watchtower.sh)" -eq 2 ]
+# A2 invariant over a file: no inline fallback, and EVERY "ours" assignment goes
+# through the shared resolver (at least the two original identity sites). A count
+# pin (-eq 2) went red when T-4460 added a third, correctly routed, site (T-4540).
+_a2_routed() {
+    local f="$1" total via
+    if grep -n 'PROJECT_ROOT:-${FRAMEWORK_ROOT:-}' "$f"; then return 1; fi
+    total=$(grep -c '_our_root=' "$f")
+    via=$(grep -c '_our_root=$(_watchtower_our_root)' "$f")
+    [ "$via" -ge 2 ] && [ "$total" -eq "$via" ]
+}
+
+@test "A2 — no identity site spells the fallback inline" {
+    _a2_routed "$FRAMEWORK_ROOT/lib/watchtower.sh"
+}
+
+@test "A2 control — an extra site computing ours without the resolver is caught" {
+    cp "$FRAMEWORK_ROOT/lib/watchtower.sh" "$TEST_TEMP_DIR/wt.sh"
+    printf '%s\n' '_our_root="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"' >> "$TEST_TEMP_DIR/wt.sh"
+    ! _a2_routed "$TEST_TEMP_DIR/wt.sh" || false
+    cp "$FRAMEWORK_ROOT/lib/watchtower.sh" "$TEST_TEMP_DIR/wt2.sh"
+    printf '%s\n' '_x="${PROJECT_ROOT:-${FRAMEWORK_ROOT:-}}"' >> "$TEST_TEMP_DIR/wt2.sh"
+    ! _a2_routed "$TEST_TEMP_DIR/wt2.sh" || false
 }
 
 @test "A2 — the launcher routes through the resolver too" {
