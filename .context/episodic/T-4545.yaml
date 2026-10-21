@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4545: Flaky under load: t3298_audit_lock_integrity.bats 'no watchdog sleep survives a normal audit exit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T18:08:11Z
+# ============================================================================
+
+task_id: T-4545
+task_name: "Flaky under load: t3298_audit_lock_integrity.bats 'no watchdog sleep survives a normal audit exit"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T14:04:53Z
+completed: 2026-10-21T18:07:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T16:05:29+02:00
+last_commit: 2026-10-21T18:33:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file three tests that flake under parallel load (T-4545..T-4547). t3298 watchdog-leak test tracks its own run via env marker, not host-wide sleep-1 orphans; watchdog trap kills $! (no fork/assign window)
+
+# Key outcomes
+outcomes:
+  - 'The t3298 watchdog test identifies the audit run''s OWN processes (a per-run marker), not any host-wide `sleep 1` with PPID 1, so an unrelated orphan cannot fail it'
+  - 'The test waits for the watchdog subtree to exit against a deadline that tolerates a loaded host, and still fails when a watchdog sleep genuinely survives (proved by a negative control)'
+  - 'The watchdog TERM trap in agents/audit/audit.sh reaps the current sleep even if TERM lands between `sleep 1 &` and the pid assignment'
+  - 'The test passes 20/20 runs in a foreground loop while the host is busy, with the whole file passing under `bats --jobs`; it is not added to the unit-suite baseline'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-4545-flaky-under-load-t3298auditlockintegrity.md'
+  - '.tasks/active/T-4546-flaky-under-load-t4171budgetbandoperator.md'
+  - '.tasks/active/T-4547-flaky-under-load-testt3736basenameindexs.md'
+  - 'tests/unit/t3298_audit_lock_integrity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T16:05:29'
+    action: 'T-4545: file three tests that flake under parallel load (T-4545..T-4547)'
+  - time: '2026-10-21T18:33:00'
+    action: 'T-4545: t3298 watchdog-leak test tracks its own run via env marker, not host-wide sleep-1 orphans; watchdog trap kills $! (no fork/assign window)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 242 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 242
+  commits: 2
+  files_changed: 6
+  lines_added: 1182
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4545-flaky-under-load-t3298auditlockintegrity.md
+generated_by: context-agent-hybrid
