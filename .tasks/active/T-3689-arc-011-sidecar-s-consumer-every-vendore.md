@@ -7,7 +7,7 @@ description: >
   Origin: 832 T-980 RCA 2026-10-01 (every vendored consumer was deaf; nothing was
   ever tested from inside a vendored project). Extends upgrade_fresh_machine_simulation.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T23:02:38Z
-last_update: '2026-10-01T23:15:36Z'
+last_update: 2026-10-21T07:00:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,14 +88,26 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**HEAD re-check (2026-10-21, 1ff8ea451).** The consumer-delivery pieces this task
+was filed for have since shipped under other tasks; what was still missing is the
+proof from INSIDE a vendored consumer:
+
+| Piece | Reaches a vendored consumer? | Where |
+|---|---|---|
+| Sidecar hooks (autostart startup+resume, inbox, receiver-adapter, receiver-ready) | yes — `fw init` template; `fw upgrade` regenerates from the same template | lib/init.sh:1103,1116,1315,1319,1335; lib/upgrade.sh:2569 |
+| `sidecar-sweep-5m` cron job | yes — seeded at init, merged at upgrade | T-3673, lib/cron-seed.sh, lib/init.sh:343 |
+| `fw sidecar whoami` names the project, not `.agentic-framework` | yes | T-3671 (existing test in the same bats file) |
+| Live process (supervisor + watcher tick + receiver) from the vendored copy | not previously tested | this task's test |
+| `fw sidecar e2e` reachable in the vendored CLI | not previously tested | this task's test |
+| Live e2e (real hub + dispatched worker) from a consumer in CI | no — needs an operator decision | ## Recommendation |
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] HEAD re-check recorded in ## Context: what already reaches a vendored consumer (hooks, sweep cron, whoami) and what does not
+- [x] Regression test in tests/unit/upgrade_fresh_machine_simulation_vendored.bats builds a real `fw init` vendored consumer and asserts, from INSIDE it under env -i: all five sidecar hook entries (autostart ×2 startup+resume, inbox, receiver-adapter, receiver-ready) are wired in .claude/settings.json through the consumer's own launcher; each hook runs without error; sidecar-sweep-5m is in its cron registry; supervisor, watcher (--tick) and receiver come up running the consumer's vendored lib/sidecar code with state under the consumer's .context; `fw sidecar e2e` runs the consumer's vendored CLI and refuses at preflight (no termlink on PATH) with exit 2 (lib/sidecar_cli.py:615) and a named reason, not a traceback
+- [x] Open items needing an operator decision (live e2e in CI needs a hub + paid worker; keep-alive cron on consumer-only hosts) written as options in ## Recommendation
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -255,6 +267,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 2400 bats -f "T-3689" tests/unit/upgrade_fresh_machine_simulation_vendored.bats > /tmp/.t3689.out 2>&1 && grep -q "^ok 1 " /tmp/.t3689.out && ! grep -q "^not ok" /tmp/.t3689.out
+test "$(grep -c '# skip' /tmp/.t3689.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/upgrade_fresh_machine_simulation_vendored.bats > /tmp/.t3689-lint.out 2>&1 && grep -q clean /tmp/.t3689-lint.out
+bin/fw vendor self --check --task T-3689
 
 ## RCA
 
@@ -271,6 +287,27 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 832 T-980 (2026-10-01): every vendored consumer was deaf — no sidecar
+hooks, no sweep, no receiver — and nobody noticed, because the sidecar had only ever
+been exercised from the framework repo itself.
+
+**Root cause:** the defects themselves (missing init template hooks, `jobs: []` cron
+seed, whoami resolving `.agentic-framework` as the project) were fixed by T-3673,
+T-3671 and the hook template at lib/init.sh:1103-1335. The gap this task owns is the
+test surface: `upgrade_fresh_machine_simulation*.bats` built vendored consumers but
+asserted only version/router behaviour, never that the sidecar comes up inside one.
+
+**Why structurally allowed:** every sidecar test ran with PROJECT_ROOT = the framework
+repo (or a bare temp dir sourcing framework lib/ directly), so "works here" and
+"works in a consumer via its vendored copy" were indistinguishable.
+
+**Prevention:** the T-3689 test in tests/unit/upgrade_fresh_machine_simulation_vendored.bats
+builds a real `fw init` consumer and, under `env -i`, asserts hooks wired through the
+consumer launcher, each hook runs, the cron seed, supervisor/watcher(--tick)/receiver
+alive running `$PROJ/.agentic-framework/lib/sidecar/` code with state in the
+consumer's `.context`, and the vendored `fw sidecar e2e` refusing cleanly at preflight.
+A regression in any consumer-delivery leg turns it red.
 
 ## Evolution
 
@@ -295,6 +332,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-21 — scope shrank to the proof
+- **What changed:** between filing (2026-10-01) and pickup, T-3673 (cron seed), T-3671 (whoami) and the init hook template delivered the sidecar to consumers. The defect no longer reproduced; the missing piece was a test run from inside a vendored consumer.
+- **Plan impact:** no source change; the deliverable is the inside-the-consumer regression test. "proven by fw sidecar e2e … in CI" is proven only to the preflight boundary offline.
+- **Triggered:** live-e2e-in-CI and consumer keep-alive left as operator options in ## Recommendation.
 
 ## Recommendation
 
@@ -325,6 +367,24 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO (close on the offline consumer test); the live-e2e leg needs an operator choice
+**Rationale:** Everything that can be proven without a hub and a paid worker is now
+pinned from inside a vendored consumer. The two open items below cost money or
+change host behaviour, so they are the operator's call, not the agent's.
+**Evidence:**
+- T-3689 test in tests/unit/upgrade_fresh_machine_simulation_vendored.bats (see ## Verification)
+- Delivery legs already on HEAD: lib/init.sh:1103-1335 (hooks), T-3673 (cron seed), T-3671 (whoami)
+
+**Open item 1 — live `fw sidecar e2e` from a consumer in CI** (needs a hub + a dispatched `claude -p` worker):
+1. Nightly job on this host: build a vendored consumer, run `fw sidecar e2e` against the local hub (one internal-subscription worker per night, logged via `fw review cost log`).
+2. Run it only at release (`fw release tag-and-release` preflight) — cheaper, catches regressions later.
+3. Keep offline-only (status quo after this task); accept that hub/worker integration from a consumer is proven only by field reports.
+
+**Open item 2 — keep-alive on consumer-only hosts** (`sidecar-sweep-5m` is seeded in the registry but only runs if `fw cron install` was run on that host):
+1. `fw upgrade` runs `fw cron install` for the consumer automatically.
+2. `fw doctor` in the consumer WARNs when the registry has jobs not installed in crontab (report only).
+3. Leave as is — autostart on SessionStart already brings the sidecar up whenever an agent session starts.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -352,3 +412,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3689-arc-011-sidecar-s-consumer-every-vendore.md
 - **Context:** Initial task creation
+
+### 2026-10-20T22:02:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
