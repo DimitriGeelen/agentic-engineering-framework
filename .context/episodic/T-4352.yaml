@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4352: GH #95: Auto-restart is documented as `claude -c` (conversation kept) but the default is a fresh session (FW_RESTART_MODE=fresh, T-3166)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T20:34:36Z
+# ============================================================================
+
+task_id: T-4352
+task_name: "GH #95: Auto-restart is documented as `claude -c` (conversation kept) but the default is a fresh session (FW_RESTART_MODE=fresh, T-3166)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T23:02:25Z
+completed: 2026-10-21T20:33:46Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-21T20:31:35+02:00
+last_commit: 2026-10-21T22:29:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  auto-restart docs state the real default — fresh session (FW_RESTART_MODE=fresh, T-3166), continue = --resume opt-in; GH #95; regression bats reads the default from bin/claude-fw. Evolution entry (docs were wrong, not the wrapper)
+
+# Key outcomes
+outcomes:
+  - 'CLAUDE.md and lib/templates/claude-project.md §Auto-Restart describe the default as a fresh session (`FW_RESTART_MODE=fresh`) seeded from the handover, and name `FW_RESTART_MODE=continue` as the opt-in transcript-keeping mode; neither claims the wrapper "auto-restarts with `claude -c`"'
+  - 'docs/harnesses.md Resume list no longer says `claude-fw` restarts with `claude -c`'
+  - 'Regression bats tests/unit/t4352_restart_mode_docs.bats reads the default from bin/claude-fw and fails when any of the three docs contradicts it (fails before the doc fix, passes after)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - 'CLAUDE.md'
+  - 'docs/harnesses.md'
+  - 'lib/templates/claude-project.md'
+  - '.tasks/active/T-4352-gh-95-auto-restart-is-documented-as-clau.md'
+  - 'tests/unit/t4352_restart_mode_docs.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T20:31:35'
+    action: 'T-4352: auto-restart docs state the real default — fresh session (FW_RESTART_MODE=fresh, T-3166), continue = --resume opt-in; GH #95; regression bats reads the default from bin/claude-fw'
+  - time: '2026-10-21T22:29:01'
+    action: 'T-4352: Evolution entry (docs were wrong, not the wrapper)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4171 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4171
+  commits: 2
+  files_changed: 6
+  lines_added: 96
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4352-gh-95-auto-restart-is-documented-as-clau.md
+generated_by: context-agent-hybrid
