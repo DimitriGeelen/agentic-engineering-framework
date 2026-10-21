@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4539: Pre-push red: test_no_relative_fw_argv_t3952.py — a cwd-relative fw in argv
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T12:32:49Z
+# ============================================================================
+
+task_id: T-4539
+task_name: "Pre-push red: test_no_relative_fw_argv_t3952.py — a cwd-relative fw in argv"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T12:15:20Z
+completed: 2026-10-21T12:31:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T14:19:34+02:00
+last_commit: 2026-10-21T14:19:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  runme_queue docstring example no longer teaches a cwd-relative bin/fw job argv (T-3952 lint red since 7c43266c2); vendor sync
+
+# Key outcomes
+outcomes:
+  - 'The offending cwd-relative `bin/fw` argv is located (`lib/runme_queue.py:15-16`, docstring example job) and the commit that introduced it is named (7c43266c2, T-4491)'
+  - 'The example no longer teaches a cwd-relative fw argv: its steps are fw-free, and the prose says a job calling fw names the project''s own fw path (`bin/fw` in the framework repo, `.agentic-framework/bin/fw` in a consumer)'
+  - '`tests/unit/test_no_relative_fw_argv_t3952.py` goes red → green (1 failed → 2 passed, foreground); runme bats t4491/t4492/t4493 still green'
+  - '`bin/fw vendor self --check --task T-4539` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/runme_queue.py'
+  - 'lib/runme_queue.py'
+  - '.tasks/active/T-4539-pre-push-red-testnorelativefwargvt3952py.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T14:19:34'
+    action: 'T-4539: runme_queue docstring example no longer teaches a cwd-relative bin/fw job argv (T-3952 lint red since 7c43266c2); vendor sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 1
+  files_changed: 3
+  lines_added: 397
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4539-pre-push-red-testnorelativefwargvt3952py.md
+generated_by: context-agent-hybrid

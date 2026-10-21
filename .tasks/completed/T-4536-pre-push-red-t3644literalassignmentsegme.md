@@ -10,12 +10,12 @@ description: >
   then fix the code if the test caught a real regression, or the test if the expectation
   legitimately changed, saying which and why.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/lib/safe-commands.sh, tests/unit/t4536_literal_var_curl.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T12:14:24Z
-last_update: 2026-10-21T12:16:32Z
-date_finished:
+last_update: 2026-10-21T12:29:28Z
+date_finished: 2026-10-21T12:29:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -423,3 +423,20 @@ empty, backslash, reassignment, `read`, `export`, loop shadowing, `||`, longer n
 
 ### 2026-10-21T12:16:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e767254d
+- **Timestamp:** 2026-10-21T12:30:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T12:29:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

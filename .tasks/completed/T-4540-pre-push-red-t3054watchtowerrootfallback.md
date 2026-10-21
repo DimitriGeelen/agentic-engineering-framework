@@ -1,20 +1,20 @@
 ---
-id: T-4537
-name: "Pre-push red: test_importer_fidelity.py — corpus measured verdicts moved, and
-  'the hard error is gated on having an id' fails"
+id: T-4540
+name: "Pre-push red: t3054_watchtower_root_fallback.bats A2 — an identity site spells
+  the Watchtower fallback inline"
 description: >
-  Likely fallout from the corpus_spec changes T-4496/T-4501/T-4502/T-4505/T-4518.
-  Found by the pre-push unit-suite ratchet on 2026-10-21 (NEW red, not baselined);
-  blocks every push. Find which commit made it red (git log -S / bisect over today's
-  commits), then fix the code if the test caught a real regression, or the test if
-  the expectation legitimately changed, saying which and why.
+  A new site spells the fallback URL inline instead of using the shared helper. Found
+  by the pre-push unit-suite ratchet on 2026-10-21 (NEW red, not baselined); blocks
+  every push. Find which commit made it red (git log -S / bisect over today's commits),
+  then fix the code if the test caught a real regression, or the test if the expectation
+  legitimately changed, saying which and why.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/t3054_watchtower_root_fallback.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,9 +42,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-21T12:14:41Z
-last_update: 2026-10-21T12:16:30Z
-date_finished:
+created: 2026-10-21T12:15:38Z
+last_update: 2026-10-21T12:32:53Z
+date_finished: 2026-10-21T12:32:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,18 +55,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-21T12:15:29Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-21T12:16:09Z'
+  - ts: '2026-10-21T12:19:40Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -83,9 +73,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-21T12:30:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=310,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4537: Pre-push red: test_importer_fidelity.py — corpus measured verdicts moved, and 'the hard error is gated on having an id' fails
+# T-4540: Pre-push red: t3054_watchtower_root_fallback.bats A2 — an identity site spells the Watchtower fallback inline
 
 ## Context
 
@@ -95,10 +95,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause of each failing test in tests/unit/test_importer_fidelity.py identified (introducing commit named) and recorded in ## RCA, stating whether code or test was wrong
-- [x] `python3 -m pytest tests/unit/test_importer_fidelity.py -q` passes (was red before the fix: 2 failed, 14 passed)
-- [x] The closest suites to the changed file pass (test_corpus_spec_roundtrip.py, test_corpus_lint_lane_overflow.py: 167 passed together)
-- [x] Nothing added to .context/audits/unit-suite/baseline.yaml
+- [x] The red is localised: the new site is located (file:line), the commit that introduced it is named, and the fix is decided (code or test), with the reason
+- [x] Test A2 asserts the invariant (no inline `PROJECT_ROOT:-${FRAMEWORK_ROOT:-}` fallback; every `_our_root=` assignment in lib/watchtower.sh goes through `_watchtower_our_root`; at least the 2 original sites do) instead of an exact site count
+- [x] The new assertion still fails on an inline-fallback site (negative control run against a mutated copy)
+- [x] `tests/unit/t3054_watchtower_root_fallback.bats` goes red → green (6/7 → 8/8, foreground); t4460 suite 2/2; dead-negation lint clean
+- [x] `bin/fw vendor self --check --task T-4540` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -146,7 +147,17 @@ bvp_scores_proposed:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
 
+## RCA
+
+- **Symptom:** `tests/unit/t3054_watchtower_root_fallback.bats` test 5, "A2 — neither identity site still spells the fallback inline", is red at `[ "$(grep -c '_our_root=$(_watchtower_our_root)' lib/watchtower.sh)" -eq 2 ]`.
+- **Root cause:** commit 286fddab8 (T-4460) added a third identity site, `lib/watchtower.sh:80-85` (the start poll against /api/_identity). That site uses the shared resolver correctly (`_our_root=$(_watchtower_our_root)`), so there are now 3 matches. The test pinned an exact count of 2 rather than the invariant it guards. The task description's "a new site spells the fallback inline" is not what happened: the inline-fallback grep in the same test passes. The code is right, the expectation legitimately changed, so the **test** is fixed.
+- **Why nothing caught it earlier:** the T-4460 worker did not run the t3054 suite. The count pin fails on correct growth, so its red reads like a regression of the guarded rule.
+- **Prevention:** A2 now asserts the invariant: no inline fallback, every `_our_root=` assignment routed through `_watchtower_our_root`, and ≥2 such sites. Correct new sites therefore pass, and an unrouted one fails. A new control test pins that the assertion still catches both bad shapes.
+
 ## Verification
+out=$(timeout 600 bats tests/unit/t3054_watchtower_root_fallback.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+python3 tools/bats-dead-negation-lint.py tests/unit/t3054_watchtower_root_fallback.bats
+bin/fw vendor self --check --task T-4540
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -283,7 +294,6 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest tests/unit/test_importer_fidelity.py -q > /tmp/.t4537.out 2>&1 && grep -q passed /tmp/.t4537.out
 
 ## RCA
 
@@ -300,14 +310,6 @@ python3 -m pytest tests/unit/test_importer_fidelity.py -q > /tmp/.t4537.out 2>&1
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `test_corpus_measured_verdicts_have_not_moved` and `test_the_hard_error_is_gated_on_having_an_id` red: probe `unsupported-identified-process-child` measured `preserved`, expected `refused`.
-
-**Root cause:** the test was stale, not the code. The probe (tests/unit/test_importer_fidelity.py:465) injected `<bpmn:complexGateway id=…>` as "a tag still outside TYPE_TO_TAG" (chosen by T-4501 when boundaryEvent became supported). Commit 8490cdd7c (T-4505) deliberately added complexGateway (and every other BPMN process flow node) to `TYPE_TO_TAG` (tools/corpus_spec.py:88), so the element now round-trips and the probe measures `preserved`. The T-2614 refusal (tools/corpus_spec.py:615-633) is intact. Fix: the probe now uses an identified `<bpmn:textAnnotation>`, an artifact rather than a flow node, which takes the generic refusal. It is also the same tag as the unidentified probe, so FINDING 2's "same tag, with/without id" claim is now literally true.
-
-**Why structurally allowed:** the probe hard-codes "some tag the importer does not support", and that set shrinks every time support is added. T-4505 did not run this file. Its own table-driven test covered the new tags, but not this sibling that relied on one of them being absent.
-
-**Prevention:** the probe now points at a non-flow-node artifact, outside the class T-4505 enumerated, and a comment at the probe names the moving-target dependency for the next person who extends TYPE_TO_TAG. The pre-push unit-suite ratchet caught it within the day, as designed.
 
 ## Evolution
 
@@ -385,10 +387,27 @@ python3 -m pytest tests/unit/test_importer_fidelity.py -q > /tmp/.t4537.out 2>&1
 
 ## Updates
 
-### 2026-10-21T12:14:41Z — task-created [task-create-agent]
+### 2026-10-21T12:15:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4537-pre-push-red-testimporterfidelitypy--cor.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4540-pre-push-red-t3054watchtowerrootfallback.md
 - **Context:** Initial task creation
 
-### 2026-10-21T12:16:30Z — status-update [task-update-agent]
+### 2026-10-21T12:19:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0c08eb6d
+- **Timestamp:** 2026-10-21T12:33:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T12:32:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

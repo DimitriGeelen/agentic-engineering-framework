@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4536: Pre-push red: t3644_literal_assignment_segment.bats — 'WURL=x; curl -sf \"\ $WURL/\"' and an && chain with a literal assignment are no longer classed SAFE
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T12:30:57Z
+# ============================================================================
+
+task_id: T-4536
+task_name: "Pre-push red: t3644_literal_assignment_segment.bats — 'WURL=x; curl -sf \"\ $WURL/\"' and an && chain with a literal assignment are no longer classed SAFE"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T12:14:24Z
+completed: 2026-10-21T12:29:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T14:26:06+02:00
+last_commit: 2026-10-21T14:27:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  curl/wget option check honours an expansion of a literal the same line assigned (WURL=x; curl "$WURL/") — T-4512 over-block; env-supplied and option-shaped values stay refused; t4536_literal_var_curl.bats (16), t3644 20/20, G-121 probe 13 gated. tick Agent ACs (verification all green)
+
+# Key outcomes
+outcomes:
+  - 'Regressing commit identified and the cause named with file:line in ## RCA (code regression vs. legitimately changed expectation)'
+  - 'tests/unit/t3644_literal_assignment_segment.bats passes in full (was red)'
+  - 'docs/reports/G-121-bypass-probe.sh: all 13 bypass lines still gated, controls SAFE'
+  - 'Closest neighbouring safe-commands suites still green; bats dead-negation lint clean'
+  - 'bin/fw vendor self --check --task T-4536 clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.fabric/components/tests-unit-t4536_literal_var_curl.yaml'
+  - '.tasks/active/T-4536-pre-push-red-t3644literalassignmentsegme.md'
+  - 'tests/unit/t4536_literal_var_curl.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T14:26:06'
+    action: 'T-4536: curl/wget option check honours an expansion of a literal the same line assigned (WURL=x; curl "$WURL/") — T-4512 over-block; env-supplied and option-shaped values stay refused; t4536_literal_var_curl.bats (16), t3644 20/20, G-121 probe 13 gated'
+  - time: '2026-10-21T14:27:42'
+    action: 'T-4536: tick Agent ACs (verification all green)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 15
+  commits: 2
+  files_changed: 5
+  lines_added: 594
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4536-pre-push-red-t3644literalassignmentsegme.md
+generated_by: context-agent-hybrid

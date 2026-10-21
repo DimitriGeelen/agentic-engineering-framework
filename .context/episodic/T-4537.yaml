@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4537: Pre-push red: test_importer_fidelity.py — corpus measured verdicts moved, and 'the hard error is gated on having an id' fails
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T12:31:26Z
+# ============================================================================
+
+task_id: T-4537
+task_name: "Pre-push red: test_importer_fidelity.py — corpus measured verdicts moved, and 'the hard error is gated on having an id' fails"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T12:14:41Z
+completed: 2026-10-21T12:31:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T14:18:31+02:00
+last_commit: 2026-10-21T14:18:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  importer-fidelity probe for an unsupported identified process child uses textAnnotation — T-4505 made complexGateway supported, so the probe measured preserved; test stale, refusal intact; RCA
+
+# Key outcomes
+outcomes:
+  - 'Root cause of each failing test in tests/unit/test_importer_fidelity.py identified (introducing commit named) and recorded in ## RCA, stating whether code or test was wrong'
+  - '`python3 -m pytest tests/unit/test_importer_fidelity.py -q` passes (was red before the fix: 2 failed, 14 passed)'
+  - 'The closest suites to the changed file pass (test_corpus_spec_roundtrip.py, test_corpus_lint_lane_overflow.py: 167 passed together)'
+  - 'Nothing added to .context/audits/unit-suite/baseline.yaml'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4537-pre-push-red-testimporterfidelitypy--cor.md'
+  - 'tests/unit/test_importer_fidelity.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T14:18:31'
+    action: 'T-4537: importer-fidelity probe for an unsupported identified process child uses textAnnotation — T-4505 made complexGateway supported, so the probe measured preserved; test stale, refusal intact; RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 1
+  files_changed: 2
+  lines_added: 398
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4537-pre-push-red-testimporterfidelitypy--cor.md
+generated_by: context-agent-hybrid

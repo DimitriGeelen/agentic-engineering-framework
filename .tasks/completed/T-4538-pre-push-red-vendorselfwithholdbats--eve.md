@@ -9,10 +9,10 @@ description: >
   commits), then fix the code if the test caught a real regression, or the test if
   the expectation legitimately changed, saying which and why.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T12:14:59Z
-last_update: 2026-10-21T12:18:38Z
-date_finished:
+last_update: 2026-10-21T12:31:29Z
+date_finished: 2026-10-21T12:31:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -72,6 +72,16 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-21T12:30:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=309,acs=6)
     rubric_sha: e4a00f38e801
 ---
 
@@ -383,3 +393,22 @@ test "$(grep -c '# skip' /tmp/.t4538.out)" -eq 0
 
 ### 2026-10-21T12:18:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e601437b
+- **Timestamp:** 2026-10-21T12:31:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Nothing added to .context/audits/unit-suite/baseline.yaml
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/unit-suite/baseline.yaml in: Nothing added to .context/audits/unit-suite/baseline.yaml`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-21T12:31:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
