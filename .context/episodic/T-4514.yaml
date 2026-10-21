@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4514: A later fw reviewer judge run deletes or moves an earlier run's committed evidence files, so the earlier verdict row stops verifying and the pre-push audit FAILs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T21:41:58Z
+# ============================================================================
+
+task_id: T-4514
+task_name: "A later fw reviewer judge run deletes or moves an earlier run's committed evidence files, so the earlier verdict row stops verifying and the pre-push audit FAILs"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T20:36:59Z
+completed: 2026-10-20T21:41:17Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T23:00:50+02:00
+last_commit: 2026-10-20T23:00:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  recorded review evidence is immutable — _commit_rows restores committed evidence a later run moved/deleted/changed; judge brief requires dispatch-suffixed copies, never move/delete; regression test
+
+# Key outcomes
+outcomes:
+  - '`_commit_rows` (lib/verdict_ledger.py) restores, from HEAD, every committed file under `.context/reviews/evidence/` that is deleted or modified in the working tree before it commits a verdict row, so a later run''s commit can never leave an earlier run''s cited evidence missing or changed'
+  - 'The judge brief (lib/reviewer/judge_cli.py) tells the worker to copy screenshots under a `-$FW_SIDECAR_AGENT_ID`-suffixed name and never move, rename, overwrite or delete a file already in the evidence directory'
+  - 'Regression test `tests/unit/test_t4514_evidence_immutable.py`: run 1 commits a row citing `config@1024.png`; run 2 copies-then-moves it to a suffixed name (the T-4475 sequence) and commits its own row; run 1''s file is intact on disk and unchanged at HEAD, run 2''s suffixed copy is committed; fails without the fix'
+  - 'Neighbouring tests (T-4008 commit test) still pass; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'recorded review evidence is immutable — _commit_rows restores committed evidence a later run moved/deleted/changed; judge brief requires dispatch-suffixed copies, never move/delete; regression test'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-4514-a-later-fw-reviewer-judge-run-deletes-or.md'
+  - 'tests/unit/test_t4514_evidence_immutable.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:00:50'
+    action: 'T-4514: recorded review evidence is immutable — _commit_rows restores committed evidence a later run moved/deleted/changed; judge brief requires dispatch-suffixed copies, never move/delete; regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 64 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 64
+  commits: 1
+  files_changed: 6
+  lines_added: 215
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4514-a-later-fw-reviewer-judge-run-deletes-or.md
+generated_by: context-agent-hybrid

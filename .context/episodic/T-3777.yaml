@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3777: Sidecar supervisor respawns receivers for a vanished PROJECT_ROOT; ~65 leaked fixture sidecars on host
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T08:53:47Z
+# ============================================================================
+
+task_id: T-3777
+task_name: "Sidecar supervisor respawns receivers for a vanished PROJECT_ROOT; ~65 leaked fixture sidecars on host"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-03T17:03:51Z
+completed: 2026-10-21T08:53:23Z
+duration_days: 18
+updates_count: 2
+first_commit: 2026-10-21T02:15:23+02:00
+last_commit: 2026-10-21T02:15:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar supervisor/watcher exit when PROJECT_ROOT is gone and never recreate it — watcher.project_gone() checked at entry and per loop, event/follower writes no-op; receiver skips triple-file cleanup for a gone root (it re-mkdir'd .context, defeating T-3959's orphan check); regression + claude-fw opt-out tests; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked at HEAD: does the sidecar supervisor (watcher supervise loop) keep respawning the receiver after its PROJECT_ROOT is deleted? Evidence recorded below.'
+  - 'If it reproduces: the supervisor and the receiver exit (without recreating PROJECT_ROOT state) once PROJECT_ROOT no longer exists'
+  - 'Regression test under tests/unit/ fails without the fix and passes with it'
+  - 'claude-fw sidecar_start hook has a test of its own (opt-out CLAUDE_FW_NO_SIDECAR=1 honoured)'
+  - '`bin/fw vendor self --check --task T-3777` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/http_server.py'
+  - '.agentic-framework/lib/sidecar/watcher.py'
+  - 'lib/sidecar/http_server.py'
+  - 'lib/sidecar/watcher.py'
+  - '.tasks/active/T-3777-sidecar-supervisor-respawns-receivers-fo.md'
+  - 'tests/unit/test_sidecar_project_gone_t3777.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T02:15:23'
+    action: 'T-3777: sidecar supervisor/watcher exit when PROJECT_ROOT is gone and never recreate it — watcher.project_gone() checked at entry and per loop, event/follower writes no-op; receiver skips triple-file cleanup for a gone root (it re-mkdir''d .context, defeating T-3959''s orphan check); regression + claude-fw opt-out tests; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25429 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [unit-suite, test-red]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25429
+  commits: 1
+  files_changed: 6
+  lines_added: 191
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3777-sidecar-supervisor-respawns-receivers-fo.md
+generated_by: context-agent-hybrid

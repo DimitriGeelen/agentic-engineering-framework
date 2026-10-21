@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3762: Sidecar sender keeps retrying toward RECEIVED when the recipient has no registered receiver; status should say HUB_ACCEPTED is the last state it will see (055 finding)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T08:50:44Z
+# ============================================================================
+
+task_id: T-3762
+task_name: "Sidecar sender keeps retrying toward RECEIVED when the recipient has no registered receiver; status should say HUB_ACCEPTED is the last state it will see (055 finding)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-02T23:14:11Z
+completed: 2026-10-21T08:50:17Z
+duration_days: 19
+updates_count: 2
+first_commit: 2026-10-21T02:13:44+02:00
+last_commit: 2026-10-21T02:13:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sidecar send reports a no-receiver hub fallback — receiver: line + json receiver=none-registered (null when --hub skipped the registry); receipt half already closed by T-3684, ladder left as T-3908 pins it; regression test; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Defect re-checked at HEAD: the hub-fallback send output (text and `--json`) carries no receiver information (reproduced by the new test failing before the fix)'
+  - '`fw sidecar send` without `--hub`, to a target with no registered receiver on this host, prints a `receiver:` line naming the absence and that HUB_ACCEPTED is the last state until the recipient sends a hub receipt; `--json` carries `"receiver": "none-registered"`'
+  - 'An explicit `--hub` send (registry not consulted) prints no such line and `--json` carries `"receiver": null` — the sender is not told something it never checked'
+  - 'Regression test `tests/unit/test_sidecar_no_receiver_t3762.py` passes; neighbouring sidecar send/sweep tests still pass'
+  - 'Ladder unchanged by decision (see Decisions): RECEIVED still does not settle a posted message (T-3908 pin `test_t3908_received_only_does_not_settle` still green)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-21 — leave the retry ladder alone'
+    chose: 'report the no-receiver routing at send time; do not stop nudges for no-receiver targets.'
+    rationale: 'since T-3684 a hub-path consult can still reach RECEIVED/HANDED_OVER (recipient drain, peek hook, watcher ingest), so the receipt is no longer "one that cannot come"; the nudge is a hub post and is the only reminder a receiver-less recipient gets. T-3908 deliberately pins RECEIVED as not settling a posted message.'
+    alternatives_rejected: ['closing ladder rows on no-receiver targets (would silence the only reminder and the 1-day operator rung); closing on RECEIVED (contradicts T-3908''s pinned decision).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - 'lib/sidecar_cli.py'
+  - '.tasks/active/T-3762-sidecar-sender-keeps-retrying-toward-rec.md'
+  - 'tests/unit/test_sidecar_no_receiver_t3762.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T02:13:44'
+    action: 'T-3762: fw sidecar send reports a no-receiver hub fallback — receiver: line + json receiver=none-registered (null when --hub skipped the registry); receipt half already closed by T-3684, ladder left as T-3908 pins it; regression test; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 26496 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26496
+  commits: 1
+  files_changed: 4
+  lines_added: 132
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3762-sidecar-sender-keeps-retrying-toward-rec.md
+generated_by: context-agent-hybrid

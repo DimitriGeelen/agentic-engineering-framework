@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3801: Doctor-calling bats files exceed the 900 s per-file cap under the unit-suite pool (audit, doctor_designer_pin_drift, fw_doctor_vendored_drift, t2243, t2290, t3119, test_doctor_scope_tags)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:35:58Z
+# ============================================================================
+
+task_id: T-3801
+task_name: "Doctor-calling bats files exceed the 900 s per-file cap under the unit-suite pool (audit, doctor_designer_pin_drift, fw_doctor_vendored_drift, t2243, t2290, t3119, test_doctor_scope_tags)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T09:52:43Z
+completed: 2026-10-21T11:33:48Z
+duration_days: 17
+updates_count: 3
+first_commit: 2026-10-21T09:38:37+02:00
+last_commit: 2026-10-21T09:38:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t2290 and t3119 stop paying a whole doctor per test — MCP manifest and designer-currency checks moved verbatim into lib/doctor-drift.sh (doctor calls them in place); t2290 runs on a fixture framework root (no more live tool-set.yaml/manifest mutation), t3119 calls the currency check in full mode against its real bare-repo origin; pin_drift t1's single --quick doctor now also asserts the MCP and currency lines (wiring); T-3778 budget test extended to both files (3/3 doctor runs at HEAD); vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Each of the seven named files is measured at HEAD (2026-10-21 slow-tier nightly, post-T-4386) and the per-file seconds and the task that fixed each are recorded under ## Updates'
+  - 't2290_doctor_mcp_content_check.bats and t3119_designer_currency.bats (the two not fixed by T-3778) call their doctor check directly instead of one whole doctor per test, with no mutation of live tracked files, and pass with 0 skips'
+  - 'The T-3778 budget test (tests/unit/t3778_doctor_test_cost.bats) covers both files and fails against their HEAD versions'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 't2290 and t3119 stop paying a whole doctor per test — MCP manifest and designer-currency checks moved verbatim into lib/doctor-drift.sh (doctor calls them in place); t2290 runs on a fixture framework root (no more live tool-set.yaml/manifest mutation), t3119 calls the currency check in full mode against its real bare-repo origin; pin_drift t1''s single --quick doctor now also asserts the MCP and currency lines (wiring); T-3778 budget test extended to both files (3/3 doctor runs at HEAD); vendor synced'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/doctor-drift.sh'
+  - 'bin/fw'
+  - 'lib/doctor-drift.sh'
+  - '.tasks/active/T-3801-doctor-calling-bats-files-exceed-the-900.md'
+  - 'tests/unit/doctor_designer_pin_drift.bats'
+  - 'tests/unit/t2290_doctor_mcp_content_check.bats'
+  - 'tests/unit/t3119_designer_currency.bats'
+  - 'tests/unit/t3778_doctor_test_cost.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T09:38:37'
+    action: 'T-3801: t2290 and t3119 stop paying a whole doctor per test — MCP manifest and designer-currency checks moved verbatim into lib/doctor-drift.sh (doctor calls them in place); t2290 runs on a fixture framework root (no more live tool-set.yaml/manifest mutation), t3119 calls the currency check in full mode against its real bare-repo origin; pin_drift t1''s single --quick doctor now also asserts the MCP and currency lines (wiring); T-3778 budget test extended to both files (3/3 doctor runs at HEAD); vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 24581 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24581
+  commits: 1
+  files_changed: 9
+  lines_added: 338
+  lines_removed: 244
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3801-doctor-calling-bats-files-exceed-the-900.md
+generated_by: context-agent-hybrid

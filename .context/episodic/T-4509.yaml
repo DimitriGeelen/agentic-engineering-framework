@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4509: Read-only allowlist: awk runs commands via system(), cmd|getline and print|cmd but is classed SAFE
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T00:19:16Z
+# ============================================================================
+
+task_id: T-4509
+task_name: "Read-only allowlist: awk runs commands via system(), cmd|getline and print|cmd but is classed SAFE"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T20:18:46Z
+completed: 2026-10-21T00:18:34Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-20T22:23:36+02:00
+last_commit: 2026-10-20T22:57:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register G-121 (read-only allowlist bypasses from ring20-dashboard, reproduced on HEAD) and file T-4509..T-4513. awk is admitted only when its program cannot run a command (system(), | getline, print |, |&, @load) and its options load no code and write no file; regression test
+
+# Key outcomes
+outcomes:
+  - '`awk ''BEGIN{system("touch pwned")}''`, `awk ''BEGIN{"touch pwned"|getline x}''`, `awk ''BEGIN{print "d"|"cat"}''`, `printf` to a pipe, `|&` coprocess, `system (…)` with a space, and a program from a file (`awk -f P`) or an expansion (`awk "$P"`) are gated by is_bash_safe_command'
+  - 'A string or regex that merely contains `|` or `system` stays SAFE: `awk ''/a|b/'' F`, `awk ''{print "a|b"}'' F`, `awk ''$1 == "system" {print}'' F`, `awk ''$1 || $2'' F`'
+  - 'Controls stay SAFE: `awk ''{print $1}'' F`, `awk -F: ''{print $1}'' F`, `awk -v n=2 ''NR==n'' F`, `git grep pattern`, `sed -n 1p F`'
+  - 'New bats test covers both directions; T-4511, T-4512, T-4485, T-4367, T-4487, T-4499 and safe-commands suites stay green'
+  - '`bin/fw vendor self --check --task T-4509` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.context/project/concerns.yaml'
+  - 'docs/reports/G-121-bypass-probe.sh'
+  - '.fabric/components/tests-unit-t4509_awk_exec.yaml'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4509-read-only-allowlist-awk-runs-commands-vi.md'
+  - '.tasks/active/T-4510-read-only-allowlist-gnu-sed-e-command-an.md'
+  - '.tasks/active/T-4511-read-only-allowlist-process-substitution.md'
+  - '.tasks/active/T-4512-read-only-allowlist-option-checks-match-.md'
+  - '.tasks/active/T-4513-read-only-allowlist-git-grep--o----open-.md'
+  - 'tests/unit/t4509_awk_exec.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:23:36'
+    action: 'T-4509: register G-121 (read-only allowlist bypasses from ring20-dashboard, reproduced on HEAD) and file T-4509..T-4513'
+  - time: '2026-10-20T22:57:12'
+    action: 'T-4509: awk is admitted only when its program cannot run a command (system(), | getline, print |, |&, @load) and its options load no code and write no file; regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 239 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 239
+  commits: 2
+  files_changed: 13
+  lines_added: 2186
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4509-read-only-allowlist-awk-runs-commands-vi.md
+generated_by: context-agent-hybrid

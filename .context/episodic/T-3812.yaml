@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3812: audit.bats 'audit runs structure section' asserts the LIVE repo's structure audit has no FAIL — which includes the unit-suite ratchet, so it is red whenever any other test is red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:04:59Z
+# ============================================================================
+
+task_id: T-3812
+task_name: "audit.bats 'audit runs structure section' asserts the LIVE repo's structure audit has no FAIL — which includes the unit-suite ratchet, so it is red whenever any other test is red"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T11:15:39Z
+completed: 2026-10-21T11:04:44Z
+duration_days: 17
+updates_count: 2
+first_commit: 2026-10-21T11:23:04+02:00
+last_commit: 2026-10-21T11:23:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  does not reproduce at HEAD — audit.bats structure run is on a fixture project since T-4401; 20/20 ok, lint clean; ACs, RCA, Verification recorded
+
+# Key outcomes
+outcomes:
+  - 'Reproduction check at HEAD: no test in tests/unit/audit.bats runs `audit.sh --section structure` against the live repo (every section run goes through `_audit_fixture` / `_synthetic_project` with a private PROJECT_ROOT)'
+  - 'tests/unit/audit.bats passes in full at HEAD with no `not ok` and no skips'
+  - 'A lint prevents a regression to live-repo sectioned audits (tools/audit-live-repo-lint.py reports clean on tests/)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'does not reproduce at HEAD — audit.bats structure run is on a fixture project since T-4401; 20/20 ok, lint clean; ACs, RCA, Verification recorded'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3812-auditbats-audit-runs-structure-section-a.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T11:23:04'
+    action: 'T-3812: does not reproduce at HEAD — audit.bats structure run is on a fixture project since T-4401; 20/20 ok, lint clean; ACs, RCA, Verification recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 24469 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24469
+  commits: 1
+  files_changed: 1
+  lines_added: 26
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3812-auditbats-audit-runs-structure-section-a.md
+generated_by: context-agent-hybrid

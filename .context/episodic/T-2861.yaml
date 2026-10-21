@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2861: fw init does not set bgIsolation none, so Claude Code worktree isolation blocks the C-001 inception artifact
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T00:18:32Z
+# ============================================================================
+
+task_id: T-2861
+task_name: "fw init does not set bgIsolation none, so Claude Code worktree isolation blocks the C-001 inception artifact"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-07T17:13:22Z
+completed: 2026-10-21T00:14:31Z
+duration_days: 75
+updates_count: 2
+first_commit: 2026-10-20T23:59:19+02:00
+last_commit: 2026-10-21T00:06:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init/upgrade emit worktree.bgIsolation=none for consumers — template key in generate_claude_code_config, step-5 top-up for hook-converged consumers, operator worktree.* values preserved by settings_merge; regression bats t2861 (7 tests). fabric card for t2861 regression bats. tick Agent ACs (t2861 7/7, neighbours green, vendor check clean)
+
+# Key outcomes
+outcomes:
+  - 'AC1 — `generate_claude_code_config` (lib/init.sh, used by `fw init` and by `fw upgrade` step 5 regenerate) emits `"worktree": {"bgIsolation": "none"}` in `.claude/settings.json` for consumer and framework mode; `fw upgrade` step 5 (lib/upgrade.sh) also sets it on a hook-converged consumer that lacks the key (that consumer never takes the regenerate branch).'
+  - 'AC2 — A regenerate over an existing settings.json keeps an operator''s explicit `worktree.*` values (previous value wins per sub-key; settings_merge.py), so the default never overrides a deliberate choice.'
+  - 'AC3 — Regression bats `tests/unit/t2861_init_bgisolation.bats` fails without the fix, passes with it; neighbouring settings tests (settings_regenerate_preserves_hooks, hook_absolute_paths, t3881_template_hook_parity) stay green.'
+  - 'AC4 — Framework repo''s own `.claude/settings.json` unchanged (still `bgIsolation: none`); `bin/fw vendor self --check --task T-2861` clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/settings_merge.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.fabric/components/tests-unit-t2861_init_bgisolation.yaml'
+  - 'lib/init.sh'
+  - 'lib/settings_merge.py'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2861-fw-init-does-not-set-bgisolation-none-so.md'
+  - 'tests/unit/t2861_init_bgisolation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:59:19'
+    action: 'T-2861: fw init/upgrade emit worktree.bgIsolation=none for consumers — template key in generate_claude_code_config, step-5 top-up for hook-converged consumers, operator worktree.* values preserved by settings_merge; regression bats t2861 (7 tests)'
+  - time: '2026-10-21T00:04:57'
+    action: 'T-2861: fabric card for t2861 regression bats'
+  - time: '2026-10-21T00:06:22'
+    action: 'T-2861: tick Agent ACs (t2861 7/7, neighbours green, vendor check clean)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 106981 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 106981
+  commits: 4
+  files_changed: 10
+  lines_added: 545
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2861-fw-init-does-not-set-bgisolation-none-so.md
+generated_by: context-agent-hybrid

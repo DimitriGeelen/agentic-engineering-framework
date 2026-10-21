@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4520: Shared worker contract: the single conformance vector file (AEF-owned) for CC-01..CC-25, plus an AEF local-backend runner
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T09:10:14Z
+# ============================================================================
+
+task_id: T-4520
+task_name: "Shared worker contract: the single conformance vector file (AEF-owned) for CC-01..CC-25, plus an AEF local-backend runner"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-21T08:47:11Z
+completed: 2026-10-21T09:09:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T11:00:33+02:00
+last_commit: 2026-10-21T11:04:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  shared worker-contract conformance vectors CC-01..CC-25 (data only, backend-neutral, N2 applicability), schema check, local runner reporting not-implemented until lib/dispatch_records.py exists, README (TermLink patches hub cases in); 18 unit tests. fabric cards for new tests and helpers
+
+# Key outcomes
+outcomes:
+  - '`tests/conformance/worker-contract/vectors.yaml` holds exactly one entry per case CC-01..CC-25, each with `id`, `title`, `spec_refs`, `applicability` (`requires` capabilities, `subject`), `given`, `steps`, `then` (admissible histories / final state); data only, no AEF paths'
+  - 'Per the N2 rule, any vector whose subject is a §3 transition row declares `n_a_allowed: false`; only CC-11, CC-12, CC-17, CC-18 (capability subjects) may be n/a — enforced by the schema check'
+  - '`tests/conformance/worker-contract/check_vectors.py` (stdlib + PyYAML) validates the file and exits 0 on it, non-zero with a message on a broken file'
+  - '`tests/unit/test_worker_contract_vectors.py` covers the schema check (valid file passes; missing case, duplicate id, bad fence reason, n/a on a §3 row, AEF path, unknown step op each fail) and the runner''s not-implemented reporting'
+  - '`tests/conformance/worker-contract/run_local.py` loads the vectors, looks for AEF''s local backend, and reports each vector `not-implemented` with the missing capability when none exists; it never reports `pass` without running; exit code distinguishes "all not implemented" from failure'
+  - '`tests/conformance/worker-contract/README.md` states AEF owns the file and TermLink contributes hub cases as a patch to `vectors.yaml`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-21 — CC-08 absent branch vs §3.4/CC-17'
+    chose: 'CC-08''s absent-after-restart variant admits both `running→lost` and `running→unknown` (with a `spec_note`); CC-17 pins the §3.4 reading (absences at a new epoch count for nothing, only deadlines act).'
+    rationale: 'CC-08''s text ("two further absent sweeps at the new epoch, then G, give lost") contradicts §3.4''s table and CC-17 for an attempt never seen alive at the new epoch. Vectors must not silently pick one; the spec owner (T-4439) should reconcile the CC-08 wording.'
+    alternatives_rejected: ['encoding CC-08 strictly as written (would make CC-08 and CC-17 unsatisfiable together).']
+  - decision: '2026-10-21 — runner interprets steps itself, backend supplies an adapter'
+    chose: '`run_local.py` interprets steps/expects/then and needs only reset/apply/snapshot from the backend.'
+    rationale: 'the same interpreter shape can be reused by other backends'' runners; a vector can only be `pass` after its steps ran. Unit tests drive it with a scripted adapter (pass), a lying one (fail), a missing op (not-implemented) and missing capabilities (n/a vs N2 fail).'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-conformance-worker-contract-check_vectors.yaml'
+  - '.fabric/components/tests-conformance-worker-contract-README.yaml'
+  - '.fabric/components/tests-conformance-worker-contract-run_local.yaml'
+  - '.fabric/components/tests-conformance-worker-contract-vectors.yaml'
+  - '.fabric/components/tests-unit-test_worker_contract_vectors.yaml'
+  - '.tasks/active/T-4520-shared-worker-contract-the-single-confor.md'
+  - 'tests/conformance/worker-contract/check_vectors.py'
+  - 'tests/conformance/worker-contract/README.md'
+  - 'tests/conformance/worker-contract/run_local.py'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+  - 'tests/unit/test_worker_contract_vectors.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T11:00:33'
+    action: 'T-4520: shared worker-contract conformance vectors CC-01..CC-25 (data only, backend-neutral, N2 applicability), schema check, local runner reporting not-implemented until lib/dispatch_records.py exists, README (TermLink patches hub cases in); 18 unit tests'
+  - time: '2026-10-21T11:04:59'
+    action: 'T-4520: fabric cards for new tests and helpers'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 22
+  commits: 2
+  files_changed: 11
+  lines_added: 2714
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4520-shared-worker-contract-the-single-confor.md
+generated_by: context-agent-hybrid

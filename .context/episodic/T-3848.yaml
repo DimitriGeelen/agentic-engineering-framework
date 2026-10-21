@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3848: fw release pushes master + tag atomically but never pushes the development branch carrying the VERSION-reconcile commit: after v1.8.1 origin/bleeding-edge was 1 commit BEHIND origin/master, breaking the release-train invariant (dev branch is master's only writer, master never leads it)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:06:44Z
+# ============================================================================
+
+task_id: T-3848
+task_name: "fw release pushes master + tag atomically but never pushes the development branch carrying the VERSION-reconcile commit: after v1.8.1 origin/bleeding-edge was 1 commit BEHIND origin/master, breaking the release-train invariant (dev branch is master's only writer, master never leads it)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T07:08:36Z
+completed: 2026-10-21T11:05:01Z
+duration_days: 16
+updates_count: 2
+first_commit: 2026-10-21T11:34:36+02:00
+last_commit: 2026-10-21T11:54:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw release pushes the checked-out dev branch in the same atomic push as master + tag, and pre-flights it on every remote; regression bats; vendor synced. split release-suite verification into per-suite lines (host load timed out the combined line)
+
+# Key outcomes
+outcomes:
+  - 'Defect reproduced at HEAD before the fix: in a throwaway repo with a file:// remote, a release from `bleeding-edge` that reconciles VERSION leaves `origin/bleeding-edge` behind `origin/master`'
+  - '`release_tag_and_release` pushes the checked-out development branch (when it is a branch other than the release branch) in the SAME `--atomic` push as the release branch and tag'
+  - 'The pre-flight remote fast-forward check (T-3819) also grades the development branch on every remote, so a remote dev branch holding commits HEAD lacks refuses before VERSION is committed or a tag exists'
+  - 'Regression bats `tests/unit/t3848_release_pushes_dev_branch.bats` fails without the fix and passes with it (file:// remote only; no real push)'
+  - 'Existing release bats suites still pass; `bin/fw vendor self --check --task T-3848` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/release.sh'
+  - 'lib/release.sh'
+  - '.tasks/active/T-3848-fw-release-pushes-master--tag-atomically.md'
+  - 'tests/unit/t3848_release_pushes_dev_branch.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T11:34:36'
+    action: 'T-3848: fw release pushes the checked-out dev branch in the same atomic push as master + tag, and pre-flights it on every remote; regression bats; vendor synced'
+  - time: '2026-10-21T11:54:35'
+    action: 'T-3848: split release-suite verification into per-suite lines (host load timed out the combined line)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 23276 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23276
+  commits: 2
+  files_changed: 4
+  lines_added: 161
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3848-fw-release-pushes-master--tag-atomically.md
+generated_by: context-agent-hybrid

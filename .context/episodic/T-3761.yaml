@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3761: T-3693 e2e test leaks its two sidecar receivers (t3693a/b): http_server.py processes ran 22 h after the run and sat in the host receiver registry
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T08:50:08Z
+# ============================================================================
+
+task_id: T-3761
+task_name: "T-3693 e2e test leaks its two sidecar receivers (t3693a/b): http_server.py processes ran 22 h after the run and sat in the host receiver registry"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T23:13:29Z
+completed: 2026-10-21T08:49:39Z
+duration_days: 19
+updates_count: 2
+first_commit: 2026-10-21T02:13:56+02:00
+last_commit: 2026-10-21T10:49:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-3693 e2e teardown always stops its receivers — every step best-effort, receiver stop runs even when a termlink call times out, survivors (process table + host registry) SIGTERMed and asserted empty by both live tests; regression test drives real _teardown against a real receiver with raising termlink (red before, green after). fabric cards for new tests and helpers
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked at HEAD: the T-3693 e2e teardown path either still leaks a receiver it started (evidence recorded) or does not (evidence recorded)'
+  - '`_teardown` in tests/integration/t3693_sidecar_e2e_test.py stops the receiver even when an earlier teardown step raises (termlink timeout, wrapper wait), and one agent''s teardown failure does not skip the other''s'
+  - 'The e2e test asserts after teardown that no receiver it started is still alive and no registry entry for its agents survives'
+  - 'Regression test (no claude/tmux needed) starts a real receiver in a scratch project, makes the earlier teardown steps raise, and asserts the receiver pid is dead and its registry entry gone; fails without the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-t2657_update_uses_upstream_vendor.yaml'
+  - '.fabric/components/tests-unit-t2661_self_vendor_root_data.yaml'
+  - '.fabric/components/tests-unit-t3763_pickup_send_remote_channel.yaml'
+  - '.fabric/components/tests-unit-t3778_doctor_test_cost.yaml'
+  - '.fabric/components/tests-unit-t3798_handover_fixture_no_push.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_no_receiver_t3762.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_project_gone_t3777.yaml'
+  - '.fabric/components/tests-unit-test_t3761_e2e_teardown.yaml'
+  - '.fabric/components/tests-unit-test_t4519_worker_failed_row.yaml'
+  - '.tasks/active/T-3761-t-3693-e2e-test-leaks-its-two-sidecar-re.md'
+  - 'tests/integration/t3693_sidecar_e2e_test.py'
+  - 'tests/unit/test_t3761_e2e_teardown.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T02:13:56'
+    action: 'T-3761: T-3693 e2e teardown always stops its receivers — every step best-effort, receiver stop runs even when a termlink call times out, survivors (process table + host registry) SIGTERMed and asserted empty by both live tests; regression test drives real _teardown against a real receiver with raising termlink (red before, green after)'
+  - time: '2026-10-21T09:01:03'
+    action: 'T-3761: fabric cards for new tests and helpers'
+  - time: '2026-10-21T10:49:38'
+    action: 'T-3761: fabric cards for new tests and helpers'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 26496 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26496
+  commits: 3
+  files_changed: 12
+  lines_added: 385
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3761-t-3693-e2e-test-leaks-its-two-sidecar-re.md
+generated_by: context-agent-hybrid

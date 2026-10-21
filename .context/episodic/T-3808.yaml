@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3808: self_vendor_version.bats t7 runs 'fw vendor self --check' on the LIVE repo and writes the real .agentic-framework/VERSION
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:36:37Z
+# ============================================================================
+
+task_id: T-3808
+task_name: "self_vendor_version.bats t7 runs 'fw vendor self --check' on the LIVE repo and writes the real .agentic-framework/VERSION"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T11:12:10Z
+completed: 2026-10-21T11:36:23Z
+duration_days: 17
+updates_count: 2
+first_commit: 2026-10-21T09:12:56+02:00
+last_commit: 2026-10-21T09:12:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  self_vendor_version.bats CLI tests run against a temp fixture root, not the live repo — no live VERSION write, --check verdict is VERSION-class only; regression test for unrelated drift
+
+# Key outcomes
+outcomes:
+  - 'Defect still present at HEAD (structural): tests 6/7 `cd "$BATS_TEST_DIRNAME/../.."`, overwrite the live `.agentic-framework/VERSION` and assert exit 0 of a whole-tree `fw vendor self --check`, which exits 1 on any vendored drift (shown by new test 8 in the fixture). Live tree happened to be clean at check time, so not re-reddened live.'
+  - 'Tests 6 and 7 run the real `bin/fw vendor self [--check]` against a temp fixture framework root, never the live repo: no line in the file `cd`s to the repo root or writes the live `.agentic-framework/VERSION`'
+  - 'Regression test 8: with an unrelated vendored class drifting (root data file), `--check` exits 1 naming that class and never mentions or writes VERSION — test 7''s verdict is now VERSION-class only'
+  - '`bats tests/unit/self_vendor_version.bats` 8/8 green, no skips; dead-negation lint clean'
+  - 'Live `.agentic-framework/VERSION` is byte-identical before and after the suite runs'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'self_vendor_version.bats CLI tests run against a temp fixture root, not the live repo — no live VERSION write, --check verdict is VERSION-class only; regression test for unrelated drift'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3808-selfvendorversionbats-t7-runs-fw-vendor-.md'
+  - 'tests/unit/self_vendor_version.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T09:12:56'
+    action: 'T-3808: self_vendor_version.bats CLI tests run against a temp fixture root, not the live repo — no live VERSION write, --check verdict is VERSION-class only; regression test for unrelated drift'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 24504 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24504
+  commits: 1
+  files_changed: 2
+  lines_added: 63
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3808-selfvendorversionbats-t7-runs-fw-vendor-.md
+generated_by: context-agent-hybrid

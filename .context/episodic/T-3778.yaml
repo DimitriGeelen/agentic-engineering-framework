@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3778: Doctor-calling unit suites exceed the 900s per-file cap: Watchtower smoke endpoints still >5s
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:33:41Z
+# ============================================================================
+
+task_id: T-3778
+task_name: "Doctor-calling unit suites exceed the 900s per-file cap: Watchtower smoke endpoints still >5s"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-03T17:04:34Z
+completed: 2026-10-21T11:28:58Z
+duration_days: 18
+updates_count: 3
+first_commit: 2026-10-21T09:32:25+02:00
+last_commit: 2026-10-21T09:32:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor-calling bats files run doctor at most once — designer-pin and vendored-source drift checks moved verbatim into lib/doctor-drift.sh (doctor sources it, same output); pin_drift t2-t5 and t2243 call the functions directly (t2243 on a fixture, no longer mutating the live vendored template), pin_drift t1 is the one --quick doctor wiring run; test_doctor_scope_tags shares one doctor via setup_file; fw_doctor_vendored_drift calls the lib instead of awk-lifting Check 2b; regression test t3778_doctor_test_cost (fails at HEAD: 5/4/4 runs); vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Each named doctor-calling bats file is measured at HEAD (post-T-4386) — nightly slow-tier `file_durations` plus an alone run where the nightly is ambiguous — and the seconds are recorded under ## Updates'
+  - 'Every named file that still exceeds the 900 s per-file cap is fixed with a regression test (or, if none exceeds it, the evidence that the defect no longer reproduces is recorded with the fixing commit)'
+  - 'The three fixed files (doctor_designer_pin_drift, t2243, test_doctor_scope_tags) plus fw_doctor_vendored_drift (whose awk lift the move broke) pass, 0 skips, each well inside 900 s at load ≥ 90 (timings under ## Updates; the next slow-tier nightly is the pool-load confirmation)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'doctor-calling bats files run doctor at most once — designer-pin and vendored-source drift checks moved verbatim into lib/doctor-drift.sh (doctor sources it, same output); pin_drift t2-t5 and t2243 call the functions directly (t2243 on a fixture, no longer mutating the live vendored template), pin_drift t1 is the one --quick doctor wiring run; test_doctor_scope_tags shares one doctor via setup_file; fw_doctor_vendored_drift calls the lib instead of awk-lifting Check 2b; regression test t3778_doctor_test_cost (fails at HEAD: 5/4/4 runs); vendor synced'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/doctor-drift.sh'
+  - 'bin/fw'
+  - '.fabric/components/lib-doctor-drift.yaml'
+  - 'lib/doctor-drift.sh'
+  - '.tasks/active/T-3778-doctor-calling-unit-suites-exceed-the-90.md'
+  - 'tests/unit/doctor_designer_pin_drift.bats'
+  - 'tests/unit/fw_doctor_vendored_drift.bats'
+  - 'tests/unit/t2243_doctor_self_vendor_templates.bats'
+  - 'tests/unit/t3778_doctor_test_cost.bats'
+  - 'tests/unit/test_doctor_scope_tags.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T09:32:25'
+    action: 'T-3778: doctor-calling bats files run doctor at most once — designer-pin and vendored-source drift checks moved verbatim into lib/doctor-drift.sh (doctor sources it, same output); pin_drift t2-t5 and t2243 call the functions directly (t2243 on a fixture, no longer mutating the live vendored template), pin_drift t1 is the one --quick doctor wiring run; test_doctor_scope_tags shares one doctor via setup_file; fw_doctor_vendored_drift calls the lib instead of awk-lifting Check 2b; regression test t3778_doctor_test_cost (fails at HEAD: 5/4/4 runs); vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25584 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [unit-suite, test-red]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25584
+  commits: 1
+  files_changed: 11
+  lines_added: 500
+  lines_removed: 267
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3778-doctor-calling-unit-suites-exceed-the-90.md
+generated_by: context-agent-hybrid

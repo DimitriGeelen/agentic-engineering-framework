@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2661: self-vendor root-data class + patternless sim tests (T-2656 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:28:37Z
+# ============================================================================
+
+task_id: T-2661
+task_name: "self-vendor root-data class + patternless sim tests (T-2656 follow-up)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-28T11:51:29Z
+completed: 2026-10-21T11:27:23Z
+duration_days: 85
+updates_count: 2
+first_commit: 2026-10-21T09:25:22+02:00
+last_commit: 2026-10-21T09:34:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  self-vendor root data class — _self_vendor_root_data syncs .secret-scan-patterns/.secret-scan-allowlist/status-transitions.yaml/metrics.sh into .agentic-framework/ and --check reports their drift (audit parity already landed); pre-commit hook passes a passing scan's warning through so the patternless WARNING is no longer swallowed; regression bats t2661 + two fresh-machine sim tests; vendor synced. tick ACs — t2661 bats 5/5, fresh-machine T-2661 sim 2/2 (patternless test red before the hook fix), vendor self --check clean
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked at HEAD: whether root `.secret-scan-patterns`/`.secret-scan-allowlist` and their `.agentic-framework/` mirrors can drift with `fw vendor self --check` and `fw audit` silent'
+  - '`lib/upgrade.sh` has a `_self_vendor_root_data` helper (sibling of `_self_vendor_libs` …) wired into `fw vendor self`, syncing both root data files; `--check` reports drift in them'
+  - '`agents/audit/audit.sh check_self_vendor_drift` covers the same two root data files (parity)'
+  - 'Regression bats `tests/unit/t2661_self_vendor_root_data.bats` fails without the fix and passes with it'
+  - 'Fresh-machine sim: test asserting the vendored tree ships both data files, and a present-but-patternless case (scanner runs, WARNING fires, `FW_SECRET_SCAN_STRICT=1` blocks)'
+  - 'Installed pre-commit hook passes a passing scan''s warning through to stderr (`agents/git/lib/hooks.sh`), so the patternless WARNING is not swallowed in the fail-open default'
+  - '`bin/fw vendor self --check --task T-2661` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'tick ACs — t2661 bats 5/5, fresh-machine T-2661 sim 2/2 (patternless test red before the hook fix), vendor self --check clean'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/.secret-scan-allowlist'
+  - 'agents/git/lib/hooks.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2661-self-vendor-root-data-class--patternless.md'
+  - 'tests/unit/t2661_self_vendor_root_data.bats'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T09:25:22'
+    action: 'T-2661: self-vendor root data class — _self_vendor_root_data syncs .secret-scan-patterns/.secret-scan-allowlist/status-transitions.yaml/metrics.sh into .agentic-framework/ and --check reports their drift (audit parity already landed); pre-commit hook passes a passing scan''s warning through so the patternless WARNING is no longer swallowed; regression bats t2661 + two fresh-machine sim tests; vendor synced'
+  - time: '2026-10-21T09:34:03'
+    action: 'T-2661: tick ACs — t2661 bats 5/5, fresh-machine T-2661 sim 2/2 (patternless test red before the hook fix), vendor self --check clean'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 122375 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 122375
+  commits: 2
+  files_changed: 8
+  lines_added: 320
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2661-self-vendor-root-data-class--patternless.md
+generated_by: context-agent-hybrid

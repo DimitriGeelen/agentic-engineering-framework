@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2998: CTL-008 counts git-generated merge subjects as task-less commits
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T00:20:37Z
+# ============================================================================
+
+task_id: T-2998
+task_name: "CTL-008 counts git-generated merge subjects as task-less commits"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-14T19:55:48Z
+completed: 2026-10-21T00:19:58Z
+duration_days: 68
+updates_count: 2
+first_commit: 2026-10-20T23:57:39+02:00
+last_commit: 2026-10-20T23:57:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CTL-008/CTL-010 count with --no-merges — git-default merge subjects (admitted by the commit-msg hook's MERGE_HEAD exemption) no longer read as task-less commits; regression bats t2998 (merge exempt + task-less negative control)
+
+# Key outcomes
+outcomes:
+  - 'Defect reproduced at HEAD: audit.sh CTL-008 (oe-hourly) counted `git log --oneline -20` with no merge exemption, so a git-default `Merge branch ''x''` subject was a task-less offender'
+  - 'CTL-008 and CTL-010 count with `--no-merges` (all four CTL-008 log calls incl. the WARN sample, and the CTL-010 fallback) — merge commits exempt, matching the commit-msg hook''s MERGE_HEAD exemption (agents/git/lib/hooks.sh:202)'
+  - 'Regression bats `tests/unit/t2998_ctl008_merge_exempt.bats`: fixture repo with T- commits plus a git-default `--no-ff` merge reports 100% / no WARN; negative control — a real task-less non-merge commit still counts as an offender'
+  - '`bin/fw vendor self --check --task T-2998` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-2998-ctl-008-counts-git-generated-merge-subje.md'
+  - 'tests/unit/t2998_ctl008_merge_exempt.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:57:39'
+    action: 'T-2998: CTL-008/CTL-010 count with --no-merges — git-default merge subjects (admitted by the commit-msg hook''s MERGE_HEAD exemption) no longer read as task-less commits; regression bats t2998 (merge exempt + task-less negative control)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 96744 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 96744
+  commits: 1
+  files_changed: 4
+  lines_added: 95
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2998-ctl-008-counts-git-generated-merge-subje.md
+generated_by: context-agent-hybrid

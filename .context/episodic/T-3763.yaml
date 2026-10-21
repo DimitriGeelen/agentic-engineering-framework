@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3763: fw pickup send --remote still uses deprecated termlink remote push: hub refuses it, nothing is delivered, and the envelope lands in the senders own inbox (055 finding)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T08:51:42Z
+# ============================================================================
+
+task_id: T-3763
+task_name: "fw pickup send --remote still uses deprecated termlink remote push: hub refuses it, nothing is delivered, and the envelope lands in the senders own inbox (055 finding)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T23:14:54Z
+completed: 2026-10-21T08:50:55Z
+duration_days: 19
+updates_count: 2
+first_commit: 2026-10-21T02:11:56+02:00
+last_commit: 2026-10-21T02:11:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw pickup send --remote delivers via fw sidecar send (the one channel, T-3631) instead of deprecated termlink remote push the hub refuses; failed sends go to pickup/undelivered/ (counted by pickup_next_id), not the sender's own inbox; regression bats + transport-stub updates; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduced at HEAD: `lib/pickup.sh` `do_pickup_send` still calls `termlink remote push` for `--remote/--session`'
+  - '`fw pickup send --remote HUB --session ID` no longer calls `termlink remote push`; it delivers the envelope through the one channel (`fw sidecar send --to ID --hub HUB --notice`, T-3631 GO / T-3758), body = the envelope YAML'
+  - 'A failed delivery exits non-zero, says NOT delivered, and moves the envelope OUT of this project''s inbox (to `.context/pickup/undelivered/`, which `pickup_next_id` counts) so `fw pickup process` never reads our own outbound as incoming'
+  - 'A successful delivery archives the envelope to `sent/` (unchanged contract)'
+  - 'Regression bats `tests/unit/t3763_pickup_send_remote_channel.bats` fails before the fix and passes after; neighbouring pickup bats still green'
+  - '`bin/fw vendor self --check --task T-3763` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/pickup.sh'
+  - 'lib/pickup.sh'
+  - '.tasks/active/T-3763-fw-pickup-send---remote-still-uses-depre.md'
+  - 'tests/unit/pickup_send_remote_session.bats'
+  - 'tests/unit/t3628_pickup_send_delivery.bats'
+  - 'tests/unit/t3763_pickup_send_remote_channel.bats'
+  - 'tests/unit/t4274_pickup_inbox_filename.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T02:11:56'
+    action: 'T-3763: fw pickup send --remote delivers via fw sidecar send (the one channel, T-3631) instead of deprecated termlink remote push the hub refuses; failed sends go to pickup/undelivered/ (counted by pickup_next_id), not the sender''s own inbox; regression bats + transport-stub updates; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 26496 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26496
+  commits: 1
+  files_changed: 7
+  lines_added: 180
+  lines_removed: 84
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3763-fw-pickup-send---remote-still-uses-depre.md
+generated_by: context-agent-hybrid

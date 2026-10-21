@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2906: fw context status reports Learnings: 0 against a 608-entry corpus — 119 days blind
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T08:54:58Z
+# ============================================================================
+
+task_id: T-2906
+task_name: "fw context status reports Learnings: 0 against a 608-entry corpus — 119 days blind"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-10T18:36:45Z
+completed: 2026-10-21T08:54:37Z
+duration_days: 72
+updates_count: 2
+first_commit: 2026-10-20T23:05:35+02:00
+last_commit: 2026-10-21T01:54:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context status counts memory from parsed YAML, not one serialisation; unparseable file prints ? not 0; regression test. tick ACs; fabric card for regression test. context status no longer exits 141 — Recent listing used sort|head -3, sort took SIGPIPE under context.sh pipefail once the episodic corpus exceeded a pipe buffer; awk NR<=3 drains input; regression test with 4000 episodic files; vendor synced (incl. previously uncommitted vendored copy)
+
+# Key outcomes
+outcomes:
+  - 'Defect reproduces at HEAD: `fw context status` prints `Learnings: 0` while learnings.yaml holds 700+ `id: L-` entries'
+  - '`do_status` counts learnings, candidates, patterns and decisions by parsing the YAML (not by an indentation-sensitive grep), so both the flat `- application: …\n  id: L-NNN` and the indented `  - id: L-NNN` serialisations count'
+  - 'An unreadable/unparseable memory file prints `?` with a reason instead of a silent `0`'
+  - 'Regression test `tests/unit/t2906_context_status_counts.bats` covers flat form, indented form, and malformed file; fails against the old grep and passes with the fix'
+  - '`bin/fw vendor self --check --task T-2906` clean'
+  - '`bin/fw context status` exits 0 under `set -euo pipefail` with a large episodic corpus — the "Recent:" listing no longer dies with SIGPIPE (exit 141) in `sort -rn | head -3`; regression test with 4000 episodic files'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/status.sh'
+  - 'agents/context/lib/status.sh'
+  - '.fabric/components/tests-unit-t2906_context_status_counts.yaml'
+  - '.tasks/active/T-2906-fw-context-status-reports-learnings-0-ag.md'
+  - 'tests/unit/t2906_context_status_counts.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:05:35'
+    action: 'T-2906: context status counts memory from parsed YAML, not one serialisation; unparseable file prints ? not 0; regression test'
+  - time: '2026-10-20T23:06:40'
+    action: 'T-2906: tick ACs; fabric card for regression test'
+  - time: '2026-10-21T01:54:09'
+    action: 'T-2906: context status no longer exits 141 — Recent listing used sort|head -3, sort took SIGPIPE under context.sh pipefail once the episodic corpus exceeded a pipe buffer; awk NR<=3 drains input; regression test with 4000 episodic files; vendor synced (incl. previously uncommitted vendored copy)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 103097 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 103097
+  commits: 3
+  files_changed: 5
+  lines_added: 268
+  lines_removed: 62
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2906-fw-context-status-reports-learnings-0-ag.md
+generated_by: context-agent-hybrid

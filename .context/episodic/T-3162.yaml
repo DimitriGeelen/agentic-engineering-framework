@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3162: generated cron lines mask every job's exit status behind the logger pipeline
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T21:49:52Z
+# ============================================================================
+
+task_id: T-3162
+task_name: "generated cron lines mask every job's exit status behind the logger pipeline"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-26T12:09:12Z
+completed: 2026-10-20T21:45:55Z
+duration_days: 55
+updates_count: 2
+first_commit: 2026-10-20T23:03:11+02:00
+last_commit: 2026-10-20T23:03:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  generated cron lines end '; exit ${PIPESTATUS[0]}' so cron sees each job's own exit status through the logger pipe — lib/cron_dry_run.py mirror, executing regression bats, t2930 re-pinned (75 now reaches cron by decision), crontab regenerated + deployed. The bin/fw generator hunk landed in b0ed4b696 (swept in by a concurrent T-4515 path commit).
+
+# Key outcomes
+outcomes:
+  - '`bin/fw` `cron generate` appends `; exit ${PIPESTATUS[0]}` to every generated active job line, after the logger pipe'
+  - '`lib/cron_dry_run.py` emits byte-identical output to `fw cron generate` for the same registry, including the new suffix'
+  - 'Paused lines (`# PAUSED: ...`) and non-`fw` commands get the same treatment, so resuming a job does not change its failure semantics'
+  - 'A job that exits non-zero produces a non-zero status from the fully generated line — verified by executing the generated line, not by reading it'
+  - '`.context/cron/agentic-audit.crontab` regenerated and deployed, so both drift checks stay green after the generator change'
+  - 'Regression test `tests/unit/t3162_cron_job_exit_status_survives_logger_pipe.bats` pins: generated line propagates non-zero status, stderr still reaches logger, both generators byte-identical'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — audit''s 75 (lock contention) now reaches cron unmasked'
+    chose: 'raw `; exit ${PIPESTATUS[0]}`; a contended cron audit reports 75 (EX_TEMPFAIL, "did not run") to cron. t2930''s pin, which existed so this change would be deliberate, is updated to the new shape; the audit.sh comment is updated.'
+    rationale: 'mapping 75→0 in the cron line would bring back exactly the T-2930 false green: "not audited" reading the same as "clean".'
+    alternatives_rejected: ['`rc=${PIPESTATUS[0]}; [ $rc = 75 ] && rc=0; exit $rc` (masks did-not-run); `SHELL=/bin/bash -o pipefail` (cron.d SHELL is a bare path). - **Known consequence, not fixed here:** registry jobs wrapped in `flock -n` exit 1 when the lock is held. That now reaches cron as status 1 and looks the same as a real failure. If that noise matters, the fix is `flock -n -E 75` in the registry commands, filed separately.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/cron_dry_run.py'
+  - 'agents/audit/audit.sh'
+  - '.context/cron/agentic-audit.crontab'
+  - 'lib/cron_dry_run.py'
+  - '.tasks/active/T-3162-generated-cron-lines-mask-every-jobs-exi.md'
+  - 'tests/unit/t2930_audit_contention_exit_code.bats'
+  - 'tests/unit/t3162_cron_job_exit_status_survives_logger_pipe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:03:11'
+    action: 'T-3162: generated cron lines end ''; exit ${PIPESTATUS[0]}'' so cron sees each job''s own exit status through the logger pipe — lib/cron_dry_run.py mirror, executing regression bats, t2930 re-pinned (75 now reaches cron by decision), crontab regenerated + deployed. The bin/fw generator hunk landed in b0ed4b696 (swept in by a concurrent T-4515 path commit).'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 79776 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cron, exit-status, inbound-report, 001-cashweb, silent-failure]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 79776
+  commits: 2
+  files_changed: 12
+  lines_added: 963
+  lines_removed: 84
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3162-generated-cron-lines-mask-every-jobs-exi.md
+generated_by: context-agent-hybrid

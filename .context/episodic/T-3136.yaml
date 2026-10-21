@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3136: fw update reverts consumer local patches with no record that a patch existed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:21:55Z
+# ============================================================================
+
+task_id: T-3136
+task_name: "fw update reverts consumer local patches with no record that a patch existed"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-25T08:59:35Z
+completed: 2026-10-20T22:21:12Z
+duration_days: 56
+updates_count: 2
+first_commit: 2026-10-20T23:33:26+02:00
+last_commit: 2026-10-20T23:33:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  vendor stamp records source_commit (vendored base) and fw update shows it; bin/fw local-patch refusal (T-3850) pinned; 6 regression tests
+
+# Key outcomes
+outcomes:
+  - 'Evidence at HEAD: a local `bin/fw` patch makes a re-vendor refuse and stay unwritten (covered by T-3850; pinned by a new test here)'
+  - 'The vendor stamp records `source_commit` (the full sha of the vendored source HEAD) when the source is a git checkout, and omits it otherwise'
+  - '`fw update` shows the vendored base commit next to the current version, read from the stamp'
+  - 'Regression test `tests/unit/t3136_vendor_base_commit.bats` fails without the fix and passes with it; t3850 + lib_update suites still green; `bin/fw vendor self --check --task T-3136` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/update.sh'
+  - '.agentic-framework/lib/vendor_preserve.py'
+  - 'lib/update.sh'
+  - 'lib/vendor_preserve.py'
+  - '.tasks/active/T-3136-fw-update-reverts-consumer-local-patches.md'
+  - 'tests/unit/t3136_vendor_base_commit.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:33:26'
+    action: 'T-3136: vendor stamp records source_commit (vendored base) and fw update shows it; bin/fw local-patch refusal (T-3850) pinned; 6 regression tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 81441 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [update, vendoring, provenance, consumer-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 81441
+  commits: 1
+  files_changed: 6
+  lines_added: 197
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3136-fw-update-reverts-consumer-local-patches.md
+generated_by: context-agent-hybrid

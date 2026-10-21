@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4513: Read-only allowlist: git grep -O / --open-files-in-pager=CMD starts a command but is classed SAFE
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:02:44Z
+# ============================================================================
+
+task_id: T-4513
+task_name: "Read-only allowlist: git grep -O / --open-files-in-pager=CMD starts a command but is classed SAFE"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T20:22:15Z
+completed: 2026-10-20T22:01:47Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T23:58:36+02:00
+last_commit: 2026-10-20T23:58:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  read-only allowlist refuses git grep -O / --open-files-in-pager (any abbreviation, short bundle, quoted or expanded form) — judged on the dequoted option words; t4513_git_grep_pager.bats (5 tests, both directions). tick vendor-check AC (clean after fe1e81228)
+
+# Key outcomes
+outcomes:
+  - '`git grep -O pattern`, `git grep -Ovim pattern`, `git grep -iO pattern`, `git grep --open-files-in-pager=touch pattern`, `git grep --open-files-in-pager pattern`, `git grep --open-f pattern`, `git grep --op=x pattern`, `git grep -''O'' pattern`, `git grep "--open-files-in-pager=x" pattern`, `git -C . grep -O pattern` and `git grep "$P" pattern` are gated by is_bash_safe_command'
+  - 'Controls stay SAFE: `git grep pattern`, `git grep -n -e foo`, `git grep -C3 foo`, `git grep -i --or foo`, `git grep -e FOO`, `awk ''{print $1}'' F`, `sed -n 1p F`'
+  - 'New bats test covers both directions; T-4510, T-4509, T-4511, T-4512, T-4485, T-4367, T-4487, T-4499 and safe-commands suites stay green'
+  - '`bin/fw vendor self --check --task T-4513` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4513-read-only-allowlist-git-grep--o----open-.md'
+  - 'tests/unit/t4513_git_grep_pager.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:58:36'
+    action: 'T-4513: read-only allowlist refuses git grep -O / --open-files-in-pager (any abbreviation, short bundle, quoted or expanded form) — judged on the dequoted option words; t4513_git_grep_pager.bats (5 tests, both directions)'
+  - time: '2026-10-20T23:58:54'
+    action: 'T-4513: tick vendor-check AC (clean after fe1e81228)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 99 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 99
+  commits: 2
+  files_changed: 4
+  lines_added: 186
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4513-read-only-allowlist-git-grep--o----open-.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3775: fw_focus_alias tests 3-5 red only under the full unit suite
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T08:52:44Z
+# ============================================================================
+
+task_id: T-3775
+task_name: "fw_focus_alias tests 3-5 red only under the full unit suite"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-03T17:02:27Z
+completed: 2026-10-21T08:52:20Z
+duration_days: 18
+updates_count: 2
+first_commit: 2026-10-21T02:09:56+02:00
+last_commit: 2026-10-21T02:09:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  does not reproduce at HEAD — fw_focus_alias 8/8 alone x3, 96/96 under 12x concurrency at load 65, green under worker env; 2026-10-18 recurrence analysed from retained failure output (seconds-wide fw focus window in a 30-red dirty-tree run); evidence + RCA recorded
+
+# Key outcomes
+outcomes:
+  - 'Reproduction attempted at HEAD (alone, repeated, and under parallel load); outcome recorded with command + output'
+  - 'If it reproduces: root cause localised with file:line, fixed, and a regression test fails without the fix; if not: evidence of non-reproduction and the retained suite failure output analysed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3775-fwfocusalias-tests-3-5-red-only-under-th.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T02:09:56'
+    action: 'T-3775: does not reproduce at HEAD — fw_focus_alias 8/8 alone x3, 96/96 under 12x concurrency at load 65, green under worker env; 2026-10-18 recurrence analysed from retained failure output (seconds-wide fw focus window in a 30-red dirty-tree run); evidence + RCA recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25429 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [unit-suite, test-red]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25429
+  commits: 1
+  files_changed: 1
+  lines_added: 27
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3775-fwfocusalias-tests-3-5-red-only-under-th.md
+generated_by: context-agent-hybrid

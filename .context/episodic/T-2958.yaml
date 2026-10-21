@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2958: P-011 eval substitutes backticks outside single quotes — collapsed pattern can pass emptily
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:05:03Z
+# ============================================================================
+
+task_id: T-2958
+task_name: "P-011 eval substitutes backticks outside single quotes — collapsed pattern can pass emptily"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-12T22:25:11Z
+completed: 2026-10-20T22:01:51Z
+duration_days: 69
+updates_count: 2
+first_commit: 2026-10-20T22:46:27+02:00
+last_commit: 2026-10-20T22:46:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  P-011 refuses Verification lines whose backticks bash would command-substitute ("" collapsed to "" and passed emptily); quoting-state lexer in lib/verification-port.sh, gate preflight, 13-test regression. fabric card for t2958_verification_backticks.bats
+
+# Key outcomes
+outcomes:
+  - 'Defect reproduced at HEAD: a Verification line ``grep -q "``" f`` (and the T-446 code-fence regex inside `python3 -c "…"`) passes T-2991''s parse check and evals GREEN on a file containing no backticks (the pair collapses to the empty pattern). Triple backticks alone are already refused as unparseable; the pair is the silent case.'
+  - '`lib/verification-port.sh` gains `find_unquoted_backtick_lines` (prints each line holding a backtick that bash would command-substitute: outside single quotes / `$''…''` and not backslash-escaped) and `check_verification_backticks` (refuses, bypass `FW_ALLOW_BACKTICK_VERIFICATION=1`)'
+  - 'The P-011 gate in `agents/task-create/update-task.sh` calls the check BEFORE the eval loop, and logs the bypass Tier-2'
+  - 'Regression bats `tests/unit/t2958_verification_backticks.bats` covers: flagged (bare, in double quotes, code-fence regex), not flagged (single-quoted, escaped, `$''…''`, `$(…)`), and the end-to-end close refusal; fails without the fix'
+  - '`bin/fw vendor self --check --task T-2958` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/verification-port.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.fabric/components/tests-unit-t2958_verification_backticks.yaml'
+  - 'lib/verification-port.sh'
+  - '.tasks/active/T-2958-p-011-eval-substitutes-backticks-outside.md'
+  - 'tests/unit/t2958_verification_backticks.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:46:27'
+    action: 'T-2958: P-011 refuses Verification lines whose backticks bash would command-substitute ("``" collapsed to "" and passed emptily); quoting-state lexer in lib/verification-port.sh, gate preflight, 13-test regression'
+  - time: '2026-10-20T22:46:37'
+    action: 'T-2958: fabric card for t2958_verification_backticks.bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 99336 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 99336
+  commits: 2
+  files_changed: 7
+  lines_added: 388
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2958-p-011-eval-substitutes-backticks-outside.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4522: tests/integration/fw_docs.bats and tests/unit/handover.bats hang to the 900 s cap on a clean machine
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T10:56:27Z
+# ============================================================================
+
+task_id: T-4522
+task_name: "tests/integration/fw_docs.bats and tests/unit/handover.bats hang to the 900 s cap on a clean machine"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T08:59:05Z
+completed: 2026-10-21T10:55:21Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T12:02:49+02:00
+last_commit: 2026-10-21T12:05:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  docgen memoises episodic/learnings loads per run (fw docs --all ~40 min -> 32 s) + DOCGEN_OUTPUT_DIR override; fw_docs/docgen_component bats write to temp dirs under timeout; handover.bats runs handover.sh against a one-task fixture project under timeout instead of the live repo (8x75 s -> 27 s, no longer rewrites live LATEST.md or deletes CHECKPOINT files); parse-count regression test; vendor synced. tick vendor-check AC (all Verification lines pass)
+
+# Key outcomes
+outcomes:
+  - 'Root cause of each hang localised to a file:line and recorded in ## RCA'
+  - 'tests/integration/fw_docs.bats finishes in bounded time (each external call wrapped in `timeout`, or the waited-on dependency removed/guarded with a clear skip reason)'
+  - 'tests/unit/handover.bats finishes in bounded time on a clean machine (no unbounded wait on a host service / network / TTY)'
+  - 'Regression guard added that fails if the hang returns'
+  - '`bin/fw vendor self --check --task T-4522` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'docgen memoises episodic/learnings loads per run (fw docs --all ~40 min -> 32 s) + DOCGEN_OUTPUT_DIR override; fw_docs/docgen_component bats write to temp dirs under timeout; handover.bats runs handover.sh against a one-task fixture project under timeout instead of the live repo (8x75 s -> 27 s, no longer rewrites live LATEST.md or deletes CHECKPOINT files); parse-count regression test; vendor synced'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/docgen/generate_component.py'
+  - '.agentic-framework/agents/docgen/generate-component.sh'
+  - 'agents/docgen/generate_component.py'
+  - 'agents/docgen/generate-component.sh'
+  - '.tasks/active/T-4522-testsintegrationfwdocsbats-and-testsunit.md'
+  - 'tests/integration/fw_docs.bats'
+  - 'tests/unit/docgen_component.bats'
+  - 'tests/unit/handover.bats'
+  - 'tests/unit/test_t4522_docgen_parse_once.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T12:02:49'
+    action: 'T-4522: docgen memoises episodic/learnings loads per run (fw docs --all ~40 min -> 32 s) + DOCGEN_OUTPUT_DIR override; fw_docs/docgen_component bats write to temp dirs under timeout; handover.bats runs handover.sh against a one-task fixture project under timeout instead of the live repo (8x75 s -> 27 s, no longer rewrites live LATEST.md or deletes CHECKPOINT files); parse-count regression test; vendor synced'
+  - time: '2026-10-21T12:05:17'
+    action: 'T-4522: tick vendor-check AC (all Verification lines pass)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 116 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 116
+  commits: 2
+  files_changed: 9
+  lines_added: 279
+  lines_removed: 81
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4522-testsintegrationfwdocsbats-and-testsunit.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,114 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4515: fw git install-hooks comments out hook lines it did not write, silently disabling a consumer's own gates (T-4403 regression)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T23:48:26Z
+# ============================================================================
+
+task_id: T-4515
+task_name: "fw git install-hooks comments out hook lines it did not write, silently disabling a consumer's own gates (T-4403 regression)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T20:39:53Z
+completed: 2026-10-20T23:46:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T22:42:23+02:00
+last_commit: 2026-10-20T23:41:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register G-122 (install-hooks disables consumer gate lines, from 832), file T-4514..T-4516; close T-4496, T-4501, T-4502, T-4487, T-4493, T-4486 and others staged. install-hooks never comments out or drops a consumer's hook lines — old-framework extras stay ACTIVE below the block, an unparseable or non-shell merge is refused with the hook left unchanged; fw doctor WARNs on lines T-4403 commented out; be-tag notice tells consumers to check their hooks; t4515 bats counts active gate lines and runs the gate (G-122). fabric cards for new tests
+
+# Key outcomes
+outcomes:
+  - 'Migrating an unmarked old framework hook keeps the lines the template lacks ACTIVE, below the block, under a `# T-4515: project lines kept ACTIVE` marker; no line is ever prefixed with `# ` by install-hooks (`_fw_hook_compose`, agents/git/lib/hooks.sh)'
+  - 'When the kept lines do not parse after the block (or the consumer hook is not a shell script), install-hooks REFUSES that hook: the installed file is left byte-identical (its gates keep running), the lines are named, and the run exits non-zero; it never installs the block alone over a consumer hook'
+  - '`fw doctor` WARNs on a framework-managed hook that carries project lines commented out by the T-4403 installer (the `kept ... (commented out` header), naming the hook and the line count'
+  - 'Regression test (832 T-1240 shape): a consumer hook with its own active gate line, install-hooks run, the ACTIVE (uncommented) gate-line count is unchanged, and running the hook proves the gate still executes (a failing gate blocks)'
+  - 'T-4403 tests stay green; only the assertion of the commenting-out is changed'
+  - 'The next be-tag notice carries one line telling consumers to check their hooks'
+  - '`bin/fw vendor self --check --task T-4515` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/release-tags.sh'
+  - 'agents/git/lib/hooks.sh'
+  - 'bin/fw'
+  - '.context/episodic/T-4456.yaml'
+  - '.context/episodic/T-4487.yaml'
+  - '.context/episodic/T-4493.yaml'
+  - '.context/episodic/T-4496.yaml'
+  - '.context/episodic/T-4505.yaml'
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/tests-unit-t2859_work_on_usage_examples.yaml'
+  - '.fabric/components/tests-unit-t3136_vendor_base_commit.yaml'
+  - '.fabric/components/tests-unit-t3154_doctor_agent_entry_scripts.yaml'
+  - '.fabric/components/tests-unit-t3162_cron_job_exit_status_survives_logger_pipe.yaml'
+  - '.fabric/components/tests-unit-t3720_dispatch_empty_prompt.yaml'
+  - '.fabric/components/tests-unit-t4515_install_hooks_keep_gates_active.yaml'
+  - '.fabric/components/tests-unit-test_t3715_mcp_approve.yaml'
+  - 'lib/release-tags.sh'
+  - '.tasks/active/T-4514-a-later-fw-reviewer-judge-run-deletes-or.md'
+  - '.tasks/active/T-4515-fw-git-install-hooks-comments-out-hook-l.md'
+  - '.tasks/active/T-4516-stop-shipping-and-writing-lan-addresses-.md'
+  - '.tasks/completed/T-4456-fw-reviewer-judge-the-antigravity-seat-c.md'
+  - '.tasks/completed/T-4486-adapt-termlink-proposal-348-t-3185-hunk-.md'
+  - '.tasks/completed/T-4487-shellwritescan-boundary-mode-stays-clean.md'
+  - '.tasks/completed/T-4493-runme-job-queue-slice-3-t-4470-ordered-b.md'
+  - '.tasks/completed/T-4496-corpus-generate-crashes-with-attributeer.md'
+  - '.tasks/completed/T-4502-corpus-derive-silently-drops-a-second-bp.md'
+  - '.tasks/completed/T-4505-corpusspec-one-test-that-every-bpmn-20-n.md'
+  - 'tests/unit/t4403_hook_block_preserve.bats'
+  - 'tests/unit/t4515_install_hooks_keep_gates_active.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:42:23'
+    action: 'T-4515: register G-122 (install-hooks disables consumer gate lines, from 832), file T-4514..T-4516; close T-4496, T-4501, T-4502, T-4487, T-4493, T-4486 and others staged'
+  - time: '2026-10-20T23:02:30'
+    action: 'T-4515: install-hooks never comments out or drops a consumer''s hook lines — old-framework extras stay ACTIVE below the block, an unparseable or non-shell merge is refused with the hook left unchanged; fw doctor WARNs on lines T-4403 commented out; be-tag notice tells consumers to check their hooks; t4515 bats counts active gate lines and runs the gate (G-122)'
+  - time: '2026-10-20T23:41:13'
+    action: 'T-4515: fabric cards for new tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 187 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 187
+  commits: 3
+  files_changed: 25
+  lines_added: 1814
+  lines_removed: 142
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4515-fw-git-install-hooks-comments-out-hook-l.md
+generated_by: context-agent-hybrid

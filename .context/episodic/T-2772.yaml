@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2772: T-2732 port gate is blind to FW_TEST_PORT=3000 (env-var assignment, not URL literal)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T23:56:12Z
+# ============================================================================
+
+task_id: T-2772
+task_name: "T-2732 port gate is blind to FW_TEST_PORT=3000 (env-var assignment, not URL literal)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-03T17:21:06Z
+completed: 2026-10-20T23:48:37Z
+duration_days: 78
+updates_count: 2
+first_commit: 2026-10-20T23:07:55+02:00
+last_commit: 2026-10-21T00:01:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  port-3000 gate sees env-var assignments (FW_TEST_PORT=3000 etc.), not only URLs; 6 regression tests; sweep names live carriers T-1963/T-2082. tick vendor-check AC. rewrite FW_TEST_PORT=3000 Verification carriers (T-1963, T-2082) to resolve the port via bin/fw watchtower port; port-hardcode bats test 8 green
+
+# Key outcomes
+outcomes:
+  - 'Defect reproduces at HEAD: `find_port_literals ''FW_TEST_PORT=3000 python3 -m pytest …''` prints nothing before the fix'
+  - '`find_port_literals` (lib/verification-port.sh) flags port-3000 env-var assignments (`FW_TEST_PORT=3000`, `PORT=3000`, `FW_PORT=3000`, quoted values, after `env`/`export`) with no port resolution on the line'
+  - 'Discriminator kept: a line that resolves the port (`fw watchtower url|port`, `fw config get PORT`, `$WT_PORT`…) still passes; `PORT=30001`, `PORT=4000` and `$PORT == 3000` comparisons are not flagged'
+  - 'Regression tests in tests/unit/verification_port_hardcode.bats carry the T-1960/T-1961 corpus line, fail without the fix, pass with it; whole file green (new tests green; test 8 red until T-1963/T-2082 lines are rewritten — see RCA sweep)'
+  - 'Corpus swept for the env-var shape; every live carrier in an active task''s `## Verification` named in this task (with disposition)'
+  - '`bin/fw vendor self --check --task T-2772` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verification-port.sh'
+  - 'lib/verification-port.sh'
+  - '.tasks/active/T-1963-arcsslugreview-route--read-only-review-s.md'
+  - '.tasks/active/T-2082-t-2081-fix--add-taskcompleted-guard-to-r.md'
+  - '.tasks/active/T-2772-t-2732-port-gate-is-blind-to-fwtestport3.md'
+  - 'tests/unit/verification_port_hardcode.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:07:55'
+    action: 'T-2772: port-3000 gate sees env-var assignments (FW_TEST_PORT=3000 etc.), not only URLs; 6 regression tests; sweep names live carriers T-1963/T-2082'
+  - time: '2026-10-20T23:10:43'
+    action: 'T-2772: tick vendor-check AC'
+  - time: '2026-10-21T00:01:00'
+    action: 'T-2772: rewrite FW_TEST_PORT=3000 Verification carriers (T-1963, T-2082) to resolve the port via bin/fw watchtower port; port-hardcode bats test 8 green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 112707 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 112707
+  commits: 3
+  files_changed: 6
+  lines_added: 121
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2772-t-2732-port-gate-is-blind-to-fwtestport3.md
+generated_by: context-agent-hybrid

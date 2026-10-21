@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3722: Watchtower toggle-ac writes a Human-tick provenance row so fw audit stops FAILing on operator ticks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:22:17Z
+# ============================================================================
+
+task_id: T-3722
+task_name: "Watchtower toggle-ac writes a Human-tick provenance row so fw audit stops FAILing on operator ticks"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T12:41:07Z
+completed: 2026-10-20T22:21:58Z
+duration_days: 18
+updates_count: 3
+first_commit: 2026-10-20T23:22:07+02:00
+last_commit: 2026-10-20T23:22:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  re-checked at HEAD — already fixed by T-4070 (d82574407); ACs, RCA, Verification record the evidence; Watchtower restarted (current)
+
+# Key outcomes
+outcomes:
+  - 'Defect re-checked at HEAD: `toggle_ac` (web/blueprints/tasks.py:1239-1255) writes a `via=watchtower` ledger row via `human_ac_ticks.record` for every newly ticked `### Human` box, and rolls the tick back if the row cannot be written — fixed by T-4070 (commit d82574407), so no new source change is needed here'
+  - 'Regression coverage exists and is green: tests/web/test_t4070_watchtower_tick_provenance.py proves (a) a Watchtower Human tick writes one row and `human_ac_ticks.audit` returns 0 after commit, (b) the control (same tick, no row) returns 2 naming the task, (c) Agent ticks and unticks write no row, (d) a ledger write failure refuses the tick and leaves the file unchanged'
+  - 'Running Watchtower is current with web/ (`bin/fw watchtower current` exits 0), so operator ticks taken today go through the fixed endpoint'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 're-checked at HEAD — already fixed by T-4070 (d82574407); ACs, RCA, Verification record the evidence; Watchtower restarted (current)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3722-watchtower-toggle-ac-writes-a-human-tick.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:22:07'
+    action: 'T-3722: re-checked at HEAD — already fixed by T-4070 (d82574407); ACs, RCA, Verification record the evidence; Watchtower restarted (current)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 26500 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [T-3695, sovereignty]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26500
+  commits: 2
+  files_changed: 21
+  lines_added: 2915
+  lines_removed: 49
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3722-watchtower-toggle-ac-writes-a-human-tick.md
+generated_by: context-agent-hybrid

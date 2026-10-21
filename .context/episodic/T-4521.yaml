@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4521: Unit suite aborts under Ubuntu's bats 1.10 before any test runs: heredoc fixtures in t4058_unit_suite_keeps_failures.bats parse as real tests (duplicate names)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T10:55:16Z
+# ============================================================================
+
+task_id: T-4521
+task_name: "Unit suite aborts under Ubuntu's bats 1.10 before any test runs: heredoc fixtures in t4058_unit_suite_keeps_failures.bats parse as real tests (duplicate names)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T08:58:51Z
+completed: 2026-10-21T10:54:46Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T11:29:21+02:00
+last_commit: 2026-10-21T11:29:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  bats <1.11 counted heredoc fixture @test lines as real tests (duplicate-name abort on Ubuntu 24.04's bats 1.10); 10 files now spell fixtures @@test and restore them with sed, new tools/bats-heredoc-test-lint.py (quote/$( )-aware) refuses @test in a heredoc body, pinned by tests/lint/bats-heredoc-test.bats; precision checked against bats 1.10 vs 1.13 --count over all of tests/
+
+# Key outcomes
+outcomes:
+  - 'No line in tests/unit/t4058_unit_suite_keeps_failures.bats matches the bats preprocessor''s test pattern inside a heredoc fixture (fixtures generated without a literal `@test` at line start)'
+  - 't4058_unit_suite_keeps_failures.bats still passes in full (fixtures behave as before at run time)'
+  - 'A lint (tools/bats-heredoc-test-lint.py) refuses any `@test` line inside a heredoc in a .bats file, reports clean on tests/, and is pinned by a regression bats test that feeds it a bad fixture'
+  - '`bats --count tests/unit/t4058_unit_suite_keeps_failures.bats` equals the number of real tests (no fixture tests counted)'
+  - 'The 9 other files with the same defect (found by the lint; confirmed by bats 1.10.0 vs 1.13.0 `--count` over all of tests/, which disagreed on exactly these 10 files) are fixed with the same `@@test` + sed convention, and pass under both bats 1.10.0 and 1.13.0'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'bats <1.11 counted heredoc fixture @test lines as real tests (duplicate-name abort on Ubuntu 24.04''s bats 1.10); 10 files now spell fixtures @@test and restore them with sed, new tools/bats-heredoc-test-lint.py (quote/$( )-aware) refuses @test in a heredoc body, pinned by tests/lint/bats-heredoc-test.bats; precision checked against bats 1.10 vs 1.13 --count over all of tests/'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/bats-heredoc-test-lint.py'
+  - '.tasks/active/T-4521-unit-suite-aborts-under-ubuntus-bats-110.md'
+  - 'tests/lint/bats-cron-env-lint.bats'
+  - 'tests/lint/bats-heredoc-test.bats'
+  - 'tests/unit/audit_ctl_arc_tag_only_pattern.bats'
+  - 'tests/unit/t3048_bats_leg_guard.bats'
+  - 'tests/unit/t3302_unit_suite_schedule.bats'
+  - 'tests/unit/t3602_unit_suite_partial_run.bats'
+  - 'tests/unit/t4058_unit_suite_keeps_failures.bats'
+  - 'tests/unit/t4377_unit_tiers.bats'
+  - 'tests/unit/t4381_unit_suite_accounting.bats'
+  - 'tests/unit/t4450_unit_suite_env_scrub.bats'
+  - 'tests/unit/t4524_unit_suite_session_env.bats'
+  - 'tools/bats-heredoc-test-lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T11:29:21'
+    action: 'T-4521: bats <1.11 counted heredoc fixture @test lines as real tests (duplicate-name abort on Ubuntu 24.04''s bats 1.10); 10 files now spell fixtures @@test and restore them with sed, new tools/bats-heredoc-test-lint.py (quote/$( )-aware) refuses @test in a heredoc body, pinned by tests/lint/bats-heredoc-test.bats; precision checked against bats 1.10 vs 1.13 --count over all of tests/'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 115 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 115
+  commits: 1
+  files_changed: 14
+  lines_added: 474
+  lines_removed: 51
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4521-unit-suite-aborts-under-ubuntus-bats-110.md
+generated_by: context-agent-hybrid

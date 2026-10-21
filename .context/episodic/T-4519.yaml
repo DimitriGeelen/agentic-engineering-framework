@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4519: A committed reviewer-verdict row from a worker that was later killed (exit 143) fails the ledger audit forever, with no sanctioned exit, blocking every push
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T09:09:05Z
+# ============================================================================
+
+task_id: T-4519
+task_name: "A committed reviewer-verdict row from a worker that was later killed (exit 143) fails the ledger audit forever, with no sanctioned exit, blocking every push"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T06:58:24Z
+completed: 2026-10-21T09:05:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T09:29:22+02:00
+last_commit: 2026-10-21T10:54:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  verdict ledger — a runtime-attested green whose worker was killed after committing (signed exit != 0) is VOID: audit grades it WARN (exit 3, never PASS, never counts) when every other check passes; a committed row of a still-running dispatch is PROVISIONAL (WARN) until the runtime signs its exit; audit.sh names both; regression test (7); vendor synced. consumer command uses fw reviewer verdict audit; pre-fix red re-confirmed (3/7 fail against dad71ef3d^ ledger), all Verification lines green
+
+# Key outcomes
+outcomes:
+  - 'Reproduced at HEAD before the fix: a committed green whose runtime completion has exit 143 makes `verdict_ledger.audit` return 2 with `FAIL <id> ... worker failed` (regression test red before the fix)'
+  - 'Leg 1: such a row is graded `WARN void: ... worker failed` (audit exit 3, never 0, never PASS) when every OTHER check on the row passes; it still never counts (`apply` ticks nothing) and the append-only history check is untouched'
+  - 'Leg 1 guard: a worker-failed row that ALSO fails another check (e.g. introduced by another identity) still FAILs'
+  - 'Leg 1 supersede: a later valid green from a fresh dispatch on the same criterion ticks it while the void row stays WARN'
+  - 'Leg 2: a committed row whose dispatch the runtime started but has not yet completed, inside its signed `complete_by` window, is graded `WARN provisional` (never counts); past the window with no completion it FAILs as before'
+  - '`agents/audit/audit.sh` rc=3 branch names the new WARN classes, not only acknowledged ones'
+  - 'T-3579/T-3581/T-3657/T-4490/T-4514 suites and the t3580 round-3 tests stay green'
+  - 'Consumer command for existing rows written into the task (## Recommendation)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'consumer command uses fw reviewer verdict audit; pre-fix red re-confirmed (3/7 fail against dad71ef3d^ ledger), all Verification lines green'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'agents/audit/audit.sh'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-4519-a-committed-reviewer-verdict-row-from-a-.md'
+  - 'tests/unit/test_t4519_worker_failed_row.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T09:29:22'
+    action: 'T-4519: verdict ledger — a runtime-attested green whose worker was killed after committing (signed exit != 0) is VOID: audit grades it WARN (exit 3, never PASS, never counts) when every other check passes; a committed row of a still-running dispatch is PROVISIONAL (WARN) until the runtime signs its exit; audit.sh names both; regression test (7); vendor synced'
+  - time: '2026-10-21T10:54:54'
+    action: 'T-4519: consumer command uses fw reviewer verdict audit; pre-fix red re-confirmed (3/7 fail against dad71ef3d^ ledger), all Verification lines green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 126 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 126
+  commits: 2
+  files_changed: 6
+  lines_added: 661
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4519-a-committed-reviewer-verdict-row-from-a-.md
+generated_by: context-agent-hybrid

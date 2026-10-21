@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4524: The unit-suite runner leaks CLAUDECODE=1 into tests
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T10:57:06Z
+# ============================================================================
+
+task_id: T-4524
+task_name: "The unit-suite runner leaks CLAUDECODE=1 into tests"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T08:59:28Z
+completed: 2026-10-21T10:56:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T11:11:10+02:00
+last_commit: 2026-10-21T11:11:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unit-suite runner unsets agent-session variables (CLAUDECODE, CLAUDE_*, TERMLINK_SESSION_ID, FW_DISPATCHED_WORKER, FW_SIDECAR_*, focus/claude-fw keys) per child; hermetic helpers (bash + pytest twin) also strip TERMLINK_SESSION_ID; regression bats t4524 runs the runner on a fixture corpus from a session-shaped env; vendor synced. tick vendor-check AC
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/unit-suite.sh` `_run_one` unsets the agent-session variables (CLAUDECODE, CLAUDE_*, TERMLINK_SESSION_ID, FW_DISPATCHED_WORKER, FW_SIDECAR_*, FW_FOCUS_SESSION_KEY, FW_SESSION_SCOPED_FOCUS, FW_CLAUDE_FW_*) before starting each bats/pytest child; the runner''s own FW_WATCHTOWER_ENSURE=0 / FW_DOCTOR_SMOKE=0 still reach the child'
+  - 'The hermetic helpers (tests/unit/helpers/hermetic.bash and its pytest twin tests/unit/hermetic.py) also strip TERMLINK_SESSION_ID, keeping both contracts the same (they already strip CLAUDE* and FW_*)'
+  - 'Regression test tests/unit/t4524_unit_suite_session_env.bats runs the runner on a fixture corpus with CLAUDECODE=1 etc. set and asserts neither the bats nor the pytest child sees them; it fails on the pre-fix runner'
+  - 'Existing neighbours t4450_unit_suite_env_scrub.bats and hermetic_helper.bats stay green; `bin/fw vendor self --check --task T-4524` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'unit-suite runner unsets agent-session variables (CLAUDECODE, CLAUDE_*, TERMLINK_SESSION_ID, FW_DISPATCHED_WORKER, FW_SIDECAR_*, focus/claude-fw keys) per child; hermetic helpers (bash + pytest twin) also strip TERMLINK_SESSION_ID; regression bats t4524 runs the runner on a fixture corpus from a session-shaped env; vendor synced'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - 'agents/audit/unit-suite.sh'
+  - '.fabric/components/tests-unit-t4524_unit_suite_session_env.yaml'
+  - '.tasks/active/T-4524-the-unit-suite-runner-leaks-claudecode1-.md'
+  - 'tests/unit/helpers/hermetic.bash'
+  - 'tests/unit/hermetic_helper.bats'
+  - 'tests/unit/hermetic.py'
+  - 'tests/unit/t4524_unit_suite_session_env.bats'
+  - 'tests/unit/test_hermetic_fixture.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T11:11:10'
+    action: 'T-4524: unit-suite runner unsets agent-session variables (CLAUDECODE, CLAUDE_*, TERMLINK_SESSION_ID, FW_DISPATCHED_WORKER, FW_SIDECAR_*, focus/claude-fw keys) per child; hermetic helpers (bash + pytest twin) also strip TERMLINK_SESSION_ID; regression bats t4524 runs the runner on a fixture corpus from a session-shaped env; vendor synced'
+  - time: '2026-10-21T11:11:22'
+    action: 'T-4524: tick vendor-check AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 117 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 117
+  commits: 2
+  files_changed: 9
+  lines_added: 138
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4524-the-unit-suite-runner-leaks-claudecode1-.md
+generated_by: context-agent-hybrid

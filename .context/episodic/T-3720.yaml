@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3720: fw termlink dispatch launches a worker with an empty --prompt-file: only the sidecar preamble reaches the model, no task
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:22:42Z
+# ============================================================================
+
+task_id: T-3720
+task_name: "fw termlink dispatch launches a worker with an empty --prompt-file: only the sidecar preamble reaches the model, no task"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T12:19:36Z
+completed: 2026-10-20T22:22:20Z
+duration_days: 18
+updates_count: 2
+first_commit: 2026-10-20T23:22:23+02:00
+last_commit: 2026-10-20T23:22:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw termlink dispatch refuses an empty or whitespace-only prompt before spawning; regression bats
+
+# Key outcomes
+outcomes:
+  - 'Defect reproduced (or ruled out) at HEAD: `fw termlink dispatch --prompt-file <empty file>` checked against current `agents/termlink/termlink.sh`'
+  - '`fw termlink dispatch` refuses an empty or whitespace-only prompt (from `--prompt-file` or `--prompt`) with a non-zero exit and an actionable message, before any worker is spawned'
+  - 'Regression test `tests/unit/t3720_dispatch_empty_prompt.bats` covers empty file, whitespace-only file, and empty `--prompt`, and asserts no worker directory/session is created'
+  - '`bin/fw vendor self --check --task T-3720` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - 'agents/termlink/termlink.sh'
+  - '.tasks/active/T-3720-fw-termlink-dispatch-launches-a-worker-w.md'
+  - 'tests/unit/t3720_dispatch_empty_prompt.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:22:23'
+    action: 'T-3720: fw termlink dispatch refuses an empty or whitespace-only prompt before spawning; regression bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 26522 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, dispatch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26522
+  commits: 1
+  files_changed: 4
+  lines_added: 94
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3720-fw-termlink-dispatch-launches-a-worker-w.md
+generated_by: context-agent-hybrid

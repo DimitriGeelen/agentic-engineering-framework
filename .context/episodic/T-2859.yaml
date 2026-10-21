@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2859: fw work-on usage text advertises a --type-less form that always fails off-tty
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T21:50:41Z
+# ============================================================================
+
+task_id: T-2859
+task_name: "fw work-on usage text advertises a --type-less form that always fails off-tty"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-07T17:10:29Z
+completed: 2026-10-20T21:49:59Z
+duration_days: 74
+updates_count: 2
+first_commit: 2026-10-20T23:05:53+02:00
+last_commit: 2026-10-20T23:05:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw work-on usage example carries --type (create-task.sh requires it off-tty); regression test runs every printed example off-tty
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked at HEAD: every `fw work-on "<name>"` usage example printed by bin/fw either carries `--type` or is accepted off-tty'
+  - 'If it reproduces: usage text fixed and a regression test pins that no printed work-on example for a new task omits `--type`'
+  - '`bin/fw vendor self --check --task T-2859` clean (only if vendored paths changed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — truthful usage text vs default --type'
+    chose: 'fix the usage text (add `--type build` to the description example plus a one-line note that --type is required off-tty).'
+    rationale: 'workflow_type drives gates (G-020 build readiness, inception discipline, RCA gate); silently defaulting to build would mis-type inceptions/refactors and hide a real choice. The off-tty fail-fast already names `--type`.'
+    alternatives_rejected: ['defaulting `--type build` in `fw work-on` — wider behavioural change across every consumer for a documentation defect.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-2859-fw-work-on-usage-text-advertises-a---typ.md'
+  - 'tests/unit/t2859_work_on_usage_examples.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:05:53'
+    action: 'T-2859: fw work-on usage example carries --type (create-task.sh requires it off-tty); regression test runs every printed example off-tty'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 106839 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 106839
+  commits: 1
+  files_changed: 4
+  lines_added: 78
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2859-fw-work-on-usage-text-advertises-a---typ.md
+generated_by: context-agent-hybrid

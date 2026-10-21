@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3853: D-626 delegation classifier reads framework-written annotations (reviewer escalation notes, verdict citations) as part of the criterion: 'authorize' in an escalation note made a criterion operator-only (ring20 G-225, second case after 'sovereignty'), and no command clears a resolved escalation — classify on producer text only, and add an operator command to mark an escalation resolved
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:01:34Z
+# ============================================================================
+
+task_id: T-3853
+task_name: "D-626 delegation classifier reads framework-written annotations (reviewer escalation notes, verdict citations) as part of the criterion: 'authorize' in an escalation note made a criterion operator-only (ring20 G-225, second case after 'sovereignty'), and no command clears a resolved escalation — classify on producer text only, and add an operator command to mark an escalation resolved"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T07:12:12Z
+completed: 2026-10-21T11:00:35Z
+duration_days: 16
+updates_count: 2
+first_commit: 2026-10-21T11:24:12+02:00
+last_commit: 2026-10-21T11:24:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  delegation classifier reads producer text only — framework-written reviewer verdict/escalation lines (one shared GENERATED_ANNOTATION_RE) no longer feed the risk regexes ('authorize' in an escalation note made a layout check operator-only, ring20 G-225); operator verb fw reviewer verdict resolve-escalation clears a resolved note and logs escalation-resolved; regression tests; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Defect reproduced at HEAD: a `[REVIEW]` layout criterion whose only risk word sits in a framework-written `**Reviewer escalation (…):**` line classifies `act-in-the-world` / `sovereignty-field` (operator-only)'
+  - '`lib/delegation.py` classifies on producer text only: lines matching the framework''s generated-annotation shape (`**Reviewer verdict` / `**Reviewer escalation`) are excluded from every regex the classifier runs (risk classes, inception, agent-self), the same exclusion `verdict_ledger.criterion_body` already applies to the digest'
+  - 'Risk words in the PRODUCER text still route operator-only (no weakening): the same criterion with "authorize" in its Steps stays `act-in-the-world`'
+  - 'Operator command `fw reviewer verdict resolve-escalation T-XXX --ac N --reason "…"` removes the escalation note from the criterion and appends a `kind: escalation-resolved` row to the applied log; refused under `CLAUDECODE=1` without `--i-am-human`; refuses when the criterion has no escalation note or the reason is empty'
+  - 'Regression tests in `tests/unit/` fail without the fix and pass with it; neighbouring delegation / verdict-ledger tests stay green'
+  - '`bin/fw vendor self --check --task T-3853` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/delegation.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'lib/delegation.py'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-3853-d-626-delegation-classifier-reads-framew.md'
+  - 'tests/unit/test_t3853_producer_text.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T11:24:12'
+    action: 'T-3853: delegation classifier reads producer text only — framework-written reviewer verdict/escalation lines (one shared GENERATED_ANNOTATION_RE) no longer feed the risk regexes (''authorize'' in an escalation note made a layout check operator-only, ring20 G-225); operator verb fw reviewer verdict resolve-escalation clears a resolved note and logs escalation-resolved; regression tests; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 23268 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23268
+  commits: 1
+  files_changed: 6
+  lines_added: 296
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3853-d-626-delegation-classifier-reads-framew.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3849: VERSION still gets a second writer after T-3821: after the v1.8.1 pre-push, the working-tree VERSION read 1.8.68 (uncommitted) although T-3821 made the pre-push hook skip a tracked VERSION — find the remaining stamper (handover? vendor? another hook) and remove it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T09:14:49Z
+# ============================================================================
+
+task_id: T-3849
+task_name: "VERSION still gets a second writer after T-3821: after the v1.8.1 pre-push, the working-tree VERSION read 1.8.68 (uncommitted) although T-3821 made the pre-push hook skip a tracked VERSION — find the remaining stamper (handover? vendor? another hook) and remove it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T07:09:19Z
+completed: 2026-10-21T09:14:04Z
+duration_days: 16
+updates_count: 2
+first_commit: 2026-10-05T15:59:28+02:00
+last_commit: 2026-10-21T10:53:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  evidence from 2026-10-05 (VERSION stamped 1.8.1/1.8.4/1.8.11 after the v1.8.2 release). does not reproduce at HEAD — deployed pre-push skips a tracked VERSION, VERSION clean at 1.8.14 after 539 commits / 26 pushes; stamper was the undeployed pre-push stamp, fixed by T-3821 (fc5a2d74f) + T-3998; evidence, RCA, Verification recorded
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked at HEAD: the deployed `.git/hooks/pre-push` carries the T-3821 tracked-VERSION skip, and the working-tree VERSION equals HEAD''s committed VERSION after commits and pushes since the release'
+  - 'The remaining stamper is identified (file:line) and either removed here or named with the fixing task/commit'
+  - 'No other writer of the root VERSION exists in bin/fw, lib/, agents/ besides `fw release` and the guarded pre-push branch (grep evidence recorded)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'does not reproduce at HEAD — deployed pre-push skips a tracked VERSION, VERSION clean at 1.8.14 after 539 commits / 26 pushes; stamper was the undeployed pre-push stamp, fixed by T-3821 (fc5a2d74f) + T-3998; evidence, RCA, Verification recorded'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3849-version-still-gets-a-second-writer-after.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T15:59:28'
+    action: 'T-3849: evidence from 2026-10-05 (VERSION stamped 1.8.1/1.8.4/1.8.11 after the v1.8.2 release)'
+  - time: '2026-10-21T10:53:17'
+    action: 'T-3849: does not reproduce at HEAD — deployed pre-push skips a tracked VERSION, VERSION clean at 1.8.14 after 539 commits / 26 pushes; stamper was the undeployed pre-push stamp, fixed by T-3821 (fc5a2d74f) + T-3998; evidence, RCA, Verification recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 23164 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23164
+  commits: 2
+  files_changed: 1
+  lines_added: 396
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3849-version-still-gets-a-second-writer-after.md
+generated_by: context-agent-hybrid

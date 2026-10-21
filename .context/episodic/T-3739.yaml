@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3739: fw sidecar send: a bare --to that is not a known project id silently becomes a sub-inbox under the SENDER's project; a slash form drops the hub id; both report delivered
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T00:14:26Z
+# ============================================================================
+
+task_id: T-3739
+task_name: "fw sidecar send: a bare --to that is not a known project id silently becomes a sub-inbox under the SENDER's project; a slash form drops the hub id; both report delivered"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T17:41:27Z
+completed: 2026-10-21T00:13:37Z
+duration_days: 19
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  055 @86 2026-10-02: --to ring20-management-agent resolved to inbox:<hub>/055-agentic-fleet-cockpit/ring20-management-agent; --to .agentic-framework/ring20-management-agent to inbox:.agentic-framework/...; both printed 'delivered: INJECTED_NOW' (now HUB_ACCEPTED). Only the hub-qualified form reached Ring20. Fix: print the resolved topic before sending, and refuse or warn when the resolved topic has no known reader or receiver.
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked at HEAD: whether a bare `--to <name>` that is not a known project id, and a `--to <a>/<b>` slash form, still resolve to a sender-local/hub-less topic and report delivered (evidence recorded under ## RCA) — does NOT reproduce; both refused'
+  - 'If it reproduces: `fw sidecar send` prints the resolved topic before sending, and refuses (non-zero, no post) a `--to` whose resolved topic has no known reader or receiver — N/A as a new change: the refusal already ships (T-3855 for bare/slash forms, T-4418 for explicit circuits nothing reads)'
+  - 'Regression test under tests/unit/ fails without the fix and passes with it — N/A, no fix made; existing pins cover both shapes (`test_sidecar_cross_hub_t3855.py::test_unknown_bare_name_without_hub_is_refused_by_name`, `::test_cli_refusal_posts_nothing_and_never_says_delivered`, `::test_explicit_circuit_on_an_unreachable_hub_is_refused`; `test_sidecar_orphan_circuit_t4418.py`), 60 passed'
+  - '`bin/fw vendor self --check --task T-3739` clean (no source touched)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 26312 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, sidecar, addressing, 055-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26312
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3739-fw-sidecar-send-a-bare---to-that-is-not-.md
+generated_by: context-agent-hybrid

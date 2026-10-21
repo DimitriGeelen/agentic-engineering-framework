@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3810: hook_telemetry_race T-3371 asserts a 5 ms per-fire wall-clock budget — fails under unit-suite load
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T09:13:21Z
+# ============================================================================
+
+task_id: T-3810
+task_name: "hook_telemetry_race T-3371 asserts a 5 ms per-fire wall-clock budget — fails under unit-suite load"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T11:13:57Z
+completed: 2026-10-21T09:10:57Z
+duration_days: 17
+updates_count: 2
+first_commit: 2026-10-21T10:55:48+02:00
+last_commit: 2026-10-21T10:55:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  hook_telemetry_race budget asserts CPU time (user+sys) not wall clock — wall read 15-50ms/fire under oversubscription while CPU stayed ~2.4ms; new oversubscribed leg (2x nproc burners) and control leg (injected per-fire CPU must fail the budget)
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked at HEAD: the T-3371 per-fire budget test is shown red under CPU load (or its absence of a defect recorded with evidence)'
+  - 'The per-fire budget assertion is robust to host load (no single wall-clock mean over sequential fires decides the verdict) while still catching a real per-fire regression'
+  - 'Regression test proves the assertion stays green under synthetic CPU saturation and still fails on an injected slow fire path'
+  - '`bin/fw vendor self --check --task T-3810` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3810-hooktelemetryrace-t-3371-asserts-a-5-ms-.md'
+  - 'tests/unit/hook_telemetry_race.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T10:55:48'
+    action: 'T-3810: hook_telemetry_race budget asserts CPU time (user+sys) not wall clock — wall read 15-50ms/fire under oversubscription while CPU stayed ~2.4ms; new oversubscribed leg (2x nproc burners) and control leg (injected per-fire CPU must fail the budget)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 24357 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24357
+  commits: 1
+  files_changed: 2
+  lines_added: 80
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3810-hooktelemetryrace-t-3371-asserts-a-5-ms-.md
+generated_by: context-agent-hybrid

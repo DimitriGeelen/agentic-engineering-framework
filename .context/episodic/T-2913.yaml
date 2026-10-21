@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2913: in-repo scripts post to termlink channel post directly — bypass fw rail identity+label gates
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T00:11:21Z
+# ============================================================================
+
+task_id: T-2913
+task_name: "in-repo scripts post to termlink channel post directly — bypass fw rail identity+label gates"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-10T20:16:11Z
+completed: 2026-10-21T00:06:09Z
+duration_days: 72
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2908 discovered 6 in-repo scripts (lib/templates/scripts/{agent-respond,agent-send,chat-arc-broadcast,listener-heartbeat}.sh, lib/pickup-channel-bridge.sh, lib/publish-learning-to-bus.sh — plus their vendored scripts/ mirrors) call "termlink channel post" directly instead of "fw rail post", so none of them get the T-2904 identity guard or the T-2905 from_project label attach. Same producer identity behaviour as bare shell (host-signed unless RAIL_IDENTITY_FILE is configured). Route them through do_rail post (lib/rail-identity.sh) or equivalently source the guard+label logic, then verify each call site still functions (agent-respond/agent-send are the doorbell path, chat-arc-broadcast/listener-heartbeat are cron-invoked, pickup-channel-bridge/publish-learning-to-bus are pickup-pipeline). One bug, one task per Task Sizing Rules — do not fold into T-2908.
+
+# Key outcomes
+outcomes:
+  - 'Defect re-checked at HEAD (7e8875e16): `grep -n "channel post" lib/templates/scripts/{agent-respond,agent-send,chat-arc-broadcast,listener-heartbeat}.sh lib/pickup-channel-bridge.sh lib/publish-learning-to-bus.sh` → agent-send.sh:173, agent-respond.sh:102,111, chat-arc-broadcast.sh:112, listener-heartbeat.sh:130, pickup-channel-bridge.sh:87,89, publish-learning-to-bus.sh:103,105 — all bare `termlink channel post`; still reproduces'
+  - 'Each of the six scripts (and its `.agentic-framework/` vendored copy) posts with the project rail identity (TERMLINK_IDENTITY_FILE from RAIL_IDENTITY_FILE when configured) and the canonical `from_project` label, via `rail_post_exec` in lib/rail-identity.sh'
+  - 'No direct `termlink channel post` call remains in those six scripts outside the shared helper (bats leg D)'
+  - 'Regression test `tests/unit/t2913_scripts_rail_identity.bats` drives each script against a stub termlink and asserts the label + identity env reach the post; 9/9 pass with the fix, 9/9 fail with the six scripts reverted to HEAD'
+  - '`bin/fw vendor self --check --task T-2913` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-21 — warn, don''t refuse, on host-signed script posts'
+    chose: '`rail_post_exec` applies the project identity + label and only WARNS (once per process) when no RAIL_IDENTITY_FILE is configured; it does not run `rail_identity_guard`''s refusal.'
+    rationale: 'these callers are unattended (heartbeat loop, pickup hook, learning hook) or the doorbell ack path; refusing there is a messaging outage on every consumer without RAIL_IDENTITY_FILE, not a prompt anyone can answer. It also avoids two `termlink agent identity --resolve` calls per heartbeat.'
+    alternatives_rejected: ['routing through `do_rail post` verbatim (blocks, and prepends the label before the positional topic); per-script copies of the label logic (the drift this task exists to remove). If the operator wants the refusal here too, it is one line in `rail_post_exec`.']
+  - decision: '2026-10-21 — a caller-chosen identity wins'
+    chose: 'if TERMLINK_IDENTITY_FILE or TERMLINK_AGENT_ID is already set in the caller''s environment, `rail_post_exec` keeps it.'
+    rationale: 'TERMLINK_IDENTITY_FILE outranks TERMLINK_AGENT_ID in termlink''s precedence, so injecting the project file would silently re-sign a session-scoped producer (e.g. chat-arc-broadcast run with TERMLINK_AGENT_ID) as the project.'
+    alternatives_rejected: ['unconditional override as in `do_rail post`.']
+  - decision: '2026-10-21 — repo-root scripts/ not hand-edited'
+    chose: 'leave `scripts/*.sh` (this repo''s own fw-upgrade-installed toolkit copy) to `fw upgrade`; it was already behind lib/templates/scripts (no T-3286 changes).'
+    rationale: 'it is an install surface managed by `fw upgrade` step 7b, not a source; the vendored mirror that `fw vendor self` manages (`.agentic-framework/`) is synced.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 102469 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [rail, gate, L-399]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 102469
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2913-in-repo-scripts-post-to-termlink-channel.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3838: lib/shell_write_scan.py does not treat 'truncate -s 0 <task file>' as a write
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:00:26Z
+# ============================================================================
+
+task_id: T-3838
+task_name: "lib/shell_write_scan.py does not treat 'truncate -s 0 <task file>' as a write"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T16:31:01Z
+completed: 2026-10-21T10:59:42Z
+duration_days: 17
+updates_count: 2
+first_commit: 2026-10-21T11:14:17+02:00
+last_commit: 2026-10-21T11:14:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  shell_write_scan default mode treats truncate operands as write targets (-s/-r/--size/--reference values skipped, clusters and abbreviations handled); regression bats; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked at HEAD: `truncate -s 0 <task file>` is (or is not) classified as a write by lib/shell_write_scan.py, evidence recorded below'
+  - 'If it reproduces: shell_write_scan.py classifies `truncate` (all size spellings) as a write to its file operands, with a regression test that fails without the fix'
+  - 'Existing shell_write_scan tests stay green; `bin/fw vendor self --check --task T-3838` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-3838-libshellwritescanpy-does-not-treat-trunc.md'
+  - 'tests/unit/t3838_write_scan_truncate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T11:14:17'
+    action: 'T-3838: shell_write_scan default mode treats truncate operands as write targets (-s/-r/--size/--reference values skipped, clusters and abbreviations handled); regression bats; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 24148 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24148
+  commits: 1
+  files_changed: 4
+  lines_added: 140
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3838-libshellwritescanpy-does-not-treat-trunc.md
+generated_by: context-agent-hybrid

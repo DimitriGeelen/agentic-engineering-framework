@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3154: fw doctor reports All agent scripts executable over a hardcoded seven-item list
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:11:37Z
+# ============================================================================
+
+task_id: T-3154
+task_name: "fw doctor reports All agent scripts executable over a hardcoded seven-item list"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-26T09:48:37Z
+completed: 2026-10-20T22:07:39Z
+duration_days: 55
+updates_count: 2
+first_commit: 2026-10-20T23:34:35+02:00
+last_commit: 2026-10-20T23:34:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor's agent-executable check enumerates entry scripts from disk and states its count (was a hardcoded 7-item list printing 'All'); govd.sh 644->755 surfaced by the honest check
+
+# Key outcomes
+outcomes:
+  - 'Doctor''s agent-executable check (bin/fw Check 7) enumerates the agent scripts from disk instead of a hardcoded 7-item list, and its OK line states how many scripts it checked'
+  - 'A non-executable agent script outside the old list (e.g. agents/designer/designer.sh at mode 644) makes doctor print `FAIL  Agent not executable: designer/designer.sh` (live proof: first run after the fix printed `FAIL  Agent not executable: govd/govd.sh`)'
+  - 'Regression bats test pins both legs (non-listed script at 644 → FAIL; all executable → OK with count) and is green; neighbouring doctor tests still green'
+  - '`bin/fw vendor self --check --task T-3154` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — which set doctor checks'
+    chose: 'agent entry scripts, `<name>/<name>.sh` plus task-create/create-task.sh, enumerated from disk.'
+    rationale: 'these are the scripts fw executes directly; 8 other agents/*/*.sh are deliberately 644 (sourced or `bash`-invoked), so "every .sh" would FAIL on correct files.'
+    alternatives_rejected: ['every agents/*/*.sh (false FAILs); git index mode 100755 (already covered by T-3317''s parity WARN, and unavailable where the vendored dir is not a git work tree).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/govd/govd.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/exec-bit-drift.sh'
+  - 'agents/govd/govd.sh'
+  - 'bin/fw'
+  - 'lib/exec-bit-drift.sh'
+  - '.tasks/active/T-3154-fw-doctor-reports-all-agent-scripts-exec.md'
+  - 'tests/unit/t3154_doctor_agent_entry_scripts.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:34:35'
+    action: 'T-3154: doctor''s agent-executable check enumerates entry scripts from disk and states its count (was a hardcoded 7-item list printing ''All''); govd.sh 644->755 surfaced by the honest check'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 79939 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [doctor, false-green, verdict-without-predicate]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 79939
+  commits: 1
+  files_changed: 8
+  lines_added: 167
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3154-fw-doctor-reports-all-agent-scripts-exec.md
+generated_by: context-agent-hybrid

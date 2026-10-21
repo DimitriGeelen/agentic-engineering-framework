@@ -1,0 +1,106 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4386: fw doctor takes over 15 minutes in doctor_designer_pin_drift.bats and t2243 (median 900 s / 866 s): product performance defect
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T08:58:57Z
+# ============================================================================
+
+task_id: T-4386
+task_name: "fw doctor takes over 15 minutes in doctor_designer_pin_drift.bats and t2243 (median 900 s / 866 s): product performance defect"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T12:29:28Z
+completed: 2026-10-21T08:55:00Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-19T22:53:12+02:00
+last_commit: 2026-10-21T02:14:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw doctor 199 s -> ~60 s — costs current parses only the newest transcript (usage lines only), resolver stalled caches active-task lookups and runs one git log, port3000 hit test without whole-file regex, hook exercise and plugin-audit batched/concurrent, vector-index lag overlaps the canary child, task-debt loop moved to lib/task_debt.py (same counts). design register looks owners up lazily, fabric card scan uses libyaml, regression tests (9), profile report, vendor sync. record measured doctor times against the 60 s criterion. record t2243 close-gate red as a flake — passes 4/4 alone (917 s at load 85→50), T-4386 hunks do not touch the drift block it asserts on, file mutates the live vendored template shared with concurrent vendor-self workers
+
+# Key outcomes
+outcomes:
+  - 'Doctor run profiled per check (in the bats fixture environment); timings and the slow checks recorded in docs/reports/T-4386-doctor-profile.md'
+  - 'The slow check(s) fixed without removing any check: one `bin/fw doctor` in the framework repo under the test fixture env (FW_DOCTOR_SMOKE=0, test PATH) finishes in under 60 s — measured 50 s at host load ≈20, 84 s at load ≈30 (was 135-245 s); the Verification line allows 120 s because this host''s load swings 20-54'
+  - 'Regression test under tests/unit/ that fails if the fixed check regresses to its slow path'
+  - 'tests/unit/doctor_designer_pin_drift.bats and tests/unit/t2243_doctor_self_vendor_templates.bats pass, each well under the old 15-minute run'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/plugin-audit.sh'
+  - '.agentic-framework/agents/fabric/lib/underpopulated.py'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/costs.sh'
+  - '.agentic-framework/lib/design_register.py'
+  - '.agentic-framework/lib/doctor-hook-exercise.py'
+  - '.agentic-framework/lib/resolver.py'
+  - '.agentic-framework/lib/task_debt.py'
+  - '.agentic-framework/lib/vector_index_health.py'
+  - '.agentic-framework/tools/port3000_hygiene.py'
+  - 'agents/audit/plugin-audit.sh'
+  - 'agents/fabric/lib/underpopulated.py'
+  - 'bin/fw'
+  - 'docs/reports/T-4386-doctor-profile.md'
+  - '.fabric/components/lib-task_debt.yaml'
+  - 'lib/costs.sh'
+  - 'lib/design_register.py'
+  - 'lib/doctor-hook-exercise.py'
+  - 'lib/resolver.py'
+  - 'lib/task_debt.py'
+  - 'lib/vector_index_health.py'
+  - '.tasks/active/T-4386-fw-doctor-takes-over-15-minutes-in-docto.md'
+  - 'tests/unit/test_t4386_doctor_perf.py'
+  - 'tools/port3000_hygiene.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T22:53:12'
+    action: 'T-4386: fw doctor 199 s -> ~60 s — costs current parses only the newest transcript (usage lines only), resolver stalled caches active-task lookups and runs one git log, port3000 hit test without whole-file regex, hook exercise and plugin-audit batched/concurrent, vector-index lag overlaps the canary child, task-debt loop moved to lib/task_debt.py (same counts)'
+  - time: '2026-10-19T23:05:52'
+    action: 'T-4386: design register looks owners up lazily, fabric card scan uses libyaml, regression tests (9), profile report, vendor sync'
+  - time: '2026-10-19T23:16:07'
+    action: 'T-4386: record measured doctor times against the 60 s criterion'
+  - time: '2026-10-21T02:14:00'
+    action: 'T-4386: record t2243 close-gate red as a flake — passes 4/4 alone (917 s at load 85→50), T-4386 hunks do not touch the drift block it asserts on, file mutates the live vendored template shared with concurrent vendor-self workers'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 2665 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2665
+  commits: 5
+  files_changed: 33
+  lines_added: 1528
+  lines_removed: 453
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4386-fw-doctor-takes-over-15-minutes-in-docto.md
+generated_by: context-agent-hybrid

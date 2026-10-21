@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4357: GH #100: fw doctor says `resolver-loop.timer is installed but inactive` on hosts where it is not installed (systemd 245)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T21:24:01Z
+# ============================================================================
+
+task_id: T-4357
+task_name: "GH #100: fw doctor says `resolver-loop.timer is installed but inactive` on hosts where it is not installed (systemd 245)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T23:06:06Z
+completed: 2026-10-20T21:22:41Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-20T22:18:56+02:00
+last_commit: 2026-10-20T22:49:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw doctor decides resolver-loop.timer presence from the unit listing, not list-unit-files' exit code (systemd 245 exits 0 on no match, GH #100); regression test. fabric cards for the T-4354/T-4357/T-4358/T-4361/T-4503 tests. close-prep — Evolution entries for T-4357/T-4358/T-4354/T-4361 (arc-021); [REVIEW] Human AC, Visual Verification and Recommendation for render-touching T-4361 (/config row) and T-4407 (/approvals sidecar error card)
+
+# Key outcomes
+outcomes:
+  - '`fw doctor`''s Autonomous Dispatch block decides "installed" from the unit name in `systemctl list-unit-files` output, not from its exit code (bin/fw)'
+  - 'With a systemctl that exits 0 and lists no unit (systemd 245 behaviour), doctor prints "resolver-loop.timer not installed on this host"'
+  - 'Controls: unit listed + inactive → "installed but inactive"; unit listed + active → LIVE; no systemctl → "not installed"'
+  - 'Regression test tests/unit/t4357_doctor_resolver_timer_presence.bats runs the real bin/fw block against a stub systemctl and fails without the fix; tests/unit/test_t4386_doctor_perf.py stays green'
+  - '`bin/fw vendor self --check --task T-4357` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'close-prep — Evolution entries for T-4357/T-4358/T-4354/T-4361 (arc-021); [REVIEW] Human AC, Visual Verification and Recommendation for render-touching T-4361 (/config row) and T-4407 (/approvals sidecar error card)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.fabric/components/tests-unit-t4357_doctor_resolver_timer_presence.yaml'
+  - '.fabric/components/tests-unit-t4358_doctor_turn_driver_interactive.yaml'
+  - '.fabric/components/tests-unit-t4361_boundary_home_paths.yaml'
+  - '.fabric/components/tests-unit-t4401_audit_live_repo_lint.yaml'
+  - '.fabric/components/tests-unit-t4503_refused_upgrade_no_skeleton.yaml'
+  - '.fabric/components/tests-unit-test_t4354_smoke_test_base_url.yaml'
+  - '.fabric/components/tools-audit-live-repo-lint.yaml'
+  - '.tasks/active/T-4354-gh-97-fw-doctor-watchtower-smoke-test-pr.md'
+  - '.tasks/active/T-4357-gh-100-fw-doctor-says-resolver-looptimer.md'
+  - '.tasks/active/T-4358-gh-101-fw-doctor-warns-turn-driver-is-no.md'
+  - '.tasks/active/T-4361-gh-104-project-boundary-gate-hard-codes-.md'
+  - '.tasks/active/T-4407-testoperatorfacingstderr-flags-approvals.md'
+  - 'tests/unit/t4357_doctor_resolver_timer_presence.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:18:56'
+    action: 'T-4357: fw doctor decides resolver-loop.timer presence from the unit listing, not list-unit-files'' exit code (systemd 245 exits 0 on no match, GH #100); regression test'
+  - time: '2026-10-20T22:32:59'
+    action: 'T-4357: fabric cards for the T-4354/T-4357/T-4358/T-4361/T-4503 tests'
+  - time: '2026-10-20T22:49:18'
+    action: 'T-4357: close-prep — Evolution entries for T-4357/T-4358/T-4354/T-4361 (arc-021); [REVIEW] Human AC, Visual Verification and Recommendation for render-touching T-4361 (/config row) and T-4407 (/approvals sidecar error card)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2776 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2776
+  commits: 3
+  files_changed: 15
+  lines_added: 404
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4357-gh-100-fw-doctor-says-resolver-looptimer.md
+generated_by: context-agent-hybrid

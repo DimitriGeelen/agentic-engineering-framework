@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4510: Read-only allowlist: GNU sed e command and s///e flag execute commands but are classed SAFE
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:01:39Z
+# ============================================================================
+
+task_id: T-4510
+task_name: "Read-only allowlist: GNU sed e command and s///e flag execute commands but are classed SAFE"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T20:19:23Z
+completed: 2026-10-20T21:59:55Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T23:51:05+02:00
+last_commit: 2026-10-20T23:51:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  read-only allowlist refuses GNU sed's e command and the e/w flags of s — options whitelisted (-f/--file and unknown/ambiguous long options fail closed), every -e/--expression script parsed command by command by shell_write_scan.sed_script_risk; t4510_sed_exec.bats (7 tests, both directions). tick vendor-check AC (clean after 18e8f70cd)
+
+# Key outcomes
+outcomes:
+  - '`sed ''e touch pwned'' F`, `sed ''1e touch pwned'' F`, `sed ''s/a/b/e'' F`, `sed -n ''s/a/b/ge'' F`, `sed -E ''s/a/b/e'' F`, `sed -e ''s/a/b/e'' F`, `sed --expression=''1e x'' F`, `sed ''/x/e'' F`, `sed ''1!e x'' F`, `sed ''s|a|b|e'' F`, `sed -e ''1{e x'' -e ''}'' F` (several -e scripts are joined by newlines, as GNU sed does), `sed -ne ''s/a/b/e'' F`, `sed --expr=''1e x'' F` (long-option abbreviation) and `sed -f P F` / `sed --file=P F` (script not visible) are gated by is_bash_safe_command'
+  - 'Data that contains `e` stays SAFE: `sed ''s/e/E/g'' F`, `sed ''/e/d'' F`, `sed ''y/e/E/'' F`, `sed ''1a text with e'' F`, `sed -n ''/re/p'' F`'
+  - 'Controls stay SAFE: `sed -n 1p F`, `sed -E ''s/(a)/\1/'' F`, `sed -n ''1,5p;$p'' F`, `git grep pattern`, `awk ''{print $1}'' F`'
+  - 'New bats test covers both directions; T-4509, T-4511, T-4512, T-4485, T-4367, T-4487, T-4499 and safe-commands suites stay green'
+  - '`bin/fw vendor self --check --task T-4510` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4510-read-only-allowlist-gnu-sed-e-command-an.md'
+  - 'tests/unit/t4510_sed_exec.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:51:05'
+    action: 'T-4510: read-only allowlist refuses GNU sed''s e command and the e/w flags of s — options whitelisted (-f/--file and unknown/ambiguous long options fail closed), every -e/--expression script parsed command by command by shell_write_scan.sed_script_risk; t4510_sed_exec.bats (7 tests, both directions)'
+  - time: '2026-10-20T23:51:45'
+    action: 'T-4510: tick vendor-check AC (clean after 18e8f70cd)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 100 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 100
+  commits: 2
+  files_changed: 6
+  lines_added: 575
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4510-read-only-allowlist-gnu-sed-e-command-an.md
+generated_by: context-agent-hybrid

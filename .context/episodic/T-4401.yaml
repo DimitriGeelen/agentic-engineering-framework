@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4401: tests/unit files that run a live sectioned audit in the real repo play a lock lottery: skip (no coverage) or pay the whole section
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T21:15:36Z
+# ============================================================================
+
+task_id: T-4401
+task_name: "tests/unit files that run a live sectioned audit in the real repo play a lock lottery: skip (no coverage) or pay the whole section"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T15:26:30Z
+completed: 2026-10-20T21:10:57Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-20T22:33:03+02:00
+last_commit: 2026-10-20T22:33:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit-lock lottery — audit.bats live calls run on a fixture project, t3443 control uses lockless --check, lint + test refuse sectioned audits against the real repo
+
+# Key outcomes
+outcomes:
+  - 'Every tests/unit file that ran a live sectioned audit (`audit.sh --section …` / `fw audit --section …`) against the real repo now runs it against an isolated fixture PROJECT_ROOT (private `.context/locks/audit.lock`) or the lockless `--check` path, so it can no longer skip on exit 75 — audit.bats (8 calls → fixture), t3443 control (→ `--check invariant-suite,dead-negation-lint`); the one exception, t3062 (measures this repo''s own pre-push cost), is marked `# live-audit-ok:` with its reason'
+  - 'A lint (`tools/audit-live-repo-lint.py`) flags any bats/pytest test under tests/unit that runs a sectioned audit with the real repo as PROJECT_ROOT; it reports clean on the fixed corpus (and flags all 9 calls in the pre-fix audit.bats + t3443)'
+  - 'A regression test proves the lint fires on a synthetic offender and stays quiet on a fixture-rooted call'
+  - 'Each converted test file passes with zero exit-75 skips'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'audit-lock lottery — audit.bats live calls run on a fixture project, t3443 control uses lockless --check, lint + test refuse sectioned audits against the real repo'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4401-testsunit-files-that-run-a-live-sectione.md'
+  - 'tests/unit/audit.bats'
+  - 'tests/unit/t3062_prepush_runtime.bats'
+  - 'tests/unit/t3443_audit_structure_framework_scope.bats'
+  - 'tests/unit/t4401_audit_live_repo_lint.bats'
+  - 'tools/audit-live-repo-lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:33:03'
+    action: 'T-4401: audit-lock lottery — audit.bats live calls run on a fixture project, t3443 control uses lockless --check, lint + test refuse sectioned audits against the real repo'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1784 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1784
+  commits: 1
+  files_changed: 6
+  lines_added: 378
+  lines_removed: 52
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4401-testsunit-files-that-run-a-live-sectione.md
+generated_by: context-agent-hybrid

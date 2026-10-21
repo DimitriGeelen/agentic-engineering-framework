@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3863: Verdict ledger row cannot be committed when the consumer gitignores .context/: fw reviewer judge writes the row, the worker's git add/commit fails (lib/verdict_ledger.py ~L1292), the judge prints only 'unknown - never committed', and from then on the pre-push verdict-ledger audit blocks EVERY push with no valid agent exit — git add -f the ledger paths (or init/upgrade re-include .context/reviews/), surface commit_error, and add a logged operator path to discard a row whose worker commit failed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:04:40Z
+# ============================================================================
+
+task_id: T-3863
+task_name: "Verdict ledger row cannot be committed when the consumer gitignores .context/: fw reviewer judge writes the row, the worker's git add/commit fails (lib/verdict_ledger.py ~L1292), the judge prints only 'unknown - never committed', and from then on the pre-push verdict-ledger audit blocks EVERY push with no valid agent exit — git add -f the ledger paths (or init/upgrade re-include .context/reviews/), surface commit_error, and add a logged operator path to discard a row whose worker commit failed"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T07:41:33Z
+completed: 2026-10-21T11:04:18Z
+duration_days: 16
+updates_count: 2
+first_commit: 2026-10-21T11:58:26+02:00
+last_commit: 2026-10-21T11:58:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  verdict commit failures journalled to commit-errors.jsonl and named in the uncommitted fault (judge + audit); operator-only 'verdict discard' removes a stranded uncommitted row (logged to discarded.jsonl); gitignored-.context commit confirmed fixed by T-4008; regression pytest; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduction at HEAD recorded: in a repo whose `.gitignore` has `/.context/*`, `_commit_rows` on the ledger paths either commits (fixed by T-4008''s `git add -f`) or fails — evidence written under ## RCA'
+  - 'A failed verdict commit is durable and surfaced: `_commit_rows` callers append `{verdict ids, task, dispatch_id, error}` to `.context/reviews/commit-errors.jsonl`, and the judge''s per-criterion `why` for an `uncommitted` row names the git error instead of only "never committed"'
+  - 'Logged operator path to discard an uncommitted row: `verdict_ledger.py discard <row-id> --reason "…"` removes ONLY an uncommitted (pending) row plus its `recorded.jsonl` journal entry, refuses a committed row, refuses under `CLAUDECODE=1` without `--i-am-human`, and appends the discarded row to `.context/reviews/discarded.jsonl`; afterwards `audit` no longer FAILs on it'
+  - 'Regression tests (pytest) cover: commit under `/.context/*` gitignore succeeds; commit-error surfaced in the uncommitted fault text; discard refuses committed row / agent without --i-am-human, and clears the audit FAIL'
+  - '`bin/fw vendor self --check --task T-3863` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'verdict commit failures journalled to commit-errors.jsonl and named in the uncommitted fault (judge + audit); operator-only ''verdict discard'' removes a stranded uncommitted row (logged to discarded.jsonl); gitignored-.context commit confirmed fixed by T-4008; regression pytest; vendor synced'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-3863-verdict-ledger-row-cannot-be-committed-w.md'
+  - 'tests/unit/test_t3863_verdict_commit_gitignored_context.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T11:58:26'
+    action: 'T-3863: verdict commit failures journalled to commit-errors.jsonl and named in the uncommitted fault (judge + audit); operator-only ''verdict discard'' removes a stranded uncommitted row (logged to discarded.jsonl); gitignored-.context commit confirmed fixed by T-4008; regression pytest; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 23242 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23242
+  commits: 1
+  files_changed: 4
+  lines_added: 326
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3863-verdict-ledger-row-cannot-be-committed-w.md
+generated_by: context-agent-hybrid

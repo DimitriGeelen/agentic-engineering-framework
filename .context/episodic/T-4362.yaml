@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4362: GH #105: A clone's bin/fw called by full path from inside a consumer project runs the project's vendored copy instead (upgrade reports 'Bare-from-consumer')
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T21:10:49Z
+# ============================================================================
+
+task_id: T-4362
+task_name: "GH #105: A clone's bin/fw called by full path from inside a consumer project runs the project's vendored copy instead (upgrade reports 'Bare-from-consumer')"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T23:09:22Z
+completed: 2026-10-20T21:07:41Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-20T22:36:49+02:00
+last_commit: 2026-10-20T23:01:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  GH #105 regression test (clone's bin/fw by full path from a consumer; inherited FRAMEWORK_ROOT case), RCA, ACs, verification; bin/fw fix landed in aa2972838. fabric cards for new tests
+
+# Key outcomes
+outcomes:
+  - 'Root cause of #105 localised to a file:line and confirmed with one reproduction (recorded in ## RCA)'
+  - '`<clone>/bin/fw upgrade` invoked by full path from inside a consumer that has a vendored `.agentic-framework/` resolves FRAMEWORK_ROOT to the clone and does not report "Bare-from-consumer"'
+  - 'Regression test under tests/unit/ reproduces the #105 scenario and is green (and fails without the fix, if a fix was needed)'
+  - '`bin/fw vendor self --check --task T-4362` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'GH #105 regression test (clone''s bin/fw by full path from a consumer; inherited FRAMEWORK_ROOT case), RCA, ACs, verification; bin/fw fix landed in aa2972838'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-t3160_cron_dry_run_does_not_write.yaml'
+  - '.fabric/components/tests-unit-t4362_clone_fw_full_path_from_consumer.yaml'
+  - '.fabric/components/tests-unit-test_t4514_evidence_immutable.yaml'
+  - '.tasks/active/T-4362-gh-105-a-clones-binfw-called-by-full-pat.md'
+  - 'tests/unit/t4362_clone_fw_full_path_from_consumer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:36:49'
+    action: 'T-4362: GH #105 regression test (clone''s bin/fw by full path from a consumer; inherited FRAMEWORK_ROOT case), RCA, ACs, verification; bin/fw fix landed in aa2972838'
+  - time: '2026-10-20T23:01:17'
+    action: 'T-4362: fabric cards for new tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2758 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2758
+  commits: 2
+  files_changed: 5
+  lines_added: 176
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4362-gh-105-a-clones-binfw-called-by-full-pat.md
+generated_by: context-agent-hybrid

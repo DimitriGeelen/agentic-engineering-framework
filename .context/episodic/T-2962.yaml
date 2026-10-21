@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2962: _KNOWN_EXT membership is audited by reference count, not by round-trip behaviour
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:12:41Z
+# ============================================================================
+
+task_id: T-2962
+task_name: "_KNOWN_EXT membership is audited by reference count, not by round-trip behaviour"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-12T23:12:56Z
+completed: 2026-10-20T22:12:13Z
+duration_days: 69
+updates_count: 2
+first_commit: 2026-10-21T00:05:04+02:00
+last_commit: 2026-10-21T00:05:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  _KNOWN_EXT membership pinned by behaviour — per-member, per-modelled-value mutate-and-round-trip probes (21 values, 9 members) + completeness pins to _KNOWN_EXT/_EXT_ATTRS/read sets; workflowMeta@version pinned as derived
+
+# Key outcomes
+outcomes:
+  - 'Reproduced at HEAD: no committed test exercises `_KNOWN_EXT` membership by behaviour (the T-2967 7/7 probe was ad hoc and never committed; `_KNOWN_EXT` has since grown to 9 members)'
+  - '`tests/unit/test_corpus_spec_roundtrip.py` carries a per-member, per-modelled-attribute mutate-and-round-trip test: for every `_KNOWN_EXT` member, changing each modelled value changes the emitted map, so a member whose handler is a no-op fails the test'
+  - 'A completeness test pins the probe table to `_KNOWN_EXT` itself (and `_KNOWN_EXT` to the union of the per-context read sets), so a new member without a behaviour probe fails'
+  - 'Neighbouring corpus_spec / corpus_lint tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2962-knownext-membership-is-audited-by-refere.md'
+  - 'tests/unit/test_corpus_spec_roundtrip.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T00:05:04'
+    action: 'T-2962: _KNOWN_EXT membership pinned by behaviour — per-member, per-modelled-value mutate-and-round-trip probes (21 values, 9 members) + completeness pins to _KNOWN_EXT/_EXT_ATTRS/read sets; workflowMeta@version pinned as derived'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 99299 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 99299
+  commits: 1
+  files_changed: 2
+  lines_added: 172
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2962-knownext-membership-is-audited-by-refere.md
+generated_by: context-agent-hybrid

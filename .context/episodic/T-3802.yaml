@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3802: fw reviewer judge panel seats leave TermLink registrations and live processes behind after the verdict row is committed (055: 12 leftover judge-t-163-r5-* seats) — tear down each seat, and test registration count before/after a judge run
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T00:13:32Z
+# ============================================================================
+
+task_id: T-3802
+task_name: "fw reviewer judge panel seats leave TermLink registrations and live processes behind after the verdict row is committed (055: 12 leftover judge-t-163-r5-* seats) — tear down each seat, and test registration count before/after a judge run"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T10:10:42Z
+completed: 2026-10-21T00:12:39Z
+duration_days: 17
+updates_count: 2
+first_commit: 2026-10-21T00:10:16+02:00
+last_commit: 2026-10-21T00:10:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  does not reproduce at HEAD — judge seats' TermLink sessions end with run.sh since T-4152 exec fix (3757b6917); 0/166 registered sessions are judge-* across 81 finalised judge workers incl. 2026-10-20 r5 panels; t4152 bats 8/8; evidence + RCA recorded
+
+# Key outcomes
+outcomes:
+  - 'Reproduction at HEAD checked: either the leak is shown to still occur (judge seat dispatch leaves its TermLink session registered / process alive after the verdict) or evidence that it no longer does is recorded under ## RCA — **does not reproduce** (evidence in ## RCA)'
+  - 'If it reproduces: each judge seat''s TermLink endpoint is torn down after `fw termlink wait` returns (finalised) — N/A: does not reproduce; the teardown already happens in the dispatcher every judge seat goes through (`agents/termlink/termlink.sh:1736-1741`, T-4152), so no judge-specific change is needed'
+  - 'Regression test asserts the registration count before/after a seat dispatch — already exists: `tests/unit/t4152_dispatch_endpoint_leak.bats` tests 2 and 4 (test 4 is the `--task-type review` path judge seats use; test 3 is the control proving the leak without `exec`); 8/8 green at HEAD'
+  - '`bin/fw vendor self --check --task T-3802` clean — no source touched (task file only)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'does not reproduce at HEAD — judge seats'' TermLink sessions end with run.sh since T-4152 exec fix (3757b6917); 0/166 registered sessions are judge-* across 81 finalised judge workers incl. 2026-10-20 r5 panels; t4152 bats 8/8; evidence + RCA recorded'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3802-fw-reviewer-judge-panel-seats-leave-term.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T00:10:16'
+    action: 'T-3802: does not reproduce at HEAD — judge seats'' TermLink sessions end with run.sh since T-4152 exec fix (3757b6917); 0/166 registered sessions are judge-* across 81 finalised judge workers incl. 2026-10-20 r5 panels; t4152 bats 8/8; evidence + RCA recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 23881 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23881
+  commits: 1
+  files_changed: 1
+  lines_added: 27
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3802-fw-reviewer-judge-panel-seats-leave-term.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3196: VERSION is incoherent across four sources and vendor self propagates a downgrade
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:08:05Z
+# ============================================================================
+
+task_id: T-3196
+task_name: "VERSION is incoherent across four sources and vendor self propagates a downgrade"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-27T08:46:12Z
+completed: 2026-10-20T22:07:19Z
+duration_days: 54
+updates_count: 2
+first_commit: 2026-10-20T23:55:00+02:00
+last_commit: 2026-10-20T23:55:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  does not reproduce at HEAD — VERSION coherent at 1.8.14 (root, HEAD, vendored, tag); fixed by T-3821 (fc5a2d74f) + T-3998; evidence, RCA, Verification recorded
+
+# Key outcomes
+outcomes:
+  - 'Reproduction check at HEAD recorded: root VERSION (working copy and HEAD), `.agentic-framework/VERSION`, and the latest release tag agree'
+  - 'The pre-push stamp no longer writes a tracked VERSION (the writer that moved VERSION backward), evidenced by the fixing task/commit'
+  - 'An existing regression test pins "tracked VERSION is not stamped" and passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'does not reproduce at HEAD — VERSION coherent at 1.8.14 (root, HEAD, vendored, tag); fixed by T-3821 (fc5a2d74f) + T-3998; evidence, RCA, Verification recorded'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3196-version-is-incoherent-across-four-source.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:55:00'
+    action: 'T-3196: does not reproduce at HEAD — VERSION coherent at 1.8.14 (root, HEAD, vendored, tag); fixed by T-3821 (fc5a2d74f) + T-3998; evidence, RCA, Verification recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 78561 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 78561
+  commits: 1
+  files_changed: 1
+  lines_added: 33
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3196-version-is-incoherent-across-four-source.md
+generated_by: context-agent-hybrid

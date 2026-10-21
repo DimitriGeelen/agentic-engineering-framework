@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2961: VERSION third field is a distance, not a patch — T-2925 GO never got a build slice
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:12:10Z
+# ============================================================================
+
+task_id: T-2961
+task_name: "VERSION third field is a distance, not a patch — T-2925 GO never got a build slice"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-12T23:12:00Z
+completed: 2026-10-20T22:11:44Z
+duration_days: 69
+updates_count: 2
+first_commit: 2026-10-21T00:05:13+02:00
+last_commit: 2026-10-21T00:05:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-push VERSION stamp keeps the tag's patch — X.Y.Z+N.gSHA (T-4055 grammar), not <major.minor>.<distance>; regression bats t2961, T-3821 control updated; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Defect re-checked at HEAD: the pre-push VERSION stamp (`agents/git/lib/hooks.sh:1470-1471`, untracked-VERSION branch) still composed `<major>.<minor>.<distance>` from `git describe`, discarding the tag''s patch'
+  - 'The stamp writes the same grammar as `bin/fw _derive_version` (T-4055): `vX.Y.Z-N-gSHA` → `X.Y.Z+N.gSHA`; an exact tag stays `X.Y.Z`'
+  - 'Regression bats `tests/unit/t2961_prepush_version_stamp.bats` runs the shipped stamp block in a temp repo with an untracked VERSION and asserts the stamped value keeps the patch (3 of 4 tests fail against HEAD''s hooks.sh; all 4 pass with the fix); the T-3821 control test that pinned the old `1.0.4` form now expects `1.0.0+4.g<sha>`'
+  - '`bin/fw vendor self --check --task T-2961` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - 'agents/git/lib/hooks.sh'
+  - '.tasks/active/T-2961-version-third-field-is-a-distance-not-a-.md'
+  - 'tests/unit/t2961_prepush_version_stamp.bats'
+  - 'tests/unit/t3821_version_single_writer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T00:05:13'
+    action: 'T-2961: pre-push VERSION stamp keeps the tag''s patch — X.Y.Z+N.gSHA (T-4055 grammar), not <major.minor>.<distance>; regression bats t2961, T-3821 control updated; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 99299 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 99299
+  commits: 1
+  files_changed: 5
+  lines_added: 104
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2961-version-third-field-is-a-distance-not-a-.md
+generated_by: context-agent-hybrid

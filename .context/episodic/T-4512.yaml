@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4512: Read-only allowlist: option checks match raw words, so quoted -'exec' (find) and -'o' (curl) pass as SAFE
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T21:52:37Z
+# ============================================================================
+
+task_id: T-4512
+task_name: "Read-only allowlist: option checks match raw words, so quoted -'exec' (find) and -'o' (curl) pass as SAFE"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T20:21:30Z
+completed: 2026-10-20T21:51:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-20T22:42:49+02:00
+last_commit: 2026-10-20T22:42:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  option checks read the program's argv through one dequoting tokenizer (option_words); find, curl/wget, git branch/tag and sed/sort no longer miss quoted or brace-built options; regression test
+
+# Key outcomes
+outcomes:
+  - '`find . -''exec'' touch {} \;`, `find . "-exec" …`, `find . -e\xec …`, `find . $''-exec'' …` and `find . -{exec,name} …` are gated (not SAFE) by is_bash_safe_command'
+  - '`curl -''o'' F URL`, `curl "-o" F URL`, `curl $''-o'' F URL` and `curl -{o,s} F URL` are gated'
+  - 'Option checks route through one shared dequoting tokenizer (reusing the T-4485 git word-dequoter), which refuses what it cannot resolve'
+  - 'Controls stay SAFE: `find . -name ''*.md''`, `curl -s URL`, `git grep pattern`, `awk ''{print $1}'' F`, `sed -n 1p F`'
+  - 'New bats test covers both directions; T-4485, T-4367, T-4487, T-4499 and safe-commands suites stay green'
+  - '`bin/fw vendor self --check --task T-4512` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.fabric/components/tests-unit-t4512_option_check_dequote.yaml'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4512-read-only-allowlist-option-checks-match-.md'
+  - 'tests/unit/t4512_option_check_dequote.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:42:49'
+    action: 'T-4512: option checks read the program''s argv through one dequoting tokenizer (option_words); find, curl/wget, git branch/tag and sed/sort no longer miss quoted or brace-built options; regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 90 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 90
+  commits: 1
+  files_changed: 7
+  lines_added: 448
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4512-read-only-allowlist-option-checks-match-.md
+generated_by: context-agent-hybrid

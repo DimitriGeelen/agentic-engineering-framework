@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4518: corpus_spec carries unknown child elements of aef:io (and other aef: extension elements) verbatim through derive/generate, or refuses naming them
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:10:23Z
+# ============================================================================
+
+task_id: T-4518
+task_name: "corpus_spec carries unknown child elements of aef:io (and other aef: extension elements) verbatim through derive/generate, or refuses naming them"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-20T21:46:13Z
+completed: 2026-10-20T22:09:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-21T00:01:29+02:00
+last_commit: 2026-10-21T00:01:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  corpus_spec carries unknown aef: extension content verbatim or refuses naming it — unmodelled attrs on structured elements ride ext_attrs, process/lane ext_raw added, known names in non-reading contexts ride ext_raw, children/text/ns-attrs/repeats inside structured elements and text/comments in aef:ioMapping refused; regression test (13 cases). fabric card for regression test
+
+# Key outcomes
+outcomes:
+  - 'Observed behaviour of parse_map/emit_map today on unknown children (and unknown attributes/text) inside known aef: extension elements is written into ## Context from a fixture run'
+  - 'Unknown content inside a structured aef: extension element (uid, position, eventDef, link, meta, workflowMeta, laneMeta, callRef) round-trips verbatim (namespace, attributes, text, order) through derive → generate, or parse refuses naming the element; nothing is dropped silently'
+  - 'aef:ioMapping with an unknown child is refused naming the element (already true; pinned by a test), and a nested unknown child inside an unknown aef: extension element round-trips verbatim'
+  - 'Regression test tests/unit/test_t4518_ext_unknown_children.py with a nested unknown child fails before the fix and passes after; neighbouring corpus_spec tests stay green'
+  - '`bin/fw vendor self --check --task T-4518` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — carry vs refuse for unmodelled attributes'
+    chose: 'carry plain attributes verbatim (`ext_attrs`); refuse children, text and namespaced attributes inside structured elements.'
+    rationale: 'a first cut refused every unmodelled attribute and broke 23 committed maps (designer `uuid=`), so carrying them is both possible and needed. Children inside a structured element have no slot that keeps the element''s modelled fields editable.'
+    alternatives_rejected: ['emitting the whole structured element from a raw copy (a later spec edit to e.g. `pos` would be silently overridden by the raw copy).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/corpus_spec.py'
+  - '.fabric/components/tests-unit-test_t4518_ext_unknown_children.yaml'
+  - '.tasks/active/T-4518-corpusspec-carries-unknown-child-element.md'
+  - 'tests/unit/test_t4518_ext_unknown_children.py'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T00:01:29'
+    action: 'T-4518: corpus_spec carries unknown aef: extension content verbatim or refuses naming it — unmodelled attrs on structured elements ride ext_attrs, process/lane ext_raw added, known names in non-reading contexts ride ext_raw, children/text/ns-attrs/repeats inside structured elements and text/comments in aef:ioMapping refused; regression test (13 cases)'
+  - time: '2026-10-21T00:01:41'
+    action: 'T-4518: fabric card for regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23
+  commits: 2
+  files_changed: 5
+  lines_added: 486
+  lines_removed: 60
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4518-corpusspec-carries-unknown-child-element.md
+generated_by: context-agent-hybrid

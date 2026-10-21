@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3866: fw notify has never delivered on consumers using the skills-manager dispatcher: lib/notify.sh runs alert_dispatcher.py as a SCRIPT but it uses a relative import (ImportError), the call is backgrounded with 2>/dev/null, and fw notify status/setup only check the file exists — invoke as a module from the package root, log stderr, make fw notify test foreground with the dispatcher exit code, doctor WARN when a dry import fails
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T10:59:30Z
+# ============================================================================
+
+task_id: T-3866
+task_name: "fw notify has never delivered on consumers using the skills-manager dispatcher: lib/notify.sh runs alert_dispatcher.py as a SCRIPT but it uses a relative import (ImportError), the call is backgrounded with 2>/dev/null, and fw notify status/setup only check the file exists — invoke as a module from the package root, log stderr, make fw notify test foreground with the dispatcher exit code, doctor WARN when a dry import fails"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T08:28:26Z
+completed: 2026-10-21T10:57:24Z
+duration_days: 16
+updates_count: 2
+first_commit: 2026-10-21T11:01:17+02:00
+last_commit: 2026-10-21T11:01:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw notify runs the skills-manager dispatcher as a package module via lib/notify_dispatch.py (dispatch_alert API; script mode hit a relative-import ImportError and this host's dispatcher has no __main__), background stderr to .context/working/notify.log, foreground fw_notify_send + fw notify test returns the dispatcher exit code, status/setup report a dry import, doctor WARNs when enabled and not importable; sidecar waiting push uses the same helper; regression bats; vendor synced. fabric card for lib/notify_dispatch.py
+
+# Key outcomes
+outcomes:
+  - 'Reproduced at HEAD: `lib/notify.sh` ran `python3 <dispatcher>.py` as a script; the skills-manager dispatcher on this host (`/opt/150-skills-manager/skills/alerts/alert_dispatcher.py:15`) opens with `from .alert_config import …` (relative import → ImportError as a script) and has NO `__main__` block, so even `python3 -m` would import and exit 0 sending nothing. 999 itself is affected.'
+  - 'New `lib/notify_dispatch.py` invokes the dispatcher as a package module (sys.path = first ancestor without `__init__.py`, module name derived from the path) and calls its `dispatch_alert()` API; exit 0 = dispatched or deduplicated, non-zero + stderr reason otherwise; `check` subcommand does a dry import'
+  - '`fw_notify` stays fire-and-forget but appends dispatcher stderr to `.context/working/notify.log` instead of `/dev/null`; new foreground `fw_notify_send` returns the dispatcher''s exit code'
+  - '`fw notify test` runs in the foreground and fails (exit 1, reason shown) when the dispatcher fails; `fw notify status`/`setup` report the dry-import result, not just file existence'
+  - '`fw doctor` WARNs when notifications are enabled and the dry import fails (`fw_notify_doctor_check` in lib/notify.sh)'
+  - 'Sidecar waiting-push (`lib/sidecar/waiting.py:default_notifier`) — same script-mode defect — routes through the same helper'
+  - 'Regression tests (`tests/unit/lib_notify.bats`) use a fixture package dispatcher with a relative import: fail at the old script invocation, pass now; existing notify + sidecar waiting tests green'
+  - '`bin/fw vendor self --check --task T-3866` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw notify runs the skills-manager dispatcher as a package module via lib/notify_dispatch.py (dispatch_alert API; script mode hit a relative-import ImportError and this host''s dispatcher has no __main__), background stderr to .context/working/notify.log, foreground fw_notify_send + fw notify test returns the dispatcher exit code, status/setup report a dry import, doctor WARNs when enabled and not importable; sidecar waiting push uses the same helper; regression bats; vendor synced'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/notify_dispatch.py'
+  - '.agentic-framework/lib/notify.sh'
+  - '.agentic-framework/lib/sidecar/waiting.py'
+  - 'bin/fw'
+  - '.fabric/components/lib-notify_dispatch.yaml'
+  - 'lib/notify_dispatch.py'
+  - 'lib/notify.sh'
+  - 'lib/sidecar/waiting.py'
+  - '.tasks/active/T-3866-fw-notify-has-never-delivered-on-consume.md'
+  - '.tasks/active/T-4520-shared-worker-contract-the-single-confor.md'
+  - 'tests/conformance/worker-contract/check_vectors.py'
+  - 'tests/conformance/worker-contract/README.md'
+  - 'tests/conformance/worker-contract/run_local.py'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+  - 'tests/unit/lib_notify.bats'
+  - 'tests/unit/test_worker_contract_vectors.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T11:01:17'
+    action: 'T-3866: fw notify runs the skills-manager dispatcher as a package module via lib/notify_dispatch.py (dispatch_alert API; script mode hit a relative-import ImportError and this host''s dispatcher has no __main__), background stderr to .context/working/notify.log, foreground fw_notify_send + fw notify test returns the dispatcher exit code, status/setup report a dry import, doctor WARNs when enabled and not importable; sidecar waiting push uses the same helper; regression bats; vendor synced'
+  - time: '2026-10-21T11:01:50'
+    action: 'T-3866: fabric card for lib/notify_dispatch.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 23188 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23188
+  commits: 2
+  files_changed: 17
+  lines_added: 554
+  lines_removed: 2661
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3866-fw-notify-has-never-delivered-on-consume.md
+generated_by: context-agent-hybrid

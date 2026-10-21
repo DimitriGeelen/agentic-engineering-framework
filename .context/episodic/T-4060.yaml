@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4060: Invariant 'fw test lint actually reports a silent-skip section' fails the pre-push audit under load (full fw test lint, 175 s alone, under a 600 s timeout) — blocked pushes twice on 2026-10-11
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T10:52:42Z
+# ============================================================================
+
+task_id: T-4060
+task_name: "Invariant 'fw test lint actually reports a silent-skip section' fails the pre-push audit under load (full fw test lint, 175 s alone, under a 600 s timeout) — blocked pushes twice on 2026-10-11"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T17:55:49Z
+completed: 2026-10-21T10:51:59Z
+duration_days: 10
+updates_count: 2
+first_commit: 2026-10-21T12:43:41+02:00
+last_commit: 2026-10-21T12:43:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  no-repro at HEAD — fixed by T-4375 (f66df8ac7, shellcheck stubbed in the wiring leg); leg 5.1 s at load 181 vs 600 s timeout; evidence, RCA, ACs and Verification recorded
+
+# Key outcomes
+outcomes:
+  - 'Reproduction at HEAD measured: wall time of the leg "fw test lint actually reports a silent-skip section" recorded in ## RCA (post-T-4375 shellcheck stub) — 5.1 s at load average 181'
+  - 'No-repro established with evidence: last recorded failure predates the T-4375 fix commit (f66df8ac7); no code change made under this task (none needed)'
+  - 'tests/lint/bats-silent-skip.bats passes in full (17/17) with zero skips'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'no-repro at HEAD — fixed by T-4375 (f66df8ac7, shellcheck stubbed in the wiring leg); leg 5.1 s at load 181 vs 600 s timeout; evidence, RCA, ACs and Verification recorded'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4060-invariant-fw-test-lint-actually-reports-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T12:43:41'
+    action: 'T-4060: no-repro at HEAD — fixed by T-4375 (f66df8ac7, shellcheck stubbed in the wiring leg); leg 5.1 s at load 181 vs 600 s timeout; evidence, RCA, ACs and Verification recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13976 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, tests, flaky]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 13976
+  commits: 1
+  files_changed: 1
+  lines_added: 42
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4060-invariant-fw-test-lint-actually-reports-.md
+generated_by: context-agent-hybrid

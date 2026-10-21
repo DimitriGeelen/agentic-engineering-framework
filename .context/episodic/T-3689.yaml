@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3689: arc-011 sidecar S-CONSUMER: every vendored consumer gets the full sidecar (process, hooks, tick, cron) via fw init/fw upgrade, proven by fw sidecar e2e run from INSIDE a vendored consumer in CI
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T11:19:34Z
+# ============================================================================
+
+task_id: T-3689
+task_name: "arc-011 sidecar S-CONSUMER: every vendored consumer gets the full sidecar (process, hooks, tick, cron) via fw init/fw upgrade, proven by fw sidecar e2e run from INSIDE a vendored consumer in CI"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T23:02:38Z
+completed: 2026-10-21T11:19:01Z
+duration_days: 20
+updates_count: 3
+first_commit: 2026-10-21T09:18:11+02:00
+last_commit: 2026-10-21T11:15:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pin the full sidecar from inside a vendored consumer — fw init consumer under env -i: hooks wired via consumer launcher and runnable, sidecar-sweep-5m seeded, supervisor/watcher(--tick)/receiver running vendored lib/sidecar with state in consumer .context, vendored fw sidecar e2e refuses at preflight (exit 2, named reason); delivery already on HEAD (T-3673, T-3671, init hook template) so no source change; live-e2e-in-CI and consumer keep-alive left as operator options. re-verified — T-3689 bats 1/1, file 5/5, lint + vendor check clean; one intermittent fw init exit 2 noted (output discarded by helper)
+
+# Key outcomes
+outcomes:
+  - 'HEAD re-check recorded in ## Context: what already reaches a vendored consumer (hooks, sweep cron, whoami) and what does not'
+  - 'Regression test in tests/unit/upgrade_fresh_machine_simulation_vendored.bats builds a real `fw init` vendored consumer and asserts, from INSIDE it under env -i: all five sidecar hook entries (autostart ×2 startup+resume, inbox, receiver-adapter, receiver-ready) are wired in .claude/settings.json through the consumer''s own launcher; each hook runs without error; sidecar-sweep-5m is in its cron registry; supervisor, watcher (--tick) and receiver come up running the consumer''s vendored lib/sidecar code with state under the consumer''s .context; `fw sidecar e2e` runs the consumer''s vendored CLI and refuses at preflight (no termlink on PATH) with exit 2 (lib/sidecar_cli.py:615) and a named reason, not a traceback'
+  - 'Open items needing an operator decision (live e2e in CI needs a hub + paid worker; keep-alive cron on consumer-only hosts) written as options in ## Recommendation'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3689-arc-011-sidecar-s-consumer-every-vendore.md'
+  - 'tests/unit/upgrade_fresh_machine_simulation_vendored.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T09:18:11'
+    action: 'T-3689: pin the full sidecar from inside a vendored consumer — fw init consumer under env -i: hooks wired via consumer launcher and runnable, sidecar-sweep-5m seeded, supervisor/watcher(--tick)/receiver running vendored lib/sidecar with state in consumer .context, vendored fw sidecar e2e refuses at preflight (exit 2, named reason); delivery already on HEAD (T-3673, T-3671, init hook template) so no source change; live-e2e-in-CI and consumer keep-alive left as operator options'
+  - time: '2026-10-21T11:15:02'
+    action: 'T-3689: re-verified — T-3689 bats 1/1, file 5/5, lint + vendor check clean; one intermittent fw init exit 2 noted (output discarded by helper)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 28096 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [sidecar, arc-011, design-conformance, T-3682]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 28096
+  commits: 2
+  files_changed: 2
+  lines_added: 149
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3689-arc-011-sidecar-s-consumer-every-vendore.md
+generated_by: context-agent-hybrid

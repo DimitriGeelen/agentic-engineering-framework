@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3709: Dispatch route cache silently picks haiku for build work: _route_cache_query_best_model ranks by close-gate outcomes a worker can self-satisfy; every 2026-10-02 sidecar/gate dispatch ran on haiku and two closed falsely
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T21:51:31Z
+# ============================================================================
+
+task_id: T-3709
+task_name: "Dispatch route cache silently picks haiku for build work: _route_cache_query_best_model ranks by close-gate outcomes a worker can self-satisfy; every 2026-10-02 sidecar/gate dispatch ran on haiku and two closed falsely"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T23:47:50Z
+completed: 2026-10-20T21:50:56Z
+duration_days: 19
+updates_count: 2
+first_commit: 2026-10-20T23:07:20+02:00
+last_commit: 2026-10-20T23:07:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  build-class dispatches no longer take their model from the route cache (config, then opus); dispatch prints the resolved model + source; regression test. fabric card for regression test
+
+# Key outcomes
+outcomes:
+  - 'Defect re-checked at HEAD before the fix: `_resolve_dispatch_model_and_fallback "" build` returns the route cache''s success-rate winner (haiku in a seeded cache), ahead of config — reproduces (`haiku|true|route_cache`, 2026-10-20)'
+  - 'Build-class task types (build, design, specification, refactor) never take their model from the route cache: resolution is explicit → DISPATCH_MODEL_FOR_<TYPE> → DISPATCH_MODEL_DEFAULT → `opus` (source `strongest-default`)'
+  - 'Non-build task types keep the T-1669 route-cache-first behaviour (existing tests stay green; the two tests that pinned haiku-for-build moved to task type `test`)'
+  - '`fw termlink dispatch` prints the resolved model and its source to stderr at dispatch time'
+  - 'Regression test `tests/unit/test_t3709_build_model_routing.py` fails without the fix (6 failed, 1 passed) and passes with it (7/7); neighbouring route-cache / dispatch-task-type tests green (89 passed, 1 pre-existing T-1650 skip)'
+  - '`bin/fw vendor self --check --task T-3709` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - 'agents/termlink/termlink.sh'
+  - '.fabric/components/tests-unit-test_t3709_build_model_routing.yaml'
+  - '.tasks/active/T-3709-dispatch-route-cache-silently-picks-haik.md'
+  - 'tests/unit/test_route_cache_record.py'
+  - 'tests/unit/test_route_cache_resolve.py'
+  - 'tests/unit/test_t3709_build_model_routing.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T23:07:20'
+    action: 'T-3709: build-class dispatches no longer take their model from the route cache (config, then opus); dispatch prints the resolved model + source; regression test'
+  - time: '2026-10-20T23:07:41'
+    action: 'T-3709: fabric card for regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 27243 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, dispatch, model-routing, false-completion]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 27243
+  commits: 2
+  files_changed: 7
+  lines_added: 167
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3709-dispatch-route-cache-silently-picks-haik.md
+generated_by: context-agent-hybrid

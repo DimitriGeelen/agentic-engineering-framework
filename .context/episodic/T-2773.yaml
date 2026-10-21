@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2773: stale 'Read-only — live weight sliders ship in T-1929' copy still rendered on /bvp
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-20T22:11:40Z
+# ============================================================================
+
+task_id: T-2773
+task_name: "stale 'Read-only — live weight sliders ship in T-1929' copy still rendered on /bvp"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-03T17:21:55Z
+completed: 2026-10-20T22:11:13Z
+duration_days: 78
+updates_count: 2
+first_commit: 2026-10-21T00:04:14+02:00
+last_commit: 2026-10-21T00:04:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  does not reproduce as UI copy — stale string is T-1971/T-2773 task titles rendered as /bvp data rows (pages 9/11); copy removed by 33d35d5d4; evidence, RCA, options for T-1971's page-wide grep recorded
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked at HEAD: rendered /bvp inspected for both strings, source of the stale string located (or its absence recorded with evidence)'
+  - 'Rendered /bvp contains "Drag a slider below to preview re-ranking" and does NOT contain "Read-only — live weight sliders ship in T-1929" (page 1, the URL T-1971''s line fetches; see RCA for why this holds only because of pagination)'
+  - 'If a fix was needed: regression test pins the absence of the stale string; otherwise the fixing task/commit is recorded (no UI fix needed: 33d35d5d4 / T-1971 removed the copy from web/ on 2026-05-21; remaining occurrences are task-title data — see RCA)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2773-stale-read-only--live-weight-sliders-shi.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T00:04:14'
+    action: 'T-2773: does not reproduce as UI copy — stale string is T-1971/T-2773 task titles rendered as /bvp data rows (pages 9/11); copy removed by 33d35d5d4; evidence, RCA, options for T-1971''s page-wide grep recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 112609 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 112609
+  commits: 1
+  files_changed: 1
+  lines_added: 63
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2773-stale-read-only--live-weight-sliders-shi.md
+generated_by: context-agent-hybrid

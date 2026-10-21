@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2680: silent-zero store-grep detector (T-2679 Slice 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T00:06:01Z
+# ============================================================================
+
+task_id: T-2680
+task_name: "silent-zero store-grep detector (T-2679 Slice 1)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-29T16:40:31Z
+completed: 2026-10-21T00:04:20Z
+duration_days: 84
+updates_count: 2
+first_commit: 2026-10-21T00:10:24+02:00
+last_commit: 2026-10-21T02:04:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  silent-zero store-grep detector — lib/silent_zero_scan.py (fixed-indent YAML-key greps on stores + zero-fallback counts on .context/), fw audit check silent-zero-store-greps (structure, WARN; 16 live sites incl. 2 already dead: harvest.sh practices, audit.sh:8295 patterns count), reviewer pattern silent-zero-store-grep on Verification lines + catalogue; 19 pytest pin T-2676/T-2677 verbatim shapes and tolerant negatives; vendor synced. fabric cards for new tests and helpers
+
+# Key outcomes
+outcomes:
+  - 'Detector module `lib/silent_zero_scan.py` flags (a) fixed-indent greps (`^` + 2+ literal spaces + YAML key) against a YAML store (a `.context/` path, a `*.yaml` literal, or a variable resolving to / named as one), and (b) zero-fallback counts (`grep -c … || echo 0` / `|| n=0`) against a `.context/` store; prints `file:line: <rule>: <snippet>` and exits 0 (findings are advisory)'
+  - 'Detector does NOT flag indent-tolerant greps (`^[[:space:]]*`, `^ *`, `^ +`, `^\s*`), stdin greps, comments, nor greps of non-store files'
+  - '`fw audit` (structure section, check id `silent-zero-store-greps`) emits one summarised WARN with count + first 3 findings, and a PASS line when none are found'
+  - 'Reviewer static scan exposes the same rules as pattern `silent-zero-store-grep` over the task''s `## Verification` lines (lie_severity partial → CONCERN, not FAIL), catalogued in `policy/anti-patterns.yaml`'
+  - 'Regression tests `tests/unit/test_silent_zero_scan.py` cover both rules, the tolerant-grep negatives, and the T-2676/T-2677 verbatim shapes; all pass (19 passed)'
+  - '`bin/fw vendor self --check --task T-2680` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'silent-zero store-grep detector — lib/silent_zero_scan.py (fixed-indent YAML-key greps on stores + zero-fallback counts on .context/), fw audit check silent-zero-store-greps (structure, WARN; 16 live sites incl. 2 already dead: harvest.sh practices, audit.sh:8295 patterns count), reviewer pattern silent-zero-store-grep on Verification lines + catalogue; 19 pytest pin T-2676/T-2677 verbatim shapes and tolerant negatives; vendor synced'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - '.agentic-framework/lib/silent_zero_scan.py'
+  - '.agentic-framework/policy/anti-patterns.yaml'
+  - 'agents/audit/audit.sh'
+  - '.fabric/components/lib-templates-scripts-rail-post.yaml'
+  - 'lib/reviewer/static_scan.py'
+  - 'lib/silent_zero_scan.py'
+  - 'policy/anti-patterns.yaml'
+  - '.tasks/active/T-2680-silent-zero-store-grep-detector-t-2679-s.md'
+  - 'tests/unit/test_silent_zero_scan.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T00:10:24'
+    action: 'T-2680: silent-zero store-grep detector — lib/silent_zero_scan.py (fixed-indent YAML-key greps on stores + zero-fallback counts on .context/), fw audit check silent-zero-store-greps (structure, WARN; 16 live sites incl. 2 already dead: harvest.sh practices, audit.sh:8295 patterns count), reviewer pattern silent-zero-store-grep on Verification lines + catalogue; 19 pytest pin T-2676/T-2677 verbatim shapes and tolerant negatives; vendor synced'
+  - time: '2026-10-21T02:04:13'
+    action: 'T-2680: fabric cards for new tests and helpers'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 119963 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 119963
+  commits: 2
+  files_changed: 11
+  lines_added: 869
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2680-silent-zero-store-grep-detector-t-2679-s.md
+generated_by: context-agent-hybrid

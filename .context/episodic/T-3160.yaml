@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3160: fw cron install --dry-run writes the git-tracked crontab source before printing 'no changes made
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-21T00:17:51Z
+# ============================================================================
+
+task_id: T-3160
+task_name: "fw cron install --dry-run writes the git-tracked crontab source before printing 'no changes made"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-26T12:08:35Z
+completed: 2026-10-21T00:11:59Z
+duration_days: 56
+updates_count: 2
+first_commit: 2026-10-20T22:49:44+02:00
+last_commit: 2026-10-20T22:49:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw cron install --dry-run renders into a scratch file (FW_CRON_GENERATE_OUT) instead of rewriting the tracked crontab source; regression bats; --dry-run survey of 7 commands
+
+# Key outcomes
+outcomes:
+  - '`fw cron install --dry-run` leaves `$PROJECT_ROOT/.context/cron/agentic-audit.crontab` untouched — same md5 AND same mtime — when the on-disk source differs from what the registry would generate'
+  - 'The diff `--dry-run` prints is unchanged in content: registry-derived text compared against the deployed target, rendered by the same `fw cron generate` into a scratch file (`FW_CRON_GENERATE_OUT`) rather than into the tracked source — see Decisions for why not `lib/cron_dry_run.py`'
+  - '`fw cron install` without `--dry-run` still generates, diffs and installs exactly as before (in-sync short-circuit, new-install preview, sudo degradation all preserved)'
+  - 'Regression test `tests/unit/t3160_cron_dry_run_does_not_write.bats` pins: mtime+md5 unchanged after `--dry-run`, diff still printed, non-dry-run still writes'
+  - 'Every other `fw` subcommand advertising `--dry-run` is surveyed for the same shape (write reached before the flag is honoured) and the result recorded in `## Decisions` — `fw vendor`, `fw upgrade`, `fw harvest`, `fw triage route`, `fw integrate run`, `fw task archive-eligible`, `fw mcp reap`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-20 — dry-run comparand: redirect the real generator, not lib/cron_dry_run.py'
+    chose: '`install --dry-run` runs the same `fw cron generate` with `FW_CRON_GENERATE_OUT=<mktemp>`.'
+    rationale: '`lib/cron_dry_run.py` skips generate''s refusals (T-3835 temp-fw path, T-3171 missing/duplicate id) and is always called with `$FRAMEWORK_ROOT/bin/fw`, while generate prefers a consumer''s `.agentic-framework/bin/fw`. In a consumer its text would differ from what install then writes, so the dry-run diff would be wrong in a new way. Redirecting the write target keeps one generator and the exact text.'
+    alternatives_rejected: ['`lib/cron_dry_run.py` as comparand (above); back up and restore the source (still writes the tracked file, mtime changes, unsafe on interrupt).']
+  - decision: '2026-10-20 — cross-command `--dry-run` survey (AC 5)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-3160-fw-cron-install---dry-run-writes-the-git.md'
+  - 'tests/unit/t3160_cron_dry_run_does_not_write.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:49:44'
+    action: 'T-3160: fw cron install --dry-run renders into a scratch file (FW_CRON_GENERATE_OUT) instead of rewriting the tracked crontab source; regression bats; --dry-run survey of 7 commands'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 79923 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cron, dry-run, inbound-report, 001-cashweb]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 79923
+  commits: 1
+  files_changed: 4
+  lines_added: 164
+  lines_removed: 30
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3160-fw-cron-install---dry-run-writes-the-git.md
+generated_by: context-agent-hybrid
