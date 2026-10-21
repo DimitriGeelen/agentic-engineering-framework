@@ -548,7 +548,8 @@ def mtime_cached_get(
 
 _TASK_REF_RE_SHARED = re_mod.compile(r"(?<![\w/-])(T-\d{3,5})(?![\w/-])")
 _BARE_URL_RE_SHARED = re_mod.compile(r"(?<![\(\[\"'`])(https?://[^\s<>'\"`)\]]+)")
-_CODE_URL_HTML_RE_SHARED = re_mod.compile(r"<code>(https?://[^<\s]+?)</code>")
+# T-4290: no quotes — the match goes into href="…" and markdown2 leaves quotes raw in code.
+_CODE_URL_HTML_RE_SHARED = re_mod.compile(r"<code>(https?://[^<\s\"']+?)</code>")
 
 # T-1764: single source of truth for "viewable artefact paths".
 # Both the auto-linker (T-1722) and the /file/ route (T-632) consult these.

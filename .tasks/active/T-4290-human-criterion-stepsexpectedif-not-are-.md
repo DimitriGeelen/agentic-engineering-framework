@@ -9,10 +9,10 @@ description: >
   through render_markdown_safe; test with a criterion whose Steps contain a script
   tag. Render surface: [REVIEW] Human AC.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T08:37:29Z
-last_update: '2026-10-18T08:46:03Z'
+last_update: 2026-10-21T21:45:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,10 +95,17 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge: a Human criterion whose Steps/Expected/If-not carry raw HTML (`<script>`, `<img onerror>`) or a backticked URL with a quote is rendered by `_parse_acceptance_criteria` + `_ac_list.html`; result recorded in ## RCA
+- [x] If any field reaches the page as live markup/attribute injection, the producer (`web/blueprints/tasks.py`) is fixed so the `|safe` fields carry only escaped/sanitised HTML
+- [x] Regression test under tests/unit/ renders the fields with a script-tag / attribute-injection payload and asserts no live `<script`, `onerror=` or broken-out `on*=` attribute; passes
 
 ### Human
+- [ ] [REVIEW] Backticked URLs in Human-criterion Steps are still clickable on a real page
+  **Steps:**
+  1. Open the URL printed by `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` followed by `/inception/T-4046` (or any task whose Human Steps contain a backticked `http://` URL)
+  2. Expand a Human criterion card and click a backticked URL in its Steps
+  **Expected:** the URL renders as a code-styled link and opens; Steps/Expected/If-not look as before
+  **If not:** note the task id and the criterion; the regex change is in web/blueprints/tasks.py `_CODE_URL_HTML_RE`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -274,6 +281,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 python3 -m pytest tests/unit/test_t4290_ac_fields_escaped.py -q > /tmp/.t4290 2>&1 && grep -q passed /tmp/.t4290
+timeout 300 python3 -m pytest tests/unit/test_t4287_ac_list_escape.py tests/unit/test_ac_body_parser_steps.py tests/unit/test_extract_recommendation.py -q > /tmp/.t4290b 2>&1 && grep -q passed /tmp/.t4290b
+bin/fw vendor self --check --task T-4290
+bin/fw watchtower current
 
 ## RCA
 
@@ -290,6 +301,32 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Reproduced on bleeding-edge 2026-10-21** (tests/unit/test_t4290_ac_fields_escaped.py, before fix: 2 of 8 payloads live).
+The parser mostly sanitises: `_parse_ac_body` renders Steps/Expected/If-not through
+markdown2 `safe_mode='escape'`, so raw `<script>`, `<img onerror>`, `javascript:` links and
+quote-breaking `[a](x" onclick=…)` / `![i](x" onerror=…)` all come out inert. One post-processor
+does not.
+
+**Symptom:** a Human criterion whose Steps/Expected/If-not contains a backticked URL with a
+quote, e.g. `` `http://x"onmouseover="alert(1)` ``, renders on /inception/<id>, /tasks/<id>
+and /review/<id> as `<a href="http://x"onmouseover="alert(1)">`, a live event handler.
+
+**Root cause:** `_linkify_code_urls` (web/blueprints/tasks.py:354, `_CODE_URL_HTML_RE`) and its
+twin in `render_markdown_safe` (web/shared.py:551, `_CODE_URL_HTML_RE_SHARED`, used at :1114)
+match `<code>(https?://[^<\s]+?)</code>` and interpolate the match into `href="…"`. markdown2
+HTML-escapes `& < >` inside a code span but not `"` or `'`, so the captured URL can close the
+attribute. The `|safe` in `_ac_list.html:61-63` then trusts the result.
+
+**Why structurally allowed:** the T-1575 linkifier was written as a post-processing step over
+already-"safe" HTML, and its tests pinned only that benign backticked URLs became clickable;
+no test fed a hostile value through it. T-4287 checked the template's fallback, not the producer.
+
+**Prevention:** the URL class now excludes `"` and `'` in both regexes, so a quoted value is
+never lifted into an attribute (it stays an inert `<code>` span). The regression test drives the
+real parser + real `_ac_list.html` with 8 hostile payloads and parses the output with
+`html.parser`, failing on any `on*` attribute, `javascript:` URL or `<script>` element; it also
+pins `render_markdown_safe` against the same payload.
 
 ## Evolution
 
@@ -344,6 +381,13 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The parser sanitises Steps/Expected/If-not (markdown2 safe_mode='escape') except for one post-processor: the backticked-URL linkifier put unescaped quotes into `href`, giving a live `onmouseover` on /inception, /tasks and /review (and its twin in `render_markdown_safe`). Both regexes now exclude quotes; benign backticked URLs still link.
+**Evidence:**
+- tests/unit/test_t4290_ac_fields_escaped.py: 17 passed after; 2 failed before (both surfaces, quote payload)
+- 296 neighbouring render/AC/recommendation tests pass; the 1 failure (test_operator_facing_stderr, approvals.py:931) is untouched code
+- Watchtower restarted; `bin/fw watchtower current` exit 0
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -371,3 +415,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4290-human-criterion-stepsexpectedif-not-are-.md
 - **Context:** Initial task creation
+
+### 2026-10-21T21:45:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

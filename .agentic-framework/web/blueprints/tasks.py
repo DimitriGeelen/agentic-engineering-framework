@@ -351,7 +351,9 @@ def _auto_link_bare_urls(text):
 # HTML to wrap `<code>http(s)://...</code>` in an anchor while preserving the
 # code-span styling. This guarantees URLs are clickable regardless of how the
 # agent wrote them — the rendering layer is the contract, not agent discipline.
-_CODE_URL_HTML_RE = re_mod.compile(r"<code>(https?://[^<\s]+?)</code>")
+# T-4290: no quotes in the URL — markdown2 leaves " and ' unescaped inside a code
+# span, and the match is interpolated into href="…", so a quote would close it.
+_CODE_URL_HTML_RE = re_mod.compile(r"<code>(https?://[^<\s\"']+?)</code>")
 
 
 def _linkify_code_urls(html):
