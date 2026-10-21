@@ -10,10 +10,10 @@ description: >
   use bare kill -0, which succeeds on a zombie (T-4306 fixed bin/watchtower.sh with
   _pid_alive). Fix both classes with tests (ss off PATH; zombie pid).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [watchtower, bug]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ origin: {kind: "agent", source: "T-4332"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T21:23:06Z
-last_update: '2026-10-18T21:31:23Z'
+last_update: 2026-10-21T18:16:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `bin/watchtower.sh status` with a live PID but `ss` absent from PATH prints the running block (PID/Log lines) instead of exiting silently under set -euo pipefail
+- [x] The pid liveness checks in `lib/watchtower.sh` and `lib/watchtower-staleness.sh` treat a zombie PID as not alive (no bare `kill -0` remains as the sole test)
+- [x] Regression bats `tests/unit/t4337_watchtower_status_zombie.bats` covers ss-off-PATH and zombie pid; fails before the fix, passes after
+- [x] Existing watchtower bats nearest the changed files still pass; vendor sync clean for this task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,8 +278,22 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4337_watchtower_status_zombie.bats > /tmp/.t4337.out 2>&1 && ! grep -q "^not ok" /tmp/.t4337.out
+test "$(grep -c '# skip' /tmp/.t4337.out)" -eq 0
+timeout 600 bats tests/unit/t4306_watchtower_zombie_pid.bats tests/unit/t3661_watchtower_status_exit.bats tests/unit/t2938_watchtower_source_staleness.bats tests/unit/lib_watchtower.bats > /tmp/.t4337n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4337n.out
+! grep -n 'kill -0' lib/watchtower.sh lib/watchtower-staleness.sh
+bash -n bin/watchtower.sh && bash -n lib/watchtower.sh && bash -n lib/watchtower-staleness.sh && bash -n lib/pid-alive.sh
+bin/fw vendor self --check --task T-4337
 
 ## RCA
+
+**Symptom:** (1) `fw watchtower status` on a host without `ss` printed "Watchtower is running (PID N)" and then exited silently — no Local/PID/Log/Uptime lines. (2) `_watchtower_url` Layer 1 and `watchtower_process_start_epoch` (doctor/audit currency check) treated a zombie Watchtower pid as a live process.
+
+**Root cause:** (1) `bin/watchtower.sh` do_status (~line 537) assigned `port=$(ss … | grep "pid=…" | …)` bare; under `set -euo pipefail` a failing `ss` or a non-matching `grep` makes the assignment non-zero and errexit kills the script. (2) `lib/watchtower.sh:191` and `lib/watchtower-staleness.sh:44` used bare `kill -0`, which succeeds on an exited-but-unreaped (zombie) process. T-4306 fixed the same test only inside `bin/watchtower.sh` (`_pid_alive`), leaving the two libs on the old check.
+
+**Why structurally allowed:** the zombie-aware helper lived as a private function in one script, so the libs had nothing shared to call; each T-4306/T-4332 fix was scoped to the call site it hit. Tests only exercised the hosts where `ss` exists and pids were live.
+
+**Prevention:** one shared helper, `lib/pid-alive.sh:fw_pid_alive`, now used by `bin/watchtower.sh`, `lib/watchtower.sh` and `lib/watchtower-staleness.sh`; `tests/unit/t4337_watchtower_status_zombie.bats` pins ss-off-PATH status and zombie handling in both libs (3 of 4 tests fail on the pre-fix code); the Verification line `! grep 'kill -0'` on the two libs stops a bare check from coming back.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -373,3 +389,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4337-watchtower-remaining-silent-set--e-exits.md
 - **Context:** Initial task creation
+
+### 2026-10-21T18:16:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

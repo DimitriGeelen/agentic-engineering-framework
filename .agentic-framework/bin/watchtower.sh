@@ -21,6 +21,7 @@ source "$FRAMEWORK_ROOT/lib/firewall.sh"
 # T-1803: shared identity helpers (_watchtower_port_holder_is_ours,
 # _watchtower_identity_matches) so the writer reuses the reader's identity check.
 source "$FRAMEWORK_ROOT/lib/watchtower.sh"
+source "$FRAMEWORK_ROOT/lib/pid-alive.sh"
 # PID/LOG in PROJECT_ROOT so review.sh and watchtower.sh find them in the same place (T-1154)
 PID_FILE="$PROJECT_ROOT/.context/working/watchtower.pid"
 # T-1287: port + url triple alongside pid (foundation for T-1284 3-layer discovery)
@@ -60,15 +61,7 @@ get_pid() {
 # not reaped — common for children of a container's PID 1), so stop failed and
 # start refused on a server that was already gone. A zombie is stopped.
 _pid_alive() {
-    local pid="$1" state=""
-    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null || return 1
-    if [ -r "/proc/$pid/stat" ]; then
-        # comm may contain spaces/parens: the state follows the LAST ')'.
-        state=$(sed 's/.*) //' "/proc/$pid/stat" 2>/dev/null | cut -d' ' -f1)
-    else
-        state=$(ps -o stat= -p "$pid" 2>/dev/null | tr -d '[:space:]')
-    fi
-    [ "${state:0:1}" != "Z" ]
+    fw_pid_alive "$1"
 }
 
 is_running() {
@@ -539,7 +532,9 @@ do_status() {
 
         # Find the port from the process
         local port
-        port=$(ss -tlnp 2>/dev/null | grep "pid=${pid}" | awk '{print $4}' | grep -oE '[0-9]+' | tail -1)
+        # T-4337: `|| true` — ss missing or no match must not exit status
+        # silently under set -euo pipefail (same class as T-4332).
+        port=$(ss -tlnp 2>/dev/null | grep "pid=${pid}" | awk '{print $4}' | grep -oE '[0-9]+' | tail -1) || true
         if [ -n "$port" ]; then
             echo "  Local:  http://localhost:${port}"
             local lan_ip

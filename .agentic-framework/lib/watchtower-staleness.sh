@@ -35,13 +35,19 @@
 # Portability: no `find -newermt` (GNU accepts @epoch, BSD does not parse it the
 # same way) and no bare `stat -c` (BSD wants -f %m). Both flavours are probed.
 
+_wt_lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/pid-alive.sh
+source "$_wt_lib_dir/pid-alive.sh"
+unset _wt_lib_dir
+
 # Epoch seconds at which $1 started. Echoes nothing and returns 1 when it cannot
 # be determined — every caller must treat "unknown" as "do not warn", because a
 # guess here produces a WARN on every doctor run.
 watchtower_process_start_epoch() {
     local pid="$1" elapsed now
     [ -n "$pid" ] || return 1
-    kill -0 "$pid" 2>/dev/null || return 1
+    # T-4337: a zombie is not a running process (bare kill -0 says it is).
+    fw_pid_alive "$pid" || return 1
 
     # `ps -o etimes=` (seconds since start) exists on Linux and modern BSD/macOS.
     elapsed=$(ps -o etimes= -p "$pid" 2>/dev/null | tr -d '[:space:]')

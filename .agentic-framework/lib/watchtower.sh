@@ -14,6 +14,8 @@
 
 # Source config for PORT setting (guard protects double-source)
 source "${FRAMEWORK_ROOT:-.}/lib/config.sh"
+# T-4337: zombie-aware liveness (bare kill -0 succeeds on a zombie)
+source "${FRAMEWORK_ROOT:-.}/lib/pid-alive.sh"
 
 [[ -n "${_FW_WATCHTOWER_LOADED:-}" ]] && return 0
 _FW_WATCHTOWER_LOADED=1
@@ -187,8 +189,8 @@ _watchtower_url() {
         _url=$(cat "$_uf" 2>/dev/null | tr -d '[:space:]')
         [ -n "$_pid" ] && [ -n "$_url" ] || continue
 
-        # Verify process is alive (cheap kernel check)
-        kill -0 "$_pid" 2>/dev/null || continue
+        # Verify process is alive and not a zombie (T-4337)
+        fw_pid_alive "$_pid" || continue
 
         # Verify identity (confirms the url actually IS our Watchtower,
         # not a masquerader that happened to bind the same port after restart)
