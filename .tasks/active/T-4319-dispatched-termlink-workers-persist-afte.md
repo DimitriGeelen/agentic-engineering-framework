@@ -12,10 +12,10 @@ description: >
   after a TTL), and a fw doctor WARN for idle dispatch workers older than N hours.
   Check our own host too (termlink list shows many old orch/urteil probe sessions).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [termlink, dispatch, resource-leak]
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ origin: {kind: "peer", source: "ring20"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T18:19:06Z
-last_update: '2026-10-18T18:31:48Z'
+last_update: 2026-10-21T18:55:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,14 +93,42 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Reproduction check, 2026-10-21, bleeding-edge @ 25a7c2aea: does NOT reproduce on current code.**
+
+- **This project's workers end cleanly.** 64 dispatch workers whose `meta.json` names
+  `/opt/999-Agentic-Engineering-Framework` wrote `exit_code` in the last 10 h. 0 of them are
+  still in `termlink list`, and 0 have a tmux session left on the default server or on
+  `-L fw-agents`.
+- **Every leftover on this host is a consumer running a stale vendored `termlink.sh`.** About 45
+  idle `tl-*` sessions were left (judge-*, orch-*, urteil-*, gov-probe-*, w-t2108b, greenfield-*,
+  t104-recovery). Each has a finished worker dir (`exit_code` present), a `termlink register --shell`
+  process, and a child `/bin/bash` sitting at its prompt (`wchan=do_select`, no children).
+  `termlink pty output` shows the typed line as `bash /tmp/tl-dispatch/<n>/run.sh …`, without
+  `exec`, followed by `=== Worker <n> finished ===` and a fresh prompt. That is exactly the
+  pre-T-4152 behaviour. The projects are `/opt/050-email-archive`, `/opt/1409-sprind`,
+  `/home/dimitri-mint-dev` and an orchestrierung scratch dir.
+- **The fix is T-4152** (3757b6917, 2026-10-13, `agents/termlink/termlink.sh:1808`). It injects
+  `exec bash $wdir/run.sh …`, so run.sh replaces the session shell. When run.sh exits,
+  `termlink register` exits, the pane closes and tmux drops the session. `remain-on-exit` is
+  `off` on both tmux servers, `fw-agents` included, so this holds on ring20's socket too.
+  T-4152 is in v1.8.11 (`git describe --contains` → v1.8.11~373) and is on `master`.
+- **Already-leaked endpoints can be reaped.** `fw termlink cleanup` stops the endpoints of
+  finished dispatch workers (T-4152, project-scoped since T-4558). Each project has to run it
+  for its own workers.
+- **Pinned by** `tests/unit/t4152_dispatch_endpoint_leak.bats`: 8/8 ok, 0 skipped. Its test 1
+  greps the `exec bash $wdir/run.sh` inject line.
+
+The ring20 report (v1.8.10+579, 2026-10-17) fits a vendored copy from before T-4152. The cure
+is `fw upgrade` in each affected consumer, then `fw termlink cleanup --yes` there. No source
+change was made under this task.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge (post T-4152 exec, T-4558, T-4561): evidence recorded in ## Context whether a finished, collected dispatch worker still leaves a tmux session / TermLink registration behind
+- [x] It does not reproduce: the existing regression pin for the root-cause fix (`tests/unit/t4152_dispatch_endpoint_leak.bats`, asserts the `exec bash $wdir/run.sh` inject) passes with no skips, and the inject line is present in `agents/termlink/termlink.sh`
+- [x] ## RCA filled (symptom, root cause, why nothing caught it, prevention)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,7 +307,32 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+grep -qE '^ *termlink pty inject "\$name" "exec bash \$wdir/run\.sh ' agents/termlink/termlink.sh
+timeout 300 bats tests/unit/t4152_dispatch_endpoint_leak.bats > /tmp/.t4319.out 2>&1 && ! grep -q "^not ok" /tmp/.t4319.out
+test "$(grep -c '# skip' /tmp/.t4319.out)" -eq 0
+
 ## RCA
+
+**Symptom:** ring20 found 141 idle tmux sessions and TermLink registrations a day after a
+reviewer-judge drive and a triage run. This host showed the same thing: about 45 idle `tl-*`
+sessions, each with a finished worker dir.
+
+**Root cause:** before T-4152, `cmd_dispatch` injected `bash $wdir/run.sh …` into the worker's
+`--shell` session, without `exec` (now `agents/termlink/termlink.sh:1808`). When run.sh exited,
+the session's interactive bash returned to its prompt. `termlink register --shell` and the tmux
+pane both stayed alive indefinitely. T-4152 (3757b6917, v1.8.11) changed the line to
+`exec bash …`. Every leftover observed here comes from a consumer whose vendored `termlink.sh`
+predates that change: its PTY transcript shows the non-exec line.
+
+**Why structurally allowed:** a fix in the framework reaches a consumer only when that consumer
+runs `fw upgrade`. Nothing reports a consumer running a dispatch path older than a known leak
+fix. Separately, `fw termlink cleanup` (which stops leaked endpoints) is consent-gated and
+project-scoped (T-3651, T-4558), so no single run cleans up another project's leak.
+
+**Prevention:** for current code, `tests/unit/t4152_dispatch_endpoint_leak.bats` pins the `exec`
+inject plus cleanup's endpoint stop. For consumers, `fw upgrade` delivers the fix. A doctor WARN
+for idle finished-worker endpoints older than N hours, or a TTL reaper, was the remaining part of
+the ring20 proposal. It is a new feature and is not built here; see ## Decisions.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -359,6 +412,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-21 — scope: no source change
+- **Chose:** record that the bug does not reproduce and stop. The leak is already fixed by T-4152 (v1.8.11).
+- **Why:** 0 of 64 recent finished workers from this project leaked. Every leaked session on the host traces to a pre-T-4152 vendored copy.
+- **Rejected:** a TTL reaper or a `fw doctor` WARN for idle finished-worker endpoints. That is the leftover half of the ring20 proposal and a new feature, not this bug. If the parent wants it, file a separate build task. Upgrading the affected consumers (050-email-archive, 1409-sprind, /home/dimitri-mint-dev) and running `fw termlink cleanup --yes` in each is operator or consumer work and is not done here.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -375,3 +433,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4319-dispatched-termlink-workers-persist-afte.md
 - **Context:** Initial task creation
+
+### 2026-10-21T18:55:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
