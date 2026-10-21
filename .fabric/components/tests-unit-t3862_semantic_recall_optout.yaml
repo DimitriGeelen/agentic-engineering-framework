@@ -1,0 +1,21 @@
+id: tests/unit/t3862_semantic_recall_optout.bats
+name: t3862_semantic_recall_optout
+type: script
+subsystem: tests
+location: tests/unit/t3862_semantic_recall_optout.bats
+tags: []
+
+purpose: "T-3862: semantic recall deliberately absent on a host (SEMANTIC_RECALL=0) is \"not configured on this host\", not 7 FAILs; and fw upgrade names the missing prerequisites (sqlite-vec, a reachable embed host) instead of staying silent."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-21
+created_by: unknown
