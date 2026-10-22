@@ -3373,26 +3373,6 @@ if ! fw_is_linked_worktree "$PROJECT_ROOT" && [ -f "$FRAMEWORK_ROOT/lib/process_
     fi
 fi
 
-# T-4637 (T-4635 RCA): long-lived agent processes (claude-fw, Watchtower, the
-# TermLink hub, tmux servers) in a session-*.scope of a user without linger are
-# SIGKILLed when systemd force-tears that slice down under load — six workers and
-# the parent died at once on 2026-10-22, with nothing reporting it. Same predicate
-# as fw doctor's [host] WARN (G-079). WARN: host state, fixed by the operator.
-if ! fw_is_linked_worktree "$PROJECT_ROOT" && [ -f "$FRAMEWORK_ROOT/lib/process_placement.py" ]; then
-    _pp_rc=0
-    _pp_out=$(python3 "$FRAMEWORK_ROOT/lib/process_placement.py" \
-        --watchtower-pid-file "$PROJECT_ROOT/.context/working/watchtower.pid" 2>/dev/null) || _pp_rc=$?
-    if [ "$_pp_rc" -eq 1 ]; then
-        while IFS= read -r _pp_line; do
-            [ -n "$_pp_line" ] || continue
-            warn "Fragile process placement: ${_pp_line%% lives in *}" "$_pp_line" \
-                 "${_pp_line##*Fix: }"
-        done <<< "$_pp_out"
-    elif [ "$_pp_rc" -eq 0 ]; then
-        pass "Process placement: no long-lived agent process in a non-lingering session scope"
-    fi
-fi
-
 # T-3317 (OBS-336): exec-bit drift — tracked *.sh / bin/fw whose git index mode
 # is 100755 but whose on-disk copy is not executable. Origin: a worker rewrite
 # of agents/audit/audit.sh dropped the x-bit and `fw audit` died exit 126 —
