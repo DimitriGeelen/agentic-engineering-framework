@@ -143,15 +143,30 @@ def _call(app, view):
 
 def test_30_cold_graduation_requests_leave_server_responsive(monkeypatch):
     """The AC scenario, in-process: 30 concurrent cold /graduation requests while
-    / and a static file are fetched. Both must answer within 2s."""
+    / and a static file are fetched. Both must answer while the cold scan is
+    still in progress.
+
+    T-4616: this used to sleep 3s in the scan and assert / answered in < 2.0s of
+    wall clock, which a loaded 4-vCPU runner missed (3.18s). The property is an
+    ORDERING one — / must not wait for the scan — so the scan is now held on an
+    event that is released only after / and the static file have answered. A
+    wedged / would block until the safety timer releases the scan, and the
+    assertion on `released_early` names that, with no wall-clock budget."""
     from web.app import app
     client = app.test_client()
     client.get("/")  # warm / so we measure contention, not its own cold build
     real = discovery._scan_application_refs
+    entered, release = threading.Event(), threading.Event()
+    released_early = []
 
     def slow():
-        time.sleep(3)  # a cold corpus scan, made deterministic
+        entered.set()
+        release.wait(120)  # a cold corpus scan, held until / has answered
         return real()
+
+    def safety():
+        released_early.append(True)
+        release.set()
 
     monkeypatch.setattr(discovery, "_scan_application_refs", slow)
     discovery.signature_cached.__globals__["_SIG_CACHES"].pop("graduation-app-index", None)
@@ -160,18 +175,22 @@ def test_30_cold_graduation_requests_leave_server_responsive(monkeypatch):
                for _ in range(30)]
     for t in threads:
         t.start()
-    time.sleep(0.3)
-    t0 = time.perf_counter()
-    assert app.test_client().get("/").status_code == 200
-    t_root = time.perf_counter() - t0
-    t0 = time.perf_counter()
-    r = app.test_client().get("/static/pico.min.css")
-    t_static = time.perf_counter() - t0
-    r.close()
+    assert entered.wait(60), "no /graduation request reached the cold scan"
+    timer = threading.Timer(60, safety)
+    timer.start()
+    try:
+        assert app.test_client().get("/").status_code == 200
+        root_during_scan = not release.is_set()
+        r = app.test_client().get("/static/pico.min.css")
+        static_during_scan = not release.is_set()
+        r.close()
+    finally:
+        timer.cancel()
+        release.set()
     for t in threads:
-        t.join(30)
-    assert t_root < 2.0, f"/ took {t_root:.2f}s under load"
-    assert t_static < 2.0, f"static took {t_static:.2f}s under load"
+        t.join(60)
+    assert root_during_scan and not released_early, "/ waited for the cold /graduation scan"
+    assert static_during_scan, "static waited for the cold /graduation scan"
     assert len(codes) == 30 and set(codes) <= {200, 503}
     assert codes.count(503) >= 30 - discovery.GRADUATION_INFLIGHT
 
