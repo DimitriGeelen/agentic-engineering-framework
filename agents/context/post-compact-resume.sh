@@ -377,7 +377,11 @@ fi
 # .agentic-framework/bin/fw paths that break under cd) at the moment the
 # agent's session resumes — not contingent on a real tool call firing.
 # Silent on healthy hooks. Probe failure is non-fatal (degrades to no-op).
-HOOK_EXERCISE_HELPER="${FW_DOCTOR_HOOK_EXERCISE:-$FRAMEWORK_ROOT/lib/doctor-hook-exercise.py}"
+# T-4622: the helper-path override is FW_RESUME_HOOK_EXERCISE_HELPER. It used to
+# be FW_DOCTOR_HOOK_EXERCISE, which T-4523 made doctor's on/off switch (=0) — so
+# the unit-suite runner's FW_DOCTOR_HOOK_EXERCISE=0 became helper path "0" here
+# and silently disabled this probe.
+HOOK_EXERCISE_HELPER="${FW_RESUME_HOOK_EXERCISE_HELPER:-$FRAMEWORK_ROOT/lib/doctor-hook-exercise.py}"
 SETTINGS_FILE="$PROJECT_ROOT/.claude/settings.json"
 if [ -f "$HOOK_EXERCISE_HELPER" ] && [ -f "$SETTINGS_FILE" ]; then
     HOOK_PROBE=$(SETTINGS_FILE="$SETTINGS_FILE" python3 "$HOOK_EXERCISE_HELPER" 2>/dev/null || echo "")

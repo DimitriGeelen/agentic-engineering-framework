@@ -1,10 +1,14 @@
 ---
 id: T-4622
-name: "Push blocker: session_start_hook_warning #2 resume hook warning output no longer parses"
+name: "Push blocker: session_start_hook_warning #2 resume hook warning output no longer
+  parses"
 description: >
-  New red 2026-10-22 (.context/audits/unit-suite/failures/2026-10-22T08:47:18Z/bats/session_start_hook_warning.bats.out): test 2 (resume hook appends a warning when settings.json has a broken bare-relative path) fails parsing the hook output as JSON. Likely changed by T-4353 (resume hook header) or T-4172 (SessionStart after budget restart). Fix the cause.
+  New red 2026-10-22 (.context/audits/unit-suite/failures/2026-10-22T08:47:18Z/bats/session_start_hook_warning.bats.out):
+  test 2 (resume hook appends a warning when settings.json has a broken bare-relative
+  path) fails parsing the hook output as JSON. Likely changed by T-4353 (resume hook
+  header) or T-4172 (SessionStart after budget restart). Fix the cause.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T09:34:01Z
-last_update: 2026-10-22T09:34:01Z
-date_finished: null
+last_update: '2026-10-22T09:45:45Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:35:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:45:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4622: Push blocker: session_start_hook_warning #2 resume hook warning output no longer parses
@@ -62,8 +93,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of session_start_hook_warning.bats #2 identified with file:line and recorded in ## RCA
+- [x] Resume hook (agents/context/post-compact-resume.sh) again appends the broken-hook warning when settings.json carries a bare-relative hook path, including under the unit-suite runner's FW_DOCTOR_HOOK_EXERCISE=0; test #2 unchanged, new test #5 pins the runner env
+- [x] tests/unit/session_start_hook_warning.bats passes 5/5 with no skips, with and without FW_DOCTOR_HOOK_EXERCISE=0
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4622` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +281,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+FW_DOCTOR_HOOK_EXERCISE=0 timeout 900 bats tests/unit/session_start_hook_warning.bats > /tmp/.t4622.out 2>&1 && ! grep -q "^not ok" /tmp/.t4622.out && grep -q "^ok 5 " /tmp/.t4622.out
+test "$(grep -c '# skip' /tmp/.t4622.out)" -eq 0
+bin/fw vendor self --check --task T-4622
 
 ## RCA
 
@@ -264,8 +300,6 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -288,6 +322,18 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+**Symptom:** session_start_hook_warning.bats #2 red in every unit-suite run since 2026-10-22T01:03Z (three runs), green when run alone. The resume hook's additionalContext parsed fine but had no "Broken Hook Warning" section.
+
+**Root cause:** one env var with two meanings. `agents/context/post-compact-resume.sh:380` read `FW_DOCTOR_HOOK_EXERCISE` as a *helper-path override* (T-1630). T-4523 (c51a23d50) made the same name doctor's *on/off switch* (`bin/fw:2404`, `=0` skips) and had the unit-suite runner export it (`agents/audit/unit-suite.sh:310`). Under the runner the resume hook took helper path "0", `[ -f "0" ]` failed, and the probe was silently skipped. Reproduced alone: `FW_DOCTOR_HOOK_EXERCISE=0 bats tests/unit/session_start_hook_warning.bats` → `not ok 2`. Not T-4353/T-4172 (the header changes), as the filing guessed.
+
+**Why structurally allowed:** T-4523 grepped consumers of the variable as a switch (doctor) but the resume hook used it as a path, so the collision did not look like a consumer; the resume hook degrades to a no-op on a missing helper by design, so a bad value is silent. The suite test ran without the runner's env when T-4523 was verified.
+
+**Fix:** the resume hook's override is now `FW_RESUME_HOOK_EXERCISE_HELPER`, a name nothing else uses; test #4 updated to it.
+
+**Prevention:** new test #5 runs the bare-relative scenario with `FW_DOCTOR_HOOK_EXERCISE=0` set and asserts the warning — red on the old code (shown via test #2 under the same env), green now.
+
+## Evolution
 
 ## Recommendation
 
@@ -345,3 +391,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4622-push-blocker-sessionstarthookwarning-2-r.md
 - **Context:** Initial task creation
+
+### 2026-10-22T09:35:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

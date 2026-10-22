@@ -124,9 +124,9 @@ assert 'Broken Hook' not in ctx and 'failed to resolve' not in ctx.lower(), \
   }
 }
 EOF
-    # Use FW_DOCTOR_HOOK_EXERCISE override to point at non-existent path
+    # Use FW_RESUME_HOOK_EXERCISE_HELPER override to point at non-existent path
     cd "$TEST_TEMP_DIR"
-    run env FW_DOCTOR_HOOK_EXERCISE="/nonexistent/helper.py" PROJECT_ROOT="$TEST_TEMP_DIR" \
+    run env FW_RESUME_HOOK_EXERCISE_HELPER="/nonexistent/helper.py" PROJECT_ROOT="$TEST_TEMP_DIR" \
         bash "$FRAMEWORK_ROOT/agents/context/post-compact-resume.sh"
     [ "$status" -eq 0 ]
     # Output is still valid JSON with additionalContext (script didn't crash).
@@ -134,5 +134,35 @@ EOF
 import json, sys
 data = json.loads(sys.stdin.read())
 assert 'additionalContext' in data['hookSpecificOutput']
+"
+}
+
+# T-4622: the unit-suite runner exports FW_DOCTOR_HOOK_EXERCISE=0 (T-4523, doctor's
+# off-switch). The resume hook used to read that same variable as its helper-path
+# override, so "0" became the helper path and the probe was silently skipped —
+# test 2 went red in every suite run while passing alone. Pin the runner's env.
+@test "resume hook still warns when doctor's FW_DOCTOR_HOOK_EXERCISE=0 switch is set (T-4622)" {
+    cat > "$TEST_TEMP_DIR/.claude/settings.json" <<EOF2
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {"type": "command", "command": ".agentic-framework/bin/fw hook check-tier0"}
+        ]
+      }
+    ]
+  }
+}
+EOF2
+    cd "$TEST_TEMP_DIR"
+    run env FW_DOCTOR_HOOK_EXERCISE=0 PROJECT_ROOT="$TEST_TEMP_DIR" \
+        bash "$FRAMEWORK_ROOT/agents/context/post-compact-resume.sh"
+    [ "$status" -eq 0 ]
+    echo "$output" | python3 -c "
+import json, sys
+ctx = json.loads(sys.stdin.read())['hookSpecificOutput']['additionalContext']
+assert 'Broken Hook Warning' in ctx, f'probe skipped under FW_DOCTOR_HOOK_EXERCISE=0: {ctx[-300:]}'
 "
 }
