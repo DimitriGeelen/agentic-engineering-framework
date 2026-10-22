@@ -31,6 +31,16 @@ also resumed at 13:41 and 13:43.
   then on claude-fw ping death, T-4541) fall in the same high-load windows.
 - The relaunched tmux server now lives in `/user.slice/user-1000.slice/session-c1.scope`.
 
+### Correction after review (2026-10-22, codex and claude-code seats)
+
+Two reviewers noted that the 13:37:10 force-kill precedes the deaths (13:38:48–58) by about
+100 s. The journal shows the actual trigger: a root ssh login at 13:38:32 created a new root
+session; when it closed, systemd stopped `user@0.service` and **removed `user-0.slice` at
+13:38:43.889 in an ordinary, non-timeout teardown**. The deaths follow within 5–15 s. So the
+kill does not need a stop timeout: any teardown of root's slice while a long-lived process
+lives in a root login-session scope is enough. The cause and the linger remediation stand;
+the "only under load" qualifier below is too narrow.
+
 ## Root cause
 
 Long-lived agent processes (the shared tmux server, claude-fw sessions, TermLink workers)
