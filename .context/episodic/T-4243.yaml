@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4243: fw pickup send to a TermLink session that no longer exists leaves the envelope in the SENDER's own inbox (second occurrence; dimitri-mint-dev T-113 / P-013)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T12:12:42Z
+# ============================================================================
+
+task_id: T-4243
+task_name: "fw pickup send to a TermLink session that no longer exists leaves the envelope in the SENDER's own inbox (second occurrence; dimitri-mint-dev T-113 / P-013)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-17T13:44:18Z
+completed: 2026-10-22T12:12:20Z
+duration_days: 5
+updates_count: 2
+first_commit: 2026-10-22T10:31:16+02:00
+last_commit: 2026-10-22T10:31:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  does not reproduce on bleeding-edge — real fw pickup send to a gone session (tl-zalfqzng on hub greenfield) is refused by the sidecar resolver, exits 1, envelope in pickup/undelivered/, nothing in the inbox; already fixed by T-3763 + T-4175 (unreleased); evidence, RCA and real ACs recorded, no code change
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked on current bleeding-edge: a real `fw pickup send --remote HUB --session <gone-session>` (no stub) exits non-zero, says NOT delivered, and leaves no envelope in `.context/pickup/inbox/` (the envelope is in `undelivered/`)'
+  - 'Existing regression tests for this path (t3763 failed-delivery, t4175 never-in-inbox) pass'
+  - 'Evidence and the commits that already fixed it recorded in `## RCA` / `## Decisions`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'does not reproduce on bleeding-edge — real fw pickup send to a gone session (tl-zalfqzng on hub greenfield) is refused by the sidecar resolver, exits 1, envelope in pickup/undelivered/, nothing in the inbox; already fixed by T-3763 + T-4175 (unreleased); evidence, RCA and real ACs recorded, no code change'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — does not reproduce on bleeding-edge; no code change'
+    chose: 'record the evidence and stop. No new code or test.'
+    rationale: 'a real run on bleeding-edge (real `fw sidecar send`, no stub; pickup dirs in a temp project) of `do_pickup_send --type learning --summary probe --remote <hub> --session tl-zalfqzng` against hub `greenfield` printed `send: REFUSED, nothing posted — no inbox inbox:aef925c6d2f4ac54/tl-zalfqzng on hub greenfield … Project inboxes on that hub: aef-greenfield-test`, then `NOT delivered: fw sidecar send exited 2 — envelope kept in …/pickup/undelivered`, and exited 1. The only files were `pickup/undelivered/P-001-learning.yaml` and the id lock. Nothing went to `inbox/`. Against `local-hub` it also exited 1 with the envelope in `undelivered/`. That refusal came from a TOFU-pin mismatch on 127.0.0.1:9100 (an environment matter, not this bug). Both existing regression files pass 10/10 with 0 skips.'
+    alternatives_rejected: ['a new regression test. t3763 test 3 and t4175 test 10 already pin the behaviour this task asks for, and both would fail against the v1.8.10 code. - **Left open (not this task):** the fix has not reached a release (731e4793b is first in v1.8.15-be.2; 43e8e3056 is untagged). dimitri-mint-dev keeps hitting it until a master release carries both. Also, a STALE peer-directory entry (`.context/sidecar/peers.json`) for a gone agent on the same hub resolves through `addressing.resolve` step 2 without the T-4418 read-evidence check, so such a send could report HUB_ACCEPTED. That is a sidecar addressing matter, not this one, and it is not filed here.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4243-fw-pickup-send-to-a-termlink-session-tha.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T10:31:16'
+    action: 'T-4243: does not reproduce on bleeding-edge — real fw pickup send to a gone session (tl-zalfqzng on hub greenfield) is refused by the sidecar resolver, exits 1, envelope in pickup/undelivered/, nothing in the inbox; already fixed by T-3763 + T-4175 (unreleased); evidence, RCA and real ACs recorded, no code change'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7108 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7108
+  commits: 1
+  files_changed: 1
+  lines_added: 47
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4243-fw-pickup-send-to-a-termlink-session-tha.md
+generated_by: context-agent-hybrid
