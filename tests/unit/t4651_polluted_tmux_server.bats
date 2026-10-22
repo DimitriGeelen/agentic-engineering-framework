@@ -16,8 +16,7 @@
 #   claude-fw — the line claude-fw injects into the TermLink PTY shell, rendered from
 #               bin/claude-fw's own source (as t4638 does), run as a session on the server with
 #               a stand-in `claude` that records what it sees. TermLink itself is not invoked.
-#               Scope: the pin clears the project path variables, not FW_*; B's FW_* still
-#               reach claude on this path (open finding, T-4651), so FW_* lines are excluded.
+#               B's FW_* are dropped too (T-4659); FW_* from claude-fw's own env still arrive.
 #
 # Only a PRIVATE server is used (tmux -L t4651-$$-<rand>, socket dir inside the test tmpdir),
 # killed in teardown. The default tmux server is never touched. Every tmux call has a timeout.
@@ -146,8 +145,11 @@ _launcher_env() {   # sets LAUNCH_ENV
     _assert_resolves_a "$W/paths.out"
 }
 
-@test "T-4651 claude-fw: the injected PTY line on B's server launches claude with no B path, A's dirs resolve" {
-    P="$T/p"; mkdir -p "$P"
+# Run the claude-fw PTY line on B's server; $1 = output dir, $2.. = NAME=VALUE exported in the
+# claude-fw process that renders the line (its own launch env).
+_run_claude_fw_line() {
+    local P="$1"; shift
+    mkdir -p "$P"
     INJECT_SRC=$(grep -E '^[[:space:]]*termlink_inject "[^"]*command claude\$\{_tl_args\}' "$REPO/bin/claude-fw")
     [ -n "$INJECT_SRC" ]
     PIN_SRC=$(grep -E '^[[:space:]]*_tl_pin=\$\(_tl_project_env_prefix\)' "$REPO/bin/claude-fw" || true)
@@ -157,6 +159,7 @@ _launcher_env() {   # sets LAUNCH_ENV
     chmod +x "$T/bin/claude"
     # Render the injected line as claude-fw builds it with project A pinned.
     line=$(
+        local kv; for kv in "$@"; do export "$kv"; done
         CLAUDE_ARGS=(); restart_count=0; _tl_args=""; _tl_env=""; _tl_pin=""
         PROJECT_ROOT="$A"; FRAMEWORK_ROOT="$A/.agentic-framework"
         unset TERMLINK_SIDECAR_SOCKET TERMLINK_SIDECAR_STATUS_SOCKET
@@ -170,10 +173,22 @@ _launcher_env() {   # sets LAUNCH_ENV
     env -i "${BASE_ENV[@]}" timeout 10 tmux -L "$SOCK" -f /dev/null \
         new-session -d -s a -c "$A" "bash --noprofile --norc $P/pty.sh 2>$P/pty.err"
     _wait_for "$P/done"
-    # The pin covers the project PATH variables only. B's FW_* still reach claude through this
-    # path (FW_FOO is the probe for that) — an open finding of T-4651, not asserted here.
-    grep -v '^FW_' "$P/env.out" > "$P/env.paths"
-    _assert_no_b "$P/env.paths"
+}
+
+@test "T-4651 claude-fw: the injected PTY line on B's server launches claude with no B path or FW_*, A's dirs resolve" {
+    P="$T/p"
+    _run_claude_fw_line "$P"
+    _assert_no_b "$P/env.out"
+    ! grep -q '^FW_FOO=' "$P/env.out" || false
     grep -qx "PROJECT_ROOT=$A" "$P/env.out"
     _assert_resolves_a "$P/paths.out"
+}
+
+@test "T-4659 claude-fw: an FW_* set in claude-fw's own launch env still reaches claude, B's FW_FOO does not" {
+    P="$T/q"
+    _run_claude_fw_line "$P" FW_TERMLINK_MAX_WORKERS=7 "FW_SAFE_MODE=has space"
+    grep -qx "FW_TERMLINK_MAX_WORKERS=7" "$P/env.out"
+    grep -qx "FW_SAFE_MODE=has space" "$P/env.out"
+    ! grep -q '^FW_FOO=' "$P/env.out" || false
+    _assert_no_b "$P/env.out"
 }

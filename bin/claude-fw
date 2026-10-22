@@ -401,6 +401,19 @@ _tl_project_env_prefix() {
             "$_v" "$_r" "$_r" "$_v" "$_v" "$_r"
     done
     printf 'unset %s; export %s; ' "$_unset" "$_exp"
+    # T-4659: the server's FW_* are some other project's identity (FW_SIDECAR_AGENT_ID, FW_BIN,
+    # FW_DISPATCHED_WORKER …). Allow by origin: drop every FW_* the shell inherited, then
+    # re-export the ones in claude-fw's OWN environment (what the operator set on this launch).
+    # FW_ROUTED_FROM stays dropped (path-derived, in _unset above).
+    printf '%s; ' 'for _cfw_v in $(env | sed -n "s/^\(FW_[A-Za-z0-9_]*\)=.*/\1/p"); do unset "$_cfw_v"; done; unset _cfw_v'
+    local _own=""
+    while IFS= read -r _v; do
+        [ "$_v" = FW_ROUTED_FROM ] && continue
+        [[ "$_v" =~ ^FW_[A-Za-z0-9_]+$ ]] || continue
+        _own="$_own${_own:+ }$_v=$(printf '%q' "${!_v}")"
+    done < <(compgen -e)
+    [ -z "$_own" ] || printf 'export %s; ' "$_own"
+    return 0
 }
 
 # T-3648 (port of 055 P-011/P-012, framework:pickup offsets 242/244): one ping

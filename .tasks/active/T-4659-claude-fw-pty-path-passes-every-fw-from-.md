@@ -1,10 +1,17 @@
 ---
 id: T-4659
-name: "claude-fw PTY path passes every FW_* from a polluted tmux server env into the session (FW_SIDECAR_AGENT_ID, FW_BIN, FW_DISPATCHED_WORKER ...)"
+name: "claude-fw PTY path passes every FW_* from a polluted tmux server env into the
+  session (FW_SIDECAR_AGENT_ID, FW_BIN, FW_DISPATCHED_WORKER ...)"
 description: >
-  Found by T-4651's A-after-B test: bin/claude-fw _tl_project_env_prefix unsets TASKS_DIR/CONTEXT_DIR/_FW_PATHS_DERIVED_BY/FW_ROUTED_FROM and pins PROJECT_ROOT/FRAMEWORK_ROOT, but leaves every other FW_* from the server's global env, so another project's identity or paths reach the session (e.g. FW_SIDECAR_AGENT_ID would make this session answer as the other project). The dispatch path already uses an allow-list (T-4647). Fix: same allow-list principle for the claude-fw PTY line; then drop the FW_* exclusion from the claude-fw leg of tests/unit/t4651_polluted_tmux_server.bats so it asserts the full no-B-value. Blocks G-116/G-124 closure.
+  Found by T-4651's A-after-B test: bin/claude-fw _tl_project_env_prefix unsets TASKS_DIR/CONTEXT_DIR/_FW_PATHS_DERIVED_BY/FW_ROUTED_FROM
+  and pins PROJECT_ROOT/FRAMEWORK_ROOT, but leaves every other FW_* from the server's
+  global env, so another project's identity or paths reach the session (e.g. FW_SIDECAR_AGENT_ID
+  would make this session answer as the other project). The dispatch path already
+  uses an allow-list (T-4647). Fix: same allow-list principle for the claude-fw PTY
+  line; then drop the FW_* exclusion from the claude-fw leg of tests/unit/t4651_polluted_tmux_server.bats
+  so it asserts the full no-B-value. Blocks G-116/G-124 closure.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T19:37:42Z
-last_update: 2026-10-22T19:37:42Z
-date_finished: null
+last_update: 2026-10-22T19:38:32Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T19:38:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4659: claude-fw PTY path passes every FW_* from a polluted tmux server env into the session (FW_SIDECAR_AGENT_ID, FW_BIN, FW_DISPATCHED_WORKER ...)
@@ -62,8 +86,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] claude-fw's injected PTY line drops every FW_* inherited from the tmux server (t4651 claude-fw leg asserts no B value, FW_FOO included)
+- [x] FW_* present in claude-fw's own environment still reach claude (new bats test)
+- [x] t4651 and t4638 bats green with zero skips; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,6 +137,12 @@ date_finished: null
 -->
 
 ## Verification
+
+bash -n bin/claude-fw && bash -n bin/fw
+out=$(timeout 900 bats tests/unit/t4651_polluted_tmux_server.bats 2>&1); echo "$out" | tail -3; ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -qi '# skip'
+out=$(timeout 900 bats tests/unit/t4638*.bats 2>&1); echo "$out" | tail -3; ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -qi '# skip'
+python3 tools/bats-dead-negation-lint.py tests/ | grep -q clean
+bin/fw vendor self --check --task T-4659
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -265,6 +296,11 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** with project B's tmux server holding FW_SIDECAR_AGENT_ID / FW_BIN / FW_DISPATCHED_WORKER, a claude-fw PTY launch for project A starts claude with B's values (T-4651 FW_FOO probe).
+**Root cause:** bin/claude-fw `_tl_project_env_prefix` (line ~392) unsets only TASKS_DIR, CONTEXT_DIR, _FW_PATHS_DERIVED_BY, FW_ROUTED_FROM and pins PROJECT_ROOT/FRAMEWORK_ROOT; every other FW_* in the PTY shell's inherited (server) env passes through — a deny-list, the shape T-4647 replaced on the dispatch path.
+**Why structurally allowed:** T-4638 tested path variables only; t4651's claude-fw leg filtered `^FW_` out of its assertion, so the leak was recorded as an open finding rather than failing.
+**Prevention:** the prefix now drops all inherited FW_* and re-exports only claude-fw's own; the t4651 claude-fw leg asserts the full no-B-value and a new test pins that claude-fw's own FW_* still arrives.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -329,6 +365,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — how FW_* from claude-fw's own launch env is carried
+- **Chose:** the injected PTY line first unsets every FW_* the PTY shell inherited from the tmux server, then re-exports exactly the FW_* present in claude-fw's own environment (values %q-quoted), minus FW_ROUTED_FROM (path-derived).
+- **Why:** claude-fw's env is the only source that is this project's and this launch's; the server env is by definition someone else's. FW_TERMLINK_MAX_WORKERS / FW_SAFE_MODE / FW_RESTART_MODE set on the claude-fw command line keep working.
+- **Rejected:** reusing lib/spawn-env.sh's FW_SPAWN_ENV_ALLOW — it drops all FW_* by design (a dispatch worker gets its FW_* from run.sh/env.sh), so it would break operator settings here; a second hand-written FW_ name list would drift. Origin-based (claude-fw env) needs no list. Also rejected `env -i` rebuild: the PTY shell is the user's login shell with their rc environment.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -345,3 +386,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4659-claude-fw-pty-path-passes-every-fw-from-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T19:38:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
