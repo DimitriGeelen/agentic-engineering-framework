@@ -10,10 +10,10 @@ description: >
   silent at the verb level. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (lines 34-36). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -45,7 +45,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:35:50Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T10:52:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction status recorded on current bleeding-edge: `tests/integration/fw_inception.bats` tests 3-5 checked with CLAUDE* env stripped (reproduced 2026-10-22 at 961c19464: 3/4/5 not ok)
+- [x] If it reproduces: `fw inception start` in a fixture project succeeds (template lookup finds a template with `## Recommendation` and `## Decision`), and a create-task refusal is not silent at the verb level
+- [x] Regression test pins the fixed behaviour (fails without the fix): `tests/unit/t4597_inception_start_template_fallback.bats` — 3 of 4 not ok against HEAD code, 4/4 ok with fix (test 3 is the project-template-wins control)
+- [x] `tests/integration/fw_inception.bats` passes in full with CLAUDE* stripped (5/5)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,6 +284,10 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT bats tests/unit/t4597_inception_start_template_fallback.bats > /tmp/.t4597a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4597a.out && test "$(grep -c '# skip' /tmp/.t4597a.out)" -eq 0
+timeout 600 env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT bats tests/integration/fw_inception.bats > /tmp/.t4597b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4597b.out && test "$(grep -c '# skip' /tmp/.t4597b.out)" -eq 0
+bash -n lib/inception.sh && bash -n agents/task-create/create-task.sh
+bin/fw vendor self --check --task T-4597
 
 ## RCA
 
@@ -298,6 +304,16 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** In a project without `.tasks/templates/` (the `fw_inception.bats` fixture), `fw inception start` exited 1 with no output; integration tests 3-5 red.
+
+**Root cause:** Two defects. (1) `agents/task-create/create-task.sh:475,512` read templates only from `$TASKS_DIR/templates/`; with none there, an inception fell to the inline fallback (no `## Recommendation` / `## Decision`) and the T-1263 check (create-task.sh ~640) refused and deleted the file. (2) `lib/inception.sh:165` captured create-task in `output=$(... 2>&1)` under bin/fw's `set -euo pipefail`, so the non-zero exit aborted the verb before `echo "$output"` — the refusal was swallowed, hence "silent".
+
+**Why structurally allowed:** The T-1263 required-sections check was added at creation time without covering the inline fallback it can reach; the only test exercising an unseeded project was the integration suite, which is not on the per-commit path. The `$(...)` + set -e swallow is a generic shell trap with no lint.
+
+**Fix:** create-task resolves each template project-first, then `$FRAMEWORK_ROOT/.tasks/templates/` (vendored consumers carry this copy); do_inception_start keeps create-task's rc (`|| rc=$?`), echoes its output, prints a named error and returns the rc.
+
+**Prevention:** `tests/unit/t4597_inception_start_template_fallback.bats` (unit suite) pins inception and build creation in an unseeded project, project-template precedence, and that a create-task refusal is printed and fails the verb.
 
 ## Evolution
 
@@ -379,3 +395,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4597-inception-start-fails-in-the-fwinception.md
 - **Context:** Initial task creation
+
+### 2026-10-22T10:52:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

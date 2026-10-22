@@ -161,14 +161,20 @@ do_inception_start() {
     # to create-task.sh so the CLI-mirror filing gate doesn't double-fire on this
     # path. The recommendation has already been validated above and will be
     # injected via _inject_recommendation_block after creation.
-    local output
+    # T-4597: `|| rc=$?` keeps a create-task refusal from aborting here under the
+    # caller's set -e, which used to swallow the captured error before it was echoed.
+    local output rc=0
     output=$(FW_INCEPTION_PRE_GATED=1 "$AGENTS_DIR/task-create/create-task.sh" \
         --name "$name" \
         --description "Inception: $name" \
         --type inception \
-        --owner "$owner" ${origin:+--origin "$origin"} 2>&1)
+        --owner "$owner" ${origin:+--origin "$origin"} 2>&1) || rc=$?
 
     echo "$output"
+    if [ "$rc" -ne 0 ]; then
+        echo -e "${RED}ERROR: inception task was not created (create-task exited $rc)${NC}" >&2
+        return "$rc"
+    fi
 
     # Extract task ID and set focus
     local task_id

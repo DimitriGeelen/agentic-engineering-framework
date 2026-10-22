@@ -470,10 +470,24 @@ format_yaml_array() {
 TAGS_YAML=$(format_yaml_array "$TAGS")
 RELATED_YAML=$(format_yaml_array "$RELATED")
 
+# T-4597: a project without .tasks/templates/ (one fw init never seeded, or a test
+# fixture) uses the framework's own copy. Without this an inception fell through to
+# the inline fallback below, which has no ## Recommendation / ## Decision, and the
+# T-1263 check refused every `fw inception start` in such a project.
+_template_path() {
+    if [ -f "$TASKS_DIR/templates/$1" ]; then
+        echo "$TASKS_DIR/templates/$1"
+    elif [ -f "$FRAMEWORK_ROOT/.tasks/templates/$1" ]; then
+        echo "$FRAMEWORK_ROOT/.tasks/templates/$1"
+    fi
+}
+INCEPTION_TEMPLATE=$(_template_path inception.md)
+DEFAULT_TEMPLATE=$(_template_path default.md)
+
 # Select template content based on workflow type
 # All vars passed via env to avoid shell interpolation into Python source (T-595)
-if [ "$WORKFLOW_TYPE" = "inception" ] && [ -f "$TASKS_DIR/templates/inception.md" ]; then
-    TC_TEMPLATE="$TASKS_DIR/templates/inception.md" \
+if [ "$WORKFLOW_TYPE" = "inception" ] && [ -n "$INCEPTION_TEMPLATE" ]; then
+    TC_TEMPLATE="$INCEPTION_TEMPLATE" \
     TC_TASK_ID="$TASK_ID" TC_STATUS="$STATUS" TC_HORIZON="$HORIZON" \
     TC_OWNER="$OWNER" TC_TAGS_YAML="$TAGS_YAML" TC_RELATED_YAML="$RELATED_YAML" \
     TC_TIMESTAMP="$TIMESTAMP" TC_FILEPATH="$FILEPATH" \
@@ -509,8 +523,8 @@ t = t.replace('[Chronological log', '### ' + e['TC_TIMESTAMP'] + ' — task-crea
 with open(e['TC_FILEPATH'], 'w') as f:
     f.write(t)
 " "$NAME" "$DESCRIPTION"
-elif [ -f "$TASKS_DIR/templates/default.md" ]; then
-    TC_TEMPLATE="$TASKS_DIR/templates/default.md" \
+elif [ -n "$DEFAULT_TEMPLATE" ]; then
+    TC_TEMPLATE="$DEFAULT_TEMPLATE" \
     TC_TASK_ID="$TASK_ID" TC_STATUS="$STATUS" TC_WORKFLOW_TYPE="$WORKFLOW_TYPE" \
     TC_HORIZON="$HORIZON" TC_OWNER="$OWNER" TC_TAGS_YAML="$TAGS_YAML" \
     TC_RELATED_YAML="$RELATED_YAML" TC_TIMESTAMP="$TIMESTAMP" TC_FILEPATH="$FILEPATH" \
@@ -632,7 +646,7 @@ if [ "$WORKFLOW_TYPE" = "inception" ]; then
     if [ -n "$_missing" ]; then
         echo -e "${RED}ERROR: Inception template missing required sections: $_missing${NC}" >&2
         echo "The inception decide pipeline requires both ## Recommendation and ## Decision." >&2
-        echo "Fix the template at: $TASKS_DIR/templates/inception.md" >&2
+        echo "Fix the template at: ${INCEPTION_TEMPLATE:-$TASKS_DIR/templates/inception.md}" >&2
         rm -f "$FILEPATH"
         exit 1
     fi
