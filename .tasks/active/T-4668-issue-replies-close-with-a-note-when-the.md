@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T20:52:42Z
-last_update: '2026-10-22T20:53:00Z'
+last_update: '2026-10-22T21:00:22Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,6 +72,16 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T21:00:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=311,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4668: Issue replies: close with a note when the submitter OKs closing ("fine to close") — standing routine, no operator question
@@ -84,10 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Classifier has a `close-ok` class (issue author explicitly OKs closing, no counter-signal); `confirmed` keeps priority; #92's real reply classifies close-ok
-- [ ] `fw issues confirm-close` accepts close-ok and an optional `--note`; the comment says "Closed with your OK", quotes the OK sentence, keeps caveats, names what was delivered
-- [ ] sync auto-closes close-ok on eligible issues only when the reply carries no suggestion; a reply with a suggestion stays needs-decision for the agent to file the follow-up and close with a note
-- [ ] tests/unit/test_t4668_close_ok.py green with gh stubbed; T-4660's tests still green
+- [x] Classifier has a `close-ok` class (issue author explicitly OKs closing, no counter-signal); `confirmed` keeps priority; #92's real reply classifies close-ok
+- [x] `fw issues confirm-close` accepts close-ok and an optional `--note`; the comment says "Closed with your OK", quotes the OK sentence, keeps caveats, names what was delivered
+- [x] sync auto-closes close-ok on eligible issues only when the reply carries no suggestion; a reply with a suggestion stays needs-decision for the agent to file the follow-up and close with a note
+- [x] tests/unit/test_t4668_close_ok.py green with gh stubbed; T-4660's tests still green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,8 +282,20 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_t4668_close_ok.py -q > /tmp/.t4668a 2>&1 && grep -q passed /tmp/.t4668a
+python3 -m pytest tests/unit/test_t4660_issue_replies.py -q > /tmp/.t4668b 2>&1 && grep -q passed /tmp/.t4668b
+python3 -c "import sys; sys.path.insert(0,'lib'); import issues; assert 'close-ok' in issues.REPLY_CLASSES"
+bin/fw vendor self --check --task T-4668
 
 ## RCA
+
+**Symptom:** #92's submitter wrote "Fine to close from our side." after the fix was released; `fw issues sync` marked the reply needs-decision as `other`, and `confirm-close` refused it, so a routine close went to the operator.
+
+**Root cause:** `lib/issues.py:912` `classify_reply` knew only confirmed / not-fixed / other, and `confirm_close` (`lib/issues.py:1056`) accepted only `confirmed`, so an explicit OK to close was not a class. Second cause: sync stored only the first 500 characters of a reply (`lib/issues.py:773`). An OK to close usually comes last, so the classifier never saw #92's.
+
+**Why structurally allowed:** T-4660's test table pinned #92 as `other`. That was right for the 500-character excerpt and wrong for the whole reply. No test used a reply whose deciding sentence comes after the excerpt.
+
+**Prevention:** `tests/unit/test_t4668_close_ok.py` pins #92's full reply as `close-ok`, pins the suggestion hold, and pins that the stored excerpt keeps the reply's tail.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

@@ -770,7 +770,7 @@ def cmd_sync(a) -> int:
             if not a.dry_run:
                 _append_row(ledger, {"issue": n, "stage": "reply", "reply_id": rid, "author": author,
                                      "created": cm.get("createdAt") or "", "url": cm.get("url") or "",
-                                     "excerpt": (cm.get("body") or "")[:500], "answered": False,
+                                     "excerpt": _excerpt(cm.get("body") or ""), "answered": False,
                                      "ts": _now()})
     try:  # T-4660: act on what the submitter said; an unreadable GitHub leaves it for the next run
         lines += _settle_replies({int(i["number"]) for i in issues}, a.dry_run)
@@ -900,8 +900,19 @@ _STRONG_NEG_RE = re.compile(
     r"(doesn'?t|does\s+not|did\s+not|didn'?t)\s+(work|fix)|not\s+working|regress\w*|re-?open\w*|"
     r"is\s+broken|remains\s+broken|broken\s+again|fails|failing)\b", re.I)
 _WEAK_NEG_RE = re.compile(r"\b(still|however|except|unfortunately)\b|\bbut\b[^.!?]*\bnot\b", re.I)
-_CAVEAT_RE = re.compile(r"\b(only|have\s+not|haven'?t|did\s+not|didn'?t|not\s+(run|clicked|tested|tried))\b", re.I)
-REPLY_CLASSES = ("confirmed", "not-fixed", "other")
+_CAVEAT_RE = re.compile(r"\b(only|have\s+not|haven'?t|did\s+not|didn'?t|cannot|can'?t|could\s+not|couldn'?t|"
+                        r"not\s+(run|clicked|tested|tried))\b", re.I)
+# T-4668: the issue author explicitly OKs closing. Standing operator ruling: that is a routine close.
+_CLOSE_OK_RE = re.compile(
+    r"\b((fine|ok|okay|good)\s+to\s+close|you\s+can\s+close|feel\s+free\s+to\s+close|"
+    r"happy\s+for\s+(this|it|the\s+issue)\s+to\s+be\s+closed)\b", re.I)
+_KEEP_OPEN_RE = re.compile(
+    r"\b(not\s+(fine|ok|okay|good)\s+to\s+close|keep\s+(this|it|the\s+issue)?\s*open|"
+    r"(don'?t|do\s+not|please\s+don'?t)\s+close)\b", re.I)
+# a reply that also asks for something more: the agent files the follow-up and closes with --note
+_SUGGEST_RE = re.compile(r"\b(could(?!\s+not)|would\s+be|suggest\w*)\b", re.I)
+REPLY_CLASSES = ("confirmed", "close-ok", "not-fixed", "other")
+CLOSABLE_CLASSES = ("confirmed", "close-ok")
 
 
 def _sentences(text: str) -> list:
@@ -909,9 +920,16 @@ def _sentences(text: str) -> list:
     return [s.strip() for s in re.split(r"(?<=[.!?])\s+(?=[A-Z`(\"'])", flat) if s.strip()]
 
 
+def _close_ok_sentence(text: str) -> str:
+    """The first sentence that explicitly OKs closing (not a question), or ""."""
+    return next((s for s in _sentences(text) if _CLOSE_OK_RE.search(s) and not s.endswith("?")), "")
+
+
 def classify_reply(text: str, author: str = "", issue_author: str = "") -> str:
-    """confirmed | not-fixed | other. Pure. `confirmed` needs the issue author's own reply, an opening
-    sentence that affirms the fix, and no counter-signal; anything doubtful is `other`."""
+    """confirmed | close-ok | not-fixed | other. Pure. `confirmed` needs the issue author's own reply,
+    an opening sentence that affirms the fix, and no counter-signal. `close-ok` (T-4668) needs a
+    sentence that explicitly OKs closing and nothing asking to keep it open; `confirmed` wins when
+    both apply. Anything doubtful is `other`."""
     text = text or ""
     if author and issue_author and author.lower() != issue_author.lower():
         return "other"
@@ -919,11 +937,16 @@ def classify_reply(text: str, author: str = "", issue_author: str = "") -> str:
     if _STRONG_NEG_RE.search(text):
         return "not-fixed"
     sents = _sentences(text)
-    if not sents or not _AFFIRM_RE.search(sents[0]):
-        return "other"
-    if _WEAK_NEG_RE.search(first_para):
-        return "other"
-    return "confirmed"
+    if sents and _AFFIRM_RE.search(sents[0]) and not _WEAK_NEG_RE.search(first_para):
+        return "confirmed"
+    if _close_ok_sentence(text) and not _KEEP_OPEN_RE.search(text):
+        return "close-ok"
+    return "other"
+
+
+def has_suggestion(text: str) -> bool:
+    """Heuristic (T-4668): the reply asks for something beyond the fix, so it needs a follow-up task."""
+    return bool(_SUGGEST_RE.search(text or ""))
 
 
 def _quote(text: str, limit: int = 220) -> str:
@@ -933,9 +956,10 @@ def _quote(text: str, limit: int = 220) -> str:
     return (s[:limit] + "…") if len(s) > limit else s
 
 
-def _caveats(text: str) -> list:
-    """Sentences after the first that say what the submitter did not or only partly checked."""
-    return [_quote(s) for s in _sentences(text)[1:] if _CAVEAT_RE.search(s)][:2]
+def _caveats(text: str, skip: str = "") -> list:
+    """Sentences after the first (and other than `skip`) that say what the submitter did not or only
+    partly checked."""
+    return [_quote(s) for s in _sentences(text)[1:] if s != skip and _CAVEAT_RE.search(s)][:2]
 
 
 _SETTLED_STAGES = ("closed", "closed-released", "closed-fixed", "closed-duplicate", "reply-settled")
@@ -986,14 +1010,21 @@ def cmd_replies(a) -> int:
     for i in items:
         print(f"#{i['issue']} [{i['stage'] or '-'}] {i['class']}{' (settled)' if i['settled'] else ''} "
               f"{i['reply_id']} {i['created']}  {i['excerpt']}")
-    print(f"replies: {len(items)} — confirm with `fw issues confirm-close <N> --reply-id <ID>`")
+    print(f"replies: {len(items)} — close a confirmed or close-ok reply with "
+          f"`fw issues confirm-close <N> --reply-id <ID> [--note \"...\"]`")
     return 0
 
 
-def _confirm_body(date: str, quote: str, reply_url: str, caveats: list, tasks: list, fixed: dict) -> str:
-    out = ["<!-- aef-intake:stage=closed -->", f"**[AEF intake] Closed: confirmed fixed** — {date}", "",
-           "Thank you for testing the fix and for taking the time to confirm it. You wrote:", "",
-           f"> {quote}", ""]
+def _confirm_body(date: str, quote: str, reply_url: str, caveats: list, tasks: list, fixed: dict,
+                  cls: str = "confirmed", note: str = "") -> str:
+    if cls == "close-ok":
+        out = ["<!-- aef-intake:stage=closed -->", f"**[AEF intake] Closed with your OK** — {date}", "",
+               "Thank you for looking at the change and for telling us it is fine to close. You wrote:", "",
+               f"> {quote}", ""]
+    else:
+        out = ["<!-- aef-intake:stage=closed -->", f"**[AEF intake] Closed: confirmed fixed** — {date}", "",
+               "Thank you for testing the fix and for taking the time to confirm it. You wrote:", "",
+               f"> {quote}", ""]
     if reply_url:
         out += [f"([your reply]({reply_url}))", ""]
     if caveats:
@@ -1006,8 +1037,11 @@ def _confirm_body(date: str, quote: str, reply_url: str, caveats: list, tasks: l
         where.append(f"released in **{fixed['release']}**")
     if fixed.get("commit"):
         where.append(f"commit {fixed['commit']}")
-    out += [("The fix is " + ", ".join(where) + ". ") if where else "",
-            "Closing this issue as completed; it can be reopened if the problem comes back.", "", FOOTER]
+    what = "What was delivered is " if cls == "close-ok" else "The fix is "
+    out += [(what + ", ".join(where) + ". ") if where else ""]
+    if note:
+        out += ["", re.sub(r"\s+", " ", note).strip()]
+    out += ["", "Closing this issue as completed; it can be reopened if the problem comes back.", "", FOOTER]
     return "\n".join(out) + "\n"
 
 
@@ -1026,8 +1060,11 @@ def _fix_facts(rows: list, n: int) -> dict | None:
     return {"tasks": tasks, "release": release, "commit": commit} if found else None
 
 
-def confirm_close(n: int, reply_id: str, dry_run: bool = False) -> str:
-    """Thank the submitter and close #n on their confirmation. Returns closed | already | would-close.
+def confirm_close(n: int, reply_id: str, dry_run: bool = False, note: str = "", auto: bool = False) -> str:
+    """Thank the submitter and close #n on their confirmation or their OK to close (T-4668). `note` is
+    appended to the comment (e.g. the follow-up task for a suggestion). `auto` is sync's call: a
+    close-ok reply that carries a suggestion is refused there, so the agent files the follow-up and
+    closes with a note. Returns closed | already | would-close.
     Raises IssuesError when any precondition fails. The comment is logged (closed-note) before the
     close, and the closed row is written only after GitHub accepted the close."""
     ledger = _issues_dir() / "intake.jsonl"
@@ -1053,29 +1090,36 @@ def confirm_close(n: int, reply_id: str, dry_run: bool = False) -> str:
     if live is not None and _login(live.get("author")).lower() != issue_author.lower():
         raise IssuesError(f"reply {reply_id} on GitHub is not by the issue author", 2)
     text = (live or {}).get("body") or reply.get("excerpt") or ""
-    if classify_reply(text, issue_author, issue_author) != "confirmed":
-        raise IssuesError(f"reply {reply_id} does not classify as confirmed; decide it by hand", 2)
-    body = _confirm_body(_now()[:10], _quote(text), (live or {}).get("url") or reply.get("url") or "",
-                         _caveats(text), fixed["tasks"], fixed)
+    cls = classify_reply(text, issue_author, issue_author)
+    if cls not in CLOSABLE_CLASSES:
+        raise IssuesError(f"reply {reply_id} does not classify as confirmed or close-ok; decide it by hand", 2)
+    if cls == "close-ok" and auto and has_suggestion(text):
+        raise IssuesError(f"reply {reply_id} OKs closing but carries a suggestion: file the follow-up, then "
+                          f"`fw issues confirm-close {n} --reply-id {reply_id} --note \"Your suggestion is "
+                          f"tracked as T-XXXX.\"`", 2)
+    ok = _close_ok_sentence(text) if cls == "close-ok" else ""
+    body = _confirm_body(_now()[:10], _quote(ok) if ok else _quote(text),
+                         (live or {}).get("url") or reply.get("url") or "",
+                         _caveats(text, skip=ok), fixed["tasks"], fixed, cls, note)
     if dry_run:
         print(body, end="")
         return "would-close"
-    note = _ledger_has(n, "closed-note")
-    if note is None and not _marked_on_issue(n, "closed"):
+    logged = _ledger_has(n, "closed-note")
+    if logged is None and not _marked_on_issue(n, "closed"):
         p = _gh(["issue", "comment", str(n), "--repo", _repo(), "--body-file", "-"], stdin=body)
         url = next((w for w in p.stdout.split() if w.startswith("https://")), "") if p.returncode == 0 else ""
         if not url:
             raise IssuesError(f"GitHub did not return a comment URL for #{n}: "
                               f"{(p.stderr or p.stdout).strip()[:300]}", 3)
-        note = {"issue": n, "stage": "closed-note", "reply_id": reply_id, "comment": url,
-                "by": "confirm-close", "ts": _now()}
-        _append_row(ledger, note)
+        logged = {"issue": n, "stage": "closed-note", "reply_id": reply_id, "comment": url,
+                  "by": "confirm-close", "ts": _now()}
+        _append_row(ledger, logged)
     q = _gh(["issue", "close", str(n), "--repo", _repo(), "--reason", "completed"])
     if q.returncode != 0:
         raise IssuesError(f"#{n} is commented but closing failed: {q.stderr.strip()[:300]}. "
                           f"Re-run to retry the close only.", 3)
-    row = {"issue": n, "stage": "closed", "reply_id": reply_id, "by": "confirm-close",
-           "comment": (note or {}).get("comment", ""), "ts": _now()}
+    row = {"issue": n, "stage": "closed", "reply_id": reply_id, "by": "confirm-close", "class": cls,
+           "comment": (logged or {}).get("comment", ""), "ts": _now()}
     if fixed["tasks"]:
         row["tasks"] = fixed["tasks"]
     _append_row(ledger, row)
@@ -1083,16 +1127,24 @@ def confirm_close(n: int, reply_id: str, dry_run: bool = False) -> str:
 
 
 def cmd_confirm_close(a) -> int:
-    out = confirm_close(a.issue, a.reply_id, a.dry_run)
+    out = confirm_close(a.issue, a.reply_id, a.dry_run, note=a.note or "")
     if out == "already":
         print(f"#{a.issue} already closed by confirm-close — nothing to do")
     elif out == "closed":
-        print(f"closed #{a.issue} on the submitter's confirmation (reply {a.reply_id})")
+        print(f"closed #{a.issue} on the submitter's reply (reply {a.reply_id})")
     return 0
 
 
+def _excerpt(body: str, head: int = 500, tail: int = 300) -> str:
+    """Head and tail of a reply (T-4668): an OK to close usually comes last, past a plain head cut."""
+    if len(body) <= head + tail:
+        return body
+    return body[:head] + "\n\n[…]\n\n" + body[-tail:]
+
+
 def _settle_replies(open_numbers: set, dry_run: bool) -> list:
-    """Sync leg: close confirmed replies on eligible issues, mark the rest needs-decision, and settle
+    """Sync leg: close confirmed and close-ok replies on eligible issues (a close-ok reply with a
+    suggestion waits for the agent), mark the rest needs-decision, and settle
     replies whose issue is no longer open. A gh failure leaves the ledger as it was for the next run."""
     ledger = _issues_dir() / "intake.jsonl"
     lines = []
@@ -1103,17 +1155,18 @@ def _settle_replies(open_numbers: set, dry_run: bool) -> list:
                 _append_row(ledger, {"issue": n, "stage": "reply-settled", "reply_id": rid,
                                      "note": "issue no longer open", "ts": _now()})
             continue
-        if it["class"] == "confirmed":
+        if it["class"] in CLOSABLE_CLASSES:
             try:
-                out = confirm_close(n, rid, dry_run=True) if dry_run else confirm_close(n, rid)
-                lines.append(f"CONFIRMED #{n}: {'would close' if dry_run else 'closed'} on the "
+                out = confirm_close(n, rid, dry_run=dry_run, auto=True)
+                tag = "CONFIRMED" if it["class"] == "confirmed" else "CLOSE-OK"
+                lines.append(f"{tag} #{n}: {'would close' if dry_run else 'closed'} on the "
                              f"submitter's reply ({out})")
                 continue
             except IssuesError as e:
                 if e.code == 3:
                     lines.append(f"WARN #{n}: confirm-close not completed ({e}); retried next sync")
                     continue
-                reason = f"confirmed but not closed: {e}"
+                reason = f"{it['class']} but not closed: {e}"
         else:
             reason = it["class"]
         if not it["needs_decision"]:
@@ -1742,9 +1795,11 @@ def main(argv=None) -> int:
     rp.add_argument("--json", action="store_true")
     rp.add_argument("--all", action="store_true", help="include settled replies")
     rp.set_defaults(fn=cmd_replies)
-    cc = sub.add_parser("confirm-close", help="thank the submitter and close an issue on their confirming reply (T-4660)")
+    cc = sub.add_parser("confirm-close", help="thank the submitter and close an issue on their confirming or "
+                                              "close-ok reply (T-4660, T-4668)")
     cc.add_argument("issue", type=int)
     cc.add_argument("--reply-id", required=True)
+    cc.add_argument("--note", help="appended to the comment, e.g. 'Your suggestion is tracked as T-XXXX.' (T-4668)")
     cc.add_argument("--dry-run", action="store_true", help="print the comment, post and close nothing")
     cc.set_defaults(fn=cmd_confirm_close)
     s = sub.add_parser("sync", help="ingest new/changed issues and submitter replies (cron)")
