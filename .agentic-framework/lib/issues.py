@@ -981,7 +981,8 @@ def _undecided_replies(include_all: bool = False) -> list:
     issue is closed in the ledger, or sync found the issue closed; needs-decision rows stay listed."""
     rows = _read_rows(_issues_dir() / "intake.jsonl")
     closed_issues = {r.get("issue") for r in rows if r.get("stage") in _SETTLED_STAGES}
-    closed_replies = {str(r.get("reply_id")) for r in rows if r.get("reply_id") and r.get("stage") == "closed"}
+    closed_replies = {str(r.get("reply_id")) for r in rows
+                      if r.get("reply_id") and r.get("stage") in ("closed", "reply-acked")}
     decisions = {str(r.get("reply_id")): r for r in rows if r.get("stage") == "needs-decision"}
     out = []
     for r in rows:
@@ -1011,7 +1012,40 @@ def cmd_replies(a) -> int:
         print(f"#{i['issue']} [{i['stage'] or '-'}] {i['class']}{' (settled)' if i['settled'] else ''} "
               f"{i['reply_id']} {i['created']}  {i['excerpt']}")
     print(f"replies: {len(items)} — close a confirmed or close-ok reply with "
-          f"`fw issues confirm-close <N> --reply-id <ID> [--note \"...\"]`")
+          f"`fw issues confirm-close <N> --reply-id <ID> [--note \"...\"]`; settle one that needs no action with "
+          f"`fw issues reply-ack <N> --reply-id <ID> --reason \"...\"`")
+    return 0
+
+
+def reply_ack(n: int, reply_id: str, reason: str, dry_run: bool = False) -> str:
+    """Settle one submitter reply that needs no action (T-4669): a reply-acked ledger row, nothing on
+    GitHub. Returns acked | already | would-ack. Raises IssuesError for an unknown reply or no reason."""
+    reason = re.sub(r"\s+", " ", reason or "").strip()
+    if not reason:
+        raise IssuesError("--reason is required: say why the reply needs no action", 2)
+    ledger = _issues_dir() / "intake.jsonl"
+    rows = _read_rows(ledger)
+    if not any(r.get("issue") == n and r.get("stage") == "reply" and str(r.get("reply_id")) == reply_id
+               for r in rows):
+        raise IssuesError(f"no reply {reply_id!r} for #{n} in the ledger", 2)
+    if any(r.get("issue") == n and r.get("stage") == "reply-acked" and str(r.get("reply_id")) == reply_id
+           for r in rows):
+        return "already"
+    row = {"issue": n, "stage": "reply-acked", "reply_id": reply_id, "reason": reason[:300],
+           "by": "agent" if _is_agent() else "operator", "ts": _now()}
+    if dry_run:
+        print(json.dumps(row, ensure_ascii=False))
+        return "would-ack"
+    _append_row(ledger, row)
+    return "acked"
+
+
+def cmd_reply_ack(a) -> int:
+    out = reply_ack(a.issue, a.reply_id, a.reason, a.dry_run)
+    if out == "already":
+        print(f"#{a.issue} reply {a.reply_id} already acknowledged — nothing to do")
+    elif out == "acked":
+        print(f"acknowledged #{a.issue} reply {a.reply_id}; nothing posted to GitHub")
     return 0
 
 
@@ -1921,6 +1955,13 @@ def main(argv=None) -> int:
     cc.add_argument("--note", help="appended to the comment, e.g. 'Your suggestion is tracked as T-XXXX.' (T-4668)")
     cc.add_argument("--dry-run", action="store_true", help="print the comment, post and close nothing")
     cc.set_defaults(fn=cmd_confirm_close)
+    ra = sub.add_parser("reply-ack", help="settle a submitter reply that needs no action; ledger only, posts "
+                                          "nothing (T-4669)")
+    ra.add_argument("issue", type=int)
+    ra.add_argument("--reply-id", required=True)
+    ra.add_argument("--reason", required=True, help="why the reply needs no action")
+    ra.add_argument("--dry-run", action="store_true", help="print the ledger row, write nothing")
+    ra.set_defaults(fn=cmd_reply_ack)
     fe = sub.add_parser("field-evidence", help="record confirm-closed issues' confirmed replies as WORKS rows in "
                                                "the submitter field-evidence table; ledger only, no GitHub (T-4664)")
     fe.add_argument("issue", type=int, nargs="*", help="issue numbers (default: every confirm-close)")

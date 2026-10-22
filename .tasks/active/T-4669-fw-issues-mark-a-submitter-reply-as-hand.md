@@ -1,10 +1,15 @@
 ---
 id: T-4669
-name: "fw issues: mark a submitter reply as handled without closing the issue (no-action reply, e.g. #14 thank-you/outreach comments)"
+name: "fw issues: mark a submitter reply as handled without closing the issue (no-action
+  reply, e.g. #14 thank-you/outreach comments)"
 description: >
-  T-4660 lists every unsettled submitter reply; a reply that needs no action (thanks, outreach, discussion) has no way to leave the list short of closing the issue. Add fw issues reply-ack <N> --reply-id <ID> --reason '...' writing a ledger row (stage=reply-acked) that settles that reply only; posts nothing to GitHub. First use: the two May 2026 comments on #14.
+  T-4660 lists every unsettled submitter reply; a reply that needs no action (thanks,
+  outreach, discussion) has no way to leave the list short of closing the issue. Add
+  fw issues reply-ack <N> --reply-id <ID> --reason '...' writing a ledger row (stage=reply-acked)
+  that settles that reply only; posts nothing to GitHub. First use: the two May 2026
+  comments on #14.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T20:58:33Z
-last_update: 2026-10-22T20:58:33Z
-date_finished: null
+last_update: 2026-10-22T21:13:22Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +55,52 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T21:00:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T21:00:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4669: fw issues: mark a submitter reply as handled without closing the issue (no-action reply, e.g. #14 thank-you/outreach comments)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+A reply that needs no action (thanks, outreach, discussion) stays in `fw issues replies`, `fw operator pending` and the
+session-start alerts forever unless the issue is closed. `reply-ack` settles one reply in the ledger, nothing on GitHub.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw issues reply-ack <N> --reply-id <ID> --reason "..."` appends one `{issue, stage: reply-acked, reply_id, reason, by, ts}` row to the intake ledger and makes no gh call at all
+- [x] It refuses (non-zero exit, no row) a reply id the ledger does not hold for that issue, and an empty `--reason`; a second ack of the same reply writes no second row
+- [x] `--dry-run` prints the row and writes nothing
+- [x] `_undecided_replies` treats a reply-acked reply as settled (it leaves `fw issues replies` and sync's needs-decision leg), while other replies on the same issue stay listed
+- [x] Run for real on #14's two replies (IC_kwDORdtOLc8AAAABBicq1A, IC_kwDORdtOLc8AAAABBih5ow); `fw issues replies --json` no longer lists them; the ledger rows committed
+- [x] `tests/unit/test_t4669_reply_ack.py` passes with gh stubbed; T-4660/T-4668/T-4664 issues tests still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +285,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_t4669_reply_ack.py -q > /tmp/.t4669.out 2>&1 && grep -q passed /tmp/.t4669.out
+bin/fw issues replies --json > /tmp/.t4669r.json 2>&1 && ! grep -q "IC_kwDORdtOLc8AAAABBicq1A\|IC_kwDORdtOLc8AAAABBih5ow" /tmp/.t4669r.json
+bin/fw vendor self --check --task T-4669
 
 ## RCA
 
@@ -345,3 +385,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4669-fw-issues-mark-a-submitter-reply-as-hand.md
 - **Context:** Initial task creation
+
+### 2026-10-22T21:03:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
