@@ -1,10 +1,16 @@
 ---
 id: T-4627
-name: "Read-only allowlist: git ls-remote/fetch --upload-pack (and --receive-pack, -u) run an arbitrary program"
+name: "Read-only allowlist: git ls-remote/fetch --upload-pack (and --receive-pack,
+  -u) run an arbitrary program"
 description: >
-  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh in their repo): the command passes has_bash_write_pattern and is_bash_safe_command (agents/context/lib/safe-commands.sh) yet git ls-remote --upload-pack=CMD <path> and git fetch --upload-pack=CMD <remote> run CMD for a local-path or ssh remote. Refuse --upload-pack/--receive-pack/-u on ls-remote and fetch in every spelling; tests plus controls.
+  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh
+  in their repo): the command passes has_bash_write_pattern and is_bash_safe_command
+  (agents/context/lib/safe-commands.sh) yet git ls-remote --upload-pack=CMD <path>
+  and git fetch --upload-pack=CMD <remote> run CMD for a local-path or ssh remote.
+  Refuse --upload-pack/--receive-pack/-u on ls-remote and fetch in every spelling;
+  tests plus controls.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +45,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "9e201103"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T10:36:00Z
-last_update: 2026-10-22T10:36:00Z
-date_finished: null
+last_update: 2026-10-22T10:59:06Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +57,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T10:45:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T10:45:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4627: Read-only allowlist: git ls-remote/fetch --upload-pack (and --receive-pack, -u) run an arbitrary program
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+ring20-dashboard round-2 probe (msg 9e201103): `git ls-remote --upload-pack=CMD <path>` and
+`git fetch --upload-pack=CMD <remote>` classify SAFE in `agents/context/lib/safe-commands.sh`
+although git runs CMD for a local-path or ssh remote. `git push --receive-pack=CMD` / `--exec=CMD`
+(push is allowlisted since T-2462) is the same vector on the write side and is covered here too.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `is_bash_safe_command` refuses `--upload-pack` on git ls-remote and git fetch in every spelling git accepts (`=CMD`, separate value, unambiguous abbreviation, `-u` / `-uCMD` / bundled `-qu`, quoted or brace-built, a word beginning with an expansion), behind git global options too
+- [x] `is_bash_safe_command` refuses `--receive-pack` / `--exec` (and their abbreviations) on git push
+- [x] Controls stay SAFE: `git ls-remote origin`, `git ls-remote --heads --refs origin`, `git fetch origin`, `git fetch --prune --tags origin`, `git push origin bleeding-edge`, `git push --repo=origin`
+- [x] Regression test `tests/unit/t4627_git_transport_program.bats` fails on the pre-fix code and passes after; existing safe-commands suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,8 +286,30 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4627_git_transport_program.bats > /tmp/.t4627.out 2>&1 && ! grep -q "^not ok" /tmp/.t4627.out
+test "$(grep -c '# skip' /tmp/.t4627.out)" -eq 0
+timeout 900 bats tests/unit/t4513_git_grep_pager.bats tests/unit/context_safe_commands.bats tests/unit/test_safe_commands_git_commit.bats > /tmp/.t4627b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4627b.out
+bin/fw vendor self --check --task T-4627
 
 ## RCA
+
+**Symptom:** `git ls-remote --upload-pack=touch .` and `git fetch --upload-pack=touch origin`
+classified SAFE and so ran with no active task, although git executes the named program as the
+remote's upload-pack (local path and ssh transports). `git push --receive-pack=CMD` / `--exec=CMD`
+likewise.
+
+**Root cause:** `agents/context/lib/safe-commands.sh` `_fw_single_command_is_safe`, git arm: `ls-remote`
+sits in the read-verb list and `push|fetch` in the T-2462 arm, each returning 0 on the verb name
+alone. Only the diff family's `--output` (T-4367) and git grep's `-O` (T-4513) were judged on their
+options.
+
+**Why structurally allowed:** the T-2462 rationale ("fetch is pure network read") reasoned about the
+verb's purpose, not its option grammar, and the program-running options of transport verbs were never
+enumerated.
+
+**Prevention:** `_fw_git_transport_runs_program` judges ls-remote/fetch/push on the dequoted option
+words (T-4512 tokenizer: quoted, brace-built and expanded spellings fail closed), and
+`tests/unit/t4627_git_transport_program.bats` pins every spelling plus SAFE controls.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -321,6 +380,11 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-22 — fetch -u and push scope
+- **Chose:** refuse any short bundle holding `u` on fetch too, and extend the check to push `--receive-pack` / `--exec`.
+- **Why:** on fetch `-u` is the harmless `--update-head-ok`, but refusing it costs one rare spelling and keeps one rule for both verbs; push is admitted by T-2462 and its pack options are the same vector.
+- **Rejected:** per-verb short-option tables (more surface to get wrong for no measured gain).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -346,3 +410,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4627-read-only-allowlist-git-ls-remotefetch--.md
 - **Context:** Initial task creation
+
+### 2026-10-22T10:59:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

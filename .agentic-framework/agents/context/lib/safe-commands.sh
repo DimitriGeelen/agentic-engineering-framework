@@ -696,6 +696,40 @@ _fw_git_grep_opens_pager() {
     return 1
 }
 
+# T-4627: git ls-remote / fetch --upload-pack=CMD and push --receive-pack=CMD /
+# --exec=CMD RUN CMD as the remote's pack program (local-path and ssh transports),
+# although the verbs are admitted by name. Judged on the dequoted words: any
+# unambiguous prefix of those long options (git accepts --u…, --rece…, --e…), any
+# short bundle holding u on ls-remote/fetch (-u is --upload-pack on ls-remote,
+# --update-head-ok on fetch: refused on both, fail closed), and a word that begins
+# with an expansion. Words after `--` are refused as well.
+# _fw_git_transport_runs_program <normalised "git verb args...">; 0 = may run one.
+_fw_git_transport_runs_program() {
+    local i j tok sub
+    _fw_option_words "$1" || return 0
+    sub="${_FW_OW[1]:-}"
+    for (( i=2; i<${#_FW_OW[@]}; i++ )); do
+        tok="${_FW_OW[i]}"
+        [ "${_FW_OWK[i]}" = E ] && return 0
+        case "$tok" in
+            --?*)
+                tok="${tok%%=*}"
+                [ "${#tok}" -ge 3 ] || continue
+                case "$sub" in
+                    push) case --receive-pack in "$tok"*) [ "${#tok}" -ge 4 ] && return 0 ;; esac
+                          case --exec in "$tok"*) return 0 ;; esac ;;
+                    *)    case --upload-pack in "$tok"*) return 0 ;; esac ;;
+                esac ;;
+            -?*)
+                [ "$sub" = push ] && continue
+                for (( j=1; j<${#tok}; j++ )); do
+                    [ "${tok:j:1}" = u ] && return 0
+                done ;;
+        esac
+    done
+    return 1
+}
+
 # T-4512: THE word list every option check reads. The find and curl/wget checks
 # matched quote-stripped words and sed/sort matched raw text, so -'exec', "-o",
 # $'-i' and -{o,u} hid the option they look for (G-121; T-4485 fixed git alone).
@@ -1137,6 +1171,10 @@ _fw_single_command_is_safe() {
             _fw_git_has_output_opt "$git_sub" "$git_norm" && return 1
             # T-4513: git grep -O / --open-files-in-pager starts a program.
             [ "$git_sub" = grep ] && _fw_git_grep_opens_pager "$git_norm" && return 1
+            # T-4627: --upload-pack / --receive-pack / --exec run a program.
+            case "$git_sub" in
+                ls-remote|fetch|push) _fw_git_transport_runs_program "$git_norm" && return 1 ;;
+            esac
             case "$git_sub" in
                 # T-2888 added the second line. The first had grown one verb per
                 # incident — T-2052, T-2054, T-2462 and T-2878 each patched this
