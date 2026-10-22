@@ -47,7 +47,10 @@ do_validate_init() {
 
     # Auto-detect provider from .framework.yaml
     if [ -z "$provider" ] && [ -f "$target_dir/.framework.yaml" ]; then
-        provider=$(grep "^provider:" "$target_dir/.framework.yaml" 2>/dev/null | sed 's/provider:[[:space:]]*//')
+        # T-4602: `|| true` — bin/fw runs under `set -euo pipefail`, so a
+        # .framework.yaml with no provider: line made this grep abort
+        # validate-init silently with rc=1 before a single check printed.
+        provider=$({ grep "^provider:" "$target_dir/.framework.yaml" 2>/dev/null || true; } | sed 's/provider:[[:space:]]*//')
     fi
     provider="${provider:-generic}"
 
@@ -491,7 +494,7 @@ print(','.join(broken))
 
     # 2d. Onboarding tasks have valid frontmatter
     local active_tasks
-    active_tasks=$(find "$target_dir/.tasks/active" -maxdepth 1 -name 'T-*.md' -type f 2>/dev/null | wc -l)
+    active_tasks=$({ find "$target_dir/.tasks/active" -maxdepth 1 -name 'T-*.md' -type f 2>/dev/null || true; } | wc -l)
     if [ "$active_tasks" -gt 0 ] && [ "$has_python" = true ]; then
         total=$((total + 1))
         local bad_tasks
@@ -562,7 +565,7 @@ print(','.join(bad))
         # 3a. No __PROJECT_NAME__ literals remaining (template substitution worked)
         total=$((total + 1))
         local unsubstituted
-        unsubstituted=$(grep -rl '__PROJECT_NAME__' "$target_dir/.tasks/" "$target_dir/CLAUDE.md" 2>/dev/null | wc -l)
+        unsubstituted=$({ grep -rl '__PROJECT_NAME__' "$target_dir/.tasks/" "$target_dir/CLAUDE.md" 2>/dev/null || true; } | wc -l)
         if [ "$unsubstituted" -eq 0 ]; then
             passed=$((passed + 1))
             [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} sem-subst  No __PROJECT_NAME__ literals remaining"
@@ -604,7 +607,7 @@ print(','.join(leaked))
         # 3c. .framework.yaml provider matches actual config
         total=$((total + 1))
         local fw_provider
-        fw_provider=$(grep "^provider:" "$target_dir/.framework.yaml" 2>/dev/null | sed 's/provider:[[:space:]]*//')
+        fw_provider=$({ grep "^provider:" "$target_dir/.framework.yaml" 2>/dev/null || true; } | sed 's/provider:[[:space:]]*//')
         if [ -n "$fw_provider" ]; then
             local has_config=false
             case "$fw_provider" in
@@ -630,7 +633,7 @@ print(','.join(leaked))
         # 3d. Fabric is clean (no framework internals)
         total=$((total + 1))
         local fabric_count
-        fabric_count=$(find "$target_dir/.fabric/components" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null | wc -l)
+        fabric_count=$({ find "$target_dir/.fabric/components" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null || true; } | wc -l)
         if [ "$fabric_count" -eq 0 ]; then
             passed=$((passed + 1))
             [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} sem-fabric Fabric is clean (0 pre-registered components)"

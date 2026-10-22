@@ -7,10 +7,10 @@ description: >
   (only .framework.yaml + dirs), or its output format changed. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (lines 45-46). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -42,7 +42,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:41:01Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T11:03:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction status of tests/integration/fw_validate_init.bats tests 1-2 on current bleeding-edge is recorded with evidence (reproduced at 0e47d94db: `not ok 1`, `not ok 2`; `fw validate-init` printed nothing, rc=1)
+- [x] If it reproduces: root cause localised (file:line) and fixed; tests/integration/fw_validate_init.bats passes with no `not ok`
+- [x] If it reproduces: a regression test exists that fails without the fix (test 3, provider-less fixture targeted explicitly; `not ok 3` with HEAD's lib/validate-init.sh, `ok 3` with the fix)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,6 +280,11 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/integration/fw_validate_init.bats > /tmp/.t4602.out 2>&1 && ! grep -q "^not ok" /tmp/.t4602.out && grep -q "^ok 3 " /tmp/.t4602.out
+test "$(grep -c '# skip' /tmp/.t4602.out)" -eq 0
+timeout 300 bats tests/unit/lib_validate_init.bats tests/unit/validate_init_check_type_join.bats tests/unit/validate_init_hook_path_expansion.bats > /tmp/.t4602u.out 2>&1 && ! grep -q "^not ok" /tmp/.t4602u.out
+bash -n lib/validate-init.sh
+bin/fw vendor self --check --task T-4602
 
 ## RCA
 
@@ -295,6 +301,31 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw validate-init` printed nothing and exited 1 for the
+fw_validate_init.bats fixture (and for the framework repo itself), so tests 1-2
+found neither `dir-` nor `Validation` in the output.
+
+**Root cause:** `bin/fw:12` runs under `set -euo pipefail`, and
+`lib/validate-init.sh` captured several `grep`/`find … | sed|wc` pipelines with
+no guard. A no-match grep (or a find on a missing dir) makes the pipeline exit
+non-zero, and errexit aborts the whole function with no message. First hit:
+`lib/validate-init.sh:50`, the provider auto-detect — any `.framework.yaml`
+without a `provider:` line (the fixture's, and this repo's own) killed the run
+before Tier 1 printed. Same shape at :565 (no `__PROJECT_NAME__` literal, i.e.
+the healthy case), :607 (provider again, Tier 3) and :636/:497 (`find` on a
+missing `.fabric/components` / `.tasks/active`). Fixed with `{ …; } || true`
+inside the substitution, matching the existing `grep -c … || true` at :342.
+
+**Why structurally allowed:** `fw init` always writes `provider:`, so a
+freshly-initialised project never took the abort path; the only caller that
+exercised a provider-less file was this bats file, which runs in the cloud
+nightly, not pre-push. And the failure was silent — rc=1 is indistinguishable
+from "validation found errors", which the tests explicitly tolerate.
+
+**Prevention:** test 3 in tests/integration/fw_validate_init.bats targets a
+provider-less fixture explicitly and asserts output from Tier 1 (`dir-`), Tier 3
+(`sem-prov`) and the summary (`Validation`), so an abort at any tier fails it.
 
 ## Evolution
 
@@ -376,3 +407,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4602-fw-validate-init-prints-no-dir--results-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:03:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -35,3 +35,15 @@ teardown() {
     [ "$status" -le 1 ]
     [[ "$output" == *"dir-"* ]]
 }
+
+# T-4602: a .framework.yaml with no provider: line (this fixture, and the
+# framework repo's own) made the provider grep abort validate-init silently
+# under bin/fw's `set -euo pipefail` — rc=1, zero output.
+@test "fw validate-init: provider-less .framework.yaml still reports every tier" {
+    ! grep -q '^provider:' "$PROJECT_ROOT/.framework.yaml" || false
+    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' '$FW' validate-init '$PROJECT_ROOT'"
+    [ "$status" -le 1 ]
+    [[ "$output" == *"dir-"* ]]
+    [[ "$output" == *"sem-prov"* ]]
+    [[ "$output" == *"Validation"* ]]
+}
