@@ -35,6 +35,11 @@ setup() {
     # Fast terminator so the test doesn't take 50s.
     export FW_TERMINATOR_POLL=1
     export FW_TERMINATOR_GRACE=1
+    # T-4032: the terminator waits for the end of the turn (the Stop hook's flag), with
+    # a FW_TERMINATOR_MAX_WAIT ceiling (default 900s). The stub writes no session
+    # record, so only the ceiling ends it; shorten it and the pre-kill banner (T-4596).
+    export FW_TERMINATOR_MAX_WAIT=2
+    export FW_TERMINATOR_BANNER_SECS=0
 }
 
 teardown() {
@@ -58,12 +63,13 @@ STUB
     _make_stub "sleep 30"
     cd "$PROJ"
     # With the terminator, each run is killed shortly after it writes the signal,
-    # so the wrapper restarts repeatedly until MAX_RESTARTS(5).
-    run timeout 60 env PATH="$BINDIR:$PATH" \
+    # so the wrapper restarts repeatedly until the restart budget (MAX_RESTARTS=5) is spent.
+    run timeout 90 env PATH="$BINDIR:$PATH" \
         FW_TERMINATOR_POLL=1 FW_TERMINATOR_GRACE=1 bash "$WRAPPER"
     [[ "$output" == *"budget-critical signal detected"* ]]
     [[ "$output" == *"Auto-restart #1"* ]]
-    [[ "$output" == *"Max restarts"* ]]
+    # T-3243: the cap is a sliding-window restart budget; its message was renamed.
+    [[ "$output" == *"Restart budget exhausted"* ]]
     # Signal consumed (removed) on the final iteration.
     [ ! -f "$SIG" ]
 }
@@ -71,10 +77,11 @@ STUB
 @test "CONTROL: claude exits with fresh signal → wrapper restarts on exit" {
     _make_stub "exit 0"
     cd "$PROJ"
-    # Stub exits immediately each run → wrapper restarts until MAX_RESTARTS(5).
+    # Stub exits immediately each run → wrapper restarts until the restart budget (MAX_RESTARTS=5) is spent.
     run timeout 40 env PATH="$BINDIR:$PATH" bash "$WRAPPER"
     [[ "$output" == *"Auto-restart #1"* ]]
-    [[ "$output" == *"Max restarts"* ]]
+    # T-3243: the cap is a sliding-window restart budget; its message was renamed.
+    [[ "$output" == *"Restart budget exhausted"* ]]
     # Signal consumed (removed) by the restart path on the final iteration.
     [ ! -f "$SIG" ]
 }

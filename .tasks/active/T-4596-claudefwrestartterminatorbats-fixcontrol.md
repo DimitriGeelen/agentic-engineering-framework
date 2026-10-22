@@ -9,10 +9,10 @@ description: >
   messages or the tests are stale against T-3166/T-4497 wording. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (lines 24-25). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -44,7 +44,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:35:04Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T10:52:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge: tests 1-2 of tests/integration/claude_fw_restart_terminator.bats run and the result is recorded in ## RCA
+- [x] If it reproduces: root cause localised (file:line) and fixed minimally, and `timeout 600 bats tests/integration/claude_fw_restart_terminator.bats` reports no `not ok`
+- [x] Regression coverage exists that fails without the fix (the bats file itself, if the defect is in claude-fw)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -275,6 +276,10 @@ cost_estimate_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 #
+timeout 600 bats tests/integration/claude_fw_restart_terminator.bats > /tmp/.t4596.out 2>&1 && grep -q '^ok 3 ' /tmp/.t4596.out && ! grep -q '^not ok' /tmp/.t4596.out
+test "$(grep -c '# skip' /tmp/.t4596.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/integration/claude_fw_restart_terminator.bats > /tmp/.t4596.lint 2>&1 && grep -q clean /tmp/.t4596.lint
+#
 # Vendored-path hint (T-3236, T-4419): if you edited bin/fw, lib/, agents/, policy/,
 # web/, tools/ or .tasks/templates/, run `bin/fw vendor self` and add
 #     bin/fw vendor self --check --task T-XXXX
@@ -297,6 +302,20 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Reproduction (2026-10-22, bleeding-edge after T-4619..T-4623):** still red — `not ok 1` (line 64, no "budget-critical signal detected") and `not ok 2` (line 77, no "Max restarts"); test 3 ok.
+
+**Symptom:** FIX and CONTROL fail although the wrapper restarts correctly ("Auto-restart #1 ... #5" printed).
+
+**Root cause:** the tests were stale; `bin/claude-fw` is correct. Two independent drifts:
+1. CONTROL (and FIX's last assertion): T-3243 (8c42fe698) replaced the lifetime cap with a sliding-window budget and renamed the message to "Restart budget exhausted — N/M restarts within the last Ws" (`bin/claude-fw:1543`). Nothing prints "Max restarts" any more. Measured: stub-exits run ends with exactly that line, rc 0, signal consumed.
+2. FIX: T-4032 (661c026f3) made `_terminator_watch` (`bin/claude-fw:714`) wait for the end of the turn; the stub writes no session record (`norecord`), so only the `FW_TERMINATOR_MAX_WAIT` ceiling (default 900 s, `bin/claude-fw:720`) plus the 5 s banner (`:793`) ends it — longer than the test's 60 s timeout, so the "signal detected" line (`:792`) never appears. Measured with MAX_WAIT=2, BANNER_SECS=0: 6 detections, 5 restarts, budget-exhausted exit in 44 s.
+
+**Fix:** test only — setup exports `FW_TERMINATOR_MAX_WAIT=2` and `FW_TERMINATOR_BANNER_SECS=0`; FIX timeout 60→90 s (measured 44 s); assertions use "Restart budget exhausted". The test still bites: without the terminator the 30 s stub runs ~33 s/iteration and never prints "budget-critical signal detected".
+
+**Why structurally allowed:** `tests/integration/` is not in the per-commit or pre-push suite, so T-3243 and T-4032 landed with their own unit tests green while this integration file went red unseen; it surfaced only in the cloud run (T-4508/T-4589).
+
+**Prevention:** the test now pins the T-4032 knobs explicitly (comment cites why), so a future default change to the turn-end wait cannot silently re-time it out. Running `tests/integration/` on wrapper-touching commits is the structural gap — not addressed here (out of scope).
 
 ## Evolution
 
@@ -378,3 +397,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4596-claudefwrestartterminatorbats-fixcontrol.md
 - **Context:** Initial task creation
+
+### 2026-10-22T10:52:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
