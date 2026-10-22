@@ -7,10 +7,10 @@ description: >
   Decide whether skip should move them to completed/ (marked skipped) or set a horizon/status
   that hides them, and make it consistent with the T-532 gate.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [onboarding]
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T20:44:42Z
-last_update: '2026-10-18T20:46:15Z'
+last_update: 2026-10-22T08:28:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,6 +82,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-22T07:46:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4333: Skipped onboarding tasks T-001..T-005 stay in .tasks/active/
@@ -94,8 +110,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw onboarding skip` shelves every unfinished onboarding-tagged task in `.tasks/active/` to `horizon: later` (status `captured`), so they leave the ready/in-flight lists and the handover's Suggested First Action
+- [x] Tasks stay in `active/` (not moved, not marked work-completed): `fw onboarding reset` + the T-532 gate keep seeing them, and "complete them later" stays true
+- [x] Already work-completed onboarding tasks and non-onboarding tasks are untouched
+- [x] Regression bats `tests/unit/t4333_onboarding_skip_shelves.bats` red before the fix, green after
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,6 +291,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4333_onboarding_skip_shelves.bats > /tmp/.t4333.out 2>&1 && ! grep -q "^not ok" /tmp/.t4333.out
+test "$(grep -c '# skip' /tmp/.t4333.out)" -eq 0
+bash -n bin/fw
+bin/fw vendor self --check --task T-4333
 
 ## RCA
 
@@ -289,6 +311,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after `fw onboarding skip` on a fresh project (dimitri-mint-dev T-133 F-03), the five seeded onboarding tasks T-001..T-005 stayed in `.tasks/active/` at `horizon: now` (T-001 `started-work`), so task lists, the handover's in-flight/ready sections and Suggested First Action kept offering the work the operator had just declined. Reproduced on bleeding-edge 2026-10-22 (bats legs 1, 2, 5 red).
+
+**Root cause:** `bin/fw` `onboarding skip` (the `skip)` arm under `onboarding)`, ~line 9838) only wrote `.context/working/.onboarding-complete` and a bypass-log entry. It disabled the T-532 gate (`agents/context/check-active-task.sh:1121`) but never touched the task set the gate guards, so "gate off" and "tasks still presented as current work" coexisted.
+
+**Why structurally allowed:** the gate and the task presentation (handover `wip_rank`, horizon ordering) read different signals — the gate reads the marker, presentation reads `status`/`horizon` — and nothing tied the skip verb to the latter. No test exercised `fw onboarding skip` end to end.
+
+**Prevention:** skip now shelves every unfinished onboarding-tagged task (element-wise tag match, same predicate as the gate, T-2881) to `horizon: later`, demoting `started-work` → `captured` (T-1068 invariant). `tests/unit/t4333_onboarding_skip_shelves.bats` pins shelving, demotion, untouched completed/non-onboarding (incl. `arc:onboarding-curriculum`) tasks, and that tasks stay in `active/`.
 
 ## Evolution
 
@@ -354,6 +384,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — what skip does to the onboarding tasks
+- **Chose:** shelve in place — `horizon: later`, `started-work` → `captured`; tasks stay in `active/`.
+- **Why:** reversible (`fw task update T-XXX --horizon now`), keeps the skip message "you can still complete them later" true, keeps `fw onboarding reset` meaningful (the T-532 gate scans `active/` regardless of horizon, so reset re-arms it over the same tasks), and horizon `later` is exactly what the handover ranks as parked and excludes from Suggested First Action.
+- **Rejected:** moving them to `completed/` as work-completed/skipped — records work as done that was not, bypasses their AC/verification gates, triggers episodic generation for non-work, and makes `reset` a no-op. A new `skipped` status — not in the lifecycle; every consumer would need to learn it.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -370,3 +405,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4333-skipped-onboarding-tasks-t-001t-005-stay.md
 - **Context:** Initial task creation
+
+### 2026-10-22T08:27:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -9822,10 +9822,39 @@ PYREVQ
                     exit 0
                 fi
                 echo -e "${YELLOW}Skipping onboarding tasks.${NC}"
-                echo "You can still complete them later: fw task list --tag onboarding"
+                echo "You can still complete them later: fw task list --tag onboarding (promote one with: fw task update T-XXX --horizon now)"
                 mkdir -p "$(dirname "$ONBOARDING_MARKER")"
                 echo "skipped: $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$ONBOARDING_MARKER"
                 echo "reason: manual skip via fw onboarding skip" >> "$ONBOARDING_MARKER"
+                # T-4333: shelve the unfinished onboarding tasks (horizon: later,
+                # started-work → captured per the T-1068 invariant) so they leave the
+                # ready lists and the handover's Suggested First Action. They stay in
+                # active/ — not completed — so "complete them later" and
+                # `fw onboarding reset` keep holding. Tag match is element-wise, the
+                # same predicate as the T-532 gate (T-2881).
+                PROJECT_ROOT="$PROJECT_ROOT" python3 - <<'PYEOF' || true
+import glob, os, re
+tag = re.compile(r'^tags:[ \t]*\[?([^]\n]*,)?[ \t]*onboarding[ \t]*(,|\]|$)', re.M)
+for tf in sorted(glob.glob(os.path.join(os.environ['PROJECT_ROOT'], '.tasks/active/T-*.md'))):
+    with open(tf) as f:
+        text = f.read()
+    m = re.match(r'---\n(.*?\n)---\n', text, re.S)
+    if not m:
+        continue
+    fm = m.group(1)
+    st = re.search(r'^status:[ \t]*(\S+)', fm, re.M)
+    if not tag.search(fm) or (st and st.group(1) == 'work-completed'):
+        continue
+    new = re.sub(r'^horizon:.*$', 'horizon: later', fm, count=1, flags=re.M)
+    if new == fm and not re.search(r'^horizon:', fm, re.M):
+        new = fm + 'horizon: later\n'
+    new = re.sub(r'^status:[ \t]*started-work[ \t]*$', 'status: captured', new, count=1, flags=re.M)
+    if new != fm:
+        with open(tf, 'w') as f:
+            f.write('---\n' + new + '---\n' + text[m.end():])
+    tid = re.search(r'^id:[ \t]*(\S+)', fm, re.M)
+    print('  shelved (horizon: later): ' + (tid.group(1) if tid else os.path.basename(tf)))
+PYEOF
                 # Log to bypass-log
                 BYPASS_LOG="$PROJECT_ROOT/.context/bypass-log.yaml"
                 if [ -f "$BYPASS_LOG" ]; then
