@@ -201,7 +201,9 @@ _wait_marked_gone() {
         echo "FAIL: flock arm's EXIT trap still unlinks the lock file" >&2
         return 1
     fi
-    grep -q "trap \"rm -f '\\\$AUDIT_LOCK_FILE'\" EXIT" "$AUDIT"
+    # The fallback trap's rm must name the lock file; other operands may follow
+    # it (T-4542 added the holder record), so pin the operand, not the trap text.
+    grep -Eq "trap \"rm -f '\\\$AUDIT_LOCK_FILE'( '[^']*')*\" EXIT" "$AUDIT"
     # The mtime stale sweep exists exactly once, inside the fallback arm
     # (after the flock-availability split), not shared before it.
     [ "$(grep -c 'lock_age=' "$AUDIT")" -eq 1 ]
@@ -232,6 +234,26 @@ _wait_marked_gone() {
         echo "expected stale sweep + acquire (0), got $status: $output" >&2
         return 1
     }
+}
+
+@test "t3298: fallback arm releases the lock on a normal exit (lock file and holder record gone)" {
+    # T-4619: in the no-flock arm the file's existence IS the lock, so a normal
+    # exit must unlink it — or every later audit exits 75 until the stale sweep.
+    # Behavioural counterpart of the source pin above, which matches trap text.
+    local d="$PROJ/bin" b p
+    mkdir -p "$d"
+    for b in bash sh dirname basename pwd date stat mkdir rm cat grep sed python3 \
+             git tr head cut wc ls mktemp uname awk sort find tail env touch chmod \
+             cp mv id hostname sleep kill ps timeout xargs readlink; do
+        p=$(command -v "$b" 2>/dev/null) && ln -sf "$p" "$d/$b"
+    done
+    rm -f "$LOCK" "$LOCK.holder"
+    run env -u LD_PRELOAD PATH="$d" PROJECT_ROOT="$PROJ" \
+        FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+        "$d/bash" "$AUDIT" --section t3298-no-such-section --quiet
+    [ "$status" -eq 0 ] || { echo "expected 0, got $status: $output" >&2; return 1; }
+    [ ! -e "$LOCK" ] || { echo "fallback arm left the lock file behind" >&2; return 1; }
+    [ ! -e "$LOCK.holder" ] || { echo "fallback arm left the holder record behind" >&2; return 1; }
 }
 
 @test "t3298: fallback arm still refuses a FRESH lock file with 75 (sweep does not over-sweep)" {

@@ -1,10 +1,15 @@
 ---
 id: T-4619
-name: "Push blocker: t3298_audit_lock_integrity #9 source pin expects the old flock EXIT trap"
+name: "Push blocker: t3298_audit_lock_integrity #9 source pin expects the old flock
+  EXIT trap"
 description: >
-  New red 2026-10-22 (.context/audits/unit-suite/failures/2026-10-22T08:47:18Z/bats/t3298_audit_lock_integrity.bats.out): test 9 greps agents/audit/audit.sh for the old EXIT trap; T-4542 (62a792ff0, pre-push lock holder) changed the lock arm. Decide whether the pin should follow the new code (same safety property) or the code regressed the property the pin protects; fix accordingly.
+  New red 2026-10-22 (.context/audits/unit-suite/failures/2026-10-22T08:47:18Z/bats/t3298_audit_lock_integrity.bats.out):
+  test 9 greps agents/audit/audit.sh for the old EXIT trap; T-4542 (62a792ff0, pre-push
+  lock holder) changed the lock arm. Decide whether the pin should follow the new
+  code (same safety property) or the code regressed the property the pin protects;
+  fix accordingly.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T09:32:45Z
-last_update: 2026-10-22T09:32:45Z
-date_finished: null
+last_update: '2026-10-22T09:35:54Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:35:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4619: Push blocker: t3298_audit_lock_integrity #9 source pin expects the old flock EXIT trap
@@ -62,8 +84,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Decided: T-4542 kept the safety property (the flock arm never unlinks the lock, and the fallback arm still rm-releases it on EXIT). Only the literal text of the trap changed, so the pin follows the code and no audit.sh change is needed
+- [x] t3298 test 9 pins the fallback rm-release by its shape (an EXIT trap whose rm operands include `$AUDIT_LOCK_FILE`), so extra operands such as the T-4542 holder file pass and dropping the lock from the trap fails
+- [x] New behavioural test: a fallback-arm (no flock) audit leaves no lock file and no holder file behind after a normal exit
+- [x] `timeout 900 bats tests/unit/t3298_audit_lock_integrity.bats` all green, no skips; bats dead-negation lint clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +272,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t3298_audit_lock_integrity.bats > /tmp/.t4619.out 2>&1 && ! grep -q "^not ok" /tmp/.t4619.out
+test "$(grep -c '# skip' /tmp/.t4619.out)" -eq 0
+grep -q "fallback arm releases the lock on a normal exit" tests/unit/t3298_audit_lock_integrity.bats
+python3 tools/bats-dead-negation-lint.py tests/unit/t3298_audit_lock_integrity.bats > /tmp/.t4619.lint 2>&1 && grep -q clean /tmp/.t4619.lint
 
 ## RCA
 
@@ -264,6 +292,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** the unit-suite run of 2026-10-22T08:47:18Z reported `t3298_audit_lock_integrity.bats` #9 red: `grep -q "trap \"rm -f '\$AUDIT_LOCK_FILE'\" EXIT"` found no match in agents/audit/audit.sh. Push blocked.
+
+**Root cause:** the pin matched the exact text of a trap rather than the property behind it. T-4542 (62a792ff0) gave the fallback (no-flock) arm a holder record and widened its release trap to `trap "rm -f '$AUDIT_LOCK_FILE' '$AUDIT_LOCK_HOLDER_FILE'" EXIT` (agents/audit/audit.sh:773). The property was intact: the fallback arm still unlinks the lock on exit, and the flock arm still never unlinks it. Only the exact string the test grepped for at tests/unit/t3298_audit_lock_integrity.bats:204 was gone. The code was right and the test was wrong.
+
+**Why structurally allowed:** the fallback arm's rm-release was pinned only by source text. No behavioural test ran a fallback-arm audit and checked that the lock file was gone afterwards (tests 10 and 11 check the sweep and the refusal, not the release). So any harmless rewording of the trap turned red, while a real regression that kept the old text elsewhere would have stayed green. T-4542 ran its own regression bats, not the t3298 file, so the break surfaced only in the nightly suite.
+
+**Prevention:** the pin now matches the operand (`rm -f '$AUDIT_LOCK_FILE'` optionally followed by further quoted operands, then `EXIT`). A new behavioural test (#11) runs the fallback arm without flock and asserts that neither the lock file nor the holder record survives a normal exit. Both were shown to bite: a scratch copy of audit.sh whose trap no longer names the lock file failed #9 and #11, and the real tree passes 13/13.
 
 ## Evolution
 
@@ -345,3 +380,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4619-push-blocker-t3298auditlockintegrity-9-s.md
 - **Context:** Initial task creation
+
+### 2026-10-22T09:35:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
