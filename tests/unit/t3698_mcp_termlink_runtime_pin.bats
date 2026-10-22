@@ -115,6 +115,10 @@ _init_mcp() {   # _init_mcp <dir> [force] — run the real init generator
 
 # ── fw upgrade producer (end to end, scrubbed env, real vendored bin/fw) ────
 
+# T-4617: push to an explicit branch and point the bare's HEAD at it (same fix
+# T-4587 made to overlay_upstream). From a detached-HEAD checkout (CI, cloud
+# clones) the bare's HEAD is a bare sha, `push origin HEAD` has no branch to
+# update and fails, and the consumer's clone never sees the overlay.
 _overlay() {   # _overlay <bare> <paths…> — commit working-tree files into the upstream
     local bare="$1"; shift
     local wc="$TEST_TEMP_DIR/overlay-wc" f
@@ -122,8 +126,28 @@ _overlay() {   # _overlay <bare> <paths…> — commit working-tree files into t
     for f in "$@"; do cp "$FWROOT/$f" "$wc/$f"; done
     git -C "$wc" add -- "$@"
     git -C "$wc" -c user.name=t -c user.email=t@t commit --quiet --no-gpg-sign -m overlay >/dev/null 2>&1 || true
-    git -C "$wc" push --quiet origin HEAD 2>/dev/null
+    git -C "$wc" push --quiet origin HEAD:refs/heads/fw-test-overlay
+    git --git-dir="$bare" symbolic-ref HEAD refs/heads/fw-test-overlay
     rm -rf "$wc"
+}
+
+@test "T-4617: _overlay lands the overlay when the upstream bare's HEAD is detached" {
+    FRAMEWORK_ROOT="$FWROOT"
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    make_upstream_bare "$upstream_bare"
+    # The shape a detached-HEAD checkout produces: the bare's HEAD is a bare sha.
+    git --git-dir="$upstream_bare" update-ref --no-deref HEAD "$(git --git-dir="$upstream_bare" rev-parse HEAD)"
+    ! git --git-dir="$upstream_bare" symbolic-ref -q HEAD || false
+
+    # Overlay source is a scratch dir, so the test never writes into the checkout.
+    local f=t4617-overlay-probe
+    mkdir -p "$TEST_TEMP_DIR/src"
+    echo "t4617-overlay-marker" > "$TEST_TEMP_DIR/src/$f"
+    FWROOT="$TEST_TEMP_DIR/src" run _overlay "$upstream_bare" "$f"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+
+    git clone --quiet "$upstream_bare" "$TEST_TEMP_DIR/check" 2>/dev/null
+    [ "$(cat "$TEST_TEMP_DIR/check/$f")" = "t4617-overlay-marker" ]
 }
 
 _upgrade() {   # _upgrade <proj> [args…] — env -i, only the test's hub dirs passed through
