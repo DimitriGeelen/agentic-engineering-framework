@@ -100,11 +100,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/paths.sh drops an inherited TASKS_DIR/CONTEXT_DIR (stderr line, re-derived from PROJECT_ROOT) whenever its canonical path (realpath -m) lies inside another framework project — nearest ancestor holding .framework.yaml (or a linked worktree whose main checkout does) that is not PROJECT_ROOT — including subdirs (/x/.context/working) and symlinks into another project
-- [ ] The exact-dir case (<other>/.tasks) is still caught, and a fixture tmp dir with no such ancestor is still honoured unchanged
-- [ ] FW_TASKS_DIR_OVERRIDE=1 is honoured when set on this invocation, and ignored (with a stderr line) when _FW_PATHS_DERIVED_BY names a different root than PROJECT_ROOT
-- [ ] No python in the path; at most one realpath per variable; the walk stops at /
-- [ ] Regression tests in tests/unit/t4222_inherited_env_dirs.bats cover subdir, symlink, exact-dir, fixture, override-honoured, override-ignored; t4222 and t4651 suites green with zero skips
+- [x] lib/paths.sh drops an inherited TASKS_DIR/CONTEXT_DIR (stderr line, re-derived from PROJECT_ROOT) whenever its canonical path (realpath -m) lies inside another framework project — nearest ancestor holding .framework.yaml (or a linked worktree whose main checkout does) that is not PROJECT_ROOT — including subdirs (/x/.context/working) and symlinks into another project
+- [x] The exact-dir case (<other>/.tasks) is still caught, and a fixture tmp dir with no such ancestor is still honoured unchanged
+- [x] FW_TASKS_DIR_OVERRIDE=1 is honoured when set on this invocation, and ignored (with a stderr line) when _FW_PATHS_DERIVED_BY names a different root than PROJECT_ROOT
+- [x] No python in the path; at most one realpath per variable; the walk stops at /
+- [x] Regression tests in tests/unit/t4222_inherited_env_dirs.bats cover subdir, symlink, exact-dir, fixture, override-honoured, override-ignored; t4222 and t4651 suites green with zero skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
