@@ -199,7 +199,8 @@ if [ "$TIER" = perf ]; then JOBS=1; fi
 
 BATS_BUDGET=0 PY_BUDGET=0
 RESULTS="$(mktemp -d)"
-mkdir -p "$RESULTS/bats" "$RESULTS/pytest"
+mkdir -p "$RESULTS/bats" "$RESULTS/pytest" "$RESULTS/t"
+: > "$RESULTS/tmp-leaked"
 trap 'rm -rf "$RESULTS"' EXIT
 
 # T-4526: the run must leave no new aef-*/fw-* entry in the temp dir. ~406 of
@@ -257,15 +258,20 @@ _run_one() {
             FW_SESSION_SCOPED_FOCUS|FW_CLAUDE_FW_*) unset "$v" ;;
         esac
     done
+    # T-4215: each file gets its own TMPDIR under $RESULTS (removed on EXIT), and
+    # it is removed when the file ends. A file killed at its cap never runs its
+    # teardown, so bats-run-*, pytest-of-* and every mktemp it made used to stay
+    # in the shared /tmp (12,962 dirs / 9.1 GB on dimitri-mint-dev, P-015).
+    local ftmp; ftmp="$(mktemp -d "$RESULTS/t/XXXXXX")"
     t0=$(date +%s); rc=0
     if [ "$leg" = bats ]; then
-        ( cd "$FRAMEWORK_ROOT" && timeout -k 10 "$cap" bats --tap "$file" ) \
+        ( cd "$FRAMEWORK_ROOT" && TMPDIR="$ftmp" BATS_TMPDIR="$ftmp" timeout -k 10 "$cap" bats --tap "$file" ) \
             < /dev/null > "$out" 2>&1 || rc=$?
     else
         # --color=no + env scrub: FORCE_COLOR/PY_COLORS make pytest write ANSI into
         # the redirected file, and the ^FAILED name-parse finds nothing
         # (OBS-374 class — reproduced live under FORCE_COLOR=3, T-3302).
-        ( cd "$FRAMEWORK_ROOT" && timeout -k 10 "$cap" \
+        ( cd "$FRAMEWORK_ROOT" && TMPDIR="$ftmp" timeout -k 10 "$cap" \
             env -u FORCE_COLOR PY_COLORS=0 NO_COLOR=1 \
             python3 -m pytest "$file" -q -rf -p no:cacheprovider --color=no ) \
             < /dev/null > "$out" 2>&1 || rc=$?
@@ -275,6 +281,11 @@ _run_one() {
         # measured skip, counted as such, not a failure.
         if [ "$rc" -eq 5 ] && grep -qE '^(=+ )?[0-9]+ skipped( in |, )' "$out"; then rc=0; fi
     fi
+    # T-4526 still names an aef-*/fw-* entry a test left behind: its creator has
+    # the bug, even though the host no longer keeps the entry.
+    find "$ftmp" -mindepth 1 -maxdepth 1 \( -name 'aef-*' -o -name 'fw-*' \) \
+        -printf '%f\n' 2>/dev/null >> "$RESULTS/tmp-leaked"
+    rm -rf "$ftmp"
     st=done
     # 143 = TERM from outside (the runner's signal trap stopping the pool).
     if [ "$rc" -eq 143 ]; then st=interrupted
@@ -449,6 +460,8 @@ _keep_failures
 
 # T-4526: new aef-*/fw-* temp entries since the run started.
 _tmp_names | LC_ALL=C comm -13 "$RESULTS/tmp-before" - > "$RESULTS/tmp-new" 2>/dev/null || : > "$RESULTS/tmp-new"
+# T-4215: plus those a test left in its own per-file TMPDIR (removed since).
+LC_ALL=C sort -u -o "$RESULTS/tmp-new" "$RESULTS/tmp-new" "$RESULTS/tmp-leaked" 2>/dev/null || :
 TMP_LEFTOVERS=$(wc -l < "$RESULTS/tmp-new" | tr -d ' ')
 
 FINISHED="$(date -u +%FT%TZ)"
@@ -661,7 +674,7 @@ fi
 
 echo "$FINISHED DONE runner_exit=$RUNNER_EXIT bats_rc=$BATS_RC pytest_rc=$PY_RC wall=$(( $(date +%s) - START_EPOCH ))s jobs=$JOBS tmp_leftovers=$TMP_LEFTOVERS" >> "$RUN_LOG"
 if [ "$TMP_LEFTOVERS" -gt 0 ]; then
-    echo "unit-suite: WARN $TMP_LEFTOVERS new aef-*/fw-* entr(y/ies) left in $TMP_ROOT (T-4526) — see tmp_leftovers in the report" >&2
+    echo "unit-suite: WARN $TMP_LEFTOVERS new aef-*/fw-* entr(y/ies) left in $TMP_ROOT or a test's TMPDIR (T-4526) — see tmp_leftovers in the report" >&2
 fi
 if [ -n "$TREE_LEAKED" ]; then
     echo "$FINISHED TREE-LEAK changed=$TREE_CHANGED (T-4523)" >> "$RUN_LOG"

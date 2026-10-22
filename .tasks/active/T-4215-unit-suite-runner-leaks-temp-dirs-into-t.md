@@ -12,7 +12,7 @@ description: >
   basetemp. Other prefixes (t450-sources, t464-fleet, t1068-corpus, agent-outside-opt,
   org.chromium.*) are not in AEF code — routed to 055/832.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-15T17:24:36Z
-last_update: '2026-10-15T17:31:38Z'
+last_update: 2026-10-22T08:27:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,6 +86,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-22T07:46:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4215: Unit-suite runner leaks temp dirs into /tmp when it kills a timed-out test file (bats-run-*, mktemp dirs whose teardown never runs) — dimitri-mint-dev P-015
@@ -98,8 +114,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `agents/audit/unit-suite.sh` runs every test file with its own `TMPDIR` under one per-run temp directory, so bats' `bats-run-*`, pytest's `pytest-of-*` and any `mktemp` a test makes land there, not in the caller's temp root
+- [x] The per-file directory is removed after the file ends, including when the per-file timeout killed it; the per-run directory is removed on EXIT (normal and signal paths)
+- [x] Regression bats test runs the runner on a fixture corpus with one file that makes a temp dir and is killed by the per-file cap; it asserts nothing new is left in the caller's TMPDIR (red before the fix, green after)
+- [x] Existing runner tests closest to the change show no new red (t4526, t3602, t4450, t4058, t3302, t4524 green; t4381 #7 "tree=clean" fails identically on the unmodified runner — pre-existing, not this change)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -262,6 +280,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/audit/unit-suite.sh
+timeout 400 bats tests/unit/t4215_unit_suite_file_tmpdir.bats > /tmp/.t4215.out 2>&1 && ! grep -q "^not ok" /tmp/.t4215.out
+test "$(grep -c '# skip' /tmp/.t4215.out)" -eq 0
+timeout 590 bats tests/unit/t4526_tmp_leftovers.bats > /tmp/.t4215b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4215b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4215_unit_suite_file_tmpdir.bats > /tmp/.t4215c.out 2>&1 && grep -q clean /tmp/.t4215c.out
+bin/fw vendor self --check --task T-4215
 
 ## RCA
 
@@ -278,6 +302,31 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** dimitri-mint-dev P-015: /tmp held 12,962 dirs / 9.1 GB after two days; AEF's
+nightly unit-suite contributed `bats-run-*` and `tmp.*` dirs from killed test files.
+Reproduced on bleeding-edge 2026-10-22: a fixture file that `mktemp -d`s and is killed at
+the per-file cap left its dir in the caller's TMPDIR (t4215 test 1 red on the old runner).
+
+**Root cause:** `agents/audit/unit-suite.sh:_run_one` (bats leg line 262, pytest leg 268)
+ran every file with the caller's TMPDIR. A file killed by `timeout -k 10 "$cap"` never
+runs its `teardown`/fixture cleanup, so everything it made under TMPDIR (its `mktemp`
+dirs, bats' `bats-run-*`, pytest's `pytest-of-*`) stayed in the shared temp root.
+
+**Why structurally allowed:** cleanup lived only in each test's own teardown — the happy
+path. T-4526 added a leftover *report*, but only for `aef-*`/`fw-*` names, so the
+`tmp.*`/`bats-run-*` dirs a killed file leaves were invisible to it.
+
+**Fix:** each file now runs with `TMPDIR` (and `BATS_TMPDIR`) set to its own
+`mktemp -d "$RESULTS/t/XXXXXX"`, removed when the file ends — killed or not — and
+`$RESULTS` itself is removed by the EXIT trap (signal path too). `aef-*`/`fw-*` entries
+found in a per-file dir before removal are merged into the T-4526 `tmp_leftovers` report,
+so leaking creators are still named.
+
+**Prevention:** `tests/unit/t4215_unit_suite_file_tmpdir.bats` pins it (killed file leaves
+the caller's TMPDIR empty; finished file saw its own TMPDIR; an fw-* leak inside the
+per-file dir is still reported). Residual: a runner killed with SIGKILL skips its EXIT
+trap — out of scope; the caller's temp-cleaning applies.
 
 ## Evolution
 
@@ -359,3 +408,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4215-unit-suite-runner-leaks-temp-dirs-into-t.md
 - **Context:** Initial task creation
+
+### 2026-10-22T08:27:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
