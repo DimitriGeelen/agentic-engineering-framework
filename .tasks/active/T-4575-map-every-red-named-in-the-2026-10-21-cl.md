@@ -48,7 +48,7 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:49:16Z
-last_update: '2026-10-22T07:36:24Z'
+last_update: '2026-10-22T07:45:35Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -77,21 +77,65 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T07:45:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4575: Map every red named in the 2026-10-21 cloud reports to a baseline entry or a task (T-4508 AC 2)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Full per-row map with evidence: `docs/reports/T-4575-cloud-red-map.md`. Unmatched reds were re-run
+2026-10-22 in a clean clone of bleeding-edge e785e48b9 under `env -i` (foreground, one file at a time).
+
+| Named red (report) | Disposition |
+|---|---|
+| bats 1.10 heredoc abort (1) | sibling T-4570 |
+| fw_docs.bats / handover.bats hang (1, 4) | sibling T-4573 |
+| fw build esbuild / js-yaml (1, 4) | sibling T-4572 |
+| /file/docs/style-guide.md 404 (4) | sibling T-4571 |
+| Playwright 41/50 (1, 4) | sibling T-4574 |
+| upgrade leaves hooks un-updated; revived project line (3) | siblings T-4568, T-4569 |
+| approvals_close_ready_arcs (1, 2) | baseline, owner T-3611 |
+| atomic_yaml_write_lint (2) | baseline, owner T-3612 |
+| audit_inception_recommendation t10 (2) | baseline, owner T-3609 |
+| lint fail=1, unnamed (1) | baseline (likely), owner T-4221 / T-4581 |
+| budget_gate t28 (1) | existing T-4577 |
+| test_inception_verdict_render decided_unclosed_count (1) | existing T-3898 |
+| test_govd_sandbox (2) | existing T-4578 |
+| test_pretooluse_gates 6/12 (4) | existing T-4579 |
+| test_register_requirements_gate (4) | existing T-4580 |
+| lib_costs t3 (2) | filed T-4583 |
+| t3118_horizon_migration_scope t8 (2) | filed T-4584 |
+| t2436 --check vs --dry-run (4) | filed T-4585 |
+| test_t3077 approvals surface isolation (4) | filed T-4586 |
+| fresh-machine 5 not-ok on detached HEAD (3) | filed T-4587 |
+| suite leaves changed paths in the clone (1, 4) | filed T-4588 |
+| audit_ctl_arc_tag_only_pattern, bvp_auto_promote, lib_config_file, t3379, t3388, t3644, test_extract_recommendation, test_importer_fidelity, test_no_relative_fw_argv_t3952, test_render_artefact_paths, test_t3649 (2, 4) | passes on e785e48b9 |
+| v1.8.14 doctor false OK cron (3) | passes (candidate WARNs) |
+| t3062_prepush_runtime t1 (2) | env (fresh clone, no deployed cron; T-4401) |
+| bvp_auto_promote_enable t7 (2) | env (cron) |
+| missing modules / pip-vs-python3 / playwright download (2) | env; job 1 prompt fixed here |
+| mcp, termlink, ollama, ss, cron, systemd, git-hooks, cryptography, npm-deps, claude-cli, vector index (1, 4) | env |
+| load-only timeouts, 9 pass-alone pytest (2, 4) | flaky |
+| no ~/.local/bin/fw shim (3) | env (by design: install.sh installs it) |
+| CLAUDECODE leak, container restart, pgrep self-match (1, 2) | env (job runner) |
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] docs/reports/T-4575-cloud-red-map.md maps every red named in reports-2026-10-21-relayed-by-ring20.md to exactly one of: sibling task (T-4568..T-4574), baseline entry (with owner), existing task, newly filed task, env (not a defect), or "passes on current bleeding-edge" with the evidence
-- [ ] Every row marked "newly filed" names a task id that exists in .tasks/active/
-- [ ] job1-clean-room-unit-suite.md setup installs web/requirements.txt (markdown2, ollama, ruamel.yaml, tantivy, bleach) and cffi, via `python3 -m pip` so it reaches the python3 on PATH
+- [x] docs/reports/T-4575-cloud-red-map.md maps every red named in reports-2026-10-21-relayed-by-ring20.md to exactly one of: sibling task (T-4568..T-4574), baseline entry (with owner), existing task, newly filed task, env (not a defect), or "passes on current bleeding-edge" with the evidence
+- [x] Every row marked "newly filed" names a task id that exists in .tasks/active/
+- [x] job1-clean-room-unit-suite.md setup installs web/requirements.txt (markdown2, ollama, ruamel.yaml, tantivy, bleach) and cffi, via `python3 -m pip` so it reaches the python3 on PATH
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
