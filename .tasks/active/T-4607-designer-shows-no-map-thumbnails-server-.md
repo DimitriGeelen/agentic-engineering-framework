@@ -51,7 +51,7 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:44:29Z
-last_update: '2026-10-22T08:46:27Z'
+last_update: '2026-10-22T09:00:48Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,6 +80,16 @@ bvp_scores_proposed:
       (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:00:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=338,acs=9)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4607: Designer shows no map thumbnails: server-written versions have no PNG and /api/thumb has no rendered fallback
@@ -102,11 +112,11 @@ bvp_scores_proposed:
 ### Human
 - [ ] [REVIEW] Map thumbnails show in the designer's Open-project modal
   **Steps:**
-  1. Open `$(cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url)/designer` in a browser (hard-refresh)
+  1. Open http://192.168.10.107:3000/designer in a browser (hard-refresh)
   2. Click **Open project**
   3. Look at the map cards (e.g. aef-task-lifecycle, aef-audit-cron)
   **Expected:** each card shows a small diagram picture, not the grid ▦ placeholder
-  **If not:** note which map shows the placeholder and run `curl -s -o /dev/null -w '%{http_code} %{content_type}\n' "$(bin/fw watchtower url)/api/thumb?id=<id>"`
+  **If not:** note which map shows the placeholder and open its thumbnail directly, e.g. http://192.168.10.107:3000/api/thumb?id=aef-task-lifecycle (should show a diagram image)
 
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
@@ -419,3 +429,19 @@ bin/fw vendor self --check --task T-4607
 
 ### 2026-10-22T08:46:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-928184f0
+- **Timestamp:** 2026-10-22T09:46:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — A headless renderer (`web/designer_thumb.py`) turns a map's BPMN XML into a PNG stored as a `data:image/png;base64,` URL, the same shape the client sends on save
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/designer_thumb.py in: A headless renderer (`web/designer_thumb.py`) turns a map's BPMN XML into a PNG stored as a `data:image/png;base64,` URL, the same shape the client se`
+- **AC#3 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``

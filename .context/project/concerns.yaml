@@ -5625,3 +5625,22 @@ concerns:
     fw doctor does not look for commented-out project lines in managed hooks
   what_remains: T-4515. Close when install-hooks never disables a foreign line (test), doctor flags commented-out project
     gate lines, and the be-tag notice tells affected consumers to check their hooks.
+- id: G-123
+  type: gap
+  title: Review pages still hand the operator shell expressions and bare paths instead of full clickable URLs (T-2030 class, recurring)
+  description: 'Operator 2026-10-22 on /review/T-4607: Step 1 read $(cd ... && bin/fw watchtower url)/designer. The
+    full-URL rule dates from 2026-05-24 (T-2027/T-2028); T-2030 GO, T-2050/T-2139 (review_link_validator --enforce at
+    fw task review), T-2140 (reviewer detector) and T-2181 (chat RCA) each closed one spelling. The shell-substitution
+    spelling passed fw task review because both checks are denylists of three literal phrasings.'
+  severity: medium
+  status: open
+  detected_in: T-4624
+  observed: '2026-10-22'
+  reported_by: operator
+  blast_radius: every Human criterion and Recommendation the operator reads in Watchtower; every agent and worker that authors them
+  detection_gap: enforcement matches known bad phrasings instead of requiring the good form; CLAUDE.md teaches
+    $(bin/fw watchtower url) for Verification and workers carry it into Human Steps; workers never load the parent's
+    memory rule; the render surface shows author text unresolved
+  what_remains: T-4624. Close when Watchtower renders $(...bin/fw watchtower url)/path and backticked route paths as full
+    own-origin links, the validator requires literal http(s) URLs in Human Steps (allowlist) at task-file write,
+    fw task review and partial-complete, and tests cover every spelling seen so far.
