@@ -150,7 +150,10 @@ BODY
 # ============================================================================
 
 @test "inception-decide: blocks invocation when CLAUDECODE=1 set" {
-    # Gate fires BEFORE task file lookup, so no fixture needed — any T-XXX works.
+    # Target validation runs BEFORE the sovereignty gate (T-2964), so the gate is
+    # only reachable with a real inception task — an unknown id stops at lookup.
+    _write_task "T-9913" "redteam inception-decide fixture" "## Decision" >/dev/null
+    sed -i 's/^workflow_type: build$/workflow_type: inception/' "$FRAMEWORK_ROOT/.tasks/active/T-9913-redteam.md"
     run env CLAUDECODE=1 "$FW" inception decide T-9913 go --rationale "redteam test"
     [ "$status" -ne 0 ]
     [[ "$output" == *"Claude Code"* ]] || [[ "$output" == *"CLAUDECODE"* ]] || [[ "$output" == *"agents must not invoke"* ]] || [[ "$output" == *"Agents must not invoke"* ]]
@@ -165,4 +168,12 @@ BODY
     # different error that does NOT mention the CLAUDECODE block.
     [[ "$output" != *"running inside Claude Code"* ]]
     [[ "$output" != *"Agents must not invoke"* ]]
+}
+
+@test "inception-decide: unknown task names it instead of exiting silently (T-4594)" {
+    # find_task_file used to return 1 on not-found; under bin/fw's set -e the
+    # lookup line killed the script before this message: exit 1, empty output.
+    run env CLAUDECODE=1 "$FW" inception decide T-9915 go --rationale "redteam test"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"T-9915 not found"* ]]
 }

@@ -29,7 +29,11 @@ find_task_file() {
         [[ -z "$result" ]] && \
             result=$(find "$tasks_dir/completed" -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
     fi
+    # Not found is an empty stdout and a ZERO status (T-4594). Ending on a bare
+    # `[[ -n ]] && echo` returned 1 here, and a caller doing `x=$(find_task_file …)`
+    # under `set -e` died on that line before printing its own "not found" message.
     [[ -n "$result" ]] && echo "$result"
+    return 0
 }
 
 # Check if a task exists (in active/ or completed/)

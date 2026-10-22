@@ -47,6 +47,17 @@ teardown() {
     [ -z "$output" ]
 }
 
+@test "find_task_file: not-found returns 0 so a set -e caller reaches its own message (T-4594)" {
+    # `run` alone swallows the status; assert it, then prove the caller survives.
+    run find_task_file "T-999" "active"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+    run bash -c 'set -euo pipefail; source "$FRAMEWORK_ROOT/lib/tasks.sh"
+        f=$(find_task_file T-999 active); [ -z "$f" ] && echo "Task T-999 not found"'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Task T-999 not found"* ]]
+}
+
 @test "find_task_file: scoped search only checks specified dir" {
     touch "$TASKS_DIR/completed/T-400-done.md"
     run find_task_file "T-400" "active"

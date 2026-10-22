@@ -10,10 +10,10 @@ description: >
   test at a real inception fixture. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (line 21). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -45,7 +45,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:34:14Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T10:52:43Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction status on current bleeding-edge recorded (test passes or fails, and whether the "not found" message reaches output) — reproduced 2026-10-22 at 961c19464: `not ok 1 inception-decide: blocks invocation when CLAUDECODE=1 set`, rc=1 and empty output
+- [x] `fw inception decide` on an unknown task emits a "not found" message (not empty output) and exits non-zero
+- [x] tests/governance/test_task_lifecycle_gates.bats CLAUDECODE tests run against a real inception fixture and pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,8 +283,23 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/lib_tasks.bats > /tmp/.t4594-unit.out 2>&1 && ! grep -q "^not ok" /tmp/.t4594-unit.out
+test "$(grep -c '# skip' /tmp/.t4594-unit.out)" -eq 0
+grep -q "not-found returns 0" /tmp/.t4594-unit.out
+timeout 600 bats -f "inception-decide" tests/governance/test_task_lifecycle_gates.bats > /tmp/.t4594-gov.out 2>&1 && ! grep -q "^not ok" /tmp/.t4594-gov.out
+test "$(grep -c '# skip' /tmp/.t4594-gov.out)" -eq 0
+grep -q "unknown task names it" /tmp/.t4594-gov.out
+bin/fw vendor self --check --task T-4594
 
 ## RCA
+
+**Symptom:** `fw inception decide T-9913 go --rationale x` (T-9913 absent) exits 1 with EMPTY output, although `lib/inception.sh:479` prints "Task T-9913 not found in active tasks". The governance test `tests/governance/test_task_lifecycle_gates.bats:152` was red: it assumed the CLAUDECODE gate fires before task lookup, which T-2964 reversed on purpose.
+
+**Root cause:** `lib/tasks.sh:32` — `find_task_file` ended with `[[ -n "$result" ]] && echo "$result"`, so it RETURNED 1 whenever the task was not found, contrary to its own contract ("empty string if not found"). `bin/fw:12` runs `set -euo pipefail`, and `lib/inception.sh:477` does `task_file=$(find_task_file "$task_id" active)` (a plain assignment, not `local x=$(…)`), so errexit killed the process on that line, before the `[ -z "$task_file" ]` branch that prints the message. Same for `lib/inception.sh:202` and the other plain-assignment callers.
+
+**Why structurally allowed:** the hazard had already been hit once (`agents/context/lib/focus.sh:90-100`, T-2874) and was patched at that ONE call site with `|| true` instead of at the helper, so every other caller kept the trap. `tests/unit/lib_tasks.bats` tested not-found only via `run`, which swallows the exit status, so the non-zero return was never asserted. The governance test then went red for a different reason (T-2964 ordering) and the empty output was read as "gate not reached" rather than "script died silently".
+
+**Prevention:** `find_task_file` now returns 0 on not-found (callers already decide on the emptiness of the output; none tests its status). Regression test in `tests/unit/lib_tasks.bats` asserts a `set -e` caller survives a not-found lookup; the governance suite now asserts the unknown-task path names the task, and the CLAUDECODE gate test runs against a real inception fixture.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -379,3 +395,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4594-inception-decide-on-an-unknown-task-exit.md
 - **Context:** Initial task creation
+
+### 2026-10-22T10:52:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
