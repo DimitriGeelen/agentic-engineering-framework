@@ -3,16 +3,26 @@ id: T-4124
 name: "sidecar send to a local peer fails HTTP 401 unauthorized after a host reboot
   (055-agentic-fleet-cockpit receiver on 127.0.0.1:37415); worked hours before"
 description: >
-  LOCALISED 2026-10-12 21:xx: 055's registered receiver (pid 16898) is alive and holds port 37415, but 055's
-  receiver.token was rewritten ~16 min AFTER that receiver started (registry mtime 1791827468, token mtime
-  1791828416). Senders read the file (direct.py post_with_token → lifecycle.read_token), the server compares
-  against the token it loaded at start → 401 for every sender (010 confirmed independently). Code path:
-  lib/sidecar_cli.py:600-625 — when the triple file is missing/unreadable the receiver is treated as not
-  running, write_token() overwrites the token BEFORE the new server binds; with a fixed configured port the new
-  server cannot bind and dies, the old one keeps the old token. No lock, no token rollback on a failed start.
-  Fix shape: take a lock; write the token only after confirming no live listener for this project on the
-  port (or have the server re-read the token file per request / on change); restore the previous token when
-  the new server does not come up; and a REJECTED 401 should stay queued for retry. Immediate remedy for 055:
+  LOCALISED 2026-10-12 21:xx: 055's registered receiver (pid 16898) is alive and holds
+  port 37415, but 055's
+  receiver.token was rewritten ~16 min AFTER that receiver started (registry mtime
+  1791827468, token mtime
+  1791828416). Senders read the file (direct.py post_with_token → lifecycle.read_token),
+  the server compares
+  against the token it loaded at start → 401 for every sender (010 confirmed independently).
+  Code path:
+  lib/sidecar_cli.py:600-625 — when the triple file is missing/unreadable the receiver
+  is treated as not
+  running, write_token() overwrites the token BEFORE the new server binds; with a
+  fixed configured port the new
+  server cannot bind and dies, the old one keeps the old token. No lock, no token
+  rollback on a failed start.
+  Fix shape: take a lock; write the token only after confirming no live listener for
+  this project on the
+  port (or have the server re-read the token file per request / on change); restore
+  the previous token when
+  the new server does not come up; and a REJECTED 401 should stay queued for retry.
+  Immediate remedy for 055:
   restart its receiver (stop + start).
   2026-10-12 after the system crash/reboot: fw sidecar send --to 055-agentic-fleet-cockpit
   -> REJECTED HTTP 401 unauthorized, twice. Other local peers (dimitri-mint-dev, 832,
@@ -54,7 +64,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T18:25:02Z
-last_update: '2026-10-12T18:31:15Z'
+last_update: '2026-10-22T07:46:00Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,6 +103,22 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-22T07:46:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

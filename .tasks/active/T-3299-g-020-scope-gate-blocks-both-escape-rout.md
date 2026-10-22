@@ -3,22 +3,23 @@ id: T-3299
 name: "G-020 scope gate blocks BOTH escape routes its own block message prescribes
   — an agent focused on a placeholder-AC build task can be wedged. Measured 2026-08-29
   (T-3216 run, focus landed on auto-created T-3215/T-3216). The message names: (1)
-  'Edit the task file: replace the [First …] placeholder ACs with real ACs' (literal placeholder token elided here so the review-gate's placeholder scan does not match this quotation); (2) 'bin/fw task
-  update T-XXX --type inception'. Route (2) is refused by check-active-task itself
-  — not on the read-only allowlist (agents/context/lib/safe-commands.sh), so the gate
-  quotes the remedy back verbatim while refusing it. Route (1) is refused for every
-  SHELL form (heredoc, sed -i, any redirect all match the write-pattern regex); it
-  survives only via a Write/Edit TOOL call, which is not routed through the same regex.
-  So an agent whose only write surface is bash has no legal move at all. I escaped
-  only by using the Edit tool. Also blocked in the same state: 'fw task update --horizon
-  later', 'fw push', and plain reads that merely contain sed/awk/2>/dev/null — the
-  write-pattern regex is matching read commands (sibling of T-2410, already filed,
-  but the deadlock is distinct from the false-positive class). Fix direction, cheapest
-  first: allowlist the gate's own two prescribed remedies in safe-commands.sh so the
-  block message is reachable from the blocked state. Structural lesson worth a rail:
-  a block message is an executable contract — for every gate that prints a remedy,
-  run that remedy verbatim WHILE the gate is firing, not from a clean shell. Ours
-  was written by someone who was not blocked at the time. Sibling to L-399/T-1890
+  'Edit the task file: replace the [First …] placeholder ACs with real ACs' (literal
+  placeholder token elided here so the review-gate's placeholder scan does not match
+  this quotation); (2) 'bin/fw task update T-XXX --type inception'. Route (2) is refused
+  by check-active-task itself — not on the read-only allowlist (agents/context/lib/safe-commands.sh),
+  so the gate quotes the remedy back verbatim while refusing it. Route (1) is refused
+  for every SHELL form (heredoc, sed -i, any redirect all match the write-pattern
+  regex); it survives only via a Write/Edit TOOL call, which is not routed through
+  the same regex. So an agent whose only write surface is bash has no legal move at
+  all. I escaped only by using the Edit tool. Also blocked in the same state: 'fw
+  task update --horizon later', 'fw push', and plain reads that merely contain sed/awk/2>/dev/null
+  — the write-pattern regex is matching read commands (sibling of T-2410, already
+  filed, but the deadlock is distinct from the false-positive class). Fix direction,
+  cheapest first: allowlist the gate's own two prescribed remedies in safe-commands.sh
+  so the block message is reachable from the blocked state. Structural lesson worth
+  a rail: a block message is an executable contract — for every gate that prints a
+  remedy, run that remedy verbatim WHILE the gate is firing, not from a clean shell.
+  Ours was written by someone who was not blocked at the time. Sibling to L-399/T-1890
   producer-consumer parity, one notch worse: there the bypass existed and was rejected
   downstream; here the gate rejects it itself. Second trigger in the same run: an
   automated process created T-3215 in started-work with template ACs and TOOK FOCUS
@@ -45,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:15:10Z
-last_update: 2026-09-07T01:20:19Z
+last_update: '2026-10-22T07:45:24Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +85,22 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-22T07:45:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref,body:concern-ref); D2=0 (no-signal); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

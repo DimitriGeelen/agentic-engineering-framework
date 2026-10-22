@@ -1,8 +1,13 @@
 ---
 id: T-4559
-name: "Worker lifecycle: periodic own-project sweep of finished workers, --worker-binding on spawn, hub host-wide slot before dispatch (055 proposal T-588)"
+name: "Worker lifecycle: periodic own-project sweep of finished workers, --worker-binding
+  on spawn, hub host-wide slot before dispatch (055 proposal T-588)"
 description: >
-  055-agentic-fleet-cockpit proposal (msg af547837, their docs/reports/T-588-consultation-synthesis.md): (2) periodic no-prompt sweep of finished workers of this project only; (3) cmd_spawn passes TermLink --worker-binding <dispatch_id>:<attempt> so the hub tells workers from human shells; (4) dispatch asks the hub for a host-wide slot instead of count-then-spawn. Part (1) is the bug filed alongside.
+  055-agentic-fleet-cockpit proposal (msg af547837, their docs/reports/T-588-consultation-synthesis.md):
+  (2) periodic no-prompt sweep of finished workers of this project only; (3) cmd_spawn
+  passes TermLink --worker-binding <dispatch_id>:<attempt> so the hub tells workers
+  from human shells; (4) dispatch asks the hub for a host-wide slot instead of count-then-spawn.
+  Part (1) is the bug filed alongside.
 
 status: captured
 workflow_type: inception
@@ -13,8 +18,8 @@ components: []
 related_tasks: []
 origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "af547837"}
 created: 2026-10-21T15:41:52Z
-last_update: 2026-10-21T15:41:52Z
-date_finished: null
+last_update: '2026-10-22T07:46:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -23,6 +28,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-10-22T07:45:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:46:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4559: Worker lifecycle: periodic own-project sweep of finished workers, --worker-binding on spawn, hub host-wide slot before dispatch (055 proposal T-588)

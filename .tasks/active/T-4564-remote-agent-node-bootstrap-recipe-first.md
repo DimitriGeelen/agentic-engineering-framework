@@ -1,8 +1,14 @@
 ---
 id: T-4564
-name: "Remote agent node bootstrap recipe (first case: ring20's external-VPS node for 1409-sprind)"
+name: "Remote agent node bootstrap recipe (first case: ring20's external-VPS node
+  for 1409-sprind)"
 description: >
-  Define how a remote agent node is bootstrapped for AEF: toolchain, how projects get their vendored AEF, Watchtower per project, per-project identity/secrets (no estate tokens), what stays off (GitHub mirror sync, consumer-recover over SSH), inference endpoints (Ollama chat/embed/tags; litellm /v1/messages for ollama-loop via ANTHROPIC_BASE_URL), and how the node registers with the fleet (TermLink hub; 055 cockpit). ring20-mgmt (T-2477) feeds the concrete steps from their node.
+  Define how a remote agent node is bootstrapped for AEF: toolchain, how projects
+  get their vendored AEF, Watchtower per project, per-project identity/secrets (no
+  estate tokens), what stays off (GitHub mirror sync, consumer-recover over SSH),
+  inference endpoints (Ollama chat/embed/tags; litellm /v1/messages for ollama-loop
+  via ANTHROPIC_BASE_URL), and how the node registers with the fleet (TermLink hub;
+  055 cockpit). ring20-mgmt (T-2477) feeds the concrete steps from their node.
 
 status: captured
 workflow_type: inception
@@ -13,8 +19,8 @@ components: []
 related_tasks: []
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "cf4e415f"}
 created: 2026-10-21T20:30:58Z
-last_update: 2026-10-21T20:30:58Z
-date_finished: null
+last_update: '2026-10-22T07:46:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -23,6 +29,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-10-22T07:45:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:46:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4564: Remote agent node bootstrap recipe (first case: ring20's external-VPS node for 1409-sprind)
