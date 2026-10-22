@@ -8,10 +8,10 @@ description: >
   was the main clone's master, not the tag; a standalone clone worked. Source: 050-email-archive
   field report on be.3 upgrade (sidecar 5b5b40e9, 2026-10-22).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T20:29:39Z
-last_update: '2026-10-22T20:30:18Z'
+last_update: 2026-10-22T22:13:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -71,20 +71,31 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T20:30:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4661: fw upgrade run from a git worktree of a release tag resolves the framework to the worktree's main clone and pins its HEAD (master 2328ae76b) instead of the tag
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw upgrade` invoked through a linked worktree's `bin/fw` must pin (and sync from) that worktree's checkout, not the main clone's.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `bin/fw` does not re-exec the main checkout's binary for `upgrade` when the invoked binary lives in a linked worktree (the worktree is the release source the operator chose); every other command still redirects (T-3111 suite green)
+- [x] Regression test `tests/unit/t4661_upgrade_from_worktree_source.bats` (real `git worktree add` of a tag in a temp repo whose main clone has moved on) fails before the fix and passes after: upgrade runs the worktree's binary with FRAMEWORK_ROOT = the worktree, and the recorded version_sha is the tag commit, not the main clone's HEAD
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -269,6 +280,13 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4661_upgrade_from_worktree_source.bats > /tmp/.t4661a 2>&1 && ! grep -q "^not ok" /tmp/.t4661a
+test "$(grep -c '# skip' /tmp/.t4661a)" -eq 0
+timeout 600 bats tests/unit/t3111_worktree_reexec.bats > /tmp/.t4661b 2>&1 && ! grep -q "^not ok" /tmp/.t4661b
+test "$(grep -c '# skip' /tmp/.t4661b)" -eq 0
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4661c 2>&1 && ! grep -q "^not ok" /tmp/.t4661c
+bash -n bin/fw
+bin/fw vendor self --check --task T-4661
 
 ## RCA
 
@@ -285,6 +303,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 050 ran `fw upgrade` with the `bin/fw` of a git worktree checked out at tag v1.8.15-be.3; the consumer's `.framework.yaml` got `version_sha` = the main clone's HEAD (master 2328ae76b), and the code synced was the main clone's, not the tag's. A standalone clone of the same tag worked.
+
+**Root cause:** `bin/fw:_fw_reexec_authority` (T-3111, R7 leg L2, bin/fw ~440-530) re-execs the MAIN checkout's `bin/fw` with `FRAMEWORK_ROOT` exported to the main checkout whenever the invoked binary (`FW_BIN_DIR`) or `PROJECT_ROOT` is a linked worktree. The redirect exists so a governance *session* in a stale worktree runs current enforcement, but it applied to every command — including `upgrade`, where the worktree is the release *source* the operator picked. After the exec, `lib/upgrade.sh` saw `FRAMEWORK_ROOT` = main clone, synced from it, and `fw_record_version_sha` (lib/version-relation.sh:207) ran `git -C <main clone> rev-parse HEAD`.
+
+**Why structurally allowed:** T-3111's tests only asserted that the redirect fires (version string, argv, FRAMEWORK_ROOT handoff); none asked which commands it must NOT apply to. The upgrade suites run from a plain clone, never from a linked worktree, so source identity under a worktree was never exercised.
+
+**Prevention:** `tests/unit/t4661_upgrade_from_worktree_source.bats` builds a temp repo, tags a commit, moves the main clone on, `git worktree add`s the tag, and asserts that `upgrade` through the worktree's binary keeps FRAMEWORK_ROOT on the worktree and that the sha the pin writer records is the tag commit; the T-3111 suite keeps proving every other command still redirects.
 
 ## Evolution
 
@@ -366,3 +392,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4661-fw-upgrade-run-from-a-git-worktree-of-a-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T22:13:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

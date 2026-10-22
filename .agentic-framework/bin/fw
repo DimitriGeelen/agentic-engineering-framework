@@ -442,6 +442,17 @@ _fw_reexec_authority() {
     # back. Checked before any git call, so a redirected process pays nothing.
     [ -n "${FW_REEXEC_DEPTH:-}" ] && return 0
 
+    # T-4661: `upgrade` through a worktree's OWN binary is not a replica session —
+    # the worktree is the release source the operator picked (a tag checked out
+    # beside the clone). Redirecting moved FRAMEWORK_ROOT to the main clone, so
+    # upgrade synced the clone's code and pinned the clone's HEAD instead of the
+    # tag's. The binary that was invoked is the version to install; leave it be.
+    if [ "${1:-}" = "upgrade" ] && [ -f "$FW_BIN_DIR/../lib/worktree-identity.sh" ]; then
+        # shellcheck source=/dev/null
+        source "$FW_BIN_DIR/../lib/worktree-identity.sh" 2>/dev/null \
+            && fw_is_linked_worktree "$FW_BIN_DIR" && return 0
+    fi
+
     # Both libs are sourceable-and-side-effect-free by contract; lib/paths.sh is
     # not (it resolves and exports paths on source), which is why the predicate
     # lives in lib/worktree-identity.sh. Resolved from THIS binary's own tree —
