@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4259: fw init seeds a cron registry but leaves it ungenerated; doctor WARNs and also prints cron OK.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T09:43:14Z
+# ============================================================================
+
+task_id: T-4259
+task_name: "fw init seeds a cron registry but leaves it ungenerated; doctor WARNs and also prints cron OK."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:26:00Z
+completed: 2026-10-22T09:36:42Z
+duration_days: 5
+updates_count: 3
+first_commit: 2026-10-21T22:45:44+02:00
+last_commit: 2026-10-22T01:19:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init generates the crontab from its seeded registry (generate only; init code landed in cfd8fbe84) and names fw cron install in next steps; regression bats runs fresh init + vendored fw doctor. doctor/audit cron dry-runs render with the fw path generate writes — cron_fw_path in lib/cron-registry.sh is the one rule (T-3835) for generate, doctor and audit; an inherited FRAMEWORK_ROOT no longer reports 'registry edited but not generated' on a fresh init; t4259 (c) pins the inherited env, new leg (e) pins the shared rule. vendor self — cron_fw_path shared by generate/doctor/audit
+
+# Key outcomes
+outcomes:
+  - 'Reproduced on bleeding-edge: a fresh `fw init` project''s `fw doctor` prints "Cron registry present but not generated" (registry seeded with jobs by lib/cron-seed.sh, no generated crontab)'
+  - '`fw init` generates `.context/cron/agentic-audit.crontab` from the seeded registry (generate only, never install), so doctor''s registry→generated leg agrees with the registry'
+  - '`fw init` next steps name `fw cron install` as the step that schedules the seeded jobs'
+  - 'Regression bats test fails before the fix and passes after'
+  - '(2026-10-22 integration) Doctor/audit registry→generated dry-runs render with the same fw path `fw cron generate` writes — one helper `cron_fw_path` in `lib/cron-registry.sh` used by all three — so a fresh init''s doctor run with an inherited FRAMEWORK_ROOT (agent session, bats test_helper) reports no "edited but not generated"; t4259 (c) pins that env explicitly, new leg (e) pins the shared rule; 5/5 green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/cron-registry.sh'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'lib/cron-registry.sh'
+  - '.tasks/active/T-4259-fw-init-seeds-a-cron-registry-but-leaves.md'
+  - 'tests/unit/t4259_init_cron_generated.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T22:45:44'
+    action: 'T-4259: fw init generates the crontab from its seeded registry (generate only; init code landed in cfd8fbe84) and names fw cron install in next steps; regression bats runs fresh init + vendored fw doctor'
+  - time: '2026-10-22T01:18:42'
+    action: 'T-4259: doctor/audit cron dry-runs render with the fw path generate writes — cron_fw_path in lib/cron-registry.sh is the one rule (T-3835) for generate, doctor and audit; an inherited FRAMEWORK_ROOT no longer reports ''registry edited but not generated'' on a fresh init; t4259 (c) pins the inherited env, new leg (e) pins the shared rule'
+  - time: '2026-10-22T01:19:35'
+    action: 'T-4259: vendor self — cron_fw_path shared by generate/doctor/audit'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 6850 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6850
+  commits: 3
+  files_changed: 8
+  lines_added: 196
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4259-fw-init-seeds-a-cron-registry-but-leaves.md
+generated_by: context-agent-hybrid

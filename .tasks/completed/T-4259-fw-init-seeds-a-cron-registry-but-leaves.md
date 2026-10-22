@@ -7,12 +7,12 @@ description: >
   in installer next steps; make the two cron lines agree. Findings (0909 run aef-install-20261017T144241Z):
   F-15. Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-6.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, bin/fw, lib/cron-registry.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:26:00Z
-last_update: 2026-10-21T23:06:04Z
-date_finished:
+last_update: 2026-10-22T09:36:42Z
+date_finished: 2026-10-22T09:36:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -417,3 +417,25 @@ grep -q "T-4259" lib/init.sh && grep -q "cron generate" lib/init.sh
 ### 2026-10-22 — integration: t4259 (c) red on HEAD
 - **Cause:** doctor's registry→generated dry-run used `$FRAMEWORK_ROOT/bin/fw`, generate used the consumer's vendored fw; an inherited FRAMEWORK_ROOT (test_helper, agent sessions) made them differ. Reproduced by hand: clean env → no WARN; `FRAMEWORK_ROOT=/opt/…` → "Cron registry edited but not generated".
 - **Changed:** new `cron_fw_path` in `lib/cron-registry.sh`; `bin/fw` cron generate, `bin/fw` doctor and `agents/audit/audit.sh` use it. t4259 (c) now passes FRAMEWORK_ROOT explicitly; new leg (e) pins the helper and that no dry-run renders with a bare `$FRAMEWORK_ROOT/bin/fw`. t4259 5/5 green.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-83516e46
+- **Timestamp:** 2026-10-22T09:42:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `timeout 900 bats tests/unit/t4259_init_cron_generated.bats > /tmp/.t4259.out 2>&1 && ! grep -q "^not ok" /tmp/.t4259.out`
+
+### 2026-10-22T09:36:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
