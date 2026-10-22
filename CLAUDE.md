@@ -1461,6 +1461,8 @@ bin/fw release tag-and-release [--bump patch|minor|major]
 
 A release also posts stage 9 (Released, with its evidence) on each linked GitHub issue per the close rule — T-4340: `fw issues release` runs after publish; closes only on a WORKS field verdict, else asks to confirm and the sweep closes after 14 days (`--dry-run` lists it, posts nothing).
 
+**Submitter replies close issues; nobody waits the 14 days (operator ruling 2026-10-22, standing; T-4660, T-4668).** The 2-hourly `fw issues sync` cron also reads every reply from an issue's author. A reply that confirms the fix (`confirmed`) or OKs closing (`close-ok`) on an issue the ledger shows fixed or released is closed at that sync with one thank-you comment that quotes the reply and names the task and release. A reply that OKs closing but carries a suggestion is left for the agent: file the follow-up task, then `fw issues confirm-close <N> --reply-id <ID> --note "tracked as T-XXXX"`. Closing in these cases is the agent's routine, not an operator question — do it and report it. Everything else (not fixed, partial, discussion) is listed by `fw issues replies`, in `fw operator pending` and in the session-start alerts; a reply that needs no action is settled with `fw issues reply-ack` (T-4669), never by closing the issue. The 14-day sweep still covers silence.
+
 Between releases `master` deliberately lags. That lag **is** the product: a
 consumer running `fw upgrade` inherits the last released state, not tonight's
 half-finished refactor.
