@@ -8,12 +8,12 @@ description: >
   exists. Reproduce on the live Watchtower, find the path resolution that drops it,
   fix, test.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, watchtower]
-components: []
+components: [web/shared.py]
 related_tasks: [T-4508]
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,8 +43,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:48:34Z
-last_update: 2026-10-21T22:05:38Z
-date_finished:
+last_update: 2026-10-22T11:26:27Z
+date_finished: 2026-10-22T11:26:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -130,6 +130,12 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] The style guide opens in the Watchtower file viewer and reads as a rendered document
+  **Steps:**
+  1. Open http://192.168.10.107:3000/file/docs/style-guide.md
+  2. Scroll through the page
+  **Expected:** the style guide renders as formatted Markdown inside the normal Watchtower chrome (headings, lists, code blocks), not a "Not Served" page and not raw text
+  **If not:** note what the page shows (status, "Not Served", raw text) and screenshot it
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -379,6 +385,13 @@ docs/archive/ so its disclosure-boundary check still lands in an unservable dire
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** Top-level docs/*.md files are now served by the Watchtower file viewer; the fix is a depth-1 allowance in `is_viewable_path` (extension still checked, subdirs unchanged). All Agent ACs pass and the live Watchtower answers 200. The [REVIEW] criterion was added on 2026-10-22 because the change is in `web/shared.py`, a render surface (P-013); it only asks you to look at the rendered page.
+**Evidence:**
+- Commit ec23b3a9a: `web/shared.py` depth-1 docs allowance; regression `tests/unit/test_t4571_docs_top_level_viewable.py` (2 of 3 red without the fix)
+- http://192.168.10.107:3000/file/docs/style-guide.md answers HTTP 200 on the restarted Watchtower (checked 2026-10-22 by T-4632)
+- Path-traversal and unlisted-subdir refusals still pinned by `tests/unit/test_file_viewer_unservable.py`
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -410,3 +423,20 @@ docs/archive/ so its disclosure-boundary check still lands in an unservable dire
 ### 2026-10-21T22:05:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e5d2ac11
+- **Timestamp:** 2026-10-22T11:26:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 138
+     - evidence: `curl -s -o /tmp/.t4571.html -w "%{http_code}" "$(bin/fw watchtower url)/file/docs/style-guide.md" | grep -qx 200 && grep -q "Style Guide" /tmp/.t4571.html`
+
+### 2026-10-22T11:26:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
