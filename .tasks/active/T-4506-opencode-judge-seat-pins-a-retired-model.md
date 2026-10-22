@@ -117,12 +117,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `policy/review-backends.yaml` opencode model pin is `zai-coding-plan/glm-5.3` (no `glm-5.2` left in the registry), and whatever signed-registry follow-up the change requires is done
-- [ ] A preflight checks each pinned opencode model against `opencode models <provider>`; it names a retired pin explicitly and skips cleanly when opencode is absent
-- [ ] `fw doctor` and `fw reviewer judge` run the preflight
-- [ ] Regression test covers: listed pin passes, unlisted pin fails naming the model, opencode absent skips
-- [ ] One real `opencode run` with the new pin answers; its cost is logged with `bin/fw review cost log`
-- [ ] Vendored copies in sync (`bin/fw vendor self --check --task T-4506` clean)
+- [x] `policy/review-backends.yaml` opencode model pin is `zai-coding-plan/glm-5.3` (no `glm-5.2` left in the registry), and whatever signed-registry follow-up the change requires is done
+- [x] A preflight checks each pinned opencode model against `opencode models <provider>`; it names a retired pin explicitly and skips cleanly when opencode is absent
+- [x] `fw doctor` and `fw reviewer judge` run the preflight
+- [x] Regression test covers: listed pin passes, unlisted pin fails naming the model, opencode absent skips
+- [x] One real `opencode run` with the new pin answers; its cost is logged with `bin/fw review cost log`
+- [x] Vendored copies in sync (`bin/fw vendor self --check --task T-4506` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -407,6 +407,10 @@ bin/fw vendor self --check --task T-4506
 - **Chose:** re-pin `policy/review-backends.yaml` opencode from `zai-coding-plan/glm-5.2` to `zai-coding-plan/glm-5.3`.
 - **Why:** glm-5.2 is retired by Z.AI ("Unexpected server error" on every launch, confirmed here 2026-10-20 and by 832 2026-10-22, refs err_c051cd21 / err_ac2840bf); glm-5.3 is listed and answers. Operator asked "re-pin? yes/no" and answered verbatim: "1 yes" (2026-10-22).
 - **Rejected:** leaving the seat dead in every rung-5 panel.
+
+### 2026-10-22 — what the signed registry chain needs after the re-pin
+- **Chose:** commit the registry (and its vendored copy) — nothing else. The ledger reads `policy/review-backends.yaml` only AS COMMITTED (`lib/verdict_ledger.py:_registry_blob`) and each review run pins that blob's sha256 at registration; there is no stored registry hash to re-sign. Runs registered before the commit keep their glm-5.2 blob; new runs pin the glm-5.3 blob.
+- **Chose (judge):** a retired-pin kind is removed from the run's dispatchable kinds (seat stays, unfilled, reason printed), not added to `exclude_kinds`, so the panel shape and the paid-seat proposal path are unchanged. A failed listing is "unchecked", never a retirement, so a network blip cannot take a seat down.
 
 ## Decision
 
