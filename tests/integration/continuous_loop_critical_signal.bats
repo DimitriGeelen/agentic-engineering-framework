@@ -77,6 +77,32 @@ _run_post() {  # transcript_path
     [ -f "$SIGNAL" ]
     grep -q '"directive"' "$SIGNAL"
     grep -q 'Continue the loop' "$SIGNAL"
+    # T-4577: the signal must stay valid JSON and carry the directive VALUE — the
+    # fold's python had an IndentationError that 2>/dev/null swallowed for months.
+    python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert d['directive']=='Continue the loop. No task ref here.', d" "$SIGNAL"
+}
+
+@test "T-4577: checkpoint.sh embedded python snippets compile (no swallowed IndentationError)" {
+    # Extract every python3 -c "..." body from checkpoint.sh and compile it. A syntax
+    # error inside one is invisible at run time when its stderr goes to /dev/null.
+    run python3 - "$REAL/agents/context/checkpoint.sh" <<'PY'
+import re, sys
+src = open(sys.argv[1]).read()
+bad = []
+snippets = list(re.finditer(r'python3 -c "\n(.*?)\n" ', src, re.S))
+if not snippets:
+    bad.append('no python3 -c snippets found: extractor out of date')
+for m in snippets:
+    body = m.group(1).replace('\\"', '"')
+    try:
+        compile(body, 'snippet', 'exec')
+    except SyntaxError as e:
+        bad.append('line %d: %s' % (src[:m.start()].count('\n') + 1, e))
+print('\n'.join(bad) or 'clean')
+sys.exit(1 if bad else 0)
+PY
+    [ "$status" -eq 0 ]
+    [[ "$output" == "clean" ]]
 }
 
 @test "T-2363 directive-fold: no directive key when .next-directive.yaml absent (backward compat)" {

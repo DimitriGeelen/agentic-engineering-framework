@@ -51,7 +51,10 @@ run_gate() {
     else
         json="{\"tool_name\": \"$tool_name\", \"tool_input\": {}}"
     fi
-    run bash -c "echo '$json' | PROJECT_ROOT='$PROJECT_ROOT' CONTEXT_DIR='$PROJECT_ROOT/.context' HOME='$HOME' '$HOOK'"
+    # T-4577: FW_CHECKPOINT_SH=/bin/true — otherwise every critical block starts a
+    # detached real checkpoint.sh auto-handover (T-3989) that races the gate and can
+    # overwrite the .restart-requested signal these tests assert on.
+    run bash -c "echo '$json' | PROJECT_ROOT='$PROJECT_ROOT' CONTEXT_DIR='$PROJECT_ROOT/.context' HOME='$HOME' FW_CHECKPOINT_SH=/bin/true '$HOOK'"
 }
 
 # --- Fast path: cached status ---

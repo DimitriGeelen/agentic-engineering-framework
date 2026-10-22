@@ -334,13 +334,13 @@ _auto_handover_at_critical() {
                 _directive_json=$(python3 -c "
 import yaml, json, sys
 try:
-with open('$_directive_file') as f:
-    d = yaml.safe_load(f) or {}
-v = d.get('directive')
-if isinstance(v, str) and v.strip():
-    print(',\"directive\":' + json.dumps(v.strip()))
+    with open('$_directive_file') as f:
+        d = yaml.safe_load(f) or {}
+    v = d.get('directive')
+    if isinstance(v, str) and v.strip():
+        print(',\"directive\":' + json.dumps(v.strip()))
 except Exception:
-pass
+    pass
 " 2>/dev/null) || _directive_json=""
             fi
             cat > "$restart_signal" << SIGNAL_EOF
