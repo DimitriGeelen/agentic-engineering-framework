@@ -163,7 +163,10 @@ def _launch(root: Path, *, did: str, kind: str, brief: str, revision: str, run_i
         before_run(w)
     env = {k: v for k, v in os.environ.items() if not k.startswith(("FW_", "GIT_"))}
     env.update(PATH=f"{_stub_dir(root)}:{os.environ['PATH']}", STUB_MODE=mode,
-               LEDGER=str(_HERE / "lib/verdict_ledger.py"), WDIR_EXPECTED=str(w))
+               LEDGER=str(_HERE / "lib/verdict_ledger.py"), WDIR_EXPECTED=str(w),
+               # T-4647: the stubs read STUB_MODE/LEDGER/WDIR_EXPECTED from the environment, which
+               # run.sh's allow-list scrub would drop; this env is built here, so mark it clean.
+               _FW_RUNTIME_ENV_CLEAN="1")
     env.pop("PROJECT_ROOT", None)
     with (w.parent / f"{did}.out").open("w") as fh:
         p = subprocess.run(["bash", str(w / "run.sh"), did, str(root), str(w), "60", "", "review", ""],

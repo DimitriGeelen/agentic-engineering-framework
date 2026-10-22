@@ -266,7 +266,10 @@ def _run_worker(root, mode="green", model="", env=None, tamper_env_after_start=F
         (stub_dir / "python3").chmod(0o755)
     env = {k: v for k, v in os.environ.items() if not k.startswith(("FW_", "GIT_"))}
     env.update(PATH=f"{stub_dir}:{os.environ['PATH']}", STUB_MODE=mode,
-               LEDGER=str(_HERE / "lib/verdict_ledger.py"), WDIR_EXPECTED=str(wdir))
+               LEDGER=str(_HERE / "lib/verdict_ledger.py"), WDIR_EXPECTED=str(wdir),
+               # T-4647: the stubs read STUB_MODE/LEDGER/WDIR_EXPECTED from the environment, which
+               # run.sh's allow-list scrub would drop; this env is built here, so mark it clean.
+               _FW_RUNTIME_ENV_CLEAN="1")
     env.pop("PROJECT_ROOT", None)
     # Output to a file, not a pipe: run.sh's watchdog `sleep` outlives it and would hold a pipe open.
     with (wdir.parent / f"{did}.out").open("w") as fh:
