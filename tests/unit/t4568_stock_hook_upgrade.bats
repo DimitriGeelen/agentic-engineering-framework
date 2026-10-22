@@ -69,13 +69,28 @@ _install() {
     grep -q "^# VERSION=$(sed -n 's/^COMMIT_MSG_HOOK_VERSION="\(.*\)"/\1/p' "$FRAMEWORK_ROOT/agents/git/lib/hooks.sh")$" "$HOOKS/commit-msg"
 }
 
-@test "project line appended to a stock hook is kept active, once, and the old template is not" {
+@test "project line appended to a stock hook that ran is kept active, once, and the old template is not" {
+    # v1.8.14's post-commit has no unconditional top-level exit, so a line
+    # appended to it ran on every commit and must keep running.
+    echo 'echo PROJECT-GATE-RAN' >> "$HOOKS/post-commit"
+    run _install
+    [ "$status" -eq 0 ]
+    [ "$(grep -cx 'echo PROJECT-GATE-RAN' "$HOOKS/post-commit")" -eq 1 ]
+    after=$(awk -v e="$END_LINE" 'f && !/^#/ { print } $0 == e { f = 1 }' "$HOOKS/post-commit")
+    [ "$after" = "echo PROJECT-GATE-RAN" ]
+    [ -f "$HOOKS/post-commit.pre-fw-block" ]
+}
+
+@test "project line appended after a stock hook's final exit stays inert, once (T-4569)" {
+    # v1.8.14's commit-msg ends in 'exit 0': an appended line never ran, so it
+    # is kept commented out rather than starting to run on every commit.
     echo 'echo PROJECT-GATE-RAN' >> "$HOOKS/commit-msg"
     run _install
     [ "$status" -eq 0 ]
-    [ "$(grep -cx 'echo PROJECT-GATE-RAN' "$HOOKS/commit-msg")" -eq 1 ]
+    [ "$(grep -c 'PROJECT-GATE-RAN' "$HOOKS/commit-msg")" -eq 1 ]
+    grep -qx '# echo PROJECT-GATE-RAN' "$HOOKS/commit-msg"
     after=$(awk -v e="$END_LINE" 'f && !/^#/ { print } $0 == e { f = 1 }' "$HOOKS/commit-msg")
-    [ "$after" = "echo PROJECT-GATE-RAN" ]
+    [ -z "$after" ]
     [ -f "$HOOKS/commit-msg.pre-fw-block" ]
 }
 
