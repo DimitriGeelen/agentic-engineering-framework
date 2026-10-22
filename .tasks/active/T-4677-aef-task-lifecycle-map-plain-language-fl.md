@@ -1,8 +1,15 @@
 ---
 id: T-4677
-name: "aef-task-lifecycle map: plain-language flow/task names so the business lens reads as a business flow (ids into Notes/technical fields)"
+name: "aef-task-lifecycle map: plain-language flow/task names so the business lens
+  reads as a business flow (ids into Notes/technical fields)"
 description: >
-  832 screenshot review (sidecar 97db861b, 832 T-1241/T-1278): the business lens hides fields/ids/badges but not words inside names, so flow names like 'shelved — horizon next/later auto-demotes to captured (T-1068)', 'promoted — fw work-on T-XXX', task 'completion gates: Agent ACs (P-010) + ## Verification commands (P-011)' and the tl_create note 'G-020 blocks source edits until real ACs exist' show technical tokens in the BUSINESS view. Rename to plain language, keep ids in Notes or hostRef/workflowRef; map conformance (T-2621) and corpus lint must stay green.
+  832 screenshot review (sidecar 97db861b, 832 T-1241/T-1278): the business lens hides
+  fields/ids/badges but not words inside names, so flow names like 'shelved — horizon
+  next/later auto-demotes to captured (T-1068)', 'promoted — fw work-on T-XXX', task
+  'completion gates: Agent ACs (P-010) + ## Verification commands (P-011)' and the
+  tl_create note 'G-020 blocks source edits until real ACs exist' show technical tokens
+  in the BUSINESS view. Rename to plain language, keep ids in Notes or hostRef/workflowRef;
+  map conformance (T-2621) and corpus lint must stay green.
 
 status: captured
 workflow_type: refactor
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T22:23:02Z
-last_update: 2026-10-22T22:23:02Z
-date_finished: null
+last_update: '2026-10-22T22:27:40Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-22T22:27:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:refactor); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4677: aef-task-lifecycle map: plain-language flow/task names so the business lens reads as a business flow (ids into Notes/technical fields)
