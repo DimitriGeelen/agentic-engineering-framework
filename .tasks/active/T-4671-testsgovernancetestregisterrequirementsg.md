@@ -1,10 +1,18 @@
 ---
 id: T-4671
-name: "tests/governance/test_register_requirements_gate.bats runs in the REAL repo: fw task update --status work-completed git-mv's its T-99xx redteam fixtures into the live index, and an unrelated commit picks them up"
+name: "tests/governance/test_register_requirements_gate.bats runs in the REAL repo:
+  fw task update --status work-completed git-mv's its T-99xx redteam fixtures into
+  the live index, and an unrelated commit picks them up"
 description: >
-  Observed 2026-10-22: a2e53a22a (T-4650 capture) committed .tasks/completed/T-9902/9905/9906-redteam.md and their episodic files, already staged in the real index; the test's setup later rm'd them, leaving tracked deletions. The test cds to FRAMEWORK_ROOT and writes .tasks/.context/docs/architecture there. Fix: run against a temp project (copy or fw init fixture with PROJECT_ROOT set, git init'd), never the live tree; add a guard that fails the test if the real repo's index or tree changed. Check t3586_skip_flag_policy.bats and test_t3896_inception_readiness.py for the same pattern.
+  Observed 2026-10-22: a2e53a22a (T-4650 capture) committed .tasks/completed/T-9902/9905/9906-redteam.md
+  and their episodic files, already staged in the real index; the test's setup later
+  rm'd them, leaving tracked deletions. The test cds to FRAMEWORK_ROOT and writes
+  .tasks/.context/docs/architecture there. Fix: run against a temp project (copy or
+  fw init fixture with PROJECT_ROOT set, git init'd), never the live tree; add a guard
+  that fails the test if the real repo's index or tree changed. Check t3586_skip_flag_policy.bats
+  and test_t3896_inception_readiness.py for the same pattern.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T21:43:33Z
-last_update: 2026-10-22T21:43:33Z
-date_finished: null
+last_update: 2026-10-22T21:47:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +58,53 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T21:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T21:45:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4671: tests/governance/test_register_requirements_gate.bats runs in the REAL repo: fw task update --status work-completed git-mv's its T-99xx redteam fixtures into the live index, and an unrelated commit picks them up
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+tests/governance/test_register_requirements_gate.bats cd'd into the framework repo and
+wrote T-99xx task/episodic/arc/design fixtures there; its successful closes are staged
+into the real index by update-task.sh's T-4094 postcondition. Move it to a throwaway git
+project and add a reusable guard that fails a test which changes the real repo.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] test_register_requirements_gate.bats runs every case in a temp `git init`'d PROJECT_ROOT (no write to FRAMEWORK_ROOT), all 5 assertions unchanged in meaning, 5/5 ok and 0 skips
+- [x] tests/live_repo_guard.bash: `live_repo_guard_begin` records `git status --porcelain` + index content hash of the real repo (whole repo, or scoped to a pathspec); `live_repo_guard_end` fails the test if either changed; wired into the register-gate test's setup/teardown, scoped to its fixture namespace
+- [x] Regression test tests/unit/t4671_live_repo_guard.bats proves the guard fails on a staged file and on a working-tree change, passes on no change, and that a scoped guard ignores out-of-scope changes
+- [x] t3586_skip_flag_policy.bats and test_t3896_inception_readiness.py checked: both already isolated (temp PROJECT_ROOT / tmp_path); recorded in ## Updates
+- [x] Real repo `git status --porcelain` and index hash identical before/after running the changed files (recorded in ## Updates)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +289,13 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/governance/test_register_requirements_gate.bats > /tmp/.t4671a 2>&1 && ! grep -q "^not ok" /tmp/.t4671a && grep -q "^ok 5 " /tmp/.t4671a
+test "$(grep -c '# skip' /tmp/.t4671a)" -eq 0
+timeout 300 bats tests/unit/t4671_live_repo_guard.bats > /tmp/.t4671b 2>&1 && ! grep -q "^not ok" /tmp/.t4671b && grep -q "^ok 4 " /tmp/.t4671b
+test "$(grep -c '# skip' /tmp/.t4671b)" -eq 0
+grep -q "live_repo_guard_begin" tests/governance/test_register_requirements_gate.bats && grep -q "live_repo_guard_end" tests/governance/test_register_requirements_gate.bats
+! grep -q 'cd "$FRAMEWORK_ROOT"' tests/governance/test_register_requirements_gate.bats
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4671c 2>&1 && grep -q clean /tmp/.t4671c
 
 ## RCA
 
@@ -264,6 +312,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a2e53a22a (an unrelated T-4650 capture commit) committed .tasks/completed/T-9902/9905/9906-redteam.md and .context/episodic/T-9902/9905/9906.yaml; the test's later teardown rm'd them, leaving tracked deletions (cleaned in b19757443).
+
+**Root cause:** tests/governance/test_register_requirements_gate.bats:21-23 `setup() { cd "$FRAMEWORK_ROOT"; }` made the live repo the test's PROJECT_ROOT, and every fixture helper wrote under `$FRAMEWORK_ROOT`. Three cases close successfully, and agents/task-create/update-task.sh:3199-3206 (T-4094 close-staging postcondition) `git add`s the completed task file and its episodic into PROJECT_ROOT's index. Teardown deletes the files on disk but cannot unstage them, so the next commit in the shared checkout that took the staged state carried them.
+
+**Why structurally allowed:** the test predates T-4094; when it was written a close of an untracked task was a plain `mv`, so a disk-only teardown was a complete cleanup. T-4094 widened the side effect from "disk" to "disk + index" and nothing tied the test's cleanup to the index. No test asserted the real repo was left untouched, so the leak was silent until a commit picked it up.
+
+**Prevention:** the test now runs in a temp `git init`'d project with CLAUDE_PROJECT_DIR unset, and tests/live_repo_guard.bash (begin/end) fails any test that changes the real repo's porcelain status or index content — the leak is now a red test, not a stray commit. Pinned by tests/unit/t4671_live_repo_guard.bats.
 
 ## Evolution
 
@@ -320,6 +376,11 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-22 — scope of the live-repo guard
+- **Chose:** whole-repo snapshot by default, with an optional pathspec; the register-gate test passes its fixture namespace (`.tasks/**/T-99xx-*`, `.context/episodic/T-99xx.yaml`, the redteam arc and design doc).
+- **Why:** the first run with a whole-repo guard went red on test 4 because a parallel worker modified `.tasks/active/T-4670-*.md` mid-run. In this shared checkout a whole-repo comparison is a flake source; the scoped one watches exactly where this test's leak landed (a2e53a22a's paths all match it).
+- **Rejected:** whole-repo only (flaky with 5 workers in one tree); disk-only teardown (the original failure: cannot see the index).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -345,3 +406,13 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4671-testsgovernancetestregisterrequirementsg.md
 - **Context:** Initial task creation
+
+### 2026-10-22T21:47:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-22 — fix and evidence [w4671]
+- **Root cause confirmed by reading:** update-task.sh:3199-3206 (T-4094) `git add`s the completed task + episodic into PROJECT_ROOT's index; the test's PROJECT_ROOT was the live repo (`cd "$FRAMEWORK_ROOT"`). Not re-run against the live repo to "prove" it: that would re-stage the fixtures into the shared index.
+- **Real repo before/after (final run of every Verification line, whole repo, sha256):** status `5a4f9594…8205f` → `5a4f9594…8205f`; index (`ls-files -s`) `8f6c7f54…c0c3e6` → `8f6c7f54…c0c3e6`. Identical. `git status --porcelain | grep -c 'T-99xx|redteam'` = 0.
+- **Results:** register gate 5/5 ok, 0 skips; t4671_live_repo_guard 4/4 ok, 0 skips; t3586_skip_flag_policy 17/17 ok; test_t3896_inception_readiness 7 passed; bats-dead-negation-lint clean.
+- **Siblings checked:** tests/unit/t3586_skip_flag_policy.bats already sets `PROJECT_ROOT=$(mktemp -d)` and calls update-task.sh directly — does not write into the real repo. tests/web/test_t3896_inception_readiness.py writes its T-99xx files under pytest `tmp_path` and monkeypatches `inception.PROJECT_ROOT` — does not write into the real repo. Neither changed.
+- **Not in scope, noted:** tests/governance/test_task_lifecycle_gates.bats has the same `cd "$FRAMEWORK_ROOT"` + T-99xx shape, but only exercises block paths (no close succeeds, so T-4094 never stages). It leaks into the real index only if a gate regresses to allow — worth the same treatment as a follow-up.

@@ -14,28 +14,58 @@
 # T-4580: fixture Verification lines must be real checks, not `true` — since T-4197
 # the reviewer's severe tautology finding refuses the close before the register
 # gate runs, which turned every PASSES case red for the wrong reason.
+#
+# T-4671: every case runs in a throwaway `git init`'d PROJECT_ROOT. This file used
+# to cd into the framework repo and write its T-99xx fixtures there; the closes
+# that succeed are staged by update-task.sh's T-4094 postcondition, so they landed
+# in the REAL index and an unrelated commit (a2e53a22a) picked them up. The live
+# repo guard now fails any case that changes the real repo's status or index.
 
-FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+load ../test_helper
+load ../live_repo_guard
+
 FW="$FRAMEWORK_ROOT/bin/fw"
 
 setup() {
-    cd "$FRAMEWORK_ROOT"
+    # Scoped to the namespace these fixtures write: a whole-repo snapshot also trips
+    # on other workers editing the shared checkout mid-run (T-4671, first run).
+    live_repo_guard_begin "$FRAMEWORK_ROOT" \
+        ':(glob).tasks/**/T-99[0-9][0-9]-*' ':(glob).context/episodic/T-99[0-9][0-9].yaml' \
+        '.context/arcs/redteam-arc.yaml' 'docs/architecture/redteam-design.md'
+    TEST_TEMP_DIR="$(mktemp -d)"
+    export TEST_TEMP_DIR
+    export PROJECT_ROOT="$TEST_TEMP_DIR"
+    guard_project_root
+    # bin/fw prefers CLAUDE_PROJECT_DIR over PROJECT_ROOT; inside a Claude session it
+    # names the live repo, which is exactly where these fixtures must not go.
+    unset CLAUDE_PROJECT_DIR FW_SKIP_REGISTER_REQUIREMENTS
+    mkdir -p "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed" \
+             "$PROJECT_ROOT/.tasks/templates" "$PROJECT_ROOT/.context/working" \
+             "$PROJECT_ROOT/.context/episodic" "$PROJECT_ROOT/.context/arcs" \
+             "$PROJECT_ROOT/docs/architecture"
+    echo "framework_root: $FRAMEWORK_ROOT" > "$PROJECT_ROOT/.framework.yaml"
+    cp "$FRAMEWORK_ROOT/.tasks/templates/zzz-default.md" \
+       "$PROJECT_ROOT/.tasks/templates/default.md" 2>/dev/null || \
+       echo "# template" > "$PROJECT_ROOT/.tasks/templates/default.md"
+    git -C "$PROJECT_ROOT" init -q
+    git -C "$PROJECT_ROOT" config user.email t@t
+    git -C "$PROJECT_ROOT" config user.name t
+    git -C "$PROJECT_ROOT" add -A
+    git -C "$PROJECT_ROOT" commit -qm "fixture base" --no-verify
+    cd "$PROJECT_ROOT"
 }
 
 teardown() {
-    rm -f "$FRAMEWORK_ROOT/.tasks/active/"T-99[0-9][0-9]-*.md
-    rm -f "$FRAMEWORK_ROOT/.tasks/completed/"T-99[0-9][0-9]-*.md
-    rm -f "$FRAMEWORK_ROOT/.context/episodic/"T-99[0-9][0-9].yaml
-    rm -f "$FRAMEWORK_ROOT/.context/arcs/redteam-arc.yaml"
-    rm -f "$FRAMEWORK_ROOT/docs/architecture/redteam-design.md"
+    cd /
+    [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
+    live_repo_guard_end
 }
 
 # Helper: write arc metadata
 _write_arc() {
     local slug="$1"
     local design_doc="$2"
-    mkdir -p "$FRAMEWORK_ROOT/.context/arcs"
-    cat > "$FRAMEWORK_ROOT/.context/arcs/${slug}.yaml" <<EOF
+    cat > "$PROJECT_ROOT/.context/arcs/${slug}.yaml" <<EOF
 id: $slug
 name: "Redteam Arc"
 status: in-progress
@@ -87,7 +117,7 @@ _write_task_on_arc() {
     local title="$2"
     local arc_id="$3"
     local body="$4"
-    local file="$FRAMEWORK_ROOT/.tasks/active/${id}-redteam.md"
+    local file="$PROJECT_ROOT/.tasks/active/${id}-redteam.md"
     cat > "$file" <<EOF
 ---
 id: ${id}
@@ -113,7 +143,7 @@ EOF
 
 # Control: task with valid owner for deferred requirement
 @test "register gate: PASSES when deferred R-id names existing owner" {
-    _write_design "$FRAMEWORK_ROOT/docs/architecture/redteam-design.md"
+    _write_design "$PROJECT_ROOT/docs/architecture/redteam-design.md"
     _write_arc "redteam-arc" "docs/architecture/redteam-design.md"
 
     # Create the owner task
@@ -121,7 +151,7 @@ EOF
 ### Agent
 - [x] Dummy AC
 ## Verification
-test -x bin/fw"
+test -f .framework.yaml"
 
     # Main task defers R1 but names owner
     _write_task_on_arc "T-9902" "Defers R1 with owner" "redteam-arc" "## Context
@@ -131,7 +161,7 @@ This slice defers R1 (First requirement) to T-9901.
 ### Agent
 - [x] Dummy AC
 ## Verification
-test -x bin/fw
+test -f .framework.yaml
 ## Recommendation
 **Recommendation:** GO
 **Rationale:** test
@@ -143,7 +173,7 @@ test -x bin/fw
 
 # Treatment: task defers R-id without naming owner
 @test "register gate: BLOCKS when R-id deferred without owner_task" {
-    _write_design "$FRAMEWORK_ROOT/docs/architecture/redteam-design.md"
+    _write_design "$PROJECT_ROOT/docs/architecture/redteam-design.md"
     _write_arc "redteam-arc" "docs/architecture/redteam-design.md"
 
     # Create owner for R1 so we only test R2
@@ -151,7 +181,7 @@ test -x bin/fw
 ### Agent
 - [x] Dummy AC
 ## Verification
-test -x bin/fw"
+test -f .framework.yaml"
 
     # Main task defers R2, which has no owner
     _write_task_on_arc "T-9903" "Defers R2 no owner" "redteam-arc" "## Context
@@ -161,7 +191,7 @@ This slice defers the liveness self-probe daemon (R2) — a separate slice.
 ### Agent
 - [x] Dummy AC
 ## Verification
-test -x bin/fw
+test -f .framework.yaml
 ## Recommendation
 **Recommendation:** GO
 **Rationale:** test
@@ -176,7 +206,7 @@ test -x bin/fw
 
 # Treatment: task defers requirement but owner doesn't exist
 @test "register gate: BLOCKS when owner_task does not exist" {
-    _write_design "$FRAMEWORK_ROOT/docs/architecture/redteam-design.md"
+    _write_design "$PROJECT_ROOT/docs/architecture/redteam-design.md"
     _write_arc "redteam-arc" "docs/architecture/redteam-design.md"
 
     # Main task defers R1, whose register owner T-9901 is not created in this test.
@@ -189,7 +219,7 @@ This slice defers R1 (its register owner T-9901 does not exist here).
 ### Agent
 - [x] Dummy AC
 ## Verification
-test -x bin/fw
+test -f .framework.yaml
 ## Recommendation
 **Recommendation:** GO
 **Rationale:** test
@@ -202,7 +232,7 @@ test -x bin/fw
 
 # Control: task that doesn't defer anything passes
 @test "register gate: PASSES when no requirements deferred" {
-    _write_design "$FRAMEWORK_ROOT/docs/architecture/redteam-design.md"
+    _write_design "$PROJECT_ROOT/docs/architecture/redteam-design.md"
     _write_arc "redteam-arc" "docs/architecture/redteam-design.md"
 
     # Task doesn't mention any R-X
@@ -213,7 +243,7 @@ This slice builds something without deferring spec requirements.
 ### Agent
 - [x] Dummy AC
 ## Verification
-test -x bin/fw
+test -f .framework.yaml
 ## Recommendation
 **Recommendation:** GO
 **Rationale:** test
@@ -225,7 +255,7 @@ test -x bin/fw
 
 # Bypass: --skip-register-requirements allows override
 @test "register gate: PASSES with --skip-register-requirements bypass" {
-    _write_design "$FRAMEWORK_ROOT/docs/architecture/redteam-design.md"
+    _write_design "$PROJECT_ROOT/docs/architecture/redteam-design.md"
     _write_arc "redteam-arc" "docs/architecture/redteam-design.md"
 
     # Task defers R2 with no owner
@@ -236,7 +266,7 @@ This slice defers R2 (liveness self-probe daemon) with no owner, but we're bypas
 ### Agent
 - [x] Dummy AC
 ## Verification
-test -x bin/fw
+test -f .framework.yaml
 ## Recommendation
 **Recommendation:** GO
 **Rationale:** test
