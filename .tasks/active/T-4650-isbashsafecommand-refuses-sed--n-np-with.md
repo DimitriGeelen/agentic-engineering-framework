@@ -94,12 +94,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `is_bash_safe_command 'sed -n 1,5p docs/T-037-*.md'` returns 0 (glob in a sed FILE operand of a print-only form is accepted); the literal-filename form still returns 0
-- [ ] sed SCRIPT stays strict: `sed -n 1p *.md w out`, `sed -i ... *.md`, `sed -n 'w x' f`, `sed -n "$(...)" f`, a glob in the script position, and `sed -e 's/a/b/e' f` are all refused
-- [ ] Decision recorded on glob-in-FILE for cat/head/tail/grep/wc, applied where the operand is unambiguously a file
-- [ ] Decision recorded: adb NOT added (adb shell runs arbitrary device commands)
-- [ ] Regression test tests/unit/t4650_sed_glob_file_operand.bats passes with 0 skips; neighbouring safe-commands tests still pass
-- [ ] `bin/fw vendor self --check --task T-4650` clean
+- [x] `is_bash_safe_command 'sed -n 1,5p docs/T-037-*.md'` returns 0 (glob in a sed FILE operand of a print-only form is accepted); the literal-filename form still returns 0
+- [x] sed SCRIPT stays strict: `sed -n 1p *.md w out`, `sed -i ... *.md`, `sed -n 'w x' f`, `sed -n "$(...)" f`, a glob in the script position, and `sed -e 's/a/b/e' f` are all refused
+- [x] Decision recorded on glob-in-FILE for cat/head/tail/grep/wc, applied where the operand is unambiguously a file
+- [x] Decision recorded: adb NOT added (adb shell runs arbitrary device commands)
+- [x] Regression test tests/unit/t4650_sed_glob_file_operand.bats passes with 0 skips; neighbouring safe-commands tests still pass
+- [x] `bin/fw vendor self --check --task T-4650` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
