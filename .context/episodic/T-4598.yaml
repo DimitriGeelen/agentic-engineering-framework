@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4598: greenfield bats control expects fw init to seed jobs: [] but init now seeds cron jobs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T11:42:01Z
+# ============================================================================
+
+task_id: T-4598
+task_name: "greenfield bats control expects fw init to seed jobs: [] but init now seeds cron jobs"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T08:36:36Z
+completed: 2026-10-22T11:39:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T13:25:25+02:00
+last_commit: 2026-10-22T13:25:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  greenfield bats re-anchors the T-2844 empty-registry assertion on a jobs: [] copy of the fixture (init now seeds cron jobs); seeded registry gets its own non-empty control
+
+# Key outcomes
+outcomes:
+  - 'Reproduced on bleeding-edge: the greenfield test "an empty cron registry is not reported as drift" fails on its `jobs: []` control because `fw init` now seeds jobs (lib/init.sh:368 → lib/cron-seed.sh)'
+  - 'The T-2844 assertion is re-anchored on a genuinely empty registry: a copy of the greenfield fixture with `jobs: []` is doctored, and the test asserts the "registry declares no jobs" SKIP fired and no cron drift WARN appeared (control proves the copy really is empty)'
+  - 'The seeded greenfield registry keeps its own assertion (non-empty, declares the seeded jobs) so the stale assumption is replaced, not deleted'
+  - '`tests/integration/fw_onboarding_greenfield.bats` cron tests pass; dead-negation lint clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'greenfield bats re-anchors the T-2844 empty-registry assertion on a jobs: [] copy of the fixture (init now seeds cron jobs); seeded registry gets its own non-empty control'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4598-greenfield-bats-control-expects-fw-init-.md'
+  - 'tests/integration/fw_onboarding_greenfield.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T13:25:25'
+    action: 'T-4598: greenfield bats re-anchors the T-2844 empty-registry assertion on a jobs: [] copy of the fixture (init now seeds cron jobs); seeded registry gets its own non-empty control'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 183 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cloud, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 183
+  commits: 1
+  files_changed: 2
+  lines_added: 59
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4598-greenfield-bats-control-expects-fw-init-.md
+generated_by: context-agent-hybrid
