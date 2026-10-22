@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4621: Push blocker: t3248_useful_headroom #6 unknown-measurement branch no longer writes level unknown
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T12:05:51Z
+# ============================================================================
+
+task_id: T-4621
+task_name: "Push blocker: t3248_useful_headroom #6 unknown-measurement branch no longer writes level unknown"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T09:33:38Z
+completed: 2026-10-22T12:04:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T11:40:17+02:00
+last_commit: 2026-10-22T11:40:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t3248 #6 follows T-4174's split of the single-entry case — unknown branch now reached by a lone HIGH reading (280k/300k, above warn); new test pins the young-session branch (lone low reading: ok, provisional, null headroom fields); no code change, no baseline entry
+
+# Key outcomes
+outcomes:
+  - 'Root cause of t3248_useful_headroom #6 red identified with file:line (deliberate contract change vs regression)'
+  - 'Cause fixed; `bats tests/unit/t3248_useful_headroom.bats` fully green, test still asserts a real property of the unknown-measurement branch'
+  - 'Nothing added to the unit-suite baseline'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4621-push-blocker-t3248usefulheadroom-6-unkno.md'
+  - 'tests/unit/t3248_useful_headroom.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T11:40:17'
+    action: 'T-4621: t3248 #6 follows T-4174''s split of the single-entry case — unknown branch now reached by a lone HIGH reading (280k/300k, above warn); new test pins the young-session branch (lone low reading: ok, provisional, null headroom fields); no code change, no baseline entry'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 151 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, push-blocker, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 151
+  commits: 1
+  files_changed: 2
+  lines_added: 64
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4621-push-blocker-t3248usefulheadroom-6-unkno.md
+generated_by: context-agent-hybrid
