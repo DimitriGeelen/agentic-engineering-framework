@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4323: Firewall rules Watchtower opened are never removed: stop leaves them, nothing flags a rule for a port no longer served
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T12:11:44Z
+# ============================================================================
+
+task_id: T-4323
+task_name: "Firewall rules Watchtower opened are never removed: stop leaves them, nothing flags a rule for a port no longer served"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T18:40:00Z
+completed: 2026-10-22T12:11:18Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-22T10:34:14+02:00
+last_commit: 2026-10-22T10:34:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower stop removes the UFW rule start added (recorded in .context/working/watchtower.firewall, only recorded rules are deleted, a failed delete keeps the record and prints the command); fw doctor WARNs on framework-labelled UFW rules whose port has no listener with the delete command; regression bats t4323 (9/10 red pre-fix, 10/10 green)
+
+# Key outcomes
+outcomes:
+  - '`ensure_firewall_open` records each rule it actually added (port) in a per-project state file (`.context/working/watchtower.firewall`), and records nothing when it did not add the rule (already allowed, no opt-in, loopback, ufw absent/inactive)'
+  - '`close_recorded_firewall_rules` deletes only the recorded rules (`ufw delete allow PORT/tcp`) and clears the record; a rule present but not recorded is never deleted; a failed delete keeps the record and prints the exact command'
+  - '`watchtower.sh stop` (clean stop and stale-pid cleanup) calls `close_recorded_firewall_rules`'
+  - '`firewall_orphan_rules` lists framework-labelled ufw ALLOW rules (comment Agentic Framework / Watchtower / fw serve) whose port has no TCP listener; `fw doctor` WARNs on them and prints `sudo ufw delete allow PORT/tcp`'
+  - 'Regression bats `tests/unit/t4323_firewall_rule_cleanup.bats` red before the fix, green after; `lib_firewall.bats` and `t4297_watchtower_firewall_consent.bats` stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'Watchtower stop removes the UFW rule start added (recorded in .context/working/watchtower.firewall, only recorded rules are deleted, a failed delete keeps the record and prints the command); fw doctor WARNs on framework-labelled UFW rules whose port has no listener with the delete command; regression bats t4323 (9/10 red pre-fix, 10/10 green)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/lib/firewall.sh'
+  - 'bin/fw'
+  - 'bin/watchtower.sh'
+  - 'lib/firewall.sh'
+  - '.tasks/active/T-4323-firewall-rules-watchtower-opened-are-nev.md'
+  - 'tests/unit/t4323_firewall_rule_cleanup.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T10:34:14'
+    action: 'T-4323: Watchtower stop removes the UFW rule start added (recorded in .context/working/watchtower.firewall, only recorded rules are deleted, a failed delete keeps the record and prints the command); fw doctor WARNs on framework-labelled UFW rules whose port has no listener with the delete command; regression bats t4323 (9/10 red pre-fix, 10/10 green)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5371 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, watchtower, firewall, doctor]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5371
+  commits: 1
+  files_changed: 8
+  lines_added: 335
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4323-firewall-rules-watchtower-opened-are-nev.md
+generated_by: context-agent-hybrid
