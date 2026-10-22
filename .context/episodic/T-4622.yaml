@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4622: Push blocker: session_start_hook_warning #2 resume hook warning output no longer parses
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T12:06:28Z
+# ============================================================================
+
+task_id: T-4622
+task_name: "Push blocker: session_start_hook_warning #2 resume hook warning output no longer parses"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T09:34:01Z
+completed: 2026-10-22T12:05:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T11:57:42+02:00
+last_commit: 2026-10-22T11:57:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  resume hook's helper-path override renamed FW_DOCTOR_HOOK_EXERCISE -> FW_RESUME_HOOK_EXERCISE_HELPER — T-4523 made FW_DOCTOR_HOOK_EXERCISE=0 doctor's off-switch and the unit-suite runner exports it, so the resume hook took helper path "0" and silently skipped the probe (session_start_hook_warning #2 red only in suite runs); regression test 5 pins the runner env; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Root cause of session_start_hook_warning.bats #2 identified with file:line and recorded in ## RCA'
+  - 'Resume hook (agents/context/post-compact-resume.sh) again appends the broken-hook warning when settings.json carries a bare-relative hook path, including under the unit-suite runner''s FW_DOCTOR_HOOK_EXERCISE=0; test #2 unchanged, new test #5 pins the runner env'
+  - 'tests/unit/session_start_hook_warning.bats passes 5/5 with no skips, with and without FW_DOCTOR_HOOK_EXERCISE=0'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4622` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - 'agents/context/post-compact-resume.sh'
+  - '.tasks/active/T-4622-push-blocker-sessionstarthookwarning-2-r.md'
+  - 'tests/unit/session_start_hook_warning.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T11:57:42'
+    action: 'T-4622: resume hook''s helper-path override renamed FW_DOCTOR_HOOK_EXERCISE -> FW_RESUME_HOOK_EXERCISE_HELPER — T-4523 made FW_DOCTOR_HOOK_EXERCISE=0 doctor''s off-switch and the unit-suite runner exports it, so the resume hook took helper path "0" and silently skipped the probe (session_start_hook_warning #2 red only in suite runs); regression test 5 pins the runner env; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 151 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, push-blocker, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 151
+  commits: 1
+  files_changed: 4
+  lines_added: 100
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4622-push-blocker-sessionstarthookwarning-2-r.md
+generated_by: context-agent-hybrid
