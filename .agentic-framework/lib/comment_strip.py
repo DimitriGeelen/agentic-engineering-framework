@@ -83,4 +83,9 @@ def strip_html_comment_lines(text: str) -> str:
 
 
 if __name__ == "__main__":
-    sys.stdout.write(strip_html_comment_lines(sys.stdin.read()))
+    # T-4608: decode strict UTF-8 from bytes, never through the locale. With
+    # LANG unset or C, Python runs in UTF-8 mode (PEP 540) and sys.stdin uses
+    # surrogateescape (C.UTF-8 too), so an undecodable byte passed silently and
+    # extract_verification_block returned 0 where it must return 2 (T-3232).
+    text = sys.stdin.buffer.read().decode("utf-8")
+    sys.stdout.buffer.write(strip_html_comment_lines(text).encode("utf-8"))

@@ -1,13 +1,19 @@
 ---
 id: T-4608
-name: "t3232 verification-extractor legs fail when LANG is unset (locale-dependent decode)"
+name: "t3232 verification-extractor legs fail when LANG is unset (locale-dependent
+  decode)"
 description: >
-  tests/unit/t3232_verification_extractor_failure.bats tests 2,3,8,11 pass with LANG=en_US.UTF-8 and fail with LANG unset (confirmed here: env -u LANG). Cloud saw UnicodeDecodeError. Either the extractor's decode path depends on the locale (defect: the gate's rc-2 refusal would not fire on such a host) or the fixture does; pin the encoding. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (lines 98-101). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
+  tests/unit/t3232_verification_extractor_failure.bats tests 2,3,8,11 pass with LANG=en_US.UTF-8
+  and fail with LANG unset (confirmed here: env -u LANG). Cloud saw UnicodeDecodeError.
+  Either the extractor's decode path depends on the locale (defect: the gate's rc-2
+  refusal would not fire on such a host) or the fixture does; pin the encoding. Source:
+  docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (lines 98-101). Reproduced
+  on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -39,8 +45,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:44:45Z
-last_update: 2026-10-22T08:44:45Z
-date_finished: null
+last_update: 2026-10-22T11:03:34Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:00:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:00:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4608: t3232 verification-extractor legs fail when LANG is unset (locale-dependent decode)
@@ -63,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction on current bleeding-edge recorded (t3232 bats with LANG/LC_* unset): reproduces or not, with evidence
+- [x] If it reproduces: root cause localised (extractor vs fixture) and the encoding pinned so t3232 passes with LANG/LC_ALL/LC_CTYPE unset and with LANG=C
+- [x] Regression test runs the extractor under a non-UTF-8 locale and fails without the fix
+- [x] t3232 suite still passes under the default locale
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +284,13 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 env -u LANG -u LC_ALL -u LC_CTYPE bats tests/unit/t3232_verification_extractor_failure.bats > /tmp/.t4608a 2>&1 && ! grep -q "^not ok" /tmp/.t4608a
+test "$(grep -c '# skip' /tmp/.t4608a)" -eq 0
+timeout 600 env LC_ALL=C.UTF-8 bats tests/unit/t3232_verification_extractor_failure.bats > /tmp/.t4608b 2>&1 && ! grep -q "^not ok" /tmp/.t4608b
+timeout 300 bats tests/unit/t4608_extractor_locale.bats > /tmp/.t4608c 2>&1 && grep -q '^ok 5 ' /tmp/.t4608c && ! grep -q "^not ok" /tmp/.t4608c
+test "$(grep -c '# skip' /tmp/.t4608c)" -eq 0
+timeout 600 bats tests/unit/t3232_verification_extractor_failure.bats > /tmp/.t4608d 2>&1 && ! grep -q "^not ok" /tmp/.t4608d
+bin/fw vendor self --check --task T-4608
 
 ## RCA
 
@@ -265,6 +307,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** t3232 tests 2, 3, 8, 11 failed with LANG unset (reproduced on bleeding-edge 0e47d94db with `env -u LANG -u LC_ALL -u LC_CTYPE`: 7/11 pass). A Verification block holding an undecodable byte returned rc 0 instead of 2, so the P-011 gate did not refuse it.
+
+**Root cause:** a defect in the extractor, not the fixture. `lib/comment_strip.py` (`__main__`, called from `lib/verification-port.sh:315`) read `sys.stdin.read()`, which decodes using the locale. When LC_CTYPE is C/POSIX/unset, CPython runs in UTF-8 mode (PEP 540). CPython also uses `surrogateescape` on stdin for C.UTF-8, the usual container default. In those cases 0xff decodes without raising, python exits 0, and `extract_verification_block` returns 0. Only strict locales such as en_US.UTF-8 raised `UnicodeDecodeError`, and that is why the suite passed on the origin host. The cloud run's `UnicodeDecodeError` came from a strict leg. On a C/C.UTF-8 host (cron, `env -i`, containers) the T-3232 refusal never fired at all.
+
+**Why structurally allowed:** T-3232's tests inherited the runner's locale. The behaviour under test depended on an environment variable that no test pinned, so the suite showed green on exactly one kind of host.
+
+**Prevention:** the CLI now decodes `sys.stdin.buffer` as strict UTF-8 and writes UTF-8 bytes, so the locale no longer matters. `tests/unit/t4608_extractor_locale.bats` pins unset, C and C.UTF-8 locales itself. Against the old comment_strip.py, 3 of its 5 tests fail (the two non-ASCII controls pass either way). With the fix, t3232 and t4608 give 16/16 under unset, C, C.UTF-8 and the default locale.
 
 ## Evolution
 
@@ -346,3 +396,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4608-t3232-verification-extractor-legs-fail-w.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:03:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
