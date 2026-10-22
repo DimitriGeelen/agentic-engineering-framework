@@ -7,10 +7,10 @@ description: >
   Fix: pickup send must fail visibly when the target session is gone (or route via
   the project address), never re-queue to the sender.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:44:18Z
-last_update: '2026-10-17T13:46:22Z'
+last_update: 2026-10-22T08:28:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -81,6 +81,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-22T07:46:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4243: fw pickup send to a TermLink session that no longer exists leaves the envelope in the SENDER's own inbox (second occurrence; dimitri-mint-dev T-113 / P-013)
@@ -93,8 +109,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge: a real `fw pickup send --remote HUB --session <gone-session>` (no stub) exits non-zero, says NOT delivered, and leaves no envelope in `.context/pickup/inbox/` (the envelope is in `undelivered/`)
+- [x] Existing regression tests for this path (t3763 failed-delivery, t4175 never-in-inbox) pass
+- [x] Evidence and the commits that already fixed it recorded in `## RCA` / `## Decisions`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,6 +289,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3763_pickup_send_remote_channel.bats tests/unit/t4175_pickup_send_requires_target.bats > /tmp/.t4243.out 2>&1 && ! grep -q "^not ok" /tmp/.t4243.out
+test "$(grep -c '# skip' /tmp/.t4243.out)" -eq 0
+grep -q 'local filepath="$PICKUP_UNDELIVERED/$filename"' lib/pickup.sh
 
 ## RCA
 
@@ -288,6 +308,18 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** dimitri-mint-dev (fw v1.8.10) ran `fw pickup send --remote … --session tl-zalfqzng` to a session that no longer existed; the push failed and the envelope stayed in THEIR OWN `.context/pickup/inbox/`, where `fw pickup process` reads it as incoming work (second occurrence after their T-113 / P-013).
+
+**Root cause:** in v1.8.10 `lib/pickup.sh` wrote every outgoing envelope to `$PICKUP_INBOX` (v1.8.10 `lib/pickup.sh:622`, `local filepath="$PICKUP_INBOX/$filename"`), pushed it with `termlink remote push` (`:700`), and on failure only printed "envelope left in $PICKUP_INBOX" (`:702`). The sender's inbox was used as the outbox.
+
+**Why structurally allowed:** inbox and outbox shared one directory, so a failed outgoing send looked identical to received work. No test sent to a dead target and then looked at the inbox.
+
+**Prevention (already on bleeding-edge, not in any release yet):**
+- T-3763 (731e4793b, first in v1.8.15-be.2): delivery goes through `fw sidecar send`. A failed send exits non-zero and the envelope goes to `pickup/undelivered/`.
+- T-4175 (43e8e3056): outgoing envelopes are written to `undelivered/` from the start (`lib/pickup.sh` `local filepath="$PICKUP_UNDELIVERED/$filename"`), never the inbox, and move to `sent/` only after a successful push.
+- The sidecar resolver refuses a bare `--to` on a remote hub with no `inbox:<hubid>/<name>` (T-3899 `_require_remote_inbox`, `lib/sidecar/addressing.py`), so a gone session is refused by name, with the list of project inboxes that DO exist ("route via the project address").
+- Regression tests: `tests/unit/t3763_pickup_send_remote_channel.bats` test 3 (failed delivery: non-zero, not in the inbox, in `undelivered/`) and `tests/unit/t4175_pickup_send_requires_target.bats` test 10 (never in the inbox, even mid-push).
 
 ## Evolution
 
@@ -353,6 +385,12 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — does not reproduce on bleeding-edge; no code change
+- **Chose:** record the evidence and stop. No new code or test.
+- **Why:** a real run on bleeding-edge (real `fw sidecar send`, no stub; pickup dirs in a temp project) of `do_pickup_send --type learning --summary probe --remote <hub> --session tl-zalfqzng` against hub `greenfield` printed `send: REFUSED, nothing posted — no inbox inbox:aef925c6d2f4ac54/tl-zalfqzng on hub greenfield … Project inboxes on that hub: aef-greenfield-test`, then `NOT delivered: fw sidecar send exited 2 — envelope kept in …/pickup/undelivered`, and exited 1. The only files were `pickup/undelivered/P-001-learning.yaml` and the id lock. Nothing went to `inbox/`. Against `local-hub` it also exited 1 with the envelope in `undelivered/`. That refusal came from a TOFU-pin mismatch on 127.0.0.1:9100 (an environment matter, not this bug). Both existing regression files pass 10/10 with 0 skips.
+- **Rejected:** a new regression test. t3763 test 3 and t4175 test 10 already pin the behaviour this task asks for, and both would fail against the v1.8.10 code.
+- **Left open (not this task):** the fix has not reached a release (731e4793b is first in v1.8.15-be.2; 43e8e3056 is untagged). dimitri-mint-dev keeps hitting it until a master release carries both. Also, a STALE peer-directory entry (`.context/sidecar/peers.json`) for a gone agent on the same hub resolves through `addressing.resolve` step 2 without the T-4418 read-evidence check, so such a send could report HUB_ACCEPTED. That is a sidecar addressing matter, not this one, and it is not filed here.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -369,3 +407,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4243-fw-pickup-send-to-a-termlink-session-tha.md
 - **Context:** Initial task creation
+
+### 2026-10-22T08:27:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
