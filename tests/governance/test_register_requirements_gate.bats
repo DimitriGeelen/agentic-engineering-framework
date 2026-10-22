@@ -10,6 +10,10 @@
 #   - Synthetic task on that arc, scope fence deferring R-X
 #   - Control: task with valid owner → passes
 #   - Treatment: task without owner → blocks
+#
+# T-4580: fixture Verification lines must be real checks, not `true` — since T-4197
+# the reviewer's severe tautology finding refuses the close before the register
+# gate runs, which turned every PASSES case red for the wrong reason.
 
 FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
 FW="$FRAMEWORK_ROOT/bin/fw"
@@ -117,7 +121,7 @@ EOF
 ### Agent
 - [x] Dummy AC
 ## Verification
-true"
+test -x bin/fw"
 
     # Main task defers R1 but names owner
     _write_task_on_arc "T-9902" "Defers R1 with owner" "redteam-arc" "## Context
@@ -127,7 +131,7 @@ This slice defers R1 (First requirement) to T-9901.
 ### Agent
 - [x] Dummy AC
 ## Verification
-true
+test -x bin/fw
 ## Recommendation
 **Recommendation:** GO
 **Rationale:** test
@@ -147,7 +151,7 @@ true
 ### Agent
 - [x] Dummy AC
 ## Verification
-true"
+test -x bin/fw"
 
     # Main task defers R2, which has no owner
     _write_task_on_arc "T-9903" "Defers R2 no owner" "redteam-arc" "## Context
@@ -157,7 +161,7 @@ This slice defers the liveness self-probe daemon (R2) — a separate slice.
 ### Agent
 - [x] Dummy AC
 ## Verification
-true
+test -x bin/fw
 ## Recommendation
 **Recommendation:** GO
 **Rationale:** test
@@ -185,7 +189,7 @@ This slice defers R1 (its register owner T-9901 does not exist here).
 ### Agent
 - [x] Dummy AC
 ## Verification
-true
+test -x bin/fw
 ## Recommendation
 **Recommendation:** GO
 **Rationale:** test
@@ -209,7 +213,7 @@ This slice builds something without deferring spec requirements.
 ### Agent
 - [x] Dummy AC
 ## Verification
-true
+test -x bin/fw
 ## Recommendation
 **Recommendation:** GO
 **Rationale:** test
@@ -232,7 +236,7 @@ This slice defers R2 (liveness self-probe daemon) with no owner, but we're bypas
 ### Agent
 - [x] Dummy AC
 ## Verification
-true
+test -x bin/fw
 ## Recommendation
 **Recommendation:** GO
 **Rationale:** test
