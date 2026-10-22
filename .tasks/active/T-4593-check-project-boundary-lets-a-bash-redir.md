@@ -8,10 +8,10 @@ description: >
   write by redirect is not refused. Gate gap, not a stale test. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (line 23). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -43,7 +43,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:33:48Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T10:52:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction status on current bleeding-edge recorded (test 16 'Bash redirect to /etc: blocked' was red on HEAD 961c19464)
+- [x] Root cause established: the hook refuses `/etc` redirects (exit 2 for `/etc/profile.d/x.sh` and `/etc/cron.d/../passwd`) and allows only the sanctioned `/etc/cron.d/` zone (T-1191, T-603 GO). The test's example target was that zone, so the test was stale and the gate had no gap
+- [x] Test retargeted to a non-exempt /etc path, plus two new pins: the cron.d exemption is allowed and `..` escape from it is blocked
+- [x] tests/integration/check_project_boundary.bats passes in full (36/36, no `not ok`, no skip)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,6 +282,7 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/integration/check_project_boundary.bats > /tmp/.t4593.out 2>&1 && ! grep -q "^not ok" /tmp/.t4593.out
 
 ## RCA
 
@@ -296,6 +299,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/integration/check_project_boundary.bats` test 'Bash redirect to /etc: blocked' was red: the hook returned 0 for `echo crontab > /etc/cron.d/my-cron`.
+
+**Root cause:** a stale test. The gate has no gap. T-661 (2026-03-28) wrote the test using `/etc/cron.d/my-cron` as its example of an `/etc` write. T-1191 (2026-04-13, implementing T-603 GO: cron definitions copied to /etc/cron.d) then made `/etc/cron.d/` a sanctioned Bash write zone, and the test was not updated. The exemption still lives in `agents/context/check-project-boundary.sh:783` (Pattern 3) and `:953` (`_ZONES`, Pattern 5). Every other `/etc` write is refused: `echo x > /etc/profile.d/x.sh` gives 2, and `echo x > /etc/cron.d/../passwd` gives 2 (normalised by shell_write_scan).
+
+**Why structurally allowed:** T-1191 changed the zone list without running the boundary bats suite, and nothing ran that integration suite on the change. The red was only found by the T-4508 cloud full-suite run.
+
+**Prevention:** the test now pins both sides of the exemption: the `/etc/cron.d` redirect is allowed, a `..` escape out of it is blocked, and a non-exempt `/etc` path is blocked. A future change to the zone in either direction turns one of these red.
 
 ## Evolution
 
@@ -361,6 +372,11 @@ cost_estimate_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — fix the test, not the gate
+- **Chose:** retarget the test to a non-exempt `/etc` path and pin the `/etc/cron.d` exemption.
+- **Why:** the exemption came from a recorded GO (T-603, then T-1191). Removing it would break `fw cron install` and undo an operator decision.
+- **Rejected:** blocking `/etc/cron.d` in the hook. That reverses T-603 GO, so it is the operator's call and outside this task's scope.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -377,3 +393,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4593-check-project-boundary-lets-a-bash-redir.md
 - **Context:** Initial task creation
+
+### 2026-10-22T10:52:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

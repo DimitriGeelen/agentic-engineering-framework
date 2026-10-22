@@ -143,7 +143,18 @@ run_other_hook() {
 }
 
 @test "Bash redirect to /etc: blocked" {
+    # T-4593: not /etc/cron.d — that is a sanctioned write zone (T-1191, T-603 GO).
+    run_bash_hook "echo x > /etc/profile.d/x.sh"
+    [ "$status" -eq 2 ]
+}
+
+@test "Bash redirect to /etc/cron.d: allowed (T-1191 safe zone)" {
     run_bash_hook "echo crontab > /etc/cron.d/my-cron"
+    [ "$status" -eq 0 ]
+}
+
+@test "Bash redirect escaping /etc/cron.d via ..: blocked" {
+    run_bash_hook "echo x > /etc/cron.d/../passwd"
     [ "$status" -eq 2 ]
 }
 
