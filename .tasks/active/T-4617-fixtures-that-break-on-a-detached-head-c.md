@@ -44,7 +44,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:49:58Z
-last_update: 2026-10-22T12:54:52Z
+last_update: 2026-10-22T20:21:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,7 +98,7 @@ cost_estimate_proposed:
 - [x] `tests/unit/t3698_mcp_termlink_runtime_pin.bats` `_overlay` pushes to an explicit branch (`HEAD:refs/heads/fw-test-overlay`) and points the bare's HEAD at it, as T-4587 did for `overlay_upstream`; no `push origin HEAD` remains in either fixture
 - [x] A regression test in t3698 detaches the upstream bare's HEAD and proves `_overlay` still lands the overlay (fails with the old `push origin HEAD`)
 - [x] `web/test_app.py::TestSessionCockpit::test_session_status_shows_git_info` asserts the strip shows the checkout's actual branch (or `unknown` when detached), not a hard-coded `master`/`main`
-- [ ] t3698, upgrade_fresh_machine_simulation and the TestSessionCockpit tests pass both here (bleeding-edge) and from a detached-HEAD scratch clone (`git clone` + `git checkout --detach`)
+- [x] t3698, upgrade_fresh_machine_simulation and the TestSessionCockpit tests pass both here (bleeding-edge) and from a detached-HEAD scratch clone (`git clone` + `git checkout --detach`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -397,6 +397,10 @@ bin/fw vendor self --check --task T-4617
 - **Context:** Initial task creation
 
 ### 2026-10-22 — AC4 evidence (worker w4617b)
+### 2026-10-22 — AC4 re-run at HEAD f901e0bb1 (worker w4617)
+- Here (bleeding-edge, f901e0bb1): `bats tests/unit/t3698_mcp_termlink_runtime_pin.bats` 9/9 ok, 0 skips; `pytest web/test_app.py -k TestSessionCockpit` 10 passed; `bats tests/unit/upgrade_fresh_machine_simulation.bats` 19/19 ok (run via `--filter` chunks, the file exceeds one 600 s call).
+- Detached clone: `git clone /opt/999-Agentic-Engineering-Framework <tmp>/c && git -C <tmp>/c checkout --detach f901e0bb1` (`git symbolic-ref -q HEAD` exit 1), tests run from inside the clone: t3698 9/9 ok; TestSessionCockpit 10 passed; simulation 19/19 ok. No fixture change needed. Scratch clone removed.
+
 - Detached scratch clone of 526ab6596 (`git symbolic-ref -q HEAD` exit 1): t3698 9/9 ok; upgrade_fresh_machine_simulation 19/19 ok (run in 6 filtered chunks, each test is slow); TestSessionCockpit 10 passed.
 - On bleeding-edge: t3698 9/9 ok, TestSessionCockpit 10 passed. upgrade_fresh_machine_simulation was NOT re-run on the branch (this task does not change it; the full suite takes ~40 min). AC4 left unticked for the parent to confirm.
 - Old-fixture probe: the new T-4617 test fails against `push --quiet origin HEAD 2>/dev/null` (overlay file missing from the clone).
