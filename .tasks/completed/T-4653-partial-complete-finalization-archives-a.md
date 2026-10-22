@@ -8,12 +8,12 @@ description: >
   (docs/reports/T-4649-ring20-patch-triage.md, category 5), ring20 patch #14. Verify
   against our code before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/update-task.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T19:31:26Z
-last_update: 2026-10-22T20:21:25Z
-date_finished:
+last_update: 2026-10-22T21:04:33Z
+date_finished: 2026-10-22T21:04:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -396,3 +396,27 @@ bin/fw vendor self --check --task T-4653
 
 ### 2026-10-22T20:21:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e8bce4fb
+- **Timestamp:** 2026-10-22T21:04:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Watchtower finalize route (web/blueprints/approvals.py:1332) goes through update-task.sh (it passes --skip-verification deliberately as an operator action), so no web/ change is needed
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/approvals.py in: Watchtower finalize route (web/blueprints/approvals.py:1332) goes through update-task.sh (it passes --skip-verification deliberately as an operator ac`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `python3 tools/bats-dead-negation-lint.py tests/ 2>&1 | grep -q clean`
+
+### 2026-10-22T21:04:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

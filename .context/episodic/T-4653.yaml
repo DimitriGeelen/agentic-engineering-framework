@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4653: Partial-complete finalization archives a task to completed/ without re-running ## Verification (P-011 skipped)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T21:04:53Z
+# ============================================================================
+
+task_id: T-4653
+task_name: "Partial-complete finalization archives a task to completed/ without re-running ## Verification (P-011 skipped)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T19:31:26Z
+completed: 2026-10-22T21:04:33Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-22T22:26:37+02:00
+last_commit: 2026-10-22T22:26:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  partial-complete finalization re-runs ## Verification (P-011) before archiving
+
+# Key outcomes
+outcomes:
+  - 'The partial-complete finalization branch of update-task.sh runs run_verification_commands before moving the task to completed/'
+  - 'A fixture partial-complete task whose Verification line has gone red stays in .tasks/active/ and exits non-zero with the normal P-011 message'
+  - 'A green Verification line still archives the task (control), and --skip-verification (operator) still bypasses, logged'
+  - 'Watchtower finalize route (web/blueprints/approvals.py:1332) goes through update-task.sh (it passes --skip-verification deliberately as an operator action), so no web/ change is needed'
+  - 'Regression test tests/unit/t4653_partial_complete_reverify.bats is red before the fix and green after'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.tasks/active/T-4653-partial-complete-finalization-archives-a.md'
+  - 'tests/unit/t4653_partial_complete_reverify.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T22:26:37'
+    action: 'T-4653: partial-complete finalization re-runs ## Verification (P-011) before archiving'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 93 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 93
+  commits: 1
+  files_changed: 4
+  lines_added: 135
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4653-partial-complete-finalization-archives-a.md
+generated_by: context-agent-hybrid

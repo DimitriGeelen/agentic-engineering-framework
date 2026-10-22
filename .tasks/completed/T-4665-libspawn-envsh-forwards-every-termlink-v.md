@@ -1,18 +1,21 @@
 ---
-id: T-4666
-name: "lib/spawn-env.sh passes PATH verbatim: a caller PATH with another project's
-  .agentic-framework/bin first makes the dispatched worker run that project's fw"
+id: T-4665
+name: "lib/spawn-env.sh forwards every TERMLINK_* variable: a dispatched worker inherits
+  the spawning agent's TERMLINK_SIDECAR_SOCKET and TERMLINK_AGENT_ID (can read its
+  mail, sign as it)"
 description: >
-  Build PATH by construction (this framework's bin dir, ~/.local/bin, ~/.cargo/bin,
-  system dirs), as TermLink T-3550 does; test with a foreign-bin PATH canary. Source:
-  010-termlink be.3 field report (sidecar 6829fbaa, 2026-10-22).
+  T-4647 allow-lists the TERMLINK_[A-Z0-9_]+ prefix. TermLink's T-3463 removed exactly
+  this from termlink spawn. Replace the prefix with exact names (TERMLINK_RUNTIME_DIR
+  plus hub connection settings); agent-scoped identity/socket variables never forwarded.
+  Extend the T-4647/T-4651 tests with canaries. Source: 010-termlink be.3 field report
+  (sidecar 6829fbaa, 2026-10-22).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/termlink.sh, lib/spawn-env.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T20:41:42Z
-last_update: 2026-10-22T20:46:36Z
-date_finished:
+created: 2026-10-22T20:41:22Z
+last_update: 2026-10-22T21:04:59Z
+date_finished: 2026-10-22T21:04:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,7 +57,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-22T20:42:22Z'
+  - ts: '2026-10-22T20:42:20Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
@@ -71,18 +74,18 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-22T20:45:16Z'
+  - ts: '2026-10-22T20:45:15Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=298,acs=5)
+      (workflow:build); effort=8 (lines=299,acs=6)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4666: lib/spawn-env.sh passes PATH verbatim: a caller PATH with another project's .agentic-framework/bin first makes the dispatched worker run that project's fw
+# T-4665: lib/spawn-env.sh forwards every TERMLINK_* variable: a dispatched worker inherits the spawning agent's TERMLINK_SIDECAR_SOCKET and TERMLINK_AGENT_ID (can read its mail, sign as it)
 
 ## Context
 
@@ -92,8 +95,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw_spawn_env` builds PATH by construction (this framework's bin, dirs of resolved claude/termlink, ~/.local/bin, ~/.cargo/bin, system dirs; only those that exist) and never copies the caller's PATH; the run.sh copy does the same
-- [x] A caller PATH with a foreign `.agentic-framework/bin` first is dropped; the worker resolves this project's `fw`, and still finds claude, termlink, git, python3, bats (bats regression test, fails on the old verbatim PATH)
+- [x] `FW_SPAWN_ENV_ALLOW` in `lib/spawn-env.sh` lists TERMLINK_* variables by exact name; no `TERMLINK_[A-Z0-9_]+` prefix remains there or in the run.sh copy in `agents/termlink/termlink.sh`
+- [x] Canaries TERMLINK_SIDECAR_SOCKET, TERMLINK_AGENT_ID and TERMLINK_ZZ_CANARY are dropped by `fw_spawn_env`; every kept TERMLINK_* name passes (bats regression test, fails on the old prefix)
+- [x] Kept list and the reason for each name recorded in `## Decisions`
 - [x] Existing T-4647 and T-4651 bats suites stay green; vendor copy in sync
 
 ### Human
@@ -279,22 +283,22 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 600 bats tests/unit/t4647_spawn_env_allowlist.bats > /tmp/.t4666-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4666-a.out && grep -q "T-4666: a dispatch with a foreign fw first" /tmp/.t4666-a.out
-test "$(grep -c '# skip' /tmp/.t4666-a.out)" -eq 0
-timeout 600 bats tests/unit/t4651_polluted_tmux_server.bats > /tmp/.t4666-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4666-b.out
-test "$(grep -c '# skip' /tmp/.t4666-b.out)" -eq 0
-timeout 900 python3 -m pytest -q tests/unit/t3582_harness_kinds_test.py > /tmp/.t4666-c.out 2>&1 && grep -q passed /tmp/.t4666-c.out
-bin/fw vendor self --check --task T-4666
+timeout 600 bats tests/unit/t4647_spawn_env_allowlist.bats > /tmp/.t4665-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4665-a.out && grep -q "T-4665: fw_spawn_env drops TermLink" /tmp/.t4665-a.out
+test "$(grep -c '# skip' /tmp/.t4665-a.out)" -eq 0
+timeout 600 bats tests/unit/t4651_polluted_tmux_server.bats > /tmp/.t4665-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4665-b.out
+test "$(grep -c '# skip' /tmp/.t4665-b.out)" -eq 0
+! grep -n 'TERMLINK_\[A-Z0-9_\]+' lib/spawn-env.sh agents/termlink/termlink.sh
+bin/fw vendor self --check --task T-4665
 
 ## RCA
 
-**Symptom:** a dispatched worker whose dispatcher's PATH had `/opt/other/.agentic-framework/bin` ahead of this project's bin ran *that* project's `fw` for every hook and verb (010-termlink be.3 field report, 2026-10-22).
+**Symptom:** a worker started by `fw termlink dispatch` inherited the spawning agent's `TERMLINK_SIDECAR_SOCKET` and `TERMLINK_AGENT_ID` (010-termlink be.3 field report, sidecar 6829fbaa, 2026-10-22): it could read that agent's consult mail and sign channel posts as it.
 
-**Root cause:** `lib/spawn-env.sh:FW_SPAWN_ENV_ALLOW` (T-4647) listed `PATH` as an allowed name, so `fw_spawn_env` copied the caller's PATH verbatim into `termlink spawn`, and the run.sh copy of the list (`agents/termlink/termlink.sh`, RUNEOF heredoc) copied the session shell's PATH verbatim into the worker. PATH is a search order, not a value: allow-listing the name allow-lists whatever directories it holds, including another project's framework.
+**Root cause:** `lib/spawn-env.sh:FW_SPAWN_ENV_ALLOW` (T-4647) allow-listed the whole prefix `TERMLINK_[A-Z0-9_]+`, and the self-contained copy in the run.sh heredoc (`agents/termlink/termlink.sh`, `FW_SPAWN_ENV_ALLOW=` inside RUNEOF) did the same. A prefix is a deny-list in disguise: every agent-scoped TermLink variable (identity file/dir, agent id, sidecar sockets, session ids) matched it.
 
-**Why structurally allowed:** T-4647's allow-list reasoning was about *which variables* reach a worker; PATH was treated as host plumbing like HOME. Its tests asserted only `grep -q '^PATH='` (present), never what it contained, so a foreign bin dir passed.
+**Why structurally allowed:** the T-4647 tests asserted only that the foreign *project* variables (PROJECT_ROOT, CONTEXT_DIR, FW_*) were dropped and that `TERMLINK_RUNTIME_DIR` passed; nothing named an agent-scoped TermLink variable as a canary, so the prefix's over-reach was never measured. TermLink itself had removed the same forwarding from `termlink spawn` (its T-3463) without the framework's copy following.
 
-**Prevention:** PATH is now built by construction in both copies (`fw_spawn_path` in `lib/spawn-env.sh`; the inline builder in run.sh) and `PATH` is off the allow-list. `tests/unit/t4647_spawn_env_allowlist.bats` T-4666 tests put a foreign `.agentic-framework/bin/fw` and a foreign `bin/fw` first on the caller PATH and assert both are dropped, that `fw` resolves to this framework's (builder) or the worker project's own `.agentic-framework/bin/fw` (real dispatch through the stubbed runtime), and that termlink/git/python3/bats still resolve. Red-before: both tests fail against the pre-T-4666 tree (foreign bin kept; worker resolved `…/other/.agentic-framework/bin/fw`).
+**Prevention:** `tests/unit/t4647_spawn_env_allowlist.bats` now carries canaries (`TERMLINK_SIDECAR_SOCKET`, `TERMLINK_SIDECAR_STATUS_SOCKET`, `TERMLINK_AGENT_ID`, `TERMLINK_IDENTITY_FILE`, `TERMLINK_SESSION_ID`, `TERMLINK_SESSION`, `TERMLINK_ZZ_CANARY`) that must be dropped, each kept name must pass, and a static test refuses any `TERMLINK_[A-Z0-9_]+` prefix in either copy; the existing equality test keeps the two copies identical. Red-before: HEAD's `lib/spawn-env.sh` forwards all three named canaries.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -374,10 +378,13 @@ bin/fw vendor self --check --task T-4666
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-22 — what goes into the constructed PATH
-- **Chose:** in order, each only if it exists and only once: this framework's bin (run.sh: the worker project's own — `$PROJECT_DIR/bin` for the framework repo, `$PROJECT_DIR/.agentic-framework/bin` for a consumer, else the dispatcher's fw dir); the directories of the resolved `claude`, `termlink`, `node` and, for a review, the pinned worker binary; `~/.local/bin`, `~/.cargo/bin`; `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`. A resolved binary that sits in some *other* `.agentic-framework/bin` does not add that dir.
-- **Why the two additions beyond the brief:** `node` — the worker's MCP servers start via `npx` (here `/root/.nvm/…/bin`, not on any fixed dir); the review worker binary's dir — `codex` is `#!/usr/bin/env node` in the same nvm dir, so a codex review seat would otherwise fail to start. Both are resolved binaries' dirs, same trust as claude's.
-- **Rejected:** filtering the caller's PATH (drop `*/.agentic-framework/bin` entries) — a deny-list again; any other foreign bin dir (e.g. `/opt/other/bin/fw`) would still win.
+### 2026-10-22 — which TERMLINK_* names a worker gets from its parent
+- **Chose:** exactly three, from a grep of every `TERMLINK_*` the framework reads (lib/ agents/ bin/) and the names the termlink binary reads:
+  - `TERMLINK_RUNTIME_DIR` — where the hub and session registry live; a worker without it can register in `/tmp/termlink-$UID` while the hub listens elsewhere (split-brain, T-3779).
+  - `TERMLINK_RUNTIME_DIR_FALLBACK` — the host's list of known hub dirs read by `lib/termlink-runtime.sh`; host-level, not agent-level.
+  - `TERMLINK_BIN` — the binary override read by the templated scripts (`lib/templates/scripts/*.sh`); host-level.
+- **Never forwarded:** `TERMLINK_AGENT_ID`, `TERMLINK_IDENTITY_FILE`, `TERMLINK_IDENTITY_DIR`, `TERMLINK_IDENTITY_NO_CREATE` (identity: sign as the parent), `TERMLINK_SIDECAR_SOCKET`, `TERMLINK_SIDECAR_STATUS_SOCKET`, `TERMLINK_SIDECAR_*` (the parent's mailbox), `TERMLINK_SESSION`, `TERMLINK_SESSION_ID` (the parent's session; `termlink spawn` sets the worker's own in its PTY, and `lib/sidecar_cli.py` resolves the consult agent id from `TERMLINK_SESSION`), `TERMLINK_TASK_GOVERNANCE` (comes from the worker's own `.mcp.json`), and the framework's own config names (`TERMLINK_MAX_WORKERS` etc. are read via `fw_config`/`FW_*`, not inherited).
+- **Rejected:** keeping the prefix with a deny-list of agent-scoped names — the same fail-open shape T-4647 replaced; any new TermLink identity variable would leak by default.
 
 ## Decision
 
@@ -391,10 +398,27 @@ bin/fw vendor self --check --task T-4666
 
 ## Updates
 
-### 2026-10-22T20:41:42Z — task-created [task-create-agent]
+### 2026-10-22T20:41:22Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4666-libspawn-envsh-passes-path-verbatim-a-ca.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4665-libspawn-envsh-forwards-every-termlink-v.md
 - **Context:** Initial task creation
 
-### 2026-10-22T20:42:20Z — status-update [task-update-agent]
+### 2026-10-22T20:42:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2d76ab76
+- **Timestamp:** 2026-10-22T21:05:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T21:04:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

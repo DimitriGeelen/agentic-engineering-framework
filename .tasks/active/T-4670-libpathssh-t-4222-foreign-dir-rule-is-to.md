@@ -1,16 +1,10 @@
 ---
-id: T-4665
-name: "lib/spawn-env.sh forwards every TERMLINK_* variable: a dispatched worker inherits
-  the spawning agent's TERMLINK_SIDECAR_SOCKET and TERMLINK_AGENT_ID (can read its
-  mail, sign as it)"
+id: T-4670
+name: "lib/paths.sh T-4222 foreign-dir rule is too narrow: only catches <proj>/.tasks or <proj>/.context exactly; adopt the any-ancestor rule and stop honouring an inherited FW_TASKS_DIR_OVERRIDE"
 description: >
-  T-4647 allow-lists the TERMLINK_[A-Z0-9_]+ prefix. TermLink's T-3463 removed exactly
-  this from termlink spawn. Replace the prefix with exact names (TERMLINK_RUNTIME_DIR
-  plus hub connection settings); agent-scoped identity/socket variables never forwarded.
-  Extend the T-4647/T-4651 tests with canaries. Source: 010-termlink be.3 field report
-  (sidecar 6829fbaa, 2026-10-22).
+  T-4222 re-derives an inherited TASKS_DIR/CONTEXT_DIR only when basename is .tasks/.context AND its parent has .framework.yaml. Misses: a subdir inside another project (/opt/x/.context/working), symlinks into another project (no canonicalisation), and any inherited FW_TASKS_DIR_OVERRIDE=1 (codex review of T-4635 flagged this). 055 patched its vendored copy (055 commit 1929217a): any value lying inside ANOTHER framework project (an ancestor with .framework.yaml that is not PROJECT_ROOT) is dropped and re-derived; fixture dirs with no such ancestor pass. Adopt that, canonicalise with realpath, and only honour FW_TASKS_DIR_OVERRIDE when set on this invocation (not inherited across a project boundary, e.g. ignore it when _FW_PATHS_DERIVED_BY names another root). Extend tests/unit/t4651_polluted_tmux_server.bats or the T-4222 test. Source: 055 sidecar 1676a6f2; T-4635 reviews (codex, opencode).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T20:41:22Z
-last_update: '2026-10-22T20:45:15Z'
-date_finished:
+created: 2026-10-22T21:20:28Z
+last_update: 2026-10-22T21:20:28Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,36 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-22T20:42:20Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 0
-      D2: 0
-      D3: 0
-      D4: 0
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-22T20:45:15Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=299,acs=6)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4665: lib/spawn-env.sh forwards every TERMLINK_* variable: a dispatched worker inherits the spawning agent's TERMLINK_SIDECAR_SOCKET and TERMLINK_AGENT_ID (can read its mail, sign as it)
+# T-4670: lib/paths.sh T-4222 foreign-dir rule is too narrow: only catches <proj>/.tasks or <proj>/.context exactly; adopt the any-ancestor rule and stop honouring an inherited FW_TASKS_DIR_OVERRIDE
 
 ## Context
 
@@ -95,10 +62,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `FW_SPAWN_ENV_ALLOW` in `lib/spawn-env.sh` lists TERMLINK_* variables by exact name; no `TERMLINK_[A-Z0-9_]+` prefix remains there or in the run.sh copy in `agents/termlink/termlink.sh`
-- [x] Canaries TERMLINK_SIDECAR_SOCKET, TERMLINK_AGENT_ID and TERMLINK_ZZ_CANARY are dropped by `fw_spawn_env`; every kept TERMLINK_* name passes (bats regression test, fails on the old prefix)
-- [x] Kept list and the reason for each name recorded in `## Decisions`
-- [x] Existing T-4647 and T-4651 bats suites stay green; vendor copy in sync
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,22 +248,8 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 600 bats tests/unit/t4647_spawn_env_allowlist.bats > /tmp/.t4665-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4665-a.out && grep -q "T-4665: fw_spawn_env drops TermLink" /tmp/.t4665-a.out
-test "$(grep -c '# skip' /tmp/.t4665-a.out)" -eq 0
-timeout 600 bats tests/unit/t4651_polluted_tmux_server.bats > /tmp/.t4665-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4665-b.out
-test "$(grep -c '# skip' /tmp/.t4665-b.out)" -eq 0
-! grep -n 'TERMLINK_\[A-Z0-9_\]+' lib/spawn-env.sh agents/termlink/termlink.sh
-bin/fw vendor self --check --task T-4665
 
 ## RCA
-
-**Symptom:** a worker started by `fw termlink dispatch` inherited the spawning agent's `TERMLINK_SIDECAR_SOCKET` and `TERMLINK_AGENT_ID` (010-termlink be.3 field report, sidecar 6829fbaa, 2026-10-22): it could read that agent's consult mail and sign channel posts as it.
-
-**Root cause:** `lib/spawn-env.sh:FW_SPAWN_ENV_ALLOW` (T-4647) allow-listed the whole prefix `TERMLINK_[A-Z0-9_]+`, and the self-contained copy in the run.sh heredoc (`agents/termlink/termlink.sh`, `FW_SPAWN_ENV_ALLOW=` inside RUNEOF) did the same. A prefix is a deny-list in disguise: every agent-scoped TermLink variable (identity file/dir, agent id, sidecar sockets, session ids) matched it.
-
-**Why structurally allowed:** the T-4647 tests asserted only that the foreign *project* variables (PROJECT_ROOT, CONTEXT_DIR, FW_*) were dropped and that `TERMLINK_RUNTIME_DIR` passed; nothing named an agent-scoped TermLink variable as a canary, so the prefix's over-reach was never measured. TermLink itself had removed the same forwarding from `termlink spawn` (its T-3463) without the framework's copy following.
-
-**Prevention:** `tests/unit/t4647_spawn_env_allowlist.bats` now carries canaries (`TERMLINK_SIDECAR_SOCKET`, `TERMLINK_SIDECAR_STATUS_SOCKET`, `TERMLINK_AGENT_ID`, `TERMLINK_IDENTITY_FILE`, `TERMLINK_SESSION_ID`, `TERMLINK_SESSION`, `TERMLINK_ZZ_CANARY`) that must be dropped, each kept name must pass, and a static test refuses any `TERMLINK_[A-Z0-9_]+` prefix in either copy; the existing equality test keeps the two copies identical. Red-before: HEAD's `lib/spawn-env.sh` forwards all three named canaries.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -378,14 +329,6 @@ bin/fw vendor self --check --task T-4665
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-22 — which TERMLINK_* names a worker gets from its parent
-- **Chose:** exactly three, from a grep of every `TERMLINK_*` the framework reads (lib/ agents/ bin/) and the names the termlink binary reads:
-  - `TERMLINK_RUNTIME_DIR` — where the hub and session registry live; a worker without it can register in `/tmp/termlink-$UID` while the hub listens elsewhere (split-brain, T-3779).
-  - `TERMLINK_RUNTIME_DIR_FALLBACK` — the host's list of known hub dirs read by `lib/termlink-runtime.sh`; host-level, not agent-level.
-  - `TERMLINK_BIN` — the binary override read by the templated scripts (`lib/templates/scripts/*.sh`); host-level.
-- **Never forwarded:** `TERMLINK_AGENT_ID`, `TERMLINK_IDENTITY_FILE`, `TERMLINK_IDENTITY_DIR`, `TERMLINK_IDENTITY_NO_CREATE` (identity: sign as the parent), `TERMLINK_SIDECAR_SOCKET`, `TERMLINK_SIDECAR_STATUS_SOCKET`, `TERMLINK_SIDECAR_*` (the parent's mailbox), `TERMLINK_SESSION`, `TERMLINK_SESSION_ID` (the parent's session; `termlink spawn` sets the worker's own in its PTY, and `lib/sidecar_cli.py` resolves the consult agent id from `TERMLINK_SESSION`), `TERMLINK_TASK_GOVERNANCE` (comes from the worker's own `.mcp.json`), and the framework's own config names (`TERMLINK_MAX_WORKERS` etc. are read via `fw_config`/`FW_*`, not inherited).
-- **Rejected:** keeping the prefix with a deny-list of agent-scoped names — the same fail-open shape T-4647 replaced; any new TermLink identity variable would leak by default.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -398,10 +341,7 @@ bin/fw vendor self --check --task T-4665
 
 ## Updates
 
-### 2026-10-22T20:41:22Z — task-created [task-create-agent]
+### 2026-10-22T21:20:28Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4665-libspawn-envsh-forwards-every-termlink-v.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4670-libpathssh-t-4222-foreign-dir-rule-is-to.md
 - **Context:** Initial task creation
-
-### 2026-10-22T20:42:18Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
