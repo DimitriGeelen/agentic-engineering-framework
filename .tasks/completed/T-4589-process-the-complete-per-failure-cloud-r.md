@@ -14,10 +14,10 @@ description: >
   silently needs ~/.claude/projects or a detached-HEAD-unsafe fixture). Flaky: one
   task listing them. Hang: fw_test_cmd.bats recursion.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [cloud, test, triage]
 components: []
 related_tasks: [T-4508, T-4575]
@@ -49,8 +49,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "cd7ae2ea"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T07:53:33Z
-last_update: 2026-10-22T08:31:31Z
-date_finished:
+last_update: 2026-10-22T11:29:41Z
+date_finished: 2026-10-22T11:29:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -475,3 +475,25 @@ that file alone on bleeding-edge 2026-10-22 (single files only, no full suite).
 
 ### 2026-10-22T07:54:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c85941ac
+- **Timestamp:** 2026-10-22T11:29:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 136
+     - evidence: `sha256sum docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt | grep -q '^a131b3d632ff542dfade8474c9e939aa81e902e92cc1797d526d8a322db07d79 '`
+
+### 2026-10-22T11:29:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

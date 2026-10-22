@@ -1,0 +1,107 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4589: Process the complete per-failure cloud report at f028d507 (197 items: 122 defect, 65 env, 9 flaky, 1 hang)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T11:30:22Z
+# ============================================================================
+
+task_id: T-4589
+task_name: "Process the complete per-failure cloud report at f028d507 (197 items: 122 defect, 65 env, 9 flaky, 1 hang)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T07:53:33Z
+completed: 2026-10-22T11:29:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T09:54:08+02:00
+last_commit: 2026-10-22T10:52:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file processing of the complete per-failure cloud report. save per-failure cloud report f028d507 (sha256 a131b3d6…, byte-exact); real ACs + RCA. triage of f028d507 per-failure report — cause -> task table; filed T-4593..T-4618 (excl. T-4607), one per unowned cause, plus flaky (T-4616) and fw_test_cmd hang (T-4615)
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt committed with sha256 a131b3d632ff542dfade8474c9e939aa81e902e92cc1797d526d8a322db07d79'
+  - 'Every defect line grouped by root cause in a `## Triage` cause -> task table in this file; causes owned by open tasks mapped, not re-filed'
+  - 'One new task (owner agent, horizon next, related T-4589) per unowned independent root cause, plus one flaky task and the fw_test_cmd.bats hang'
+  - 'Env lines recorded as env; env gaps that are framework defects (detached-HEAD-unsafe fixtures, ~/.claude/projects dependency) filed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt'
+  - '.tasks/active/T-4589-process-the-complete-per-failure-cloud-r.md'
+  - '.tasks/active/T-4593-check-project-boundary-lets-a-bash-redir.md'
+  - '.tasks/active/T-4594-inception-decide-on-an-unknown-task-exit.md'
+  - '.tasks/active/T-4595-t3247-d5-still-expects-a-bare--c-for-fwr.md'
+  - '.tasks/active/T-4596-claudefwrestartterminatorbats-fixcontrol.md'
+  - '.tasks/active/T-4597-inception-start-fails-in-the-fwinception.md'
+  - '.tasks/active/T-4598-greenfield-bats-control-expects-fw-init-.md'
+  - '.tasks/active/T-4599-fw-setup-ignores-projectroot-and-reports.md'
+  - '.tasks/active/T-4600-fwtaskbats-placeholder-name-test-omits--.md'
+  - '.tasks/active/T-4601-integration-fixtures-run-fw-updatedoctor.md'
+  - '.tasks/active/T-4602-fw-validate-init-prints-no-dir--results-.md'
+  - '.tasks/active/T-4603-t2501-claude-fw-drift-tests-run-doctor--.md'
+  - '.tasks/active/T-4604-t3298-source-pin-greps-an-exit-trap-stri.md'
+  - '.tasks/active/T-4605-t4542prepushlockholderbats-runs-a-sectio.md'
+  - '.tasks/active/T-4606-t4226budgetladderbats-gate-legs-need-fra.md'
+  - '.tasks/active/T-4608-t3232-verification-extractor-legs-fail-w.md'
+  - '.tasks/active/T-4609-t4381-fixture-run-is-flagged-by-the-t-45.md'
+  - '.tasks/active/T-4610-tasks-board-does-not-cap-the-started-wor.md'
+  - '.tasks/active/T-4611-approval-summary-counts-omit-ac-review-t.md'
+  - '.tasks/active/T-4612-testauditfrontmattervariantspy-fails-det.md'
+  - '.tasks/active/T-4613-testcockpitactivity-cloud-render-of-cock.md'
+  - '.tasks/active/T-4614-fw-pickup-send-without-termlink-saves-lo.md'
+  - '.tasks/active/T-4615-fwtestcmdbats-hangs-its-first-test-runs-.md'
+  - '.tasks/active/T-4616-nine-timingorder-sensitive-tests-from-th.md'
+  - '.tasks/active/T-4617-fixtures-that-break-on-a-detached-head-c.md'
+  - '.tasks/active/T-4618-fwcostsbats-and-fwpluginauditbats-need-h.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T09:54:08'
+    action: 'T-4589: file processing of the complete per-failure cloud report'
+  - time: '2026-10-22T09:59:22'
+    action: 'T-4589: save per-failure cloud report f028d507 (sha256 a131b3d6…, byte-exact); real ACs + RCA'
+  - time: '2026-10-22T10:52:35'
+    action: 'T-4589: triage of f028d507 per-failure report — cause -> task table; filed T-4593..T-4618 (excl. T-4607), one per unowned cause, plus flaky (T-4616) and fw_test_cmd hang (T-4615)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 216 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cloud, test, triage]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 216
+  commits: 3
+  files_changed: 27
+  lines_added: 9863
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4589-process-the-complete-per-failure-cloud-r.md
+generated_by: context-agent-hybrid
