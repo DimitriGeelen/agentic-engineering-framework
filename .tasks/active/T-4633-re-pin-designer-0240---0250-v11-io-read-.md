@@ -12,12 +12,12 @@ description: >
   through save (T-4549 cases). Note GET /api/lens-definition (T-4402) does not exist
   yet, so only 'All' shows; record that.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [designer, pin]
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: [T-4448, T-4607]
 origin: {kind: "peer", source: "832-Workflow-designer", ref: "a061bcad"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -47,8 +47,8 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "a061bcad"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T11:06:41Z
-last_update: '2026-10-22T11:15:39Z'
-date_finished:
+last_update: 2026-10-22T12:06:43Z
+date_finished: 2026-10-22T12:06:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -420,3 +420,22 @@ Not bug-class: this is a planned upstream re-pin, not a defect fix. No root caus
 
 ### 2026-10-22T11:09:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b6397e29
+- **Timestamp:** 2026-10-22T12:07:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `policy/designer-pin.yaml` pins 0.25.0 (version, sha256, bytes, source_artifact, source_tag, vendored_path, notes), mirrored into `.agentic-framework/policy/designer-pin.yaml`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agentic-framework/policy/designer-pin.yaml in: `policy/designer-pin.yaml` pins 0.25.0 (version, sha256, bytes, source_artifact, source_tag, vendored_path, notes), mirrored into `.agentic-framework/`
+- **AC#3 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T12:06:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

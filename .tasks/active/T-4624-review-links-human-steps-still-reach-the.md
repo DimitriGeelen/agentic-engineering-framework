@@ -21,12 +21,12 @@ description: >
   on task-file Write/Edit; (c) tests for each spelling seen so far plus the shell
   form.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, watchtower, review, recurrence]
-components: []
+components: [agents/context/check-review-links.py, agents/context/check-review-links.sh, agents/task-create/update-task.sh, lib/review_link_validator.py, web/blueprints/tasks.py, web/shared.py]
 related_tasks: [T-2030, T-2139, T-2140, T-2181, T-4607]
 origin: {kind: "operator"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -56,8 +56,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T09:47:27Z
-last_update: '2026-10-22T10:00:53Z'
-date_finished:
+last_update: 2026-10-22T12:08:08Z
+date_finished: 2026-10-22T12:08:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -443,3 +443,24 @@ bin/fw vendor self --check --task T-4624
 
 ### 2026-10-22T09:50:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-246813f2
+- **Timestamp:** 2026-10-22T12:08:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — RENDER: `web/shared.py` `resolve_watchtower_refs` / `link_route_code_spans` are applied by `render_markdown_safe` and `web/blueprints/tasks.py` `_render_md_inline`/`_render_md_block`; `$(…bin/fw watch
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: RENDER: `web/shared.py` `resolve_watchtower_refs` / `link_route_code_spans` are applied by `render_markdown_safe` and `web/blueprints/tasks.py` `_rend`
+- **AC#4 (Agent)** — VALIDATE enforced at `fw task review` (unchanged call site), at the partial-complete transition in `agents/task-create/update-task.sh` (refuses before the transition, bypass `FW_ALLOW_REVIEW_LINK_HOME
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: VALIDATE enforced at `fw task review` (unchanged call site), at the partial-complete transition in `agents/task-create/update-task.sh` (refuses before`
+- **AC#3 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T12:08:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
