@@ -12,12 +12,12 @@ description: >
   14 days with this task as owner. Work: reproduce each under load (busy loops), find
   the shared resource or deadline, fix, and drop from the baseline.
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: [tests, flaky]
-components: []
+components: [tests/unit/t1719_ask_routing.bats]
 related_tasks: []
 arc_id: test-suite-health
 origin: {kind: "agent", source: "T-4246"}
@@ -48,8 +48,8 @@ origin: {kind: "agent", source: "T-4246"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T19:19:58Z
-last_update: 2026-10-22T08:27:50Z
-date_finished:
+last_update: 2026-10-22T12:10:23Z
+date_finished: 2026-10-22T12:10:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -434,3 +434,20 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4325d.out 2>&1 && grep 
 ### 2026-10-22T08:27:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1bd3dbf1
+- **Timestamp:** 2026-10-22T12:10:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T12:10:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
