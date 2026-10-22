@@ -1,10 +1,15 @@
 ---
 id: T-4638
-name: "claude-fw drops inherited PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR that point at another project before launch"
+name: "claude-fw drops inherited PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR that point at
+  another project before launch"
 description: >
-  T-4635 RCA: the relaunched AEF session inherited CONTEXT_DIR/TASKS_DIR of /opt/1409-sprind from a tmux server another project's TermLink spawn started. fw already falls back per call, but every hook warns and tools without that guard would cross projects. claude-fw must unset or reset those variables to its own project before launching claude (and say so once). Test with a fake foreign environment.
+  T-4635 RCA: the relaunched AEF session inherited CONTEXT_DIR/TASKS_DIR of /opt/1409-sprind
+  from a tmux server another project's TermLink spawn started. fw already falls back
+  per call, but every hook warns and tools without that guard would cross projects.
+  claude-fw must unset or reset those variables to its own project before launching
+  claude (and say so once). Test with a fake foreign environment.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: [T-4635, T-4541]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T12:40:34Z
-last_update: 2026-10-22T12:40:34Z
-date_finished: null
+last_update: 2026-10-22T13:13:22Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T12:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T12:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4638: claude-fw drops inherited PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR that point at another project before launch
@@ -62,8 +94,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `--termlink` mode: the line claude-fw injects into the TermLink PTY shell clears an inherited foreign `TASKS_DIR`/`CONTEXT_DIR`/`_FW_PATHS_DERIVED_BY`/`FW_ROUTED_FROM` and sets `PROJECT_ROOT`/`FRAMEWORK_ROOT` to claude-fw's own project, so the launched claude sees its own project (test: fake foreign env in an `env -i` PTY-like shell)
+- [x] It says so once: a foreign value prints one `claude-fw: inherited X=… is not this project` line; the second relaunch in the same shell (already cleared) and a clean shell print nothing
+- [x] Plain mode: `_cfw_pin_project` now also warns (not only silently unsets) when an inherited `TASKS_DIR`/`CONTEXT_DIR` lies outside the project, and the launched claude has neither
+- [x] Regression bats `tests/unit/t4638_claude_fw_foreign_env.bats` green; T-4474, T-4462, T-4222, T-4217, T-4003 still green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +282,30 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n bin/claude-fw
+timeout 600 bats tests/unit/t4638_claude_fw_foreign_env.bats > /tmp/.t4638.out 2>&1 && ! grep -q "^not ok" /tmp/.t4638.out
+test "$(grep -c '# skip' /tmp/.t4638.out)" -eq 0
+timeout 600 bats tests/unit/t4474_claude_fw_inject_sidecar_env.bats tests/unit/t4462_claude_fw_inject_bypasses_function.bats > /tmp/.t4638b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4638b.out
+bin/fw vendor self --check --task T-4638
 
 ## RCA
+**Symptom:** after the T-4635 relaunch the AEF parent session (`claude-fw --resume … --termlink`)
+ran with `CONTEXT_DIR=/opt/1409-sprind/.context` and `TASKS_DIR=/opt/1409-sprind/.tasks`; every
+fw hook printed the `inherited TASKS_DIR … is outside project` warning.
+
+**Root cause:** in `--termlink` mode claude is typed into the TermLink PTY shell
+(`bin/claude-fw:1401`, `termlink_inject "…command claude…"`). That shell is a child of the
+shared tmux server, whose global environment was seeded by 1409-sprind's TermLink spawn, so
+claude inherited THAT environment. `_cfw_pin_project` (`bin/claude-fw:41`) cleans only
+claude-fw's own process environment, which the PTY shell never sees.
+
+**Why structurally allowed:** T-4217/T-4222 stopped fw from seeding a server with its paths and
+made fw fall back per call, but nothing scrubbed a server that was already seeded by another
+project, and the inject path had no test with a foreign environment.
+
+**Prevention:** the injected line now clears the foreign variables and exports the pinned
+project paths, announcing it once; `tests/unit/t4638_claude_fw_foreign_env.bats` runs the
+real injected line in a shell carrying a fake foreign env.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +401,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4638-claude-fw-drops-inherited-projectrootcon.md
 - **Context:** Initial task creation
+
+### 2026-10-22T13:13:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -49,6 +49,14 @@ _cfw_pin_project() {
     if [ -n "${PROJECT_ROOT:-}" ] && [ "$PROJECT_ROOT" != "$d" ]; then
         echo "claude-fw: WARNING: inherited PROJECT_ROOT=$PROJECT_ROOT is not this project; this session uses $d (T-4218)" >&2
     fi
+    # T-4638: say so for TASKS_DIR/CONTEXT_DIR too (unset below), not only for PROJECT_ROOT.
+    local _v
+    for _v in TASKS_DIR CONTEXT_DIR; do
+        case "${!_v:-$d}" in
+            "$d"|"$d"/*) ;;
+            *) echo "claude-fw: WARNING: inherited $_v=${!_v} is not this project; cleared for $d (T-4638)" >&2 ;;
+        esac
+    done
     # T-4369: the framework repo first — it also carries a vendored self-copy
     # (fw vendor self), and exporting that ran every fw command from the copy.
     if [ -f "$d/FRAMEWORK.md" ] && [ -x "$d/bin/fw" ]; then fwr="$d"
@@ -372,6 +380,27 @@ _tl_sidecar_env_prefix() {
         [ -n "${!_v:-}" ] && printf '%s=%q ' "$_v" "${!_v}"
     done
     return 0
+}
+
+# T-4638 (T-4635 RCA): the PTY shell takes its environment from the tmux server TermLink spawned
+# it on, and a server another project's spawn started carries THAT project's PROJECT_ROOT /
+# TASKS_DIR / CONTEXT_DIR (1409-sprind's, 2026-10-22). _cfw_pin_project cleaned only this
+# process. So the injected line pins the shell itself to this project: it names each foreign
+# value it finds (once — the shell keeps the cleared state, so a relaunch finds nothing), unsets
+# the derived variables and exports the pinned paths. Plain POSIX case/unset/export, no bash
+# indirection: the PTY shell is the user's shell. Outside any project it adds nothing.
+_tl_project_env_prefix() {
+    [ -n "${PROJECT_ROOT:-}" ] || return 0
+    local _r _v _unset="TASKS_DIR CONTEXT_DIR _FW_PATHS_DERIVED_BY FW_ROUTED_FROM" _exp
+    _r=$(printf '%q' "$PROJECT_ROOT")
+    _exp="PROJECT_ROOT=$_r"
+    if [ -n "${FRAMEWORK_ROOT:-}" ]; then _exp="$_exp FRAMEWORK_ROOT=$(printf '%q' "$FRAMEWORK_ROOT")"
+    else _unset="$_unset FRAMEWORK_ROOT"; fi
+    for _v in PROJECT_ROOT TASKS_DIR CONTEXT_DIR; do
+        printf 'case "${%s:-}" in ""|%s|%s/*) ;; *) echo "claude-fw: inherited %s=$%s is not this project; cleared for "%s" (T-4638)" >&2 ;; esac; ' \
+            "$_v" "$_r" "$_r" "$_v" "$_v" "$_r"
+    done
+    printf 'unset %s; export %s; ' "$_unset" "$_exp"
 }
 
 # T-3648 (port of 055 P-011/P-012, framework:pickup offsets 242/244): one ping
@@ -1397,8 +1426,9 @@ while true; do
         _tl_args=""
         [ "${#CLAUDE_ARGS[@]}" -gt 0 ] && _tl_args=$(printf ' %q' "${CLAUDE_ARGS[@]}")
         _tl_env=$(_tl_sidecar_env_prefix)   # T-4474: sidecar sockets, per command
+        _tl_pin=$(_tl_project_env_prefix)   # T-4638: this project's paths, not the server's
         _tl_tok="r${restart_count}p$$e$(date +%s)"   # T-4249: this run's marker token
-        termlink_inject "${_tl_env}command claude${_tl_args}; printf '__CLAUDE_FW_EXIT_${_tl_tok}_%s__\n' \"\$?\""
+        termlink_inject "${_tl_pin}${_tl_env}command claude${_tl_args}; printf '__CLAUDE_FW_EXIT_${_tl_tok}_%s__\n' \"\$?\""
         _TL_PING_FAILS=0 # T-3648: each run starts with a clean failure count
         # Wait for claude to exit by polling the PTY for shell prompt
         # We check if claude process is still running inside the session
