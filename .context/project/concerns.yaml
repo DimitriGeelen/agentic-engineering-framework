@@ -5644,3 +5644,23 @@ concerns:
   what_remains: T-4624. Close when Watchtower renders $(...bin/fw watchtower url)/path and backticked route paths as full
     own-origin links, the validator requires literal http(s) URLs in Human Steps (allowlist) at task-file write,
     fw task review and partial-complete, and tests cover every spelling seen so far.
+- id: G-124
+  type: gap
+  title: Agent sessions and workers die together when systemd force-tears down root's user slice under load
+  description: 'RCA T-4635 (docs/reports/T-4635-session-kill-rca.md). 2026-10-22 13:38: the parent claude-fw session,
+    six TermLink workers and all monitors died at once. Long-lived agent processes live in user-0.slice; root does not
+    linger, so cron-driven session churn tears the slice down every minute; under load the stop times out and systemd
+    SIGKILLs everything left in it. 50 such timeouts since 2026-10-20, clustered in high-load windows; the 2026-10-21
+    09:08 and 11:47 session deaths fit. Side finding: the replacement tmux server took another project''s
+    PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR as its environment.'
+  severity: high
+  status: open
+  detected_in: T-4635
+  observed: '2026-10-22'
+  reported_by: operator (session death), agent RCA
+  blast_radius: every claude-fw session, TermLink worker and tmux-hosted process on the host, all projects
+  detection_gap: nothing checks where long-lived framework processes live or whether their user lingers; a killed
+    worker leaves no exit_code so the parent never learns; earlier deaths were attributed to claude-fw ping (T-4541)
+  what_remains: operator runs enable-root-linger runme (host); T-4636 (launch outside login scopes), T-4637
+    (doctor/audit placement WARN + vanished-worker sweep), T-4638 (drop foreign project env); TermLink to use its
+    own tmux socket or clean server env (sent 2026-10-22). Close when T-4636..T-4638 land with tests.
