@@ -24,6 +24,8 @@ source "$FRAMEWORK_ROOT/lib/watchtower.sh"
 source "$FRAMEWORK_ROOT/lib/pid-alive.sh"
 # PID/LOG in PROJECT_ROOT so review.sh and watchtower.sh find them in the same place (T-1154)
 PID_FILE="$PROJECT_ROOT/.context/working/watchtower.pid"
+# T-4323: UFW rules this project's Watchtower added (one port per line); stop removes them.
+FIREWALL_STATE_FILE="$PROJECT_ROOT/.context/working/watchtower.firewall"
 # T-1287: port + url triple alongside pid (foundation for T-1284 3-layer discovery)
 PORT_FILE="$PROJECT_ROOT/.context/working/watchtower.port"
 URL_FILE="$PROJECT_ROOT/.context/working/watchtower.url"
@@ -166,6 +168,7 @@ do_stop() {
     if ! _pid_alive "$pid"; then
         log_warn "Stale PID file (PID $pid not running). Cleaning up."
         rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
+        close_recorded_firewall_rules "$FIREWALL_STATE_FILE"
         return 0
     fi
 
@@ -198,6 +201,8 @@ do_stop() {
     fi
 
     rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
+    # T-4323: remove the UFW rule(s) start added; a stopped server serves no port.
+    close_recorded_firewall_rules "$FIREWALL_STATE_FILE"
     log_info "Watchtower stopped."
 }
 
@@ -459,7 +464,7 @@ do_start() {
             # T-4297: pass the bind host (loopback never touches UFW) and honour the
             # operator's opt-in from config; without it nothing is opened.
             FW_WATCHTOWER_OPEN_FIREWALL="${FW_WATCHTOWER_OPEN_FIREWALL:-$(fw_config "WATCHTOWER_OPEN_FIREWALL" "0" 2>/dev/null || echo 0)}" \
-                ensure_firewall_open "$port" "Agentic Framework" "${FW_HOST:-0.0.0.0}"
+                ensure_firewall_open "$port" "Agentic Framework" "${FW_HOST:-0.0.0.0}" "$FIREWALL_STATE_FILE"
 
             local lan_ip
             lan_ip=$(detect_lan_ip)

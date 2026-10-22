@@ -10,10 +10,10 @@ description: >
   printing the delete command. Reference tool: dimitri-mint-dev tools/ufw-watchtower-prune.sh
   (dry run / --delete / --narrow CIDR, with backups).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [security, watchtower, firewall, doctor]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T18:40:00Z
-last_update: '2026-10-18T18:46:44Z'
+last_update: 2026-10-22T08:28:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,6 +85,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-22T07:46:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4323: Firewall rules Watchtower opened are never removed: stop leaves them, nothing flags a rule for a port no longer served
@@ -97,8 +113,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `ensure_firewall_open` records each rule it actually added (port) in a per-project state file (`.context/working/watchtower.firewall`), and records nothing when it did not add the rule (already allowed, no opt-in, loopback, ufw absent/inactive)
+- [x] `close_recorded_firewall_rules` deletes only the recorded rules (`ufw delete allow PORT/tcp`) and clears the record; a rule present but not recorded is never deleted; a failed delete keeps the record and prints the exact command
+- [x] `watchtower.sh stop` (clean stop and stale-pid cleanup) calls `close_recorded_firewall_rules`
+- [x] `firewall_orphan_rules` lists framework-labelled ufw ALLOW rules (comment Agentic Framework / Watchtower / fw serve) whose port has no TCP listener; `fw doctor` WARNs on them and prints `sudo ufw delete allow PORT/tcp`
+- [x] Regression bats `tests/unit/t4323_firewall_rule_cleanup.bats` red before the fix, green after; `lib_firewall.bats` and `t4297_watchtower_firewall_consent.bats` stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,8 +295,21 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/fw && bash -n lib/firewall.sh && bash -n bin/watchtower.sh
+timeout 300 bats tests/unit/t4323_firewall_rule_cleanup.bats > /tmp/.t4323.out 2>&1 && ! grep -q "^not ok" /tmp/.t4323.out
+test "$(grep -c '# skip' /tmp/.t4323.out)" -eq 0
+timeout 300 bats tests/unit/lib_firewall.bats tests/unit/t4297_watchtower_firewall_consent.bats > /tmp/.t4323b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4323b.out
+bin/fw vendor self --check --task T-4323
 
 ## RCA
+
+**Symptom:** dimitri-mint-dev T-128: on .107, 65 of 78 'Agentic Framework'/'Watchtower'/'fw serve' UFW ALLOW rules were for ports nothing listened on.
+
+**Root cause:** `lib/firewall.sh:ensure_firewall_open` ran `ufw allow PORT/tcp` and kept no record of having done so, and `bin/watchtower.sh:do_stop` (line ~157) only killed the process and removed the pid/port/url triple. Every start on a new port (auto-allocation, restarts on another port) left one more rule behind, and nothing could later tell which rules it was entitled to remove. T-4297 made opening opt-in, which slows the accumulation but does not remove a single existing rule or stop an opted-in host accumulating.
+
+**Why structurally allowed:** the firewall change was a fire-and-forget side effect of start with no inverse in stop, and `fw doctor` checks the Watchtower process triple but never the host state that start mutated — so a dead rule was invisible to every check.
+
+**Prevention:** start records the rule it added (`.context/working/watchtower.firewall`), stop removes exactly the recorded rules; `fw doctor` WARNs on any framework-labelled rule whose port has no listener and prints the delete command (catches pre-existing rules and rules from other launchers). Pinned by `tests/unit/t4323_firewall_rule_cleanup.bats`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -373,3 +405,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4323-firewall-rules-watchtower-opened-are-nev.md
 - **Context:** Initial task creation
+
+### 2026-10-22T08:27:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

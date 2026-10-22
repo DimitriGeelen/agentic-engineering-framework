@@ -3068,6 +3068,22 @@ PY
         echo -e "  ${CYAN}SKIP${NC}  Watchtower not running (no triple) — start with: fw serve"
     fi
 
+    # Check: framework-labelled UFW rules for ports nothing listens on (T-4323).
+    # Watchtower start used to add a rule per port and stop never removed it
+    # (dimitri-mint-dev: 65 of 78 such rules dead). Report, never delete.
+    if [ -f "$FRAMEWORK_ROOT/lib/firewall.sh" ]; then
+        # shellcheck source=/dev/null
+        . "$FRAMEWORK_ROOT/lib/firewall.sh"
+        local _fw_orphans _fw_orphan_n
+        _fw_orphans=$(firewall_orphan_rules 2>/dev/null)
+        if [ -n "$_fw_orphans" ]; then
+            _fw_orphan_n=$(printf '%s\n' "$_fw_orphans" | grep -c .)
+            echo -e "  ${YELLOW}WARN${NC}  $_fw_orphan_n framework-labelled UFW rule(s) open a port nothing listens on"
+            printf '%s\n' "$_fw_orphans" | sed 's|^|         sudo ufw delete allow |; s|$|/tcp|'
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # Check: Watchtower secret-key file mode (T-4062). Watchtower tightens it on
     # start, but an agent or operator can widen it afterwards, and the key signs
     # CSRF/session tokens — group or world read, or a named ACL grant, defeats 0600.
