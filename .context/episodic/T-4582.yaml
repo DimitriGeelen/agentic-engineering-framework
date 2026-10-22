@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4582: fw termlink wait misses worker.done emitted before it subscribes and idles the full timeout
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:02:49Z
+# ============================================================================
+
+task_id: T-4582
+task_name: "fw termlink wait misses worker.done emitted before it subscribes and idles the full timeout"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T07:22:49Z
+completed: 2026-10-22T10:02:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T09:23:25+02:00
+last_commit: 2026-10-22T09:30:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file fw termlink wait race (1409-sprind T-2540). fw termlink wait checks exit_code before the event wait and waits in 5 s slices under one deadline — a worker.done emitted before the wait subscribed no longer idles the full timeout; t4582 bats pins already-done, finished-mid-wait and timeout cases. fabric card for t4582_termlink_wait_missed_event.bats
+
+# Key outcomes
+outcomes:
+  - '`cmd_wait` checks `_worker_done` before any `termlink event wait`; a worker already done returns its exit code at once, without waiting on the event'
+  - 'The single-worker wait runs the event wait in short slices (≤5 s) with a `_worker_done` check between slices, under ONE deadline computed before the first slice (total wait never exceeds `--timeout`)'
+  - 'Regression test `tests/unit/t4582_termlink_wait_missed_event.bats` (stub termlink whose `event wait` never fires) fails before the fix and passes after'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - 'agents/termlink/termlink.sh'
+  - '.fabric/components/tests-unit-t4582_termlink_wait_missed_event.yaml'
+  - '.tasks/active/T-4582-fw-termlink-wait-misses-workerdone-emitt.md'
+  - 'tests/unit/t4582_termlink_wait_missed_event.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T09:23:25'
+    action: 'T-4582: file fw termlink wait race (1409-sprind T-2540)'
+  - time: '2026-10-22T09:29:42'
+    action: 'T-4582: fw termlink wait checks exit_code before the event wait and waits in 5 s slices under one deadline — a worker.done emitted before the wait subscribed no longer idles the full timeout; t4582 bats pins already-done, finished-mid-wait and timeout cases'
+  - time: '2026-10-22T09:30:18'
+    action: 'T-4582: fabric card for t4582_termlink_wait_missed_event.bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 159 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, termlink, dispatch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 159
+  commits: 3
+  files_changed: 5
+  lines_added: 512
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4582-fw-termlink-wait-misses-workerdone-emitt.md
+generated_by: context-agent-hybrid
