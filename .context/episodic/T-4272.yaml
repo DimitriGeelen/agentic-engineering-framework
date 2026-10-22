@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4272: C-001 (artifact first) and the G-067 open-questions gate prescribe opposite orders for inception start.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:26:40Z
+# ============================================================================
+
+task_id: T-4272
+task_name: "C-001 (artifact first) and the G-067 open-questions gate prescribe opposite orders for inception start."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:29:39Z
+completed: 2026-10-22T10:26:11Z
+duration_days: 5
+updates_count: 2
+first_commit: 2026-10-22T00:41:38+02:00
+last_commit: 2026-10-22T00:41:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  C-001 and the T-2194 Open Questions gate name one order — IW-1 first, docs/reports/ artifact second; CLAUDE.md item 6 + consumer template reworded, gate block message names the artifact as the next step; regression bats (2 legs, red before); vendor synced
+
+# Key outcomes
+outcomes:
+  - 'CLAUDE.md §Inception Discipline item 6 names filing IW-1 under `## Open Questions` as the step before creating the `docs/reports/` artifact, and names the T-2194 gate as the reason'
+  - 'lib/templates/claude-project.md (the consumer CLAUDE.md template) carries the same order'
+  - 'The T-2194 block message names the C-001 research artifact (`docs/reports/<task>-*.md`) as the step after filing IW-1'
+  - 'Regression bats in tests/unit/inception_open_questions_gate.bats: the block message names the artifact step, and both docs put Open Questions before docs/reports in item 6; red before the fix, green after; the existing 6 tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - 'agents/context/check-active-task.sh'
+  - 'CLAUDE.md'
+  - 'lib/templates/claude-project.md'
+  - '.tasks/active/T-4272-c-001-artifact-first-and-the-g-067-open-.md'
+  - 'tests/unit/inception_open_questions_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:41:38'
+    action: 'T-4272: C-001 and the T-2194 Open Questions gate name one order — IW-1 first, docs/reports/ artifact second; CLAUDE.md item 6 + consumer template reworded, gate block message names the artifact as the next step; regression bats (2 legs, red before); vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6896 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6896
+  commits: 1
+  files_changed: 7
+  lines_added: 85
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4272-c-001-artifact-first-and-the-g-067-open-.md
+generated_by: context-agent-hybrid
