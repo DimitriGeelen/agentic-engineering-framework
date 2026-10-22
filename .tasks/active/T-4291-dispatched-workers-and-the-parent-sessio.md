@@ -12,10 +12,10 @@ description: >
   var set by fw termlink dispatch. Test: two sessions set different focus; each keeps
   its own.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T08:37:45Z
-last_update: '2026-10-18T08:46:04Z'
+last_update: 2026-10-22T08:34:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,6 +86,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-22T07:46:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4291: Dispatched workers and the parent session share one .context/working/focus.yaml: a worker's fw work-on silently moves the parent's focus (and the parent's moves the worker's)
@@ -98,8 +114,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on bleeding-edge 2026-10-22: a dispatched worker's `fw work-on` writes only `focus.<key>.yaml`; the shared `focus.yaml` is untouched (evidence in ## RCA)
+- [x] Existing regression tests for the shared-file direction pass (`tests/unit/t3038_session_scoped_focus.bats`, `tests/unit/t3422_dispatch_seeds_focus.bats`)
+- [x] The residual mechanism (stale-focus gate compares a worker's stamp against the parent-owned `session.yaml`) is recorded with file:line and an operator question + recommendation in ## Decisions
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -277,6 +294,8 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3038_session_scoped_focus.bats tests/unit/t3422_dispatch_seeds_focus.bats > /tmp/.t4291.out 2>&1 && ! grep -q "^not ok" /tmp/.t4291.out
+test "$(grep -c '# skip' /tmp/.t4291.out)" -eq 0
 
 ## RCA
 
@@ -293,6 +312,44 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after workers ran `bin/fw work-on`, the parent and the workers saw focus
+"moved by another session" and refused commands (no active task / stale focus).
+
+**Reproduction on bleeding-edge (2026-10-22, worker w4291b):** the shared-file direction in
+the title does NOT reproduce. Dispatch exports `FW_SESSION_SCOPED_FOCUS=1` and
+`FW_FOCUS_SESSION_KEY=<worker>` (`agents/termlink/termlink.sh:1203-1204`) and pre-seeds the
+worker's file (`:1218`, T-3422). `fw_focus_file` (`lib/paths.sh:204-220`) resolves the
+worker to `focus.<key>.yaml`. My own `fw work-on T-4291` wrote
+`.context/working/focus.w4291b.yaml` only; the shared `focus.yaml` stayed
+`current_task: null`. `t3038` "a scoped write leaves the parent's focus.yaml
+byte-identical" pins that direction; t3038 + t3422 run 18/18 green.
+
+**Root cause of what IS still seen — the shared `session.yaml`, not `focus.yaml`:**
+- The writer stamps the scoped focus with the SHARED session id:
+  `agents/context/lib/focus.sh:124-126` reads `$CONTEXT_DIR/working/session.yaml`.
+- The gate compares that stamp to the SHARED session id:
+  `agents/context/check-active-task.sh:631-634` reads `session.yaml`, and `:755`
+  blocks with "STALE FOCUS — Task From Previous Session" when they differ.
+- `session.yaml` belongs to the parent. Whenever its `session_id` changes (the parent's
+  `fw context init`, a new parent session, or anything that rewrites the file), every
+  live worker's focus becomes "stale" at once, and the worker must re-run `fw work-on`.
+  Live instance: my `work-on` at 10:27:17 stamped `S-2026-0925-2252` (the value
+  committed at HEAD in `session.yaml`). The file was rewritten to `S-2026-1022-0827` by
+  10:28:40, and my next Bash call was blocked as STALE FOCUS. Re-running `work-on`
+  cleared it. This is the "parent's moves the worker's" half of the title.
+- Side finding (not fixed here): for a moment `session.yaml` held its committed HEAD
+  content (`S-2026-0925-2252`), so something restored it from git while the session ran.
+  The writer is unidentified. That is its own bug, the T-3131/T-3329 class.
+
+**Why structurally allowed:** T-3038/T-3422 scoped the focus FILE but not its staleness
+STAMP. The T-560 stale check still keys on a single shared session id, so workers stay
+coupled to the parent's session lifecycle. No test runs a worker gate check across a
+parent session-id change.
+
+**Prevention:** pending the operator decision below. The chosen option gets a bats test:
+worker focus stamped, parent `session_id` changed, worker gate call still allowed (or
+blocked, by design).
 
 ## Evolution
 
@@ -358,6 +415,32 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — OPERATOR QUESTION: how should T-560 stale-focus treat session-scoped (worker) focus?
+- **Context:** the shared-focus-file bug is already fixed (T-3038/T-3422). What remains
+  is the T-560 stale check: it compares a worker's focus stamp against the parent-owned
+  `session.yaml` (`check-active-task.sh:755`), so any parent `session_id` change marks
+  every live worker's focus stale. This changes a governance gate's semantics, so it is
+  the operator's call, not a worker's.
+- **Options:**
+  1. **Stamp scoped focus with the worker key** (`FW_FOCUS_SESSION_KEY`, plus dispatch id
+     if available) instead of the shared `session_id`. The gate compares a scoped file
+     against the same key. A reused worker name from an older dispatch still needs
+     protecting: let `fw_focus_seed` overwrite a file whose stamp is not this dispatch.
+  2. **Skip the T-560 stale check when `FW_SESSION_SCOPED_FOCUS=1`.** This is the
+     simplest option. Staleness then rests on dispatch seeding alone, which today never
+     overwrites (`lib/paths.sh` fw_focus_seed rc 1), so a reused name inherits old focus.
+  3. **Leave it.** Workers re-run `fw work-on` when blocked. It costs a tool call each
+     time and confuses workers ("another session moved my focus").
+- **Recommendation: option 1.** It keeps T-560's purpose (catch focus left from a
+  different session) and makes "session" mean the worker's own session, which is what
+  T-3038 intended. It closes the reused-name hole that option 2 would open. The fix is
+  small: `focus.sh:124-126` and `check-active-task.sh:631-634` choose the stamp source
+  through one helper next to `fw_focus_file` (L-399 parity), plus a bats test across a
+  parent session-id change.
+- **Separately:** something restored `session.yaml` from git HEAD mid-session (around
+  10:27 on 2026-10-22). It should get its own task (one bug = one task); I did not
+  file it, to stay inside this task's scope.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -374,3 +457,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4291-dispatched-workers-and-the-parent-sessio.md
 - **Context:** Initial task creation
+
+### 2026-10-22T08:27:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
