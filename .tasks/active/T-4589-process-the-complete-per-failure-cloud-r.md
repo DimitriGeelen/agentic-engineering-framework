@@ -1,10 +1,20 @@
 ---
 id: T-4589
-name: "Process the complete per-failure cloud report at f028d507 (197 items: 122 defect, 65 env, 9 flaky, 1 hang)"
+name: "Process the complete per-failure cloud report at f028d507 (197 items: 122 defect,
+  65 env, 9 flaky, 1 hang)"
 description: >
-  ring20 relayed the operator-approved per-failure re-run (trig_01QQhSuKjra5B1gHPm8r7Zqm, pinned f028d507): /var/tmp/ring20-aef-perfailure-f028d507.txt, 230 lines, sha256 a131b3d632ff542dfade8474c9e939aa81e902e92cc1797d526d8a322db07d79 (byte-exact to the cloud job's own report). Save it under docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt with the same sha256, then group the 122 defect lines by root cause (one task per independent cause, not per test), skip causes already owned by open tasks (T-4568..T-4582, T-4221, T-4574 Playwright triage) and note the mapping. Env lines: note as env, no tasks, except where the env gap is itself a framework defect (e.g. a test that silently needs ~/.claude/projects or a detached-HEAD-unsafe fixture). Flaky: one task listing them. Hang: fw_test_cmd.bats recursion.
+  ring20 relayed the operator-approved per-failure re-run (trig_01QQhSuKjra5B1gHPm8r7Zqm,
+  pinned f028d507): /var/tmp/ring20-aef-perfailure-f028d507.txt, 230 lines, sha256
+  a131b3d632ff542dfade8474c9e939aa81e902e92cc1797d526d8a322db07d79 (byte-exact to
+  the cloud job's own report). Save it under docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
+  with the same sha256, then group the 122 defect lines by root cause (one task per
+  independent cause, not per test), skip causes already owned by open tasks (T-4568..T-4582,
+  T-4221, T-4574 Playwright triage) and note the mapping. Env lines: note as env,
+  no tasks, except where the env gap is itself a framework defect (e.g. a test that
+  silently needs ~/.claude/projects or a detached-HEAD-unsafe fixture). Flaky: one
+  task listing them. Hang: fw_test_cmd.bats recursion.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +49,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "cd7ae2ea"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T07:53:33Z
-last_update: 2026-10-22T07:53:33Z
-date_finished: null
+last_update: '2026-10-22T07:54:51Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +61,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:54:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4589: Process the complete per-failure cloud report at f028d507 (197 items: 122 defect, 65 env, 9 flaky, 1 hang)
@@ -63,8 +90,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt committed with sha256 a131b3d632ff542dfade8474c9e939aa81e902e92cc1797d526d8a322db07d79
+- [ ] Every defect line grouped by root cause in a `## Triage` cause -> task table in this file; causes owned by open tasks mapped, not re-filed
+- [ ] One new task (owner agent, horizon next, related T-4589) per unowned independent root cause, plus one flaky task and the fw_test_cmd.bats hang
+- [ ] Env lines recorded as env; env gaps that are framework defects (detached-HEAD-unsafe fixtures, ~/.claude/projects dependency) filed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,8 +278,16 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+sha256sum docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt | grep -q '^a131b3d632ff542dfade8474c9e939aa81e902e92cc1797d526d8a322db07d79 '
+git ls-files --error-unmatch docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
+grep -q '^## Triage' .tasks/active/T-4589-process-the-complete-per-failure-cloud-r.md
 
 ## RCA
+
+**Symptom:** the 2026-10-21 per-failure cloud run at f028d507 reported 197 failing/hanging items (122 defect, 65 env, 9 flaky, 1 hang).
+**Root cause:** not one cause — this is a triage task; each independent cause is filed as its own task in `## Triage` below with its file:line evidence.
+**Why structurally allowed:** the local suite runs on a host that has termlink, installed hooks, a branch checkout, ~/.claude and the vector index, so env-dependent and corpus-drift reds never show locally; only a clean cloud clone surfaces them.
+**Prevention:** the per-failure cloud run itself (T-4508) is the detector; each filed task carries its own regression pin.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -346,3 +383,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4589-process-the-complete-per-failure-cloud-r.md
 - **Context:** Initial task creation
+
+### 2026-10-22T07:54:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
