@@ -1,13 +1,18 @@
 ---
 id: T-4614
-name: "fw pickup send without termlink saves locally with an envelope missing the summary field"
+name: "fw pickup send without termlink saves locally with an envelope missing the
+  summary field"
 description: >
-  tests/integration/fw_pickup.bats 'envelope has correct fields': in the cloud (no termlink) send printed 'NOT delivered: saved locally in this project's inbox only.' and grep summary: "Use X not Y" failed. Passes here where termlink is present, so the local-save fallback envelope differs from the delivered one. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (line 39). Triaged in T-4589.
+  tests/integration/fw_pickup.bats 'envelope has correct fields': in the cloud (no
+  termlink) send printed 'NOT delivered: saved locally in this project's inbox only.'
+  and grep summary: "Use X not Y" failed. Passes here where termlink is present, so
+  the local-save fallback envelope differs from the delivered one. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
+  (line 39). Triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -39,8 +44,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:48:38Z
-last_update: 2026-10-22T08:48:38Z
-date_finished: null
+last_update: 2026-10-22T11:28:09Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:00:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:00:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4614: fw pickup send without termlink saves locally with an envelope missing the summary field
@@ -63,8 +95,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge under the cloud differences (no termlink on PATH, HOME=/root, LANG), result recorded in ## RCA
+- [x] tests/integration/fw_pickup.bats 'envelope has correct fields' passes on bleeding-edge without termlink
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +281,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+git merge-base --is-ancestor f028d507 43e8e3056
+grep -q "grep -q 'summary: Use X not Y'" tests/integration/fw_pickup.bats
+out=$(env PATH="$(echo "$PATH" | tr ':' '\n' | grep -v -e termlink -e cargo -e /root/.local/bin -e /usr/local/bin | paste -sd:)" HOME=/root LANG=C.UTF-8 timeout 600 /usr/local/bin/bats tests/integration/fw_pickup.bats 2>&1); echo "$out" | grep -q '^ok .* envelope has correct fields' && ! echo "$out" | grep -q '^not ok'
 
 ## RCA
 
@@ -265,6 +300,18 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Outcome: does not reproduce on bleeding-edge — no code change.**
+
+**Symptom:** cloud run at f028d507 (2026-10-21 23:21) failed `fw_pickup.bats` 'envelope has correct fields' on `grep -q 'summary: "Use X not Y"'`, with send printing the old wording "NOT delivered: saved locally in this project's inbox only."
+
+**Root cause:** a stale test assertion, not an envelope defect. The envelope is written with `yaml.safe_dump` (T-2308), which emits the plain scalar `summary: Use X not Y`; the test at f028d507 (tests/integration/fw_pickup.bats:109) still asserted the old quoted heredoc form. The local-save and delivered paths share one writer, so the termlink difference was a red herring: at f028d507 the assertion was stale on every host (T-4175's commit message records "stale quoted-scalar assert in fw_pickup.bats fixed"). Fixed by 43e8e3056 (T-4175, 2026-10-22 00:23, a descendant of f028d507), which changed the assert to `summary: Use X not Y` (tests/integration/fw_pickup.bats:124) and the send wording.
+
+**Reproduction attempts (2026-10-22, bleeding-edge):** ran the whole of tests/integration/fw_pickup.bats with termlink removed from PATH (stripped ~/.local/bin, /usr/local/bin, cargo; `command -v termlink` → none), HOME=/root, LANG=C.UTF-8: 15/15 ok, including 'envelope has correct fields'. A direct `fw pickup send --local` produced `payload.summary: Use X not Y`. Detached HEAD / vector index do not touch this path (pure file write).
+
+**Why structurally allowed:** the cloud run pinned a SHA taken ~1 h before the fix landed; the triage (T-4589) filed it as a defect from the assertion text alone.
+
+**Prevention:** already in place — T-4175's regression bats plus the corrected integration assertion; the ## Verification lines here re-run the suite with no termlink on PATH.
 
 ## Evolution
 
@@ -346,3 +393,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4614-fw-pickup-send-without-termlink-saves-lo.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:28:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
