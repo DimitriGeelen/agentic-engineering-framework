@@ -81,7 +81,10 @@ fi
 total_active=0
 total_updates=0
 stale_count=0
+frozen_wip=0
+unparsed_dates=0
 seven_days_ago=$(type _date_relative &>/dev/null && _date_relative "7 days ago" || date -d "7 days ago" +%s 2>/dev/null || date -v-7d +%s 2>/dev/null || echo 0)
+fourteen_days_ago=$(type _date_relative &>/dev/null && _date_relative "14 days ago" || date -d "14 days ago" +%s 2>/dev/null || date -v-14d +%s 2>/dev/null || echo 0)
 
 for f in "$TASKS_DIR/active"/*.md; do
     [ -f "$f" ] || continue
@@ -93,11 +96,24 @@ for f in "$TASKS_DIR/active"/*.md; do
     total_updates=$((total_updates + updates))
 
     # Check for stale (>7 days old with <2 updates)
-    last_update=$(grep "^last_update:" "$f" | sed 's/last_update: //' | cut -dT -f1)
+    # T-4655: strip YAML quotes — a quoted value ("2026-…") failed the parse,
+    # the epoch came back as "0\n0", the -lt test errored to false, and a stale
+    # quoted task silently never counted. Unparseable dates are now reported.
+    last_update=$(grep -m1 "^last_update:" "$f" | sed 's/^last_update:[[:space:]]*//' | tr -d "\"'" | cut -dT -f1)
     if [ -n "$last_update" ]; then
-        last_ts=$(_date_to_epoch "$last_update" 2>/dev/null || echo 0)
-        if [ "$last_ts" -lt "$seven_days_ago" ] && [ "$updates" -lt 2 ]; then
-            stale_count=$((stale_count + 1))
+        last_ts=$(_date_to_epoch "$last_update" 2>/dev/null | head -1)
+        last_ts=${last_ts:-0}
+        if [ "$last_ts" -gt 0 ]; then
+            if [ "$last_ts" -lt "$seven_days_ago" ] && [ "$updates" -lt 2 ]; then
+                stale_count=$((stale_count + 1))
+            fi
+            # Frozen WIP: recency only — started-work with no update in 14 days
+            task_status=$(grep -m1 "^status:" "$f" | sed 's/^status:[[:space:]]*//' | tr -d "\"' ")
+            if [ "$task_status" = "started-work" ] && [ "$last_ts" -lt "$fourteen_days_ago" ]; then
+                frozen_wip=$((frozen_wip + 1))
+            fi
+        else
+            unparsed_dates=$((unparsed_dates + 1))
         fi
     fi
 done
@@ -106,6 +122,10 @@ if [ "$total_active" -gt 0 ]; then
     avg_updates=$((total_updates / total_active))
     echo "Avg updates/task:     $avg_updates"
     echo "Stale tasks (>7d):    $stale_count"
+    echo "Frozen WIP (>14d):    $frozen_wip"
+    if [ "$unparsed_dates" -gt 0 ]; then
+        echo "WARN: $unparsed_dates active task(s) with unparseable last_update (not counted)" >&2
+    fi
 fi
 
 # Acceptance criteria coverage
@@ -146,14 +166,42 @@ learnings_count=0
 episodic_count=0
 decisions_count=0
 
+# T-4655: count entries by parsing the YAML. The old fixed-indent, fixed-prefix
+# greps ("^  - id: L-") read 0 on any store serialised another way — including
+# this repo's own learnings.yaml, where "-" sits on its own line. An unreadable
+# store prints an ERROR and "?", never a count that looks like "empty" (T-2680).
+count_store_entries() {
+    python3 - "$1" <<'PY' || { echo "ERROR: metrics: cannot count $1 (python3/yaml unavailable)" >&2; echo "?"; }
+import sys
+try:
+    import yaml
+    with open(sys.argv[1]) as fh:
+        data = yaml.safe_load(fh)
+except Exception as exc:
+    print(f"ERROR: metrics: cannot read {sys.argv[1]}: {exc}", file=sys.stderr)
+    print("?")
+    sys.exit(0)
+if data is None:
+    print(0)
+elif isinstance(data, list):
+    print(sum(1 for e in data if isinstance(e, dict) and "id" in e))
+elif isinstance(data, dict):
+    print(sum(1 for v in data.values() if isinstance(v, list)
+              for e in v if isinstance(e, dict) and "id" in e))
+else:
+    print(f"ERROR: metrics: {sys.argv[1]} is not a YAML mapping or list", file=sys.stderr)
+    print("?")
+PY
+}
+
 if [ -f "$CONTEXT_DIR/project/patterns.yaml" ]; then
-    patterns_count=$(grep -c "^  - id: [FSW]P-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || true)
+    patterns_count=$(count_store_entries "$CONTEXT_DIR/project/patterns.yaml")
 fi
 if [ -f "$CONTEXT_DIR/project/learnings.yaml" ]; then
-    learnings_count=$(grep -c "^  - id: L-" "$CONTEXT_DIR/project/learnings.yaml" 2>/dev/null || true)
+    learnings_count=$(count_store_entries "$CONTEXT_DIR/project/learnings.yaml")
 fi
 if [ -f "$CONTEXT_DIR/project/decisions.yaml" ]; then
-    decisions_count=$(grep -c "^  - id: D-" "$CONTEXT_DIR/project/decisions.yaml" 2>/dev/null || true)
+    decisions_count=$(count_store_entries "$CONTEXT_DIR/project/decisions.yaml")
 fi
 if [ -d "$CONTEXT_DIR/episodic" ]; then
     episodic_count=$(find "$CONTEXT_DIR/episodic" -name "T-*.yaml" 2>/dev/null | wc -l | tr -d ' ')
