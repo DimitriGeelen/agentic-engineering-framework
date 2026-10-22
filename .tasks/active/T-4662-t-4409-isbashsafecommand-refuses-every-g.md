@@ -1,23 +1,16 @@
 ---
-id: T-4616
-name: "Nine timing/order-sensitive tests from the f028d507 cloud run that pass when
-  rerun alone"
+id: T-4662
+name: "T-4409: is_bash_safe_command refuses every git read when neither payload cwd nor PWD==PROJECT_ROOT is known; consumer test harnesses that source safe-commands.sh changed behaviour silently"
 description: >
-  Flaky (fail in the -j4 run, pass alone): t4491_runme_job_queue 80-column pty menu;
-  test_sidecar_cli_peer_frame::test_alerts (hub fingerprint unreadable); test_t4458_search_degrade
-  x2; test_t4043_docs_detail_title::test_file_with_card_links_to_it; test_t4044_task_page_doc_links
-  x4. Also timing-bound: test_t3627_watchtower_wedge (3.18 s vs 2.0 s on 4 vCPU, passes
-  here). Find the shared state or load dependence per test. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
-  (lines 123, 191-193, 203-208). Triaged in T-4589.
+  Decide whether the refusal is right for harness callers (no payload) and either document it as a contract change with an explicit opt-in, or fall back to a cwd that is knowable; add a test for the no-cwd caller. Source: 050-email-archive field report on be.3 upgrade (sidecar 5b5b40e9, 2026-10-22).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
-tags: [cloud, test]
+horizon: next
+tags: []
 components: []
-related_tasks: [T-4589]
-origin: {kind: "agent"}
+related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -44,9 +37,9 @@ origin: {kind: "agent"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T08:49:27Z
-last_update: 2026-10-22T12:54:45Z
-date_finished:
+created: 2026-10-22T20:29:59Z
+last_update: 2026-10-22T20:29:59Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,36 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-22T09:00:25Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 0
-      D2: 0
-      D3: 0
-      D4: 0
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-22T09:00:49Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4616: Nine timing/order-sensitive tests from the f028d507 cloud run that pass when rerun alone
+# T-4662: T-4409: is_bash_safe_command refuses every git read when neither payload cwd nor PWD==PROJECT_ROOT is known; consumer test harnesses that source safe-commands.sh changed behaviour silently
 
 ## Context
 
@@ -96,10 +62,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Each of the nine named tests (t4491 pty menu, sidecar test_alerts, t4458 x2, t4043, t4044 x4) has its load/order dependence identified in ## RCA with file:line, and is fixed or explained as not reproducible with evidence
-- [x] test_t3627_watchtower_wedge's wall-clock assertion uses a budget that holds under load (or an injected clock), not 2.0 s
-- [x] Every fixed test passes 10/10 runs under parallel load (run alongside a CPU load generator)
-- [x] No entries added to .context/audits/unit-suite/baseline.yaml
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -284,33 +248,8 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-# t4044/t4043: run AFTER the module replacers (the order that failed in the cloud run)
-timeout 600 python3 -m pytest -q -p no:cacheprovider tests/web/test_secret_key.py tests/web/test_load_latest_audit.py tests/web/test_fabric_loader.py tests/web/test_t4044_task_page_doc_links.py tests/web/test_t4043_docs_detail_title.py > /tmp/.t4616a 2>&1 && grep -q passed /tmp/.t4616a
-# t4458: after test_t4223_gaps_perf deletes every web.* module
-timeout 600 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4223_gaps_perf.py tests/unit/test_t4458_search_degrade.py > /tmp/.t4616b 2>&1 && grep -q passed /tmp/.t4616b
-# sidecar test_alerts: with PROJECT_ROOT away from the checkout's committed hub-id
-d=$(mktemp -d); PROJECT_ROOT=$d timeout 300 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_cli_peer_frame.py > /tmp/.t4616c 2>&1; rc=$?; rm -rf "$d"; [ $rc -eq 0 ] && grep -q passed /tmp/.t4616c
-# t4491: under the C locale cron/env -i gives (failed deterministically before)
-LC_ALL=C timeout 600 bats -f "80-column" tests/unit/t4491_runme_job_queue.bats > /tmp/.t4616d 2>&1 && ! grep -q "^not ok" /tmp/.t4616d && grep -q "^ok 1 " /tmp/.t4616d
-# t3627: no wall-clock budget left in the wedge test
-! grep -qE "assert .*< *2\.0" tests/web/test_t3627_watchtower_wedge.py && timeout 900 python3 -m pytest -q -p no:cacheprovider tests/web/test_t3627_watchtower_wedge.py > /tmp/.t4616e 2>&1 && grep -q passed /tmp/.t4616e
-# baseline untouched by this task
-! git log --format=%s -- .context/audits/unit-suite/baseline.yaml | grep -q "^T-4616"
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4616f 2>&1 && grep -q clean /tmp/.t4616f
 
 ## RCA
-
-**Symptom:** nine tests red in the f028d507 cloud -j4 run, green when rerun alone; t3627 red on a 4-vCPU runner (3.18 s vs a 2.0 s budget).
-
-**Root causes (four, one per class):**
-1. *Module identity replaced* (t4044 x4, t4043, t4458 x2). `tests/web/test_secret_key.py:30`, `tests/web/test_load_latest_audit.py:30` pop `web.shared`/`web.app`; `tests/web/test_fabric_loader.py:29` pops `web.blueprints.fabric`; `tests/unit/test_t4223_gaps_perf.py:87` deletes every `web.*` module; each reimports, building NEW module objects. Later tests patch the module object they bound at collection (`import web.search as search_mod`, `import web.blueprints.fabric as fabric`) or the new `web.shared`, while the code under test reads the other copy (`web/blueprints/tasks.py:13` binds `_auto_link_files` from the original `web.shared`; `web/blueprints/docs.py:169` and `discovery.py:258` import lazily, getting the replacement). The patch is inert → 0 links / no degraded notice. Reproduced exactly with `--noconftest` in replacer-then-victim order.
-2. *Hidden live state* (sidecar test_alerts). `lib/sidecar_cli.py:356` runs `addressing.orphan_inboxes()` → `circuit.hub_id()` (`lib/sidecar/circuit.py:115`), which silently read the checkout's committed `.context/sidecar/hub-id`; with PROJECT_ROOT/cwd elsewhere it shells out to the tripwire termlink and raises CircuitError. Reproduced with `PROJECT_ROOT=<empty dir>`.
-3. *Locale, not load* (t4491). `lib/runme_queue.py:747` truncates to `ln[:w-1] + "…"` = 80 characters, but the test measured `${#ln}`, which counts BYTES under C/POSIX (cron, env -i): 79 + 3 = 82. Reproduced deterministically with `LC_ALL=C`.
-4. *Wall-clock budget* (t3627, also t4458's `elapsed < 1.5` and `< 1.0`). The property is ordering (/ must not wait for the cold scan), asserted as a 2.0 s wall-clock budget against a 3 s sleep. A first ordering rewrite (f92abe06e) kept a 60 s safety timer that released the held scan; with ten concurrent copies beside 24 CPU burners, a slow-but-unblocked `/` (cold `/` is ~100 s on the live corpus, warm ~2 s, and other workers' `.tasks/` writes invalidate its change-driven caches) outlived the timer and read as "waited" (3/10 red). Now `/` and the static file run in a thread joined with a 900 s hang bound while the scan stays held: a wedged `/` never answers while held. Bite-checked with a scratch copy whose `/` view calls the held scan: red, `None == 200`.
-
-**Why structurally allowed:** tests/unit/conftest.py named cause (1) (L-421 "cause 2") but only restored values (`PROJECT_ROOT`) and class identity, never module identity; tests/web/conftest.py likewise. Nothing pinned a hub id for test_alerts because the committed hub-id file made it pass everywhere the author ran it. Interactive shells are UTF-8, so nobody ran the bats under C.
-
-**Prevention:** `tests/lib/module_identity.py` + an autouse fixture in both conftests restores every replaced `web*`/`lib*`/`agents*` module object after each test, covering future replacers and victims without editing them. Timing assertions in t3627/t4458 are now event-ordering assertions with a safety timer (no budget to miss). Verification lines above replay each failing order/env.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -381,10 +320,6 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4616f 2>&1 && grep -q c
 
 ## Decisions
 
-**Load evidence (2026-10-22):** 24 `python3 -c 'while 1: pass'` burners on the 24-CPU host. Web order set + sidecar (PROJECT_ROOT elsewhere) + t4491 under LC_ALL=C: 10/10. t4223→t4458 pair: 10/10. t3627 wedge test, ten copies concurrently: 10/10 after the hang-bound rewrite (7/10 with the 60 s timer). With the module-identity restore patched to a no-op, the replayed order fails t4044 x4 + t4043 (5 failed), so the fix is what makes it green.
-
-**Left open (not this task):** `tests/web/test_bpmn_frozen_v1_pin.py::test_absent_marker_stage_output_byte_identical` fails here with and without this task's fixture, as do the 5 `tests/web/test_inception_verdict_render.py` tests (run alone, restore on and off: 5 failed both ways). `test_approvals_bvp_proposals.py::test_context_includes_pending_proposals` was red only in the full `tests/web` run (327 passed, 7 failed); it passes alone both ways, and whether it is order-dependent was not attributed. The t3627 wedge test costs 75-135 s alone because the live-corpus `/` and `/graduation` are slow cold, not because of the hold.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -406,11 +341,7 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4616f 2>&1 && grep -q c
 
 ## Updates
 
-### 2026-10-22T08:49:27Z — task-created [task-create-agent]
+### 2026-10-22T20:29:59Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4616-nine-timingorder-sensitive-tests-from-th.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4662-t-4409-isbashsafecommand-refuses-every-g.md
 - **Context:** Initial task creation
-
-### 2026-10-22T11:16:57Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)

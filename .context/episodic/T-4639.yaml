@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4639: Write/Edit gate allows .git/config edits with no task; a configured diff driver/textconv/fsmonitor then runs on a 'read-only' git diff/status
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T20:16:12Z
+# ============================================================================
+
+task_id: T-4639
+task_name: "Write/Edit gate allows .git/config edits with no task; a configured diff driver/textconv/fsmonitor then runs on a 'read-only' git diff/status"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T13:00:17Z
+completed: 2026-10-22T20:15:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T15:02:15+02:00
+last_commit: 2026-10-22T15:29:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file .git/config write gap (found by T-4631). Write/Edit gate no longer exempts .git/config, info/attributes, hooks/ — no task = refused; with a task a newly set exec-capable key (diff.<x>.command/textconv, core.fsmonitor/pager/hooksPath, include.path, …) is flagged + logged; WM fence mirrors it; t4639 bats (19 tests)
+
+# Key outcomes
+outcomes:
+  - 'Write/Edit of `.git/config`, `.git/config.worktree`, `.git/worktrees/*/config(.worktree)`, `.git/info/attributes` and `.git/hooks/*` is no longer exempt in `agents/context/check-active-task.sh`: with no focused task it is BLOCKED (exit 2)'
+  - 'With a focused task, a write that sets an exec-capable key is FLAGGED (stderr WARNING + row in `.context/working/.gate-bypass-log.yaml`), one test per key: `diff.<x>.command`, `diff.<x>.textconv`, `core.fsmonitor`, `core.pager`, `core.hooksPath` (plus `include.path`); an `info/attributes` driver selection (`diff=`/`filter=`/`merge=`) and any `.git/hooks/*` write are flagged too'
+  - 'A benign `.git/config` edit with a task passes without a flag; other `.git/*` paths (e.g. `.git/COMMIT_EDITMSG`, `.git/info/exclude`) stay exempt with no task'
+  - 'The WM-task fence (`lib/wm_tasks.sh` `fw_wm_write_allowed`) no longer admits the sensitive `.git` paths'
+  - 'Regression bats `tests/unit/t4639_git_config_write_gate.bats` fails on the pre-fix hook and passes after; vendored copies synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/wm_tasks.sh'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'lib/wm_tasks.sh'
+  - '.tasks/active/T-4639-writeedit-gate-allows-gitconfig-edits-wi.md'
+  - 'tests/unit/t4639_git_config_write_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T15:02:15'
+    action: 'T-4639: file .git/config write gap (found by T-4631)'
+  - time: '2026-10-22T15:29:07'
+    action: 'T-4639: Write/Edit gate no longer exempts .git/config, info/attributes, hooks/ — no task = refused; with a task a newly set exec-capable key (diff.<x>.command/textconv, core.fsmonitor/pager/hooksPath, include.path, …) is flagged + logged; WM fence mirrors it; t4639 bats (19 tests)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 435 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, read-only-allowlist, G-121]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 435
+  commits: 2
+  files_changed: 8
+  lines_added: 850
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4639-writeedit-gate-allows-gitconfig-edits-wi.md
+generated_by: context-agent-hybrid

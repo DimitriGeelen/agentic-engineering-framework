@@ -1,23 +1,23 @@
 ---
-id: T-4636
-name: "Run claude-fw sessions and TermLink workers outside login-session scopes (survive
-  root slice teardown)"
+id: T-4616
+name: "Nine timing/order-sensitive tests from the f028d507 cloud run that pass when
+  rerun alone"
 description: >
-  T-4635 RCA (docs/reports/T-4635-session-kill-rca.md): long-lived agent processes
-  live in user-0.slice; under load systemd force-removes that slice and kills them
-  all. Make claude-fw and fw termlink dispatch launch their long-lived process in
-  a dedicated systemd scope/slice outside any login session (systemd-run --scope --slice=agentic.slice,
-  or the equivalent), with a clean fallback where systemd or permission is absent
-  (log it once). Test: a launched process reports a cgroup outside session-*.scope;
-  fallback path stays green on hosts without systemd.
+  Flaky (fail in the -j4 run, pass alone): t4491_runme_job_queue 80-column pty menu;
+  test_sidecar_cli_peer_frame::test_alerts (hub fingerprint unreadable); test_t4458_search_degrade
+  x2; test_t4043_docs_detail_title::test_file_with_card_links_to_it; test_t4044_task_page_doc_links
+  x4. Also timing-bound: test_t3627_watchtower_wedge (3.18 s vs 2.0 s on 4 vCPU, passes
+  here). Find the shared state or load dependence per test. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
+  (lines 123, 191-193, 203-208). Triaged in T-4589.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, reliability, session-survival]
-components: []
-related_tasks: [T-4635, T-4541]
+horizon: null
+tags: [cloud, test]
+components: [tests/lib/module_identity.py, tests/unit/t4491_runme_job_queue.bats, tests/unit/test_t4458_search_degrade.py]
+related_tasks: [T-4589]
+origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -44,9 +44,9 @@ related_tasks: [T-4635, T-4541]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T12:39:56Z
-last_update: 2026-10-22T12:54:52Z
-date_finished:
+created: 2026-10-22T08:49:27Z
+last_update: 2026-10-22T20:18:07Z
+date_finished: 2026-10-22T20:18:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,10 +58,10 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-22T12:45:14Z'
+  - ts: '2026-10-22T09:00:25Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
-      D1: 1
+      D1: 0
       D2: 0
       D3: 0
       D4: 0
@@ -70,12 +70,12 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
-      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
-      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-22T12:45:28Z'
+  - ts: '2026-10-22T09:00:49Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -86,7 +86,7 @@ cost_estimate_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4636: Run claude-fw sessions and TermLink workers outside login-session scopes (survive root slice teardown)
+# T-4616: Nine timing/order-sensitive tests from the f028d507 cloud run that pass when rerun alone
 
 ## Context
 
@@ -96,12 +96,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `lib/agent-scope.sh` provides `fw_agent_scope_prefix`: on a host where `systemd-run --scope --slice=agentic.slice` works it yields that prefix; a process launched through it reports a cgroup under `/agentic.slice/` and not in any `session-*.scope` (real systemd test on this host)
-- [x] Fallback: with systemd absent, systemd-run refusing, or `FW_AGENT_SCOPE=0`, the prefix is empty, the launch proceeds unchanged, and the fallback reason is logged once (stderr + `.context/working/agent-scope.log`), silent on the next call for the same reason
-- [x] Already inside `agentic.slice` → empty prefix (no nested scope, no warning)
-- [x] `bin/claude-fw` re-execs itself once through the prefix before the tmux wrap (so a tmux server it starts, and claude, live in agentic.slice); a re-exec at the restart boundary does not re-scope
-- [x] `fw termlink spawn` (and so `fw termlink dispatch`) runs `termlink spawn` through the prefix, so a tmux server it starts lives in agentic.slice
-- [x] Regression bats `tests/unit/t4636_agent_scope.bats` green; existing claude-fw and termlink spawn tests still green
+- [x] Each of the nine named tests (t4491 pty menu, sidecar test_alerts, t4458 x2, t4043, t4044 x4) has its load/order dependence identified in ## RCA with file:line, and is fixed or explained as not reproducible with evidence
+- [x] test_t3627_watchtower_wedge's wall-clock assertion uses a budget that holds under load (or an injected clock), not 2.0 s
+- [x] Every fixed test passes 10/10 runs under parallel load (run alongside a CPU load generator)
+- [x] No entries added to .context/audits/unit-suite/baseline.yaml
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,14 +284,33 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-bash -n bin/claude-fw && bash -n lib/agent-scope.sh && bash -n agents/termlink/termlink.sh
-timeout 600 bats tests/unit/t4636_agent_scope.bats > /tmp/.t4636.out 2>&1 && ! grep -q "^not ok" /tmp/.t4636.out
-# this host has systemd, so the real-cgroup test must run, not skip
-test "$(grep -c '# skip' /tmp/.t4636.out)" -eq 0
-grep -q 'fw_agent_scope_prefix' bin/claude-fw && grep -q 'fw_agent_scope_prefix' agents/termlink/termlink.sh
-bin/fw vendor self --check --task T-4636
+# t4044/t4043: run AFTER the module replacers (the order that failed in the cloud run)
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/web/test_secret_key.py tests/web/test_load_latest_audit.py tests/web/test_fabric_loader.py tests/web/test_t4044_task_page_doc_links.py tests/web/test_t4043_docs_detail_title.py > /tmp/.t4616a 2>&1 && grep -q passed /tmp/.t4616a
+# t4458: after test_t4223_gaps_perf deletes every web.* module
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4223_gaps_perf.py tests/unit/test_t4458_search_degrade.py > /tmp/.t4616b 2>&1 && grep -q passed /tmp/.t4616b
+# sidecar test_alerts: with PROJECT_ROOT away from the checkout's committed hub-id
+bash -c 'd=$(mktemp -d); trap "rm -rf $d" EXIT; PROJECT_ROOT=$d timeout 300 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_cli_peer_frame.py > /tmp/.t4616c 2>&1 && grep -q passed /tmp/.t4616c'
+# t4491: under the C locale cron/env -i gives (failed deterministically before)
+LC_ALL=C timeout 600 bats -f "80-column" tests/unit/t4491_runme_job_queue.bats > /tmp/.t4616d 2>&1 && ! grep -q "^not ok" /tmp/.t4616d && grep -q "^ok 1 " /tmp/.t4616d
+# t3627: no wall-clock budget left in the wedge test
+! grep -qE "^[[:space:]]*assert .*< *2\.0" tests/web/test_t3627_watchtower_wedge.py && timeout 900 python3 -m pytest -q -p no:cacheprovider tests/web/test_t3627_watchtower_wedge.py > /tmp/.t4616e 2>&1 && grep -q passed /tmp/.t4616e
+# baseline untouched by this task
+! git log --format=%s -- .context/audits/unit-suite/baseline.yaml | grep -q "^T-4616"
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4616f 2>&1 && grep -q clean /tmp/.t4616f
 
 ## RCA
+
+**Symptom:** nine tests red in the f028d507 cloud -j4 run, green when rerun alone; t3627 red on a 4-vCPU runner (3.18 s vs a 2.0 s budget).
+
+**Root causes (four, one per class):**
+1. *Module identity replaced* (t4044 x4, t4043, t4458 x2). `tests/web/test_secret_key.py:30`, `tests/web/test_load_latest_audit.py:30` pop `web.shared`/`web.app`; `tests/web/test_fabric_loader.py:29` pops `web.blueprints.fabric`; `tests/unit/test_t4223_gaps_perf.py:87` deletes every `web.*` module; each reimports, building NEW module objects. Later tests patch the module object they bound at collection (`import web.search as search_mod`, `import web.blueprints.fabric as fabric`) or the new `web.shared`, while the code under test reads the other copy (`web/blueprints/tasks.py:13` binds `_auto_link_files` from the original `web.shared`; `web/blueprints/docs.py:169` and `discovery.py:258` import lazily, getting the replacement). The patch is inert → 0 links / no degraded notice. Reproduced exactly with `--noconftest` in replacer-then-victim order.
+2. *Hidden live state* (sidecar test_alerts). `lib/sidecar_cli.py:356` runs `addressing.orphan_inboxes()` → `circuit.hub_id()` (`lib/sidecar/circuit.py:115`), which silently read the checkout's committed `.context/sidecar/hub-id`; with PROJECT_ROOT/cwd elsewhere it shells out to the tripwire termlink and raises CircuitError. Reproduced with `PROJECT_ROOT=<empty dir>`.
+3. *Locale, not load* (t4491). `lib/runme_queue.py:747` truncates to `ln[:w-1] + "…"` = 80 characters, but the test measured `${#ln}`, which counts BYTES under C/POSIX (cron, env -i): 79 + 3 = 82. Reproduced deterministically with `LC_ALL=C`.
+4. *Wall-clock budget* (t3627, also t4458's `elapsed < 1.5` and `< 1.0`). The property is ordering (/ must not wait for the cold scan), asserted as a 2.0 s wall-clock budget against a 3 s sleep. A first ordering rewrite (f92abe06e) kept a 60 s safety timer that released the held scan; with ten concurrent copies beside 24 CPU burners, a slow-but-unblocked `/` (cold `/` is ~100 s on the live corpus, warm ~2 s, and other workers' `.tasks/` writes invalidate its change-driven caches) outlived the timer and read as "waited" (3/10 red). Now `/` and the static file run in a thread joined with a 900 s hang bound while the scan stays held: a wedged `/` never answers while held. Bite-checked with a scratch copy whose `/` view calls the held scan: red, `None == 200`.
+
+**Why structurally allowed:** tests/unit/conftest.py named cause (1) (L-421 "cause 2") but only restored values (`PROJECT_ROOT`) and class identity, never module identity; tests/web/conftest.py likewise. Nothing pinned a hub id for test_alerts because the committed hub-id file made it pass everywhere the author ran it. Interactive shells are UTF-8, so nobody ran the bats under C.
+
+**Prevention:** `tests/lib/module_identity.py` + an autouse fixture in both conftests restores every replaced `web*`/`lib*`/`agents*` module object after each test, covering future replacers and victims without editing them. Timing assertions in t3627/t4458 are now event-ordering assertions with a safety timer (no budget to miss). Verification lines above replay each failing order/env.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -308,24 +325,6 @@ bin/fw vendor self --check --task T-4636
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-**Symptom:** 2026-10-22 13:38:58 the parent claude-fw session and all six TermLink workers died
-at once, no `exit_code`; same pattern behind the 2026-10-21 09:08 / 11:47 restarts (T-4635).
-
-**Root cause:** `bin/claude-fw` (tmux wrap at `bin/claude-fw:185`, plain `command claude` path
-otherwise) and `agents/termlink/termlink.sh:405` (`termlink spawn`, which starts the tmux server
-dispatch workers run in) launch their long-lived processes in whatever cgroup the caller is in —
-for root that is a transient `session-*.scope` inside `user-0.slice`. Root does not linger, cron
-closes root's last session every minute, and under load systemd's stop of `user-0.slice` times
-out and SIGKILLs everything still in it.
-
-**Why structurally allowed:** nothing in the framework chose or checked the cgroup of its
-long-lived processes; the kill looks like an ordinary child exit from inside, and earlier
-incidents were attributed to the nearest visible mechanism (T-4541).
-
-**Prevention:** `lib/agent-scope.sh` places both launch points in a transient scope under
-`agentic.slice` (outside every login session), with a logged fallback; pinned by
-`tests/unit/t4636_agent_scope.bats` (real cgroup placement + fallback). Detection of processes
-still in a session scope is T-4637.
 
 ## Evolution
 
@@ -382,6 +381,10 @@ still in a session scope is T-4637.
 
 ## Decisions
 
+**Load evidence (2026-10-22):** 24 `python3 -c 'while 1: pass'` burners on the 24-CPU host. Web order set + sidecar (PROJECT_ROOT elsewhere) + t4491 under LC_ALL=C: 10/10. t4223→t4458 pair: 10/10. t3627 wedge test, ten copies concurrently: 10/10 after the hang-bound rewrite (7/10 with the 60 s timer). With the module-identity restore patched to a no-op, the replayed order fails t4044 x4 + t4043 (5 failed), so the fix is what makes it green.
+
+**Left open (not this task):** `tests/web/test_bpmn_frozen_v1_pin.py::test_absent_marker_stage_output_byte_identical` fails here with and without this task's fixture, as do the 5 `tests/web/test_inception_verdict_render.py` tests (run alone, restore on and off: 5 failed both ways). `test_approvals_bvp_proposals.py::test_context_includes_pending_proposals` was red only in the full `tests/web` run (327 passed, 7 failed); it passes alone both ways, and whether it is order-dependent was not attributed. The t3627 wedge test costs 75-135 s alone because the live-corpus `/` and `/graduation` are slow cold, not because of the hold.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -390,11 +393,6 @@ still in a session scope is T-4637.
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
-### 2026-10-22 — where to put the scope
-- **Chose:** scope the launcher (claude-fw re-execs itself; `termlink spawn` runs under the prefix), so a tmux server they START is born in agentic.slice and every claude/worker under it follows.
-- **Why:** the tmux server is the parent of every pty; a worker moved alone into a scope still dies of SIGHUP when its server is killed.
-- **Rejected:** scoping only run.sh inside the pane (SIGHUP from the dead server still kills it); moving an existing server's pid between cgroups (writes to cgroup.procs, fragile).
-- **Limit:** a tmux server that is ALREADY running in a session scope (fw-agents or the default one) keeps workers there until it restarts; detecting that is T-4637.
 
 ## Decision
 
@@ -408,10 +406,37 @@ still in a session scope is T-4637.
 
 ## Updates
 
-### 2026-10-22T12:39:56Z — task-created [task-create-agent]
+### 2026-10-22T08:49:27Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4636-run-claude-fw-sessions-and-termlink-work.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4616-nine-timingorder-sensitive-tests-from-th.md
 - **Context:** Initial task creation
 
-### 2026-10-22T12:54:52Z — status-update [task-update-agent]
+### 2026-10-22T11:16:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2f8a20b5
+- **Timestamp:** 2026-10-22T20:19:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 147
+     - evidence: `! git log --format=%s -- .context/audits/unit-suite/baseline.yaml | grep -q "^T-4616"`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-10-22T20:18:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

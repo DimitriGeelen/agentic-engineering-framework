@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4652: check-tier0.sh and check-project-boundary.sh fail OPEN when the JSON decoder or python matcher cannot run
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T20:04:46Z
+# ============================================================================
+
+task_id: T-4652
+task_name: "check-tier0.sh and check-project-boundary.sh fail OPEN when the JSON decoder or python matcher cannot run"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T19:31:03Z
+completed: 2026-10-22T20:03:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T21:46:16+02:00
+last_commit: 2026-10-22T21:46:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  hooks fail closed when python decoder/matcher is unusable — bash-only degraded scan in check-tier0 and check-project-boundary
+
+# Key outcomes
+outcomes:
+  - 'Claim verified against our code: with a broken python3 first on PATH the Tier 0 hook and the project-boundary hook are shown (by test) to allow or not allow; result recorded in ## RCA'
+  - 'On decoder/matcher failure both hooks run a bash-only degraded scan of the raw payload and BLOCK on a hit (destructive keywords for Tier 0; foreign absolute project path for boundary), with a message saying the hook is degraded and why'
+  - 'On decoder/matcher failure with no hit, the hook allows and prints a one-line degraded warning to stderr'
+  - 'Healthy-python behaviour is unchanged'
+  - 'tests/unit/t4652_hook_fail_closed_degraded.bats passes (broken python + destructive blocked; broken python + benign allowed with warning; healthy unchanged) with zero skips'
+  - 'Over-block trade-off recorded in ## Decisions; .claude/settings.json not edited; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — Degraded mode over-blocks, by design'
+    chose: 'while python is unusable, grep the raw (still JSON-escaped) payload and block on any Tier 0 keyword (rm -r*, git push with --force/-f/+ref, reset --hard, branch -D, git clean -f, DROP/TRUNCATE, mkfs, dd if=, the word tier0) or, for the boundary hook, any /opt, /home, /root (not .claude/.local), /srv, /mnt path that remains after removing PROJECT_ROOT. No hit: allow with a one-line stderr warning.'
+    rationale: 'the healthy matcher is a grammar that knows e.g. `rm -rf /var/lib/x` is not Tier 0; the bash scan cannot parse, so it errs toward blocking. Over-block (a keyword in prose/heredoc, or a harmless read of /opt/other) is recoverable and visible; a silent allow is not. It only happens while degraded, and the message names the cause.'
+    alternatives_rejected: ['(a) block everything while degraded: makes a broken python a total outage including the repair commands; (b) keep allow-with-warning only: still lets a destructive command through; (c) edit .claude/settings.json to add a second hook: operator-only.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.agentic-framework/agents/context/check-tier0.sh'
+  - '.agentic-framework/lib/hook-degraded.sh'
+  - 'agents/context/check-project-boundary.sh'
+  - 'agents/context/check-tier0.sh'
+  - 'lib/hook-degraded.sh'
+  - '.tasks/active/T-4652-check-tier0sh-and-check-project-boundary.md'
+  - 'tests/unit/t4652_hook_fail_closed_degraded.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T21:46:16'
+    action: 'T-4652: hooks fail closed when python decoder/matcher is unusable — bash-only degraded scan in check-tier0 and check-project-boundary'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 32 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 32
+  commits: 1
+  files_changed: 8
+  lines_added: 405
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4652-check-tier0sh-and-check-project-boundary.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4647: fw termlink dispatch passes the caller's exported CONTEXT_DIR/TASKS_DIR into every spawn; build the spawn environment from an allow-list
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T20:05:46Z
+# ============================================================================
+
+task_id: T-4647
+task_name: "fw termlink dispatch passes the caller's exported CONTEXT_DIR/TASKS_DIR into every spawn; build the spawn environment from an allow-list"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T13:28:44Z
+completed: 2026-10-22T20:04:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T15:30:17+02:00
+last_commit: 2026-10-22T16:16:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file dispatch env allow-list fix (SEV-1 T-4635); T-4635 review prompt + bundle. spawn/dispatch child env from an allow-list — cmd_spawn runs termlink spawn under env -i (lib/spawn-env.sh), run.sh re-execs under env -i with the same list; t4647 bats asserts worker /proc environ holds no foreign CONTEXT_DIR/TASKS_DIR/PROJECT_ROOT/FW_FOO; vendor synced. review-runtime test launchers mark their stub env clean (_FW_RUNTIME_ENV_CLEAN) — run.sh's allow-list scrub would drop STUB_MODE/LEDGER/WDIR_EXPECTED. ACs ticked, decision recorded
+
+# Key outcomes
+outcomes:
+  - '`cmd_spawn` (used by `fw termlink spawn` and `fw termlink dispatch`) starts `termlink spawn` under `env -i` with an explicit allow-list (`lib/spawn-env.sh`), so the spawn process — and any tmux server it starts — carries no `PROJECT_ROOT`/`FRAMEWORK_ROOT`/`CONTEXT_DIR`/`TASKS_DIR`/`FW_*`/other unlisted variable of the caller'
+  - 'The dispatch runtime (`run.sh`) re-executes itself under `env -i` with the same allow-list before anything else, so a worker launched from a polluted shell or tmux server gets only allow-listed host variables plus what run.sh/env.sh set (project paths derived from `--project`)'
+  - 'Regression bats `tests/unit/t4647_spawn_env_allowlist.bats`: dispatch from a shell exporting a FOREIGN `CONTEXT_DIR`/`TASKS_DIR`/`PROJECT_ROOT` and an arbitrary `FW_FOO`; the spawn''s env and the worker''s `/proc/<pid>/environ` hold none of them, and the worker''s `PROJECT_ROOT` is its own `--project`. Fails on the pre-fix termlink.sh'
+  - 'Existing neighbouring suites stay green: t4217, t4222, t4152, t4636 bats; vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file dispatch env allow-list fix (SEV-1 T-4635); T-4635 review prompt + bundle'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — where the worker''s env is scrubbed'
+    chose: 'two layers: `cmd_spawn` runs `termlink spawn` under `env -i` + `lib/spawn-env.sh` allow-list, and run.sh re-execs itself (`exec env -i … "$BASH" "$0" "$@"`, guarded by `_FW_RUNTIME_ENV_CLEAN`) with an inlined copy of the same list (pinned equal by t4647 test 2). The re-exec keeps argv, so the review ledger''s parent check (`bash <wdir>/run.sh`) still holds.'
+    rationale: 'the spawn layer alone cannot help when the tmux server is ALREADY polluted; the run.sh layer covers that. run.sh is the signed canonical runtime, so it inlines the list instead of sourcing a working-tree file.'
+    alternatives_rejected: ['putting `env -i NAME=value …` into the pty-injected command — it would type allow-listed secrets (ANTHROPIC_API_KEY) into the pane''s scrollback. Keeping the deny-list and adding names — fails open, which is the bug.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/spawn-env.sh'
+  - 'agents/termlink/termlink.sh'
+  - 'docs/reports/T-4635-review/bundle.md'
+  - 'docs/reports/T-4635-review/prompt.md'
+  - '.fabric/components/lib-spawn-env.yaml'
+  - 'lib/spawn-env.sh'
+  - '.tasks/active/T-4647-fw-termlink-dispatch-passes-the-callers-.md'
+  - 'tests/unit/t3580_round3_test.py'
+  - 'tests/unit/t3582_harness_kinds_test.py'
+  - 'tests/unit/t4217_spawn_env_isolation.bats'
+  - 'tests/unit/t4647_spawn_env_allowlist.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T15:30:17'
+    action: 'T-4647: file dispatch env allow-list fix (SEV-1 T-4635); T-4635 review prompt + bundle'
+  - time: '2026-10-22T15:52:22'
+    action: 'T-4647: spawn/dispatch child env from an allow-list — cmd_spawn runs termlink spawn under env -i (lib/spawn-env.sh), run.sh re-execs under env -i with the same list; t4647 bats asserts worker /proc environ holds no foreign CONTEXT_DIR/TASKS_DIR/PROJECT_ROOT/FW_FOO; vendor synced'
+  - time: '2026-10-22T16:15:52'
+    action: 'T-4647: review-runtime test launchers mark their stub env clean (_FW_RUNTIME_ENV_CLEAN) — run.sh''s allow-list scrub would drop STUB_MODE/LEDGER/WDIR_EXPECTED'
+  - time: '2026-10-22T16:16:56'
+    action: 'T-4647: ACs ticked, decision recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 396 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, isolation, G-116, G-124]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 396
+  commits: 4
+  files_changed: 12
+  lines_added: 1019
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4647-fw-termlink-dispatch-passes-the-callers-.md
+generated_by: context-agent-hybrid

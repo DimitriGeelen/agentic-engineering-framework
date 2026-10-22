@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4637: Detect fragile placement and vanished workers: doctor/audit WARN on long-lived processes in a non-lingering session scope; sweep flags workers with no exit_code and stale output
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T20:15:18Z
+# ============================================================================
+
+task_id: T-4637
+task_name: "Detect fragile placement and vanished workers: doctor/audit WARN on long-lived processes in a non-lingering session scope; sweep flags workers with no exit_code and stale output"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T12:40:16Z
+completed: 2026-10-22T20:13:44Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T15:31:19+02:00
+last_commit: 2026-10-22T15:33:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  detect fragile process placement (doctor/audit WARN on non-lingering session scopes) and VANISHED dispatch workers (fw termlink status/vanished). drop duplicated placement block in audit.sh (hunk landed twice: T-4634's commit carried it from the shared tree, then 180d12d08 applied it again)
+
+# Key outcomes
+outcomes:
+  - '`lib/process_placement.py` classifies a pid from `/proc/<pid>/cgroup` as fragile when it sits in `user-<uid>.slice/session-*.scope` and that uid has no linger file; lingering users, service/scope units outside session scopes, and unreadable pids are not fragile. Proc root and linger dir are overridable (fixtures, no systemd changes).'
+  - 'It finds claude-fw, Watchtower (pid file), the TermLink hub and tmux servers; `fw doctor` prints one `[host]` WARN per fragile process naming `loginctl enable-linger <user>` and the scope fix (T-4636); `fw audit` emits the same as WARN.'
+  - 'A dispatch worker with no `exit_code`, no live run.sh/worker process and output (result.jsonl, else the dir) unchanged for `FW_TERMLINK_VANISHED_MINUTES` (default 10; not in the config registry, see Decisions) is reported `VANISHED` by `fw termlink status`; `fw termlink vanished [--minutes N]` lists them and exits 1 when any exist, 0 otherwise.'
+  - 'Regression tests: pytest for the placement classifier against fixture /proc trees; bats for status/vanished against a fixture dispatch dir (vanished, fresh, finished, live). Both fail without the fix and pass with it.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — vanished threshold not registered'
+    chose: '`fw_config_int TERMLINK_VANISHED_MINUTES 10` with an explicit default and `--minutes N`, no registry entry.'
+    rationale: 'a registry key must also go into `web/blueprints/config.py` (config-registry-parity lint), a render surface that brings a P-013 review and a Watchtower restart. That is out of scope here.'
+    alternatives_rejected: ['registering it in lib/config.sh alone (the parity lint goes red).']
+  - decision: '2026-10-22 — fragility keys on the slice uid'
+    chose: 'linger is checked for the uid in `user-<uid>.slice`, not the process owner.'
+    rationale: 'on this host root processes sit in `user-1000.slice/session-c1.scope` (su from a uid-1000 login). That slice is what gets torn down.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/process_placement.py'
+  - 'agents/audit/audit.sh'
+  - 'agents/termlink/termlink.sh'
+  - 'bin/fw'
+  - 'lib/process_placement.py'
+  - '.tasks/active/T-4637-detect-fragile-placement-and-vanished-wo.md'
+  - 'tests/unit/t4637_vanished_workers.bats'
+  - 'tests/unit/test_process_placement.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T15:31:19'
+    action: 'T-4637: detect fragile process placement (doctor/audit WARN on non-lingering session scopes) and VANISHED dispatch workers (fw termlink status/vanished)'
+  - time: '2026-10-22T15:33:09'
+    action: 'T-4637: drop duplicated placement block in audit.sh (hunk landed twice: T-4634''s commit carried it from the shared tree, then 180d12d08 applied it again)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 453 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, reliability, session-survival]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 453
+  commits: 2
+  files_changed: 11
+  lines_added: 787
+  lines_removed: 48
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4637-detect-fragile-placement-and-vanished-wo.md
+generated_by: context-agent-hybrid

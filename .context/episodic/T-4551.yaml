@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4551: v1.1 aef:io follow-ups: ref as data-flow join key, typeRef version pinning, forward compile reads aef:io
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T20:11:55Z
+# ============================================================================
+
+task_id: T-4551
+task_name: "v1.1 aef:io follow-ups: ref as data-flow join key, typeRef version pinning, forward compile reads aef:io"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-21T14:32:07Z
+completed: 2026-10-22T20:11:23Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-22T15:01:53+02:00
+last_commit: 2026-10-22T15:03:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  forward compile reads aef:io (v1.1) — io list + AC seeds, §1.5 version refusal, §4.3/§4.4 warnings; options+recommendation for ref join key and typeRef pinning. vendor bpmn_to_tasks.py
+
+# Key outcomes
+outcomes:
+  - '`## Decisions` records options + a recommendation for (1) ref-as-join-key and (2) typeRef version pinning; `policy/standards/aef-bpmn-mapping-v1.1-io.md` is not modified by this task'
+  - '`parse_bpmn` attaches an `io` list to each skeleton from the node''s `aef:io` (inputs and outputs, attributes verbatim, `type` defaulted to `string` and aliases `int`/`bool` resolved per §3, `aef:field`/`aef:when`/`aef:expect`/`aef:example` children); unknown children are carried verbatim, never dropped (§1.4)'
+  - '§2.3 `ref` read rule and §2.5 system derivation applied from the process-level `aef:meta` / `aef:prefixes`'
+  - 'A `mappingVersion` other than `1.1` makes the compile refuse naming the value (§1.5)'
+  - '`update`/`upsert`/`delete` with no `role="match"` field (§4.3) and an undetermined match key (§4.4) each produce a compile warning'
+  - '`render_skeleton` emits `io:` in YAML-parseable frontmatter plus pre/postcondition AC seeds from `aef:expect`; a node with no `aef:io` renders byte-identically to before'
+  - 'New pytest `tests/unit/test_bpmn_to_tasks_io.py` covers every §11 worked example and passes; existing `tests/unit/test_bpmn_to_tasks.py` still passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — (1) `ref` as the step-to-step data-flow join key (§13 item 1) — NOT implemented, needs the ruling'
+  - decision: '2026-10-22 — (2) `typeRef` version pinning (§13 item 2) — NOT implemented, needs the ruling'
+  - decision: '2026-10-22 — (3) forward compile carries aef:io as JSON flow mappings in frontmatter'
+    chose: '`io:` list in the skeleton frontmatter, one JSON object per item (JSON is YAML), attributes verbatim plus read-rule results (`type`, `fieldRef`/`fieldRef_from`, `sourceSystem`/`targetSystem` + `system_from`); `aef:expect` also seeds `# precondition:`/`# postcondition: [NEEDS-FILL]` comment lines.'
+    rationale: 'the compiler is stdlib-only (no PyYAML) and JSON escaping is safe YAML; comments keep the AC seed style the compiler already uses for constituents.'
+    alternatives_rejected: ['importing `tools/corpus_spec.py`''s `_io_parse` — namespace-exact and SystemExit-based, where this compiler is local-name-agnostic and raises typed errors that `main` maps to exit 3.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/bpmn_to_tasks.py'
+  - '.tasks/active/T-4551-v11-aefio-follow-ups-ref-as-data-flow-jo.md'
+  - 'tests/unit/test_bpmn_to_tasks_io.py'
+  - 'tools/bpmn_to_tasks.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T15:01:53'
+    action: 'T-4551: forward compile reads aef:io (v1.1) — io list + AC seeds, §1.5 version refusal, §4.3/§4.4 warnings; options+recommendation for ref join key and typeRef pinning'
+  - time: '2026-10-22T15:03:36'
+    action: 'T-4551: vendor bpmn_to_tasks.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1779 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [mapping, aef-io, T-4415]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1779
+  commits: 2
+  files_changed: 4
+  lines_added: 888
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4551-v11-aefio-follow-ups-ref-as-data-flow-jo.md
+generated_by: context-agent-hybrid

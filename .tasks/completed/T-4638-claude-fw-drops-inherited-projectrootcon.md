@@ -1,23 +1,21 @@
 ---
-id: T-4639
-name: "Write/Edit gate allows .git/config edits with no task; a configured diff driver/textconv/fsmonitor
-  then runs on a 'read-only' git diff/status"
+id: T-4638
+name: "claude-fw drops inherited PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR that point at
+  another project before launch"
 description: >
-  Found by the T-4631 worker: agents/context/check-active-task.sh:572 lets Write/Edit
-  touch .git/* with no active task. An edit to .git/config (or .git/info/attributes)
-  can set diff.<x>.command, textconv, core.fsmonitor, core.pager, core.hooksPath;
-  a later allowlisted git diff/status/log then runs that program. Close it: refuse
-  Write/Edit of .git/config, .git/info/attributes and .git/hooks/* without a task
-  (and flag those keys even with one), keep the .git paths the framework itself must
-  write; tests for each key.
+  T-4635 RCA: the relaunched AEF session inherited CONTEXT_DIR/TASKS_DIR of /opt/1409-sprind
+  from a tmux server another project's TermLink spawn started. fw already falls back
+  per call, but every hook warns and tools without that guard would cross projects.
+  claude-fw must unset or reset those variables to its own project before launching
+  claude (and say so once). Test with a fake foreign environment.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, security, read-only-allowlist, G-121]
-components: []
-related_tasks: [T-4631, T-4509]
+horizon: null
+tags: [bug, reliability, session-survival]
+components: [bin/claude-fw]
+related_tasks: [T-4635, T-4541]
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -44,9 +42,9 @@ related_tasks: [T-4631, T-4509]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T13:00:17Z
-last_update: '2026-10-22T13:15:53Z'
-date_finished:
+created: 2026-10-22T12:40:34Z
+last_update: 2026-10-22T20:13:10Z
+date_finished: 2026-10-22T20:13:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,7 +56,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-22T13:03:35Z'
+  - ts: '2026-10-22T12:45:14Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 1
@@ -75,18 +73,18 @@ bvp_scores_proposed:
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-22T13:15:53Z'
+  - ts: '2026-10-22T12:45:28Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=313,acs=7)
+      (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4639: Write/Edit gate allows .git/config edits with no task; a configured diff driver/textconv/fsmonitor then runs on a 'read-only' git diff/status
+# T-4638: claude-fw drops inherited PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR that point at another project before launch
 
 ## Context
 
@@ -96,11 +94,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Write/Edit of `.git/config`, `.git/config.worktree`, `.git/worktrees/*/config(.worktree)`, `.git/info/attributes` and `.git/hooks/*` is no longer exempt in `agents/context/check-active-task.sh`: with no focused task it is BLOCKED (exit 2)
-- [x] With a focused task, a write that sets an exec-capable key is FLAGGED (stderr WARNING + row in `.context/working/.gate-bypass-log.yaml`), one test per key: `diff.<x>.command`, `diff.<x>.textconv`, `core.fsmonitor`, `core.pager`, `core.hooksPath` (plus `include.path`); an `info/attributes` driver selection (`diff=`/`filter=`/`merge=`) and any `.git/hooks/*` write are flagged too
-- [x] A benign `.git/config` edit with a task passes without a flag; other `.git/*` paths (e.g. `.git/COMMIT_EDITMSG`, `.git/info/exclude`) stay exempt with no task
-- [x] The WM-task fence (`lib/wm_tasks.sh` `fw_wm_write_allowed`) no longer admits the sensitive `.git` paths
-- [x] Regression bats `tests/unit/t4639_git_config_write_gate.bats` fails on the pre-fix hook and passes after; vendored copies synced
+- [x] `--termlink` mode: the line claude-fw injects into the TermLink PTY shell clears an inherited foreign `TASKS_DIR`/`CONTEXT_DIR`/`_FW_PATHS_DERIVED_BY`/`FW_ROUTED_FROM` and sets `PROJECT_ROOT`/`FRAMEWORK_ROOT` to claude-fw's own project, so the launched claude sees its own project (test: fake foreign env in an `env -i` PTY-like shell)
+- [x] It says so once: a foreign value prints one `claude-fw: inherited X=… is not this project` line; the second relaunch in the same shell (already cleared) and a clean shell print nothing
+- [x] Plain mode: `_cfw_pin_project` now also warns (not only silently unsets) when an inherited `TASKS_DIR`/`CONTEXT_DIR` lies outside the project, and the launched claude has neither
+- [x] Regression bats `tests/unit/t4638_claude_fw_foreign_env.bats` green; T-4474, T-4462, T-4222, T-4217, T-4003 still green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -285,13 +282,30 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 600 bats tests/unit/t4639_git_config_write_gate.bats > /tmp/.t4639.out 2>&1 && ! grep -q "^not ok" /tmp/.t4639.out
-test "$(grep -c '# skip' /tmp/.t4639.out)" -eq 0
-bash -n agents/context/check-active-task.sh && bash -n lib/wm_tasks.sh
-python3 tools/bats-dead-negation-lint.py tests/unit/t4639_git_config_write_gate.bats > /tmp/.t4639.lint 2>&1 && grep -q clean /tmp/.t4639.lint
-bin/fw vendor self --check --task T-4639
+bash -n bin/claude-fw
+timeout 600 bats tests/unit/t4638_claude_fw_foreign_env.bats > /tmp/.t4638.out 2>&1 && ! grep -q "^not ok" /tmp/.t4638.out
+test "$(grep -c '# skip' /tmp/.t4638.out)" -eq 0
+timeout 600 bats tests/unit/t4474_claude_fw_inject_sidecar_env.bats tests/unit/t4462_claude_fw_inject_bypasses_function.bats > /tmp/.t4638b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4638b.out
+bin/fw vendor self --check --task T-4638
 
 ## RCA
+**Symptom:** after the T-4635 relaunch the AEF parent session (`claude-fw --resume … --termlink`)
+ran with `CONTEXT_DIR=/opt/1409-sprind/.context` and `TASKS_DIR=/opt/1409-sprind/.tasks`; every
+fw hook printed the `inherited TASKS_DIR … is outside project` warning.
+
+**Root cause:** in `--termlink` mode claude is typed into the TermLink PTY shell
+(`bin/claude-fw:1401`, `termlink_inject "…command claude…"`). That shell is a child of the
+shared tmux server, whose global environment was seeded by 1409-sprind's TermLink spawn, so
+claude inherited THAT environment. `_cfw_pin_project` (`bin/claude-fw:41`) cleans only
+claude-fw's own process environment, which the PTY shell never sees.
+
+**Why structurally allowed:** T-4217/T-4222 stopped fw from seeding a server with its paths and
+made fw fall back per call, but nothing scrubbed a server that was already seeded by another
+project, and the inject path had no test with a foreign environment.
+
+**Prevention:** the injected line now clears the foreign variables and exports the pinned
+project paths, announcing it once; `tests/unit/t4638_claude_fw_foreign_env.bats` runs the
+real injected line in a shell carrying a fake foreign env.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -306,14 +320,6 @@ bin/fw vendor self --check --task T-4639
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** A Write/Edit to `.git/config` (or `.git/info/attributes`, `.git/hooks/*`) passed the task gate with no focused task. Such a write can set `diff.<x>.command`, `diff.<x>.textconv`, `core.fsmonitor`, `core.pager`, `core.hooksPath`, so a later allowlisted "read-only" `git diff`/`status`/`log` runs an arbitrary program (found by the T-4631 worker).
-
-**Root cause:** `agents/context/check-active-task.sh:572` exempted the whole `"$PROJECT_ROOT"/.git/*` tree alongside `.context/`, `.tasks/`, `.claude/`, and `lib/wm_tasks.sh:138` mirrored the same exemption into the WM fence. It treated `.git/` as bookkeeping, but `config`, `info/attributes` and `hooks/` are executable configuration.
-
-**Why structurally allowed:** The read-only allowlist (`safe-commands.sh`) and the Write/Edit gate were reasoned about separately; T-4631 noted the residual in a comment (`safe-commands.sh:1332`) but no test pinned the join. The framework itself never writes `.git/*` through the Write/Edit tools (hook install, commits and config are shell/git writes), so nothing broke when the exemption was too wide.
-
-**Prevention:** `tests/unit/t4639_git_config_write_gate.bats` pins the refusal (no task) and the flag (with task) per key and per path, and pins that the remaining `.git/*` paths stay exempt, so re-widening the exemption goes red.
 
 ## Evolution
 
@@ -391,10 +397,27 @@ bin/fw vendor self --check --task T-4639
 
 ## Updates
 
-### 2026-10-22T13:00:17Z — task-created [task-create-agent]
+### 2026-10-22T12:40:34Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4639-writeedit-gate-allows-gitconfig-edits-wi.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4638-claude-fw-drops-inherited-projectrootcon.md
 - **Context:** Initial task creation
 
-### 2026-10-22T13:03:25Z — status-update [task-update-agent]
+### 2026-10-22T13:13:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9e16d939
+- **Timestamp:** 2026-10-22T20:13:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T20:13:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4659: claude-fw PTY path passes every FW_* from a polluted tmux server env into the session (FW_SIDECAR_AGENT_ID, FW_BIN, FW_DISPATCHED_WORKER ...)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T20:03:52Z
+# ============================================================================
+
+task_id: T-4659
+task_name: "claude-fw PTY path passes every FW_* from a polluted tmux server env into the session (FW_SIDECAR_AGENT_ID, FW_BIN, FW_DISPATCHED_WORKER ...)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T19:37:42Z
+completed: 2026-10-22T20:02:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T21:37:58+02:00
+last_commit: 2026-10-22T21:47:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture claude-fw FW_* passthrough from a polluted tmux server (found by T-4651). claude-fw PTY line drops inherited FW_*, re-exports only claude-fw's own. RCA filled
+
+# Key outcomes
+outcomes:
+  - 'claude-fw''s injected PTY line drops every FW_* inherited from the tmux server (t4651 claude-fw leg asserts no B value, FW_FOO included)'
+  - 'FW_* present in claude-fw''s own environment still reach claude (new bats test)'
+  - 't4651 and t4638 bats green with zero skips; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — how FW_* from claude-fw''s own launch env is carried'
+    chose: 'the injected PTY line first unsets every FW_* the PTY shell inherited from the tmux server, then re-exports exactly the FW_* present in claude-fw''s own environment (values %q-quoted), minus FW_ROUTED_FROM (path-derived).'
+    rationale: 'claude-fw''s env is the only source that is this project''s and this launch''s; the server env is by definition someone else''s. FW_TERMLINK_MAX_WORKERS / FW_SAFE_MODE / FW_RESTART_MODE set on the claude-fw command line keep working.'
+    alternatives_rejected: ['reusing lib/spawn-env.sh''s FW_SPAWN_ENV_ALLOW — it drops all FW_* by design (a dispatch worker gets its FW_* from run.sh/env.sh), so it would break operator settings here; a second hand-written FW_ name list would drift. Origin-based (claude-fw env) needs no list. Also rejected `env -i` rebuild: the PTY shell is the user''s login shell with their rc environment.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.context/episodic/T-4231.yaml'
+  - '.context/episodic/T-4567.yaml'
+  - '.tasks/active/T-4659-claude-fw-pty-path-passes-every-fw-from-.md'
+  - '.tasks/completed/T-4231-consumers-get-16-runtime-files-under-con.md'
+  - '.tasks/completed/T-4567-agentic-frameworkinstallsh-is-tracked-bu.md'
+  - 'tests/unit/t4651_polluted_tmux_server.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T21:37:58'
+    action: 'T-4659: capture claude-fw FW_* passthrough from a polluted tmux server (found by T-4651)'
+  - time: '2026-10-22T21:40:47'
+    action: 'T-4659: claude-fw PTY line drops inherited FW_*, re-exports only claude-fw''s own'
+  - time: '2026-10-22T21:47:16'
+    action: 'T-4659: RCA filled'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25
+  commits: 3
+  files_changed: 7
+  lines_added: 692
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4659-claude-fw-pty-path-passes-every-fw-from-.md
+generated_by: context-agent-hybrid

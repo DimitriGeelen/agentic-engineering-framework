@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4616: Nine timing/order-sensitive tests from the f028d507 cloud run that pass when rerun alone
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T20:20:25Z
+# ============================================================================
+
+task_id: T-4616
+task_name: "Nine timing/order-sensitive tests from the f028d507 cloud run that pass when rerun alone"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T08:49:27Z
+completed: 2026-10-22T20:18:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T13:32:17+02:00
+last_commit: 2026-10-22T16:11:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t3627 wedge test asserts ordering (/ and static answer while the cold scan is held on an event) instead of a 2.0s wall-clock budget a loaded 4-vCPU runner missed (3.18s). restore replaced web/lib/agents module objects after each test (t4044 x4, t4043, t4458 order flakes); pin sidecar hub id in test_alerts; t4491 counts characters not bytes; t4458 and t3627 assert ordering with a hang bound instead of wall-clock budgets. register tests/lib/module_identity.py fabric card
+
+# Key outcomes
+outcomes:
+  - 'Each of the nine named tests (t4491 pty menu, sidecar test_alerts, t4458 x2, t4043, t4044 x4) has its load/order dependence identified in ## RCA with file:line, and is fixed or explained as not reproducible with evidence'
+  - 'test_t3627_watchtower_wedge''s wall-clock assertion uses a budget that holds under load (or an injected clock), not 2.0 s'
+  - 'Every fixed test passes 10/10 runs under parallel load (run alongside a CPU load generator)'
+  - 'No entries added to .context/audits/unit-suite/baseline.yaml'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-lib-module_identity.yaml'
+  - '.tasks/active/T-4616-nine-timingorder-sensitive-tests-from-th.md'
+  - 'tests/lib/module_identity.py'
+  - 'tests/unit/conftest.py'
+  - 'tests/unit/t4491_runme_job_queue.bats'
+  - 'tests/unit/test_sidecar_cli_peer_frame.py'
+  - 'tests/unit/test_t4458_search_degrade.py'
+  - 'tests/web/conftest.py'
+  - 'tests/web/test_t3627_watchtower_wedge.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T13:32:17'
+    action: 'T-4616: t3627 wedge test asserts ordering (/ and static answer while the cold scan is held on an event) instead of a 2.0s wall-clock budget a loaded 4-vCPU runner missed (3.18s)'
+  - time: '2026-10-22T16:11:28'
+    action: 'T-4616: restore replaced web/lib/agents module objects after each test (t4044 x4, t4043, t4458 order flakes); pin sidecar hub id in test_alerts; t4491 counts characters not bytes; t4458 and t3627 assert ordering with a hang bound instead of wall-clock budgets'
+  - time: '2026-10-22T16:11:39'
+    action: 'T-4616: register tests/lib/module_identity.py fabric card'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 688 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cloud, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 688
+  commits: 3
+  files_changed: 9
+  lines_added: 289
+  lines_removed: 56
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4616-nine-timingorder-sensitive-tests-from-th.md
+generated_by: context-agent-hybrid

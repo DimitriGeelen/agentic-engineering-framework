@@ -1,24 +1,23 @@
 ---
-id: T-4651
-name: "G-116/G-124 close test: polluted tmux server (A-after-B) must not leak CONTEXT_DIR/TASKS_DIR
-  into fw spawn/dispatch/claude-fw sessions"
+id: T-4639
+name: "Write/Edit gate allows .git/config edits with no task; a configured diff driver/textconv/fsmonitor
+  then runs on a 'read-only' git diff/status"
 description: >
-  T-4635 review (codex, opencode): a gap closes only on a green reproduction test.
-  Build an end-to-end test on a PRIVATE tmux server (-L socket, never the default
-  server): project B starts the server with foreign PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR/FW_*
-  in its global env, then project A spawns through each AEF launcher (fw termlink
-  dispatch via lib/spawn-env.sh, claude-fw --termlink PTY shell, fw termlink spawn).
-  Assert A's child env has no foreign value and that fw resolves A's own dirs. Must
-  be red against the pre-T-4647 code (prove by reverting in a scratch copy, not by
-  editing the tree). Model: 055's A-after-B private-server test (055 commit 34e78fe1).
+  Found by the T-4631 worker: agents/context/check-active-task.sh:572 lets Write/Edit
+  touch .git/* with no active task. An edit to .git/config (or .git/info/attributes)
+  can set diff.<x>.command, textconv, core.fsmonitor, core.pager, core.hooksPath;
+  a later allowlisted git diff/status/log then runs that program. Close it: refuse
+  Write/Edit of .git/config, .git/info/attributes and .git/hooks/* without a task
+  (and flag those keys even with one), keep the .git paths the framework itself must
+  write; tests for each key.
 
-status: started-work
-workflow_type: test
+status: work-completed
+workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
-related_tasks: []
+horizon: null
+tags: [bug, security, read-only-allowlist, G-121]
+components: [agents/context/check-active-task.sh, agents/context/lib/safe-commands.sh, lib/wm_tasks.sh]
+related_tasks: [T-4631, T-4509]
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -45,9 +44,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T19:26:07Z
-last_update: 2026-10-22T19:26:59Z
-date_finished:
+created: 2026-10-22T13:00:17Z
+last_update: 2026-10-22T20:15:22Z
+date_finished: 2026-10-22T20:15:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,10 +58,10 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-22T19:26:43Z'
+  - ts: '2026-10-22T13:03:35Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
-      D1: 2
+      D1: 1
       D2: 0
       D3: 0
       D4: 0
@@ -71,27 +70,37 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T13:15:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=313,acs=7)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4651: G-116/G-124 close test: polluted tmux server (A-after-B) must not leak CONTEXT_DIR/TASKS_DIR into fw spawn/dispatch/claude-fw sessions
+# T-4639: Write/Edit gate allows .git/config edits with no task; a configured diff driver/textconv/fsmonitor then runs on a 'read-only' git diff/status
 
 ## Context
 
-Close test for G-116/G-124 (docs/reports/T-4635-session-kill-rca.md). Fixes under test: T-4647 (lib/spawn-env.sh + run.sh allow-list re-exec) and T-4638 (claude-fw PTY-shell pinning).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] tests/unit/t4651_polluted_tmux_server.bats exists, uses only a private `tmux -L t4651-$$-<rand>` server (killed in teardown), and wraps every tmux call in `timeout`
-- [x] Control leg: a plain session A starts on B's server carries B's CONTEXT_DIR (proves the server really is polluted)
-- [x] Dispatch leg: lib/spawn-env.sh's builder drops B's values from a polluted caller env, and the run.sh runtime (extracted from agents/termlink/termlink.sh) running on B's server shows no B path and resolves A's .tasks/.context via lib/paths.sh
-- [x] claude-fw leg: the injected PTY line (rendered from bin/claude-fw) running on B's server launches claude with no B path variable (FW_* excluded, see Decisions) and paths.sh resolving A's dirs
-- [x] The suite passes on HEAD with 0 skips, and goes red on a `git archive` scratch copy of pre-T-4647 (dispatch legs) and pre-T-4638 (claude-fw leg) code — evidence in ## Updates
+- [x] Write/Edit of `.git/config`, `.git/config.worktree`, `.git/worktrees/*/config(.worktree)`, `.git/info/attributes` and `.git/hooks/*` is no longer exempt in `agents/context/check-active-task.sh`: with no focused task it is BLOCKED (exit 2)
+- [x] With a focused task, a write that sets an exec-capable key is FLAGGED (stderr WARNING + row in `.context/working/.gate-bypass-log.yaml`), one test per key: `diff.<x>.command`, `diff.<x>.textconv`, `core.fsmonitor`, `core.pager`, `core.hooksPath` (plus `include.path`); an `info/attributes` driver selection (`diff=`/`filter=`/`merge=`) and any `.git/hooks/*` write are flagged too
+- [x] A benign `.git/config` edit with a task passes without a flag; other `.git/*` paths (e.g. `.git/COMMIT_EDITMSG`, `.git/info/exclude`) stay exempt with no task
+- [x] The WM-task fence (`lib/wm_tasks.sh` `fw_wm_write_allowed`) no longer admits the sensitive `.git` paths
+- [x] Regression bats `tests/unit/t4639_git_config_write_gate.bats` fails on the pre-fix hook and passes after; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,9 +285,11 @@ Close test for G-116/G-124 (docs/reports/T-4635-session-kill-rca.md). Fixes unde
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4651_polluted_tmux_server.bats > /tmp/.t4651.out 2>&1 && ! grep -q "^not ok" /tmp/.t4651.out
-test "$(grep -c '# skip' /tmp/.t4651.out)" -eq 0
-python3 tools/bats-dead-negation-lint.py tests/unit/t4651_polluted_tmux_server.bats > /tmp/.t4651.lint 2>&1 && grep -qi clean /tmp/.t4651.lint
+timeout 600 bats tests/unit/t4639_git_config_write_gate.bats > /tmp/.t4639.out 2>&1 && ! grep -q "^not ok" /tmp/.t4639.out
+test "$(grep -c '# skip' /tmp/.t4639.out)" -eq 0
+bash -n agents/context/check-active-task.sh && bash -n lib/wm_tasks.sh
+python3 tools/bats-dead-negation-lint.py tests/unit/t4639_git_config_write_gate.bats > /tmp/.t4639.lint 2>&1 && grep -q clean /tmp/.t4639.lint
+bin/fw vendor self --check --task T-4639
 
 ## RCA
 
@@ -295,10 +306,14 @@ python3 tools/bats-dead-negation-lint.py tests/unit/t4651_polluted_tmux_server.b
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-**Symptom:** G-116/G-124 — a tmux server started by another project carries that project's PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR in its global env, and sessions/workers later started on it acted on that project.
-**Root cause:** tmux gives every new session the server's global environment; the launcher's env does not reach it. Pre-T-4647 the dispatch runtime (agents/termlink/termlink.sh RUNEOF heredoc, run.sh) only exported PROJECT_ROOT/FRAMEWORK_ROOT and kept the inherited CONTEXT_DIR/TASKS_DIR/_FW_PATHS_DERIVED_BY/FW_*; pre-T-4638 bin/claude-fw injected `command claude` into the PTY shell with no pinning, so all five path variables were B's.
-**Why structurally allowed:** existing tests (t4217, t4647, t4638) exercised the env builders and the injected line against a fake `env -i` shell; none ran a child on a real tmux server whose global env had been seeded by another project, so the inheritance channel itself was never in a test.
-**Prevention:** tests/unit/t4651_polluted_tmux_server.bats runs the A-after-B order on a private tmux server (control leg proves the pollution lands), and is shown red against pre-T-4647 / pre-T-4638 code.
+
+**Symptom:** A Write/Edit to `.git/config` (or `.git/info/attributes`, `.git/hooks/*`) passed the task gate with no focused task. Such a write can set `diff.<x>.command`, `diff.<x>.textconv`, `core.fsmonitor`, `core.pager`, `core.hooksPath`, so a later allowlisted "read-only" `git diff`/`status`/`log` runs an arbitrary program (found by the T-4631 worker).
+
+**Root cause:** `agents/context/check-active-task.sh:572` exempted the whole `"$PROJECT_ROOT"/.git/*` tree alongside `.context/`, `.tasks/`, `.claude/`, and `lib/wm_tasks.sh:138` mirrored the same exemption into the WM fence. It treated `.git/` as bookkeeping, but `config`, `info/attributes` and `hooks/` are executable configuration.
+
+**Why structurally allowed:** The read-only allowlist (`safe-commands.sh`) and the Write/Edit gate were reasoned about separately; T-4631 noted the residual in a comment (`safe-commands.sh:1332`) but no test pinned the join. The framework itself never writes `.git/*` through the Write/Edit tools (hook install, commits and config are shell/git writes), so nothing broke when the exemption was too wide.
+
+**Prevention:** `tests/unit/t4639_git_config_write_gate.bats` pins the refusal (no task) and the flag (with task) per key and per path, and pins that the remaining `.git/*` paths stay exempt, so re-widening the exemption goes red.
 
 ## Evolution
 
@@ -363,14 +378,6 @@ python3 tools/bats-dead-negation-lint.py tests/unit/t4651_polluted_tmux_server.b
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
-### 2026-10-22 — what each leg runs, given no AEF launcher takes a tmux socket
-- **Chose:** dispatch = `fw_spawn_env` (lib/spawn-env.sh) builds the launcher env exactly as cmd_spawn does, and the session runs run.sh taken verbatim from termlink.sh's RUNEOF heredoc, cut before the review-ledger/worker launch, plus a probe; claude-fw = the injected PTY line rendered from bin/claude-fw (same technique as t4638) run as a session on the server, with a stand-in `claude`.
-- **Why:** `termlink spawn` has no socket option and registers with the live hub; `fw termlink spawn` and `claude-fw --termlink` both go through it, so neither can be pointed at a private server. Their env-building pieces are what decides the child's env, and those are exercised on a real polluted server.
-- **Rejected:** a PATH-shimmed `tmux` wrapper adding `-L` under real termlink — would still register sessions with the host's hub.
-
-### 2026-10-22 — FW_* through the claude-fw PTY path: open finding, excluded from the assertion
-- **Chose:** the claude-fw leg asserts no B value in any non-`FW_*` variable; FW_* lines are excluded.
-- **Why:** with the full assertion the leg fails on HEAD: `FW_FOO=<B path>` from B's server reaches A's claude. `_tl_project_env_prefix` (bin/claude-fw) unsets TASKS_DIR/CONTEXT_DIR/_FW_PATHS_DERIVED_BY/FW_ROUTED_FROM and pins PROJECT_ROOT/FRAMEWORK_ROOT, but leaves every other FW_* from the server env (real ones that carry paths or identity: FW_BIN, FW_UNIT_SUITE_DIR, FW_SIDECAR_AGENT_ID, FW_DISPATCHED_WORKER …). Fixing claude-fw is outside this task's scope; the parent should file it (one bug, one task) before G-116 claims FW_* coverage. The dispatch path does drop FW_* (allow-list), and its leg asserts the full "no B value".
 
 ## Decision
 
@@ -384,17 +391,27 @@ python3 tools/bats-dead-negation-lint.py tests/unit/t4651_polluted_tmux_server.b
 
 ## Updates
 
-### 2026-10-22T19:26:07Z — task-created [task-create-agent]
+### 2026-10-22T13:00:17Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4651-g-116g-124-close-test-polluted-tmux-serv.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4639-writeedit-gate-allows-gitconfig-edits-wi.md
 - **Context:** Initial task creation
 
-### 2026-10-22T19:26:41Z — status-update [task-update-agent]
+### 2026-10-22T13:03:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-### 2026-10-22 — red-before evidence (scratch copies, no tracked edits)
-Same bats file, `T4651_REPO=<scratch>`; scratch trees from `git archive <commit> | tar -x -C <tmpdir>`, removed after.
-- HEAD: `ok 1..4` (control, builder, run.sh runtime, claude-fw), 0 skips; private sockets gone after the run.
-- pre-T-4647 (`git archive e413704ff^` = 8a2132f11): control ok; builder **not ok** (no lib/spawn-env.sh); run.sh runtime **not ok** — child had `CONTEXT_DIR=…/projB/.context`, `TASKS_DIR=…/projB/.tasks`, `_FW_PATHS_DERIVED_BY=…/projB`, `FW_FOO=…/projB`; claude-fw ok (T-4638 predates T-4647).
-- pre-T-4638 (`git archive 245ba8fce^` = f5ed73fd8): control ok; builder **not ok**; run.sh runtime **not ok** (same four values); claude-fw **not ok** — claude saw `PROJECT_ROOT`, `FRAMEWORK_ROOT`, `TASKS_DIR`, `CONTEXT_DIR`, `_FW_PATHS_DERIVED_BY` all = projB.
-- Note: lib/paths.sh's T-4222 rule re-derives an inherited CONTEXT_DIR/TASKS_DIR that is another project's own dir, so the "resolves A's dirs" assertion alone would not have bitten on old code; the env assertion is what goes red.
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f7e5e6bf
+- **Timestamp:** 2026-10-22T20:15:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T20:15:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

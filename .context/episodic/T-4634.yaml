@@ -1,0 +1,106 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4634: tests/integration/ runs in no gate: breakage there goes unseen (found by T-4596; cloud run showed 31 integration reds)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T20:11:20Z
+# ============================================================================
+
+task_id: T-4634
+task_name: "tests/integration/ runs in no gate: breakage there goes unseen (found by T-4596; cloud run showed 31 integration reds)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T11:24:37Z
+completed: 2026-10-22T20:05:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T13:25:19+02:00
+last_commit: 2026-10-22T15:28:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file integration-suite gate gap. gate tests/integration — nightly integration-suite job, own report, graded by fw audit; 7 reds filed (T-4640..T-4646). fabric card for agents/audit/integration-suite.sh
+
+# Key outcomes
+outcomes:
+  - 'Measured: tests/integration run in the foreground, per-file cap 900 s, -j4; wall time, file count and red count recorded in ## Decisions'
+  - 'A scheduled gate runs tests/integration (both bats and pytest files) with a per-file cap and writes a report to .context/audits/integration-suite/LATEST.yaml, separate from the unit-suite report and baseline'
+  - '`fw audit` grades that report (FAIL on reds, WARN when missing/stale) and no integration test is added to any baseline'
+  - 'Regression test proves the integration report is read and graded (fails without the wiring)'
+  - 'Existing integration reds are filed as tasks (not baselined), task ids listed in ## Decisions'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — measured run (foreground, -j4, per-file cap 900 s)'
+  - decision: '2026-10-22 — which gate'
+    chose: 'a separate nightly job (`integration-suite-nightly`, 01:33) using the unit-suite runner with its own report dir and lock, graded by the same reader in `fw audit` under its own name. No integration baseline; not graded at pre-push.'
+    rationale: '34 min is too slow for pre-push or commit. Running it inside the 03:03 unit-suite job would add 34 min to that run and mix the two corpora in one report and one ratchet baseline, which the task forbids. 01:33 ends before 03:03, so the two heavy runs do not overlap. With no baseline, grading at pre-push would block every push on the 7 open reds; the daily and */30 audits FAIL on them instead.'
+    alternatives_rejected: ['weekly job (a breakage could stay unseen for 7 days, which is the failure this task is about); pre-push grading with a baseline (the task says no test goes into a baseline).']
+  - decision: '2026-10-22 — integration reds filed (none baselined)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/audit/integration-suite.sh'
+  - 'agents/audit/audit.sh'
+  - 'agents/audit/integration-suite.sh'
+  - '.context/audits/integration-suite/2026-10-22.yaml'
+  - '.context/audits/integration-suite/LATEST.yaml'
+  - '.context/audits/integration-suite/runs.log'
+  - '.context/cron/agentic-audit.crontab'
+  - '.context/cron-registry.yaml'
+  - '.fabric/components/agents-audit-integration-suite.yaml'
+  - '.tasks/active/T-4634-testsintegration-runs-in-no-gate-breakag.md'
+  - '.tasks/active/T-4640-integration-red-fwonboardinggreenfieldba.md'
+  - '.tasks/active/T-4641-integration-red-fwtermlinkbats-test-2-fw.md'
+  - '.tasks/active/T-4642-integration-red-t2922greenfieldfirstince.md'
+  - '.tasks/active/T-4643-integration-red-upgradelivesimulationbat.md'
+  - '.tasks/active/T-4644-integration-red-fwselftestbats-hits-the-.md'
+  - '.tasks/active/T-4645-integration-red-t3684sidecarwatchere2ete.md'
+  - '.tasks/active/T-4646-integration-red-t3693sidecare2etestpy-re.md'
+  - 'tests/unit/t3302_unit_suite_schedule.bats'
+  - 'tests/unit/t4634_integration_suite_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T13:25:19'
+    action: 'T-4634: file integration-suite gate gap'
+  - time: '2026-10-22T15:28:27'
+    action: 'T-4634: gate tests/integration — nightly integration-suite job, own report, graded by fw audit; 7 reds filed (T-4640..T-4646)'
+  - time: '2026-10-22T15:28:45'
+    action: 'T-4634: fabric card for agents/audit/integration-suite.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 521 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, gap, ci]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 521
+  commits: 3
+  files_changed: 20
+  lines_added: 3958
+  lines_removed: 51
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4634-testsintegration-runs-in-no-gate-breakag.md
+generated_by: context-agent-hybrid

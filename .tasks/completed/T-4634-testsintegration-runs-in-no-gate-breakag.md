@@ -11,12 +11,12 @@ description: >
   (separate baseline section, never auto-added), or a weekly job. Decide with measured
   runtime; record it. Do not add any test to a baseline.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [test, gap, ci]
-components: []
+components: [agents/audit/audit.sh, agents/audit/integration-suite.sh]
 related_tasks: [T-4596, T-4589]
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: [T-4596, T-4589]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T11:24:37Z
-last_update: 2026-10-22T12:54:48Z
-date_finished:
+last_update: 2026-10-22T20:05:54Z
+date_finished: 2026-10-22T20:05:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -423,3 +423,20 @@ bin/fw vendor self --check --task T-4634
 
 ### 2026-10-22T11:25:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-33d6142d
+- **Timestamp:** 2026-10-22T20:10:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T20:05:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

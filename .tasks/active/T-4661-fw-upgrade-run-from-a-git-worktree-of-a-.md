@@ -1,24 +1,20 @@
 ---
-id: T-4637
-name: "Detect fragile placement and vanished workers: doctor/audit WARN on long-lived
-  processes in a non-lingering session scope; sweep flags workers with no exit_code
-  and stale output"
+id: T-4661
+name: "fw upgrade run from a git worktree of a release tag resolves the framework
+  to the worktree's main clone and pins its HEAD (master 2328ae76b) instead of the
+  tag"
 description: >
-  T-4635 RCA: nothing checks where claude-fw, Watchtower, the TermLink hub or the
-  worker tmux server live; and a killed worker leaves no exit_code so the parent's
-  monitor never fires. Add (1) fw doctor/audit WARN when any of those processes is
-  in a session-*.scope of a user without linger, naming loginctl enable-linger and
-  the scope fix; (2) a dispatch-dir check (fw termlink status and a sweep) that reports
-  workers whose result.jsonl has not grown for N minutes and whose process is gone,
-  with no exit_code, as VANISHED. Tests for both.
+  050 ran fw upgrade from a worktree checkout of v1.8.15-be.3; the pinned version_sha
+  was the main clone's master, not the tag; a standalone clone worked. Source: 050-email-archive
+  field report on be.3 upgrade (sidecar 5b5b40e9, 2026-10-22).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, reliability, session-survival]
+horizon: next
+tags: []
 components: []
-related_tasks: [T-4635, T-4541]
+related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -45,8 +41,8 @@ related_tasks: [T-4635, T-4541]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T12:40:16Z
-last_update: 2026-10-22T12:54:58Z
+created: 2026-10-22T20:29:39Z
+last_update: '2026-10-22T20:30:18Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -59,11 +55,11 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-22T12:45:14Z'
+  - ts: '2026-10-22T20:30:18Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
-      D1: 1
-      D2: 4
+      D1: 0
+      D2: 0
       D3: 0
       D4: 0
       F-RECALL: 0
@@ -71,23 +67,13 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=1 (body:fix-without-learning); D2=4 (body:fw-audit-or-doctor);
-      D3=0 (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
-      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-22T12:45:28Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4637: Detect fragile placement and vanished workers: doctor/audit WARN on long-lived processes in a non-lingering session scope; sweep flags workers with no exit_code and stale output
+# T-4661: fw upgrade run from a git worktree of a release tag resolves the framework to the worktree's main clone and pins its HEAD (master 2328ae76b) instead of the tag
 
 ## Context
 
@@ -97,10 +83,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `lib/process_placement.py` classifies a pid from `/proc/<pid>/cgroup` as fragile when it sits in `user-<uid>.slice/session-*.scope` and that uid has no linger file; lingering users, service/scope units outside session scopes, and unreadable pids are not fragile. Proc root and linger dir are overridable (fixtures, no systemd changes).
-- [x] It finds claude-fw, Watchtower (pid file), the TermLink hub and tmux servers; `fw doctor` prints one `[host]` WARN per fragile process naming `loginctl enable-linger <user>` and the scope fix (T-4636); `fw audit` emits the same as WARN.
-- [x] A dispatch worker with no `exit_code`, no live run.sh/worker process and output (result.jsonl, else the dir) unchanged for `FW_TERMLINK_VANISHED_MINUTES` (default 10; not in the config registry, see Decisions) is reported `VANISHED` by `fw termlink status`; `fw termlink vanished [--minutes N]` lists them and exits 1 when any exist, 0 otherwise.
-- [x] Regression tests: pytest for the placement classifier against fixture /proc trees; bats for status/vanished against a fixture dispatch dir (vanished, fresh, finished, live). Both fail without the fix and pass with it.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -285,13 +269,6 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 python3 -m pytest tests/unit/test_process_placement.py -q > /tmp/.t4637-py.out 2>&1 && grep -q passed /tmp/.t4637-py.out
-timeout 300 bats tests/unit/t4637_vanished_workers.bats > /tmp/.t4637-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4637-bats.out
-test "$(grep -c '# skip' /tmp/.t4637-bats.out)" -eq 0
-python3 lib/process_placement.py --help > /tmp/.t4637-help.out 2>&1 && grep -q linger /tmp/.t4637-help.out
-grep -q "process_placement.py" bin/fw && grep -q "process_placement.py" agents/audit/audit.sh
-python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4637-lint.out 2>&1 && grep -q clean /tmp/.t4637-lint.out
-bin/fw vendor self --check --task T-4637
 
 ## RCA
 
@@ -308,14 +285,6 @@ bin/fw vendor self --check --task T-4637
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** 2026-10-22 13:38:58 the parent claude-fw session and six TermLink workers died at once; workers wrote no `exit_code`, the parent's monitors never fired, and nothing reported anything (docs/reports/T-4635-session-kill-rca.md).
-
-**Root cause:** long-lived agent processes were placed in `user-0.slice/session-*.scope` of a non-lingering root; systemd's per-minute slice teardown escalated to SIGKILL under load. Detection side: `fw doctor` (bin/fw, TermLink block ~3756) checks TermLink health but never where processes live; `cmd_status` (agents/termlink/termlink.sh:486) labels any dir without `exit_code` as `running`, whether or not its process exists, and `cmd_cleanup` (termlink.sh:628) only says "KEPT … no exit_code and no process".
-
-**Why structurally allowed:** no check reads cgroup placement or linger; worker liveness was inferred from the absence of an `exit_code` file, which a SIGKILLed worker can never write — so the dead state was indistinguishable from the running one.
-
-**Prevention:** `lib/process_placement.py` behind a doctor `[host]` WARN and an audit WARN (runs unprompted in cron/pre-push); a VANISHED state in `fw termlink status` plus `fw termlink vanished` (exit 1 when any) that a parent can poll; pytest + bats regressions pin both against fixtures.
 
 ## Evolution
 
@@ -381,15 +350,6 @@ bin/fw vendor self --check --task T-4637
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-22 — vanished threshold not registered
-- **Chose:** `fw_config_int TERMLINK_VANISHED_MINUTES 10` with an explicit default and `--minutes N`, no registry entry.
-- **Why:** a registry key must also go into `web/blueprints/config.py` (config-registry-parity lint), a render surface that brings a P-013 review and a Watchtower restart. That is out of scope here.
-- **Rejected:** registering it in lib/config.sh alone (the parity lint goes red).
-
-### 2026-10-22 — fragility keys on the slice uid
-- **Chose:** linger is checked for the uid in `user-<uid>.slice`, not the process owner.
-- **Why:** on this host root processes sit in `user-1000.slice/session-c1.scope` (su from a uid-1000 login). That slice is what gets torn down.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -402,10 +362,7 @@ bin/fw vendor self --check --task T-4637
 
 ## Updates
 
-### 2026-10-22T12:40:16Z — task-created [task-create-agent]
+### 2026-10-22T20:29:39Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4637-detect-fragile-placement-and-vanished-wo.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4661-fw-upgrade-run-from-a-git-worktree-of-a-.md
 - **Context:** Initial task creation
-
-### 2026-10-22T12:54:58Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

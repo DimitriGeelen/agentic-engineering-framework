@@ -1,20 +1,23 @@
 ---
-id: T-4566
-name: "t4453_upgrade_from_framework_checkout.bats tests 1-2 fail on HEAD"
+id: T-4636
+name: "Run claude-fw sessions and TermLink workers outside login-session scopes (survive
+  root slice teardown)"
 description: >
-  Found by the T-4234 worker on 2026-10-21: tests 1 and 2 of tests/unit/t4453_upgrade_from_framework_checkout.bats
-  fail on current bleeding-edge with and without the T-4234 change. Find whether a
-  recent upgrade change (T-4554 release-tag pre-flight, T-4235 auto-unshallow, T-4555
-  cron regenerate, T-4234 dry-run preview) broke them or the test is stale; fix the
-  cause, not the assertion. Never add them to the unit-suite baseline.
+  T-4635 RCA (docs/reports/T-4635-session-kill-rca.md): long-lived agent processes
+  live in user-0.slice; under load systemd force-removes that slice and kills them
+  all. Make claude-fw and fw termlink dispatch launch their long-lived process in
+  a dedicated systemd scope/slice outside any login session (systemd-run --scope --slice=agentic.slice,
+  or the equivalent), with a clean fallback where systemd or permission is absent
+  (log it once). Test: a launched process reports a cgroup outside session-*.scope;
+  fallback path stays green on hosts without systemd.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, upgrade, test]
-components: []
-related_tasks: [T-4453, T-4234]
+horizon: null
+tags: [bug, reliability, session-survival]
+components: [agents/termlink/termlink.sh, bin/claude-fw, lib/agent-scope.sh, tests/unit/t3358_claude_fw_exit_detection.bats]
+related_tasks: [T-4635, T-4541]
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -41,9 +44,9 @@ related_tasks: [T-4453, T-4234]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-21T20:43:54Z
-last_update: 2026-10-21T21:06:19Z
-date_finished:
+created: 2026-10-22T12:39:56Z
+last_update: 2026-10-22T20:12:36Z
+date_finished: 2026-10-22T20:12:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,8 +57,25 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T12:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-21T20:45:17Z'
+  - ts: '2026-10-22T12:45:28Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -64,27 +84,9 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-21T20:45:39Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4566: t4453_upgrade_from_framework_checkout.bats tests 1-2 fail on HEAD
+# T-4636: Run claude-fw sessions and TermLink workers outside login-session scopes (survive root slice teardown)
 
 ## Context
 
@@ -94,11 +96,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause of t4453 tests 1-2 failing on HEAD localised to a file:line and recorded in ## RCA
-- [x] Cause fixed in source (not the assertion); tests/unit/t4453_upgrade_from_framework_checkout.bats fully green, no skips
-- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green (re-run by the parent 2026-10-22 ~00:04 after T-4231's working-gitignore.sh was committed: 18 ok / 0 not ok; t4453 4/4)
-  <!-- 2026-10-21 w4566: tests 12/14 red in the working tree because of ANOTHER worker's in-flight lib/upgrade.sh hunk @3115 sourcing untracked lib/working-gitignore.sh (absent from the git-built upstream fixture); not this change. Re-run once that lands. -->
-- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4566` clean)
+- [x] `lib/agent-scope.sh` provides `fw_agent_scope_prefix`: on a host where `systemd-run --scope --slice=agentic.slice` works it yields that prefix; a process launched through it reports a cgroup under `/agentic.slice/` and not in any `session-*.scope` (real systemd test on this host)
+- [x] Fallback: with systemd absent, systemd-run refusing, or `FW_AGENT_SCOPE=0`, the prefix is empty, the launch proceeds unchanged, and the fallback reason is logged once (stderr + `.context/working/agent-scope.log`), silent on the next call for the same reason
+- [x] Already inside `agentic.slice` → empty prefix (no nested scope, no warning)
+- [x] `bin/claude-fw` re-execs itself once through the prefix before the tmux wrap (so a tmux server it starts, and claude, live in agentic.slice); a re-exec at the restart boundary does not re-scope
+- [x] `fw termlink spawn` (and so `fw termlink dispatch`) runs `termlink spawn` through the prefix, so a tmux server it starts lives in agentic.slice
+- [x] Regression bats `tests/unit/t4636_agent_scope.bats` green; existing claude-fw and termlink spawn tests still green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,19 +286,14 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 900 bats tests/unit/t4453_upgrade_from_framework_checkout.bats > /tmp/.t4566a 2>&1 && ! grep -q "^not ok" /tmp/.t4566a
-test "$(grep -c '# skip' /tmp/.t4566a)" -eq 0
-timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4566b 2>&1 && ! grep -q "^not ok" /tmp/.t4566b
-timeout 600 bats tests/unit/t4431_be_tags.bats > /tmp/.t4566c 2>&1 && ! grep -q "^not ok" /tmp/.t4566c
-bin/fw vendor self --check --task T-4566
+bash -n bin/claude-fw && bash -n lib/agent-scope.sh && bash -n agents/termlink/termlink.sh
+timeout 600 bats tests/unit/t4636_agent_scope.bats > /tmp/.t4636.out 2>&1 && ! grep -q "^not ok" /tmp/.t4636.out
+# this host has systemd, so the real-cgroup test must run, not skip
+test "$(grep -c '# skip' /tmp/.t4636.out)" -eq 0
+grep -q 'fw_agent_scope_prefix' bin/claude-fw && grep -q 'fw_agent_scope_prefix' agents/termlink/termlink.sh
+bin/fw vendor self --check --task T-4636
 
 ## RCA
-
-**Symptom:** t4453 tests 1-2 red at HEAD: `fw upgrade` from a -be checkout printed `Commit:    <sha>` with no `(v9.9.9-be.1)` tag.
-**Root cause:** none of today's upgrade changes (T-4554/T-4235/T-4555/T-4234) — `git log -L1690,1700:lib/upgrade.sh` lands on 2612aa389 (T-4504, 2026-10-20), which added `--exclude '*-be.*'` to the Commit: line's `git describe --tags --exact-match` (lib/upgrade.sh:1694) to satisfy t4431_be_tags test 11 ("every describe --tags excludes -be tags"). That invariant protects *version derivation* (the release floor must never be a -be tag); the Commit: line is a *label* of the exact revision vendored, and naming the -be tag on a -be cut is the whole point of T-4453. The exclude erased the label. Confirmed: HEAD's lib/upgrade.sh via T4453_UPGRADE_SH → tests 1-2 red; fixed file → green.
-**Fix:** lib/upgrade.sh:1694-1698 labels via `git tag --points-at HEAD`, preferring a release tag and falling back to a -be tag. Not a `describe`, so the t4431 lint (correctly scoped to version derivation) still holds; no assertion in either test changed.
-**Why structurally allowed:** T-4504 ran the one red test it was fixing, not t4453, which pins the same line with the opposite expectation; the two were never run together before landing.
-**Prevention:** t4453 test 4 pins precedence (release tag wins over a -be tag on the same commit); with the label off `describe`, t4453 and t4431 are both green and a future "add the exclude" fix has no lint to satisfy.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -310,6 +308,24 @@ bin/fw vendor self --check --task T-4566
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** 2026-10-22 13:38:58 the parent claude-fw session and all six TermLink workers died
+at once, no `exit_code`; same pattern behind the 2026-10-21 09:08 / 11:47 restarts (T-4635).
+
+**Root cause:** `bin/claude-fw` (tmux wrap at `bin/claude-fw:185`, plain `command claude` path
+otherwise) and `agents/termlink/termlink.sh:405` (`termlink spawn`, which starts the tmux server
+dispatch workers run in) launch their long-lived processes in whatever cgroup the caller is in —
+for root that is a transient `session-*.scope` inside `user-0.slice`. Root does not linger, cron
+closes root's last session every minute, and under load systemd's stop of `user-0.slice` times
+out and SIGKILLs everything still in it.
+
+**Why structurally allowed:** nothing in the framework chose or checked the cgroup of its
+long-lived processes; the kill looks like an ordinary child exit from inside, and earlier
+incidents were attributed to the nearest visible mechanism (T-4541).
+
+**Prevention:** `lib/agent-scope.sh` places both launch points in a transient scope under
+`agentic.slice` (outside every login session), with a logged fallback; pinned by
+`tests/unit/t4636_agent_scope.bats` (real cgroup placement + fallback). Detection of processes
+still in a session scope is T-4637.
 
 ## Evolution
 
@@ -374,6 +390,11 @@ bin/fw vendor self --check --task T-4566
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+### 2026-10-22 — where to put the scope
+- **Chose:** scope the launcher (claude-fw re-execs itself; `termlink spawn` runs under the prefix), so a tmux server they START is born in agentic.slice and every claude/worker under it follows.
+- **Why:** the tmux server is the parent of every pty; a worker moved alone into a scope still dies of SIGHUP when its server is killed.
+- **Rejected:** scoping only run.sh inside the pane (SIGHUP from the dead server still kills it); moving an existing server's pid between cgroups (writes to cgroup.procs, fragile).
+- **Limit:** a tmux server that is ALREADY running in a session scope (fw-agents or the default one) keeps workers there until it restarts; detecting that is T-4637.
 
 ## Decision
 
@@ -387,11 +408,29 @@ bin/fw vendor self --check --task T-4566
 
 ## Updates
 
-### 2026-10-21T20:43:54Z — task-created [task-create-agent]
+### 2026-10-22T12:39:56Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4566-t4453upgradefromframeworkcheckoutbats-te.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4636-run-claude-fw-sessions-and-termlink-work.md
 - **Context:** Initial task creation
 
-### 2026-10-21T20:47:18Z — status-update [task-update-agent]
+### 2026-10-22T12:54:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2f3ad0bb
+- **Timestamp:** 2026-10-22T20:12:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Fallback: with systemd absent, systemd-run refusing, or `FW_AGENT_SCOPE=0`, the prefix is empty, the launch proceeds unchanged, and the fallback reason is logged once (stderr + `.context/working/agent
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/agent-scope.log in: Fallback: with systemd absent, systemd-run refusing, or `FW_AGENT_SCOPE=0`, the prefix is empty, the launch proceeds unchanged, and the fallback reaso`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T20:12:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

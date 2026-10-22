@@ -1,21 +1,29 @@
 ---
-id: T-4638
-name: "claude-fw drops inherited PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR that point at
-  another project before launch"
+id: T-4647
+name: "fw termlink dispatch passes the caller's exported CONTEXT_DIR/TASKS_DIR into
+  every spawn; build the spawn environment from an allow-list"
 description: >
-  T-4635 RCA: the relaunched AEF session inherited CONTEXT_DIR/TASKS_DIR of /opt/1409-sprind
-  from a tmux server another project's TermLink spawn started. fw already falls back
-  per call, but every hook warns and tools without that guard would cross projects.
-  claude-fw must unset or reset those variables to its own project before launching
-  claude (and say so once). Test with a fake foreign environment.
+  SEV-1 T-4635: 1409-sprind traced the 13:39 server seeding to tools/review_dispatch.sh
+  -> fw termlink dispatch; fw itself exports its project's CONTEXT_DIR/TASKS_DIR (lib/paths.sh),
+  the dispatch inherits them, and the first spawn after a tmux server (re)start makes
+  them the server's global environment; a polluted parent also seeds every worker
+  it dispatches (AEF workers after the 14:55 cleanup still carried them). T-4217 only
+  stripped PROJECT_ROOT/FRAMEWORK_ROOT (a name list). Fix: build the child environment
+  for every spawn/dispatch path (agents/termlink/termlink.sh dispatch and spawn, run.sh/env.sh)
+  from an explicit allow-list (or env -i plus a minimal set: PATH, HOME, LANG, TERM,
+  the worker's own task/dispatch vars), with the worker's project paths derived from
+  its --project/cwd, never inherited. Test: dispatch from a shell exporting a FOREIGN
+  CONTEXT_DIR/TASKS_DIR/PROJECT_ROOT and an arbitrary FW_FOO, and assert the worker's
+  /proc environ holds none of them (the G-116 close-condition test).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, reliability, session-survival]
-components: []
-related_tasks: [T-4635, T-4541]
+horizon: null
+tags: [bug, security, isolation, G-116, G-124]
+components: [agents/termlink/termlink.sh, lib/spawn-env.sh]
+related_tasks: [T-4635, T-4638, T-4217]
+origin: {kind: "peer", source: "1409-sprind", ref: "3dff225a"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -42,9 +50,9 @@ related_tasks: [T-4635, T-4541]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T12:40:34Z
-last_update: 2026-10-22T13:13:22Z
-date_finished:
+created: 2026-10-22T13:28:44Z
+last_update: 2026-10-22T20:04:51Z
+date_finished: 2026-10-22T20:04:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,7 +64,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-22T12:45:14Z'
+  - ts: '2026-10-22T13:30:29Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 1
@@ -73,7 +81,7 @@ bvp_scores_proposed:
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-22T12:45:28Z'
+  - ts: '2026-10-22T13:30:58Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -84,7 +92,7 @@ cost_estimate_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4638: claude-fw drops inherited PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR that point at another project before launch
+# T-4647: fw termlink dispatch passes the caller's exported CONTEXT_DIR/TASKS_DIR into every spawn; build the spawn environment from an allow-list
 
 ## Context
 
@@ -94,10 +102,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `--termlink` mode: the line claude-fw injects into the TermLink PTY shell clears an inherited foreign `TASKS_DIR`/`CONTEXT_DIR`/`_FW_PATHS_DERIVED_BY`/`FW_ROUTED_FROM` and sets `PROJECT_ROOT`/`FRAMEWORK_ROOT` to claude-fw's own project, so the launched claude sees its own project (test: fake foreign env in an `env -i` PTY-like shell)
-- [x] It says so once: a foreign value prints one `claude-fw: inherited X=… is not this project` line; the second relaunch in the same shell (already cleared) and a clean shell print nothing
-- [x] Plain mode: `_cfw_pin_project` now also warns (not only silently unsets) when an inherited `TASKS_DIR`/`CONTEXT_DIR` lies outside the project, and the launched claude has neither
-- [x] Regression bats `tests/unit/t4638_claude_fw_foreign_env.bats` green; T-4474, T-4462, T-4222, T-4217, T-4003 still green
+- [x] `cmd_spawn` (used by `fw termlink spawn` and `fw termlink dispatch`) starts `termlink spawn` under `env -i` with an explicit allow-list (`lib/spawn-env.sh`), so the spawn process — and any tmux server it starts — carries no `PROJECT_ROOT`/`FRAMEWORK_ROOT`/`CONTEXT_DIR`/`TASKS_DIR`/`FW_*`/other unlisted variable of the caller
+- [x] The dispatch runtime (`run.sh`) re-executes itself under `env -i` with the same allow-list before anything else, so a worker launched from a polluted shell or tmux server gets only allow-listed host variables plus what run.sh/env.sh set (project paths derived from `--project`)
+- [x] Regression bats `tests/unit/t4647_spawn_env_allowlist.bats`: dispatch from a shell exporting a FOREIGN `CONTEXT_DIR`/`TASKS_DIR`/`PROJECT_ROOT` and an arbitrary `FW_FOO`; the spawn's env and the worker's `/proc/<pid>/environ` hold none of them, and the worker's `PROJECT_ROOT` is its own `--project`. Fails on the pre-fix termlink.sh
+- [x] Existing neighbouring suites stay green: t4217, t4222, t4152, t4636 bats; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,30 +290,13 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-bash -n bin/claude-fw
-timeout 600 bats tests/unit/t4638_claude_fw_foreign_env.bats > /tmp/.t4638.out 2>&1 && ! grep -q "^not ok" /tmp/.t4638.out
-test "$(grep -c '# skip' /tmp/.t4638.out)" -eq 0
-timeout 600 bats tests/unit/t4474_claude_fw_inject_sidecar_env.bats tests/unit/t4462_claude_fw_inject_bypasses_function.bats > /tmp/.t4638b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4638b.out
-bin/fw vendor self --check --task T-4638
+timeout 600 bats tests/unit/t4647_spawn_env_allowlist.bats > /tmp/.t4647.out 2>&1 && ! grep -q "^not ok" /tmp/.t4647.out
+test "$(grep -c '# skip' /tmp/.t4647.out)" -eq 0
+timeout 900 bats tests/unit/t4217_spawn_env_isolation.bats tests/unit/t4222_inherited_env_dirs.bats tests/unit/t4152_dispatch_endpoint_leak.bats tests/unit/t4636_agent_scope.bats > /tmp/.t4647n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4647n.out
+bash -n agents/termlink/termlink.sh && bash -n lib/spawn-env.sh
+bin/fw vendor self --check --task T-4647
 
 ## RCA
-**Symptom:** after the T-4635 relaunch the AEF parent session (`claude-fw --resume … --termlink`)
-ran with `CONTEXT_DIR=/opt/1409-sprind/.context` and `TASKS_DIR=/opt/1409-sprind/.tasks`; every
-fw hook printed the `inherited TASKS_DIR … is outside project` warning.
-
-**Root cause:** in `--termlink` mode claude is typed into the TermLink PTY shell
-(`bin/claude-fw:1401`, `termlink_inject "…command claude…"`). That shell is a child of the
-shared tmux server, whose global environment was seeded by 1409-sprind's TermLink spawn, so
-claude inherited THAT environment. `_cfw_pin_project` (`bin/claude-fw:41`) cleans only
-claude-fw's own process environment, which the PTY shell never sees.
-
-**Why structurally allowed:** T-4217/T-4222 stopped fw from seeding a server with its paths and
-made fw fall back per call, but nothing scrubbed a server that was already seeded by another
-project, and the inject path had no test with a foreign environment.
-
-**Prevention:** the injected line now clears the foreign variables and exports the pinned
-project paths, announcing it once; `tests/unit/t4638_claude_fw_foreign_env.bats` runs the
-real injected line in a shell carrying a fake foreign env.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -320,6 +311,14 @@ real injected line in a shell carrying a fake foreign env.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after a tmux server (re)start at 13:39 on 2026-10-22 (T-4635), the default tmux server's global environment held 1409-sprind's `CONTEXT_DIR`/`TASKS_DIR`; every session and dispatch worker started on it inherited another project's paths (055 read 1409's focus). AEF workers dispatched after the 14:55 cleanup still carried them, because their dispatcher was polluted.
+
+**Root cause:** the child environment of a spawn/dispatch was the caller's environment minus a hand-written name list. `agents/termlink/termlink.sh:413` (`cmd_spawn`) ran `env -u PROJECT_ROOT -u FRAMEWORK_ROOT … termlink spawn`: every variable not on the deny-list (and every one added later — the list grew T-4217 → T-4222) reached `termlink spawn` and the tmux server it starts. And the dispatch runtime (`run.sh`, the RUNEOF heredoc) ran with whatever environment the session shell had — the tmux server's global env — so a server seeded once seeded every worker on it; run.sh only overwrote `PROJECT_ROOT`/`FRAMEWORK_ROOT`, leaving `CONTEXT_DIR`/`TASKS_DIR`/`FW_*` from the parent.
+
+**Why structurally allowed:** a deny-list fails open: the safe state needs someone to remember each new variable, and nothing asserted the worker's actual environment — t4217 checked only the six named variables in the tmux global env, never the worker process.
+
+**Prevention:** the child environment is now built from an allow-list (`lib/spawn-env.sh`, mirrored in run.sh), so an unknown variable is dropped by default; `tests/unit/t4647_spawn_env_allowlist.bats` asserts on the worker's `/proc/<pid>/environ` (foreign paths and an arbitrary `FW_FOO` absent, `PROJECT_ROOT` = its own `--project`) and pins the run.sh allow-list equal to the lib's.
 
 ## Evolution
 
@@ -385,6 +384,12 @@ real injected line in a shell carrying a fake foreign env.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — where the worker's env is scrubbed
+- **Chose:** two layers: `cmd_spawn` runs `termlink spawn` under `env -i` + `lib/spawn-env.sh` allow-list, and run.sh re-execs itself (`exec env -i … "$BASH" "$0" "$@"`, guarded by `_FW_RUNTIME_ENV_CLEAN`) with an inlined copy of the same list (pinned equal by t4647 test 2). The re-exec keeps argv, so the review ledger's parent check (`bash <wdir>/run.sh`) still holds.
+- **Why:** the spawn layer alone cannot help when the tmux server is ALREADY polluted; the run.sh layer covers that. run.sh is the signed canonical runtime, so it inlines the list instead of sourcing a working-tree file.
+- **Rejected:** putting `env -i NAME=value …` into the pty-injected command — it would type allow-listed secrets (ANTHROPIC_API_KEY) into the pane's scrollback. Keeping the deny-list and adding names — fails open, which is the bug.
+- **Consequence:** test launchers that feed stubs through env (t3580_round3 `_run_worker`, t3582 `_launch`) set `_FW_RUNTIME_ENV_CLEAN=1`; t4217's stub now has its socket baked in.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -397,10 +402,29 @@ real injected line in a shell carrying a fake foreign env.
 
 ## Updates
 
-### 2026-10-22T12:40:34Z — task-created [task-create-agent]
+### 2026-10-22T13:28:44Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4638-claude-fw-drops-inherited-projectrootcon.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4647-fw-termlink-dispatch-passes-the-callers-.md
 - **Context:** Initial task creation
 
-### 2026-10-22T13:13:22Z — status-update [task-update-agent]
+### 2026-10-22T13:33:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3a7900af
+- **Timestamp:** 2026-10-22T20:05:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — The dispatch runtime (`run.sh`) re-executes itself under `env -i` with the same allow-list before anything else, so a worker launched from a polluted shell or tmux server gets only allow-listed host v
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=run.sh/env.sh in: The dispatch runtime (`run.sh`) re-executes itself under `env -i` with the same allow-list before anything else, so a worker launched from a polluted `
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T20:04:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

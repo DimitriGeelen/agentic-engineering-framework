@@ -1,20 +1,20 @@
 ---
-id: T-4652
-name: "check-tier0.sh and check-project-boundary.sh fail OPEN when the JSON decoder
-  or python matcher cannot run"
+id: T-4566
+name: "t4453_upgrade_from_framework_checkout.bats tests 1-2 fail on HEAD"
 description: >
-  When decoding fails the hooks allow everything. Proposed: bash-only keyword/absolute-path
-  scan of the raw payload, block on a hit (over-blocks only while degraded). Source:
-  ring20 per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category
-  5), ring20 patch #2-#4. Verify against our code before fixing.
+  Found by the T-4234 worker on 2026-10-21: tests 1 and 2 of tests/unit/t4453_upgrade_from_framework_checkout.bats
+  fail on current bleeding-edge with and without the T-4234 change. Find whether a
+  recent upgrade change (T-4554 release-tag pre-flight, T-4235 auto-unshallow, T-4555
+  cron regenerate, T-4234 dry-run preview) broke them or the test is stale; fix the
+  cause, not the assertion. Never add them to the unit-suite baseline.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
-related_tasks: []
+horizon: null
+tags: [bug, upgrade, test]
+components: [lib/upgrade.sh, tests/unit/t4453_upgrade_from_framework_checkout.bats]
+related_tasks: [T-4453, T-4234]
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -41,9 +41,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T19:31:03Z
-last_update: '2026-10-22T19:45:14Z'
-date_finished:
+created: 2026-10-21T20:43:54Z
+last_update: 2026-10-22T19:44:55Z
+date_finished: 2026-10-22T19:44:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,36 +54,37 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-22T19:38:23Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 0
-      D2: 0
-      D3: 0
-      D4: 0
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-22T19:45:14Z'
+  - ts: '2026-10-21T20:45:17Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=307,acs=8)
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-21T20:45:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4652: check-tier0.sh and check-project-boundary.sh fail OPEN when the JSON decoder or python matcher cannot run
+# T-4566: t4453_upgrade_from_framework_checkout.bats tests 1-2 fail on HEAD
 
 ## Context
 
@@ -93,12 +94,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Claim verified against our code: with a broken python3 first on PATH the Tier 0 hook and the project-boundary hook are shown (by test) to allow or not allow; result recorded in ## RCA
-- [x] On decoder/matcher failure both hooks run a bash-only degraded scan of the raw payload and BLOCK on a hit (destructive keywords for Tier 0; foreign absolute project path for boundary), with a message saying the hook is degraded and why
-- [x] On decoder/matcher failure with no hit, the hook allows and prints a one-line degraded warning to stderr
-- [x] Healthy-python behaviour is unchanged
-- [x] tests/unit/t4652_hook_fail_closed_degraded.bats passes (broken python + destructive blocked; broken python + benign allowed with warning; healthy unchanged) with zero skips
-- [x] Over-block trade-off recorded in ## Decisions; .claude/settings.json not edited; vendored copy in sync
+- [x] Root cause of t4453 tests 1-2 failing on HEAD localised to a file:line and recorded in ## RCA
+- [x] Cause fixed in source (not the assertion); tests/unit/t4453_upgrade_from_framework_checkout.bats fully green, no skips
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green (re-run by the parent 2026-10-22 ~00:04 after T-4231's working-gitignore.sh was committed: 18 ok / 0 not ok; t4453 4/4)
+  <!-- 2026-10-21 w4566: tests 12/14 red in the working tree because of ANOTHER worker's in-flight lib/upgrade.sh hunk @3115 sourcing untracked lib/working-gitignore.sh (absent from the git-built upstream fixture); not this change. Re-run once that lands. -->
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4566` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,18 +283,19 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-
-timeout 900 bats tests/unit/t4652_hook_fail_closed_degraded.bats > /tmp/.t4652.out 2>&1 && ! grep -q "^not ok" /tmp/.t4652.out
-test "$(grep -c '# skip' /tmp/.t4652.out)" -eq 0
-python3 tools/bats-dead-negation-lint.py tests/ 2>&1 | grep -q clean
-bin/fw vendor self --check --task T-4652
+timeout 900 bats tests/unit/t4453_upgrade_from_framework_checkout.bats > /tmp/.t4566a 2>&1 && ! grep -q "^not ok" /tmp/.t4566a
+test "$(grep -c '# skip' /tmp/.t4566a)" -eq 0
+timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4566b 2>&1 && ! grep -q "^not ok" /tmp/.t4566b
+timeout 600 bats tests/unit/t4431_be_tags.bats > /tmp/.t4566c 2>&1 && ! grep -q "^not ok" /tmp/.t4566c
+bin/fw vendor self --check --task T-4566
 
 ## RCA
 
-**Symptom:** with a broken python3 first on PATH both PreToolUse gates allowed every tool call, silently (confirmed: the decoders print '' and the hooks fall through to exit 0).
-**Root cause:** every python failure path collapses to an empty string that the hooks treat as "nothing to check": check-tier0.sh:120 (`[ -z "$COMMAND" ] && exit 0`) and :529 (`[ -z "$MATCH_RESULT" ] ... exit 0`); check-project-boundary.sh `[ -z "$FILE_PATH" ] && exit 0` (Write/Edit), `[ -z "$COMMAND" ] && exit 0` (Bash), `[ -z "$MATCH_RESULT" ] ... exit 0`, and the trailing "not a Write/Edit/Bash tool" `exit 0` (empty TOOL_NAME). The matcher prints SAFE or BLOCKED on success, so empty output means crash, but was read as SAFE.
-**Why structurally allowed:** "defensive: don't block on parse failure" was written as allow; no test ran the hooks with an unusable interpreter.
-**Prevention:** lib/hook-degraded.sh (bash-only raw-payload scan, blocks on hit, warns otherwise) wired into both hooks at python-health and empty-matcher points; tests/unit/t4652_hook_fail_closed_degraded.bats (15 tests incl. a matcher-crash case).
+**Symptom:** t4453 tests 1-2 red at HEAD: `fw upgrade` from a -be checkout printed `Commit:    <sha>` with no `(v9.9.9-be.1)` tag.
+**Root cause:** none of today's upgrade changes (T-4554/T-4235/T-4555/T-4234) — `git log -L1690,1700:lib/upgrade.sh` lands on 2612aa389 (T-4504, 2026-10-20), which added `--exclude '*-be.*'` to the Commit: line's `git describe --tags --exact-match` (lib/upgrade.sh:1694) to satisfy t4431_be_tags test 11 ("every describe --tags excludes -be tags"). That invariant protects *version derivation* (the release floor must never be a -be tag); the Commit: line is a *label* of the exact revision vendored, and naming the -be tag on a -be cut is the whole point of T-4453. The exclude erased the label. Confirmed: HEAD's lib/upgrade.sh via T4453_UPGRADE_SH → tests 1-2 red; fixed file → green.
+**Fix:** lib/upgrade.sh:1694-1698 labels via `git tag --points-at HEAD`, preferring a release tag and falling back to a -be tag. Not a `describe`, so the t4431 lint (correctly scoped to version derivation) still holds; no assertion in either test changed.
+**Why structurally allowed:** T-4504 ran the one red test it was fixing, not t4453, which pins the same line with the opposite expectation; the two were never run together before landing.
+**Prevention:** t4453 test 4 pins precedence (release tag wins over a -be tag on the same commit); with the label off `describe`, t4453 and t4431 are both green and a future "add the exclude" fix has no lint to satisfy.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -365,10 +366,14 @@ bin/fw vendor self --check --task T-4652
 
 ## Decisions
 
-### 2026-10-22 — Degraded mode over-blocks, by design
-- **Chose:** while python is unusable, grep the raw (still JSON-escaped) payload and block on any Tier 0 keyword (rm -r*, git push with --force/-f/+ref, reset --hard, branch -D, git clean -f, DROP/TRUNCATE, mkfs, dd if=, the word tier0) or, for the boundary hook, any /opt, /home, /root (not .claude/.local), /srv, /mnt path that remains after removing PROJECT_ROOT. No hit: allow with a one-line stderr warning.
-- **Why:** the healthy matcher is a grammar that knows e.g. `rm -rf /var/lib/x` is not Tier 0; the bash scan cannot parse, so it errs toward blocking. Over-block (a keyword in prose/heredoc, or a harmless read of /opt/other) is recoverable and visible; a silent allow is not. It only happens while degraded, and the message names the cause.
-- **Rejected:** (a) block everything while degraded: makes a broken python a total outage including the repair commands; (b) keep allow-with-warning only: still lets a destructive command through; (c) edit .claude/settings.json to add a second hook: operator-only.
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
 
 ## Decision
 
@@ -382,10 +387,28 @@ bin/fw vendor self --check --task T-4652
 
 ## Updates
 
-### 2026-10-22T19:31:03Z — task-created [task-create-agent]
+### 2026-10-21T20:43:54Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4652-check-tier0sh-and-check-project-boundary.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4566-t4453upgradefromframeworkcheckoutbats-te.md
 - **Context:** Initial task creation
 
-### 2026-10-22T19:38:22Z — status-update [task-update-agent]
+### 2026-10-21T20:47:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e02b4fe5
+- **Timestamp:** 2026-10-22T20:01:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T19:44:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

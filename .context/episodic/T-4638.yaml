@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4638: claude-fw drops inherited PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR that point at another project before launch
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T20:13:40Z
+# ============================================================================
+
+task_id: T-4638
+task_name: "claude-fw drops inherited PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR that point at another project before launch"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T12:40:34Z
+completed: 2026-10-22T20:13:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T15:28:00+02:00
+last_commit: 2026-10-22T15:28:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw pins the TermLink PTY shell to its own project (clears a foreign TASKS_DIR/CONTEXT_DIR, exports PROJECT_ROOT/FRAMEWORK_ROOT, says so once); plain mode warns too
+
+# Key outcomes
+outcomes:
+  - '`--termlink` mode: the line claude-fw injects into the TermLink PTY shell clears an inherited foreign `TASKS_DIR`/`CONTEXT_DIR`/`_FW_PATHS_DERIVED_BY`/`FW_ROUTED_FROM` and sets `PROJECT_ROOT`/`FRAMEWORK_ROOT` to claude-fw''s own project, so the launched claude sees its own project (test: fake foreign env in an `env -i` PTY-like shell)'
+  - 'It says so once: a foreign value prints one `claude-fw: inherited X=… is not this project` line; the second relaunch in the same shell (already cleared) and a clean shell print nothing'
+  - 'Plain mode: `_cfw_pin_project` now also warns (not only silently unsets) when an inherited `TASKS_DIR`/`CONTEXT_DIR` lies outside the project, and the launched claude has neither'
+  - 'Regression bats `tests/unit/t4638_claude_fw_foreign_env.bats` green; T-4474, T-4462, T-4222, T-4217, T-4003 still green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-4638-claude-fw-drops-inherited-projectrootcon.md'
+  - 'tests/unit/t4638_claude_fw_foreign_env.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T15:28:00'
+    action: 'T-4638: claude-fw pins the TermLink PTY shell to its own project (clears a foreign TASKS_DIR/CONTEXT_DIR, exports PROJECT_ROOT/FRAMEWORK_ROOT, says so once); plain mode warns too'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 452 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, reliability, session-survival]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 452
+  commits: 1
+  files_changed: 4
+  lines_added: 228
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4638-claude-fw-drops-inherited-projectrootcon.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4651: G-116/G-124 close test: polluted tmux server (A-after-B) must not leak CONTEXT_DIR/TASKS_DIR into fw spawn/dispatch/claude-fw sessions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T20:02:52Z
+# ============================================================================
+
+task_id: T-4651
+task_name: "G-116/G-124 close test: polluted tmux server (A-after-B) must not leak CONTEXT_DIR/TASKS_DIR into fw spawn/dispatch/claude-fw sessions"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T19:26:07Z
+completed: 2026-10-22T20:02:07Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-22T21:37:10+02:00
+last_commit: 2026-10-22T21:37:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  A-after-B close test on a private tmux server — control, spawn-env builder, run.sh runtime, claude-fw PTY line; red on pre-T-4647/pre-T-4638 scratch copies; FW_* via claude-fw left as open finding
+
+# Key outcomes
+outcomes:
+  - 'tests/unit/t4651_polluted_tmux_server.bats exists, uses only a private `tmux -L t4651-$$-<rand>` server (killed in teardown), and wraps every tmux call in `timeout`'
+  - 'Control leg: a plain session A starts on B''s server carries B''s CONTEXT_DIR (proves the server really is polluted)'
+  - 'Dispatch leg: lib/spawn-env.sh''s builder drops B''s values from a polluted caller env, and the run.sh runtime (extracted from agents/termlink/termlink.sh) running on B''s server shows no B path and resolves A''s .tasks/.context via lib/paths.sh'
+  - 'claude-fw leg: the injected PTY line (rendered from bin/claude-fw) running on B''s server launches claude with no B path variable (FW_* excluded, see Decisions) and paths.sh resolving A''s dirs'
+  - 'The suite passes on HEAD with 0 skips, and goes red on a `git archive` scratch copy of pre-T-4647 (dispatch legs) and pre-T-4638 (claude-fw leg) code — evidence in ## Updates'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — what each leg runs, given no AEF launcher takes a tmux socket'
+    chose: 'dispatch = `fw_spawn_env` (lib/spawn-env.sh) builds the launcher env exactly as cmd_spawn does, and the session runs run.sh taken verbatim from termlink.sh''s RUNEOF heredoc, cut before the review-ledger/worker launch, plus a probe; claude-fw = the injected PTY line rendered from bin/claude-fw (same technique as t4638) run as a session on the server, with a stand-in `claude`.'
+    rationale: '`termlink spawn` has no socket option and registers with the live hub; `fw termlink spawn` and `claude-fw --termlink` both go through it, so neither can be pointed at a private server. Their env-building pieces are what decides the child''s env, and those are exercised on a real polluted server.'
+    alternatives_rejected: ['a PATH-shimmed `tmux` wrapper adding `-L` under real termlink — would still register sessions with the host''s hub.']
+  - decision: '2026-10-22 — FW_* through the claude-fw PTY path: open finding, excluded from the assertion'
+    chose: 'the claude-fw leg asserts no B value in any non-`FW_*` variable; FW_* lines are excluded.'
+    rationale: 'with the full assertion the leg fails on HEAD: `FW_FOO=<B path>` from B''s server reaches A''s claude. `_tl_project_env_prefix` (bin/claude-fw) unsets TASKS_DIR/CONTEXT_DIR/_FW_PATHS_DERIVED_BY/FW_ROUTED_FROM and pins PROJECT_ROOT/FRAMEWORK_ROOT, but leaves every other FW_* from the server env (real ones that carry paths or identity: FW_BIN, FW_UNIT_SUITE_DIR, FW_SIDECAR_AGENT_ID, FW_DISPATCHED_WORKER …). Fixing claude-fw is outside this task''s scope; the parent should file it (one bug, one task) before G-116 claims FW_* coverage. The dispatch path does drop FW_* (allow-list), and its leg asserts the full "no B value".'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4651-g-116g-124-close-test-polluted-tmux-serv.md'
+  - 'tests/unit/t4651_polluted_tmux_server.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T21:37:10'
+    action: 'T-4651: A-after-B close test on a private tmux server — control, spawn-env builder, run.sh runtime, claude-fw PTY line; red on pre-T-4647/pre-T-4638 scratch copies; FW_* via claude-fw left as open finding'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 36
+  commits: 1
+  files_changed: 2
+  lines_added: 579
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4651-g-116g-124-close-test-polluted-tmux-serv.md
+generated_by: context-agent-hybrid
