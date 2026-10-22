@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4174: Budget gauge reads 'unknown — scan failed or produced no data' in the session started by a budget restart (blind right after restart) (dimitri-mint-dev P-012, their T-109)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:39:03Z
+# ============================================================================
+
+task_id: T-4174
+task_name: "Budget gauge reads 'unknown — scan failed or produced no data' in the session started by a budget restart (blind right after restart) (dimitri-mint-dev P-012, their T-109)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T16:39:40Z
+completed: 2026-10-22T10:38:00Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-10-22T00:18:51+02:00
+last_commit: 2026-10-22T00:19:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  budget gauge reads a young session (first call after a restart, <2 usage entries) as ok + real low tokens + provisional:true instead of 'unknown — scan failed'; context_tokens.py --with-status names measured/young/empty; lone reading at/above warn (T-2885 poisoning shape), empty and crashed scans stay unknown; regression bats t4174; t3241 single-entry case moved to a lone HIGH reading; vendor synced. tick vendor-sync AC (verification run: all 4 lines pass)
+
+# Key outcomes
+outcomes:
+  - '`lib/context_tokens.py --with-status` distinguishes a young session (parseable transcript, <2 in-scope usage entries) from a failed scan, and reports the lone reading as provisional; default and `--with-model` output unchanged'
+  - 'budget-gate.sh writes `level: ok`, the real low token count and `"provisional": true` for a young session whose reading is below the warn line, instead of `unknown — scan failed or produced no data`'
+  - 'A lone reading at/above the warn line (the T-2885 foreign-poisoning shape), an unparseable/empty transcript and a crashing scan still write `unknown`'
+  - 'Regression bats `tests/unit/t4174_budget_young_session.bats` fails before the fix and passes after; t3241/t2885/t3204/t3598 neighbours still green'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4174` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — how far to trust a lone young-session reading'
+    chose: 'report it (ok + real tokens + `"provisional": true`) only below the warn line; at/above warn stay `unknown`. Revised the T-3241 "single usage entry → unknown" test to a lone HIGH reading, which is the case it still protects.'
+    rationale: 'a session with one response cannot have filled its context, so a low reading is a correct low value; a lone high reading is exactly the foreign cache-priming shape T-2885 refuses, and trusting it could false-block at critical. The `provisional` marker keeps T-3241''s rule that an unconfirmed number is never indistinguishable from a confirmed one.'
+    alternatives_rejected: ['always trusting the lone reading (reopens T-2885 poisoning); writing ok/0 (the fabricated zero T-3241 removed); lowering the context_tokens.py `< 2` threshold (changes the pinned default contract for both gauges).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/lib/context_tokens.py'
+  - 'agents/context/budget-gate.sh'
+  - 'lib/context_tokens.py'
+  - '.tasks/active/T-4174-budget-gauge-reads-unknown--scan-failed-.md'
+  - 'tests/unit/t3241_budget_status_unknown_state.bats'
+  - 'tests/unit/t4174_budget_young_session.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:18:51'
+    action: 'T-4174: budget gauge reads a young session (first call after a restart, <2 usage entries) as ok + real low tokens + provisional:true instead of ''unknown — scan failed''; context_tokens.py --with-status names measured/young/empty; lone reading at/above warn (T-2885 poisoning shape), empty and crashed scans stay unknown; regression bats t4174; t3241 single-entry case moved to a lone HIGH reading; vendor synced'
+  - time: '2026-10-22T00:19:22'
+    action: 'T-4174: tick vendor-sync AC (verification run: all 4 lines pass)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 12598 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12598
+  commits: 3
+  files_changed: 11
+  lines_added: 1894
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4174-budget-gauge-reads-unknown--scan-failed-.md
+generated_by: context-agent-hybrid
