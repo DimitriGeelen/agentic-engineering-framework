@@ -1,13 +1,19 @@
 ---
 id: T-4609
-name: "t4381 fixture run is flagged by the T-4523 tree guard for the __pycache__ its own pytest leg writes"
+name: "t4381 fixture run is flagged by the T-4523 tree guard for the __pycache__ its
+  own pytest leg writes"
 description: >
-  tests/unit/t4381_unit_suite_accounting.bats:162: 'unit-suite: FAIL the run changed 1 path(s) ... ?? __pycache__/test_ok.cpython-312-pytest-9.0.2.pyc'. The tree guard counts bytecode the runner's pytest leg writes into the fixture repo; either the runner should set PYTHONDONTWRITEBYTECODE/-p no:cacheprovider or the guard should ignore __pycache__. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (line 119). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
+  tests/unit/t4381_unit_suite_accounting.bats:162: 'unit-suite: FAIL the run changed
+  1 path(s) ... ?? __pycache__/test_ok.cpython-312-pytest-9.0.2.pyc'. The tree guard
+  counts bytecode the runner's pytest leg writes into the fixture repo; either the
+  runner should set PYTHONDONTWRITEBYTECODE/-p no:cacheprovider or the guard should
+  ignore __pycache__. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
+  (line 119). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -39,8 +45,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:45:52Z
-last_update: 2026-10-22T08:45:52Z
-date_finished: null
+last_update: 2026-10-22T11:03:36Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +57,49 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:00:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:00:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4609: t4381 fixture run is flagged by the T-4523 tree guard for the __pycache__ its own pytest leg writes
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reproduced on bleeding-edge 0e47d94db (2026-10-22): `bats tests/unit/t4381_unit_suite_accounting.bats` → `not ok 7 report carries the HEAD commit and tree=clean` (line 162, runner exit 1). Fixed in the runner (PYTHONDONTWRITEBYTECODE=1 on the pytest leg), not by teaching the guard to ignore `__pycache__`: a test runner should not write into the tree it grades.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction status on current bleeding-edge recorded (t4381 bats run result)
+- [x] If it reproduces: the unit-suite runner's pytest leg no longer leaves `__pycache__` (or pytest cache) in the tree it guards, so the T-4523 tree guard does not flag it
+- [x] Regression test fails without the fix and passes with it
+- [x] tests/unit/t4381_unit_suite_accounting.bats passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +284,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+grep -q 'PYTHONDONTWRITEBYTECODE=1' agents/audit/unit-suite.sh
+timeout 600 bats tests/unit/t4609_pytest_leg_no_bytecode.bats > /tmp/.t4609v1.out 2>&1 && ! grep -q "^not ok" /tmp/.t4609v1.out
+test "$(grep -c '# skip' /tmp/.t4609v1.out)" -eq 0
+timeout 600 bats tests/unit/t4381_unit_suite_accounting.bats > /tmp/.t4609v2.out 2>&1 && ! grep -q "^not ok" /tmp/.t4609v2.out
+bin/fw vendor self --check --task T-4609
 
 ## RCA
 
@@ -265,6 +305,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/unit/t4381_unit_suite_accounting.bats:162` red — runner exit 1, "unit-suite: FAIL the run changed 1 path(s) ... ?? __pycache__/test_ok.cpython-312-pytest-9.0.2.pyc".
+
+**Root cause:** `agents/audit/unit-suite.sh:276` (pytest leg) ran `python3 -m pytest` with bytecode writes enabled, so importing the test file wrote `__pycache__/*.pyc` beside it — inside the checkout the T-4523 tree guard (`agents/audit/unit_tree_guard.py`, git-status based, ignored files excluded) snapshots before and after. `-p no:cacheprovider` already stopped `.pytest_cache`, but not import / assertion-rewrite bytecode.
+
+**Why structurally allowed:** the real corpus gitignores `__pycache__`, so the guard never sees it on `tests/unit`; only t4381's fixture repo (no .gitignore) exposed it. T-4523 landed after t4381's tests were written and nothing ran the two together until the nightly.
+
+**Prevention:** `tests/unit/t4609_pytest_leg_no_bytecode.bats` runs the runner on an un-ignored git fixture and asserts no `__pycache__`, a clean `git status`, and runner exit 0 — red against the pre-fix runner (verified with a scratch copy of HEAD's unit-suite.sh), green after.
 
 ## Evolution
 
@@ -346,3 +394,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4609-t4381-fixture-run-is-flagged-by-the-t-45.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:03:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

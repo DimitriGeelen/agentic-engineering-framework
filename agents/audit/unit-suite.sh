@@ -271,8 +271,11 @@ _run_one() {
         # --color=no + env scrub: FORCE_COLOR/PY_COLORS make pytest write ANSI into
         # the redirected file, and the ^FAILED name-parse finds nothing
         # (OBS-374 class — reproduced live under FORCE_COLOR=3, T-3302).
+        # T-4609: PYTHONDONTWRITEBYTECODE — importing the test file wrote
+        # __pycache__/*.pyc next to it, inside the tree the T-4523 guard grades;
+        # a corpus without a .gitignore for it read as a leak (t4381 red).
         ( cd "$FRAMEWORK_ROOT" && TMPDIR="$ftmp" timeout -k 10 "$cap" \
-            env -u FORCE_COLOR PY_COLORS=0 NO_COLOR=1 \
+            env -u FORCE_COLOR PY_COLORS=0 NO_COLOR=1 PYTHONDONTWRITEBYTECODE=1 \
             python3 -m pytest "$file" -q -rf -p no:cacheprovider --color=no ) \
             < /dev/null > "$out" 2>&1 || rc=$?
         # T-4381: pytest exits 5 both for "no tests collected" (red) and for a
