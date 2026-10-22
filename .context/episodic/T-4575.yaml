@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4575: Map every red named in the 2026-10-21 cloud reports to a baseline entry or a task (T-4508 AC 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T11:28:43Z
+# ============================================================================
+
+task_id: T-4575
+task_name: "Map every red named in the 2026-10-21 cloud reports to a baseline entry or a task (T-4508 AC 2)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T21:49:16Z
+completed: 2026-10-22T11:28:06Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-22T09:37:19+02:00
+last_commit: 2026-10-22T09:49:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs and verification (restored after an uncommitted revert). job 1 prompt installs web/requirements.txt and uses python3 -m pip. map every red in the 2026-10-21 cloud reports; file T-4583..T-4588 for the unmatched ones
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/T-4575-cloud-red-map.md maps every red named in reports-2026-10-21-relayed-by-ring20.md to exactly one of: sibling task (T-4568..T-4574), baseline entry (with owner), existing task, newly filed task, env (not a defect), or "passes on current bleeding-edge" with the evidence'
+  - 'Every row marked "newly filed" names a task id that exists in .tasks/active/'
+  - 'job1-clean-room-unit-suite.md setup installs web/requirements.txt (markdown2, ollama, ruamel.yaml, tantivy, bleach) and cffi, via `python3 -m pip` so it reaches the python3 on PATH'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'real ACs and verification (restored after an uncommitted revert)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4508-cloud-prompts/job1-clean-room-unit-suite.md'
+  - 'docs/reports/T-4575-cloud-red-map.md'
+  - '.tasks/active/T-4575-map-every-red-named-in-the-2026-10-21-cl.md'
+  - '.tasks/active/T-4583-libcostsbats-test-3-needs-claudeprojects.md'
+  - '.tasks/active/T-4584-9-completed-tasks-carry-horizon-now-so-t.md'
+  - '.tasks/active/T-4585-t2436vendorselfcheckbats-t4-fails-whenev.md'
+  - '.tasks/active/T-4586-testt3077approvalssurfaceisolationbats-a.md'
+  - '.tasks/active/T-4587-upgradefreshmachinesimulationbats-overla.md'
+  - '.tasks/active/T-4588-unitintegration-suites-leave-changed-del.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T09:37:19'
+    action: 'T-4575: real ACs and verification (restored after an uncommitted revert)'
+  - time: '2026-10-22T09:37:39'
+    action: 'T-4575: job 1 prompt installs web/requirements.txt and uses python3 -m pip'
+  - time: '2026-10-22T09:49:10'
+    action: 'T-4575: map every red in the 2026-10-21 cloud reports; file T-4583..T-4588 for the unmatched ones'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 818 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, cloud]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 818
+  commits: 3
+  files_changed: 9
+  lines_added: 2291
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4575-map-every-red-named-in-the-2026-10-21-cl.md
+generated_by: context-agent-hybrid

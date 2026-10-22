@@ -13,10 +13,10 @@ description: >
   modules — fix docs/reports/T-4508-cloud-prompts/job1-clean-room-unit-suite.md to
   install them.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [test, cloud]
 components: []
 related_tasks: [T-4508]
@@ -48,8 +48,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:49:16Z
-last_update: '2026-10-22T07:45:35Z'
-date_finished:
+last_update: 2026-10-22T11:28:06Z
+date_finished: 2026-10-22T11:28:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -322,7 +322,7 @@ Full per-row map with evidence: `docs/reports/T-4575-cloud-red-map.md`. Unmatche
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 test -f docs/reports/T-4575-cloud-red-map.md
 grep -q "web/requirements.txt" docs/reports/T-4508-cloud-prompts/job1-clean-room-unit-suite.md && grep -q "python3 -m pip install -r web/requirements.txt" docs/reports/T-4508-cloud-prompts/job1-clean-room-unit-suite.md
-bash -c 'set -o pipefail; for t in $(grep -o "filed T-[0-9]*" docs/reports/T-4575-cloud-red-map.md | cut -d" " -f2 | sort -u); do ls .tasks/active/$t-*.md .tasks/completed/$t-*.md 2>/dev/null | grep -q . || { echo "missing $t"; exit 1; }; done'
+bash -c 'set -o pipefail; for t in $(grep -o "filed T-[0-9]*" docs/reports/T-4575-cloud-red-map.md | cut -d" " -f2 | sort -u); do [ -n "$(ls .tasks/active/$t-*.md .tasks/completed/$t-*.md 2>/dev/null)" ] || { echo "missing $t"; exit 1; }; done'
 
 ## RCA
 
@@ -424,3 +424,20 @@ bash -c 'set -o pipefail; for t in $(grep -o "filed T-[0-9]*" docs/reports/T-457
 ### 2026-10-22T07:36:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-194eb3fe
+- **Timestamp:** 2026-10-22T11:28:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T11:28:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
