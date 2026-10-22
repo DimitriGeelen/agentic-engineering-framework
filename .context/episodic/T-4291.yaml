@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4291: Dispatched workers and the parent session share one .context/working/focus.yaml: a worker's fw work-on silently moves the parent's focus (and the parent's moves the worker's)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T12:12:14Z
+# ============================================================================
+
+task_id: T-4291
+task_name: "Dispatched workers and the parent session share one .context/working/focus.yaml: a worker's fw work-on silently moves the parent's focus (and the parent's moves the worker's)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-18T08:37:45Z
+completed: 2026-10-22T12:11:52Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-22T10:37:47+02:00
+last_commit: 2026-10-22T10:37:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  shared-focus-file direction no longer reproduces (T-3038/T-3422; t3038+t3422 18/18 green); residual is the T-560 stale check comparing worker focus stamps to the parent-owned session.yaml (check-active-task.sh:755, focus.sh:124) — evidence in RCA, operator question + recommendation (stamp scoped focus with worker key) in Decisions
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked on bleeding-edge 2026-10-22: a dispatched worker''s `fw work-on` writes only `focus.<key>.yaml`; the shared `focus.yaml` is untouched (evidence in ## RCA)'
+  - 'Existing regression tests for the shared-file direction pass (`tests/unit/t3038_session_scoped_focus.bats`, `tests/unit/t3422_dispatch_seeds_focus.bats`)'
+  - 'The residual mechanism (stale-focus gate compares a worker''s stamp against the parent-owned `session.yaml`) is recorded with file:line and an operator question + recommendation in ## Decisions'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — OPERATOR QUESTION: how should T-560 stale-focus treat session-scoped (worker) focus?'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4291-dispatched-workers-and-the-parent-sessio.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T10:37:47'
+    action: 'T-4291: shared-focus-file direction no longer reproduces (T-3038/T-3422; t3038+t3422 18/18 green); residual is the T-560 stale check comparing worker focus stamps to the parent-owned session.yaml (check-active-task.sh:755, focus.sh:124) — evidence in RCA, operator question + recommendation (stamp scoped focus with worker key) in Decisions'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5974 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5974
+  commits: 1
+  files_changed: 1
+  lines_added: 92
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4291-dispatched-workers-and-the-parent-sessio.md
+generated_by: context-agent-hybrid
