@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4588: Unit/integration suites leave changed, deleted and untracked paths in the checkout they run in
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:25:23Z
+# ============================================================================
+
+task_id: T-4588
+task_name: "Unit/integration suites leave changed, deleted and untracked paths in the checkout they run in"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T07:47:41Z
+completed: 2026-10-22T10:24:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T10:23:10+02:00
+last_commit: 2026-10-22T10:23:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unit tests that wrote into the checkout now use a throwaway project — 5 reviewer bats (fixtures + feedback-stream), rail_mcp_label_guard CLI test (.gate-bypass-log), audit_task_tools fw-hook test (.hook-counter), test_bpmn_promote apply (.bpmn-promote-audit.jsonl), test_review_link_validator bypass (.gate-bypass-log); regression bats t4588 runs each alone in a shared clone and compares the tree by content (9/9 red pre-fix, 9/9 green); t3062 live-audit leak left as an operator question in Decisions
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked on current bleeding-edge: the fast tier is run in a clean clone and `git status --porcelain` is captured afterwards; the result (leaks or none) is recorded in this task with the commit it ran at'
+  - 'Every path the fast tier leaves in the clone is attributed to the test file that wrote it, or the absence of leaks is recorded as the evidence that T-4523 already closed this'
+  - 'Each leaking test (if any) writes to a temp project instead of FRAMEWORK_ROOT, with a regression test that fails before the fix and passes after (t4588_tests_leave_checkout_clean.bats: 9/9 red with the pre-fix files via T4588_TESTS_FROM, 9/9 green after; t3062 excepted, see ## Decisions)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'unit tests that wrote into the checkout now use a throwaway project — 5 reviewer bats (fixtures + feedback-stream), rail_mcp_label_guard CLI test (.gate-bypass-log), audit_task_tools fw-hook test (.hook-counter), test_bpmn_promote apply (.bpmn-promote-audit.jsonl), test_review_link_validator bypass (.gate-bypass-log); regression bats t4588 runs each alone in a shared clone and compares the tree by content (9/9 red pre-fix, 9/9 green); t3062 live-audit leak left as an operator question in Decisions'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — t3062_prepush_runtime.bats: operator question (not fixed here)'
+  - decision: '2026-10-22 — noted, out of scope'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4588-unitintegration-suites-leave-changed-del.md'
+  - 'tests/unit/audit_task_tools.bats'
+  - 'tests/unit/rail_mcp_label_guard.bats'
+  - 'tests/unit/reviewer_human_ac_mechanical_signal.bats'
+  - 'tests/unit/t4588_tests_leave_checkout_clean.bats'
+  - 'tests/unit/test_bpmn_promote.py'
+  - 'tests/unit/test_reviewer_audience_mismatch.bats'
+  - 'tests/unit/test_reviewer_defer_as_hedge.bats'
+  - 'tests/unit/test_reviewer_prose_mismatch.bats'
+  - 'tests/unit/test_reviewer_review_link_homework.bats'
+  - 'tests/unit/test_review_link_validator.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T10:23:10'
+    action: 'T-4588: unit tests that wrote into the checkout now use a throwaway project — 5 reviewer bats (fixtures + feedback-stream), rail_mcp_label_guard CLI test (.gate-bypass-log), audit_task_tools fw-hook test (.hook-counter), test_bpmn_promote apply (.bpmn-promote-audit.jsonl), test_review_link_validator bypass (.gate-bypass-log); regression bats t4588 runs each alone in a shared clone and compares the tree by content (9/9 red pre-fix, 9/9 green); t3062 live-audit leak left as an operator question in Decisions'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 156 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, cloud]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 156
+  commits: 1
+  files_changed: 11
+  lines_added: 246
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4588-unitintegration-suites-leave-changed-del.md
+generated_by: context-agent-hybrid
