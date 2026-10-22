@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4172: SessionStart after a budget restart is titled 'Post-Compaction Context Recovery' although no compaction ran: label the actual cause (budget restart, handover id) (dimitri-mint-dev P-010, their T-107)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:36:58Z
+# ============================================================================
+
+task_id: T-4172
+task_name: "SessionStart after a budget restart is titled 'Post-Compaction Context Recovery' although no compaction ran: label the actual cause (budget restart, handover id) (dimitri-mint-dev P-010, their T-107)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T16:39:07Z
+completed: 2026-10-22T10:36:10Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-10-22T00:21:32+02:00
+last_commit: 2026-10-22T00:22:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  resume hook labels a continue-mode budget restart (source resume + fresh .auto-restart-pending) as a budget auto-restart and consumes the sentinel; every recovery header names the handover it restores from; regression bats (4/6 red before, 6/6 after); vendor synced. restore T-4173's header-comment hunks (e6076c700) that d5515ffef reverted — the T-4172 commit was built from a private index read before T-4173 landed; no code change
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked on current bleeding-edge: T-4353 already relabels fresh (`startup`) restarts; the continue-mode budget restart (source `resume` + fresh `.auto-restart-pending`) still reads as a plain resume, and no header names the handover'
+  - 'A `resume` SessionStart with a fresh `.auto-restart-pending` sentinel is labelled a budget auto-restart (continue mode) and consumes the sentinel; a plain `resume` keeps the resume header'
+  - 'The startup/resume recovery header names the handover it restores from (LATEST.md `session_id`)'
+  - 'Regression bats `tests/unit/t4172_restart_cause_label.bats` fails without the fix and passes with it; t4353 neighbour still green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'restore T-4173''s header-comment hunks (e6076c700) that d5515ffef reverted — the T-4172 commit was built from a private index read before T-4173 landed; no code change'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - 'agents/context/post-compact-resume.sh'
+  - '.tasks/active/T-4172-sessionstart-after-a-budget-restart-is-t.md'
+  - 'tests/unit/t4172_restart_cause_label.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:21:32'
+    action: 'T-4172: resume hook labels a continue-mode budget restart (source resume + fresh .auto-restart-pending) as a budget auto-restart and consumes the sentinel; every recovery header names the handover it restores from; regression bats (4/6 red before, 6/6 after); vendor synced'
+  - time: '2026-10-22T00:22:32'
+    action: 'T-4172: restore T-4173''s header-comment hunks (e6076c700) that d5515ffef reverted — the T-4172 commit was built from a private index read before T-4173 landed; no code change'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12597 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12597
+  commits: 2
+  files_changed: 4
+  lines_added: 212
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4172-sessionstart-after-a-budget-restart-is-t.md
+generated_by: context-agent-hybrid
