@@ -1,10 +1,17 @@
 ---
 id: T-4636
-name: "Run claude-fw sessions and TermLink workers outside login-session scopes (survive root slice teardown)"
+name: "Run claude-fw sessions and TermLink workers outside login-session scopes (survive
+  root slice teardown)"
 description: >
-  T-4635 RCA (docs/reports/T-4635-session-kill-rca.md): long-lived agent processes live in user-0.slice; under load systemd force-removes that slice and kills them all. Make claude-fw and fw termlink dispatch launch their long-lived process in a dedicated systemd scope/slice outside any login session (systemd-run --scope --slice=agentic.slice, or the equivalent), with a clean fallback where systemd or permission is absent (log it once). Test: a launched process reports a cgroup outside session-*.scope; fallback path stays green on hosts without systemd.
+  T-4635 RCA (docs/reports/T-4635-session-kill-rca.md): long-lived agent processes
+  live in user-0.slice; under load systemd force-removes that slice and kills them
+  all. Make claude-fw and fw termlink dispatch launch their long-lived process in
+  a dedicated systemd scope/slice outside any login session (systemd-run --scope --slice=agentic.slice,
+  or the equivalent), with a clean fallback where systemd or permission is absent
+  (log it once). Test: a launched process reports a cgroup outside session-*.scope;
+  fallback path stays green on hosts without systemd.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: [T-4635, T-4541]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T12:39:56Z
-last_update: 2026-10-22T12:39:56Z
-date_finished: null
+last_update: 2026-10-22T12:54:52Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T12:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T12:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4636: Run claude-fw sessions and TermLink workers outside login-session scopes (survive root slice teardown)
@@ -62,8 +96,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/agent-scope.sh` provides `fw_agent_scope_prefix`: on a host where `systemd-run --scope --slice=agentic.slice` works it yields that prefix; a process launched through it reports a cgroup under `/agentic.slice/` and not in any `session-*.scope` (real systemd test on this host)
+- [x] Fallback: with systemd absent, systemd-run refusing, or `FW_AGENT_SCOPE=0`, the prefix is empty, the launch proceeds unchanged, and the fallback reason is logged once (stderr + `.context/working/agent-scope.log`), silent on the next call for the same reason
+- [x] Already inside `agentic.slice` → empty prefix (no nested scope, no warning)
+- [x] `bin/claude-fw` re-execs itself once through the prefix before the tmux wrap (so a tmux server it starts, and claude, live in agentic.slice); a re-exec at the restart boundary does not re-scope
+- [x] `fw termlink spawn` (and so `fw termlink dispatch`) runs `termlink spawn` through the prefix, so a tmux server it starts lives in agentic.slice
+- [x] Regression bats `tests/unit/t4636_agent_scope.bats` green; existing claude-fw and termlink spawn tests still green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +286,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n bin/claude-fw && bash -n lib/agent-scope.sh && bash -n agents/termlink/termlink.sh
+timeout 600 bats tests/unit/t4636_agent_scope.bats > /tmp/.t4636.out 2>&1 && ! grep -q "^not ok" /tmp/.t4636.out
+# this host has systemd, so the real-cgroup test must run, not skip
+test "$(grep -c '# skip' /tmp/.t4636.out)" -eq 0
+grep -q 'fw_agent_scope_prefix' bin/claude-fw && grep -q 'fw_agent_scope_prefix' agents/termlink/termlink.sh
+bin/fw vendor self --check --task T-4636
 
 ## RCA
 
@@ -264,6 +308,24 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** 2026-10-22 13:38:58 the parent claude-fw session and all six TermLink workers died
+at once, no `exit_code`; same pattern behind the 2026-10-21 09:08 / 11:47 restarts (T-4635).
+
+**Root cause:** `bin/claude-fw` (tmux wrap at `bin/claude-fw:185`, plain `command claude` path
+otherwise) and `agents/termlink/termlink.sh:405` (`termlink spawn`, which starts the tmux server
+dispatch workers run in) launch their long-lived processes in whatever cgroup the caller is in —
+for root that is a transient `session-*.scope` inside `user-0.slice`. Root does not linger, cron
+closes root's last session every minute, and under load systemd's stop of `user-0.slice` times
+out and SIGKILLs everything still in it.
+
+**Why structurally allowed:** nothing in the framework chose or checked the cgroup of its
+long-lived processes; the kill looks like an ordinary child exit from inside, and earlier
+incidents were attributed to the nearest visible mechanism (T-4541).
+
+**Prevention:** `lib/agent-scope.sh` places both launch points in a transient scope under
+`agentic.slice` (outside every login session), with a logged fallback; pinned by
+`tests/unit/t4636_agent_scope.bats` (real cgroup placement + fallback). Detection of processes
+still in a session scope is T-4637.
 
 ## Evolution
 
@@ -328,6 +390,11 @@ date_finished: null
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+### 2026-10-22 — where to put the scope
+- **Chose:** scope the launcher (claude-fw re-execs itself; `termlink spawn` runs under the prefix), so a tmux server they START is born in agentic.slice and every claude/worker under it follows.
+- **Why:** the tmux server is the parent of every pty; a worker moved alone into a scope still dies of SIGHUP when its server is killed.
+- **Rejected:** scoping only run.sh inside the pane (SIGHUP from the dead server still kills it); moving an existing server's pid between cgroups (writes to cgroup.procs, fragile).
+- **Limit:** a tmux server that is ALREADY running in a session scope (fw-agents or the default one) keeps workers there until it restarts; detecting that is T-4637.
 
 ## Decision
 
@@ -345,3 +412,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4636-run-claude-fw-sessions-and-termlink-work.md
 - **Context:** Initial task creation
+
+### 2026-10-22T12:54:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

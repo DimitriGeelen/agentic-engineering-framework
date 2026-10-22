@@ -1,0 +1,21 @@
+id: lib/agent-scope.sh
+name: agent-scope
+type: script
+subsystem: framework-core
+location: lib/agent-scope.sh
+tags: []
+
+purpose: "lib/agent-scope.sh — T-4636 (T-4635 RCA, docs/reports/T-4635-session-kill-rca.md)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-22
+created_by: unknown

@@ -127,6 +127,32 @@ fi
 unset FW_CFW_REEXEC_PID FW_CFW_REEXEC_COUNT FW_CFW_REEXEC_TIMES FW_CFW_REEXEC_ARGS \
     FW_CFW_REEXEC_TL_SESSION FW_CFW_REEXEC_TL_ENABLED FW_CFW_REEXEC_OLD_ID
 
+# T-4636 (T-4635 RCA): started from a login session (cron, ssh, a terminal), this wrapper, the
+# tmux server it may start below and claude all lived in that session's scope, and a forced
+# teardown of the user's slice killed them together. Re-exec once through lib/agent-scope.sh's
+# `systemd-run --scope` prefix so all of them live in agentic.slice instead; where systemd
+# cannot do that the helper logs why, once, and the launch goes on as before. Only at start
+# (a T-4118 re-exec is already placed); FW_CFW_SCOPED_PID names this pid (systemd-run execs,
+# so the pid is kept) and stops a second attempt. The lib is looked up beside this script or
+# in the pinned FRAMEWORK_ROOT, never $PWD (T-3984). Opt out: FW_AGENT_SCOPE=0.
+if [ "$_CFW_RESUMED" != 1 ] && [ "${FW_CFW_SCOPED_PID:-}" != "$$" ]; then
+    for _cfw_d in "$(dirname "$_CFW_SELF_PATH")/.." "${FRAMEWORK_ROOT:-}"; do
+        [ -n "$_cfw_d" ] && [ -f "$_cfw_d/lib/agent-scope.sh" ] || continue
+        # shellcheck source=/dev/null
+        . "$_cfw_d/lib/agent-scope.sh"
+        fw_agent_scope_prefix claude-fw
+        if [ "${#FW_AGENT_SCOPE_CMD[@]}" -gt 0 ]; then
+            export FW_CFW_SCOPED_PID="$$"
+            shopt -s execfail
+            exec "${FW_AGENT_SCOPE_CMD[@]}" bash "$_CFW_SELF_PATH" "$@"
+            shopt -u execfail
+            echo "claude-fw: WARNING: could not start in its own systemd scope — continuing in the current one (T-4636)" >&2
+        fi
+        break
+    done
+fi
+unset FW_CFW_SCOPED_PID
+
 # T-4003 (operator 2026-10-09: "we wanted reliable to work for every project"): peer mail can
 # only reach an agent through a terminal something can type into — a TermLink session or a
 # tmux pane (lib/sidecar/inject.py c1/c2). A bare terminal window cannot be typed into from

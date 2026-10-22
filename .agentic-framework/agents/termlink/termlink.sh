@@ -401,8 +401,17 @@ cmd_spawn() {
     # that server's GLOBAL env is the env it was started with. Strip fw's path variables so a
     # first spawn cannot make another project's PROJECT_ROOT/FRAMEWORK_ROOT the server's global
     # env. The worker's run.sh exports its own paths (see the RUNEOF heredoc in cmd_dispatch).
+    # T-4636 (T-4635 RCA): run the spawn in its own systemd scope under agentic.slice, so a tmux
+    # server it starts — and every worker inside it — is outside the caller's login session and
+    # survives that session's forced teardown. Empty prefix (logged once) where systemd can't.
+    FW_AGENT_SCOPE_CMD=()
+    if [ -f "$FRAMEWORK_ROOT/lib/agent-scope.sh" ]; then
+        # shellcheck source=/dev/null
+        source "$FRAMEWORK_ROOT/lib/agent-scope.sh"
+        fw_agent_scope_prefix "termlink spawn $name"
+    fi
     env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM -u TASKS_DIR -u CONTEXT_DIR \
-        termlink spawn "${spawn_args[@]}"
+        ${FW_AGENT_SCOPE_CMD[@]+"${FW_AGENT_SCOPE_CMD[@]}"} termlink spawn "${spawn_args[@]}"
     echo -e "${GREEN}OK${NC}  Session '$name' registered"
     # T-4067: `if`, not `[ ] && echo` — as the function's last statement a false
     # test became its return status and aborted `fw termlink dispatch` under set -e.
