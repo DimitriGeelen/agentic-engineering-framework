@@ -12,10 +12,10 @@ description: >
   that fails the test if the real repo's index or tree changed. Check t3586_skip_flag_policy.bats
   and test_t3896_inception_readiness.py for the same pattern.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T21:43:33Z
-last_update: 2026-10-22T21:47:49Z
-date_finished:
+last_update: 2026-10-22T21:54:42Z
+date_finished: 2026-10-22T21:54:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -416,3 +416,22 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4671c 2>&1 && grep -q c
 - **Results:** register gate 5/5 ok, 0 skips; t4671_live_repo_guard 4/4 ok, 0 skips; t3586_skip_flag_policy 17/17 ok; test_t3896_inception_readiness 7 passed; bats-dead-negation-lint clean.
 - **Siblings checked:** tests/unit/t3586_skip_flag_policy.bats already sets `PROJECT_ROOT=$(mktemp -d)` and calls update-task.sh directly — does not write into the real repo. tests/web/test_t3896_inception_readiness.py writes its T-99xx files under pytest `tmp_path` and monkeypatches `inception.PROJECT_ROOT` — does not write into the real repo. Neither changed.
 - **Not in scope, noted:** tests/governance/test_task_lifecycle_gates.bats has the same `cd "$FRAMEWORK_ROOT"` + T-99xx shape, but only exercises block paths (no close succeeds, so T-4094 never stages). It leaks into the real index only if a gate regresses to allow — worth the same treatment as a follow-up.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1276575d
+- **Timestamp:** 2026-10-22T21:54:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — tests/live_repo_guard.bash: `live_repo_guard_begin` records `git status --porcelain` + index content hash of the real repo (whole repo, or scoped to a pathspec); `live_repo_guard_end` fails the test i
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/live_repo_guard.bash in: tests/live_repo_guard.bash: `live_repo_guard_begin` records `git status --porcelain` + index content hash of the real repo (whole repo, or scoped to a`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T21:54:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

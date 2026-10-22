@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4670: lib/paths.sh T-4222 foreign-dir rule is too narrow: only catches <proj>/.tasks or <proj>/.context exactly; adopt the any-ancestor rule and stop honouring an inherited FW_TASKS_DIR_OVERRIDE
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T21:54:40Z
+# ============================================================================
+
+task_id: T-4670
+task_name: "lib/paths.sh T-4222 foreign-dir rule is too narrow: only catches <proj>/.tasks or <proj>/.context exactly; adopt the any-ancestor rule and stop honouring an inherited FW_TASKS_DIR_OVERRIDE"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T21:20:28Z
+completed: 2026-10-22T21:54:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T23:20:57+02:00
+last_commit: 2026-10-22T23:52:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture paths.sh foreign-dir rule too narrow (055 ancestor rule, inherited override). paths.sh foreign-dir rule is containment-based (realpath + walk to nearest project root); inherited FW_TASKS_DIR_OVERRIDE ignored across a project boundary; 6 regression tests. tick Agent ACs (verification lines all pass)
+
+# Key outcomes
+outcomes:
+  - 'lib/paths.sh drops an inherited TASKS_DIR/CONTEXT_DIR (stderr line, re-derived from PROJECT_ROOT) whenever its canonical path (realpath -m) lies inside another framework project — nearest ancestor holding .framework.yaml (or a linked worktree whose main checkout does) that is not PROJECT_ROOT — including subdirs (/x/.context/working) and symlinks into another project'
+  - 'The exact-dir case (<other>/.tasks) is still caught, and a fixture tmp dir with no such ancestor is still honoured unchanged'
+  - 'FW_TASKS_DIR_OVERRIDE=1 is honoured when set on this invocation, and ignored (with a stderr line) when _FW_PATHS_DERIVED_BY names a different root than PROJECT_ROOT'
+  - 'No python in the path; at most one realpath per variable; the walk stops at /'
+  - 'Regression tests in tests/unit/t4222_inherited_env_dirs.bats cover subdir, symlink, exact-dir, fixture, override-honoured, override-ignored; t4222 and t4651 suites green with zero skips'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/paths.sh'
+  - '.context/episodic/T-4653.yaml'
+  - '.context/episodic/T-4665.yaml'
+  - '.context/episodic/T-4666.yaml'
+  - 'lib/paths.sh'
+  - '.tasks/active/T-4670-libpathssh-t-4222-foreign-dir-rule-is-to.md'
+  - '.tasks/completed/T-4653-partial-complete-finalization-archives-a.md'
+  - '.tasks/completed/T-4665-libspawn-envsh-forwards-every-termlink-v.md'
+  - '.tasks/completed/T-4666-libspawn-envsh-passes-path-verbatim-a-ca.md'
+  - 'tests/unit/t4222_inherited_env_dirs.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T23:20:57'
+    action: 'T-4670: capture paths.sh foreign-dir rule too narrow (055 ancestor rule, inherited override)'
+  - time: '2026-10-22T23:52:11'
+    action: 'T-4670: paths.sh foreign-dir rule is containment-based (realpath + walk to nearest project root); inherited FW_TASKS_DIR_OVERRIDE ignored across a project boundary; 6 regression tests'
+  - time: '2026-10-22T23:52:39'
+    action: 'T-4670: tick Agent ACs (verification lines all pass)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 33 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 33
+  commits: 3
+  files_changed: 8
+  lines_added: 864
+  lines_removed: 50
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4670-libpathssh-t-4222-foreign-dir-rule-is-to.md
+generated_by: context-agent-hybrid

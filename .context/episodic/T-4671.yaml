@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4671: tests/governance/test_register_requirements_gate.bats runs in the REAL repo: fw task update --status work-completed git-mv's its T-99xx redteam fixtures into the live index, and an unrelated commit picks them up
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T21:55:00Z
+# ============================================================================
+
+task_id: T-4671
+task_name: "tests/governance/test_register_requirements_gate.bats runs in the REAL repo: fw task update --status work-completed git-mv's its T-99xx redteam fixtures into the live index, and an unrelated commit picks them up"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T21:43:33Z
+completed: 2026-10-22T21:54:42Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-22T23:43:49+02:00
+last_commit: 2026-10-22T23:53:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  remove redteam fixtures a test leaked into the live index (committed by accident in a2e53a22a); T-4617 close; capture the test-isolation bug. register-gate test runs in a temp git project; live_repo_guard fails tests that change the real repo
+
+# Key outcomes
+outcomes:
+  - 'test_register_requirements_gate.bats runs every case in a temp `git init`''d PROJECT_ROOT (no write to FRAMEWORK_ROOT), all 5 assertions unchanged in meaning, 5/5 ok and 0 skips'
+  - 'tests/live_repo_guard.bash: `live_repo_guard_begin` records `git status --porcelain` + index content hash of the real repo (whole repo, or scoped to a pathspec); `live_repo_guard_end` fails the test if either changed; wired into the register-gate test''s setup/teardown, scoped to its fixture namespace'
+  - 'Regression test tests/unit/t4671_live_repo_guard.bats proves the guard fails on a staged file and on a working-tree change, passes on no change, and that a scoped guard ignores out-of-scope changes'
+  - 't3586_skip_flag_policy.bats and test_t3896_inception_readiness.py checked: both already isolated (temp PROJECT_ROOT / tmp_path); recorded in ## Updates'
+  - 'Real repo `git status --porcelain` and index hash identical before/after running the changed files (recorded in ## Updates)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'remove redteam fixtures a test leaked into the live index (committed by accident in a2e53a22a); T-4617 close; capture the test-isolation bug'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — scope of the live-repo guard'
+    chose: 'whole-repo snapshot by default, with an optional pathspec; the register-gate test passes its fixture namespace (`.tasks/**/T-99xx-*`, `.context/episodic/T-99xx.yaml`, the redteam arc and design doc).'
+    rationale: 'the first run with a whole-repo guard went red on test 4 because a parallel worker modified `.tasks/active/T-4670-*.md` mid-run. In this shared checkout a whole-repo comparison is a flake source; the scoped one watches exactly where this test''s leak landed (a2e53a22a''s paths all match it).'
+    alternatives_rejected: ['whole-repo only (flaky with 5 workers in one tree); disk-only teardown (the original failure: cannot see the index).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-4617.yaml'
+  - '.context/episodic/T-9902.yaml'
+  - '.context/episodic/T-9905.yaml'
+  - '.context/episodic/T-9906.yaml'
+  - '.tasks/active/T-4671-testsgovernancetestregisterrequirementsg.md'
+  - '.tasks/completed/T-4617-fixtures-that-break-on-a-detached-head-c.md'
+  - '.tasks/completed/T-9902-redteam.md'
+  - '.tasks/completed/T-9905-redteam.md'
+  - '.tasks/completed/T-9906-redteam.md'
+  - 'tests/governance/test_register_requirements_gate.bats'
+  - 'tests/live_repo_guard.bash'
+  - 'tests/unit/t4671_live_repo_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T23:43:49'
+    action: 'T-4671: remove redteam fixtures a test leaked into the live index (committed by accident in a2e53a22a); T-4617 close; capture the test-isolation bug'
+  - time: '2026-10-22T23:53:52'
+    action: 'T-4671: register-gate test runs in a temp git project; live_repo_guard fails tests that change the real repo'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 2
+  files_changed: 12
+  lines_added: 701
+  lines_removed: 373
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4671-testsgovernancetestregisterrequirementsg.md
+generated_by: context-agent-hybrid
