@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4584: 9 completed tasks carry horizon: next, so t3118_horizon_migration_scope.bats test 8 (CTL-030) is red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:12:10Z
+# ============================================================================
+
+task_id: T-4584
+task_name: "9 completed tasks carry horizon: next, so t3118_horizon_migration_scope.bats test 8 (CTL-030) is red"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T07:46:07Z
+completed: 2026-10-22T10:11:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T10:09:11+02:00
+last_commit: 2026-10-22T10:09:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  stale-index guard refuses a staged .tasks/completed/ blob with a non-null horizon (the R100 git-mv of an unclosed task it passed as 'the normal move'); 3 regression tests in t4167; 6 of 9 completed records migrated to horizon: null (T-4433/4434/4436 carry foreign estimator edits, left for parent); vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Root cause localised to file:line and recorded in ## RCA'
+  - 'Pre-commit refuses a staged `.tasks/completed/` blob whose frontmatter horizon is non-null, including the R100 `git mv` of an unclosed task that the stale-index guard used to pass as "the normal move"'
+  - 'The 9 affected files in .tasks/completed/ are migrated to `horizon: null`'
+  - 'Regression tests in tests/unit/t4167_stale_index_guard.bats: the R100 unclosed move is refused (red before the fix), a closed move (horizon null) and a horizon-less move stay allowed'
+  - 'tests/unit/t3118_horizon_migration_scope.bats is fully green (test 8 / CTL-030 included)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — where to stop the path'
+    chose: 'refuse at pre-commit (stale-index guard), on the staged blob, keyed on location + frontmatter horizon.'
+    rationale: 'no close path writes the horizon; the bad state is a stale index entry committed in update-task''s move→restage window, by whoever commits. Only the commit sees every route (shared index, scratch index, `commit --only`, hand `mv`). Narrowing update-task''s window (stage closed content right after the move) would still leave the episodic/verification minutes and other routes open.'
+    alternatives_rejected: ['also refusing `status != work-completed` in completed/ — broader, but out of this task''s scope; the 9 records still read `status: started-work`, so it would block migrating them.']
+  - decision: '2026-10-22 — open items for the parent (not done here)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/stale-index-guard.py'
+  - 'agents/git/lib/stale-index-guard.py'
+  - '.tasks/active/T-4584-9-completed-tasks-carry-horizon-now-so-t.md'
+  - '.tasks/completed/T-3735-fw-config-set-wraps-long-yaml-values-at-.md'
+  - '.tasks/completed/T-3760-human-fw-inception-decide-refused-with-t.md'
+  - '.tasks/completed/T-4481-sidecar-injector-ignores-a-session-recor.md'
+  - '.tasks/completed/T-4486-adapt-termlink-proposal-348-t-3185-hunk-.md'
+  - '.tasks/completed/T-4502-corpus-derive-silently-drops-a-second-bp.md'
+  - '.tasks/completed/T-4507-green-degraded-a-seat-whose-verdict-the-.md'
+  - 'tests/unit/t4167_stale_index_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T10:09:11'
+    action: 'T-4584: stale-index guard refuses a staged .tasks/completed/ blob with a non-null horizon (the R100 git-mv of an unclosed task it passed as ''the normal move''); 3 regression tests in t4167; 6 of 9 completed records migrated to horizon: null (T-4433/4434/4436 carry foreign estimator edits, left for parent); vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 145 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, cloud]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 145
+  commits: 1
+  files_changed: 10
+  lines_added: 272
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4584-9-completed-tasks-carry-horizon-now-so-t.md
+generated_by: context-agent-hybrid
