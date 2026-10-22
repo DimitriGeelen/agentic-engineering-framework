@@ -113,3 +113,7 @@ affected. Running processes keep their old copy until relaunched.
 - **0506: still unknown.**
 - The host rebooted at ~20:46, so every process now runs with a fresh environment; the leak itself
   is gone. Pre-T-4222 consumers (050, 055, 1023) stay exposed to a recurrence until they upgrade.
+- **1409-sprind inspection (21:20):** 050's leaked hook left two untracked files in 1409's
+  `.context/handovers/` (`S-2026-1022-1721.md`, `.discard-manifest.yaml`), computed from 1409's own task
+  tree. No commit was made in 1409 and nothing was pushed; 1409 quarantined both files, and its
+  LATEST.md had already been re-pointed by its own 17:36 handover. Damage is closed for 050→1409.
