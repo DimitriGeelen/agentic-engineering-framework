@@ -9,10 +9,10 @@ description: >
   docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (line 42). Reproduced
   on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -44,7 +44,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:38:21Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T11:03:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction confirmed (or refuted) on current bleeding-edge: `bats tests/integration/fw_task.bats` placeholder test result recorded in ## RCA
+- [x] Placeholder-name test passes `--owner agent --description ...` so the placeholder check, not the required-flag check, is what it exercises
+- [x] Placeholder-name test also asserts a non-zero exit (the refusal, not just a word in the output)
+- [x] `tests/integration/fw_task.bats` runs fully green with no skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +283,9 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/integration/fw_task.bats > /tmp/.t4600.out 2>&1 && ! grep -q "^not ok" /tmp/.t4600.out
+test "$(grep -c '# skip' /tmp/.t4600.out)" -eq 0
+grep -A3 'rejects placeholder names' tests/integration/fw_task.bats | grep -q -- "--owner agent --description"
 
 ## RCA
 
@@ -297,6 +302,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/integration/fw_task.bats` test 2 ("rejects placeholder names") failed at line 40: output contained neither "placeholder" nor "template". Reproduced on bleeding-edge 2026-10-22 (`not ok 1 fw task create: rejects placeholder names`).
+
+**Root cause:** stale test, not a code bug. `agents/task-create/create-task.sh:135-142` refuses a non-tty call missing `--description`/`--owner` ("Missing required flag(s)") before the placeholder-name check at `create-task.sh:151-157` runs. The test passed only `--name 'Test task' --type build`, so it hit the earlier refusal and never reached the check it was named for.
+
+**Why structurally allowed:** the test asserted only a word in the output, not which refusal fired or the exit status; when the required-flag refusal was added ahead of it, the test's premise silently changed and nothing tied the test to the check order.
+
+**Prevention:** the test now supplies every required flag (so only the placeholder check can refuse) and asserts `status -ne 0`, so a future reordering that lets the name through, or a different refusal, fails with a clear signal.
 
 ## Evolution
 
@@ -378,3 +391,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4600-fwtaskbats-placeholder-name-test-omits--.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:03:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -36,7 +36,10 @@ teardown() {
 }
 
 @test "fw task create: rejects placeholder names" {
-    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' task create --name 'Test task' --type build"
+    # T-4600: pass the required flags, otherwise the missing-flag refusal fires
+    # first and the placeholder check is never reached.
+    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' task create --name 'Test task' --type build --owner agent --description 'Test description'"
+    [ "$status" -ne 0 ]
     [[ "$output" == *"placeholder"* ]] || [[ "$output" == *"template"* ]]
 }
 
