@@ -374,6 +374,14 @@ bin/fw watchtower current
 
 ## Decisions
 
+### 2026-10-22 — restoring the five lost rows is the operator's action
+- **Chose:** the code fix prevents recurrence; the five existing rows are restored by the operator from the stash that holds them, not by an agent (agents may not write `.context/reviews/human-ac-ticks.jsonl` — T-3695 guard).
+- **Why:** the rows are genuine (written by decide at the operator's Watchtower GO) and preserved verbatim in stash commit `92e93725de` (base `fa17ac8a73`); re-appending them is lossless. An `ack` per task would also work but re-creates rather than restores.
+- **Operator runs (one line, from any directory):**
+  `cd /opt/999-Agentic-Engineering-Framework && git diff 92e93725ded8b47642782223f622d2c2d94923f2^1 92e93725ded8b47642782223f622d2c2d94923f2 -- .context/reviews/human-ac-ticks.jsonl | sed -n 's/^+{/{/p' >> .context/reviews/human-ac-ticks.jsonl && python3 lib/human_ac_ticks.py audit && git commit -m "T-4590: restore the five inception-decide provenance rows lost in the 2026-10-22 09:32 stash" -- .context/reviews/human-ac-ticks.jsonl`
+- **Expected:** the audit prints `no unprovenanced ### Human ticks …` (exit 0), then the commit lands. `stash@{0}` also holds 644 files of someone's WIP from 09:32; whoever stashed should review it. It is not touched here.
+- **Rejected:** an agent rewriting the ledger (guarded for a reason); a baseline/override (forbidden).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
