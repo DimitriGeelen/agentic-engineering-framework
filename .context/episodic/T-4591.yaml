@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4591: Push blocker: verdict ledger has 13 rows that no longer verify (T-4490 judge dispatches not in the review-dispatch registry)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T11:31:52Z
+# ============================================================================
+
+task_id: T-4591
+task_name: "Push blocker: verdict ledger has 13 rows that no longer verify (T-4490 judge dispatches not in the review-dispatch registry)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T08:19:23Z
+completed: 2026-10-22T11:30:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T10:29:51+02:00
+last_commit: 2026-10-22T10:35:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  verdict commits now also stage the dispatch registry, runs and completions their rows are verified against (_ledger_paths); restored the 18/11/36/24 registry, run, completion and cost rows a shared-checkout git stash (07:32Z, T-4578 worker) reset to HEAD; regression test (2 red before, 3/3 green); ledger audit 34 rows, 0 failures. vendor check clean, AC 4 ticked. worker-common gains FOREGROUND ONLY (re-added; uncommitted copy was lost to the 07:32 stash) and SHARED CHECKOUT (no stash/reset/clean/checkout of others' files). restore 5 human-ac-tick rows lost to the 2026-10-22 stash
+
+# Key outcomes
+outcomes:
+  - 'Root cause of the 13 unverifiable verdict rows is localised to a file:line and recorded in ## RCA'
+  - 'Cause fixed without editing or deleting any verdict-ledger row; `python3 lib/verdict_ledger.py audit` reports 0 rows failing'
+  - 'Regression test added that fails without the fix and passes with it'
+  - 'Vendored copies in sync (`bin/fw vendor self --check --task T-4591` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — restore the lost rows, do not acknowledge them'
+    chose: 'restore the registry, runs, completions and cost rows byte-for-byte from stash@{0} (each file there is HEAD plus appended lines; the rows are HMAC-signed, so the audit re-verifies them). Then commit them so they are durable.'
+    rationale: 'the rows were valid and still exist. `acknowledge` is for rows that fail to verify because of a fixed framework defect, and it never makes a row count. Using it here would have thrown away 13 real verdicts.'
+    alternatives_rejected: ['`fw reviewer verdict acknowledge` on the 13 rows (they lose standing for good); `git stash pop` (stash@{0} also carries other workers'' half-recovered edits and would conflict).']
+  - decision: '2026-10-22 — operator action: 5 Human-AC tick rows are still in stash@{0}'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.context/costs/reviews.jsonl'
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/working/worker-common.md'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-4591-push-blocker-verdict-ledger-has-13-rows-.md'
+  - 'tests/unit/test_t4591_verdict_commit_carries_provenance.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T10:29:51'
+    action: 'T-4591: verdict commits now also stage the dispatch registry, runs and completions their rows are verified against (_ledger_paths); restored the 18/11/36/24 registry, run, completion and cost rows a shared-checkout git stash (07:32Z, T-4578 worker) reset to HEAD; regression test (2 red before, 3/3 green); ledger audit 34 rows, 0 failures'
+  - time: '2026-10-22T10:30:50'
+    action: 'T-4591: vendor check clean, AC 4 ticked'
+  - time: '2026-10-22T10:33:41'
+    action: 'T-4591: worker-common gains FOREGROUND ONLY (re-added; uncommitted copy was lost to the 07:32 stash) and SHARED CHECKOUT (no stash/reset/clean/checkout of others'' files)'
+  - time: '2026-10-22T10:35:42'
+    action: 'T-4591: restore 5 human-ac-tick rows lost to the 2026-10-22 stash'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 191 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, push-blocker, regression]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 191
+  commits: 4
+  files_changed: 10
+  lines_added: 285
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4591-push-blocker-verdict-ledger-has-13-rows-.md
+generated_by: context-agent-hybrid
