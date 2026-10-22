@@ -187,6 +187,16 @@ EOF
     [[ "$output" == *"Usage"* ]]
 }
 
+# T-4667: `run` merges the streams, so the test above could not see that the usage
+# line went to stdout. Capture them apart: stdout empty, usage on stderr, rc != 0.
+@test "checkpoint: usage error goes to stderr, not stdout, and exits non-zero" {
+    local rc=0
+    "$CHECKPOINT" bogus >"$TEST_TEMP_DIR/out" 2>"$TEST_TEMP_DIR/err" || rc=$?
+    [ "$rc" -ne 0 ]
+    [ ! -s "$TEST_TEMP_DIR/out" ]
+    grep -q "Usage: checkpoint.sh" "$TEST_TEMP_DIR/err"
+}
+
 # --- Agent transcript filtering ---
 
 @test "checkpoint: ignores agent-prefixed transcript files" {
