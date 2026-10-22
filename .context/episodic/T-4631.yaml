@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4631: Read-only allowlist: git --ext-diff/--textconv and git help -w run configured programs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T22:12:22Z
+# ============================================================================
+
+task_id: T-4631
+task_name: "Read-only allowlist: git --ext-diff/--textconv and git help -w run configured programs"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T10:38:18Z
+completed: 2026-10-22T22:11:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T14:58:22+02:00
+last_commit: 2026-10-22T14:58:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  read-only allowlist refuses git help -w/--web (any abbreviation, short bundle, quoted/expanded); --ext-diff/--textconv kept admitted by measured decision (plain diff/show already run configured drivers; command-line driver channels stay refused); t4631_git_drivers_help_web.bats (4 tests, both directions)
+
+# Key outcomes
+outcomes:
+  - 'Measured (scratch repo, recorded in Decisions): whether plain `git diff` / `git show` / `git log -p` run `diff.external` and a `textconv` driver WITHOUT the flags'
+  - 'Decision recorded in `## Decisions` with that evidence, and the trust boundary written as a comment at the git arm of `agents/context/lib/safe-commands.sh`'
+  - '`is_bash_safe_command` refuses `git help -w` / `--web` (any abbreviation, short bundle, quoted/expanded spelling), which starts a browser regardless of configuration'
+  - 'The channels that would let a command line choose the driver stay refused (pinned): `GIT_EXTERNAL_DIFF=` prefix, `git -c diff.external=…`, `GIT_CONFIG_PARAMETERS=`, `git -C /outside diff`'
+  - 'Controls stay SAFE: `git diff`, `git diff --ext-diff`, `git show --textconv HEAD`, `git cat-file --textconv HEAD:F`, `git help log`, `git help -a`, `git help --guides`'
+  - 'Regression test `tests/unit/t4631_git_drivers_help_web.bats` fails on the pre-fix code (help -w) and passes after; existing safe-commands suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — --ext-diff / --textconv: trust configured drivers; refuse help -w'
+    chose: 'keep `--ext-diff` and `--textconv` admitted on diff/log/show/cat-file; refuse `git help -w` / `--web`. - **Why (evidence):** measured in a scratch repo on git 2.43.0 with a marker-writing script: plain `git diff` RAN `diff.external` with no flag; plain `git show`, plain `git diff HEAD~1` and plain `git log -p -1` each RAN a textconv driver set by `.gitattributes` + `diff.<x>.textconv`; only `git log -p` without `--ext-diff` did not run `diff.external`. So refusing the flags would leave the same program running from `git diff` / `git show`; the only real control is over the config, and the allowlist already refuses every command-line channel that sets it (`-c`, `GIT_CONFIG_*`, `GIT_EXTERNAL_DIFF`, a repository outside PROJECT_ROOT via -C/--git-dir/GIT_DIR). `help -w` is different: it starts a browser whatever the config says, an action with no read value.'
+    alternatives_rejected: ['refusing the flags (cosmetic, per the measurement); refusing diff/show/log outright (would gate the commonest read commands in exactly the null-focus states the allowlist exists for). - **Residual (not closed here, for the parent to register):** the Write/Edit gate exempts `PROJECT_ROOT/.git/*` (`agents/context/check-active-task.sh:572`), so with no active task a tool write to `.git/config` can name a diff driver, textconv or `core.fsmonitor` that a later allowlisted `git diff` / `git status` runs. That is a gate-exemption gap, independent of these flags.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4631-read-only-allowlist-git---ext-diff--text.md'
+  - 'tests/unit/t4631_git_drivers_help_web.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T14:58:22'
+    action: 'T-4631: read-only allowlist refuses git help -w/--web (any abbreviation, short bundle, quoted/expanded); --ext-diff/--textconv kept admitted by measured decision (plain diff/show already run configured drivers; command-line driver channels stay refused); t4631_git_drivers_help_web.bats (4 tests, both directions)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 693 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, read-only-allowlist, G-121]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 693
+  commits: 1
+  files_changed: 4
+  lines_added: 218
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4631-read-only-allowlist-git---ext-diff--text.md
+generated_by: context-agent-hybrid
