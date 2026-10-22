@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import hashlib
 import heapq
+import json
 import os
 import sys
 import xml.etree.ElementTree as ET
@@ -234,6 +235,190 @@ def _event_def(node: ET.Element) -> tuple[str, dict[str, str]] | None:
             }
             return (kind or "unknown", bindings)
     return None
+
+
+# T-4551: structured aef:io (policy/standards/aef-bpmn-mapping-v1.1-io.md). The forward
+# compile reads it into the skeleton instead of dropping it (§1.4). Children each element
+# knows, by local name; anything else rides "raw" verbatim.
+MAPPING_VERSIONS = ("1.1",)
+IO_TYPE_ALIASES = {"int": "number", "bool": "boolean"}  # §3.4
+IO_KEYED_OPS = {"update", "upsert", "delete"}  # §4.3
+_IO_KIDS = {
+    "input": {"field": "fields", "expect": "expects", "example": "examples"},
+    "output": {"field": "fields", "expect": "expects", "example": "examples"},
+    "field": {"when": "when"},
+    "expect": {"value": "values"},
+    "when": {"value": "values"},
+    "example": {},
+}
+
+
+class UnsupportedMappingVersionError(ValueError):
+    """The process aef:meta declares a mappingVersion this compiler does not know (§1.5)."""
+
+    def __init__(self, value: str) -> None:
+        self.value = value
+        super().__init__(
+            f"process aef:meta declares mappingVersion={value!r}; this compiler knows "
+            f"{', '.join(MAPPING_VERSIONS)} (v1.0 = no attribute) — refusing the map "
+            f"rather than misreading it (mapping v1.1 §1.5, T-4551)"
+        )
+
+
+class IoTextError(ValueError):
+    """An aef:io element carries text outside aef:value: refused, never dropped (§1.4)."""
+
+
+def _direct_meta(node: ET.Element) -> ET.Element | None:
+    """The node's OWN <aef:meta> (extensionElements > meta), not a descendant's."""
+    for ext in node:
+        if _local(ext.tag) != "extensionElements":
+            continue
+        for child in ext:
+            if _local(child.tag) == "meta":
+                return child
+    return None
+
+
+def _process_meta(root: ET.Element) -> tuple[str | None, dict[str, dict[str, str]]]:
+    """(mappingVersion, {prefix name: aef:prefix attrs}) from the process-level aef:meta
+    (§1.1, §6.1). A version other than 1.1 is refused (§1.5)."""
+    version: str | None = None
+    prefixes: dict[str, dict[str, str]] = {}
+    for proc in root.iter():
+        if _local(proc.tag) != "process":
+            continue
+        meta = _direct_meta(proc)
+        if meta is None:
+            continue
+        mv = meta.get("mappingVersion")
+        if mv is not None:
+            if mv not in MAPPING_VERSIONS:
+                raise UnsupportedMappingVersionError(mv)
+            version = version or mv
+        for group in meta:
+            if _local(group.tag) != "prefixes":
+                continue
+            for p in group:
+                if _local(p.tag) == "prefix" and p.get("name"):
+                    prefixes.setdefault(p.get("name"), dict(p.attrib))
+    return version, prefixes
+
+
+def _qname_prefix(value: str | None) -> str | None:
+    """The prefix of a QName, or None for a full IRI / a bare name."""
+    if not value or ":" not in value or "://" in value or value.startswith("urn:"):
+        return None
+    return value.split(":", 1)[0]
+
+
+def _io_entry(el: ET.Element, local: str, owner: str) -> dict:
+    """One known aef io element -> {"attrs", <child lists>, "raw"}; attributes verbatim."""
+    entry: dict = {}
+    if el.attrib:
+        entry["attrs"] = dict(el.attrib)
+    if (el.text or "").strip() or any((c.tail or "").strip() for c in el):
+        raise IoTextError(
+            f"node {owner!r} aef:{local} carries text outside mapping v1.1 — refusing "
+            f"rather than dropping it (§1.4, T-4551)"
+        )
+    kids = _IO_KIDS[local]
+    for c in el:
+        clocal = _local(c.tag) if isinstance(c.tag, str) else None
+        key = kids.get(clocal) if clocal else None
+        if key is None:
+            entry.setdefault("raw", []).append(ET.tostring(c, encoding="unicode").strip())
+        elif clocal == "value":
+            entry.setdefault(key, []).append(c.text or "")
+        else:
+            entry.setdefault(key, []).append(_io_entry(c, clocal, owner))
+    return entry
+
+
+def _node_io(
+    node: ET.Element, v11: bool, prefixes: dict[str, dict[str, str]]
+) -> list[dict] | None:
+    """The node's aef:io as a list of items, or None when it has none (T-4551).
+
+    Each input/output item keeps its attributes verbatim and adds the read-rule results:
+    `type` (§2.2/§3.3 default string, §3.4 aliases), `fieldRef` from `ref` under §2.3,
+    and `system` derived per §2.5. Unknown children of aef:io ride as {"kind", "raw"}."""
+    io_el = None
+    for ext in node:
+        if _local(ext.tag) != "extensionElements":
+            continue
+        for child in ext:
+            if _local(child.tag) == "io":
+                io_el = child
+                break
+    if io_el is None:
+        return None
+    owner = node.get("id") or "<anon>"
+    step_meta = _direct_meta(node)
+    items: list[dict] = []
+    for c in io_el:
+        clocal = _local(c.tag) if isinstance(c.tag, str) else None
+        if clocal not in ("input", "output"):
+            items.append({"kind": clocal or "comment",
+                          "raw": ET.tostring(c, encoding="unicode").strip()})
+            continue
+        item = {"kind": clocal, **_io_entry(c, clocal, owner)}
+        attrs = item.get("attrs", {})
+        typ = attrs.get("type")
+        if typ is None and not (attrs.get("fieldRef") or attrs.get("typeRef")):
+            typ = "string"
+        if typ is not None:
+            item["type"] = IO_TYPE_ALIASES.get(typ, typ)
+        field_ref = attrs.get("fieldRef")
+        ref = attrs.get("ref")
+        if (field_ref is None and ref and not v11 and "typeRef" not in attrs
+                and prefixes.get(_qname_prefix(ref) or "", {}).get("kind") == "field"):
+            field_ref = ref
+            item["fieldRef_from"] = "ref"  # §2.3: all four conditions hold
+        if field_ref is not None:
+            item["fieldRef"] = field_ref
+        sys_attr = "sourceSystem" if clocal == "input" else "targetSystem"
+        system, source = attrs.get(sys_attr), "attribute"
+        if system is None and step_meta is not None and step_meta.get(sys_attr):
+            system, source = step_meta.get(sys_attr), "step"
+        if system is None:
+            pfx = _qname_prefix(field_ref or attrs.get("typeRef"))
+            if pfx and prefixes.get(pfx, {}).get("system"):
+                system, source = prefixes[pfx]["system"], "prefix"
+        if system is not None:
+            item[sys_attr] = system
+            item["system_from"] = source
+        items.append(item)
+    return items
+
+
+def _io_warnings(node_id: str, items: list[dict]) -> list[str]:
+    """§4.3 (keyed operation with no match field) and §4.4 (undetermined match key)."""
+    out: list[str] = []
+    for item in items:
+        if item.get("kind") not in ("input", "output"):
+            continue
+        attrs = item.get("attrs", {})
+        where = f"aef:{item['kind']} {attrs.get('typeRef') or attrs.get('name') or ''}".rstrip()
+        fields = item.get("fields", [])
+        op = attrs.get("operation")
+        if op in IO_KEYED_OPS and not any(
+                f.get("attrs", {}).get("role") == "match" for f in fields):
+            out.append(
+                f"node {node_id!r} {where} operation={op!r} has no aef:field "
+                f"role=\"match\" — the map reads as \"{op} everything\" (mapping v1.1 "
+                f"§4.3, a lint error; T-4551)"
+            )
+        for f in fields:
+            fa = f.get("attrs", {})
+            if fa.get("role") == "match" and not (fa.get("fieldRef") or fa.get("path")):
+                out.append(
+                    f"node {node_id!r} {where} has a role=\"match\" aef:field with "
+                    f"neither fieldRef nor path — the key is not yet determined; no "
+                    f"update/upsert/delete code may be generated until it is named "
+                    f"(mapping v1.1 §4.4; T-4551)"
+                )
+    return out
 
 
 def _is_inception_subprocess(node: ET.Element) -> bool:
@@ -462,6 +647,10 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
     fwd, rev = _flows(root)
     starts = [nid for nid, t in ntypes.items() if t in START_TAGS]
     warnings: list[str] = []
+    # T-4551: process-level aef:meta (§1.5 refuses an unknown mappingVersion here,
+    # before any node is read) and its prefix map (§6), for the §2.3 / §2.5 read rules.
+    mapping_version, prefixes = _process_meta(root)
+    v11 = mapping_version == "1.1"
 
     # Pass 1: extract emitted nodes — task tags PLUS inception-marked subProcesses
     # (slice 3). Record node_id -> uid for linking and owner resolution.
@@ -569,6 +758,10 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
                 "constituents": constituents,
             }
         )
+        io_items = _node_io(node, v11, prefixes)
+        if io_items is not None:
+            raw[-1]["io"] = io_items
+            warnings.extend(_io_warnings(node_id, io_items))
         uid_by_node[node_id] = uid
 
     # T-3172: report the external-lane drops. This is EXPECTED behaviour, so the
@@ -688,6 +881,8 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
                 "constituents": r["constituents"],
             }
         )
+        if "io" in r:
+            skeletons[-1]["io"] = r["io"]
 
     # Pass 3: surface typed-event annotations (T-2552). 832's T-204 Slice 1 encodes
     # error/timer/message as <aef:eventDef> on a neutral intermediateCatchEvent. Pass 2's
@@ -893,6 +1088,47 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
     return skeletons, warnings
 
 
+def _expect_text(ex: dict) -> str:
+    """One aef:expect as a readable assertion, e.g. `path StageName const "Closed Won"`."""
+    attrs = dict(ex.get("attrs", {}))
+    addr = ""
+    for k in ("fieldRef", "path"):
+        if k in attrs:
+            addr = f"{k} {attrs.pop(k)} "
+            break
+    parts = [f"{k}={json.dumps(v, ensure_ascii=False)}" for k, v in attrs.items()]
+    if ex.get("values"):
+        parts.append("enum=" + json.dumps(ex["values"], ensure_ascii=False))
+    return (addr + " ".join(parts)).strip()
+
+
+def _render_io(items: list[dict] | None) -> str:
+    """`io:` frontmatter (one JSON flow mapping per item — JSON is YAML) plus a
+    pre/postcondition AC seed per aef:expect (§7.1). Empty for a node with no aef:io,
+    so io-free skeletons render byte-identically to before T-4551."""
+    if items is None:
+        return ""
+    if not items:
+        return "io: []\n"
+    lines = ["io:"]
+    seeds: list[str] = []
+    for item in items:
+        lines.append("  - " + json.dumps(item, ensure_ascii=False))
+        kind = item.get("kind")
+        if kind not in ("input", "output"):
+            continue
+        attrs = item.get("attrs", {})
+        subject = (attrs.get("typeRef") or attrs.get("schemaRef") or item.get("fieldRef")
+                   or attrs.get("name") or kind)
+        label = "precondition" if kind == "input" else "postcondition"
+        for ex in item.get("expects", []):
+            seeds.append(
+                f"# {label}: [NEEDS-FILL] {kind} {subject}: {_expect_text(ex)} "
+                f"— seed as an Agent AC (aef:expect, mapping v1.1 \u00a77)"
+            )
+    return "\n".join(lines + seeds) + "\n"
+
+
 def render_skeleton(sk: dict) -> str:
     """Render one skeleton dict as an AEF task-skeleton frontmatter block."""
     # Emitted as real frontmatter with a [NEEDS-FILL] AC skeleton (never a template stub).
@@ -919,6 +1155,7 @@ def render_skeleton(sk: dict) -> str:
         f"horizon: {sk.get('horizon', 'now')}\n"
         f"related_tasks: {related_yaml}\n"
         "status: captured\n"
+        f"{_render_io(sk.get('io'))}"
         f"{constituents_line}"
         "# acceptance_criteria: [NEEDS-FILL] — seed T-193 Agent/Human split before start\n"
         "---\n"
@@ -1032,9 +1269,10 @@ def main(argv: list[str]) -> int:
     path = positional[0]
     try:
         skeletons, warnings = parse_bpmn(path)
-    except MalformedInceptionError as e:
+    except (MalformedInceptionError, UnsupportedMappingVersionError, IoTextError) as e:
         # O-3 fail-fast (v1.1): a malformed inception is a structural diagram defect —
-        # refuse the compile with an actionable message, exit non-zero.
+        # refuse the compile with an actionable message, exit non-zero. T-4551: an unknown
+        # mappingVersion (§1.5) and aef:io text with no slot (§1.4) refuse the same way.
         sys.stderr.write(f"ERROR: {e}\n")
         return 3
     for w in warnings:
