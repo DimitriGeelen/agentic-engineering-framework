@@ -1,13 +1,20 @@
 ---
 id: T-4586
-name: "test_t3077_approvals_surface_isolation.bats A1 aborts in a fresh clone: find on missing .context/approvals fails under set -e"
+name: "test_t3077_approvals_surface_isolation.bats A1 aborts in a fresh clone: find
+  on missing .context/approvals fails under set -e"
 description: >
-  tests/governance/test_t3077_approvals_surface_isolation.bats:35-38 _live_surface_paths runs find on $FRAMEWORK_ROOT/.context/approvals, which is gitignored and absent in a fresh clone; find exits 1, bats' errexit aborts the function at line 56 ('_live_surface_paths >> sightings' failed). Reproduced 2026-10-22 in a clean clone of e785e48b9 under env -i. Named in cloud report 4 (T-4508, 'test_t3077 approvals surface isolation'). Guard the finds (|| true or test -d) so the test measures isolation, not the directory's existence.
+  tests/governance/test_t3077_approvals_surface_isolation.bats:35-38 _live_surface_paths
+  runs find on $FRAMEWORK_ROOT/.context/approvals, which is gitignored and absent
+  in a fresh clone; find exits 1, bats' errexit aborts the function at line 56 ('_live_surface_paths
+  >> sightings' failed). Reproduced 2026-10-22 in a clean clone of e785e48b9 under
+  env -i. Named in cloud report 4 (T-4508, 'test_t3077 approvals surface isolation').
+  Guard the finds (|| true or test -d) so the test measures isolation, not the directory's
+  existence.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, cloud]
 components: []
 related_tasks: [T-4575, T-4508]
@@ -39,8 +46,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T07:46:58Z
-last_update: 2026-10-22T07:46:58Z
-date_finished: null
+last_update: '2026-10-22T08:00:45Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:55:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T08:00:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=316,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4586: test_t3077_approvals_surface_isolation.bats A1 aborts in a fresh clone: find on missing .context/approvals fails under set -e
@@ -63,8 +97,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_live_surface_paths` and `_surface_manifest` in tests/governance/test_t3077_approvals_surface_isolation.bats return 0 under `set -e` when `.context/approvals` and/or `.context/working` are absent (fresh clone)
+- [x] Regression test tests/unit/t4586_t3077_helpers_missing_dirs.bats fails before the fix (4/4 not ok) and passes after (4/4 ok)
+- [x] test_t3077 still parses (2 tests) and test 2 passes; A1 in the main checkout is red for an unrelated, pre-existing reason (see Decisions)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +284,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 120 bats tests/unit/t4586_t3077_helpers_missing_dirs.bats > /tmp/.t4586.out 2>&1 && ! grep -q "^not ok" /tmp/.t4586.out
+test "$(grep -c '# skip' /tmp/.t4586.out)" -eq 0
+test "$(bats --count tests/governance/test_t3077_approvals_surface_isolation.bats)" -eq 2
+grep -q "pending-\*.yaml' 2>/dev/null || true" tests/governance/test_t3077_approvals_surface_isolation.bats
 
 ## RCA
 
@@ -265,6 +304,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** In a fresh clone, test_t3077 A1 fails with `_live_surface_paths >> sightings failed` (line 56) before measuring anything.
+
+**Root cause:** tests/governance/test_t3077_approvals_surface_isolation.bats:35-38 — `_live_surface_paths` runs `find "$FRAMEWORK_ROOT/.context/approvals" ...`; that directory is untracked (no committed files), so it is absent in a fresh clone. `find` exits 1 on a missing start path; `2>/dev/null` hides the message but not the status, and bats' errexit (inherited by functions) aborts the test. `_surface_manifest` (line 27-33) has the same finds but sits in a pipeline, so only its last stage's status counts — latent, not failing.
+
+**Why structurally allowed:** The suite only ever ran in checkouts where `.context/approvals` already existed (the live operator surface); no fresh-clone run existed until the cloud reports (T-4508).
+
+**Prevention:** finds guarded with `|| true` (absent dir = empty surface, which is the correct reading); tests/unit/t4586_t3077_helpers_missing_dirs.bats extracts both helpers and runs them under `set -e` against a root with neither directory.
 
 ## Evolution
 
@@ -330,6 +377,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — A1 red in the live checkout is out of scope
+- **Chose:** fix only the fresh-clone abort; do not change A1's sighting semantics.
+- **Why:** In the main checkout A1 fails because `.context/approvals/pending-72a180442d0c.yaml` and `.context/working/.tier0-approval.{pending,lock}` were written at 07:58:03Z by a concurrent `claude` session's real Tier 0 block (task WM-002, `git branch -D` test command), not by the gates suite. A1 records every sighting, including state that existed before the run, so any pending operator card (and the persistent `.tier0-approval.lock`) turns it red. That is a separate defect (baseline not subtracted from sightings) and deserves its own task; not filed here (worker scope).
+- **Rejected:** subtracting the pre-run baseline in this task — changes what the guard asserts, which is the guard's owner's call.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -346,3 +398,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4586-testt3077approvalssurfaceisolationbats-a.md
 - **Context:** Initial task creation
+
+### 2026-10-22T07:55:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

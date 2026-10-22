@@ -26,16 +26,18 @@ GATES_SUITE="$FRAMEWORK_ROOT/tests/governance/test_pretooluse_gates.bats"
 # Manifest of the live approvals surface: path + sha256 of every file, sorted.
 _surface_manifest() {
     {
-        find "$FRAMEWORK_ROOT/.context/approvals" -type f -print0 2>/dev/null
+        find "$FRAMEWORK_ROOT/.context/approvals" -type f -print0 2>/dev/null || true
         find "$FRAMEWORK_ROOT/.context/working" -maxdepth 1 -name '.tier0-approval*' \
-             -type f -print0 2>/dev/null
+             -type f -print0 2>/dev/null || true
     } | sort -z | xargs -0 -r sha256sum 2>/dev/null | sort
 }
 
 # Anything that would be VISIBLE on /approvals or actionable by `fw tier0 approve`.
+# Both dirs can be absent (fresh clone, T-4586): an absent dir is an empty surface,
+# and an unguarded find would exit 1 and abort the test under errexit.
 _live_surface_paths() {
-    find "$FRAMEWORK_ROOT/.context/approvals" -maxdepth 1 -name 'pending-*.yaml' 2>/dev/null
-    find "$FRAMEWORK_ROOT/.context/working" -maxdepth 1 -name '.tier0-approval*' 2>/dev/null
+    find "$FRAMEWORK_ROOT/.context/approvals" -maxdepth 1 -name 'pending-*.yaml' 2>/dev/null || true
+    find "$FRAMEWORK_ROOT/.context/working" -maxdepth 1 -name '.tier0-approval*' 2>/dev/null || true
 }
 
 @test "T-3077 A1: gates suite leaves the live approvals surface byte-identical" {
