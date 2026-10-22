@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4580: test_register_requirements_gate.bats fixtures use Verification 'true', now refused by the T-4197 tautology block: tests 1, 4, 5 red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:09:42Z
+# ============================================================================
+
+task_id: T-4580
+task_name: "test_register_requirements_gate.bats fixtures use Verification 'true', now refused by the T-4197 tautology block: tests 1, 4, 5 red"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T23:05:53Z
+completed: 2026-10-22T10:06:51Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-22T09:31:18+02:00
+last_commit: 2026-10-22T09:31:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register-gate fixtures use a real Verification check (test -x bin/fw) instead of 'true', which the T-4197 tautology block refuses before the register gate runs; tests 1, 4, 5 green again
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked on current bleeding-edge (tests 1, 4, 5 of test_register_requirements_gate.bats red before the fix)'
+  - 'Fixture tasks T-9901..T-9906 carry a non-tautological `## Verification` line, so the PASSES cases reach the register-requirements gate'
+  - 'test_register_requirements_gate.bats fully green, no skips'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'register-gate fixtures use a real Verification check (test -x bin/fw) instead of ''true'', which the T-4197 tautology block refuses before the register gate runs; tests 1, 4, 5 green again'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4580-testregisterrequirementsgatebats-fixture.md'
+  - 'tests/governance/test_register_requirements_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T09:31:18'
+    action: 'T-4580: register-gate fixtures use a real Verification check (test -x bin/fw) instead of ''true'', which the T-4197 tautology block refuses before the register gate runs; tests 1, 4, 5 green again'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 660 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, cloud, t4575]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 660
+  commits: 3
+  files_changed: 8
+  lines_added: 645
+  lines_removed: 61
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4580-testregisterrequirementsgatebats-fixture.md
+generated_by: context-agent-hybrid
