@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4609: t4381 fixture run is flagged by the T-4523 tree guard for the __pycache__ its own pytest leg writes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T11:59:22Z
+# ============================================================================
+
+task_id: T-4609
+task_name: "t4381 fixture run is flagged by the T-4523 tree guard for the __pycache__ its own pytest leg writes"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T08:45:52Z
+completed: 2026-10-22T11:58:20Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T13:10:50+02:00
+last_commit: 2026-10-22T13:10:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unit-suite pytest leg runs with PYTHONDONTWRITEBYTECODE=1 so importing a test file no longer writes __pycache__ into the tree the T-4523 guard grades (t4381 test 7 red); regression bats t4609 (red before, green after); vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduction status on current bleeding-edge recorded (t4381 bats run result)'
+  - 'If it reproduces: the unit-suite runner''s pytest leg no longer leaves `__pycache__` (or pytest cache) in the tree it guards, so the T-4523 tree guard does not flag it'
+  - 'Regression test fails without the fix and passes with it'
+  - 'tests/unit/t4381_unit_suite_accounting.bats passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - 'agents/audit/unit-suite.sh'
+  - '.tasks/active/T-4609-t4381-fixture-run-is-flagged-by-the-t-45.md'
+  - 'tests/unit/t4609_pytest_leg_no_bytecode.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T13:10:50'
+    action: 'T-4609: unit-suite pytest leg runs with PYTHONDONTWRITEBYTECODE=1 so importing a test file no longer writes __pycache__ into the tree the T-4523 guard grades (t4381 test 7 red); regression bats t4609 (red before, green after); vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 192 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cloud, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 192
+  commits: 1
+  files_changed: 4
+  lines_added: 103
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4609-t4381-fixture-run-is-flagged-by-the-t-45.md
+generated_by: context-agent-hybrid
