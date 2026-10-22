@@ -102,10 +102,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `cmd_spawn` (used by `fw termlink spawn` and `fw termlink dispatch`) starts `termlink spawn` under `env -i` with an explicit allow-list (`lib/spawn-env.sh`), so the spawn process — and any tmux server it starts — carries no `PROJECT_ROOT`/`FRAMEWORK_ROOT`/`CONTEXT_DIR`/`TASKS_DIR`/`FW_*`/other unlisted variable of the caller
-- [ ] The dispatch runtime (`run.sh`) re-executes itself under `env -i` with the same allow-list before anything else, so a worker launched from a polluted shell or tmux server gets only allow-listed host variables plus what run.sh/env.sh set (project paths derived from `--project`)
-- [ ] Regression bats `tests/unit/t4647_spawn_env_allowlist.bats`: dispatch from a shell exporting a FOREIGN `CONTEXT_DIR`/`TASKS_DIR`/`PROJECT_ROOT` and an arbitrary `FW_FOO`; the spawn's env and the worker's `/proc/<pid>/environ` hold none of them, and the worker's `PROJECT_ROOT` is its own `--project`. Fails on the pre-fix termlink.sh
-- [ ] Existing neighbouring suites stay green: t4217, t4222, t4152, t4636 bats; vendored copy synced
+- [x] `cmd_spawn` (used by `fw termlink spawn` and `fw termlink dispatch`) starts `termlink spawn` under `env -i` with an explicit allow-list (`lib/spawn-env.sh`), so the spawn process — and any tmux server it starts — carries no `PROJECT_ROOT`/`FRAMEWORK_ROOT`/`CONTEXT_DIR`/`TASKS_DIR`/`FW_*`/other unlisted variable of the caller
+- [x] The dispatch runtime (`run.sh`) re-executes itself under `env -i` with the same allow-list before anything else, so a worker launched from a polluted shell or tmux server gets only allow-listed host variables plus what run.sh/env.sh set (project paths derived from `--project`)
+- [x] Regression bats `tests/unit/t4647_spawn_env_allowlist.bats`: dispatch from a shell exporting a FOREIGN `CONTEXT_DIR`/`TASKS_DIR`/`PROJECT_ROOT` and an arbitrary `FW_FOO`; the spawn's env and the worker's `/proc/<pid>/environ` hold none of them, and the worker's `PROJECT_ROOT` is its own `--project`. Fails on the pre-fix termlink.sh
+- [x] Existing neighbouring suites stay green: t4217, t4222, t4152, t4636 bats; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -383,6 +383,12 @@ bin/fw vendor self --check --task T-4647
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-22 — where the worker's env is scrubbed
+- **Chose:** two layers: `cmd_spawn` runs `termlink spawn` under `env -i` + `lib/spawn-env.sh` allow-list, and run.sh re-execs itself (`exec env -i … "$BASH" "$0" "$@"`, guarded by `_FW_RUNTIME_ENV_CLEAN`) with an inlined copy of the same list (pinned equal by t4647 test 2). The re-exec keeps argv, so the review ledger's parent check (`bash <wdir>/run.sh`) still holds.
+- **Why:** the spawn layer alone cannot help when the tmux server is ALREADY polluted; the run.sh layer covers that. run.sh is the signed canonical runtime, so it inlines the list instead of sourcing a working-tree file.
+- **Rejected:** putting `env -i NAME=value …` into the pty-injected command — it would type allow-listed secrets (ANTHROPIC_API_KEY) into the pane's scrollback. Keeping the deny-list and adding names — fails open, which is the bug.
+- **Consequence:** test launchers that feed stubs through env (t3580_round3 `_run_worker`, t3582 `_launch`) set `_FW_RUNTIME_ENV_CLEAN=1`; t4217's stub now has its socket baked in.
 
 ## Decision
 
