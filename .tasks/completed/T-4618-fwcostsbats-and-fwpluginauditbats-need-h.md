@@ -8,12 +8,12 @@ description: >
   Tests should build a fixture HOME instead of reading the operator's. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (lines 32-33, 40). Triaged in T-4589.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [cloud, test]
-components: []
+components: [lib/costs.sh, tests/integration/fw_costs.bats]
 related_tasks: [T-4589]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,8 +43,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:50:31Z
-last_update: 2026-10-22T11:20:09Z
-date_finished:
+last_update: 2026-10-22T12:02:53Z
+date_finished: 2026-10-22T12:02:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -385,3 +385,26 @@ bin/fw vendor self --check --task T-4618
 ### 2026-10-22T11:20:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9928bc23
+- **Timestamp:** 2026-10-22T12:03:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — tests/integration/fw_plugin_audit.bats sets HOME to a temp dir with `.claude/settings.json` enabledPlugins and one fixture plugin (one task-aware and one task-silent skill), and asserts the exact Summ
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: tests/integration/fw_plugin_audit.bats sets HOME to a temp dir with `.claude/settings.json` enabledPlugins and one fixture plugin (one task-aware and `
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-10-22T12:02:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
