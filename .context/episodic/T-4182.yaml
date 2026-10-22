@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4182: Drift gate: allow the closure commit of a just-completed task, or give a non-Tier-2 remedy (832 OBS-375, their T-1150)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:41:32Z
+# ============================================================================
+
+task_id: T-4182
+task_name: "Drift gate: allow the closure commit of a just-completed task, or give a non-Tier-2 remedy (832 OBS-375, their T-1150)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T19:07:12Z
+completed: 2026-10-22T10:40:32Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-10-22T00:24:23+02:00
+last_commit: 2026-10-22T00:24:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  drift gate allows the closure commit of a just-completed task — plain commit checkpoint (is_commit_checkpoint_command) whose target is in completed/ with date_finished within 60 min passes with a NOTE, no Tier-2 bypass; old/undated targets, write patterns, --no-verify, non-commit drift and active targets still block; block message names the window; t4182 bats (10 legs, 4 fail without fix); vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Under agent control, focus on active T-A, a plain `git commit -m "T-B: …"` whose target T-B is in `.tasks/completed/` with `date_finished` inside the grace window is allowed (exit 0) with a NOTE naming T-4182 — no Tier-2 bypass needed'
+  - 'The exemption is narrow: still blocked (exit 2, FOCUS-DRIFT) when T-B has no/old `date_finished`, when the commit carries a write pattern or `--no-verify`, and for non-commit drift (`fw task update T-B`)'
+  - 'Active-target drift behaviour unchanged (still blocks, still offers `context focus`)'
+  - 'Regression bats `tests/unit/t4182_closure_commit_drift.bats` fails without the fix and passes with it; neighbours `focus_drift_remedy_scope.bats`, `focus_drift_gate.bats` stay green'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4182` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'drift gate allows the closure commit of a just-completed task — plain commit checkpoint (is_commit_checkpoint_command) whose target is in completed/ with date_finished within 60 min passes with a NOTE, no Tier-2 bypass; old/undated targets, write patterns, --no-verify, non-commit drift and active targets still block; block message names the window; t4182 bats (10 legs, 4 fail without fix); vendor synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — how to recognise "just completed"'
+    chose: '`date_finished` within 60 minutes (constant in the hook, -5 min clock-skew tolerance), plain commit checkpoint only.'
+    rationale: 'deterministic from the task file alone; bounds misattribution to the closure window; reuses the T-2054/T-3179 predicate so all three exemptions share one notion of a safe commit.'
+    alternatives_rejected: ['inspecting the staged index for the moved task file (`git commit -- paths` bypasses the index, so it is unreliable); an unbounded completed-target exemption (would let any later work be attributed to a closed task without a trace); a new FW_ config key (registry/doc parity cost for a value nobody has asked to tune).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - 'agents/context/check-active-task.sh'
+  - '.tasks/active/T-4182-drift-gate-allow-the-closure-commit-of-a.md'
+  - 'tests/unit/t4182_closure_commit_drift.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:24:23'
+    action: 'T-4182: drift gate allows the closure commit of a just-completed task — plain commit checkpoint (is_commit_checkpoint_command) whose target is in completed/ with date_finished within 60 min passes with a NOTE, no Tier-2 bypass; old/undated targets, write patterns, --no-verify, non-commit drift and active targets still block; block message names the window; t4182 bats (10 legs, 4 fail without fix); vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12453 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12453
+  commits: 1
+  files_changed: 4
+  lines_added: 235
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4182-drift-gate-allow-the-closure-commit-of-a.md
+generated_by: context-agent-hybrid
