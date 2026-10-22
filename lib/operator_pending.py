@@ -180,9 +180,24 @@ def pending_proposals() -> list[dict]:
             for p in review_cost.proposals().values() if p.get("status") == "pending"]
 
 
+def issue_replies() -> list[dict]:
+    """T-4660: GitHub submitter replies nobody has acted on, one row per issue."""
+    sys.path.insert(0, str(FW / "lib"))
+    os.environ.setdefault("PROJECT_ROOT", str(PROJECT))
+    import issues  # noqa: E402
+    by_issue: dict = {}
+    for r in issues._undecided_replies():
+        by_issue.setdefault(r["issue"], []).append(r)
+    return [{"issue": n, "count": len(rs), "class": rs[-1]["class"]} for n, rs in sorted(by_issue.items())]
+
+
 def collect() -> dict:
     ready, waiting = partial_complete()
-    return {"inceptions": undecided_inceptions(), "reviews": ready, "runmes": unrun_runmes(),
+    try:
+        replies = issue_replies()
+    except Exception:  # a broken ledger must not blank the operator's whole list
+        replies = []
+    return {"issue_replies": replies, "inceptions": undecided_inceptions(), "reviews": ready, "runmes": unrun_runmes(),
             "paid_proposals": pending_proposals(), "waiting_on_agent": len(waiting)}
 
 
@@ -215,6 +230,13 @@ def render(data: dict) -> str:
             lines.append(f"- {p['id']} — {p['task']} on {p['backend']} (~${p['estimate_cost']}) — {p['why']}")
         lines.append("")
         n += len(data["paid_proposals"])
+    if data.get("issue_replies"):
+        lines.append("## GitHub issue replies (`fw issues replies`)")
+        for r in data["issue_replies"]:
+            lines.append(f"- #{r['issue']} — {r['count']} submitter repl{'y' if r['count'] == 1 else 'ies'} "
+                         f"({r['class']}) — `fw issues replies`")
+        lines.append("")
+        n += len(data["issue_replies"])
     if n == 0:
         lines.append("Nothing is waiting on the operator.")
     if data["waiting_on_agent"]:

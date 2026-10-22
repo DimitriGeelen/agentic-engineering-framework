@@ -766,12 +766,16 @@ def cmd_sync(a) -> int:
                 continue
             seen.add(rid)
             counts["reply"] += 1
-            lines.append(f"REPLY #{n} from {author}: recorded, NOT answered (read it on the issue)")
+            lines.append(f"REPLY #{n} from {author}: recorded ({classify_reply(cm.get('body') or '', author, author)})")
             if not a.dry_run:
                 _append_row(ledger, {"issue": n, "stage": "reply", "reply_id": rid, "author": author,
-                                     "created": cm.get("createdAt") or "",
+                                     "created": cm.get("createdAt") or "", "url": cm.get("url") or "",
                                      "excerpt": (cm.get("body") or "")[:500], "answered": False,
                                      "ts": _now()})
+    try:  # T-4660: act on what the submitter said; an unreadable GitHub leaves it for the next run
+        lines += _settle_replies({int(i["number"]) for i in issues}, a.dry_run)
+    except IssuesError as e:
+        print(f"WARN: submitter replies not processed: {e}", file=sys.stderr)
     for ln in lines:
         print(ln)
     tag = " (dry-run: nothing posted or written)" if a.dry_run else ""
@@ -876,6 +880,248 @@ def cmd_close(a) -> int:
                           f"{q.stderr.strip()[:300]}. Re-run to retry the close only.", 3)
     print(f"closed #{a.issue} ({a.reason}): {url}")
     return 0
+
+
+# ── submitter replies (T-4660) ───────────────────────────────────────────────
+# sync records every submitter reply as a stage=reply row. This section reads them: a conservative
+# classifier decides confirmed / not-fixed / other, `confirm-close` thanks the submitter and closes
+# the issue on a confirmation, and everything else gets a needs-decision row that `fw issues replies`,
+# `fw operator pending` and the session-start alerts list. Reply text is untrusted: it is classified
+# with fixed patterns, and only its first sentence (flattened, marker-stripped) is ever quoted back.
+
+_AFFIRM_RE = re.compile(
+    r"\b(confirm(ed|s)?\s+(the\s+)?fix(ed)?|(verified|confirmed|checked)\s+fixed|fixed\s+for\s+me|"
+    r"(it\s+)?works\s+(now|for\s+me)|(is|are)\s+(now\s+)?(fixed|working)|looks\s+fixed|can\s+confirm|"
+    r"now\s+works|works\s+as\s+expected)\b", re.I)
+# strong negatives count anywhere in the reply; weak counter-signals only in its first paragraph, so
+# "the gate still bites" or "separate, still open" further down does not veto a confirmation.
+_STRONG_NEG_RE = re.compile(
+    r"\b(not\s+(yet\s+)?fixed|still\s+(broken|fails?|failing|happens|occurs|reproduces?|crash\w*)|"
+    r"(doesn'?t|does\s+not|did\s+not|didn'?t)\s+(work|fix)|not\s+working|regress\w*|re-?open\w*|"
+    r"is\s+broken|remains\s+broken|broken\s+again|fails|failing)\b", re.I)
+_WEAK_NEG_RE = re.compile(r"\b(still|however|except|unfortunately)\b|\bbut\b[^.!?]*\bnot\b", re.I)
+_CAVEAT_RE = re.compile(r"\b(only|have\s+not|haven'?t|did\s+not|didn'?t|not\s+(run|clicked|tested|tried))\b", re.I)
+REPLY_CLASSES = ("confirmed", "not-fixed", "other")
+
+
+def _sentences(text: str) -> list:
+    flat = re.sub(r"\s+", " ", text or "").strip()
+    return [s.strip() for s in re.split(r"(?<=[.!?])\s+(?=[A-Z`(\"'])", flat) if s.strip()]
+
+
+def classify_reply(text: str, author: str = "", issue_author: str = "") -> str:
+    """confirmed | not-fixed | other. Pure. `confirmed` needs the issue author's own reply, an opening
+    sentence that affirms the fix, and no counter-signal; anything doubtful is `other`."""
+    text = text or ""
+    if author and issue_author and author.lower() != issue_author.lower():
+        return "other"
+    first_para = re.split(r"\n\s*\n", text.strip(), maxsplit=1)[0] if text.strip() else ""
+    if _STRONG_NEG_RE.search(text):
+        return "not-fixed"
+    sents = _sentences(text)
+    if not sents or not _AFFIRM_RE.search(sents[0]):
+        return "other"
+    if _WEAK_NEG_RE.search(first_para):
+        return "other"
+    return "confirmed"
+
+
+def _quote(text: str, limit: int = 220) -> str:
+    s = (_sentences(text) or [""])[0]
+    s = re.sub(r"<!--.*?-->", "", s)
+    s = s.replace("`", "'").replace("\r", " ")
+    return (s[:limit] + "…") if len(s) > limit else s
+
+
+def _caveats(text: str) -> list:
+    """Sentences after the first that say what the submitter did not or only partly checked."""
+    return [_quote(s) for s in _sentences(text)[1:] if _CAVEAT_RE.search(s)][:2]
+
+
+_SETTLED_STAGES = ("closed", "closed-released", "closed-fixed", "closed-duplicate", "reply-settled")
+
+
+def _ledger_stage(rows: list, n: int) -> str:
+    last = ""
+    for r in rows:
+        if r.get("issue") != n:
+            continue
+        toks = [t for t in str(r.get("stage", "")).split("+") if t in STAGES]
+        if toks:
+            last = toks[-1]
+    return last
+
+
+def _undecided_replies(include_all: bool = False) -> list:
+    """Submitter reply rows that nobody acted on. A reply is settled once a closed row names it, its
+    issue is closed in the ledger, or sync found the issue closed; needs-decision rows stay listed."""
+    rows = _read_rows(_issues_dir() / "intake.jsonl")
+    closed_issues = {r.get("issue") for r in rows if r.get("stage") in _SETTLED_STAGES}
+    closed_replies = {str(r.get("reply_id")) for r in rows if r.get("reply_id") and r.get("stage") == "closed"}
+    decisions = {str(r.get("reply_id")): r for r in rows if r.get("stage") == "needs-decision"}
+    out = []
+    for r in rows:
+        if r.get("stage") != "reply":
+            continue
+        n, rid = r.get("issue"), str(r.get("reply_id") or "")
+        settled = rid in closed_replies or n in closed_issues
+        if settled and not include_all:
+            continue
+        cls = classify_reply(r.get("excerpt") or "", r.get("author") or "", r.get("author") or "")
+        out.append({"issue": n, "stage": _ledger_stage(rows, n), "class": cls, "reply_id": rid,
+                    "created": r.get("created") or "", "author": r.get("author") or "",
+                    "excerpt": re.sub(r"\s+", " ", r.get("excerpt") or "").strip()[:160],
+                    "settled": settled, "needs_decision": rid in decisions})
+    return sorted(out, key=lambda x: (x["issue"], x["created"]))
+
+
+def cmd_replies(a) -> int:
+    items = _undecided_replies(a.all)
+    if a.json:
+        print(json.dumps(items, indent=2, ensure_ascii=False))
+        return 0
+    if not items:
+        print("replies: none waiting for a decision")
+        return 0
+    for i in items:
+        print(f"#{i['issue']} [{i['stage'] or '-'}] {i['class']}{' (settled)' if i['settled'] else ''} "
+              f"{i['reply_id']} {i['created']}  {i['excerpt']}")
+    print(f"replies: {len(items)} — confirm with `fw issues confirm-close <N> --reply-id <ID>`")
+    return 0
+
+
+def _confirm_body(date: str, quote: str, reply_url: str, caveats: list, tasks: list, fixed: dict) -> str:
+    out = ["<!-- aef-intake:stage=closed -->", f"**[AEF intake] Closed: confirmed fixed** — {date}", "",
+           "Thank you for testing the fix and for taking the time to confirm it. You wrote:", "",
+           f"> {quote}", ""]
+    if reply_url:
+        out += [f"([your reply]({reply_url}))", ""]
+    if caveats:
+        out += ["You also noted what you did not check, and that is kept on record: "
+                + " ".join(f"“{c}”" for c in caveats), ""]
+    where = []
+    if tasks:
+        where.append("tracked in " + ", ".join(f"**{t}**" for t in tasks))
+    if fixed.get("release"):
+        where.append(f"released in **{fixed['release']}**")
+    if fixed.get("commit"):
+        where.append(f"commit {fixed['commit']}")
+    out += [("The fix is " + ", ".join(where) + ". ") if where else "",
+            "Closing this issue as completed; it can be reopened if the problem comes back.", "", FOOTER]
+    return "\n".join(out) + "\n"
+
+
+def _fix_facts(rows: list, n: int) -> dict | None:
+    """Tasks, release and commit from the issue's fixed-on-bleeding-edge / released ledger rows."""
+    tasks, release, commit, found = [], "", "", False
+    for r in rows:
+        if r.get("issue") != n:
+            continue
+        toks = str(r.get("stage", "")).split("+")
+        if "fixed-on-bleeding-edge" in toks or "released" in toks:
+            found = True
+            tasks += [t for t in (r.get("tasks") or []) if t not in tasks]
+            release = r.get("version") or release
+            commit = r.get("commit") or commit
+    return {"tasks": tasks, "release": release, "commit": commit} if found else None
+
+
+def confirm_close(n: int, reply_id: str, dry_run: bool = False) -> str:
+    """Thank the submitter and close #n on their confirmation. Returns closed | already | would-close.
+    Raises IssuesError when any precondition fails. The comment is logged (closed-note) before the
+    close, and the closed row is written only after GitHub accepted the close."""
+    ledger = _issues_dir() / "intake.jsonl"
+    rows = _read_rows(ledger)
+    if _ledger_has(n, "closed"):
+        return "already"
+    reply = next((r for r in rows if r.get("issue") == n and r.get("stage") == "reply"
+                  and str(r.get("reply_id")) == reply_id), None)
+    if reply is None:
+        raise IssuesError(f"no reply {reply_id!r} for #{n} in the ledger", 2)
+    fixed = _fix_facts(rows, n)
+    if fixed is None:
+        raise IssuesError(f"#{n} has no fixed-on-bleeding-edge or released stage in the ledger: "
+                          f"nothing says the fix exists yet", 2)
+    info = _issue_view(n)
+    if str(info.get("state", "")).upper() != "OPEN":
+        raise IssuesError(f"#{n} is not open", 2)
+    issue_author = _login(info.get("author"))
+    if not issue_author or (reply.get("author") or "").lower() != issue_author.lower():
+        raise IssuesError(f"reply {reply_id} is by {reply.get('author') or '?'}, not the issue author "
+                          f"{issue_author or '?'}", 2)
+    live = next((c for c in info.get("comments") or [] if str(c.get("id")) == reply_id), None)
+    if live is not None and _login(live.get("author")).lower() != issue_author.lower():
+        raise IssuesError(f"reply {reply_id} on GitHub is not by the issue author", 2)
+    text = (live or {}).get("body") or reply.get("excerpt") or ""
+    if classify_reply(text, issue_author, issue_author) != "confirmed":
+        raise IssuesError(f"reply {reply_id} does not classify as confirmed; decide it by hand", 2)
+    body = _confirm_body(_now()[:10], _quote(text), (live or {}).get("url") or reply.get("url") or "",
+                         _caveats(text), fixed["tasks"], fixed)
+    if dry_run:
+        print(body, end="")
+        return "would-close"
+    note = _ledger_has(n, "closed-note")
+    if note is None and not _marked_on_issue(n, "closed"):
+        p = _gh(["issue", "comment", str(n), "--repo", _repo(), "--body-file", "-"], stdin=body)
+        url = next((w for w in p.stdout.split() if w.startswith("https://")), "") if p.returncode == 0 else ""
+        if not url:
+            raise IssuesError(f"GitHub did not return a comment URL for #{n}: "
+                              f"{(p.stderr or p.stdout).strip()[:300]}", 3)
+        note = {"issue": n, "stage": "closed-note", "reply_id": reply_id, "comment": url,
+                "by": "confirm-close", "ts": _now()}
+        _append_row(ledger, note)
+    q = _gh(["issue", "close", str(n), "--repo", _repo(), "--reason", "completed"])
+    if q.returncode != 0:
+        raise IssuesError(f"#{n} is commented but closing failed: {q.stderr.strip()[:300]}. "
+                          f"Re-run to retry the close only.", 3)
+    row = {"issue": n, "stage": "closed", "reply_id": reply_id, "by": "confirm-close",
+           "comment": (note or {}).get("comment", ""), "ts": _now()}
+    if fixed["tasks"]:
+        row["tasks"] = fixed["tasks"]
+    _append_row(ledger, row)
+    return "closed"
+
+
+def cmd_confirm_close(a) -> int:
+    out = confirm_close(a.issue, a.reply_id, a.dry_run)
+    if out == "already":
+        print(f"#{a.issue} already closed by confirm-close — nothing to do")
+    elif out == "closed":
+        print(f"closed #{a.issue} on the submitter's confirmation (reply {a.reply_id})")
+    return 0
+
+
+def _settle_replies(open_numbers: set, dry_run: bool) -> list:
+    """Sync leg: close confirmed replies on eligible issues, mark the rest needs-decision, and settle
+    replies whose issue is no longer open. A gh failure leaves the ledger as it was for the next run."""
+    ledger = _issues_dir() / "intake.jsonl"
+    lines = []
+    for it in _undecided_replies():
+        n, rid = it["issue"], it["reply_id"]
+        if n not in open_numbers:
+            if not dry_run:
+                _append_row(ledger, {"issue": n, "stage": "reply-settled", "reply_id": rid,
+                                     "note": "issue no longer open", "ts": _now()})
+            continue
+        if it["class"] == "confirmed":
+            try:
+                out = confirm_close(n, rid, dry_run=True) if dry_run else confirm_close(n, rid)
+                lines.append(f"CONFIRMED #{n}: {'would close' if dry_run else 'closed'} on the "
+                             f"submitter's reply ({out})")
+                continue
+            except IssuesError as e:
+                if e.code == 3:
+                    lines.append(f"WARN #{n}: confirm-close not completed ({e}); retried next sync")
+                    continue
+                reason = f"confirmed but not closed: {e}"
+        else:
+            reason = it["class"]
+        if not it["needs_decision"]:
+            lines.append(f"DECIDE #{n}: reply {rid} is {reason} — see `fw issues replies`")
+            if not dry_run:
+                _append_row(ledger, {"issue": n, "stage": "needs-decision", "reply_id": rid,
+                                     "class": it["class"], "reason": str(reason)[:200], "ts": _now()})
+    return lines
 
 
 # ── release leg (T-4340, lifecycle stages 8-9) ──────────────────────────────
@@ -1165,7 +1411,7 @@ def _sweep(today: str, dry_run: bool) -> None:
             print(f"WARN  #{n}: close not done ({e}); recorded in release-pending.jsonl", file=sys.stderr)
             continue
         if outcome == "kept":
-            print(f"keep   #{n}: the submitter replied after the Released comment; left open for the operator")
+            print(f"keep   #{n}: the submitter replied after the Released comment; see `fw issues replies`")
         else:
             done += outcome in ("closed", "would-close", "already")
             print(f"{outcome:9} #{n}: please-confirm was due {r['due']}")
@@ -1492,6 +1738,15 @@ def main(argv=None) -> int:
     cl.add_argument("--text")
     cl.add_argument("--dry-run", action="store_true", help="print the comment, post and close nothing")
     cl.set_defaults(fn=cmd_close)
+    rp = sub.add_parser("replies", help="list submitter replies nobody has acted on (T-4660)")
+    rp.add_argument("--json", action="store_true")
+    rp.add_argument("--all", action="store_true", help="include settled replies")
+    rp.set_defaults(fn=cmd_replies)
+    cc = sub.add_parser("confirm-close", help="thank the submitter and close an issue on their confirming reply (T-4660)")
+    cc.add_argument("issue", type=int)
+    cc.add_argument("--reply-id", required=True)
+    cc.add_argument("--dry-run", action="store_true", help="print the comment, post and close nothing")
+    cc.set_defaults(fn=cmd_confirm_close)
     s = sub.add_parser("sync", help="ingest new/changed issues and submitter replies (cron)")
     s.add_argument("--dry-run", action="store_true", help="list what would change; post and write nothing")
     s.set_defaults(fn=cmd_sync)

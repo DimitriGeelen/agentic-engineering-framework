@@ -349,6 +349,19 @@ def cmd_orphan_inboxes(args) -> int:
     return 2 if rows is None else (1 if rows else 0)
 
 
+def _issue_reply_lines() -> list:
+    """T-4660: one line per GitHub issue with a submitter reply nobody has acted on. Never raises."""
+    try:
+        from lib import issues
+        by_issue: dict = {}
+        for r in issues._undecided_replies():
+            by_issue[r["issue"]] = by_issue.get(r["issue"], 0) + 1
+        return [f"issue reply: #{n} has {c} submitter repl{'y' if c == 1 else 'ies'} waiting "
+                f"(`fw issues replies`)" for n, c in sorted(by_issue.items())]
+    except Exception:
+        return []
+
+
 def cmd_alerts(args) -> int:
     """T-3856: session-start mail check — both routes, read-only, never silent."""
     from lib.sidecar import alerts
@@ -380,6 +393,8 @@ def cmd_alerts(args) -> int:
             print(_framed(r["first_line"]))
     if not args.json:
         for line in _orphan_lines(orphans):
+            print(line)
+        for line in _issue_reply_lines():
             print(line)
     if args.mark_seen and rows:
         alerts.mark_seen(rows)
