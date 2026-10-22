@@ -1,0 +1,21 @@
+id: tests/unit/t4582_termlink_wait_missed_event.bats
+name: t4582_termlink_wait_missed_event
+type: script
+subsystem: tests
+location: tests/unit/t4582_termlink_wait_missed_event.bats
+tags: []
+
+purpose: "T-4582 — `fw termlink wait --name W` must not idle the full timeout when W emitted worker.done before the wait subscribed."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-22
+created_by: unknown
