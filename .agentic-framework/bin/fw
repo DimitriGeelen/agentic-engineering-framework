@@ -3914,6 +3914,22 @@ sys.exit(0 if '$_tl_topic' in names else 1)
         _doctor_warn_host "TermLink not installed (cargo install termlink)"
     fi
 
+    # T-4637 (T-4635 RCA): claude-fw, Watchtower, the TermLink hub and tmux
+    # servers in a session-*.scope of a user without linger die when systemd
+    # force-tears that user's slice down under load. One [host] WARN per kind.
+    if [ -f "$FRAMEWORK_ROOT/lib/process_placement.py" ]; then
+        local _pp_out="" _pp_rc=0 _pp_line
+        _pp_out=$(python3 "$FRAMEWORK_ROOT/lib/process_placement.py" \
+            --watchtower-pid-file "$PROJECT_ROOT/.context/working/watchtower.pid" 2>/dev/null) || _pp_rc=$?
+        if [ "$_pp_rc" -eq 1 ]; then
+            while IFS= read -r _pp_line; do
+                [ -n "$_pp_line" ] && _doctor_warn_host "$_pp_line"
+            done <<< "$_pp_out"
+        elif [ "$_pp_rc" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  Process placement: no long-lived agent process in a non-lingering session scope"
+        fi
+    fi
+
     # T-3685 (arc-011 S-LIVE, R7/R14/R15): the always-on sidecar watcher. NOT
     # live (seq stalled 2 ticks, or the loopback self-probe failed) while it is
     # enabled is a FAIL — an agent with a dead listener is deaf and does not

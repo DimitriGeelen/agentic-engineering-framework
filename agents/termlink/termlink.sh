@@ -492,6 +492,67 @@ _enforce_worker_cap() {
     exit 1
 }
 
+# T-4637 (T-4635 RCA): a worker SIGKILLed with its slice never writes exit_code, so
+# "no exit_code" alone reads as running forever and the parent's monitor never fires.
+# VANISHED = no exit_code, no run.sh or other process naming the dir, and its output
+# (result.jsonl, else the dir itself) unchanged for <minutes>. A dir still being set
+# up by cmd_dispatch is fresh, so it is not reported.
+_worker_vanished() {
+    local wdir="${1%/}" minutes="$2" out procs
+    [ -f "$wdir/exit_code" ] && return 1
+    _runtime_alive "$wdir" && return 1
+    # Capture first: in `ps | grep "$wdir/"` the grep's own argv would match.
+    procs=$(ps -eo args= 2>/dev/null) || procs=""
+    grep -qF -- "$wdir/" <<< "$procs" && return 1
+    out="$wdir"
+    [ -f "$wdir/result.jsonl" ] && out="$wdir/result.jsonl"
+    [ -n "$(find "$out" -maxdepth 0 -mmin "+$minutes" 2>/dev/null)" ]
+}
+
+cmd_vanished() {
+    local minutes json=false wdir n proj found=0 real
+    minutes=$(fw_config_int "TERMLINK_VANISHED_MINUTES" 10)
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --minutes) minutes="$2"; shift 2 ;;
+            --json) json=true; shift ;;
+            -h|--help)
+                cat <<'USAGE'
+Usage: fw termlink vanished [--minutes N] [--json]
+
+List dispatch workers that VANISHED: no exit_code, no live process, and output
+(result.jsonl, else the worker dir) unchanged for N minutes (default
+TERMLINK_VANISHED_MINUTES, 10). Such a worker was killed without finishing (T-4635);
+waiting on it never returns. Exit 1 when any vanished, 0 when none.
+USAGE
+                return 0 ;;
+            *) die "Unknown option: $1" ;;
+        esac
+    done
+    [[ "$minutes" =~ ^[0-9]+$ ]] || die "--minutes must be a non-negative integer"
+    [ -d "$DISPATCH_DIR" ] || return 0
+    $json && echo "["
+    for wdir in "$DISPATCH_DIR"/*/; do
+        [ -d "$wdir" ] || continue
+        _worker_vanished "$wdir" "$minutes" || continue
+        n=$(basename "$wdir")
+        proj=$(sed -n 's/^  "project": "\(.*\)",$/\1/p' "$wdir/meta.json" 2>/dev/null | head -1)
+        if $json; then
+            [ "$found" -gt 0 ] && echo ","
+            printf '  {"name": "%s", "dir": "%s", "project": "%s", "task": "%s"}' \
+                "$n" "${wdir%/}" "$proj" "$(cat "$wdir/task" 2>/dev/null)"
+        else
+            echo -e "${RED}VANISHED${NC}  $n  (${proj:-unknown project}) — no exit_code, no process, output quiet > ${minutes}m"
+        fi
+        found=$((found + 1))
+    done
+    if $json; then echo ""; echo "]"; fi
+    if [ "$found" -gt 0 ] && ! $json; then
+        echo "  The worker was killed before it could finish (T-4635). Read what it left (fw termlink result <name>), then re-dispatch." >&2
+    fi
+    [ "$found" -eq 0 ]
+}
+
 cmd_status() {
     ensure_termlink
 
@@ -499,6 +560,8 @@ cmd_status() {
 
     # Show dispatch workers with status (adapted from tl-dispatch.sh cmd_status)
     if [ -d "$DISPATCH_DIR" ]; then
+        local vanished_min
+        vanished_min=$(fw_config_int "TERMLINK_VANISHED_MINUTES" 10)
         for wdir in "$DISPATCH_DIR"/*/; do
             [ -d "$wdir" ] || continue
             local name
@@ -508,6 +571,8 @@ cmd_status() {
                 local ec
                 ec=$(cat "$wdir/exit_code")
                 [ "$ec" = "0" ] && status="complete" || status="failed (exit: $ec)"
+            elif _worker_vanished "$wdir" "$vanished_min"; then
+                status="VANISHED"   # T-4637: killed without exit_code
             fi
             local session_alive="no"
             termlink list 2>/dev/null | grep -q "$name" && session_alive="yes" || true
@@ -1983,6 +2048,7 @@ cmd_help() {
     echo -e "  ${GREEN}spawn${NC} --task T-XXX [--name N] Open tagged terminal session"
     echo -e "  ${GREEN}exec${NC} <session> <command>      Run command in session (structured output)"
     echo -e "  ${GREEN}status${NC}                       List active TermLink sessions"
+    echo -e "  ${GREEN}vanished${NC} [--minutes N]        List workers killed without exit_code (exit 1 if any)"
     echo -e "  ${GREEN}cleanup${NC}                      Deregister sessions, close terminal windows"
     echo -e "  ${GREEN}dispatch${NC} --name N --prompt P  Spawn claude -p worker in real terminal
                                      [--project DIR] [--model M] [--timeout S]
@@ -2038,6 +2104,7 @@ if [ "${BASH_SOURCE[0]}" = "$0" ]; then
         spawn)    cmd_spawn "$@" ;;
         exec)     cmd_exec "$@" ;;
         status)   cmd_status "$@" ;;
+        vanished) cmd_vanished "$@" ;;
         cleanup)  cmd_cleanup "$@" ;;
         worker-kinds) cmd_worker_kinds "$@" ;;
         dispatch) cmd_dispatch "$@" ;;
