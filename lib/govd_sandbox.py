@@ -246,19 +246,42 @@ def emit_profile(source, project_root, out_dir) -> dict:
     return written
 
 
+def _emitted_root(out_dir) -> str | None:
+    """The project_root the on-disk artefacts were rendered at (from the manifest)."""
+    p = Path(out_dir) / MANIFEST_NAME
+    if not p.is_file():
+        return None
+    try:
+        data = yaml.safe_load(p.read_text()) or {}
+    except yaml.YAMLError:
+        return None
+    root = data.get("project_root") if isinstance(data, dict) else None
+    return str(root) if root else None
+
+
 def stale_status(source, project_root, out_dir) -> dict:
     """Source edited but not re-emitted? Compares a fresh render against the on-disk
-    artefacts. States: absent_source, absent_emitted, stale, ok."""
+    artefacts. States: absent_source, absent_emitted, stale, ok.
+
+    Path-independent (T-4578): the artefacts embed the root they were rendered at, so
+    the fresh render uses the root recorded in the emitted manifest. A clone at another
+    path is not a source edit; `emitted_root` names the other root when they differ."""
     try:
-        r = resolve(load_source(source), project_root)
+        data = load_source(source)
     except FileNotFoundError:
         return {"state": "absent_source", "differs": []}
-    fresh = {name: sha256_text(text) for name, text in render_all(r).items()}
     on_disk = {name: sha256_file(Path(out_dir) / name) for name in ARTEFACTS}
     if all(v is None for v in on_disk.values()):
         return {"state": "absent_emitted", "differs": list(ARTEFACTS)}
+    here = str(Path(project_root).resolve())
+    emitted = _emitted_root(out_dir) or here
+    r = resolve(data, emitted)
+    fresh = {name: sha256_text(text) for name, text in render_all(r).items()}
     differs = [n for n in ARTEFACTS if on_disk[n] != fresh[n]]
-    return {"state": "stale" if differs else "ok", "differs": differs}
+    out = {"state": "stale" if differs else "ok", "differs": differs}
+    if emitted != here:
+        out["emitted_root"] = emitted
+    return out
 
 
 def drift_status(out_dir, deployed_dir=DEPLOYED_DEFAULT) -> dict:

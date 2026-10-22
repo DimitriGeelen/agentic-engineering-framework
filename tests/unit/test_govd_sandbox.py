@@ -254,3 +254,24 @@ def test_repo_source_resolves_and_matches_emitted():
     assert src.is_file()
     s = gs.stale_status(src, REPO, out)
     assert s["state"] == "ok", s
+
+
+def test_relocated_checkout_is_not_stale(tmp_path):
+    """T-4578: the committed artefacts embed the root they were rendered at. A clone at
+    another path has not edited the source, so the stale check must not call it stale —
+    and it must still catch a real source edit made in that clone."""
+    root = tmp_path / "elsewhere" / "clone"
+    (root / "policy").mkdir(parents=True)
+    shutil.copy2(REPO / "policy" / "sandbox-profile.yaml", root / "policy" / "sandbox-profile.yaml")
+    shutil.copytree(REPO / "policy" / "sandbox-profile.d", root / "policy" / "sandbox-profile.d")
+    src, out = root / "policy" / "sandbox-profile.yaml", root / "policy" / "sandbox-profile.d"
+    s = gs.stale_status(src, root, out)
+    assert s["state"] == "ok", s
+    recorded = yaml.safe_load((out / gs.MANIFEST_NAME).read_text())["project_root"]
+    assert s.get("emitted_root") == recorded
+
+    data = yaml.safe_load(src.read_text())
+    data["agent_uid"] = int(data["agent_uid"]) + 1
+    src.write_text(yaml.safe_dump(data))
+    s = gs.stale_status(src, root, out)
+    assert s["state"] == "stale", s
