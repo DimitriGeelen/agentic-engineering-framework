@@ -1,10 +1,14 @@
 ---
 id: T-4653
-name: "Partial-complete finalization archives a task to completed/ without re-running ## Verification (P-011 skipped)"
+name: "Partial-complete finalization archives a task to completed/ without re-running
+  ## Verification (P-011 skipped)"
 description: >
-  The re-run branch that archives a task after the last Human AC is ticked moves it to completed/ without running Verification. Source: ring20 per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category 5), ring20 patch #14. Verify against our code before fixing.
+  The re-run branch that archives a task after the last Human AC is ticked moves it
+  to completed/ without running Verification. Source: ring20 per-patch triage vs be.3
+  (docs/reports/T-4649-ring20-patch-triage.md, category 5), ring20 patch #14. Verify
+  against our code before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T19:31:26Z
-last_update: 2026-10-22T19:31:26Z
-date_finished: null
+last_update: 2026-10-22T20:21:25Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +54,50 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T19:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T19:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4653: Partial-complete finalization archives a task to completed/ without re-running ## Verification (P-011 skipped)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Ring20 patch #14 (docs/reports/T-4649-ring20-patch-triage.md, category 5 item 2): finalizing a partial-complete task (work-completed, still in active/) archives it without re-running ## Verification. Confirmed by reading: the re-run branch in agents/task-create/update-task.sh (OLD_STATUS == NEW_STATUS == work-completed) never calls run_verification_commands.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The partial-complete finalization branch of update-task.sh runs run_verification_commands before moving the task to completed/
+- [x] A fixture partial-complete task whose Verification line has gone red stays in .tasks/active/ and exits non-zero with the normal P-011 message
+- [x] A green Verification line still archives the task (control), and --skip-verification (operator) still bypasses, logged
+- [x] Watchtower finalize route (web/blueprints/approvals.py:1332) goes through update-task.sh (it passes --skip-verification deliberately as an operator action), so no web/ change is needed
+- [x] Regression test tests/unit/t4653_partial_complete_reverify.bats is red before the fix and green after
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,6 +146,11 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4653_partial_complete_reverify.bats > /tmp/.t4653.out 2>&1 && ! grep -q "^not ok" /tmp/.t4653.out
+test "$(grep -c '# skip' /tmp/.t4653.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/ 2>&1 | grep -q clean
+bin/fw vendor self --check --task T-4653
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -251,6 +290,11 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** A partial-complete task (status work-completed, Human ACs open, in active/) whose `## Verification` has since gone red is archived to completed/ when the last Human AC is ticked and `--status work-completed` is re-run (CLI or Watchtower).
+**Root cause:** the OLD_STATUS == NEW_STATUS == work-completed re-run branch in agents/task-create/update-task.sh (line 2104-2146) checks only AC ticks, then `git mv`s the file. The P-011 call (`run_verification_commands`, line 2401) sits in the first-transition path, which this branch never reaches.
+**Why structurally allowed:** the branch (T-193) solved un-archivable partial-completes and re-implemented only the AC half of the close; no test exercised a red verification at finalization, and verification had passed at the first transition, so the skip looked redundant.
+**Prevention:** the re-run branch now calls run_verification_commands (same message, same operator-only --skip-verification); tests/unit/t4653_partial_complete_reverify.bats pins red-stays-active, green-archives, skip-bypass.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -345,3 +389,10 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4653-partial-complete-finalization-archives-a.md
 - **Context:** Initial task creation
+
+### 2026-10-22 — red evidence [T-4653]
+- Before the fix: `bats tests/unit/t4653_partial_complete_reverify.bats` → 3 of 3 `not ok` (gate never ran: no "Verification: 1/1 passed", red line archived with rc 0, no skip warning).
+- After the fix: 3 of 3 `ok`. Fix: update-task.sh partial-complete re-run branch now calls run_verification_commands before the move.
+
+### 2026-10-22T20:21:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

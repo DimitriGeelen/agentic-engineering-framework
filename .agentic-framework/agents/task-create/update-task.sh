@@ -2130,6 +2130,11 @@ if [ -n "$NEW_STATUS" ]; then
                     echo -e "${YELLOW}WARNING: $ALL_UNCHECKED/$ALL_TOTAL ACs unchecked (--skip-acceptance-criteria bypass)${NC}"
                     log_gate_bypass "--skip-acceptance-criteria" "partial_complete_recheck"
                 fi
+                # T-4653: finalizing is a close — re-run P-011 before archiving. The
+                # first transition's pass says nothing about the state at finalization.
+                export FW_TASK_UPDATE_IN_CLOSE="$TASK_ID"
+                run_verification_commands
+                unset FW_TASK_UPDATE_IN_CLOSE
                 DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
                 # T-1523: use `git mv` when tracked so both rename sides land
                 # in the index together — avoids leaving the active/* deletion
