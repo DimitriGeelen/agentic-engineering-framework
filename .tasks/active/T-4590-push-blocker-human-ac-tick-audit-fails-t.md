@@ -1,10 +1,21 @@
 ---
 id: T-4590
-name: "Push blocker: human-AC tick audit FAILs the operator's Watchtower inception GO decisions (T-4415/4466/4470/4517/4525)"
+name: "Push blocker: human-AC tick audit FAILs the operator's Watchtower inception
+  GO decisions (T-4415/4466/4470/4517/4525)"
 description: >
-  Pre-push audit 2026-10-22 FAILs 'Human-AC ticks: 5 unprovenanced' for the [REVIEW] go/no-go criterion ticked by the 'inception decision GO (via Watchtower)' commits 69dd29362c, 9889e15e39, 6826c7e18b, 0692cb2002, d0ed1b6145. These are genuine operator decisions; the same check PASSED at the be.2 push on 2026-10-21, so a commit since then (candidates: T-4285 closed-record edit gate, T-4159 tick-guard false positive, T-4192/T-4189 task tooling, T-4569) changed what counts as provenance, or the Watchtower decide path stopped writing its ledger record. Find the commit (git bisect over lib/human_ac_ticks.py, web/ decide path, update-task), fix the cause, regression test. Also: two of those commits are authored 'fw worker (termlink-dispatch)' although the operator decided in Watchtower — find how a worker git identity leaked into the Watchtower decide commit.
+  Pre-push audit 2026-10-22 FAILs 'Human-AC ticks: 5 unprovenanced' for the [REVIEW]
+  go/no-go criterion ticked by the 'inception decision GO (via Watchtower)' commits
+  69dd29362c, 9889e15e39, 6826c7e18b, 0692cb2002, d0ed1b6145. These are genuine operator
+  decisions; the same check PASSED at the be.2 push on 2026-10-21, so a commit since
+  then (candidates: T-4285 closed-record edit gate, T-4159 tick-guard false positive,
+  T-4192/T-4189 task tooling, T-4569) changed what counts as provenance, or the Watchtower
+  decide path stopped writing its ledger record. Find the commit (git bisect over
+  lib/human_ac_ticks.py, web/ decide path, update-task), fix the cause, regression
+  test. Also: two of those commits are authored 'fw worker (termlink-dispatch)' although
+  the operator decided in Watchtower — find how a worker git identity leaked into
+  the Watchtower decide commit.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:19:02Z
-last_update: 2026-10-22T08:19:02Z
-date_finished: null
+last_update: '2026-10-22T08:30:46Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T08:21:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T08:30:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=313,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4590: Push blocker: human-AC tick audit FAILs the operator's Watchtower inception GO decisions (T-4415/4466/4470/4517/4525)
@@ -62,8 +100,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root-cause commit/line identified and recorded in ## RCA (why the Watchtower inception-GO ticks of T-4415/4466/4470/4517/4525 now count as unprovenanced)
+- [ ] `lib/human_ac_ticks.py` audit reports 0 unprovenanced ticks for those five commits (genuine Watchtower decisions are recognised again) — needs the operator's ledger restore, see ## Decisions
+- [x] Regression test added that fails on the pre-fix code and passes after
+- [x] Worker git identity leak into Watchtower decide commits explained in ## RCA (and fixed or filed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +288,22 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_t4590_decide_commit_carries_provenance.py -q > /tmp/.t4590 2>&1 && grep -q passed /tmp/.t4590 && ! grep -q failed /tmp/.t4590
+python3 -m pytest tests/unit/test_t4242_decide_inherited_git_env.py tests/unit/test_decide_commit.py tests/unit/test_inception_commit_rename_paths.py tests/unit/test_t4127_decision_commit_no_window.py -q > /tmp/.t4590b 2>&1 && grep -q passed /tmp/.t4590b && ! grep -q failed /tmp/.t4590b
+bin/fw vendor self --check --task T-4590
+bin/fw watchtower current
 
 ## RCA
+
+**Symptom:** pre-push audit 2026-10-22 FAILed "Human-AC ticks: 5 unprovenanced" on the Watchtower inception-GO commits of T-4470, T-4466, T-4517, T-4525, T-4415. The same check PASSED on 2026-10-21 (be.2).
+
+**Root cause:** the provenance rows were written, then thrown away. `fw inception decide` (lib/inception.sh:410-420, `record_ticked`) appended a row for each of the five ticks to `.context/reviews/human-ac-ticks.jsonl` at decide time (rows timestamped 2026-10-20T15:20:55Z … 2026-10-21T14:01:24Z). But the Watchtower decision commit only stages the decision's *own* files: `_is_decision_file` (web/blueprints/inception.py:1008-1019) matches the task md and the episodic, not the ledger. So each row sat uncommitted in the working tree; the audit (which reads the working-tree ledger) passed while it was there. At 2026-10-22 09:32:16 a `git stash` (reflog `reset: moving to HEAD`, `stash@{0}` "WIP on bleeding-edge: fa17ac8a7") swept the working tree, ledger included. The five rows are in `stash@{0}` (`git diff 'stash@{0}^1' 'stash@{0}' -- .context/reviews/human-ac-ticks.jsonl` shows exactly those five added rows and no deletions). No commit since be.2 changed what counts as provenance — the T-4165 / T-4285 / T-4159 candidates were not the cause.
+
+**Identity leak (T-4470, T-4466 authored `fw worker (termlink-dispatch)` / `dispatch+w4468@aef.local`):** the decision commit's env is `decide_runner.git_clean_env()` (web/blueprints/inception.py:1122), which strips git's repo-local vars (T-4242) but passes `GIT_AUTHOR_*`/`GIT_COMMITTER_*` through. A dispatch worker exports its identity (lib/git-identity.sh:80); a Watchtower started or restarted from inside a worker (the web-touching rule tells workers to run `bin/fw watchtower restart`) inherits it, and every decision it commits is then authored by the worker. Inferred from the env mechanism and the w4468 dispatch window on 2026-10-20; the serving process has since been replaced, so its environ cannot be read now.
+
+**Why structurally allowed:** the decide path's only test of provenance was "a row was appended"; nothing asserted the row reached a commit, and the audit reads the working-tree ledger, so an uncommitted row reads as green until any reset/stash/checkout removes it. The identity vars were never in the T-4242 strip list because that fix was about which repo/index, not who.
+
+**Prevention:** (1) the Watchtower decision commit now includes the Human-tick ledger, so the row lands in the same commit as the tick it backs; (2) an `@aef.local` agent identity inherited by the server is dropped for the decision commit, so the repo's configured (operator) identity authors it. `tests/unit/test_t4590_decide_commit_carries_provenance.py` pins both (red before the fix).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +399,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4590-push-blocker-human-ac-tick-audit-fails-t.md
 - **Context:** Initial task creation
+
+### 2026-10-22T08:21:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

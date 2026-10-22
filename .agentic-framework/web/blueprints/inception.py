@@ -1011,11 +1011,16 @@ def _is_decision_file(task_id: str, path: str) -> bool:
     Used to scope the post-decision commit to exactly the files the decision
     touched — the task file (in active/ for DEFER, completed/ for GO/NO-GO) and
     the generated episodic — and nothing else (no unrelated working-tree churn).
+
+    T-4590: plus the Human-tick ledger. decide appends the provenance row for the
+    go/no-go tick there; left out of the commit it sat uncommitted until a `git stash`
+    swept it away, and `fw audit` then FAILed the operator's own decisions.
     """
     import re as _re
     return bool(
         _re.match(rf"^\.tasks/(active|completed)/{_re.escape(task_id)}-.*\.md$", path)
         or _re.match(rf"^\.context/episodic/{_re.escape(task_id)}(-.*)?\.yaml$", path)
+        or path == ".context/reviews/human-ac-ticks.jsonl"
     )
 
 
@@ -1120,6 +1125,11 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
     # variables - an inherited GIT_INDEX_FILE=.git/index.lock made the decision
     # commit use the lock file as its index (see decide_runner.GIT_LOCAL_ENV_VARS).
     _env = {**_dr.git_clean_env(), "FW_ALLOW_MASTER_COMMIT": "1"}
+    # T-4590: a Watchtower started from a dispatch worker inherits its @aef.local git
+    # identity; the decision is the operator's, so let the repo's configured user author it.
+    if any(_env.get(k, "").endswith("@aef.local") for k in ("GIT_AUTHOR_EMAIL", "GIT_COMMITTER_EMAIL")):
+        for k in ("GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL"):
+            _env.pop(k, None)
     try:
         status = subprocess.run(
             ["git", "status", "--porcelain", "--untracked-files=all"],
