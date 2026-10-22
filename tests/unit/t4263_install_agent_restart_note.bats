@@ -10,6 +10,10 @@
 # Confirmed RED against the pre-T-4263 install.sh: print_completion_banner did
 # not exist (the banner was inline in main), so every test fails.
 
+# T-4592: no test here runs fw init, but a test title names it, which the
+# T-3610 fence lint reads as a writer; the fence is harmless and keeps it green.
+load ../git_fence
+
 FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
 INSTALL="$FRAMEWORK_ROOT/install.sh"
 

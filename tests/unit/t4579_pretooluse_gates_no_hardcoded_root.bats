@@ -10,8 +10,9 @@ ROOT="${BATS_TEST_DIRNAME}/../.."
 GATES="$ROOT/tests/governance/test_pretooluse_gates.bats"
 
 @test "T-4579: no hook input names the origin host's checkout path" {
-    origin="/opt/999-Agentic-Engineering-""Framework"
-    run grep -nF "$origin" "$GATES"
+    # T-4592: the origin path is test data, so it is passed inline, never assigned
+    # (an assignment reads as a root default to no-hardcoded-checkout-root.bats).
+    run grep -nF "/opt/999-Agentic-Engineering-""Framework" "$GATES"
     [ "$status" -eq 1 ]
 }
 

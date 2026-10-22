@@ -1,10 +1,15 @@
 ---
 id: T-4592
-name: "Push blocker: 2 tests/lint invariants red (bats files running fw init without fencing git discovery; tests defaulting root to the literal checkout path)"
+name: "Push blocker: 2 tests/lint invariants red (bats files running fw init without
+  fencing git discovery; tests defaulting root to the literal checkout path)"
 description: >
-  Pre-push audit 2026-10-22: invariants 'every bats file that runs fw init or installs hooks fences git discovery' and 'no test under tests/ defaults its root to the literal checkout path' are RED, almost certainly from test files added on 2026-10-21/22. Run fw test invariants, find the offending files, fix each test (fence GIT_CEILING_DIRECTORIES / derive the root), keep the tests green.
+  Pre-push audit 2026-10-22: invariants 'every bats file that runs fw init or installs
+  hooks fences git discovery' and 'no test under tests/ defaults its root to the literal
+  checkout path' are RED, almost certainly from test files added on 2026-10-21/22.
+  Run fw test invariants, find the offending files, fix each test (fence GIT_CEILING_DIRECTORIES
+  / derive the root), keep the tests green.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:19:44Z
-last_update: 2026-10-22T08:19:44Z
-date_finished: null
+last_update: '2026-10-22T08:21:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T08:21:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4592: Push blocker: 2 tests/lint invariants red (bats files running fw init without fencing git discovery; tests defaulting root to the literal checkout path)
@@ -62,8 +84,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `tests/lint/bats-git-discovery-fence.bats` passes (every bats file running fw init / installing hooks fences git discovery)
+- [x] `tests/lint/no-hardcoded-checkout-root.bats` passes (no test defaults its root to the literal checkout path)
+- [x] The offending test files, once fixed, still pass their own suites
+- [x] `python3 tools/bats-dead-negation-lint.py tests/` reports clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +272,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/lint/bats-git-discovery-fence.bats tests/lint/no-hardcoded-checkout-root.bats > /tmp/.t4592-lint.out 2>&1 && ! grep -q "^not ok" /tmp/.t4592-lint.out
+timeout 300 bats tests/unit/t4263_install_agent_restart_note.bats tests/unit/t4579_pretooluse_gates_no_hardcoded_root.bats > /tmp/.t4592-unit.out 2>&1 && ! grep -q "^not ok" /tmp/.t4592-unit.out
+test "$(cat /tmp/.t4592-lint.out /tmp/.t4592-unit.out | grep -c '# skip')" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4592-neg.out 2>&1 && grep -q "clean" /tmp/.t4592-neg.out
 
 ## RCA
 
@@ -264,6 +292,18 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** pre-push `fw test invariants` red on two lint tests: `tests/lint/bats-git-discovery-fence.bats` test 1 (flagged `tests/unit/t4263_install_agent_restart_note.bats`) and `tests/lint/no-hardcoded-checkout-root.bats` test 6 (flagged `tests/unit/t4579_pretooluse_gates_no_hardcoded_root.bats:13`).
+
+**Root cause:** two test files landed 2026-10-22 that trip the corpus lints:
+1. `tests/unit/t4263_install_agent_restart_note.bats:40` (pre-fix line): the test title `"T-4263: install.sh suppresses fw init's own restart notice …"` matches the fence lint's `WRITER_RE` (`tests/lint/bats-git-discovery-fence.bats:45`, `bin/fw"? init\b` / `fw init\b`) — it strips comments but not test titles — and the file had no fence. The file runs no `fw init` at all (it greps install.sh/lib/init.sh and runs a bash shim), so this was a lint false positive on prose, added by commit c939b2816 (T-4240) when the title was reworded.
+2. `tests/unit/t4579_pretooluse_gates_no_hardcoded_root.bats:13`: `origin="/opt/999-Agentic-Engineering-""Framework"` — the path is test data (grepped for), but as an assignment it matches the `X=<path>` shape at `tests/lint/no-hardcoded-checkout-root.bats:35`. The `""` split defeats a plain grep but not the lint's `/opt/999-` prefix regex. Added by e8ba347d9 (T-4579).
+
+**Why structurally allowed:** both lints run only in the invariants/pre-push suite, not when a single new test file is run or committed, so the authoring workers (each running only their own file) saw green and the red surfaced at the next push.
+
+**Fix:** t4263 now `load ../git_fence` (harmless — sets GIT_CEILING_DIRECTORIES; the lint's own documented remedy); t4579 passes the origin path inline to `grep -nF` instead of assigning it (the lint's test-data control case, test 8, confirms inline use is not refused). Both test files' own assertions unchanged and green.
+
+**Prevention:** the two invariants themselves are the regression tests — red before, green after (16/16 across the 4 files, 0 skips). Residual: the fence lint still reads test-title prose as a writer; narrowing `WRITER_RE` to skip `@test "…"` titles is possible but the lint's negative control puts the writer body on the `@test` line, so it needs its own task rather than a rushed edit in a push blocker.
 
 ## Evolution
 
@@ -345,3 +385,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4592-push-blocker-2-testslint-invariants-red-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T08:21:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
