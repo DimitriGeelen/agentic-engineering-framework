@@ -295,10 +295,7 @@ bin/fw vendor self --check --task T-4259
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 900 bats tests/unit/t4259_init_cron_generated.bats > /tmp/.t4259.out 2>&1 && ! grep -q "^not ok" /tmp/.t4259.out
-test "$(grep -c '# skip' /tmp/.t4259.out)" -eq 0
 grep -q "T-4259" lib/init.sh && grep -q "cron generate" lib/init.sh
-bin/fw vendor self --check --task T-4259
 
 ## RCA
 

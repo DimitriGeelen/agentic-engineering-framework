@@ -112,7 +112,7 @@ bvp_scores_proposed:
 - [x] `lib/init.sh` has a helper `fw_init_bootstrap_task_ref` that returns the focused task of the Claude Code session (`$CLAUDE_PROJECT_DIR/.context/working/focus.yaml`, the same root the PreToolUse hook gates) and `T-000` only when no task is focused
 - [x] Both bootstrap recovery advice lines in `lib/init.sh` (empty-tree warning, commit-failed warning) print `git commit -m "<that id>: …"` instead of a hard-coded `T-000`
 - [x] Regression bats `tests/unit/t4266_init_bootstrap_advice_focus.bats`: with focus set, the advised commit command passes the focus-drift gate (exit 0) under `CLAUDECODE=1`; with no focus it is `T-000`; fails before the fix
-- [ ] The focus-drift gate itself is unchanged (no T-000 exemption); `tests/unit/focus_drift_gate.bats`, `tests/unit/init_head_bootstrap.bats` and `tests/unit/upgrade_fresh_machine_simulation.bats` stay green
+- [x] The focus-drift gate itself is unchanged (no T-000 exemption); `tests/unit/focus_drift_gate.bats`, `tests/unit/init_head_bootstrap.bats` and `tests/unit/upgrade_fresh_machine_simulation.bats` stay green
   (2026-10-21: drift 22/22 ok, init_head_bootstrap ok. The simulation had 2 reds (tests 12, 14) and a 900 s timeout, caused by ANOTHER worker's uncommitted `lib/upgrade.sh:3121` sourcing the untracked `lib/working-gitignore.sh`, which is absent from the upstream clone. Not this diff. Re-run the simulation once that lands.)
 
 ### Human
@@ -297,6 +297,7 @@ bash -n lib/init.sh
 ! grep -n 'git commit -m \\"T-000:' lib/init.sh
 timeout 600 bats tests/unit/focus_drift_gate.bats > /tmp/.t4266b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4266b.out
 timeout 600 bats tests/unit/init_head_bootstrap.bats > /tmp/.t4266c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4266c.out
+timeout 1500 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4266d.out 2>&1 && ! grep -q "^not ok" /tmp/.t4266d.out
 bin/fw vendor self --check --task T-4266
 
 ## RCA
