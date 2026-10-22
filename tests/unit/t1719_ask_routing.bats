@@ -115,44 +115,64 @@ print('OK')
     [[ "$output" == *OK* ]]
 }
 
-@test "t1719-a3: a live ask writes a dispatch row with workflow_id=ask" {
-    command -v ollama >/dev/null 2>&1 || skip "ollama not installed"
-    before=$(wc -l < "$DISPATCHES")
-    run bash -c "cd '$FRAMEWORK_ROOT' && timeout 180 bin/fw ask --concise 'what is P-011' >/dev/null 2>&1"
-    after=$(wc -l < "$DISPATCHES")
-    [ "$after" -gt "$before" ]
-    run bash -c "tail -1 '$DISPATCHES' | python3 -c \"import sys,json; d=json.load(sys.stdin); print(d.get('workflow_id'), d.get('task_type'))\""
+# ── telemetry lands (T-4325: hermetic, no wall-clock deadline) ────────────
+# These two used to run a LIVE `bin/fw ask` against the real ollama under
+# `timeout 180`/`timeout 240`, and assert on the live repo's shared logs. The
+# dispatch row is written only after rag_retrieve() returns, and on this host
+# under suite load retrieval alone measured 86s and a whole ask 132s — so a busy
+# run killed the ask before any row landed and the test went red for a reason
+# that had nothing to do with routing. The live logs were also written by every
+# other ask on the host, so `wc -l` grew (false green) or `tail -1` read someone
+# else's row. Now: the model calls are stubbed, the workflow is the committed
+# ask.yaml, and the logs live in a throwaway project — the property under test
+# (ask captures a dispatch row and records the route) with nothing to wait for.
+
+_ask_in_scratch() {   # runs one stubbed ask.ask() with PROJECT_ROOT=$SCRATCH
+    SCRATCH="$(mktemp -d)"
+    mkdir -p "$SCRATCH/.context/project/workflows"
+    cp "$ASK_YAML" "$SCRATCH/.context/project/workflows/ask.yaml"
+    run bash -c "
+      cd '$SCRATCH'
+      PROJECT_ROOT='$SCRATCH' timeout 60 python3 -c \"
+import sys, types
+sys.path.insert(0, '$FRAMEWORK_ROOT/lib'); sys.path.insert(0, '$FRAMEWORK_ROOT')
+import ask, ollama
+ask.rag_retrieve = lambda q, limit=10: []
+ask.estate_context = lambda q, c, **kw: (c, {'available': True})
+ask.get_model = lambda: 'stub-model'
+msg = types.SimpleNamespace(content='stub answer', thinking='')
+ollama.chat = lambda **kw: types.SimpleNamespace(message=msg)
+r = ask.ask('what is P-011', limit=1, concise=True)
+print('ROUTE', r['route'], r['dispatch_id'])
+\""
+}
+
+@test "t1719-a3: an ask writes a dispatch row with workflow_id=ask" {
+    _ask_in_scratch
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"ROUTE ollama-local"* ]]
+    [ "$(wc -l < "$SCRATCH/.context/dispatches.jsonl")" -eq 1 ]
+    run python3 -c "import json; d=json.loads(open('$SCRATCH/.context/dispatches.jsonl').readline()); print(d.get('workflow_id'), d.get('task_type'))"
+    rm -rf "$SCRATCH"
     [[ "$output" == *"ask ask"* ]]
 }
 
-@test "t1719-a3: a live ask writes an outcome row naming the route" {
-    command -v ollama >/dev/null 2>&1 || skip "ollama not installed"
-    [ -f "$OUTCOMES" ] || skip "no outcomes log yet"
-    # Self-contained by construction: this test runs its OWN ask and asserts only
-    # the rows THAT run appended. It previously scanned `tail -40` of the shared
-    # log, which made the verdict a property of ambient history rather than of
-    # this run — and it fails in BOTH directions. Measured 2026-09-05: red during
-    # a close-heavy hour (task-close evaluator rows flooded the window, pushing
-    # every route row past line 40) and then green on an unchanged re-run purely
-    # because an unrelated live ask had just landed. A test that a neighbouring
-    # task can turn green is not evidence about routing.
-    local before
-    before=$(wc -l < "$OUTCOMES")
-    run bash -c "cd '$FRAMEWORK_ROOT' && timeout 240 bin/fw ask --concise 'what is P-011' >/dev/null 2>&1"
-    run bash -c "
-      cd '$FRAMEWORK_ROOT'
-      tail -n +$((before + 1)) '$OUTCOMES' | python3 -c \"
-import sys, json
-found = False
-for line in sys.stdin:
-    try: d = json.loads(line)
-    except Exception: continue
-    o = d.get('outcome') or {}
-    if o.get('route') in ('ollama-local','claude-via-litellm'):
-        found = True
-print('FOUND' if found else 'MISSING')
-\""
+@test "t1719-a3: an ask writes an outcome row naming the route" {
+    _ask_in_scratch
+    [ "$status" -eq 0 ]
+    run python3 -c "
+import json
+rows = [json.loads(l) for l in open('$SCRATCH/.context/dispatch-outcomes.jsonl')]
+print('FOUND' if any((r.get('outcome') or {}).get('route') == 'ollama-local' for r in rows) else 'MISSING')
+"
+    rm -rf "$SCRATCH"
     [[ "$output" == *FOUND* ]]
+}
+
+@test "t1719-a3 (T-4325): no test here waits on a live ask under a wall-clock deadline" {
+    # The shape that made this file load-dependent: a real `bin/fw ask` inside
+    # `timeout N`. Hermetic stubs above replace it; this keeps it from returning.
+    ! grep -nE 'timeout [0-9]+ bin/fw ask' "$BATS_TEST_FILENAME" || false
 }
 
 @test "t1719-a3: the fallback FIRES when generation fails on a connection error" {
