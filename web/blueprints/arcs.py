@@ -35,7 +35,7 @@ from lib.arc_membership import (
     scan_tasks_by_arc_id as _scan_tasks_by_arc_id_shared,
     scan_tasks_by_arc_membership as _scan_tasks_by_arc_membership_shared,
 )
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, board_awaiting_reason, render_page
 # T-3952: fw from the FRAMEWORK root, never cwd-relative "bin/fw" — these calls run with
 # cwd=PROJECT_ROOT, and a consumer project has no bin/fw at its root (.agentic-framework/bin/fw).
 _FW = str(FRAMEWORK_ROOT / "bin" / "fw")
@@ -412,6 +412,10 @@ def _task_meta_index() -> dict[str, dict[str, Any]]:
             "horizon": fm.get("horizon", "?"),
             "type": fm.get("workflow_type", "?"),
             "completed": (fm.get("_location") == "completed"),
+            # T-4663: inputs of board_awaiting_reason (the task board's predicate).
+            "owner": fm.get("owner") or "",
+            "_location": fm.get("_location") or "",
+            "_path": fm.get("_path") or "",
             # T-1909: arc_id + tags so the arc_badge macro can render
             # membership on the arc-detail constituent-task table.
             "arc_id": fm.get("arc_id") or "",
@@ -966,8 +970,9 @@ def _arc_story(arc: dict[str, Any]) -> dict[str, Any]:
 def _task_overview(constituents: list[dict[str, Any]]) -> dict[str, Any]:
     """Counts by status (completed -> 'done'), open tasks, and tasks awaiting review.
 
-    A work-completed task still in active/ is partial-complete (waiting on a
-    human), so it is labelled 'awaiting review' and kept out of the open list.
+    A task waiting on the operator - the task board's predicate, `board_awaiting_reason`
+    (T-4663: reviewer-ready, or partial-complete with the agent done) - is labelled
+    'awaiting review' and kept out of the open list.
     """
     counts: dict[str, int] = {}
     open_tasks: list[dict[str, Any]] = []
@@ -977,7 +982,7 @@ def _task_overview(constituents: list[dict[str, Any]]) -> dict[str, Any]:
             label = "missing"
         elif c.get("completed"):
             label = "done"
-        elif str(c.get("status") or "") == "work-completed":
+        elif board_awaiting_reason(c):
             label = "awaiting review"
             awaiting.append(c)
         else:

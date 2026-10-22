@@ -80,12 +80,21 @@ def _c(tid, status, completed=False):
     return {"id": tid, "name": f"n {tid}", "status": status, "completed": completed}
 
 
-def test_task_overview_awaiting_review_and_open_order():
+def _partial_complete(tmp_path, tid):
+    """T-4663: 'awaiting review' is the board's predicate - a partial-complete task
+    (work-completed, active, owner human, Agent criteria ticked) qualifies."""
+    p = tmp_path / f"{tid}-fixture.md"
+    p.write_text(f"---\nid: {tid}\nstatus: work-completed\nowner: human\n---\n\n"
+                 "## Acceptance Criteria\n\n### Agent\n- [x] done\n")
+    return dict(_c(tid, "work-completed"), owner="human", _location="active", _path=str(p))
+
+
+def test_task_overview_awaiting_review_and_open_order(tmp_path):
     from web.blueprints import arcs
 
     ov = arcs._task_overview([
         _c("T-1", "captured"), _c("T-2", "issues"), _c("T-3", "started-work"),
-        _c("T-4", "work-completed"), _c("T-5", "work-completed", completed=True),
+        _partial_complete(tmp_path, "T-4"), _c("T-5", "work-completed", completed=True),
     ])
     assert [c["id"] for c in ov["open_tasks"]] == ["T-2", "T-3", "T-1"]
     assert [c["id"] for c in ov["awaiting_review"]] == ["T-4"]
@@ -93,11 +102,11 @@ def test_task_overview_awaiting_review_and_open_order():
     assert labels["awaiting review"] == 1 and labels["done"] == 1
 
 
-def test_task_overview_render_awaiting_and_cap(client, monkeypatch):
+def test_task_overview_render_awaiting_and_cap(client, monkeypatch, tmp_path):
     from web.blueprints import arcs
 
     real = arcs._resolve_constituents
-    fake = ([_c("T-9001", "work-completed")]
+    fake = ([_partial_complete(tmp_path, "T-9001")]
             + [_c(f"T-91{i:02d}", "captured") for i in range(13)])
     for c in fake:
         c.update({"missing": False, "bvp": None})

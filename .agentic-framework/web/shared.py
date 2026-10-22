@@ -1886,6 +1886,51 @@ def task_review_state(path: Path | str) -> tuple[str | None, list[str], int]:
     return state, reasons, open_human
 
 
+def count_open_agent_acs(body: str) -> int:
+    """Unticked criteria in every ``### Agent`` block (comments stripped), scoped the way
+    `count_human_acs` scopes Human criteria."""
+    if not body:
+        return 0
+    text = _strip_html_comments(body)
+    return sum(len(re_mod.findall(r"^\s*-\s*\[ \]", m.group(1), re_mod.MULTILINE))
+               for m in re_mod.finditer(r"^### Agent\s*$(.*?)(?=^#{1,3} |\Z)",
+                                        text, re_mod.MULTILINE | re_mod.DOTALL))
+
+
+_OPEN_AGENT_CACHE: dict[str, tuple[int, int]] = {}
+AWAIT_REVIEWER_READY = "reviewer: ready"
+AWAIT_AGENT_DONE = "agent done"
+
+
+def board_awaiting_reason(meta: dict) -> str | None:
+    """Why a task waits on the operator (T-4663), or None: the ONE predicate behind the
+    board's "Awaiting review" column and the arc page's overview.
+
+    * ``"reviewer: ready"`` - `task_review_state` calls it ready (T-4053, unchanged).
+    * ``"agent done"`` - partial-complete: ``work-completed``, still in active/, owner
+      human, no unticked Agent criterion. No reviewer verdict needed, so projects that
+      keep reviews human-only still see the tasks waiting on them.
+
+    Reviewer-ready wins when both hold, so a task carries one reason. Fills
+    ``_review_state`` / ``_wait_reasons`` / ``_open_human`` on ``meta`` for the card."""
+    path = meta.get("_path")
+    active = meta.get("_location") == "active" and bool(path)
+    meta["_review_state"], meta["_wait_reasons"], meta["_open_human"] = (
+        task_review_state(path) if active else (None, [], 0))
+    if meta["_review_state"] == READY:
+        return AWAIT_REVIEWER_READY
+    if (active and str(meta.get("status") or "") == "work-completed"
+            and str(meta.get("owner") or "") == "human"):
+        def _count(q: Path) -> int:
+            try:
+                return count_open_agent_acs(q.read_text(encoding="utf-8", errors="replace"))
+            except OSError:
+                return -1
+        if mtime_cached_get(Path(path), _count, _OPEN_AGENT_CACHE, -1) == 0:
+            return AWAIT_AGENT_DONE
+    return None
+
+
 _INCEPTION_DECIDED_RE = re_mod.compile(r"^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b", re_mod.M)
 
 

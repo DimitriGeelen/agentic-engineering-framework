@@ -381,6 +381,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
 .kanban-column[data-column="awaiting-review"] .kanban-column-header { border-bottom-color: #f9a825; }
 .kanban-column[data-column="awaiting-review"] .kanban-card { border-left: 3px solid #f9a825; }
 .kanban-human-open { font-size: 0.65rem; color: var(--pico-muted-color); }
+.kanban-await-reason { font-size: 0.65rem; color: #b07800; }
 </style>
 
 <div class="tasks-toolbar">
@@ -529,7 +530,9 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
             {{ inline_select(task.id, 'owner', enum_owners, task.owner, select_class='inline-owner-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset', lazy=True) }}
             {{ arc_badge(task) }}
             {{ bvp_badge(task) }}
-            {% if task._open_human and task._review_state != 'ready' %}
+            {% if task._await_reason %}
+            <span class="kanban-await-reason">{{ task._await_reason }}</span>
+            {% elif task._open_human and task._review_state != 'ready' %}
             <span class="kanban-human-open" title="{{ task._wait_reasons|join('; ') }}">{{ task._open_human }} Human open</span>
             {% endif %}
         </div>
@@ -564,7 +567,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         {% endif %}
     </div>
     {% if s == 'started-work' %}
-    {# T-4045: derived "Awaiting review" column — tasks the readiness predicate calls ready. #}
+    {# T-4045/T-4663: derived "Awaiting review" column — reviewer-ready or agent-done tasks (board_awaiting_reason). #}
     <div class="kanban-column" data-column="awaiting-review">
         <div class="kanban-column-header">
             Awaiting review <span class="count">({{ awaiting_tasks|length }})</span>

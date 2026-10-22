@@ -1,13 +1,18 @@
 ---
 id: T-4663
-name: "Task board 'Awaiting review' column: also take human-owned tasks whose Agent criteria are all ticked, without requiring a reviewer verdict (GitHub #92 follow-up)"
+name: "Task board 'Awaiting review' column: also take human-owned tasks whose Agent
+  criteria are all ticked, without requiring a reviewer verdict (GitHub #92 follow-up)"
 description: >
-  Submitter of #92 (MikeEchoVoid, 2026-10-22): projects that keep reviews human-only never enable the AI reviewer, so the column stays empty for them; what they need is the agent-done/human-must-act set, today served by owner: agent human and /tasks?owner=human. Proposal: the column also admits partial-complete tasks (all Agent ACs ticked, owner human) with no reviewer verdict. Render-surface change: needs a [REVIEW] Human AC.
+  Submitter of #92 (MikeEchoVoid, 2026-10-22): projects that keep reviews human-only
+  never enable the AI reviewer, so the column stays empty for them; what they need
+  is the agent-done/human-must-act set, today served by owner: agent human and /tasks?owner=human.
+  Proposal: the column also admits partial-complete tasks (all Agent ACs ticked, owner
+  human) with no reviewer verdict. Render-surface change: needs a [REVIEW] Human AC.
 
-status: captured
+status: started-work
 workflow_type: build
 owner:
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T20:37:45Z
-last_update: 2026-10-22T20:37:45Z
-date_finished: null
+last_update: 2026-10-22T22:17:15Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T20:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T20:45:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4663: Task board 'Awaiting review' column: also take human-owned tasks whose Agent criteria are all ticked, without requiring a reviewer verdict (GitHub #92 follow-up)
@@ -62,10 +94,21 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `web/shared.py` has ONE predicate `board_awaiting_reason(meta)` returning "reviewer: ready" (T-4053 readiness ready), "agent done" (partial-complete: status work-completed, in `.tasks/active/`, owner human, no unticked `### Agent` criterion; no reviewer verdict needed) or None; reviewer-ready wins when both hold, so a task is listed once
+- [x] `/tasks` board "Awaiting review" column admits tasks by that predicate and each card shows its reason compactly (`kanban-await-reason`)
+- [x] `arcs.py` `_task_overview` uses the same predicate instead of its own `status == work-completed` copy
+- [x] `tests/web/test_t4663_awaiting_agent_done.py` covers reviewer-ready only, partial-complete only, both, neither (and the arc overview); it fails on the pre-fix code and passes after; `tests/web/test_t4045_board_awaiting_review.py` stays green
+- [x] Watchtower restarted; `bin/fw watchtower current` passes and live `/tasks` renders the column
 
 ### Human
+- [ ] [REVIEW] The task board's "Awaiting review" column shows agent-done tasks and reads clearly
+  **Steps:**
+  1. Open http://192.168.10.107:3000/tasks (board view)
+  2. Look at the "Awaiting review" column between In Progress and Issues
+  3. Check that human-owned tasks whose agent work is done (partial-complete) appear there, each card labelled "agent done" or "reviewer: ready"
+  **Expected:** the column lists the tasks waiting on you, no task appears twice on the board, and each card's reason label is readable at a glance
+  **If not:** note the task id(s) missing or doubled and what the label should say
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -249,7 +292,22 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 600 python3 -m pytest tests/web/test_t4663_awaiting_agent_done.py tests/web/test_t4045_board_awaiting_review.py -q -rs > /tmp/.t4663-pytest.out 2>&1 && grep -q passed /tmp/.t4663-pytest.out && ! grep -qE "failed|error" /tmp/.t4663-pytest.out
+test "$(grep -c SKIPPED /tmp/.t4663-pytest.out)" -eq 0
+grep -q "def board_awaiting_reason" web/shared.py && grep -q "board_awaiting_reason" web/blueprints/tasks.py && grep -q "board_awaiting_reason" web/blueprints/arcs.py
+bin/fw watchtower current
+curl -sf "$(bin/fw watchtower url)/tasks?view=board" -o /tmp/.t4663-tasks.html && grep -q 'data-column="awaiting-review"' /tmp/.t4663-tasks.html
+bin/fw vendor self --check --task T-4663
+
 ## RCA
+
+**Symptom:** GitHub #92 follow-up — on projects that keep reviews human-only (AI reviewer never enabled), the board's "Awaiting review" column is always empty although tasks are waiting on the human.
+
+**Root cause:** `web/blueprints/tasks.py:809` admitted only `task_review_state(...) == "ready"`. T-4053 readiness (`web/shared.py` `_compute_readiness`) needs a green independent-reviewer verdict on every open reviewer-judged Human criterion ([REVIEW] / render / taste), which never arrives when the reviewer is off, so partial-complete tasks (agent finished, owner human) stayed in the Completed column. `web/blueprints/arcs.py` `_task_overview` carried its own, different copy (`status == work-completed`).
+
+**Why structurally allowed:** the T-4045 tests only built fixtures whose Human criterion is not reviewer-judged ([RUBBER-STAMP]), so the reviewer-off path was never exercised; two surfaces each kept their own "awaiting" rule.
+
+**Prevention:** one shared predicate `board_awaiting_reason` used by both surfaces, and `tests/web/test_t4663_awaiting_agent_done.py` pinning the four fixture cases, including a [REVIEW] criterion with no verdict.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -318,7 +376,19 @@ date_finished: null
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The column now holds the set GitHub #92 asked for: tasks where the agent is done and you must act. It still admits reviewer-ready tasks and also admits partial-complete tasks with no reviewer verdict. One shared predicate drives both the board and the arc page, so the two can no longer disagree. Each card is listed once, with a compact reason label. One thing to look at when you review: the live board now puts 340 cards in this column (282 "agent done", 58 "reviewer: ready"), and the column has no cap.
+**Evidence:**
+- `tests/web/test_t4663_awaiting_agent_done.py`: 4 tests, all 4 failed on the pre-fix code and pass now. They cover reviewer-ready only, partial-complete only, both (listed once as "reviewer: ready"), neither, and the arc overview.
+- `tests/web/test_t4045_board_awaiting_review.py` and `tests/web/test_t3564_arc_page_layout.py` are green (15 passed). The T-3564 fixtures were updated to a real partial-complete task, because the arc overview now uses the shared predicate.
+- Live board: http://192.168.10.107:3000/tasks renders the column, and `bin/fw watchtower current` passes after the restart.
+
 ## Decisions
+
+### 2026-10-23 — arc page predicate
+- **Chose:** the arc page uses the board's `board_awaiting_reason` instead of `status == work-completed`.
+- **Why:** the brief asked for one function. A `work-completed` task still in active/ that is not partial-complete (owner agent, or Agent boxes open) is now listed as open, not awaiting.
+- **Rejected:** keeping the arc's status-only copy, because the two surfaces would disagree.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -345,3 +415,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4663-task-board-awaiting-review-column-also-t.md
 - **Context:** Initial task creation
+
+### 2026-10-22T22:16:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

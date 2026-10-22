@@ -18,7 +18,7 @@ from web.shared import (
     _auto_link_files,
     resolve_watchtower_refs, link_route_code_spans,
     count_human_acs,
-    task_review_state,
+    board_awaiting_reason,
 )
 from web.subprocess_utils import run_fw_command
 
@@ -799,15 +799,13 @@ def tasks():
     # Board columns: newest first, so a cap trims the stalest cards, not the current ones.
     board_tasks = sorted(all_tasks, key=_board_order_key, reverse=True)
     # T-4045: derived "Awaiting review" column (no new status is stored). The one
-    # readiness predicate (T-4053) decides; waiting tasks stay where their status puts
-    # them and carry their open-Human count so the two kinds are told apart.
-    awaiting_tasks = []
+    # predicate (T-4663: reviewer-ready per T-4053, or partial-complete agent-done)
+    # decides; waiting tasks stay where their status puts them and carry their
+    # open-Human count so the two kinds are told apart.
     for t in board_tasks:
-        t["_review_state"], t["_wait_reasons"], t["_open_human"] = (
-            task_review_state(t["_path"]) if t.get("_location") == "active" and t.get("_path")
-            else (None, [], 0))
-    awaiting_tasks = [t for t in board_tasks if t["_review_state"] == "ready"]
-    board_tasks = [t for t in board_tasks if t["_review_state"] != "ready"]
+        t["_await_reason"] = board_awaiting_reason(t)
+    awaiting_tasks = [t for t in board_tasks if t["_await_reason"]]
+    board_tasks = [t for t in board_tasks if not t["_await_reason"]]
     # "+N more" must land on the same filtered list the board came from.
     overflow_qs = urlencode([(k, v) for k, v in (
         ("owner", owner_filter), ("horizon", horizon_filter), ("tag", tag_filter),
