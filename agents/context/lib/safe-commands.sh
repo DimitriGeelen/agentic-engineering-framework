@@ -696,6 +696,40 @@ _fw_git_grep_opens_pager() {
     return 1
 }
 
+# T-4629: git remote and git reflog are mixed verbs (T-2888's class): `remote add|
+# remove|set-url|…` write .git/config, `reflog expire|delete|drop` destroy history.
+# remote is admitted only bare, after -v/--verbose, or with show / get-url; reflog
+# unless any word is expire, delete or drop (its default is show, and an argument
+# that is not a sub-verb is a ref to show). Judged on the dequoted words; a word
+# that begins with an expansion, or words that cannot be resolved, are refused.
+# _fw_git_mixed_verb_is_read <normalised "git verb args...">; 0 = read.
+_fw_git_mixed_verb_is_read() {
+    local i tok
+    _fw_option_words "$1" || return 1
+    for (( i=2; i<${#_FW_OW[@]}; i++ )); do
+        [ "${_FW_OWK[i]}" = E ] && return 1
+    done
+    case "${_FW_OW[1]:-}" in
+        remote)
+            for (( i=2; i<${#_FW_OW[@]}; i++ )); do
+                tok="${_FW_OW[i]}"
+                case "$tok" in
+                    -v) continue ;;
+                    --v*) case --verbose in "$tok"*) continue ;; esac; return 1 ;;
+                    show|get-url) return 0 ;;
+                    *) return 1 ;;
+                esac
+            done
+            return 0 ;;
+        reflog)
+            for (( i=2; i<${#_FW_OW[@]}; i++ )); do
+                case "${_FW_OW[i]}" in expire|delete|drop) return 1 ;; esac
+            done
+            return 0 ;;
+    esac
+    return 1
+}
+
 # T-4627: git ls-remote / fetch --upload-pack=CMD and push --receive-pack=CMD /
 # --exec=CMD RUN CMD as the remote's pack program (local-path and ssh transports),
 # although the verbs are admitted by name. Judged on the dequoted words: any
@@ -1244,8 +1278,13 @@ _fw_single_command_is_safe() {
                 # residue: `git symbolic-ref HEAD refs/heads/x` writes. Same
                 # reason `config` stays out — a verb whose read and write forms
                 # differ only by an argument cannot be decided on the verb alone.
-                status|log|diff|show|remote|describe|rev-parse|shortlog|blame|ls-files|ls-tree|cat-file|name-rev|reflog)
+                status|log|diff|show|describe|rev-parse|shortlog|blame|ls-files|ls-tree|cat-file|name-rev)
                     return 0
+                    ;;
+                # T-4629: remote and reflog write on some sub-verbs.
+                remote|reflog)
+                    _fw_git_mixed_verb_is_read "$git_norm" && return 0
+                    return 1
                     ;;
                 # T-2889: branch, tag and stash are the same class as config —
                 # read and write forms differ only by arguments (`git stash`

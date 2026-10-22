@@ -1,10 +1,16 @@
 ---
 id: T-4629
-name: "Read-only allowlist: git remote add/remove/set-url and git reflog expire/delete write the repo"
+name: "Read-only allowlist: git remote add/remove/set-url and git reflog expire/delete
+  write the repo"
 description: >
-  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh in their repo): the command passes has_bash_write_pattern and is_bash_safe_command (agents/context/lib/safe-commands.sh) yet writes the repository: git remote add|remove|set-url writes .git/config; git reflog expire --expire=now --all and git reflog delete destroy history. Allow git remote only for -v/show/get-url and git reflog only for show/list. Tests plus controls.
+  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh
+  in their repo): the command passes has_bash_write_pattern and is_bash_safe_command
+  (agents/context/lib/safe-commands.sh) yet writes the repository: git remote add|remove|set-url
+  writes .git/config; git reflog expire --expire=now --all and git reflog delete destroy
+  history. Allow git remote only for -v/show/get-url and git reflog only for show/list.
+  Tests plus controls.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +45,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "9e201103"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T10:37:03Z
-last_update: 2026-10-22T10:37:03Z
-date_finished: null
+last_update: 2026-10-22T11:08:52Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +57,50 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T10:45:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T10:45:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4629: Read-only allowlist: git remote add/remove/set-url and git reflog expire/delete write the repo
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+ring20-dashboard round-2 probe (msg 9e201103): `git remote add|remove|set-url` and
+`git reflog expire|delete` classify SAFE in `agents/context/lib/safe-commands.sh` although they
+write `.git/config` or destroy reflog history.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `is_bash_safe_command` admits `git remote` only bare, with `-v`/`--verbose`, or with the `show` / `get-url` sub-verbs; `add`, `remove`, `rm`, `rename`, `set-url`, `set-head`, `set-branches`, `prune`, `update` and any unknown option or sub-verb are refused, behind git global options and in quoted or expanded spellings too
+- [x] `is_bash_safe_command` refuses `git reflog expire|delete|drop` (any position, quoted or expanded); `git reflog`, `git reflog show …`, `git reflog list`, `git reflog exists X`, `git reflog -n 5` stay SAFE
+- [x] Controls stay SAFE: `git remote`, `git remote -v`, `git remote show origin`, `git remote get-url origin`, `git remote get-url --push origin`, `git status`
+- [x] Regression test `tests/unit/t4629_git_remote_reflog.bats` fails on the pre-fix code and passes after; existing safe-commands suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,8 +285,29 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4629_git_remote_reflog.bats > /tmp/.t4629.out 2>&1 && ! grep -q "^not ok" /tmp/.t4629.out
+test "$(grep -c '# skip' /tmp/.t4629.out)" -eq 0
+timeout 900 bats tests/unit/context_safe_commands.bats tests/unit/test_safe_commands_git_commit.bats tests/unit/t4627_git_transport_program.bats > /tmp/.t4629b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4629b.out
+bin/fw vendor self --check --task T-4629
 
 ## RCA
+
+**Symptom:** `git remote add x /tmp/y`, `git remote set-url origin …` and
+`git reflog expire --expire=now --all` classified SAFE and ran with no active task, although they
+rewrite `.git/config` or delete reflog entries.
+
+**Root cause:** `agents/context/lib/safe-commands.sh` `_fw_single_command_is_safe`, git arm: `remote`
+and `reflog` sit in the first read-verb list (`status|log|diff|show|remote|…|reflog`) and return 0
+on the verb name. Both are mixed verbs whose read and write forms differ only by the sub-verb.
+
+**Why structurally allowed:** the T-2888 comment in the same arm names this exact class (`config`,
+`symbolic-ref` kept out because "read and write forms differ only by an argument") and T-2889 gave
+branch/tag/stash an argument check, but remote and reflog were listed before that rule existed and
+were never re-examined against it.
+
+**Prevention:** `_fw_git_mixed_verb_is_read` decides remote/reflog on their sub-verb (dequoted words,
+fail closed on expansions), and `tests/unit/t4629_git_remote_reflog.bats` pins every write sub-verb
+plus SAFE controls.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -346,3 +403,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4629-read-only-allowlist-git-remote-addremove.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:08:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
