@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4567: .agentic-framework/install.sh is tracked but excluded from self-vendoring, so it goes stale
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T19:44:53Z
+# ============================================================================
+
+task_id: T-4567
+task_name: ".agentic-framework/install.sh is tracked but excluded from self-vendoring, so it goes stale"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-21T21:04:03Z
+completed: 2026-10-22T19:37:33Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-21T23:04:23+02:00
+last_commit: 2026-10-21T23:39:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file stale tracked .agentic-framework/install.sh. untrack .agentic-framework/install.sh and 6 other tracked copies no vendor class ships (stale, no reader); regression bats checks every tracked vendored path is in do_vendor's ship set. tick ACs; simulation verification timeout 1800s (suite takes ~15 min)
+
+# Key outcomes
+outcomes:
+  - 'Readers of `.agentic-framework/install.sh` (fw upgrade, fw vendor, init, consumers, tests) are enumerated in ## Decisions and the chosen fix (untrack vs vendor) follows from them'
+  - 'The tracked `.agentic-framework/install.sh` either no longer exists in the index or is byte-identical to `install.sh`'
+  - 'A regression bats test fails if a file tracked under `.agentic-framework/` is excluded from self-vendoring (the drift class, not just this one file)'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` stays green (18/18 on a clean clone of HEAD; in the shared tree tests 12/14 fail on another worker''s uncommitted lib/upgrade.sh:3121 sourcing untracked lib/working-gitignore.sh)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-21 — untrack the vendored install.sh, do not vendor it'
+    chose: '`git rm` `.agentic-framework/install.sh` (plus the six other tracked files in the same class, see below). Nothing that `fw vendor` / `fw vendor self` ships was changed. - **Why (readers, from grep):** - `do_vendor` (bin/fw:689 `includes=(`) never lists install.sh. Its dry run says so (bin/fw:882). So no consumer has ever received it, and `fw upgrade` goes through do_vendor. - `fw vendor self` (bin/fw:~10730) has no install.sh class. - install.sh itself only reads a target''s `.agentic-framework/{FRAMEWORK.md,VERSION,bin/fw}` (install.sh:304-307, 569-576), never the repo''s tracked copy. - Every test that runs install.sh uses `$FRAMEWORK_ROOT/install.sh` with FRAMEWORK_ROOT = repo root (e.g. tests/unit/install_scan.bats:8-9). No reader of `.agentic-framework/install.sh` exists. - So untracking leaves what consumers receive unchanged. Vendoring install.sh would *add* a file consumers have never had, which is a behaviour change with no reader to justify it. - **Same class, same fix:** `.agentic-framework/tests/integration/{fw_git,fw_healing,fw_work_on}.bats` and `.agentic-framework/.fabric/components/tests-integration-*.yaml` were tracked by T-744. They sit outside the ship set too and all differ from source. The new regression test covers the class, so they are untracked as well.'
+    alternatives_rejected: ['adding install.sh to `includes[]` (changes what consumers receive; no reader). Adding a self-vendor sync class for it (that would keep a copy nobody reads).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/.fabric/components/tests-integration-fw_git.yaml'
+  - '.agentic-framework/.fabric/components/tests-integration-fw_healing.yaml'
+  - '.agentic-framework/.fabric/components/tests-integration-fw_work_on.yaml'
+  - '.agentic-framework/install.sh'
+  - '.agentic-framework/tests/integration/fw_git.bats'
+  - '.agentic-framework/tests/integration/fw_healing.bats'
+  - '.agentic-framework/tests/integration/fw_work_on.bats'
+  - '.tasks/active/T-4567-agentic-frameworkinstallsh-is-tracked-bu.md'
+  - 'tests/unit/t4567_vendored_tree_tracked_parity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T23:04:23'
+    action: 'T-4567: file stale tracked .agentic-framework/install.sh'
+  - time: '2026-10-21T23:20:16'
+    action: 'T-4567: untrack .agentic-framework/install.sh and 6 other tracked copies no vendor class ships (stale, no reader); regression bats checks every tracked vendored path is in do_vendor''s ship set'
+  - time: '2026-10-21T23:39:04'
+    action: 'T-4567: tick ACs; simulation verification timeout 1800s (suite takes ~15 min)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1353 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, vendor]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1353
+  commits: 3
+  files_changed: 9
+  lines_added: 499
+  lines_removed: 678
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4567-agentic-frameworkinstallsh-is-tracked-bu.md
+generated_by: context-agent-hybrid

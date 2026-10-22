@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T19:37:42Z
-last_update: 2026-10-22T19:38:32Z
+last_update: '2026-10-22T19:45:14Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,6 +73,16 @@ bvp_scores_proposed:
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T19:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=314,acs=5)
     rubric_sha: e4a00f38e801
 ---
 
@@ -295,6 +305,11 @@ bin/fw vendor self --check --task T-4659
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** T-4651's A-after-B test showed an `FW_*` value from project B's tmux server env (e.g. `FW_FOO=<B path>`) reaching project A's claude launched by claude-fw; real variables of that family carry identity and paths (`FW_SIDECAR_AGENT_ID`, `FW_BIN`, `FW_DISPATCHED_WORKER`).
+**Root cause:** T-4638's `_tl_project_env_prefix` scrubbed by name (TASKS_DIR, CONTEXT_DIR, _FW_PATHS_DERIVED_BY, FW_ROUTED_FROM) — a deny-list — while tmux gives every new PTY shell the server's whole global environment.
+**Why structurally allowed:** the same deny-list shape that let G-116's fix miss CONTEXT_DIR/TASKS_DIR; no polluted-server test existed for the claude-fw path until T-4651.
+**Prevention:** the PTY line now unsets every inherited `FW_*` and re-exports only claude-fw's own (allow-list principle, as T-4647); T-4651's claude-fw leg asserts the full no-B-value with no `FW_*` exclusion, so any future leak of the family goes red.
 
 **Symptom:** with project B's tmux server holding FW_SIDECAR_AGENT_ID / FW_BIN / FW_DISPATCHED_WORKER, a claude-fw PTY launch for project A starts claude with B's values (T-4651 FW_FOO probe).
 **Root cause:** bin/claude-fw `_tl_project_env_prefix` (line ~392) unsets only TASKS_DIR, CONTEXT_DIR, _FW_PATHS_DERIVED_BY, FW_ROUTED_FROM and pins PROJECT_ROOT/FRAMEWORK_ROOT; every other FW_* in the PTY shell's inherited (server) env passes through — a deny-list, the shape T-4647 replaced on the dispatch path.
