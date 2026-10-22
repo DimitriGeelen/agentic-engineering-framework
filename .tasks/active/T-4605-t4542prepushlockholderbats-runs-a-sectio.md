@@ -8,10 +8,10 @@ description: >
   use audit.sh --check, or mark with '# live-audit-ok: <reason>'. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (line 120). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -43,7 +43,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:42:49Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T11:03:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge: t4401 lint test 1 flags tests/unit/t4542_prepush_lock_holder.bats (or evidence recorded that it no longer does)
+- [x] t4542_prepush_lock_holder.bats no longer runs a sectioned audit against the live repo (fixture PROJECT_ROOT, --check, or a justified live-audit-ok marker)
+- [x] tests/unit/t4401_audit_live_repo_lint.bats passes, and t4542_prepush_lock_holder.bats still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -156,6 +157,10 @@ cost_estimate_proposed:
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+python3 tools/audit-live-repo-lint.py tests/unit/t4542_prepush_lock_holder.bats > /tmp/.t4605-lint 2>&1 && grep -q "audit-live-repo-lint: clean" /tmp/.t4605-lint
+timeout 900 bats tests/unit/t4542_prepush_lock_holder.bats > /tmp/.t4605-bats 2>&1 && ! grep -q "^not ok" /tmp/.t4605-bats
+test "$(grep -c '# skip' /tmp/.t4605-bats)" -eq 0
+timeout 600 bats -f "tests/unit holds no sectioned audit" tests/unit/t4401_audit_live_repo_lint.bats > /tmp/.t4605-t4401 2>&1 && grep -q '^ok 1 ' /tmp/.t4605-t4401
 #
 # ── Mutable-corpus anchor (T-3326) ────────────────────────────────────────────
 # Do NOT anchor a verification line (or a unit test it runs) to MUTABLE corpus
@@ -281,22 +286,6 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
-
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -320,6 +309,16 @@ cost_estimate_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** `tests/unit/t4401_audit_live_repo_lint.bats` test 1 red: `tools/audit-live-repo-lint.py` flags `tests/unit/t4542_prepush_lock_holder.bats:120` and `:183` as sectioned audits in the real repo. Reproduced on bleeding-edge 0e47d94db (2 findings, rc=1).
+
+**Root cause:** both lines are assertions on the holder-record text `audit.sh --cron --section structure` (a `[[ == ]]` match and a `grep` pattern), not audit calls. The lint's call detector (`tools/audit-live-repo-lint.py:33-36` — `audit\.sh` plus `--section` on one statement) cannot tell a string naming the command from a statement running it, and its `NOT_A_CALL` exemption (line 43) covers only comments/echo/printf/yaml lines. The file's real audit calls (lines 165, 174, 190) are already `PROJECT_ROOT="$TMP_REPO"`-rooted. T-4542 was written with the literal string inline.
+
+**Why structurally allowed:** the lint landed (T-4401) after/alongside T-4542 and was not run over the T-4542 file before either closed; the nightly suite surfaced it as a red.
+
+**Prevention:** the expected job text now lives in one variable (`HOLDER_JOB`, built from `HOLDER_SECTION`) used by the fake holder and both assertions, so no statement both names `audit.sh` and carries a literal `--section`; t4401 test 1 (run by `fw test unit` and pre-push) keeps any new live call red.
 
 ## Recommendation
 
@@ -377,3 +376,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4605-t4542prepushlockholderbats-runs-a-sectio.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:03:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

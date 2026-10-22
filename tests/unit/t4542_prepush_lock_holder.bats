@@ -16,6 +16,12 @@ load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo
 # Hermetic: every lock and marker is the fixture's own.
 
 FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+# The job line a --cron structure audit records in the holder file (audit.sh
+# writes "job=audit.sh <argv>"). Held in one variable: the fake holder writes it
+# and the assertions match it; those lines name the job, they do not run it, and
+# keeping the section flag out of them keeps the T-4401 live-audit lint exact.
+HOLDER_SECTION='--section structure'
+HOLDER_JOB="audit.sh --cron $HOLDER_SECTION"
 
 setup() {
     TMP_REPO="$(mktemp -d -t fw-t4542-XXXXXX)"
@@ -96,8 +102,8 @@ _wait_lock_holder_ready() {
 _fake_cron_audit_for() {
     ( exec 200>"$LOCK_FILE"
       flock -w 30 200 || exit 75
-      printf 'pid=%s\nsince=%s\njob=audit.sh --cron --section structure\n' \
-          "$BASHPID" "$(( $(date +%s) - 812 ))" > "$HOLDER_FILE"
+      printf 'pid=%s\nsince=%s\njob=%s\n' \
+          "$BASHPID" "$(( $(date +%s) - 812 ))" "$HOLDER_JOB" > "$HOLDER_FILE"
       : > "$READY_FILE"
       exec sleep "$1" ) &
     CRON_PID=$!
@@ -117,7 +123,7 @@ _run_push_hook() {
     FW_PREPUSH_LOCK_WAIT=4 FW_PREPUSH_LOCK_PROGRESS=1 _run_push_hook
     [ "$status" -eq 1 ]
     [[ "$output" == *"Push blocked"* ]]
-    [[ "$output" == *"lock held by pid $CRON_PID (audit.sh --cron --section structure) for 81"* ]]
+    [[ "$output" == *"lock held by pid $CRON_PID ($HOLDER_JOB) for 81"* ]]
     [[ "$output" == *"still waiting ("* ]]
     [[ "$output" == *"Lock: held by pid $CRON_PID"* ]]
     # the wait line comes BEFORE the progress lines (printed at once, not at the end)
@@ -180,7 +186,7 @@ _run_push_hook() {
         sleep 0.1
     done
     grep -q "^pid=$CRON_PID$" "$HOLDER_FILE"
-    grep -q '^job=audit.sh --cron --section structure$' "$HOLDER_FILE"
+    grep -qFx "job=$HOLDER_JOB" "$HOLDER_FILE"
     grep -q '^since=[0-9][0-9]*$' "$HOLDER_FILE"
 }
 
