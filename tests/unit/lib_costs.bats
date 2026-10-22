@@ -61,11 +61,19 @@ JSONL
 }
 
 @test "costs: _costs_jsonl_dir uses pwd when PROJECT_ROOT unset" {
+    # T-4583: own HOME + the dir it asserts on, like the tests above — the old
+    # prefix-glob passed only on hosts that already had a transcript dir.
+    # FRAMEWORK_ROOT is unset too: fw_claude_project_dirs prefers it over $PWD.
+    export HOME="$TEST_TEMP_DIR/home"
+    local cwd="$TEST_TEMP_DIR/cwd"
+    mkdir -p "$cwd"
+    cwd=$(cd "$cwd" && pwd -P)
+    local expected="$HOME/.claude/projects/$(printf '%s' "$cwd" | tr -c 'a-zA-Z0-9' '-')"
+    mkdir -p "$expected"
     unset PROJECT_ROOT
     source "$FRAMEWORK_ROOT/lib/costs.sh"
-    result=$(_costs_jsonl_dir)
-    # Should contain the current working directory translated
-    [[ "$result" == "$HOME/.claude/projects/-"* ]]
+    result=$(cd "$cwd" && unset FRAMEWORK_ROOT && _costs_jsonl_dir)
+    [ "$result" = "$expected" ]
 }
 
 # ============================================================
