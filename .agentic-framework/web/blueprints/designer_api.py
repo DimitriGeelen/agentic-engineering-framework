@@ -50,6 +50,7 @@ from web.designer_registry import (
     remove_project_refs,
     sync_project_refs,
 )
+from web import designer_thumb
 from web.shared import PROJECT_ROOT
 
 bp = Blueprint("designer_api", __name__)
@@ -141,6 +142,10 @@ def save():
     (d / f"v{v}.bpmn").write_text(bpmn)
     if png:
         (d / f"v{v}.png").write_text(png)
+    else:
+        # T-4607: a save without a client thumbnail (corpus_spec --save, prove harness)
+        # gets one rendered headless, off the request thread. Best-effort.
+        designer_thumb.write_version_png_async(d, v, bpmn)
     meta["latest"] = v
     meta["updated"] = int(time.time())
     meta.setdefault("versions", []).append({"v": v, "note": note, "ts": meta["updated"]})
@@ -232,17 +237,17 @@ def thumb():
         vn = int(m.get("latest", 0)) if m else 0
     p = _map_dir(i) / f"v{vn}.png"
     if not p.is_file():
-        return _err("not found", 404)
-    raw = p.read_text()
-    if raw.startswith("data:"):
-        import base64
-        header, _, b64 = raw.partition(",")
-        mime = header[5:].split(";")[0] or "image/png"
-        try:
-            return Response(base64.b64decode(b64), mimetype=mime)
-        except (ValueError, TypeError):
-            return _err("bad thumb", 404)
-    return Response(raw, mimetype="image/png")
+        # T-4607: no stored PNG (server-written version, or a map that arrived via
+        # git — *.png is gitignored) → pre-rendered fallback, rendered on a miss.
+        p = designer_thumb.rendered_fallback(i, vn, store=_STORE,
+                                             cache=_STORE.parent / "_rendered")
+        if p is None:
+            return _err("not found", 404)
+    try:
+        body, mime = designer_thumb.decode(p.read_text())
+    except (ValueError, TypeError):
+        return _err("bad thumb", 404)
+    return Response(body, mimetype=mime)
 
 
 @bp.route("/api/versions")

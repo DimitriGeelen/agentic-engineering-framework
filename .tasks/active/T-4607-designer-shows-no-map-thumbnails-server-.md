@@ -1,10 +1,22 @@
 ---
 id: T-4607
-name: "Designer shows no map thumbnails: server-written versions have no PNG and /api/thumb has no rendered fallback"
+name: "Designer shows no map thumbnails: server-written versions have no PNG and /api/thumb
+  has no rendered fallback"
 description: >
-  Operator 2026-10-22: 'our workflow designer does not show any screenshots'. 832 (msg 6d4bac44) confirms the feature is the map thumbnail, in the artifact since 0.1.0: the Versions and Open-project modals load GET /api/thumb?id=<id>[&v=<n>] and show a grid placeholder on 404. Our web/blueprints/designer_api.py:216 serves .context/designer/projects/<id>/v<N>.png only; versions written server-side (corpus derive / promote ceremony, e.g. aef-task-lifecycle v3, only v2.png exists) store no PNG, and there is no pre-rendered fallback like 832's reference tools/gallery-serve.py (.editor-versions/_rendered/<id>.png). Fix: every server-side writer of a map version also produces its thumbnail (render the BPMN headless, e.g. with the pinned designer artifact under Playwright, or an SVG->PNG path), backfill the missing PNGs for current versions, and give /api/thumb a pre-rendered fallback for maps with no saved version. Test: /api/thumb for every listed map's latest version returns 200 image/png.
+  Operator 2026-10-22: 'our workflow designer does not show any screenshots'. 832
+  (msg 6d4bac44) confirms the feature is the map thumbnail, in the artifact since
+  0.1.0: the Versions and Open-project modals load GET /api/thumb?id=<id>[&v=<n>]
+  and show a grid placeholder on 404. Our web/blueprints/designer_api.py:216 serves
+  .context/designer/projects/<id>/v<N>.png only; versions written server-side (corpus
+  derive / promote ceremony, e.g. aef-task-lifecycle v3, only v2.png exists) store
+  no PNG, and there is no pre-rendered fallback like 832's reference tools/gallery-serve.py
+  (.editor-versions/_rendered/<id>.png). Fix: every server-side writer of a map version
+  also produces its thumbnail (render the BPMN headless, e.g. with the pinned designer
+  artifact under Playwright, or an SVG->PNG path), backfill the missing PNGs for current
+  versions, and give /api/thumb a pre-rendered fallback for maps with no saved version.
+  Test: /api/thumb for every listed map's latest version returns 200 image/png.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +51,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:44:29Z
-last_update: 2026-10-22T08:44:29Z
-date_finished: null
+last_update: '2026-10-22T08:46:27Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +63,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T08:46:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4607: Designer shows no map thumbnails: server-written versions have no PNG and /api/thumb has no rendered fallback
@@ -63,10 +92,22 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A headless renderer (`web/designer_thumb.py`) turns a map's BPMN XML into a PNG stored as a `data:image/png;base64,` URL, the same shape the client sends on save
+- [x] Every server-side writer of a `v<N>.bpmn` under `.context/designer/projects/` also writes `v<N>.png` (best-effort: a render failure never blocks the version write) — the only in-repo writer is `/api/save` (corpus_spec `--save` and the prove harness POST through it); a png-less save now renders in a background thread
+- [x] Backfill: every listed map's current latest version has a `v<latest>.png` on disk (`python3 -m web.designer_thumb backfill` wrote 10)
+- [x] `/api/thumb` falls back to a pre-rendered `.context/designer/_rendered/<id>.v<N>.png` (rendering on demand when missing) when the requested version has no saved PNG, instead of 404
+- [x] Regression test: `/api/thumb?id=<id>` returns 200 `image/png` for every map `/api/list` lists, plus a fallback test for a version without a PNG
+- [x] `bin/fw watchtower restart` run; `bin/fw watchtower current` passes
 
 ### Human
+- [ ] [REVIEW] Map thumbnails show in the designer's Open-project modal
+  **Steps:**
+  1. Open `$(cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url)/designer` in a browser (hard-refresh)
+  2. Click **Open project**
+  3. Look at the map cards (e.g. aef-task-lifecycle, aef-audit-cron)
+  **Expected:** each card shows a small diagram picture, not the grid ▦ placeholder
+  **If not:** note which map shows the placeholder and run `curl -s -o /dev/null -w '%{http_code} %{content_type}\n' "$(bin/fw watchtower url)/api/thumb?id=<id>"`
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -249,6 +290,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 python3 -m pytest tests/web/test_t4607_designer_thumbs.py -q > /tmp/.t4607.out 2>&1 && grep -q passed /tmp/.t4607.out && ! grep -qE "failed|skipped" /tmp/.t4607.out
+timeout 300 python3 -m pytest tests/web/test_designer_api_save_gate.py tests/web/test_api_version_latest.py tests/web/test_designer_api_uuid_identity.py -q > /tmp/.t4607b.out 2>&1 && grep -q passed /tmp/.t4607b.out
+code=$(curl -s -o /dev/null -w '%{http_code} %{content_type}' "$(bin/fw watchtower url)/api/thumb?id=aef-task-lifecycle"); test "$code" = "200 image/png"
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4607
 
 ## RCA
 
@@ -265,6 +311,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Open-project / Versions modals in /designer show the grid placeholder for most maps: `/api/thumb?id=<id>` 404s (10 of 16 maps had no PNG for their latest version, e.g. aef-task-lifecycle v3).
+
+**Root cause:** `web/blueprints/designer_api.py:233` (pre-fix) served only `v<N>.png`, and the only writer of that file is `/api/save` storing what the *client* sends (`designer_api.py:142`). Two producers never send one: (1) server-side saves — `tools/corpus_spec.py generate --save` and the `prove` harness POST bpmn with no png; (2) git — `.gitignore:74` ignores `*.png`, so every map version that reached this checkout through a commit (renumbering T-4224, restore T-2863, any clone/consumer) has BPMN and no thumbnail. There was no server-side renderer and no fallback.
+
+**Why structurally allowed:** the thumbnail was treated as a client artefact attached to a save, not as a derived view of the BPMN; no test asserted "every listed map has a thumbnail", and the endpoint's 404 is graceful by contract, so the failure looked identical to "feature working, nothing to show".
+
+**Prevention:** `tests/web/test_t4607_designer_thumbs.py` builds the git-clone state (meta.json + BPMN only, no PNG) from the live store and requires `/api/thumb` 200 image/png for every map `/api/list` returns — fails with 404 without the fallback (verified by disabling `rendered_fallback`). Plus a live-store check and a server-side-save test.
 
 ## Evolution
 
@@ -319,6 +373,13 @@ date_finished: null
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** Every map /api/list returns now gets a thumbnail from the live Watchtower (16/16 return 200 image/png). Missing PNGs were backfilled, a save with no PNG gets one rendered, and git-delivered maps are rendered when first requested (they have no PNG because `*.png` is gitignored). What's left is your visual check of the Open-project modal.
+**Evidence:**
+- `tests/web/test_t4607_designer_thumbs.py`: 5 passed. The png-less-store test fails with HTTP 404 when the fallback is disabled.
+- Neighbouring designer API tests: 26 passed
+- `bin/fw watchtower current`: current after restart
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -329,6 +390,15 @@ date_finished: null
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-22 — how to render headless
+- **Chose:** Playwright chromium loads the pinned designer artifact (`vendor/designer/aef-workflow-designer-<pin>.html`, file://), `adoptImportedXml(xml)`, then the artifact's own `captureThumbnail()` — `web/designer_thumb.py`. Output compared visually against a client-saved v2.png of aef-task-lifecycle: same framing, palette, 320px width.
+- **Why:** identical code path to the client, so thumbnails match operator saves; no re-implementation of BPMN layout; chromium 140 is available on this host (~3 s per render warm).
+- **Rejected:** a server-side SVG→PNG renderer (would be a second, divergent drawing of the map); 832's `_rendered/<id>.png` populated only by an offline job (stale the moment a map changes).
+
+### 2026-10-22 — where the fallback lives
+- **Chose:** `/api/thumb` miss → `.context/designer/_rendered/<id>.v<N>.png` (data URL, re-rendered when the BPMN is newer), rendered on demand. Outside `projects/` because every store reader iterates its dirs as map ids. A GET never writes into the store; writers (`/api/save` without png → background thread; `python3 -m web.designer_thumb backfill`) write `v<N>.png`.
+- **Why:** `*.png` is gitignored, so a backfill alone is lost on every clone; render-on-miss makes the thumbnail a derived view that self-heals. Hosts without Playwright/chromium degrade to today's 404 placeholder.
 
 ## Decision
 
@@ -346,3 +416,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4607-designer-shows-no-map-thumbnails-server-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T08:46:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
