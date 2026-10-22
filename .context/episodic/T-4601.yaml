@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4601: Integration fixtures run fw update/doctor in an uninitialised tmp dir and are refused before the code under test
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T11:46:15Z
+# ============================================================================
+
+task_id: T-4601
+task_name: "Integration fixtures run fw update/doctor in an uninitialised tmp dir and are refused before the code under test"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T08:39:35Z
+completed: 2026-10-22T11:45:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T12:56:08+02:00
+last_commit: 2026-10-22T12:56:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  give fw_update and handover_latest_symlink fixtures a real project so they reach the code under test
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked on current bleeding-edge: both tests run and the result (still red / already green) is recorded in ## RCA'
+  - '`tests/integration/fw_update.bats` "fw update --check: shows version info" reaches the update code (no "No vendored framework" refusal) and passes'
+  - '`tests/integration/handover_latest_symlink.bats` "fw doctor: WARNs on a dangling LATEST.md" reaches doctor''s handover check (no "not in an AEF project" refusal) and passes'
+  - 'Each fixed test asserts the refusal text is absent, so a fixture regression fails loudly instead of matching a loose pattern'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'give fw_update and handover_latest_symlink fixtures a real project so they reach the code under test'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4601-integration-fixtures-run-fw-updatedoctor.md'
+  - 'tests/integration/fw_update.bats'
+  - 'tests/integration/handover_latest_symlink.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T12:56:08'
+    action: 'T-4601: give fw_update and handover_latest_symlink fixtures a real project so they reach the code under test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 186 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cloud, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 186
+  commits: 1
+  files_changed: 3
+  lines_added: 63
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4601-integration-fixtures-run-fw-updatedoctor.md
+generated_by: context-agent-hybrid
