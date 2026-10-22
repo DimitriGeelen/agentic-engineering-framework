@@ -4,13 +4,19 @@ RULES (hard): do not push, open PRs, issues or comments, or contact any service 
 
 1. Setup
    apt-get update && apt-get install -y git bash bats jq python3 python3-pip python3-yaml python3-flask python3-pytest
-   pip install playwright && python3 -m playwright install --with-deps chromium
+   python3 -m pip install playwright && python3 -m playwright install --with-deps chromium
+   (Always `python3 -m pip`: a bare `pip` can install into a different Python than the python3 on PATH.
+   If the browser download fails, pin playwright to the version matching the Chromium already installed.)
    (If an install step fails, note it in the report and continue with what works.)
 
 2. Clone, pinned
    git clone https://github.com/DimitriGeelen/agentic-engineering-framework.git aef
    cd aef && git checkout cc094b509c42eafd36814049014e045bcfd865f6
    Confirm HEAD equals that sha; if the commit is not on the mirror yet, wait 5 minutes and fetch again (up to 30 minutes), then report and stop if still absent.
+   Then, from inside aef, install the Python modules the code imports:
+   python3 -m pip install -r web/requirements.txt cffi cryptography jsonschema beautifulsoup4 pytest-timeout
+   (web/requirements.txt carries markdown2, ollama, ruamel.yaml, tantivy, bleach, sqlite-vec. On the first
+   T-4508 run they were left out and 77 of the 89 failing pytest files failed with "No module named ...".)
 
 3. Identity for any test that commits in temporary repos
    git config --global user.name "cloud-job"; git config --global user.email "cloud-job@example.invalid"
