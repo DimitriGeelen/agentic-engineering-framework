@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4595: t3247 D5 still expects a bare -c for FW_RESTART_MODE=continue after T-4497 switched it to --resume <id>
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T11:35:41Z
+# ============================================================================
+
+task_id: T-4595
+task_name: "t3247 D5 still expects a bare -c for FW_RESTART_MODE=continue after T-4497 switched it to --resume <id>"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T08:34:42Z
+completed: 2026-10-22T11:34:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T12:56:51+02:00
+last_commit: 2026-10-22T12:56:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t3247 D5 pins the T-4497 continue contract (--resume <id>, not bare -c)
+
+# Key outcomes
+outcomes:
+  - 'Reproduction on current bleeding-edge checked: t3247 test 5 was `not ok` at line 174 (`[ "$got" = "-c" ]`) before the fix'
+  - 't3247 test 5 asserts the T-4497 contract (`--resume <id>`, never bare `-c`) and the whole file is green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4595-t3247-d5-still-expects-a-bare--c-for-fwr.md'
+  - 'tests/unit/t3247_restart_headless_prompt.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T12:56:51'
+    action: 'T-4595: t3247 D5 pins the T-4497 continue contract (--resume <id>, not bare -c)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 179 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cloud, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 179
+  commits: 1
+  files_changed: 2
+  lines_added: 30
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4595-t3247-d5-still-expects-a-bare--c-for-fwr.md
+generated_by: context-agent-hybrid
