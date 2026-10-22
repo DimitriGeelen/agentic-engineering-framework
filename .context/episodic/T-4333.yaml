@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4333: Skipped onboarding tasks T-001..T-005 stay in .tasks/active/
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T12:10:17Z
+# ============================================================================
+
+task_id: T-4333
+task_name: "Skipped onboarding tasks T-001..T-005 stay in .tasks/active/"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-18T20:44:42Z
+completed: 2026-10-22T12:09:49Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-22T10:32:43+02:00
+last_commit: 2026-10-22T10:32:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw onboarding skip shelves unfinished onboarding tasks (horizon: later, started-work -> captured) instead of leaving them as current work; tasks stay in active/ so reset and 'complete later' hold; regression bats t4333 (3/5 red pre-fix, 5/5 green); vendored copy synced
+
+# Key outcomes
+outcomes:
+  - '`fw onboarding skip` shelves every unfinished onboarding-tagged task in `.tasks/active/` to `horizon: later` (status `captured`), so they leave the ready/in-flight lists and the handover''s Suggested First Action'
+  - 'Tasks stay in `active/` (not moved, not marked work-completed): `fw onboarding reset` + the T-532 gate keep seeing them, and "complete them later" stays true'
+  - 'Already work-completed onboarding tasks and non-onboarding tasks are untouched'
+  - 'Regression bats `tests/unit/t4333_onboarding_skip_shelves.bats` red before the fix, green after'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw onboarding skip shelves unfinished onboarding tasks (horizon: later, started-work -> captured) instead of leaving them as current work; tasks stay in active/ so reset and ''complete later'' hold; regression bats t4333 (3/5 red pre-fix, 5/5 green); vendored copy synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — what skip does to the onboarding tasks'
+    chose: 'shelve in place — `horizon: later`, `started-work` → `captured`; tasks stay in `active/`.'
+    rationale: 'reversible (`fw task update T-XXX --horizon now`), keeps the skip message "you can still complete them later" true, keeps `fw onboarding reset` meaningful (the T-532 gate scans `active/` regardless of horizon, so reset re-arms it over the same tasks), and horizon `later` is exactly what the handover ranks as parked and excludes from Suggested First Action.'
+    alternatives_rejected: ['moving them to `completed/` as work-completed/skipped — records work as done that was not, bypasses their AC/verification gates, triggers episodic generation for non-work, and makes `reset` a no-op. A new `skipped` status — not in the lifecycle; every consumer would need to learn it.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4333-skipped-onboarding-tasks-t-001t-005-stay.md'
+  - 'tests/unit/t4333_onboarding_skip_shelves.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T10:32:43'
+    action: 'T-4333: fw onboarding skip shelves unfinished onboarding tasks (horizon: later, started-work -> captured) instead of leaving them as current work; tasks stay in active/ so reset and ''complete later'' hold; regression bats t4333 (3/5 red pre-fix, 5/5 green); vendored copy synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5245 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [onboarding]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5245
+  commits: 1
+  files_changed: 4
+  lines_added: 185
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4333-skipped-onboarding-tasks-t-001t-005-stay.md
+generated_by: context-agent-hybrid
