@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4165: T-4158 build: standing operator delegation as a Human-tick provenance kind — recorded once by the operator, scoped, conditional on a green verdict, expiring and revocable; audit accepts in-scope agent ticks that cite the verdict
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:29:06Z
+# ============================================================================
+
+task_id: T-4165
+task_name: "T-4158 build: standing operator delegation as a Human-tick provenance kind — recorded once by the operator, scoped, conditional on a green verdict, expiring and revocable; audit accepts in-scope agent ticks that cite the verdict"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T15:34:02Z
+completed: 2026-10-22T10:28:39Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-10-22T00:39:43+02:00
+last_commit: 2026-10-22T00:39:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  standing operator delegation as a Human-tick provenance kind — operator-only grant/revoke/list (lib/human_ac_ticks.py delegation, ledger .context/reviews/standing-delegations.jsonl, guarded by the Bash and Write/Edit tick guards); audit accepts a 'Delegated tick: SD-x verdict V' tick only with an unrevoked, unexpired, in-scope grant whose pattern matches, a green verdict bound to a different condition-matching criterion, and a criterion class that is not Tier 0/bypass or act-in-the-world; one cite, one tick; pytest 24 legs; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Standing-delegation ledger `.context/reviews/standing-delegations.jsonl` (append-only grant/revoke rows) with `python3 lib/human_ac_ticks.py delegation grant|revoke|list`; grant needs criterion pattern, scope (`--arc` and/or `--tasks`), condition pattern, expiry; grant and revoke are refused under agent control unless `--i-am-human`'
+  - 'Grant refuses a pattern that is empty or matches everything; expiry is mandatory and bounded'
+  - '`human_ac_ticks.py audit` accepts a Human tick that carries `**Delegated tick:** SD-xxxx verdict <id>` only when ALL hold: grant exists, not revoked and unexpired at the tick commit; task in scope (task list or `arc_id`); ticked criterion title matches the grant pattern; the cited verdict is a GREEN row for this task in `verdicts.jsonl` whose `ac_digest` is a DIFFERENT Human criterion of the same task whose title matches the grant''s condition pattern; the ticked criterion is not tier0-or-bypass / act-in-the-world (lib/delegation.py classifier); one cite licenses one tick'
+  - 'The `**Delegated tick:**` annotation is excluded from the criterion key (adding it does not turn the criterion into a new one)'
+  - 'Regression tests (pytest) cover the accept path and each refusal leg (no grant, revoked, expired, out of scope, pattern miss, non-green / wrong-criterion verdict, act-in-the-world class, replay) and the agent-control refusal of grant'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — grant surface: operator CLI now, Watchtower later'
+    chose: 'grants/revokes via `python3 lib/human_ac_ticks.py delegation grant|revoke`, run by the operator in their own terminal (refused under CLAUDECODE/AI_AGENT unless `--i-am-human`; the Bash text gate and the Write/Edit guard refuse the verbs and `standing-delegations.jsonl` under agent control, like `ack`).'
+    rationale: 'T-4158 names "Watchtower or --i-am-human"; a Watchtower form is a render-surface change that needs its own `[REVIEW]` criterion (P-013), so it does not belong in this build. ring20-manager can use the CLI today. The operator one-liner for their case: `python3 lib/human_ac_ticks.py delegation grant --pattern ''Step \d+ output approved'' --condition ''Independent review'' --arc arc-008 --expires <YYYY-MM-DD>`.'
+    alternatives_rejected: ['a `--from-watchtower` flag with no endpoint behind it (unverifiable provenance). - **Open for the operator:** whether to file the Watchtower grant/revoke form as a follow-up build task.']
+  - decision: '2026-10-22 — grant-validity clock'
+    chose: 'grant/revoke/expiry are judged against the tick commit''s committer date (`%cI`), and a tick committed before the grant does not count.'
+    rationale: 'a later grant must not launder earlier ticks; a revoke stops ticks committed after it. - **Residual (same as T-3581):** committer dates can be set by the committer; ancestry-based ordering would need the grant itself to be committed. Same-user forgery of the ledger stays out of scope, as for `ack`.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-human-ac-tick.py'
+  - '.agentic-framework/lib/human_ac_ticks.py'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/check-human-ac-tick.py'
+  - 'lib/human_ac_ticks.py'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4165-t-4158-build-standing-operator-delegatio.md'
+  - 'tests/unit/test_t4165_standing_delegation.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:39:43'
+    action: 'T-4165: standing operator delegation as a Human-tick provenance kind — operator-only grant/revoke/list (lib/human_ac_ticks.py delegation, ledger .context/reviews/standing-delegations.jsonl, guarded by the Bash and Write/Edit tick guards); audit accepts a ''Delegated tick: SD-x verdict V'' tick only with an unrevoked, unexpired, in-scope grant whose pattern matches, a green verdict bound to a different condition-matching criterion, and a criterion class that is not Tier 0/bypass or act-in-the-world; one cite, one tick; pytest 24 legs; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12654 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12654
+  commits: 2
+  files_changed: 11
+  lines_added: 2071
+  lines_removed: 30
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4165-t-4158-build-standing-operator-delegatio.md
+generated_by: context-agent-hybrid
