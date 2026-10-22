@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4164: T-4091 slice 3: read side — fw recall / fw ask --scope own|estate|both, cross-project hits labelled with provenance, local fallback 'estate unavailable
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:30:59Z
+# ============================================================================
+
+task_id: T-4164
+task_name: "T-4091 slice 3: read side — fw recall / fw ask --scope own|estate|both, cross-project hits labelled with provenance, local fallback 'estate unavailable"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T15:33:12Z
+completed: 2026-10-22T10:29:13Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-10-22T00:40:55+02:00
+last_commit: 2026-10-22T00:41:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  estate read side — fw recall / fw ask --scope own|estate|both with provenance on every hit (R-12/R-33), cross-project labels (R-13), own-first/solution-finder ranking with superseded filter (R-14), peer reports never 'tested' (R-36), local fallback with 'estate unavailable' (R-16); query embedded with estate_ingest.MODEL; 26 regression tests; vendor synced. fabric card for lib/estate_recall.py
+
+# Key outcomes
+outcomes:
+  - '`lib/estate_recall.py` queries the estate main collection with the query embedded by the SAME pinned model ingest uses (`estate_ingest.MODEL`, not a second constant), and returns hits carrying every R-12/R-33 field: project, task id or path, item type, date recorded, date last confirmed, evidence type, status, model id, score, framework version — a field the stored payload lacks renders as `unrecorded`, never blank'
+  - '`fw recall --scope own|estate|both` (default `own`, unchanged output) and `fw ask --scope own|estate|both`; every hit from another project is labelled `[cross-project: <project>]` (R-13)'
+  - 'Ranking (R-14): default mode keeps own hits first when scores are within a margin (`--margin`, default 0.05) except a cross-project hit that is newer and evidence `tested`; `--mode solution-finder` puts other projects first; `superseded`/`retired` hits are excluded unless `--include-superseded` (R-14/R-16 desc)'
+  - 'A peer-report item never displays evidence `tested` (R-36)'
+  - 'Store unreachable, store refusing the token, no read token, or embedder down: recall/ask answer from the local index, print `estate unavailable: <reason>`, exit 0 (R-16)'
+  - 'Regression tests `tests/unit/test_estate_recall.py` (fakes for store + embedder, no network) cover all of the above and pass; `tests/unit/t3056_recall_open_tasks.bats` and `tests/unit/test_estate_ingest.py` still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — what `estate` and `both` mean'
+    chose: '`estate` = the whole estate store, own items included and labelled `[own: …]`, ranked by R-14 over one comparable score; `both` = local index (own, fresher) plus the estate''s OTHER projects only (`must_not project == own`), shown as a separate "Estate knowledge" section after the local one (default) or before it (`--mode solution-finder`).'
+    rationale: 'local hybrid scores and estate cosine scores are not on one scale, so a merged list would rank by noise; own items pushed to the estate would duplicate local hits in `both`.'
+    alternatives_rejected: ['merging local and estate lists by score (incomparable scales); querying own items from the estate in `both` (duplicates, staler than the local index).']
+  - decision: '2026-10-22 — read token and missing payload fields (open follow-ups, no operator decision needed to ship)'
+    chose: 'read token name `qdrant_estate_read_aef` (env `FW_QDRANT_ESTATE_READ_AEF_API_KEY`), Infisical `QDRANT_ESTATE_TOKEN_READ_AEF`, same convention as the staging/ingest tokens. Until ring20 issues it, every estate query answers locally with `estate unavailable: … no token …` (R-16), exit 0.'
+    rationale: 'no read-token name existed anywhere in the repo or design docs.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/memory-recall.py'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/ask.py'
+  - '.agentic-framework/lib/ask.sh'
+  - '.agentic-framework/lib/estate_recall.py'
+  - 'agents/context/lib/memory-recall.py'
+  - 'bin/fw'
+  - '.fabric/components/lib-estate_recall.yaml'
+  - 'lib/ask.py'
+  - 'lib/ask.sh'
+  - 'lib/estate_recall.py'
+  - '.tasks/active/T-4164-t-4091-slice-3-read-side--fw-recall--fw-.md'
+  - 'tests/unit/test_estate_recall.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:40:55'
+    action: 'T-4164: estate read side — fw recall / fw ask --scope own|estate|both with provenance on every hit (R-12/R-33), cross-project labels (R-13), own-first/solution-finder ranking with superseded filter (R-14), peer reports never ''tested'' (R-36), local fallback with ''estate unavailable'' (R-16); query embedded with estate_ingest.MODEL; 26 regression tests; vendor synced'
+  - time: '2026-10-22T00:41:18'
+    action: 'T-4164: fabric card for lib/estate_recall.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12656 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12656
+  commits: 2
+  files_changed: 13
+  lines_added: 1088
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4164-t-4091-slice-3-read-side--fw-recall--fw-.md
+generated_by: context-agent-hybrid
