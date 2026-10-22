@@ -322,6 +322,10 @@ YAML
 # The upstream bare is cloned from committed HEAD; overlay the working-tree
 # copies of the named files as one extra commit so the test judges the code
 # under edit, not the last commit.
+# T-4587: push to an explicit branch and point the bare's HEAD at it. When
+# FRAMEWORK_ROOT is a detached HEAD (a CI checkout pinned to a sha), the bare's
+# HEAD is a bare sha, `push origin HEAD` has no branch to update and fails, and
+# the consumer's clone (which follows the bare's HEAD) never sees the overlay.
 overlay_upstream() {
     local bare="$1"; shift
     local wc="$TEST_TEMP_DIR/overlay-wc"
@@ -330,8 +334,27 @@ overlay_upstream() {
     for f in "$@"; do cp "$FRAMEWORK_ROOT/$f" "$wc/$f"; done
     git -C "$wc" add -- "$@"
     git -C "$wc" -c user.name=t -c user.email=t@t commit --quiet --no-gpg-sign -m "overlay" >/dev/null 2>&1 || true
-    git -C "$wc" push --quiet origin HEAD 2>/dev/null
+    git -C "$wc" push --quiet origin HEAD:refs/heads/fw-test-overlay
+    git --git-dir="$bare" symbolic-ref HEAD refs/heads/fw-test-overlay
     rm -rf "$wc"
+}
+
+@test "T-4587: overlay_upstream lands the overlay when the upstream bare's HEAD is detached" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    make_upstream_bare "$upstream_bare"
+    # The shape a sha-pinned CI checkout produces: the bare's HEAD is a bare sha.
+    git --git-dir="$upstream_bare" update-ref --no-deref HEAD "$(git --git-dir="$upstream_bare" rev-parse HEAD)"
+    ! git --git-dir="$upstream_bare" symbolic-ref -q HEAD || false
+
+    # Overlay source is a scratch dir, so the test never writes into the checkout.
+    local f=t4587-overlay-probe
+    mkdir -p "$TEST_TEMP_DIR/src"
+    echo "t4587-overlay-marker" > "$TEST_TEMP_DIR/src/$f"
+    FRAMEWORK_ROOT="$TEST_TEMP_DIR/src" run overlay_upstream "$upstream_bare" "$f"
+    [ "$status" -eq 0 ]
+
+    git clone --quiet "$upstream_bare" "$TEST_TEMP_DIR/check" 2>/dev/null
+    [ "$(cat "$TEST_TEMP_DIR/check/$f")" = "t4587-overlay-marker" ]
 }
 
 @test "T-3835: live fw upgrade regenerates the crontab against the consumer's durable fw, never the temp clone" {

@@ -1,13 +1,19 @@
 ---
 id: T-4587
-name: "upgrade_fresh_machine_simulation.bats overlay_upstream cannot push when the framework checkout is on a detached HEAD"
+name: "upgrade_fresh_machine_simulation.bats overlay_upstream cannot push when the
+  framework checkout is on a detached HEAD"
 description: >
-  tests/unit/upgrade_fresh_machine_simulation.bats:325-335 overlay_upstream clones the bare upstream and does 'git push origin HEAD'; when the framework checkout under test is a detached HEAD (cloud job 2 pinned a sha), the bare's HEAD and the overlay clone have no branch, the push fails silently (2>/dev/null) and the overlay never lands, so T-3835, T-3836, T-3831 x2 and T-3833 fail. On a local branch all 5 pass (cloud report 3, T-4508). Make the fixture push to an explicit branch ref.
+  tests/unit/upgrade_fresh_machine_simulation.bats:325-335 overlay_upstream clones
+  the bare upstream and does 'git push origin HEAD'; when the framework checkout under
+  test is a detached HEAD (cloud job 2 pinned a sha), the bare's HEAD and the overlay
+  clone have no branch, the push fails silently (2>/dev/null) and the overlay never
+  lands, so T-3835, T-3836, T-3831 x2 and T-3833 fail. On a local branch all 5 pass
+  (cloud report 3, T-4508). Make the fixture push to an explicit branch ref.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, cloud]
 components: []
 related_tasks: [T-4575, T-4508]
@@ -39,8 +45,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T07:47:22Z
-last_update: 2026-10-22T07:47:22Z
-date_finished: null
+last_update: '2026-10-22T08:00:45Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:56:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T08:00:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=311,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4587: upgrade_fresh_machine_simulation.bats overlay_upstream cannot push when the framework checkout is on a detached HEAD
@@ -63,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced: with the bare upstream's HEAD detached, the current overlay_upstream leaves the overlay commit unreachable from a fresh clone of the bare
+- [x] overlay_upstream pushes to an explicit branch ref and points the bare's HEAD at it, so a clone of the bare checks out the overlay whether the source was on a branch or a detached HEAD
+- [x] Regression test in upgrade_fresh_machine_simulation.bats detaches the bare's HEAD, runs overlay_upstream, and asserts a clone sees the overlay; it fails on the old helper and passes on the new one
+- [x] upgrade_fresh_machine_simulation.bats is fully green (no `not ok`, no skips); bats dead-negation lint clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,8 +284,19 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4587.out 2>&1 && ! grep -q "^not ok" /tmp/.t4587.out && grep -q "T-4587" /tmp/.t4587.out
+test "$(grep -c '# skip' /tmp/.t4587.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4587.lint 2>&1 && grep -q clean /tmp/.t4587.lint
 
 ## RCA
+
+**Symptom:** In cloud job 2 (framework checkout pinned to a sha, detached HEAD), T-3835, T-3836, T-3831 x2 and T-3833 in upgrade_fresh_machine_simulation.bats fail; on a local branch all five pass (cloud report 3, T-4508).
+
+**Root cause:** `tests/unit/upgrade_fresh_machine_simulation.bats` overlay_upstream ran `git push --quiet origin HEAD 2>/dev/null`. `make_upstream_bare` (tests/fresh_machine_helper.bash) bare-clones FRAMEWORK_ROOT; when that is detached, the bare's HEAD is a detached sha and the overlay clone has no branch, so `push origin HEAD` has no branch to update and fails. Even a successful push to some branch would not move the bare's detached HEAD, which is what the consumer's clone checks out. The overlay never reaches the code under test, so the tests judge committed HEAD instead of the working tree.
+
+**Why structurally allowed:** the push's stderr went to /dev/null and its exit status was the helper's last-but-one command, so failure was silent; every local run is on a branch, so the detached shape was never exercised before cloud runs.
+
+**Prevention:** overlay_upstream now pushes to an explicit branch ref and points the bare's HEAD at it, and fails loudly if the push fails. A regression test detaches the bare's HEAD before overlaying, so the shape is exercised on every local run.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -346,3 +392,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4587-upgradefreshmachinesimulationbats-overla.md
 - **Context:** Initial task creation
+
+### 2026-10-22T07:55:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
