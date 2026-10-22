@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4579: tests/governance/test_pretooluse_gates.bats tests 6 and 12 hard-code /opt/999-Agentic-Engineering-Framework paths: red in any other checkout
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:06:33Z
+# ============================================================================
+
+task_id: T-4579
+task_name: "tests/governance/test_pretooluse_gates.bats tests 6 and 12 hard-code /opt/999-Agentic-Engineering-Framework paths: red in any other checkout"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T23:05:23Z
+completed: 2026-10-22T10:05:33Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-22T09:29:17+02:00
+last_commit: 2026-10-22T09:29:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  test_pretooluse_gates builds hook-input paths from $FRAMEWORK_ROOT — tests 6/12 were red in any checkout not at the origin path; t4579 regression pins no hard-coded root. fabric card for t4579 regression test
+
+# Key outcomes
+outcomes:
+  - 'Reproduced: in a clone outside /opt/999-Agentic-Engineering-Framework, tests 6 and 12 of tests/governance/test_pretooluse_gates.bats fail'
+  - 'Every hook-input file_path in test_pretooluse_gates.bats is built from $FRAMEWORK_ROOT; no /opt/999-Agentic-Engineering-Framework literal remains'
+  - 'Regression test tests/unit/t4579_pretooluse_gates_no_hardcoded_root.bats fails on the pre-fix file and passes after'
+  - 'test_pretooluse_gates.bats is green in the main checkout and in a clone at another path'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-t4579_pretooluse_gates_no_hardcoded_root.yaml'
+  - '.tasks/active/T-4579-testsgovernancetestpretoolusegatesbats-t.md'
+  - 'tests/governance/test_pretooluse_gates.bats'
+  - 'tests/unit/t4579_pretooluse_gates_no_hardcoded_root.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T09:29:17'
+    action: 'T-4579: test_pretooluse_gates builds hook-input paths from $FRAMEWORK_ROOT — tests 6/12 were red in any checkout not at the origin path; t4579 regression pins no hard-coded root'
+  - time: '2026-10-22T09:29:35'
+    action: 'T-4579: fabric card for t4579 regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 660 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, cloud, t4575]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 660
+  commits: 2
+  files_changed: 4
+  lines_added: 453
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4579-testsgovernancetestpretoolusegatesbats-t.md
+generated_by: context-agent-hybrid
