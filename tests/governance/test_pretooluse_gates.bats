@@ -104,7 +104,7 @@ setup() {
 current_task: ""
 last_change: 2026-04-29T00:00:00Z
 EMPTY
-    INPUT='{"tool_name":"Write","tool_input":{"file_path":"/opt/999-Agentic-Engineering-Framework/test_redteam_should_block.txt"}}'
+    INPUT="{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$FRAMEWORK_ROOT/test_redteam_should_block.txt\"}}"
     run bash -c "echo '$INPUT' | '$HOOK_BIN' hook check-active-task"
     rc=$status; out=$output
     cp "$BACKUP" "$FOCUS"; rm -f "$BACKUP"
@@ -120,7 +120,7 @@ EMPTY
 current_task: ""
 last_change: 2026-04-29T00:00:00Z
 EMPTY
-    INPUT='{"tool_name":"Write","tool_input":{"file_path":"/opt/999-Agentic-Engineering-Framework/.context/working/test.yaml"}}'
+    INPUT="{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$FRAMEWORK_ROOT/.context/working/test.yaml\"}}"
     run bash -c "echo '$INPUT' | '$HOOK_BIN' hook check-active-task"
     rc=$status
     cp "$BACKUP" "$FOCUS"; rm -f "$BACKUP"
@@ -225,7 +225,7 @@ _assert_pending_filed_in_sandbox() {
 }
 
 @test "check-project-boundary: ALLOWS Write inside PROJECT_ROOT" {
-    INPUT='{"tool_name":"Write","tool_input":{"file_path":"/opt/999-Agentic-Engineering-Framework/test.txt"}}'
+    INPUT="{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$FRAMEWORK_ROOT/test.txt\"}}"
     run bash -c "echo '$INPUT' | '$HOOK_BIN' hook check-project-boundary"
     [ "$status" -eq 0 ]
 }
@@ -237,7 +237,7 @@ _assert_pending_filed_in_sandbox() {
 @test "budget-gate: ALLOWS when no transcript path provided (fail-open path)" {
     # No session_id in JSON → hook cannot read tokens → falls through to allow
     # (PostToolUse fallback handles enforcement in this case per T-138/T-271).
-    INPUT='{"tool_name":"Write","tool_input":{"file_path":"/opt/999-Agentic-Engineering-Framework/test.txt"}}'
+    INPUT="{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$FRAMEWORK_ROOT/test.txt\"}}"
     run bash -c "echo '$INPUT' | '$HOOK_BIN' hook budget-gate"
     # Must not crash; either 0 (allow) or 2 (block based on cached state).
     [ "$status" -eq 0 ] || [ "$status" -eq 2 ]
