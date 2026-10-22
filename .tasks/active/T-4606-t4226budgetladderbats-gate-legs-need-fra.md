@@ -8,10 +8,10 @@ description: >
   Derive it from BATS_TEST_DIRNAME or load test_helper. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (lines 114-115). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -43,7 +43,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:44:06Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T11:03:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduce check on current bleeding-edge: `env -u FRAMEWORK_ROOT bats tests/unit/t4226_budget_ladder.bats` result recorded in ## RCA
+- [x] t4226_budget_ladder.bats resolves the gate path itself (from BATS_TEST_DIRNAME) when the caller's environment does not set FRAMEWORK_ROOT
+- [x] `env -u FRAMEWORK_ROOT bats tests/unit/t4226_budget_ladder.bats` passes with zero `not ok` and zero skips
+- [x] Suite still passes with FRAMEWORK_ROOT set by the caller; dead-negation lint clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,6 +282,10 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 env -u FRAMEWORK_ROOT bats tests/unit/t4226_budget_ladder.bats > /tmp/.t4606-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4606-a.out
+test "$(grep -c '# skip' /tmp/.t4606-a.out)" -eq 0
+timeout 300 env FRAMEWORK_ROOT="$PWD" bats tests/unit/t4226_budget_ladder.bats > /tmp/.t4606-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4606-b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4226_budget_ladder.bats > /tmp/.t4606-c.out 2>&1 && grep -q clean /tmp/.t4606-c.out
 
 ## RCA
 
@@ -296,6 +302,28 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** with FRAMEWORK_ROOT unset (clean env / cloud runner), tests 10-11 of
+`tests/unit/t4226_budget_ladder.bats` fail: `bash: /agents/context/budget-gate.sh: No such
+file` (exit 127). Re-confirmed on bleeding-edge 0e47d94db on 2026-10-22 with
+`env -u FRAMEWORK_ROOT bats …`: `not ok 10`, `not ok 11`, BW01 exit 127.
+
+**Root cause:** `tests/unit/t4226_budget_ladder.bats:98` (`gate_at`) ran
+`bash '$FRAMEWORK_ROOT/agents/context/budget-gate.sh'`, but the file never sets
+FRAMEWORK_ROOT; `setup()` (line 7) derives the checkout as `FW_ROOT` from
+BATS_TEST_DIRNAME. The gate legs read an ambient variable that only exists when the suite
+runs inside a framework session (hooks/fw export FRAMEWORK_ROOT).
+
+**Why structurally allowed:** every run on the authoring host is inside a Claude/fw session
+where FRAMEWORK_ROOT is exported, so the undefined variable resolved by accident; nothing
+runs the unit suite under a scrubbed environment except the cloud runner that reported it.
+
+**Fix:** `gate_at` uses `$FW_ROOT` (this checkout) instead. Verified: 11/11 ok with
+`env -u FRAMEWORK_ROOT`, with `FRAMEWORK_ROOT=$PWD`, and under `env -i`.
+
+**Prevention:** the `## Verification` line runs the suite with FRAMEWORK_ROOT removed, so
+the two gate legs are the regression test (red before the fix, green after). A corpus-wide
+lint for bats files reading an ambient FRAMEWORK_ROOT they never set is not in scope here.
 
 ## Evolution
 
@@ -377,3 +405,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4606-t4226budgetladderbats-gate-legs-need-fra.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:03:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -87,6 +87,8 @@ level_at() {
 
 # Write a transcript whose latest usage reads $2 tokens, then run budget-gate on a Write
 # to a source file under window $1. Sets $status; the gate's exit code is the verdict.
+# The gate is this checkout's ($FW_ROOT from setup), never the caller's FRAMEWORK_ROOT,
+# which a clean environment leaves unset (T-4606).
 gate_at() {
     local window="$1" used="$2"
     local proj="$BATS_TEST_TMPDIR/proj" transcript="$BATS_TEST_TMPDIR/t.jsonl"
@@ -95,7 +97,7 @@ gate_at() {
         "{\"timestamp\":\"2026-10-17T10:01:00.000Z\",\"message\":{\"model\":\"claude-opus-5\",\"usage\":{\"input_tokens\":1,\"cache_read_input_tokens\":0,\"cache_creation_input_tokens\":$((used - 1)),\"output_tokens\":1}}}" \
         > "$transcript"
     local input="{\"hook_event_name\":\"PreToolUse\",\"transcript_path\":\"$transcript\",\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"/src/main.py\"}}"
-    run bash -c "printf '%s' '$input' | PROJECT_ROOT='$proj' CONTEXT_DIR='$proj/.context' HOME='$BATS_TEST_TMPDIR/home' NTFY_ENABLED=false FW_CONTEXT_WINDOW=$window bash '$FRAMEWORK_ROOT/agents/context/budget-gate.sh'"
+    run bash -c "printf '%s' '$input' | PROJECT_ROOT='$proj' CONTEXT_DIR='$proj/.context' HOME='$BATS_TEST_TMPDIR/home' NTFY_ENABLED=false FW_CONTEXT_WINDOW=$window bash '$FW_ROOT/agents/context/budget-gate.sh'"
 }
 
 @test "gate at 800K: 749999 used is not blocked (Red, warning only)" {
