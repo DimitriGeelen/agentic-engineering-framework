@@ -9,10 +9,10 @@ description: >
   is mis-scoped as host-only. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (lines 48-49). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -44,7 +44,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:41:38Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T11:03:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction confirmed on current bleeding-edge and the root cause localised (file:line) — `--quick` hypothesis checked, not assumed
+- [x] tests/integration/t2501_claude_fw_drift.bats passes all 4 tests with no skips
+- [x] Drift assertions pin the doctor WARN wording as it is emitted (including the T-4051 kind label), so a future wording drift fails loudly in this file
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +282,8 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/integration/t2501_claude_fw_drift.bats > /tmp/.t4603.out 2>&1 && ! grep -q "^not ok" /tmp/.t4603.out && grep -q "^ok 4 " /tmp/.t4603.out
+test "$(grep -c '# skip' /tmp/.t4603.out)" -eq 0
 
 ## RCA
 
@@ -297,6 +300,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** tests/integration/t2501_claude_fw_drift.bats tests 1 and 4 fail (`*"Installed claude-fw drifted from repo source"*` not in output). Reproduced on bleeding-edge 2026-10-22.
+
+**Root cause:** not `--quick`. The drift check in `bin/fw` doctor (bin/fw:3360-3420) is not behind `_doctor_quick_skip` — test 2 (OK path) passed under `--quick`, which proves the check runs. T-4051 (80499503b) changed the WARN to `Installed claude-fw ($_cfw_kind) drifted from repo source` (bin/fw:3395), inserting `(fixed copy)`/`(router)` between "claude-fw" and "drifted", so the test's substring no longer matched. The triage hypothesis (--quick skips a host probe) was wrong.
+
+**Why structurally allowed:** T-4051 changed producer wording without running this integration file (it lives under tests/integration/, outside the unit suite the change was checked against). Worse, the negative assertions in tests 2 and 3 (`!= *"Installed claude-fw drifted..."*`) went vacuous at the same time — they would pass even if a drift WARN were printed.
+
+**Prevention:** positive assertions now pin the full emitted wording including the kind label; negative assertions match only the kind-independent tail `drifted from repo source`, so any future drift WARN in the OK/SKIP cases fails them, and any further wording change fails tests 1/4 loudly rather than silently weakening 2/3.
 
 ## Evolution
 
@@ -378,3 +389,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4603-t2501-claude-fw-drift-tests-run-doctor--.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:03:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -66,6 +66,13 @@ teardown() {
 
 # Run `fw doctor --quick` with claude-fw resolution controlled entirely by the
 # fixture — CLEAN_PATH_DIR guarantees no ambient claude-fw leaks in.
+# --quick is fine: the drift check is not behind _doctor_quick_skip.
+#
+# T-4603: T-4051 inserted the copy kind into the WARN ("Installed claude-fw
+# (fixed copy) drifted ..."), so the old "Installed claude-fw drifted" substring
+# never matched — tests 1 and 4 went red, and the negative assertions in tests
+# 2 and 3 passed vacuously. Positives pin the full wording with the kind; the
+# negatives match only the kind-independent tail, so any drift WARN fails them.
 run_doctor_with_path() {
     local extra_path="$1"
     run bash -c "cd '$FRAMEWORK_ROOT' && CLAUDECODE=1 PATH='${extra_path}:${CLEAN_PATH_DIR}' PROJECT_ROOT='$FRAMEWORK_ROOT' bin/fw doctor --quick 2>&1"
@@ -76,7 +83,7 @@ run_doctor_with_path() {
     printf '#!/bin/bash\n# stale wrapper, no supervision export\n' > "$TEST_TEMP_DIR/bin/claude-fw"
     chmod +x "$TEST_TEMP_DIR/bin/claude-fw"
     run_doctor_with_path "$TEST_TEMP_DIR/bin"
-    [[ "$output" == *"Installed claude-fw drifted from repo source"* ]]
+    [[ "$output" == *"Installed claude-fw (fixed copy) drifted from repo source"* ]]
     [[ "$output" == *"Refresh:"* ]]
 }
 
@@ -86,14 +93,14 @@ run_doctor_with_path() {
     chmod +x "$TEST_TEMP_DIR/bin/claude-fw"
     run_doctor_with_path "$TEST_TEMP_DIR/bin"
     [[ "$output" == *"Installed claude-fw matches repo source"* ]]
-    [[ "$output" != *"Installed claude-fw drifted from repo source"* ]]
+    [[ "$output" != *"drifted from repo source"* ]]
 }
 
 @test "T-2501: claude-fw NOT on PATH → SKIP (no false alarm)" {
     # Fixture dir stays empty; CLEAN_PATH_DIR has no claude-fw either.
     run_doctor_with_path ""
     [[ "$output" == *"claude-fw not on PATH"* ]]
-    [[ "$output" != *"Installed claude-fw drifted from repo source"* ]]
+    [[ "$output" != *"drifted from repo source"* ]]
 }
 
 @test "T-3358: TWO stale copies on PATH → both reported, not just the first" {
@@ -107,6 +114,6 @@ run_doctor_with_path() {
     printf '#!/bin/bash\n# stale wrapper, no supervision export\n' > "$TEST_TEMP_DIR/second/claude-fw"
     chmod +x "$TEST_TEMP_DIR/second/claude-fw"
     run_doctor_with_path "$TEST_TEMP_DIR/bin:$TEST_TEMP_DIR/second"
-    [[ "$output" == *"Installed claude-fw drifted from repo source"* ]]
+    [[ "$output" == *"Installed claude-fw (fixed copy) drifted from repo source"* ]]
     [[ "$output" == *"$TEST_TEMP_DIR/second/claude-fw"* ]]
 }
