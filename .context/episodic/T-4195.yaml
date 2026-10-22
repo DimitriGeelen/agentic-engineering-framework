@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4195: reviewer destructive scan: ignore comment lines and backticked or prose mentions in Verification and AC text (832 OBS-466, their T-1150)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:32:37Z
+# ============================================================================
+
+task_id: T-4195
+task_name: "reviewer destructive scan: ignore comment lines and backticked or prose mentions in Verification and AC text (832 OBS-466, their T-1150)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T19:11:34Z
+completed: 2026-10-22T10:32:07Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-10-22T00:31:36+02:00
+last_commit: 2026-10-22T00:31:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reviewer Layer 1 escalation ignores description — Verification #-comment lines and HTML comments, AC backticked/double-quoted spans and HTML comments are stripped before every trigger matches; executable and unquoted hits still escalate; regression test 11 legs (7 red pre-fix); vendor synced
+
+# Key outcomes
+outcomes:
+  - '`evaluate_escalations` drops full-line `#` comments and `<!-- -->` blocks from the Verification haystack before matching, so `# never rm -rf here` no longer escalates while an executable `rm -rf` line still does'
+  - 'AC-text matchers ignore HTML comments, backticked spans and double-quoted spans (quotations are description), while an unquoted "force-push the branch" still escalates'
+  - 'Regression test `tests/unit/test_t4195_escalation_description.py` fails on pre-fix code and passes after; neighbouring reviewer escalation tests stay green'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4195` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'reviewer Layer 1 escalation ignores description — Verification #-comment lines and HTML comments, AC backticked/double-quoted spans and HTML comments are stripped before every trigger matches; executable and unquoted hits still escalate; regression test 11 legs (7 red pre-fix); vendor synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — what counts as description'
+    chose: 'Verification: drop full-line `#` comments and HTML comments only. AC: drop HTML comments, backticked and double-quoted spans. Unquoted AC prose ("force-push the branch") still escalates.'
+    rationale: 'Shell backticks and quoted strings in Verification can execute (`` `rm -rf x` ``, `bash -c "…"`), so stripping them would open a fail-open hole; full-line comments never execute. In AC text the force-push/hard-reset words are the plan (T-3642 kept them unconditional), so only explicit quotation is treated as description.'
+    alternatives_rejected: ['stripping trailing inline `cmd # comment` (needs shell quote tracking; deferred, rare); a per-matcher `exclude_pattern` (would have to be repeated on every trigger).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - 'lib/reviewer/static_scan.py'
+  - '.tasks/active/T-4195-reviewer-destructive-scan-ignore-comment.md'
+  - 'tests/unit/test_t4195_escalation_description.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:31:36'
+    action: 'T-4195: reviewer Layer 1 escalation ignores description — Verification #-comment lines and HTML comments, AC backticked/double-quoted spans and HTML comments are stripped before every trigger matches; executable and unquoted hits still escalate; regression test 11 legs (7 red pre-fix); vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12440 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12440
+  commits: 1
+  files_changed: 4
+  lines_added: 174
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4195-reviewer-destructive-scan-ignore-comment.md
+generated_by: context-agent-hybrid
