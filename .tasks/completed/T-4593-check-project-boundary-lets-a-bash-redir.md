@@ -8,10 +8,10 @@ description: >
   write by redirect is not refused. Gate gap, not a stale test. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (line 23). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -43,8 +43,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:33:48Z
-last_update: 2026-10-22T10:52:39Z
-date_finished:
+last_update: 2026-10-22T11:32:06Z
+date_finished: 2026-10-22T11:32:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -397,3 +397,22 @@ timeout 600 bats tests/integration/check_project_boundary.bats > /tmp/.t4593.out
 ### 2026-10-22T10:52:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-22d704f8
+- **Timestamp:** 2026-10-22T11:32:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Root cause established: the hook refuses `/etc` redirects (exit 2 for `/etc/profile.d/x.sh` and `/etc/cron.d/../passwd`) and allows only the sanctioned `/etc/cron.d/` zone (T-1191, T-603 GO). The test
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/profile.d/x.sh in: Root cause established: the hook refuses `/etc` redirects (exit 2 for `/etc/profile.d/x.sh` and `/etc/cron.d/../passwd`) and allows only the sanctione`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T11:32:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

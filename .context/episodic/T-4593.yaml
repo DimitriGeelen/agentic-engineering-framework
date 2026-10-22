@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4593: check-project-boundary lets a Bash redirect write to /etc (echo > /etc/cron.d/x returns 0)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T11:33:13Z
+# ============================================================================
+
+task_id: T-4593
+task_name: "check-project-boundary lets a Bash redirect write to /etc (echo > /etc/cron.d/x returns 0)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T08:33:48Z
+completed: 2026-10-22T11:32:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T12:55:55+02:00
+last_commit: 2026-10-22T12:55:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary bats — /etc redirect test was stale (cron.d is T-1191 safe zone); retarget + pin exemption edges
+
+# Key outcomes
+outcomes:
+  - 'Reproduction status on current bleeding-edge recorded (test 16 ''Bash redirect to /etc: blocked'' was red on HEAD 961c19464)'
+  - 'Root cause established: the hook refuses `/etc` redirects (exit 2 for `/etc/profile.d/x.sh` and `/etc/cron.d/../passwd`) and allows only the sanctioned `/etc/cron.d/` zone (T-1191, T-603 GO). The test''s example target was that zone, so the test was stale and the gate had no gap'
+  - 'Test retargeted to a non-exempt /etc path, plus two new pins: the cron.d exemption is allowed and `..` escape from it is blocked'
+  - 'tests/integration/check_project_boundary.bats passes in full (36/36, no `not ok`, no skip)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — fix the test, not the gate'
+    chose: 'retarget the test to a non-exempt `/etc` path and pin the `/etc/cron.d` exemption.'
+    rationale: 'the exemption came from a recorded GO (T-603, then T-1191). Removing it would break `fw cron install` and undo an operator decision.'
+    alternatives_rejected: ['blocking `/etc/cron.d` in the hook. That reverses T-603 GO, so it is the operator''s call and outside this task''s scope.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4593-check-project-boundary-lets-a-bash-redir.md'
+  - 'tests/integration/check_project_boundary.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T12:55:55'
+    action: 'T-4593: boundary bats — /etc redirect test was stale (cron.d is T-1191 safe zone); retarget + pin exemption edges'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 178 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cloud, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 178
+  commits: 1
+  files_changed: 2
+  lines_added: 36
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4593-check-project-boundary-lets-a-bash-redir.md
+generated_by: context-agent-hybrid
