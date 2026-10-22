@@ -600,7 +600,7 @@ _EXPANDS = re.compile(r"[A-Za-z_0-9{(@*#?$!-]")
 _WATCHTOWER_URL_SUB = re.compile(r"\$\((?:bin/fw|fw|\.agentic-framework/bin/fw) watchtower url\)")
 
 
-def option_words(command: str) -> tuple[list[tuple[str, str]] | None, str | None]:
+def option_words(command: str, globs: bool = False) -> tuple[list[tuple[str, str]] | None, str | None]:
     """T-4512: the words bash hands the program, for an option check on ONE simple
     command. The read-only allowlist (agents/context/lib/safe-commands.sh) matched raw
     or quote-stripped words, so `find . -'exec'` and `curl -'o' F` hid the option.
@@ -611,7 +611,12 @@ def option_words(command: str) -> tuple[list[tuple[str, str]] | None, str | None
     A quoted expansion after a literal first character (`"Bearer $T"`) is 'L': whatever
     it expands to, the word cannot start with `-`. Returns (None, reason) for what the
     text cannot resolve: a backtick, an unquoted $ (may split into several words), an
-    unquoted glob, a brace expression left unexpanded, an unterminated quote."""
+    unquoted glob, a brace expression left unexpanded, an unterminated quote.
+    T-4650: with globs=True an unquoted glob is admitted as kind
+      'G'  expands to file names unknown here, but every one starts with the word's
+           first character, which is a literal other than `-`: never an option
+    A glob word whose first character is a glob, an expansion or `-` stays refused
+    (`*` may expand to a file named `-i`). Callers decide where a 'G' may stand."""
     if "`" in command:
         return None, "backtick substitution"
     masks: list[str] = []
@@ -628,10 +633,15 @@ def option_words(command: str) -> tuple[list[tuple[str, str]] | None, str | None
             u = "".join(c for k, c in enumerate(e) if em[k] == "u")
             if "$" in u:
                 return None, "an unquoted expansion ($) may split into several words"
-            if any(c in "*?[" for c in u):
+            glob = any(c in "*?[" for c in u)
+            if glob and not (globs and e[:1] and e[0] != "-" and em[:1] != "d"
+                             and not (em[0] == "u" and e[0] in "*?[")):
                 return None, "an unquoted glob"
             if "{" in u and ("," in u or ".." in u):
                 return None, "a brace expression not expanded from the text"
+            if glob:
+                out.append((e, "G"))
+                continue
             kind = "L"
             if em[:1] == "d":
                 kind = "E"

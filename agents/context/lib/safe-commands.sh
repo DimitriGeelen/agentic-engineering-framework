@@ -794,6 +794,9 @@ _fw_git_transport_runs_program() {
 # or brace goes to lib/shell_write_scan.py option_words, the tokenizer git_output_risk
 # uses. Returns 1 when the words cannot be resolved (unquoted $, backtick, unquoted
 # glob, unterminated quote) or python3/the library fails: callers treat 1 as unsafe.
+# T-4650: `_fw_option_words CLAUSE globs` admits an unquoted glob whose first
+# character is a literal other than `-` as kind G (file names, never an option);
+# only a caller that checks where a G stands may pass it.
 _fw_option_words() {
     _FW_OW=(); _FW_OWK=()
     local _special="[]\$\`'\"\\\\*?[{]" _rec _ok=0
@@ -809,10 +812,10 @@ _fw_option_words() {
     done < <(python3 -I -c 'import sys
 sys.path.insert(0, sys.argv[1])
 import shell_write_scan as s
-words, why = s.option_words(sys.argv[2])
+words, why = s.option_words(sys.argv[2], globs=(sys.argv[3] == "globs"))
 if words is None:
     sys.exit(1)
-sys.stdout.write("".join(k + w + "\0" for w, k in words) + "OK\0")' "$_FW_SAFE_COMMANDS_LIB" "$1" 2>/dev/null)
+sys.stdout.write("".join(k + w + "\0" for w, k in words) + "OK\0")' "$_FW_SAFE_COMMANDS_LIB" "$1" "${2:-}" 2>/dev/null)
     [ "$_ok" -eq 1 ] && return 0
     _FW_OW=(); _FW_OWK=()
     return 1
@@ -870,7 +873,7 @@ _fw_sed_runs_command() {
     local -a longs=(--expression= --file= --line-length= --quiet --silent --regexp-extended \
         --separate --unbuffered --null-data --posix --debug --sandbox --binary \
         --follow-symlinks --version --help --in-place)
-    _fw_option_words "$1" || return 0
+    _fw_option_words "$1" globs || return 0
     n=${#_FW_OW[@]}
     for (( i=1; i<n; i++ )); do
         tok="${_FW_OW[i]}"
@@ -887,7 +890,7 @@ _fw_sed_runs_command() {
                     --file=|--in-place=) return 0 ;;
                     --expression=|--line-length=)
                         if [ "${tok#*=}" != "$tok" ]; then j="${tok#*=}"
-                        else i=$((i + 1)); j="${_FW_OW[i]:-}"; [ "${_FW_OWK[i]:-}" = E ] && return 0; fi
+                        else i=$((i + 1)); j="${_FW_OW[i]:-}"; case "${_FW_OWK[i]:-}" in E|G) return 0 ;; esac; fi
                         [ "$opt" = --expression= ] && { script+="${j}"$'\n'; script_seen=1; } ;;
                 esac ;;
             -?*)
@@ -896,7 +899,7 @@ _fw_sed_runs_command() {
                         n|E|r|s|u|z|b) ;;
                         e|l)
                             opt="${tok:j+1}"
-                            if [ -z "$opt" ]; then i=$((i + 1)); opt="${_FW_OW[i]:-}"; [ "${_FW_OWK[i]:-}" = E ] && return 0; fi
+                            if [ -z "$opt" ]; then i=$((i + 1)); opt="${_FW_OW[i]:-}"; case "${_FW_OWK[i]:-}" in E|G) return 0 ;; esac; fi
                             [ "${tok:j:1}" = e ] && { script+="${opt}"$'\n'; script_seen=1; }
                             break ;;
                         *) return 0 ;;
@@ -907,9 +910,25 @@ _fw_sed_runs_command() {
     done
     if [ "$script_seen" -eq 0 ]; then
         [ "$i" -lt "$n" ] || return 1
-        [ "${_FW_OWK[i]}" = E ] && return 0
+        case "${_FW_OWK[i]}" in E|G) return 0 ;; esac
         script="${_FW_OW[i]}"
+        i=$((i + 1))
     fi
+    # T-4650: a glob FILE operand is admitted only beside a print-only script
+    # (ADDR[,ADDR]p per line) and with no operand that is a bare sed command
+    # letter (`*.md w out` reads as a detached w command, so it is refused).
+    for (( j=i; j<n; j++ )); do
+        [ "${_FW_OWK[j]}" = G ] || continue
+        for (( j=i; j<n; j++ )); do
+            case "${_FW_OW[j]}" in w|W|e|r|R) return 0 ;; esac
+        done
+        local _addr='([0-9]+|\$|/[^/]*/)' _line
+        while IFS= read -r _line; do
+            [ -z "$_line" ] && continue
+            [[ "$_line" =~ ^${_addr}(,${_addr})?p$ ]] || return 0
+        done <<< "$script"
+        break
+    done
     python3 -I -c 'import sys
 sys.path.insert(0, sys.argv[1])
 import shell_write_scan as s
@@ -923,8 +942,10 @@ sys.exit(1 if s.sed_script_risk(sys.argv[2]) else 3)' "$_FW_SAFE_COMMANDS_LIB" "
 # `-i` / `-o` passed them. Judged on _fw_option_words; a word that cannot be
 # resolved, or one that begins with an expansion, counts as the option.
 _fw_filter_option_writes() {
-    local base="$1" i tok
-    _fw_option_words "$2" || return 0
+    local base="$1" i tok globs=""
+    # T-4650: a G word never begins with `-`, so it cannot hide sed's -i.
+    [ "$base" = sed ] && globs=globs
+    _fw_option_words "$2" $globs || return 0
     for (( i=1; i<${#_FW_OW[@]}; i++ )); do
         tok="${_FW_OW[i]}"
         [ "${_FW_OWK[i]}" = E ] && return 0

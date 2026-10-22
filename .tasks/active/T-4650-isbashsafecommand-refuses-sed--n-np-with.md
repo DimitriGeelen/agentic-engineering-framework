@@ -1,10 +1,15 @@
 ---
 id: T-4650
-name: "is_bash_safe_command refuses sed -n Np with a glob FILE operand (over-block; field report dimitri-mint-dev be.3)"
+name: "is_bash_safe_command refuses sed -n Np with a glob FILE operand (over-block;
+  field report dimitri-mint-dev be.3)"
 description: >
-  Field report 2412ba7c (dimitri-mint-dev T-168): sed -n 1,5p docs/T-037-*.md is refused while the same command with a literal filename passes. A glob in a FILE operand cannot become a sed script or w-target. Hit as a G-020 block on sed -n 76,135p .tasks/completed/T-166-*.md. Also suggestion: adb read-only verbs (adb devices -l, adb shell pm list packages) not on the allowlist.
+  Field report 2412ba7c (dimitri-mint-dev T-168): sed -n 1,5p docs/T-037-*.md is refused
+  while the same command with a literal filename passes. A glob in a FILE operand
+  cannot become a sed script or w-target. Hit as a G-020 block on sed -n 76,135p .tasks/completed/T-166-*.md.
+  Also suggestion: adb read-only verbs (adb devices -l, adb shell pm list packages)
+  not on the allowlist.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T15:42:50Z
-last_update: 2026-10-22T15:42:50Z
-date_finished: null
+last_update: 2026-10-22T19:08:31Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T15:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T15:45:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4650: is_bash_safe_command refuses sed -n Np with a glob FILE operand (over-block; field report dimitri-mint-dev be.3)
@@ -62,8 +94,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `is_bash_safe_command 'sed -n 1,5p docs/T-037-*.md'` returns 0 (glob in a sed FILE operand of a print-only form is accepted); the literal-filename form still returns 0
+- [ ] sed SCRIPT stays strict: `sed -n 1p *.md w out`, `sed -i ... *.md`, `sed -n 'w x' f`, `sed -n "$(...)" f`, a glob in the script position, and `sed -e 's/a/b/e' f` are all refused
+- [ ] Decision recorded on glob-in-FILE for cat/head/tail/grep/wc, applied where the operand is unambiguously a file
+- [ ] Decision recorded: adb NOT added (adb shell runs arbitrary device commands)
+- [ ] Regression test tests/unit/t4650_sed_glob_file_operand.bats passes with 0 skips; neighbouring safe-commands tests still pass
+- [ ] `bin/fw vendor self --check --task T-4650` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +284,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4650_sed_glob_file_operand.bats > /tmp/.t4650.out 2>&1 && ! grep -q "^not ok" /tmp/.t4650.out
+timeout 600 bats tests/unit/t4650_sed_glob_file_operand.bats > /tmp/.t4650s.out 2>&1; test "$(grep -c '# skip' /tmp/.t4650s.out)" -eq 0
+bash -c 'source agents/context/lib/safe-commands.sh && is_bash_safe_command "sed -n 1,5p docs/T-037-*.md"'
+bash -c 'source agents/context/lib/safe-commands.sh && ! is_bash_safe_command "sed -n 1p *.md w out"'
+bin/fw vendor self --check --task T-4650
 
 ## RCA
 
@@ -264,6 +305,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `sed -n 1,5p docs/T-037-*.md` was gated (G-020 block in dimitri-mint-dev) while `sed -n 1,5p docs/T-037-x.md` passed.
+
+**Root cause:** `lib/shell_write_scan.py:option_words` (T-4512) returned None on any unquoted glob (`if any(c in "*?[" ...): return None, "an unquoted glob"`), and both sed checks in `agents/context/lib/safe-commands.sh` (`_fw_filter_option_writes`, `_fw_sed_runs_command`) treat an unresolvable word list as unsafe. The refusal was correct for option positions (a leading `*` may expand to `-i`) but was applied to FILE operands too, where a glob that starts with a literal non-`-` character can never become an option or a script.
+
+**Why structurally allowed:** T-4510/T-4512 tests covered the dangerous forms with literal file operands only (`F`); no fixture used a glob operand, so the over-block was invisible until a field user hit it. cat/head/tail/grep/wc were unaffected because they never route through option_words.
+
+**Prevention:** `tests/unit/t4650_sed_glob_file_operand.bats` pins both directions: glob FILE operands with print-only scripts are SAFE, and glob-in-script, leading-wildcard globs, -i, w/e forms and non-print scripts beside a glob stay refused.
 
 ## Evolution
 
@@ -329,6 +378,20 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — how a glob is admitted for sed
+- **Chose:** opt-in `option_words(globs=True)` returning kind `G` only for a glob word whose first character is a literal other than `-` (so no expansion can be an option). sed refuses a G as the script or as an -e/--expression value, and admits G FILE operands only when every script line is print-only (`ADDR[,ADDR]p`, ADDR = N, `$` or `/re/`) and no operand is a bare sed command letter (w W e r R), so `sed -n 1p d/*.md w out` stays refused.
+- **Why:** a leading wildcard (`sed -n 1p *.md`) can expand to a file named `-i` and GNU sed permutes options, so that form stays refused; the reported shapes (`docs/T-037-*.md`, `.tasks/completed/T-166-*.md`) all begin with a literal.
+- **Rejected:** dropping the glob refusal in option_words globally (it also feeds find/curl/git/sort/uniq checks where a glob may sit in an option or output position).
+
+### 2026-10-22 — glob-in-FILE for cat/head/tail/grep/wc
+- **Chose:** no change. Measured before the fix: `cat docs/*.md`, `head -5 docs/*.md`, `tail -3 docs/T-?.md`, `grep -n foo docs/*.md`, `wc -l docs/*.md` already return safe — those arms never call option_words. sort/uniq stay refused with globs (sort -o and uniq's second operand are output positions; out of this task's scope).
+- **Why:** the over-block was specific to the sed (and sort/uniq) option-word checks.
+
+### 2026-10-22 — adb not added
+- **Chose:** do NOT allowlist adb (`adb devices -l`, `adb shell pm list packages` suggested by the reporter).
+- **Why:** `adb shell` runs an arbitrary command on the device, and other adb verbs (install, push, reboot, root, uninstall) change device state; a verb-scoped split would have to parse the remote shell command line, which the gate cannot prove read-only. Under a task the gate does not block it anyway.
+- **Rejected:** allowlisting `adb devices` alone — low value, and adds a tool family to the list that invites widening.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -345,3 +408,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4650-isbashsafecommand-refuses-sed--n-np-with.md
 - **Context:** Initial task creation
+
+### 2026-10-22T19:07:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
