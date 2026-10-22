@@ -7,12 +7,12 @@ description: >
   run aef-install-20261017T144241Z): F-39. Triage: docs/reports/T-4253-greenfield-run-triage.md
   PROPOSED-NEW-16.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/approvals.py, web/templates/_continuous_halt.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:28:49Z
-last_update: 2026-10-21T22:27:32Z
-date_finished:
+last_update: 2026-10-22T11:24:05Z
+date_finished: 2026-10-22T11:24:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -115,9 +115,9 @@ bvp_scores_proposed:
 - [x] Watchtower restarted; `bin/fw watchtower current` exits 0; vendor sync clean for this task
 
 ### Human
-- [ ] [REVIEW] /approvals brake card reads correctly in the no-run state
+- [ ] [REVIEW] Approvals page brake card reads correctly in the no-run state
   **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` and open `<url>/approvals`
+  1. Open http://192.168.10.107:3000/approvals
   2. With no continuous run armed (`.context/working/.continuous-mode.yaml` absent or `enabled: false`), look at the brake card at the top
   **Expected:** Card says "No continuous run armed" with a neutral border, not "Continuous run is RUNNING"; the brake button still lets you pre-engage the halt
   **If not:** Screenshot the card and note what text it shows
@@ -377,6 +377,14 @@ bin/fw vendor self --check --task T-4269
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The brake card now models the three states stop-driver.sh actually has (HALTED, RUNNING when `.continuous-mode.yaml` has `enabled: true`, "No continuous run armed" otherwise), so a fresh install no longer reads as RUNNING. All four Agent ACs are ticked and every verification line passes; only your look at the rendered card remains.
+**Evidence:**
+- Commit 50d4c1eba: `_halt_state()` in `web/blueprints/approvals.py` returns `armed` by the driver's literal-true rule; `web/templates/_continuous_halt.html` has the third branch
+- `tests/unit/test_continuous_halt_control.py`: 12 passed (rerun 2026-10-22 by T-4632); the no-state-file and `enabled: false` cases assert no "RUNNING"
+- `bin/fw watchtower current` exits 0; `bin/fw vendor self --check --task T-4269` clean
+- Page to check: http://192.168.10.107:3000/approvals
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -408,3 +416,22 @@ bin/fw vendor self --check --task T-4269
 ### 2026-10-21T22:27:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-826151da
+- **Timestamp:** 2026-10-22T11:24:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `_halt_state()` (web/blueprints/approvals.py) reports `armed` from the same rule stop-driver.sh uses: `.context/working/.continuous-mode.yaml` exists and has `enabled: true` (literal true only)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/approvals.py in: `_halt_state()` (web/blueprints/approvals.py) reports `armed` from the same rule stop-driver.sh uses: `.context/working/.continuous-mode.yaml` exists `
+- **AC#3 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T11:24:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
