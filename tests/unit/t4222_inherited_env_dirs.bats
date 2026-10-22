@@ -45,3 +45,55 @@ _run_in_b() {
     echo "$output" | grep -qx "TD=$F/.tasks"
     rm -rf "$F"
 }
+
+# T-4670: the rule is containment, not the exact <proj>/.tasks shape. Each case sources lib/paths.sh
+# in project B with an inherited value and reports what it resolved to.
+_paths_in_b() {   # _paths_in_b <NAME=VALUE>... — env passed to the sourcing shell
+    cd "$B"
+    run env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM \
+        -u FW_TASKS_DIR_OVERRIDE -u TASKS_DIR -u CONTEXT_DIR HOME="$HOME_N" PROJECT_ROOT="$B" "$@" \
+        bash -c ". '$ROOT/lib/paths.sh'; echo \"TD=\$TASKS_DIR\"; echo \"CD=\$CONTEXT_DIR\""
+}
+
+@test "T-4670: subdir inside another project (/x/.context/working) is re-derived" {
+    _paths_in_b CONTEXT_DIR="$A/.context/working"
+    echo "$output"
+    echo "$output" | grep -qx "CD=$B/.context"
+    echo "$output" | grep -q "inherited CONTEXT_DIR=$A/.context/working lies inside another project"
+}
+
+@test "T-4670: a symlink into another project is re-derived" {
+    S="$(mktemp -d -t fw-t4670-ln-XXXXXX)"; ln -s "$A/.tasks" "$S/tasks"
+    _paths_in_b TASKS_DIR="$S/tasks"
+    rm -rf "$S"
+    echo "$output"
+    echo "$output" | grep -qx "TD=$B/.tasks"
+}
+
+@test "T-4670: the exact-dir case (<other>/.tasks) is still caught" {
+    _paths_in_b TASKS_DIR="$A/.tasks"
+    echo "$output"
+    echo "$output" | grep -qx "TD=$B/.tasks"
+}
+
+@test "T-4670: a fixture tmp dir with no project ancestor is still honoured" {
+    F="$(mktemp -d -t fw-t4670-fx-XXXXXX)"; mkdir -p "$F/sub/.context"
+    _paths_in_b CONTEXT_DIR="$F/sub/.context"
+    rm -rf "$F"
+    echo "$output"
+    echo "$output" | grep -qx "CD=$F/sub/.context"
+    ! echo "$output" | grep -q "inherited" || false
+}
+
+@test "T-4670: FW_TASKS_DIR_OVERRIDE=1 set on this invocation keeps a value inside another project" {
+    _paths_in_b TASKS_DIR="$A/.tasks/active" FW_TASKS_DIR_OVERRIDE=1
+    echo "$output"
+    echo "$output" | grep -qx "TD=$A/.tasks/active"
+}
+
+@test "T-4670: FW_TASKS_DIR_OVERRIDE=1 inherited across a project boundary is ignored, with a stderr line" {
+    _paths_in_b TASKS_DIR="$A/.tasks" FW_TASKS_DIR_OVERRIDE=1 _FW_PATHS_DERIVED_BY="$A"
+    echo "$output"
+    echo "$output" | grep -qx "TD=$B/.tasks"
+    echo "$output" | grep -q "ignoring FW_TASKS_DIR_OVERRIDE=1 inherited from project $A"
+}

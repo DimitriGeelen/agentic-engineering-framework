@@ -1,10 +1,21 @@
 ---
 id: T-4670
-name: "lib/paths.sh T-4222 foreign-dir rule is too narrow: only catches <proj>/.tasks or <proj>/.context exactly; adopt the any-ancestor rule and stop honouring an inherited FW_TASKS_DIR_OVERRIDE"
+name: "lib/paths.sh T-4222 foreign-dir rule is too narrow: only catches <proj>/.tasks
+  or <proj>/.context exactly; adopt the any-ancestor rule and stop honouring an inherited
+  FW_TASKS_DIR_OVERRIDE"
 description: >
-  T-4222 re-derives an inherited TASKS_DIR/CONTEXT_DIR only when basename is .tasks/.context AND its parent has .framework.yaml. Misses: a subdir inside another project (/opt/x/.context/working), symlinks into another project (no canonicalisation), and any inherited FW_TASKS_DIR_OVERRIDE=1 (codex review of T-4635 flagged this). 055 patched its vendored copy (055 commit 1929217a): any value lying inside ANOTHER framework project (an ancestor with .framework.yaml that is not PROJECT_ROOT) is dropped and re-derived; fixture dirs with no such ancestor pass. Adopt that, canonicalise with realpath, and only honour FW_TASKS_DIR_OVERRIDE when set on this invocation (not inherited across a project boundary, e.g. ignore it when _FW_PATHS_DERIVED_BY names another root). Extend tests/unit/t4651_polluted_tmux_server.bats or the T-4222 test. Source: 055 sidecar 1676a6f2; T-4635 reviews (codex, opencode).
+  T-4222 re-derives an inherited TASKS_DIR/CONTEXT_DIR only when basename is .tasks/.context
+  AND its parent has .framework.yaml. Misses: a subdir inside another project (/opt/x/.context/working),
+  symlinks into another project (no canonicalisation), and any inherited FW_TASKS_DIR_OVERRIDE=1
+  (codex review of T-4635 flagged this). 055 patched its vendored copy (055 commit
+  1929217a): any value lying inside ANOTHER framework project (an ancestor with .framework.yaml
+  that is not PROJECT_ROOT) is dropped and re-derived; fixture dirs with no such ancestor
+  pass. Adopt that, canonicalise with realpath, and only honour FW_TASKS_DIR_OVERRIDE
+  when set on this invocation (not inherited across a project boundary, e.g. ignore
+  it when _FW_PATHS_DERIVED_BY names another root). Extend tests/unit/t4651_polluted_tmux_server.bats
+  or the T-4222 test. Source: 055 sidecar 1676a6f2; T-4635 reviews (codex, opencode).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T21:20:28Z
-last_update: 2026-10-22T21:20:28Z
-date_finished: null
+last_update: 2026-10-22T21:47:39Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T21:30:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T21:30:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4670: lib/paths.sh T-4222 foreign-dir rule is too narrow: only catches <proj>/.tasks or <proj>/.context exactly; adopt the any-ancestor rule and stop honouring an inherited FW_TASKS_DIR_OVERRIDE
@@ -62,8 +100,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] lib/paths.sh drops an inherited TASKS_DIR/CONTEXT_DIR (stderr line, re-derived from PROJECT_ROOT) whenever its canonical path (realpath -m) lies inside another framework project — nearest ancestor holding .framework.yaml (or a linked worktree whose main checkout does) that is not PROJECT_ROOT — including subdirs (/x/.context/working) and symlinks into another project
+- [ ] The exact-dir case (<other>/.tasks) is still caught, and a fixture tmp dir with no such ancestor is still honoured unchanged
+- [ ] FW_TASKS_DIR_OVERRIDE=1 is honoured when set on this invocation, and ignored (with a stderr line) when _FW_PATHS_DERIVED_BY names a different root than PROJECT_ROOT
+- [ ] No python in the path; at most one realpath per variable; the walk stops at /
+- [ ] Regression tests in tests/unit/t4222_inherited_env_dirs.bats cover subdir, symlink, exact-dir, fixture, override-honoured, override-ignored; t4222 and t4651 suites green with zero skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +289,13 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n lib/paths.sh
+timeout 600 bats tests/unit/t4222_inherited_env_dirs.bats > /tmp/.t4670-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4670-a.out && grep -q "subdir inside another project" /tmp/.t4670-a.out
+test "$(grep -c '# skip' /tmp/.t4670-a.out)" -eq 0
+timeout 600 bats tests/unit/t4651_polluted_tmux_server.bats > /tmp/.t4670-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4670-b.out
+test "$(grep -c '# skip' /tmp/.t4670-b.out)" -eq 0
+! sed -n '/^# T-4222/,/^# Common directories/p' lib/paths.sh | grep -q python
+bin/fw vendor self --check --task T-4670
 
 ## RCA
 
@@ -264,6 +312,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** an inherited TASKS_DIR/CONTEXT_DIR pointing into another project still steered fw into that project when it was a subdir (`/x/.context/working`) or a symlink into it; and an inherited `FW_TASKS_DIR_OVERRIDE=1` (set once in project A, carried across a session/tmux boundary into B) switched the T-4222 guard off entirely (codex review of T-4635; 055 sidecar 1676a6f2).
+
+**Root cause:** `lib/paths.sh` T-4222 block (lines 74-86 before the fix) recognised a foreign value only when `basename == .tasks|.context` AND `dirname` held `.framework.yaml` — a textual, exact-dir test with no canonicalisation and no ancestor walk. Line 74 honoured `FW_TASKS_DIR_OVERRIDE` from the environment with no notion of where it came from, so an override inherited from another project was indistinguishable from one set on this call.
+
+**Why structurally allowed:** T-4222's tests (`tests/unit/t4222_inherited_env_dirs.bats`) only exercised the exact `<proj>/.tasks` shape that the rule was written against, so the rule and its test shared the same blind spot; the override test asserted it was honoured but never that it was ignored when inherited.
+
+**Prevention:** the rule is now containment-based (walk up from `realpath -m` of the value to the nearest framework project root; foreign if that root is not PROJECT_ROOT), and the override is dropped with a stderr line when `_FW_PATHS_DERIVED_BY` names another root. Six new cases in the T-4222 bats file pin subdir, symlink, exact-dir, fixture, override-honoured and override-ignored.
 
 ## Evolution
 
@@ -345,3 +401,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4670-libpathssh-t-4222-foreign-dir-rule-is-to.md
 - **Context:** Initial task creation
+
+### 2026-10-22T21:47:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

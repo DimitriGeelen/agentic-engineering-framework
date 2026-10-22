@@ -62,26 +62,51 @@ fi
 # the unset block is skipped, and the explicit `TASKS_DIR` survives intact
 # (this is what tests/unit/create_task.bats:18 relies on).
 if [[ -n "${_FW_PATHS_DERIVED_BY:-}" ]] && [[ "$_FW_PATHS_DERIVED_BY" != "$PROJECT_ROOT" ]]; then
+    # T-4670: an FW_TASKS_DIR_OVERRIDE=1 that crossed a project boundary is not this call's
+    # decision — drop it so the T-4222 rule below (and this process's children) still apply.
+    if [[ "${FW_TASKS_DIR_OVERRIDE:-0}" == "1" ]]; then
+        echo "fw: ignoring FW_TASKS_DIR_OVERRIDE=1 inherited from project $_FW_PATHS_DERIVED_BY (this project is $PROJECT_ROOT)" >&2
+        unset FW_TASKS_DIR_OVERRIDE
+    fi
     unset TASKS_DIR CONTEXT_DIR
 fi
 
-# T-4222 (G-116, second source): with the sentinel absent (unset by a polluted session, or never
-# set) an inherited TASKS_DIR/CONTEXT_DIR still survived the `:-` below and steered writes into
-# another project. Rule: an inherited value is re-derived (with a stderr warning) when it lies
-# outside PROJECT_ROOT AND is itself a project's own dir — basename .tasks/.context whose parent
-# carries .framework.yaml. Plain test fixtures (tmp dirs without .framework.yaml) and
-# FW_TASKS_DIR_OVERRIDE=1 are honoured unchanged.
+# T-4222 (G-116, second source), widened by T-4670: with the sentinel absent (unset by a polluted
+# session, or never set) an inherited TASKS_DIR/CONTEXT_DIR still survived the `:-` below and
+# steered writes into another project. Rule: an inherited value is re-derived (with a stderr
+# warning) when its canonical path (realpath -m, symlinks resolved) lies inside ANOTHER framework
+# project — the nearest ancestor holding .framework.yaml, or a linked worktree whose main checkout
+# does, is not PROJECT_ROOT. That covers <other>/.tasks, <other>/.context/working and symlinks into
+# <other>. Plain test fixtures (no such ancestor) and FW_TASKS_DIR_OVERRIDE=1 set on this call are
+# honoured unchanged. Hot path (value == $PROJECT_ROOT/.tasks) costs no fork; otherwise at most one
+# realpath per variable plus one for PROJECT_ROOT, and the walk is pure string ops ending at /.
 if [[ "${FW_TASKS_DIR_OVERRIDE:-0}" != "1" ]]; then
+    _fw_preal=""
     for _fw_dv in TASKS_DIR:.tasks CONTEXT_DIR:.context; do
         _fw_dn="${_fw_dv%%:*}"; _fw_db="${_fw_dv##*:}"; _fw_dval="${!_fw_dn:-}"
-        if [[ -n "$_fw_dval" && "$(basename "$_fw_dval")" == "$_fw_db" \
-              && "$(dirname "$_fw_dval")" != "$PROJECT_ROOT" \
-              && -f "$(dirname "$_fw_dval")/.framework.yaml" ]]; then
-            echo "fw: inherited $_fw_dn=$_fw_dval is outside project $PROJECT_ROOT; using $PROJECT_ROOT/$_fw_db (set FW_TASKS_DIR_OVERRIDE=1 to keep it)" >&2
+        [[ -z "$_fw_dval" || "$_fw_dval" == "$PROJECT_ROOT/$_fw_db" ]] && continue
+        [[ -n "$_fw_preal" ]] || _fw_preal="$(realpath -m -- "$PROJECT_ROOT" 2>/dev/null)" || _fw_preal="$PROJECT_ROOT"
+        _fw_d="$(realpath -m -- "$_fw_dval" 2>/dev/null)" || _fw_d="$_fw_dval"
+        _fw_owner=""
+        while [[ "$_fw_d" == /?* ]]; do
+            if [[ "$_fw_d" == "$_fw_preal" || "$_fw_d" == "$PROJECT_ROOT" ]]; then
+                break
+            elif [[ -f "$_fw_d/.framework.yaml" ]]; then
+                _fw_owner="$_fw_d"; break
+            elif [[ -f "$_fw_d/.git" ]]; then
+                _fw_gl=""; read -r _fw_gl < "$_fw_d/.git" 2>/dev/null; _fw_gl="${_fw_gl#gitdir: }"
+                if [[ "$_fw_gl" == */.git/worktrees/* && -f "${_fw_gl%%/.git/worktrees/*}/.framework.yaml" ]]; then
+                    _fw_owner="$_fw_d"; break
+                fi
+            fi
+            _fw_d="${_fw_d%/*}"
+        done
+        if [[ -n "$_fw_owner" ]]; then
+            echo "fw: inherited $_fw_dn=$_fw_dval lies inside another project ($_fw_owner), not $PROJECT_ROOT; using $PROJECT_ROOT/$_fw_db (set FW_TASKS_DIR_OVERRIDE=1 on this call to keep it)" >&2
             unset "$_fw_dn"
         fi
     done
-    unset _fw_dv _fw_dn _fw_db _fw_dval
+    unset _fw_dv _fw_dn _fw_db _fw_dval _fw_d _fw_owner _fw_gl _fw_preal
 fi
 
 # Common directories
