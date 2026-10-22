@@ -8,12 +8,12 @@ description: >
   on without a live host (cron, termlink, watchtower, network), make them fail fast
   or skip with a reason, never hang.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, test]
-components: []
+components: [tests/unit/handover.bats]
 related_tasks: [T-4508]
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,8 +43,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:48:55Z
-last_update: 2026-10-21T22:05:54Z
-date_finished:
+last_update: 2026-10-22T10:00:07Z
+date_finished: 2026-10-22T10:00:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -398,3 +398,20 @@ python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4573-l.out 2>&1 && grep
 ### 2026-10-21T22:05:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-17a58fe0
+- **Timestamp:** 2026-10-22T10:01:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T10:00:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

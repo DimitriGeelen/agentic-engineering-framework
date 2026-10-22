@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4573: tests/unit/handover.bats and tests/integration/fw_docs.bats hang (900 s timeout every run) on a clean machine (cloud run)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:01:52Z
+# ============================================================================
+
+task_id: T-4573
+task_name: "tests/unit/handover.bats and tests/integration/fw_docs.bats hang (900 s timeout every run) on a clean machine (cloud run)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T21:48:55Z
+completed: 2026-10-22T10:00:07Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-22T00:11:14+02:00
+last_commit: 2026-10-22T00:11:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  handover.bats stops after the first handover.sh timeout (sentinel in BATS_FILE_TMPDIR, later calls skip with reason) so a regression costs 120 s not 8x120=960 s over the 900 s cap; HANDOVER_TEST_SCRIPT override; regression bats drives handover.bats against a sleeping stub (1 not ok + 7 skips; pre-fix 8 not ok); cloud hang itself predated T-4522, re-measured 16 s / 12 s with host services stubbed
+
+# Key outcomes
+outcomes:
+  - 'Root cause of each hang named with file:line in ## RCA (what each suite blocks on without cron/termlink/watchtower/network)'
+  - 'tests/unit/handover.bats completes under `timeout 600` with live-host services absent (no rc=124)'
+  - 'tests/integration/fw_docs.bats completes under `timeout 600` with live-host services absent (no rc=124)'
+  - 'A regression test fails if the blocking call is reintroduced without a timeout/skip'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'handover.bats stops after the first handover.sh timeout (sentinel in BATS_FILE_TMPDIR, later calls skip with reason) so a regression costs 120 s not 8x120=960 s over the 900 s cap; HANDOVER_TEST_SCRIPT override; regression bats drives handover.bats against a sleeping stub (1 not ok + 7 skips; pre-fix 8 not ok); cloud hang itself predated T-4522, re-measured 16 s / 12 s with host services stubbed'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4573-testsunithandoverbats-and-testsintegrati.md'
+  - 'tests/unit/handover.bats'
+  - 'tests/unit/t4573_handover_bats_fail_fast.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:11:14'
+    action: 'T-4573: handover.bats stops after the first handover.sh timeout (sentinel in BATS_FILE_TMPDIR, later calls skip with reason) so a regression costs 120 s not 8x120=960 s over the 900 s cap; HANDOVER_TEST_SCRIPT override; regression bats drives handover.bats against a sleeping stub (1 not ok + 7 skips; pre-fix 8 not ok); cloud hang itself predated T-4522, re-measured 16 s / 12 s with host services stubbed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 731 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 731
+  commits: 1
+  files_changed: 3
+  lines_added: 91
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4573-testsunithandoverbats-and-testsintegrati.md
+generated_by: context-agent-hybrid
