@@ -95,9 +95,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `tests/unit/t3698_mcp_termlink_runtime_pin.bats` `_overlay` pushes to an explicit branch (`HEAD:refs/heads/fw-test-overlay`) and points the bare's HEAD at it, as T-4587 did for `overlay_upstream`; no `push origin HEAD` remains in either fixture
-- [ ] A regression test in t3698 detaches the upstream bare's HEAD and proves `_overlay` still lands the overlay (fails with the old `push origin HEAD`)
-- [ ] `web/test_app.py::TestSessionCockpit::test_session_status_shows_git_info` asserts the strip shows the checkout's actual branch (or `unknown` when detached), not a hard-coded `master`/`main`
+- [x] `tests/unit/t3698_mcp_termlink_runtime_pin.bats` `_overlay` pushes to an explicit branch (`HEAD:refs/heads/fw-test-overlay`) and points the bare's HEAD at it, as T-4587 did for `overlay_upstream`; no `push origin HEAD` remains in either fixture
+- [x] A regression test in t3698 detaches the upstream bare's HEAD and proves `_overlay` still lands the overlay (fails with the old `push origin HEAD`)
+- [x] `web/test_app.py::TestSessionCockpit::test_session_status_shows_git_info` asserts the strip shows the checkout's actual branch (or `unknown` when detached), not a hard-coded `master`/`main`
 - [ ] t3698, upgrade_fresh_machine_simulation and the TestSessionCockpit tests pass both here (bleeding-edge) and from a detached-HEAD scratch clone (`git clone` + `git checkout --detach`)
 
 ### Human
@@ -395,6 +395,11 @@ bin/fw vendor self --check --task T-4617
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4617-fixtures-that-break-on-a-detached-head-c.md
 - **Context:** Initial task creation
+
+### 2026-10-22 — AC4 evidence (worker w4617b)
+- Detached scratch clone of 526ab6596 (`git symbolic-ref -q HEAD` exit 1): t3698 9/9 ok; upgrade_fresh_machine_simulation 19/19 ok (run in 6 filtered chunks, each test is slow); TestSessionCockpit 10 passed.
+- On bleeding-edge: t3698 9/9 ok, TestSessionCockpit 10 passed. upgrade_fresh_machine_simulation was NOT re-run on the branch (this task does not change it; the full suite takes ~40 min). AC4 left unticked for the parent to confirm.
+- Old-fixture probe: the new T-4617 test fails against `push --quiet origin HEAD 2>/dev/null` (overlay file missing from the clone).
 
 ### 2026-10-22T11:19:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
