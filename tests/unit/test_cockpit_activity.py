@@ -34,12 +34,31 @@ def test_activity_route_returns_fragment_with_task_links():
     assert "wt-activity" in html
 
 
-def test_cockpit_page_has_polling_activity_card():
+def _with_scan(monkeypatch, scan):
+    # T-4613: "/" renders cockpit.html only when load_scan() returns a scan; the
+    # source, .context/scans/LATEST.yaml, is gitignored, so a fresh clone (the cloud
+    # run) got the index.html fallback. Supply the scan instead of reading host state.
+    from web.blueprints import core as core_mod
+    monkeypatch.setattr(core_mod, "load_scan", lambda: scan)
+
+
+def test_cockpit_page_has_polling_activity_card(monkeypatch):
+    _with_scan(monkeypatch, {"schema_version": 1})
     html = _client().get("/").get_data(as_text=True)
     assert 'hx-get="/cockpit/activity"' in html
     assert 'id="wt-activity"' in html
     # polls without reload — hx-trigger includes a timed poll
     assert "every" in html and "hx-trigger" in html
+
+
+def test_page_card_assertion_is_driven_by_the_scan_not_host_state(monkeypatch):
+    # T-4613 regression: with no scan (a fresh clone) "/" is the index.html fallback,
+    # which has no polling card. If this ever starts passing without a scan, the test
+    # above no longer needs its fixture; if the one above fails here, it is the
+    # fixture, not the host, that is wrong.
+    _with_scan(monkeypatch, None)
+    html = _client().get("/").get_data(as_text=True)
+    assert 'hx-get="/cockpit/activity"' not in html
 
 
 def test_activity_route_is_get_only():

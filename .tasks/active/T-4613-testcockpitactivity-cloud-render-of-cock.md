@@ -1,13 +1,18 @@
 ---
 id: T-4613
-name: "test_cockpit_activity: cloud render of /cockpit lacks the hx-get=/cockpit/activity card; passes on the dev host"
+name: "test_cockpit_activity: cloud render of /cockpit lacks the hx-get=/cockpit/activity
+  card; passes on the dev host"
 description: >
-  tests/unit/test_cockpit_activity.py::test_cockpit_page_has_polling_activity_card failed alone in the cloud clone; web/templates/cockpit.html mounts the card unconditionally, so the cloud response was likely a different page (error/redirect). Not reproduced here; localise with the cloud env (detached HEAD, no session state). Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (line 187). Triaged in T-4589.
+  tests/unit/test_cockpit_activity.py::test_cockpit_page_has_polling_activity_card
+  failed alone in the cloud clone; web/templates/cockpit.html mounts the card unconditionally,
+  so the cloud response was likely a different page (error/redirect). Not reproduced
+  here; localise with the cloud env (detached HEAD, no session state). Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
+  (line 187). Triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -39,8 +44,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:48:18Z
-last_update: 2026-10-22T08:48:18Z
-date_finished: null
+last_update: 2026-10-22T11:28:01Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:00:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:00:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4613: test_cockpit_activity: cloud render of /cockpit lacks the hx-get=/cockpit/activity card; passes on the dev host
@@ -63,8 +95,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause reproduced on the dev host by removing the scan (load_scan → None): `/` renders index.html without the activity card
+- [x] test_cockpit_activity.py page test supplies its own scan fixture, so it no longer depends on the gitignored .context/scans/LATEST.yaml
+- [x] Regression test proves the page test passes with no LATEST.yaml present (load_scan patched to None at source)
+- [x] tests/unit/test_cockpit_activity.py passes in full
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,22 +283,8 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+timeout 600 python3 -m pytest tests/unit/test_cockpit_activity.py -q -p no:cacheprovider > /tmp/.t4613.out 2>&1 && grep -q passed /tmp/.t4613.out && ! grep -q failed /tmp/.t4613.out
+grep -q "load_scan" tests/unit/test_cockpit_activity.py
 
 ## Evolution
 
@@ -289,6 +309,16 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** `test_cockpit_page_has_polling_activity_card` failed in the cloud clone (the response was a full Watchtower page with no `hx-get="/cockpit/activity"`) and passed on the dev host.
+
+**Root cause:** `web/blueprints/core.py:428-449` `index()` renders `cockpit.html` (which mounts the polling card at `web/templates/cockpit.html:336`) only when `load_scan()` (`web/shared.py:436`) returns data from `.context/scans/LATEST.yaml`. That file is gitignored (`.context/scans/.gitignore:3`), so a fresh clone has no scan and `/` falls back to `index.html`, which has no polling card. The test read the host's scan state implicitly. It was a test defect, not a product defect. Reproduced here by patching `core.load_scan` to return None: card absent. With `{"schema_version": 1}`: card present.
+
+**Why structurally allowed:** the dev host always has a LATEST.yaml (the scan cron writes it), so the hidden dependency never showed. Only a clean-clone run (the T-4508 cloud run) could expose it.
+
+**Prevention:** the page test now supplies its scan through `_with_scan()`. A companion test pins the no-scan branch (no card), so the fixture's necessity is explicit and checked in either environment.
 
 ## Recommendation
 
@@ -346,3 +376,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4613-testcockpitactivity-cloud-render-of-cock.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:28:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
