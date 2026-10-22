@@ -121,3 +121,8 @@ affected. Running processes keep their old copy until relaunched.
   (055 T-538); now an allow-list (055 commit 34e78fe1) with an A-after-B polluted private-server test
   that was red on the old code — the model for the G-116/G-124 close test. 055's post-reboot host scan:
   256 agent processes, 0 foreign TASKS_DIR/CONTEXT_DIR, tmux global environment clean.
+- **Host remediation done (23:40):** `loginctl enable-linger root` and `loginctl enable-linger dimitri-mint-dev`
+  run on .107 by dimitri-mint-dev's operator runme `linger-107` (EXIT 0); verified from the AEF session:
+  both users LINGER yes, `/var/lib/systemd/linger` lists both. Root's slice is no longer torn down when
+  its last login session closes, and the session-c1.scope placement of Watchtower, claude-fw and tmux
+  now survives a logout of dimitri-mint-dev.

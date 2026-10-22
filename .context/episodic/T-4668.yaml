@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4668: Issue replies: close with a note when the submitter OKs closing (\"fine to close\") — standing routine, no operator question
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T21:39:40Z
+# ============================================================================
+
+task_id: T-4668
+task_name: "Issue replies: close with a note when the submitter OKs closing (\"fine to close\") — standing routine, no operator question"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T20:52:42Z
+completed: 2026-10-22T21:39:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T22:54:30+02:00
+last_commit: 2026-10-22T23:04:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ACs for the close-ok routine (operator ruling: closing on submitter OK is standing). CLAUDE.md — submitter replies close issues (confirmed / close-ok), standing routine; T-4669 captured. issue replies gain a close-ok class (submitter OKs closing); confirm-close takes close-ok and --note; sync auto-closes close-ok unless the reply carries a suggestion; reply excerpt keeps head and tail. closed #92 with the submitter's OK; suggestion tracked as T-4663
+
+# Key outcomes
+outcomes:
+  - 'Classifier has a `close-ok` class (issue author explicitly OKs closing, no counter-signal); `confirmed` keeps priority; #92''s real reply classifies close-ok'
+  - '`fw issues confirm-close` accepts close-ok and an optional `--note`; the comment says "Closed with your OK", quotes the OK sentence, keeps caveats, names what was delivered'
+  - 'sync auto-closes close-ok on eligible issues only when the reply carries no suggestion; a reply with a suggestion stays needs-decision for the agent to file the follow-up and close with a note'
+  - 'tests/unit/test_t4668_close_ok.py green with gh stubbed; T-4660''s tests still green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'issue replies gain a close-ok class (submitter OKs closing); confirm-close takes close-ok and --note; sync auto-closes close-ok unless the reply carries a suggestion; reply excerpt keeps head and tail'
+    source: git-mined
+  - description: 'CLAUDE.md — submitter replies close issues (confirmed / close-ok), standing routine; T-4669 captured'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # 1 decision(s) below are recorded in the register (.context/project/decisions.yaml) for this task but absent from the task file's Decisions section (T-4193).
+  - decision: 'D-781'
+    chose: 'Closing a GitHub issue is a standing agent routine, not an operator question, once the fix is built, tested, deployed and the submitter''s reply confirms it works or says it is fine to close; the agent closes it with a note (naming any follow-up task) and reports afterwards. Ambiguous or negative replies are still surfaced. Operator ruling 2026-10-22.'
+    rationale: 'Not specified'
+    id: 'D-781'
+    source: register
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - 'CLAUDE.md'
+  - '.context/issues/intake.jsonl'
+  - 'lib/issues.py'
+  - '.tasks/active/T-4668-issue-replies-close-with-a-note-when-the.md'
+  - '.tasks/active/T-4669-fw-issues-mark-a-submitter-reply-as-hand.md'
+  - 'tests/unit/test_t4668_close_ok.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T22:54:30'
+    action: 'T-4668: ACs for the close-ok routine (operator ruling: closing on submitter OK is standing)'
+  - time: '2026-10-22T22:59:06'
+    action: 'T-4668: CLAUDE.md — submitter replies close issues (confirmed / close-ok), standing routine; T-4669 captured'
+  - time: '2026-10-22T23:02:38'
+    action: 'T-4668: issue replies gain a close-ok class (submitter OKs closing); confirm-close takes close-ok and --note; sync auto-closes close-ok unless the reply carries a suggestion; reply excerpt keeps head and tail'
+  - time: '2026-10-22T23:04:17'
+    action: 'T-4668: closed #92 with the submitter''s OK; suggestion tracked as T-4663'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 46 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 46
+  commits: 4
+  files_changed: 7
+  lines_added: 1101
+  lines_removed: 87
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4668-issue-replies-close-with-a-note-when-the.md
+generated_by: context-agent-hybrid

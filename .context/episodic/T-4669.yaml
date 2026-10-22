@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4669: fw issues: mark a submitter reply as handled without closing the issue (no-action reply, e.g. #14 thank-you/outreach comments)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T21:40:11Z
+# ============================================================================
+
+task_id: T-4669
+task_name: "fw issues: mark a submitter reply as handled without closing the issue (no-action reply, e.g. #14 thank-you/outreach comments)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T20:58:33Z
+completed: 2026-10-22T21:39:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T23:17:19+02:00
+last_commit: 2026-10-22T23:17:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw issues reply-ack settles one no-action submitter reply with a reply-acked ledger row (nothing posted); _undecided_replies treats it as settled; #14's two May 2026 replies acknowledged
+
+# Key outcomes
+outcomes:
+  - '`fw issues reply-ack <N> --reply-id <ID> --reason "..."` appends one `{issue, stage: reply-acked, reply_id, reason, by, ts}` row to the intake ledger and makes no gh call at all'
+  - 'It refuses (non-zero exit, no row) a reply id the ledger does not hold for that issue, and an empty `--reason`; a second ack of the same reply writes no second row'
+  - '`--dry-run` prints the row and writes nothing'
+  - '`_undecided_replies` treats a reply-acked reply as settled (it leaves `fw issues replies` and sync''s needs-decision leg), while other replies on the same issue stay listed'
+  - 'Run for real on #14''s two replies (IC_kwDORdtOLc8AAAABBicq1A, IC_kwDORdtOLc8AAAABBih5ow); `fw issues replies --json` no longer lists them; the ledger rows committed'
+  - '`tests/unit/test_t4669_reply_ack.py` passes with gh stubbed; T-4660/T-4668/T-4664 issues tests still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw issues reply-ack settles one no-action submitter reply with a reply-acked ledger row (nothing posted); _undecided_replies treats it as settled; #14''s two May 2026 replies acknowledged'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - '.context/issues/intake.jsonl'
+  - 'lib/issues.py'
+  - '.tasks/active/T-4669-fw-issues-mark-a-submitter-reply-as-hand.md'
+  - 'tests/unit/test_t4669_reply_ack.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T23:17:19'
+    action: 'T-4669: fw issues reply-ack settles one no-action submitter reply with a reply-acked ledger row (nothing posted); _undecided_replies treats it as settled; #14''s two May 2026 replies acknowledged'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 41
+  commits: 1
+  files_changed: 5
+  lines_added: 227
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4669-fw-issues-mark-a-submitter-reply-as-hand.md
+generated_by: context-agent-hybrid

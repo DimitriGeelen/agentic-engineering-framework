@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4664: A submitter's confirm-close on a GitHub issue is not yet counted as release field evidence (WORKS row for the linked task)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T21:39:55Z
+# ============================================================================
+
+task_id: T-4664
+task_name: "A submitter's confirm-close on a GitHub issue is not yet counted as release field evidence (WORKS row for the linked task)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T20:38:18Z
+completed: 2026-10-22T21:39:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T23:13:15+02:00
+last_commit: 2026-10-22T23:13:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  confirm-close records a submitter's confirmed fix as a WORKS row in docs/reports/field-test-submitter-confirmations.md; release merges it with the per-version field report; fw issues field-evidence backfills (8 rows: #86-#94)
+
+# Key outcomes
+outcomes:
+  - '`confirm_close` on a `confirmed` reply appends one `| T-NNNN | **WORKS** — GitHub #N (submitter) | <version or "not stated"> | <reply link> | <date> |` row to `docs/reports/field-test-submitter-confirmations.md`, for the issue''s linked task(s) from the ledger; the version is taken from the reply text when it names one (e.g. "on 1.8.13")'
+  - 'A `close-ok` reply records no row; an issue with no linked task records no row; re-recording the same reply adds no second row (idempotent)'
+  - '`fw issues release` merges the submitter table with the release''s own field report, so a task with only a submitter WORKS row gets verdict `works` and its evidence names "GitHub #N (submitter)"; a FAILS row in either report still holds the issue'
+  - '`fw issues field-evidence [N ...] [--dry-run]` backfills from the ledger''s confirm-close `closed` rows without calling GitHub; dry-run writes nothing'
+  - 'Backfill run for real for #86 #87 #88 #89 #90 #91 #93 #94 (rows only for those whose reply classifies `confirmed`), and the result committed'
+  - '`tests/unit/test_t4664_confirm_close_field_evidence.py` passes, with gh stubbed (no real GitHub call); existing T-4660/T-4668 issues tests still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'confirm-close records a submitter''s confirmed fix as a WORKS row in docs/reports/field-test-submitter-confirmations.md; release merges it with the per-version field report; fw issues field-evidence backfills (8 rows: #86-#94)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - 'docs/reports/field-test-submitter-confirmations.md'
+  - 'lib/issues.py'
+  - '.tasks/active/T-4664-a-submitters-confirm-close-on-a-github-i.md'
+  - 'tests/unit/test_t4664_confirm_close_field_evidence.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T23:13:15'
+    action: 'T-4664: confirm-close records a submitter''s confirmed fix as a WORKS row in docs/reports/field-test-submitter-confirmations.md; release merges it with the per-version field report; fw issues field-evidence backfills (8 rows: #86-#94)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 61 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 61
+  commits: 2
+  files_changed: 6
+  lines_added: 1170
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4664-a-submitters-confirm-close-on-a-github-i.md
+generated_by: context-agent-hybrid
