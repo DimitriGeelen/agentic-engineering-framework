@@ -1,10 +1,16 @@
 ---
 id: T-4673
-name: "Release tags do not reach the GitHub mirror: be-tag --push pushes origin only, and fw mirror status/sync compare master HEAD only, so a missing tag reads 'in sync'"
+name: "Release tags do not reach the GitHub mirror: be-tag --push pushes origin only,
+  and fw mirror status/sync compare master HEAD only, so a missing tag reads 'in sync'"
 description: >
-  2026-10-23: v1.8.15-be.4 was tagged and pushed to origin (OneDev) but field projects (TermLink, dimitri-mint-dev) clone from GitHub and saw tags only up to be.3; fw mirror status said 'github: in sync'. Fix: be-tag --push (and tag-and-release) push the tag to every remote fw push uses (github included), and fw mirror status/sync compare release tags (v*) as well as branch heads, re-pushing missing tags. Test with two bare remotes.
+  2026-10-23: v1.8.15-be.4 was tagged and pushed to origin (OneDev) but field projects
+  (TermLink, dimitri-mint-dev) clone from GitHub and saw tags only up to be.3; fw
+  mirror status said 'github: in sync'. Fix: be-tag --push (and tag-and-release) push
+  the tag to every remote fw push uses (github included), and fw mirror status/sync
+  compare release tags (v*) as well as branch heads, re-pushing missing tags. Test
+  with two bare remotes.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T22:04:23Z
-last_update: 2026-10-22T22:04:23Z
-date_finished: null
+last_update: '2026-10-22T22:15:22Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T22:13:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T22:15:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=300,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4673: Release tags do not reach the GitHub mirror: be-tag --push pushes origin only, and fw mirror status/sync compare master HEAD only, so a missing tag reads 'in sync'
@@ -62,8 +95,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw release be-tag --push` pushes the new tag to every remote (push URL not `no_push`), github included, then checks each with `ls-remote`; a remote missing the tag makes it print the remote name and exit non-zero (tests/unit/t4673_tags_reach_mirror.bats, two bare remotes)
+- [x] `fw release tag-and-release` verifies the tag with `ls-remote` on every remote after the atomic pushes and fails loudly (non-zero, names the remote) when any lacks it
+- [x] `fw mirror status` lists `refs/tags/v*` present on origin but missing on a mirror (branch-head line kept), so a tag-only gap no longer reads "in sync"
+- [x] `fw mirror sync` pushes missing v* tags to the mirror as new refs only: never `--force`, never deletes, and a tag whose SHA differs on the mirror is reported, not moved
+- [x] Existing mirror and be-tag suites stay green (test_mirror_sync.bats, test_mirror_stderr_capture.bats, t4431_be_tags.bats)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,22 +284,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+timeout 600 bats tests/unit/t4673_tags_reach_mirror.bats > /tmp/.t4673.out 2>&1 && ! grep -q "^not ok" /tmp/.t4673.out && grep -q "^ok 1 " /tmp/.t4673.out
+test "$(grep -c '# skip' /tmp/.t4673.out)" -eq 0
+timeout 600 bats tests/unit/test_mirror_sync.bats tests/unit/test_mirror_stderr_capture.bats tests/unit/t4431_be_tags.bats > /tmp/.t4673b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4673b.out
+test "$(grep -c '# skip' /tmp/.t4673b.out)" -eq 0
+bash -n lib/mirror.sh && bash -n lib/release-tags.sh && bash -n lib/release.sh
+bin/fw vendor self --check --task T-4673
 
 ## Evolution
 
@@ -288,6 +314,16 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** v1.8.15-be.4 reached origin (OneDev) but not GitHub; field projects cloning from GitHub saw tags up to be.3, while `fw mirror status` said "github: in sync".
+
+**Root cause:** `lib/release-tags.sh` `release_be_tag` pushed with a hard-coded `git push origin refs/tags/<tag>` (the `--push` branch), inheriting the T-1255 rule that only origin is pushed and OneDev's PushRepository mirrors the rest — but that mirror does not carry new tags reliably, so github never got the tag. `lib/mirror.sh` `mirror_status`/`mirror_sync_one` compared only `ls-remote origin HEAD` against the mirror's default-branch head, so tags were outside both the check and the repair.
+
+**Why structurally allowed:** neither push path verified the result on the consumer-facing remote (`tag-and-release` pushed to every remote but never read back with `ls-remote`), and the only mirror detector measured branch heads, so a tag-only gap produced the same output as a healthy mirror (false green). Tests covered be-tag locally and mirror branch parity only.
+
+**Prevention:** tag pushes now go to every remote and are read back with `ls-remote` (fail loudly per missing remote); `fw mirror status` reports missing v* tags and the 15-minute `fw mirror sync` cron pushes them (new refs only). Pinned by tests/unit/t4673_tags_reach_mirror.bats against two bare remotes.
 
 ## Recommendation
 
@@ -345,3 +381,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4673-release-tags-do-not-reach-the-github-mir.md
 - **Context:** Initial task creation
+
+### 2026-10-22T22:13:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

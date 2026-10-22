@@ -728,6 +728,14 @@ release_tag_and_release() {
     [ -n "$ver_snap" ] && rm -rf "$ver_snap"
     ver_snap=""
 
+    # T-4673: a push exit code is not evidence the tag is where consumers look
+    # (v1.8.15-be.4 reached origin but never GitHub). Read it back everywhere.
+    if [ "$pub_attempted" -gt 0 ] && ! release_tag_verify_remotes "$root" "$next"; then
+        echo -e "${RED}RELEASE INCOMPLETE:${NC} $next is missing on the remote(s) above." >&2
+        echo "  Push it there: git -C $root push <remote> refs/tags/${next}:refs/tags/${next}  (or fw mirror sync)" >&2
+        failed=1
+    fi
+
     # Create GitHub Release (best-effort)
     if command -v gh >/dev/null 2>&1; then
         echo -e "${CYAN}Creating GitHub Release $next...${NC}"

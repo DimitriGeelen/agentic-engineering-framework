@@ -62,12 +62,58 @@ release_be_upgrade_notice() {
     echo "  Check your git hooks: be.3/be.1 commented out your own lines in .git/hooks (G-122); fw doctor names them — uncomment yours."
 }
 
+# release_tag_remotes <root>  — every remote a release tag must reach (T-4673):
+#   all remotes, github included, except those whose push URL is the `no_push`
+#   sentinel. Branch pushes skip mirrors because OneDev's PushRepository job
+#   carries branches; it does not reliably carry new tags, and field projects
+#   clone from GitHub, so a tag goes to each remote directly.
+release_tag_remotes() {
+    local root="$1" r
+    while IFS= read -r r; do
+        [ -z "$r" ] && continue
+        [ "$(git -C "$root" remote get-url --push "$r" 2>/dev/null)" = "no_push" ] && continue
+        echo "$r"
+    done < <(git -C "$root" remote 2>/dev/null)
+}
+
+# release_tag_verify_remotes <root> <tag>  — read the tag back from every
+#   release_tag_remotes remote with ls-remote. Prints one line per remote that
+#   lacks it (or cannot be reached) and returns 1; returns 0 when all have it.
+release_tag_verify_remotes() {
+    local root="$1" tag="$2" r missing=0 listing
+    while IFS= read -r r; do
+        [ -z "$r" ] && continue
+        if ! listing="$(git -C "$root" ls-remote --tags "$r" "refs/tags/$tag" 2>/dev/null)"; then
+            echo -e "${RED}ERROR:${NC} $r: unreachable — cannot confirm $tag is there" >&2
+            missing=1
+        elif ! grep -q "refs/tags/${tag}$" <<< "$listing"; then
+            echo -e "${RED}ERROR:${NC} $r: missing $tag after push — consumers of $r cannot see it" >&2
+            missing=1
+        fi
+    done < <(release_tag_remotes "$root")
+    return "$missing"
+}
+
+# release_tag_publish <root> <tag>  — push one tag (new ref, never forced) to
+#   every release_tag_remotes remote, then verify each with ls-remote.
+release_tag_publish() {
+    local root="$1" tag="$2" r
+    while IFS= read -r r; do
+        [ -z "$r" ] && continue
+        echo "Pushing $tag to $r..."
+        git -C "$root" push "$r" "refs/tags/${tag}:refs/tags/${tag}" 2>&1 || \
+            echo -e "${YELLOW}WARN:${NC} push of $tag to $r failed" >&2
+    done < <(release_tag_remotes "$root")
+    release_tag_verify_remotes "$root" "$tag"
+}
+
 # release_be_tag [--version X.Y.Z] [--dry-run] [--push] — fw release be-tag
 #   Creates an ANNOTATED vX.Y.Z-be.N tag on HEAD of the dev branch
 #   (FW_DEV_BRANCH, default bleeding-edge). X.Y.Z defaults to the patch after
 #   the latest release tag. Refuses on any other branch (master above all: it is
 #   the consumer install surface), on a detached HEAD, and when X.Y.Z is not
-#   above the latest release. Pushes only with --push (origin, the tag only).
+#   above the latest release. Pushes only with --push: the tag only, to every
+#   remote (release_tag_publish, T-4673), verified with ls-remote.
 release_be_tag() {
     local root="${PROJECT_ROOT:-$(pwd)}"
     local ver="" dry_run=false push=false
@@ -121,7 +167,12 @@ release_be_tag() {
     head="$(git -C "$root" rev-parse HEAD)"
     existing="$(git -C "$root" tag -l "v${ver}-be.*" --points-at "$head" | head -1)"
     if [ -n "$existing" ]; then
-        echo "HEAD is already tagged $existing — nothing to do"
+        echo "HEAD is already tagged $existing — no new tag"
+        # --push on an existing tag republishes it (new refs only) and verifies.
+        if [ "$push" = true ] && [ "$dry_run" != true ] && ! release_tag_publish "$root" "$existing"; then
+            echo -e "${RED}$existing is NOT on every remote${NC}" >&2
+            return 1
+        fi
         release_be_upgrade_notice "$existing"
         return 0
     fi
@@ -135,9 +186,13 @@ release_be_tag() {
     git -C "$root" tag -a "$tag" -m "Bleeding-edge pre-release ${tag#v} (base ${latest:-none}, T-4023)" "$head" || return 1
     echo -e "${GREEN}Tagged${NC} $tag at ${head:0:12} on $dev (base release: ${latest:-none})"
     if [ "$push" = true ]; then
-        git -C "$root" push origin "refs/tags/${tag}:refs/tags/${tag}" || return 1
+        if ! release_tag_publish "$root" "$tag"; then
+            echo -e "${RED}$tag is NOT on every remote${NC} — re-run: fw release be-tag --push (or fw mirror sync)" >&2
+            return 1
+        fi
+        echo -e "${GREEN}$tag verified on:${NC} $(release_tag_remotes "$root" | tr '\n' ' ')"
     else
-        echo "Push when ready: git -C $root push origin refs/tags/${tag}:refs/tags/${tag}"
+        echo "Push when ready: fw release be-tag --push (pushes $tag to every remote, github included)"
     fi
     release_be_upgrade_notice "$tag"
 }
