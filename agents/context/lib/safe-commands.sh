@@ -15,6 +15,16 @@
 #   4. FW diagnostics (6 patterns)
 #   5. System utilities (6 patterns)
 #   6. Validation (2 patterns)
+#
+# T-4662: CALLER CONTRACT — the shell's cwd. A git clause is judged against the
+# repository git would discover from the shell's cwd (T-4409), so the caller must
+# say where the shell is. The hook sets _FW_PAYLOAD_CWD from the payload's `cwd`
+# (check-active-task.sh). A caller with no payload (a test harness) does the same:
+#     export PROJECT_ROOT=<project> _FW_PAYLOAD_CWD=<absolute cwd of the command>
+# Without it the cwd is known only when $PWD IS PROJECT_ROOT. Otherwise every git
+# clause is NOT SAFE, and the first such refusal in a process says so on stderr.
+# There is deliberately no fallback to "$PWD somewhere inside PROJECT_ROOT": the
+# hook's $PWD does not follow the Bash tool's shell, which keeps its cwd across calls.
 
 # --- T-2834: chain-aware entry point -------------------------------------
 #
@@ -198,6 +208,17 @@ _fw_initial_git_cwd() {
         _rp="$(realpath -e -- "$PWD" 2>/dev/null)"; _rr="$(realpath -e -- "$PROJECT_ROOT" 2>/dev/null)"
         [ -n "$_rp" ] && [ "$_rp" = "$_rr" ] && printf '%s' "$_rp"
     fi
+    return 0
+}
+
+# T-4662: say once per process why a git clause was refused for want of a cwd
+# (the caller has checked that the cwd was unknown, not foreign), but only when no
+# payload cwd was given at all: the harness case. A foreign cwd stays quiet.
+_fw_note_unknown_git_cwd() {
+    [[ "${_FW_PAYLOAD_CWD:-}" == /* ]] && return 0
+    [ -n "${_FW_NO_CWD_NOTED:-}" ] && return 0
+    _FW_NO_CWD_NOTED=1
+    echo "safe-commands: git clause refused: the shell's cwd is unknown (no absolute _FW_PAYLOAD_CWD, and \$PWD is not PROJECT_ROOT). Callers without a hook payload: export _FW_PAYLOAD_CWD=<absolute cwd> (T-4662)." >&2
     return 0
 }
 
@@ -632,7 +653,7 @@ _fw_git_skip_globals() {
     # T-4409: with no -C/--git-dir (or with them), git discovers the repository from
     # its cwd, so the effective cwd must itself be inside PROJECT_ROOT. Unknown
     # (empty) fails the check: `cd /tmp/evil && git status` reads /tmp/evil's config.
-    _fw_git_dir_is_project "$_cwd" / >/dev/null || return 1
+    _fw_git_dir_is_project "$_cwd" / >/dev/null || { [ -z "$_cwd" ] && return 2; return 1; }
     echo "git ${words[*]:$i}"
 }
 
@@ -1331,7 +1352,9 @@ _fw_single_command_is_safe() {
         git)
             # F-26 (T-4264): judge the verb after git's global options, not the first word.
             local git_norm git_sub
-            git_norm=$(_fw_git_skip_globals "$cmd") || return 1
+            # T-4662: exit 2 = refused only because the cwd is unknown; the note is
+            # printed here, outside the $(...), so its once-per-process guard sticks.
+            git_norm=$(_fw_git_skip_globals "$cmd") || { [ $? -eq 2 ] && _fw_note_unknown_git_cwd; return 1; }
             git_sub=$(echo "$git_norm" | awk '{print $2}')
             # T-4367: --output[=FILE] on the diff-family verbs WRITES FILE.
             _fw_git_has_output_opt "$git_sub" "$git_norm" && return 1

@@ -1,13 +1,18 @@
 ---
 id: T-4662
-name: "T-4409: is_bash_safe_command refuses every git read when neither payload cwd nor PWD==PROJECT_ROOT is known; consumer test harnesses that source safe-commands.sh changed behaviour silently"
+name: "T-4409: is_bash_safe_command refuses every git read when neither payload cwd
+  nor PWD==PROJECT_ROOT is known; consumer test harnesses that source safe-commands.sh
+  changed behaviour silently"
 description: >
-  Decide whether the refusal is right for harness callers (no payload) and either document it as a contract change with an explicit opt-in, or fall back to a cwd that is knowable; add a test for the no-cwd caller. Source: 050-email-archive field report on be.3 upgrade (sidecar 5b5b40e9, 2026-10-22).
+  Decide whether the refusal is right for harness callers (no payload) and either
+  document it as a contract change with an explicit opt-in, or fall back to a cwd
+  that is knowable; add a test for the no-cwd caller. Source: 050-email-archive field
+  report on be.3 upgrade (sidecar 5b5b40e9, 2026-10-22).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T20:29:59Z
-last_update: 2026-10-22T20:29:59Z
-date_finished: null
+last_update: 2026-10-22T22:13:55Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T20:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T20:45:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4662: T-4409: is_bash_safe_command refuses every git read when neither payload cwd nor PWD==PROJECT_ROOT is known; consumer test harnesses that source safe-commands.sh changed behaviour silently
@@ -62,8 +94,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A caller with no hook payload (no `_FW_PAYLOAD_CWD`, `$PWD` not PROJECT_ROOT) that asks `is_bash_safe_command "git status"` is still refused (T-4409 kept), and stderr names the reason and the opt-in (`_FW_PAYLOAD_CWD`), at most once per process
+- [x] The documented opt-in works: the same harness call with `_FW_PAYLOAD_CWD=<abs dir inside PROJECT_ROOT>` returns SAFE, with nothing on stderr
+- [x] Foreign-repo refusal unchanged: `_FW_PAYLOAD_CWD=/tmp/evil` (outside PROJECT_ROOT) and `cd /tmp/evil && git status` stay NOT SAFE, and print no harness note (the cwd is known, just foreign)
+- [x] The contract is written in the safe-commands.sh header; regression bats `tests/unit/t4662_safe_commands_no_cwd_contract.bats` passes, and existing safe-commands/git suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +283,13 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 300 bats tests/unit/t4662_safe_commands_no_cwd_contract.bats > /tmp/.t4662.out 2>&1 && ! grep -q "^not ok" /tmp/.t4662.out
+test "$(grep -c '# skip' /tmp/.t4662.out)" -eq 0
+timeout 600 bats tests/unit/t4409_git_cwd_repo_boundary.bats tests/unit/t4343_git_repo_path_boundary.bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats > /tmp/.t4662b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4662b.out
+test "$(grep -c '# skip' /tmp/.t4662b.out)" -eq 0
+bash -n agents/context/lib/safe-commands.sh
+bin/fw vendor self --check --task T-4662
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -264,6 +305,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after the be.3 upgrade, a consumer (050-email-archive) test harness that sources `agents/context/lib/safe-commands.sh` and calls `is_bash_safe_command "git status"` with no hook payload started getting NOT SAFE. Nothing said why.
+
+**Root cause:** T-4409 made the git arm require a known effective cwd inside PROJECT_ROOT (`_fw_git_skip_globals`, agents/context/lib/safe-commands.sh:635; `is_commit_checkpoint_command` :2406). The starting cwd comes from `_fw_initial_git_cwd` (:193): an absolute `_FW_PAYLOAD_CWD`, else `$PWD` only when it equals PROJECT_ROOT, else unknown. A harness has no payload, and its `$PWD` is usually a bats temp dir or a subdirectory, so the cwd is unknown and the call fails closed. The refusal is deliberate. What was missing was a contract: `_FW_PAYLOAD_CWD` was a private variable set by `check-active-task.sh:170`, the refusal was silent, and nothing in the library said that callers without a payload must supply it.
+
+**Why structurally allowed:** T-4409 updated the framework's own suites so they export `_FW_PAYLOAD_CWD`. That fixed this repo's callers without making the requirement visible to callers in other repos. A boolean predicate that fails closed with no message cannot be told apart from a predicate that changed its rules.
+
+**Prevention:** the library header now states the contract. A refusal caused by an unknown cwd, when no payload cwd was given, prints a one-time stderr note that names `_FW_PAYLOAD_CWD`. `tests/unit/t4662_safe_commands_no_cwd_contract.bats` pins three things: the note, the opt-in, and the unchanged foreign-repo refusal.
 
 ## Evolution
 
@@ -329,6 +378,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-23 — refusal kept, made an explicit contract
+- **Chose:** keep T-4409's refusal for callers with no known cwd. Make `_FW_PAYLOAD_CWD=<absolute cwd>` the documented opt-in for harness callers (it is the variable the hook already sets, so the harness and the hook take one code path). Print a one-time stderr reason when a git clause is refused only because the cwd is unknown and no payload cwd was given.
+- **Why:** the hook process's `$PWD` does not follow the Bash tool's shell cwd, which persists across calls. "`$PWD` inside PROJECT_ROOT" would therefore not tell us where the shell is. It is a narrower form of the T-4409 red row (`git status`, no payload cwd, hook PWD=/tmp → SAFE). A harness knows its own cwd and can state it in one export.
+- **Rejected:** (a) fall back to `$PWD` when it resolves inside PROJECT_ROOT: reopens T-4409 for any hook payload missing `cwd` while the hook runs from a project subdirectory. (b) a new public `FW_*` env var: a second name for the same value, plus registry and parity overhead, for no extra safety.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -345,3 +399,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4662-t-4409-isbashsafecommand-refuses-every-g.md
 - **Context:** Initial task creation
+
+### 2026-10-22T22:13:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
