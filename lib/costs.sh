@@ -61,8 +61,13 @@ costs_help() {
 # budget-gate.sh:255, session-metrics.sh:44) already walk the union and pick
 # the globally-newest *.jsonl; `fw costs` was the remaining single-dir consumer.
 # Callers should iterate the lines and union the JSONL set.
+#
+# T-4618: `|| true` — fw_claude_project_dirs returns 1 when its last candidate
+# dir is missing (a non-git project with no transcripts), and under set -e the
+# caller's `jsonl_dir=$(...)` then exited 1 silently, before the parser could
+# print "No JSONL directory found".
 _costs_jsonl_dir() {
-    fw_claude_project_dirs
+    fw_claude_project_dirs || true
 }
 
 # Main token parsing — Python for streaming performance on large files.

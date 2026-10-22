@@ -1,13 +1,17 @@
 ---
 id: T-4618
-name: "fw_costs.bats and fw_plugin_audit.bats need host ~/.claude state (projects JSONL, enabled plugins)"
+name: "fw_costs.bats and fw_plugin_audit.bats need host ~/.claude state (projects
+  JSONL, enabled plugins)"
 description: >
-  tests/integration/fw_costs.bats (2) fail 'No JSONL directory found' and fw_plugin_audit.bats expects enabled plugins in ~/.claude/settings.json. Sibling of T-4583 (lib_costs). Tests should build a fixture HOME instead of reading the operator's. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (lines 32-33, 40). Triaged in T-4589.
+  tests/integration/fw_costs.bats (2) fail 'No JSONL directory found' and fw_plugin_audit.bats
+  expects enabled plugins in ~/.claude/settings.json. Sibling of T-4583 (lib_costs).
+  Tests should build a fixture HOME instead of reading the operator's. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
+  (lines 32-33, 40). Triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -39,8 +43,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:50:31Z
-last_update: 2026-10-22T08:50:31Z
-date_finished: null
+last_update: 2026-10-22T11:20:09Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +55,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:00:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:00:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4618: fw_costs.bats and fw_plugin_audit.bats need host ~/.claude state (projects JSONL, enabled plugins)
@@ -63,8 +94,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] tests/integration/fw_costs.bats sets HOME to a temp dir and builds `~/.claude/projects/<encoded PROJECT_ROOT>/<id>.jsonl` with a usage entry; it never reads the real ~/.claude
+- [x] fw_costs.bats asserts on the fixture's numbers (summary shows its token total, session table lists the fixture session id), not merely exit 0
+- [x] tests/integration/fw_plugin_audit.bats sets HOME to a temp dir with `.claude/settings.json` enabledPlugins and one fixture plugin (one task-aware and one task-silent skill), and asserts the exact Summary counts
+- [x] Both files pass in the foreground with HOME pointed at an empty temp dir, with no skips
+- [x] lib_costs.bats (T-4583 sibling) still passes with an empty HOME
+- [x] `fw costs` in a non-git project with no transcripts prints "No JSONL directory found" and exits non-zero, instead of exiting 1 silently (found by the new negative test; fixed at lib/costs.sh `_costs_jsonl_dir`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,22 +284,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+H=$(mktemp -d); HOME=$H timeout 300 bats tests/integration/fw_costs.bats tests/integration/fw_plugin_audit.bats tests/unit/lib_costs.bats > /tmp/.t4618.out 2>&1; rc=$?; rm -rf "$H"; [ $rc -eq 0 ] && ! grep -q "^not ok" /tmp/.t4618.out
+test "$(grep -c '# skip' /tmp/.t4618.out)" -eq 0
+grep -q 'HOME=' tests/integration/fw_costs.bats && grep -q 'HOME=' tests/integration/fw_plugin_audit.bats
+bin/fw vendor self --check --task T-4618
 
 ## Evolution
 
@@ -289,6 +312,18 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** In the clean cloud runner, fw_costs.bats tests 2-3 fail with `ERROR: No JSONL directory found (candidates: '')`, and fw_plugin_audit.bats test 2 fails because the output is only "No enabled plugins found in ~/.claude/settings.json".
+
+**Root cause:** Both files run the real code against the real `$HOME`. `lib/paths.sh:305` (`fw_claude_project_dirs`) builds the transcript dir from `${HOME}/.claude/projects`, and `lib/costs.sh:166` exits 1 when no such dir exists. `agents/audit/plugin-audit.sh:22-24` reads `$HOME/.claude/settings.json` and the plugin cache, and `plugin-audit.sh:155-157` exits 0 before printing the Summary when no plugins are enabled. Neither test file built a fixture. fw_costs.bats did not set PROJECT_ROOT either, so it also measured the framework repo's own live transcripts.
+
+**Why structurally allowed:** On the operator's host `~/.claude` always has transcripts and enabled plugins, so the tests always passed there. Nothing ran the suite with an empty HOME until the T-4508 cloud run. The plugin-audit assertions were also OR-chains loose enough that the "no plugins" path passed test 1.
+
+**Second defect found by the fix:** with no transcripts in a non-git project, `fw costs` exited 1 with no output. `fw_claude_project_dirs` (lib/paths.sh:330) ends on `[ -d "$dir" ] && printf`, so it returns 1 when its only candidate is missing. In lib/costs.sh (`set -euo pipefail`), `jsonl_dir=$(_costs_jsonl_dir)` then aborted costs_main before the parser could print "No JSONL directory found". In a git repo the second, deduplicated root ends the loop on `continue`, so the status was 0 and the error printed. That is why the cloud run showed the message. Fixed with `|| true` in `_costs_jsonl_dir`. The gauge callers read the function through process substitution, which ignores its status, so they are unaffected.
+
+**Prevention:** Each file now owns a temp HOME with the fixture it needs, and asserts on fixture-specific values. The task's Verification runs both files with HOME pointed at an empty temp dir. Same pattern as T-4583 (lib_costs.bats).
 
 ## Recommendation
 
@@ -346,3 +381,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4618-fwcostsbats-and-fwpluginauditbats-need-h.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:20:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
