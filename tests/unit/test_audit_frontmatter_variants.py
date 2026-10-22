@@ -18,7 +18,9 @@ warning rather than on a re-implemented classifier is the point: the classifier 
 changed, so a test that re-implements it would agree with itself.
 """
 
+import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -90,7 +92,14 @@ SILENT_WARN = "description content parsed as frontmatter keys"
 LOUD_WARN = "have unparseable YAML"
 
 
-def _run_audit(tmp_path: Path, fixtures: dict[str, str]) -> str:
+IMPORT_WARN = "could not import web.shared"
+
+
+def _run_audit(tmp_path: Path, fixtures: dict[str, str], python_dir: str | None = None) -> str:
+    # T-4612: audit.sh calls bare `python3`. A fixed PATH picked /usr/bin/python3 in the cloud
+    # clone, which lacked flask (installed for the interpreter running pytest), so the check
+    # under test never ran. Put this interpreter's directory first.
+    python_dir = python_dir or os.path.dirname(sys.executable)
     root = tmp_path / "root"
     (root / ".tasks" / "active").mkdir(parents=True)
     (root / ".tasks" / "completed").mkdir(parents=True)
@@ -105,7 +114,7 @@ def _run_audit(tmp_path: Path, fixtures: dict[str, str]) -> str:
         ["bash", str(AUDIT), "--section", "structure"],
         cwd=str(REPO),
         env={
-            "PATH": "/usr/bin:/bin:/usr/local/bin",
+            "PATH": f"{python_dir}:/usr/bin:/bin:/usr/local/bin",
             "HOME": str(tmp_path),
             "PROJECT_ROOT": str(root),
         },
@@ -114,6 +123,31 @@ def _run_audit(tmp_path: Path, fixtures: dict[str, str]) -> str:
     out = proc.stdout + proc.stderr
     assert "STRUCTURE CHECKS" in out, f"audit did not run the structure section:\n{out[-3000:]}"
     return out
+
+
+def test_unimportable_web_shared_is_reported_not_skipped(tmp_path):
+    """T-4612: web/shared.py present but its deps missing for `python3` must WARN.
+
+    The check used to `sys.exit(0)` on any ImportError, so a host whose `python3` lacked
+    flask lost the whole check with no output — which is how the three tests above went
+    red only in the cloud. A `flask` that raises on import stands in for "not installed".
+    """
+    shim = tmp_path / "pyshim"
+    blocker = tmp_path / "blocker"
+    shim.mkdir()
+    blocker.mkdir()
+    (blocker / "flask.py").write_text("raise ImportError('flask blocked for T-4612 test')\n")
+    py = shim / "python3"
+    py.write_text(f'#!/bin/sh\nPYTHONPATH="{blocker}" exec "{sys.executable}" "$@"\n')
+    py.chmod(0o755)
+    out = _run_audit(tmp_path, {"T-9002-loud.md": LOUD}, python_dir=str(shim))
+    assert IMPORT_WARN in out, f"audit skipped the frontmatter check silently:\n{out[-3000:]}"
+    assert LOUD_WARN not in out, out[-3000:]
+
+
+def test_working_interpreter_does_not_warn_about_import(tmp_path):
+    out = _run_audit(tmp_path, {"T-9003-clean.md": CLEAN})
+    assert IMPORT_WARN not in out, out[-3000:]
 
 
 def test_silent_truncation_is_reported(tmp_path):

@@ -1,13 +1,20 @@
 ---
 id: T-4612
-name: "test_audit_frontmatter_variants.py fails deterministically in the clean cloud clone, passes on the dev host"
+name: "test_audit_frontmatter_variants.py fails deterministically in the clean cloud
+  clone, passes on the dev host"
 description: >
-  All 3 tests fail in the cloud (audit stopped flagging unparseable frontmatter / silent truncation; output shows the tests/lint invariant-suite INFO), pass here at HEAD. The test drives audit.sh with a scratch PROJECT_ROOT and a web/ symlink; localise the env difference (clone path, missing module making the web.shared import skip silently) — a silent skip of the check is itself the defect class the test exists to catch. Not reproduced on this host. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (lines 184-186). Triaged in T-4589.
+  All 3 tests fail in the cloud (audit stopped flagging unparseable frontmatter /
+  silent truncation; output shows the tests/lint invariant-suite INFO), pass here
+  at HEAD. The test drives audit.sh with a scratch PROJECT_ROOT and a web/ symlink;
+  localise the env difference (clone path, missing module making the web.shared import
+  skip silently) — a silent skip of the check is itself the defect class the test
+  exists to catch. Not reproduced on this host. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
+  (lines 184-186). Triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -39,8 +46,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:47:49Z
-last_update: 2026-10-22T08:47:49Z
-date_finished: null
+last_update: 2026-10-22T11:28:08Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:00:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:00:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4612: test_audit_frontmatter_variants.py fails deterministically in the clean cloud clone, passes on the dev host
@@ -63,8 +97,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cloud failure reproduced locally by matching the environment difference (a `python3` first on PATH that cannot import `web.shared`'s deps)
+- [x] `agents/audit/audit.sh` no longer skips the task-frontmatter check silently when `web/shared.py` exists but cannot be imported: it emits a WARN naming the import error (the consumer case — no `web/shared.py` — stays silent)
+- [x] `tests/unit/test_audit_frontmatter_variants.py` runs audit with the interpreter that runs the test (its directory first on PATH), so it no longer depends on which `python3` the host puts in /usr/bin
+- [x] Regression test drives audit.sh with a `python3` that cannot import flask and asserts the WARN appears; it fails against the pre-fix audit.sh
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4612` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +286,8 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 python3 -m pytest tests/unit/test_audit_frontmatter_variants.py -q -p no:cacheprovider > /tmp/.t4612.out 2>&1 && grep -q passed /tmp/.t4612.out && ! grep -qE "failed|skipped" /tmp/.t4612.out
+bin/fw vendor self --check --task T-4612
 
 ## RCA
 
@@ -265,6 +304,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** In the cloud clone, 3 tests in `tests/unit/test_audit_frontmatter_variants.py` failed: audit printed neither the unparseable-YAML nor the silent-truncation WARN. They passed on the dev host.
+
+**Root cause:** `agents/audit/audit.sh:1517-1520` (pre-fix) ran `from web.shared import parse_frontmatter` under bare `python3` and did `sys.exit(0)` on *any* ImportError, intending "web/ absent (consumer project)". `web/shared.py` imports flask (`web/shared.py:14`). The test pins `PATH=/usr/bin:/bin:/usr/local/bin`; in the cloud `/usr/bin/python3` (3.12) had no flask — the deps were installed for the 3.11.17 interpreter running pytest — so `ModuleNotFoundError` took the consumer branch and the whole check vanished with no output. On the dev host /usr/bin/python3 has flask, so it ran.
+
+**Why structurally allowed:** the skip conflated "web/ is not here" with "web/ is here but cannot be imported", and printed nothing in either case — exactly the silent-skip class the test's own comment warns about. The test guarded against the first (it symlinks web/) but inherited the second through its hard-coded PATH. No check ever reported that the frontmatter check had not run.
+
+**Prevention:** audit.sh now skips silently only when `web/shared.py` does not exist; an import failure with the file present emits `WARN Task frontmatter: check did not run — could not import web.shared with <python3>`. The test drives audit with its own interpreter first on PATH, and `test_unimportable_web_shared_is_reported_not_skipped` pins the WARN with a `flask` that raises on import (deterministic on any host).
 
 ## Evolution
 
@@ -289,6 +336,11 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-22 — reproduced locally
+- **What changed:** the cloud difference was the interpreter, not the clone path: the cloud's pytest ran on python 3.11.17 (not Ubuntu 24.04's /usr/bin/python3 3.12), and the test's fixed PATH `/usr/bin:/bin:/usr/local/bin` made audit.sh's bare `python3` resolve to /usr/bin/python3, which had no flask. Reproduced here with a `python3 -S` shim first on PATH (`/tmp/t4612/repro.sh`): pre-fix, 0 lines of output from the check; post-fix, the new WARN.
+- **Plan impact:** none — fix both legs (audit loud, test uses its own interpreter).
+- **Triggered:** nothing new.
 
 ## Recommendation
 
@@ -346,3 +398,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4612-testauditfrontmattervariantspy-fails-det.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:28:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

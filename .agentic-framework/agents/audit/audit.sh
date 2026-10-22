@@ -1514,10 +1514,16 @@ fm_parse_out=$(
     } | python3 -c "
 import sys
 sys.path.insert(0, '$PROJECT_ROOT')
+import os
 try:
     from web.shared import parse_frontmatter
-except ImportError:
-    sys.exit(0)  # web/ not present (consumer project) — skip silently
+except ImportError as e:
+    if not os.path.exists(os.path.join('$PROJECT_ROOT', 'web', 'shared.py')):
+        sys.exit(0)  # web/ not present (consumer project) — skip silently
+    # T-4612: web/shared.py is here but this python3 cannot import it (e.g. flask
+    # installed for another interpreter). Skipping silently made the check vanish.
+    print(f'IMPORT\t{type(e).__name__}: {e}')
+    sys.exit(0)
 for line in sys.stdin:
     tf = line.rstrip('\n')
     if not tf:
@@ -1548,6 +1554,12 @@ for line in sys.stdin:
 while IFS=$'\t' read -r rc tf; do
     [ -z "$rc" ] && continue
     [ "$rc" = "0" ] && continue
+    if [ "$rc" = "IMPORT" ]; then
+        warn "Task frontmatter: check did not run — could not import web.shared with $(command -v python3)" \
+             "$tf" \
+             "The check reads frontmatter through web.shared.parse_frontmatter; install its dependencies (pyyaml, flask) for this python3, or put the interpreter that has them first on PATH."
+        continue
+    fi
     tf_rel="${tf#$PROJECT_ROOT/}"
     # T-2779: rc=4 is a separate class with a separate repair, so it gets its own counter.
     # Merging it into the unparseable count would tell the operator a number without
