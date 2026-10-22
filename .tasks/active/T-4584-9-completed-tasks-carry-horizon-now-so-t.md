@@ -1,13 +1,19 @@
 ---
 id: T-4584
-name: "9 completed tasks carry horizon: next, so t3118_horizon_migration_scope.bats test 8 (CTL-030) is red"
+name: "9 completed tasks carry horizon: next, so t3118_horizon_migration_scope.bats
+  test 8 (CTL-030) is red"
 description: >
-  tests/unit/t3118_horizon_migration_scope.bats:154-164 asserts every .tasks/completed/T-*.md has a null/absent horizon. On bleeding-edge e785e48b9, 9 completed tasks have 'horizon: next' (e.g. T-100194, T-100195, T-100196, T-1792, T-1794, T-2121, T-2389, T-2401, T-2411). Find which close path writes horizon on completion (or which hand move left it), migrate those files to null, and make that path stop. Named in cloud report 2 (T-4508); reproduces on the live tree, not env.
+  tests/unit/t3118_horizon_migration_scope.bats:154-164 asserts every .tasks/completed/T-*.md
+  has a null/absent horizon. On bleeding-edge e785e48b9, 9 completed tasks have 'horizon:
+  next' (e.g. T-100194, T-100195, T-100196, T-1792, T-1794, T-2121, T-2389, T-2401,
+  T-2411). Find which close path writes horizon on completion (or which hand move
+  left it), migrate those files to null, and make that path stop. Named in cloud report
+  2 (T-4508); reproduces on the live tree, not env.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, cloud]
 components: []
 related_tasks: [T-4575, T-4508]
@@ -39,8 +45,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T07:46:07Z
-last_update: 2026-10-22T07:46:07Z
-date_finished: null
+last_update: '2026-10-22T08:00:45Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +57,55 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:55:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T08:00:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=301,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4584: 9 completed tasks carry horizon: now, so t3118_horizon_migration_scope.bats test 8 (CTL-030) is red
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reproduced on bleeding-edge a1b0b13a1: 9 files in `.tasks/completed/` carry `horizon: now`
+(T-3735, T-3760, T-4433, T-4434, T-4436, T-4481, T-4486, T-4502, T-4507). The description's
+"horizon: next" and its example ids were stale; the set and value changed, the defect did not.
+All 9 also read `status: started-work`, `date_finished:` empty, and each arrived in
+`completed/` as an R100 rename (identical content to its last active/ blob), in 93906bc23,
+70c298efd, 0b1f863e9 and b300438bc.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause localised to file:line and recorded in ## RCA
+- [x] Pre-commit refuses a staged `.tasks/completed/` blob whose frontmatter horizon is non-null, including the R100 `git mv` of an unclosed task that the stale-index guard used to pass as "the normal move"
+- [x] The 9 affected files in .tasks/completed/ are migrated to `horizon: null`
+- [x] Regression tests in tests/unit/t4167_stale_index_guard.bats: the R100 unclosed move is refused (red before the fix), a closed move (horizon null) and a horizon-less move stay allowed
+- [x] tests/unit/t3118_horizon_migration_scope.bats is fully green (test 8 / CTL-030 included)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -250,7 +291,40 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 600 bats tests/unit/t4167_stale_index_guard.bats > /tmp/.t4584-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4584-a.out
+test "$(grep -c '# skip' /tmp/.t4584-a.out)" -eq 0
+timeout 600 bats tests/unit/t3118_horizon_migration_scope.bats > /tmp/.t4584-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4584-b.out
+test -z "$(grep -h '^horizon:' .tasks/completed/T-*.md | grep -vE '^horizon:[[:space:]]*(null|~)?[[:space:]]*(#.*)?$')"
+bin/fw vendor self --check --task T-4584
+
 ## RCA
+
+**Symptom:** t3118 test 8 (CTL-030) red: 9 `.tasks/completed/` files carry `horizon: now`. Each
+is wholly pre-close: `status: started-work`, empty `date_finished`, no close entry in Updates,
+though its episodic (untracked) shows the close ran. Each landed as an R100 rename.
+
+**Root cause:** the close stages its move in two steps far apart.
+`agents/task-create/update-task.sh:2804` (and :2122, the partial-complete recheck) runs
+`git mv active/X completed/X`, which carries the index entry's OLD blob (pre-close content)
+to the new path. The closed content is only re-staged by the T-4094 postcondition at
+`update-task.sh:3181`, after verification and episodic generation (minutes later). Any
+index-based commit in that window (another worker or the parent sharing the index), or a
+failed final `git add` (index.lock, WARNING only), commits the R100 rename of an unclosed
+task. Whatever then resets the working copy to HEAD leaves it there for good. No close
+path WRITES the horizon; it is the stale blob's original value.
+
+**Why structurally allowed:** the pre-commit stale-index guard (T-4167),
+`agents/git/lib/stale-index-guard.py:80-83`, inspects exactly this rename and skips it:
+"Pure rename of HEAD's content is the normal move". That premise is false for
+`completed/`: a finished close never stages a pure rename, because status, horizon and
+date_finished all change. CTL-030 is checked only after the fact (audit, t3118), so the
+broken commits landed and were found days later by a cloud report.
+
+**Prevention:** the guard now also refuses any staged `.tasks/completed/` blob whose
+frontmatter `horizon:` is not null (CTL-030 at commit time, read from the index git is
+committing, so it covers a scratch index and `commit --only` too). The R100 unclosed move,
+a hand `mv`, and a stale read-modify-write all fail at commit instead of landing. Pinned by
+three tests in t4167_stale_index_guard.bats.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -321,6 +395,17 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-22 — where to stop the path
+- **Chose:** refuse at pre-commit (stale-index guard), on the staged blob, keyed on location + frontmatter horizon.
+- **Why:** no close path writes the horizon; the bad state is a stale index entry committed in update-task's move→restage window, by whoever commits. Only the commit sees every route (shared index, scratch index, `commit --only`, hand `mv`). Narrowing update-task's window (stage closed content right after the move) would still leave the episodic/verification minutes and other routes open.
+- **Rejected:** also refusing `status != work-completed` in completed/ — broader, but out of this task's scope; the 9 records still read `status: started-work`, so it would block migrating them.
+
+### 2026-10-22 — open items for the parent (not done here)
+1. **Migration committed for 6 of 9.** T-4433, T-4434 and T-4436 also carry uncommitted BVP-estimator edits (cost_estimate, reflowed name, `date_finished: null` → empty, written 2026-10-22T07:45:58Z, before this worker). The shell-write gate refuses staging a horizon-only blob for task paths, so committing them would take that foreign edit too. Their working copies are migrated (t3118 test 8 green on disk); the parent decides whether to commit them whole: `git commit -m "T-4584: ..." -- <the 3 paths>`.
+2. **The 9 records are pre-close content** (`status: started-work`, empty date_finished, no close entry in Updates), though their episodics show the closes ran. Restoring status/date_finished is a records decision for the operator/parent (closed-record gate T-4285). Recommend: restore `status: work-completed` and date_finished from each episodic's `completed:`.
+3. **Episodics for 8 of them are untracked** (.context/episodic/T-{3735,4433,4434,4436,4481,4486,4502,4507}.yaml).
+4. `bin/migrate-horizon-null-completed.sh` treats any argument but `--dry-run` as a real run (`--help` migrates). It ran here by accident, on exactly these 9 files. Worth its own small task.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -346,3 +431,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4584-9-completed-tasks-carry-horizon-now-so-t.md
 - **Context:** Initial task creation
+
+### 2026-10-22T07:55:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

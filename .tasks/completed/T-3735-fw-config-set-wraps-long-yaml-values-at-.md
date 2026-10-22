@@ -13,7 +13,7 @@ description: >
 status: started-work
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, config, consumer, ring20-report, T-3731]
 components: []
 related_tasks: []

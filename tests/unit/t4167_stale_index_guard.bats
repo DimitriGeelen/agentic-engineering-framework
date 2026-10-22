@@ -150,3 +150,38 @@ _commit() { run git -C "$REPO" commit -m "T-001: $1"; }
     grep -q "flag: 'FW_ALLOW_STALE_INDEX=1'" "$REPO/.context/working/.gate-bypass-log.yaml"
     grep -q "paths: '.tasks/active/T-001-x.md'" "$REPO/.context/working/.gate-bypass-log.yaml"
 }
+
+# T-4584: a close stages `git mv active/X completed/X` (HEAD's pre-close blob) minutes
+# before it re-stages the closed content; a commit in between landed 9 unclosed tasks in
+# completed/ with `horizon: now`. A pure rename was waved through as "the normal move".
+_unclosed_task() {
+    printf -- '---\nid: T-003\nstatus: started-work\nhorizon: now\n---\n# T-003\n' \
+        > "$REPO/.tasks/active/T-003-z.md"
+    _commit_all "T-003: started"
+}
+
+@test "T-4584: git mv of an unclosed task (horizon set) into completed/ is refused" {
+    _unclosed_task
+    git -C "$REPO" mv .tasks/active/T-003-z.md .tasks/completed/T-003-z.md
+    _commit move
+    [ "$status" -ne 0 ]
+    [[ "$output" == *".tasks/completed/T-003-z.md"* ]]
+    [[ "$output" == *"horizon: now"* ]]
+}
+
+@test "T-4584: the closed move (horizon: null re-staged) is allowed" {
+    _unclosed_task
+    git -C "$REPO" mv .tasks/active/T-003-z.md .tasks/completed/T-003-z.md
+    sed -i 's/^status:.*/status: work-completed/; s/^horizon:.*/horizon: null/' \
+        "$REPO/.tasks/completed/T-003-z.md"
+    git -C "$REPO" add .tasks/completed/T-003-z.md
+    _commit close
+    [ "$status" -eq 0 ]
+}
+
+@test "T-4584: horizon in the body, not the frontmatter, does not trip the check" {
+    printf -- '---\nid: T-004\nhorizon: null\n---\nhorizon: now\n' > "$REPO/.tasks/completed/T-004-w.md"
+    git -C "$REPO" add .tasks/completed/T-004-w.md
+    _commit body
+    [ "$status" -eq 0 ]
+}

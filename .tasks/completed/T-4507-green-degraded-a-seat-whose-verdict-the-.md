@@ -17,7 +17,7 @@ description: >
 status: started-work
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [reviewer, judge, bug, green-degraded]
 components: []
 related_tasks: [T-4456, T-4490]

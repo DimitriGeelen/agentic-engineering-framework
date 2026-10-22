@@ -22,6 +22,11 @@ It reads the index git is about to commit: every git call inherits
 GIT_INDEX_FILE, which git sets for hooks when it commits from a temporary index
 (`git commit --only`, `git commit <paths>`, a scratch index). Never unset it.
 
+T-4584: a pure rename is not always the normal move. A staged
+`.tasks/completed/` blob whose frontmatter horizon is not null is an unclosed task
+(the close's `git mv` staged before its closed content was): refused too, same
+override (see archived_horizon_hits).
+
 Exit 0 = nothing qualifies (or override), 1 = refused, 0 with a WARNING when git
 itself cannot answer (a guard must not block every commit on its own failure).
 
@@ -31,6 +36,7 @@ pre-commit gates still run.
 """
 import datetime
 import os
+import re
 import subprocess
 import sys
 
@@ -96,6 +102,40 @@ def staged_changes():
             yield "R" if src != dst else "A", src, dst, None, new_sha
 
 
+ARCHIVE = ".tasks/completed/"
+NULL_HORIZON = re.compile(r"^horizon:[ \t]*(null|~)?[ \t]*(#.*)?$")
+
+
+def archived_horizon_hits():
+    """T-4584: staged .tasks/completed/ blobs whose frontmatter horizon is not null.
+
+    A close stages `git mv active/X completed/X` — HEAD's PRE-close blob at the new
+    path — minutes before it re-stages the closed content (update-task.sh T-4094
+    postcondition). A commit in that window lands a pure rename of an unclosed task,
+    which staged_changes() skips as "the normal move". A finished close never stages
+    a pure rename, and an archived task always carries horizon: null (CTL-030), so
+    check that here, on the index git is committing."""
+    r = git("diff-index", "--cached", "--name-only", "--diff-filter=ACMR", "-z", "HEAD",
+            "--", ARCHIVE)
+    if r.returncode != 0:
+        raise RuntimeError(r.stderr.strip() or "git diff-index failed")
+    hits = []
+    for path in (p for p in r.stdout.split("\0") if p.endswith(".md")):
+        blob = git("cat-file", "-p", ":" + path)
+        if blob.returncode != 0:
+            continue
+        lines = blob.stdout.splitlines()
+        if not lines or lines[0].strip() != "---":
+            continue
+        for line in lines[1:]:
+            if line.strip() == "---":
+                break
+            if line.startswith("horizon:") and not NULL_HORIZON.match(line):
+                hits.append((path, line.strip()))
+                break
+    return hits
+
+
 def history(paths):
     """Map path -> {blob: commit} over HEAD's history (most recent commit wins)."""
     # Pathspec matching is per-entry x per-pathspec: a few exact paths walk the
@@ -157,13 +197,36 @@ def main():
     if git("rev-parse", "-q", "--verify", "HEAD").returncode != 0:
         return 0  # initial commit: there is no history to revert to
     try:
+        archived = archived_horizon_hits()
         cands = list(staged_changes())
-        if not cands:
-            return 0
-        hist = history({c[1] for c in cands})
+        hist = history({c[1] for c in cands}) if cands else {}
     except RuntimeError as e:
         print(f"WARNING: stale-index guard (T-4167) could not run: {e}", file=sys.stderr)
         return 0
+
+    if archived:
+        if os.environ.get(OVERRIDE) == "1":
+            print(f"WARN: stale-index guard bypassed via {OVERRIDE}=1 (Tier-2, logged) — "
+                  f"{len(archived)} archived task(s) with a non-null horizon", file=sys.stderr)
+            log_bypass(root, archived)
+        else:
+            print("", file=sys.stderr)
+            print("ERROR: Commit blocked — staged .tasks/completed/ file is not a closed task "
+                  "(T-4584, CTL-030):", file=sys.stderr)
+            for path, line in archived:
+                print(f"  {path}: {line} (an archived task carries horizon: null)",
+                      file=sys.stderr)
+            print("", file=sys.stderr)
+            print("Usually a close is still running: its `git mv` staged the PRE-close blob and",
+                  file=sys.stderr)
+            print("the closed content is staged at the end. Re-stage the working copy:",
+                  file=sys.stderr)
+            print("  git add <path>     (or leave it out:  git commit -- <your paths>)",
+                  file=sys.stderr)
+            print("If the working copy is unclosed too: fw task update T-XXX --status work-completed",
+                  file=sys.stderr)
+            print(f"Deliberate:  {OVERRIDE}=1 git commit ...   (Tier-2, logged)", file=sys.stderr)
+            return 1
 
     hits = []
     for kind, hpath, path, head_blob, blob in cands:
