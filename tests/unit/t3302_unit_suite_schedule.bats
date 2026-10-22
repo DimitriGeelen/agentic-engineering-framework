@@ -392,6 +392,8 @@ PY
     grep -q 'Invariant suite (tests/lint): \$_red of \$_total' "$REPO_ROOT/agents/audit/audit.sh"
     # T-3650: the unit-suite corpus is named from the report's own suite_dir,
     # not a literal (tests/unit is only true in this repo).
-    grep -qF '_us_label="Unit suite${_us_dir:+ ($_us_dir)}"' "$REPO_ROOT/agents/audit/audit.sh"
+    # T-4634: the corpus name is per kind (unit / integration), set once.
+    grep -qF '_us_name="Unit suite"' "$REPO_ROOT/agents/audit/audit.sh"
+    grep -qF '_us_label="$_us_name${_us_dir:+ ($_us_dir)}"' "$REPO_ROOT/agents/audit/audit.sh"
     grep -qF '"$_us_label green"' "$REPO_ROOT/agents/audit/audit.sh"
 }

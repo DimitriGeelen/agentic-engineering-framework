@@ -1,0 +1,264 @@
+schema: unit-suite-report-v2
+task: T-3302
+tier: null
+started: '2026-10-22T11:27:01Z'
+finished: '2026-10-22T12:00:52Z'
+suite_dir: /opt/999-Agentic-Engineering-Framework/tests/integration
+timeout_seconds: 3500
+pytest_reserve_seconds: 600
+jobs: 4
+file_timeout_seconds: 900
+wall_seconds: 2031
+timed_out: false
+interrupted: false
+runner_exit: 1
+failures_dir: failures/2026-10-22T11:27:01Z
+revision:
+  commit: cdbaa6101eb7958a51cb1555b451d7e228dcd887
+  tree: dirty
+tree_guard:
+  start: dirty
+  changed_count: 89
+  changed:
+  - ' M .agentic-framework/agents/audit/audit.sh'
+  - ?? .agentic-framework/agents/audit/integration-suite.sh
+  - ' M .agentic-framework/tools/corpus_lenses.yaml'
+  - ' M .context/audits/cron/LATEST-CRON.yaml'
+  - ' M .context/audits/full-audit-timing.yaml'
+  - ' M .context/audits/go-scope-unpropagated/LATEST.md'
+  - ' M .context/audits/orchestrator-LATEST.yaml'
+  - ' M .context/episodic/T-4183.yaml'
+  - ' M .context/episodic/T-4506.yaml'
+  - ' M .context/episodic/T-4575.yaml'
+  - ' M .context/episodic/T-4589.yaml'
+  - ' M .context/episodic/T-4591.yaml'
+  - ' M .context/episodic/T-4593.yaml'
+  - ' M .context/episodic/T-4594.yaml'
+  - ' M .context/episodic/T-4595.yaml'
+  - ' M .context/episodic/T-4596.yaml'
+  - ' M .context/episodic/T-4597.yaml'
+  - ' M .context/episodic/T-4598.yaml'
+  - ' M .context/episodic/T-4599.yaml'
+  - ' M .context/episodic/T-4600.yaml'
+  - ' M .context/episodic/T-4601.yaml'
+  - ' M .context/episodic/T-4602.yaml'
+  - ' M .context/episodic/T-4603.yaml'
+  - ' M .context/episodic/T-4605.yaml'
+  - ' M .context/episodic/T-4606.yaml'
+  - ' M .context/episodic/T-4608.yaml'
+  - ' M .context/episodic/T-4609.yaml'
+  - ' M .context/monitors/liveness-latest.yaml'
+  - ' M .context/monitors/liveness.jsonl'
+  - ' M .context/monitors/watchtower-rss-latest.yaml'
+  - ' M .context/monitors/watchtower-rss.jsonl'
+  - ?? .context/pickup/.id-allocation.lock
+  - ' M .context/project/decisions.yaml'
+  - ' M .context/project/metrics-history.yaml'
+  - ' M .context/sidecar/.gitignore'
+  - ?? .context/sidecar/direct-ack.jsonl
+  - -> .context/sidecar/inbox-state.json.lock
+  - -> .context/sidecar/liveness.yaml.1321696.tmp
+  - -> .context/sidecar/liveness.yaml.1467321.tmp
+  - -> .context/sidecar/peers.json
+  - -> .context/sidecar/receiver.pid
+  - -> .context/sidecar/receiver.port
+  - -> .context/sidecar/receiver.url
+  - -> .context/sidecar/waiting/closures.jsonl
+  - -> .context/sidecar/waiting/epoch
+  - -> .context/sidecar/waiting/escalations.jsonl
+  - ' D .context/working/.approval-notified'
+  - ' D .context/working/.edit-counter'
+  - ' M .context/working/.fabric-describe.last'
+  - ' M .context/working/.gate-bypass-log.yaml'
+  - ' M .context/working/.hook-counter'
+  - ' M .context/working/.loop-detect.json'
+  - ' M .context/working/.mirror-sync.log'
+  - ' M .context/working/.session-baseline'
+  - ' M .context/working/.stop-driver.log'
+  - ' M .context/working/.verb-counter'
+  - ' M .context/working/continuous-run.jsonl'
+  - ' M .context/working/feedback-stream.yaml'
+  - ' M .context/working/focus.yaml'
+  - ' M .context/working/session.yaml'
+  - -> .context/working/t4626/old.sh
+  - -> .context/working/t4631/ext.sh
+  - -> .context/working/t4631/repo/
+  - -> .context/working/t4631/tc-ran
+  - -> .context/working/t4631/tc.sh
+  - ?? .context/working/watchtower-ensure.log
+  - ' M .context/working/watchtower.pid'
+  - -> .tasks/active/T-4183-audit-mitigation-text-print-the-resolved.md
+  - ' M .tasks/active/T-4198-watchtower-settings-offer-a-mistral-la-p.md'
+  - ' M .tasks/active/T-4269-approvals-shows-continuous-run-is-runnin.md'
+  - -> .tasks/active/T-4290-human-criterion-stepsexpectedif-not-are-.md
+  - -> .tasks/active/T-4402-one-lens-definition-businesslogicaltechn.md
+  - ' M .tasks/active/T-4551-v11-aefio-follow-ups-ref-as-data-flow-jo.md'
+  - -> .tasks/active/T-4571-watchtower-filedocsstyle-guidemd-returns.md
+  - D  .tasks/active/T-4610-tasks-board-does-not-cap-the-started-wor.md
+  - -> .tasks/active/T-4612-testauditfrontmattervariantspy-fails-det.md
+  - -> .tasks/active/T-4613-testcockpitactivity-cloud-render-of-cock.md
+  - -> .tasks/active/T-4614-fw-pickup-send-without-termlink-saves-lo.md
+  - ' M .tasks/active/T-4616-nine-timingorder-sensitive-tests-from-th.md'
+  - ' M .tasks/active/T-4631-read-only-allowlist-git---ext-diff--text.md'
+  - ' M .tasks/active/T-4634-testsintegration-runs-in-no-gate-breakag.md'
+  - AM .tasks/completed/T-4610-tasks-board-does-not-cap-the-started-wor.md
+  - ' M agents/audit/audit.sh'
+  - ?? agents/audit/integration-suite.sh
+  - ' M tests/unit/t4491_runme_job_queue.bats'
+  - ' M tests/unit/test_sidecar_cli_peer_frame.py'
+  - ' M tests/unit/test_t4458_search_degrade.py'
+  - -> tests/web/test_t3627_watchtower_wedge.py
+  - ' M tools/corpus_lenses.yaml'
+  leaked: false
+legs:
+  bats:
+    files: 94
+    files_completed: 93
+    files_timed_out:
+    - fw_self_test.bats
+    files_not_run: 0
+    files_not_run_names: []
+    files_not_determined: []
+    budget_seconds: 2899
+    tests: 568
+    failed_count: 6
+    skipped: 2
+    exit: 124
+    failed:
+    - 'fw_onboarding_greenfield.bats: greenfield: doctor emits no PROJECT-SCOPE warning'
+    - 'fw_onboarding_greenfield.bats: greenfield: hooks resolve from a foreign CWD'
+    - 'fw_termlink.bats: fw termlink check: verifies installation'
+    - 't2922_greenfield_first_inception.bats: t2922: the placeholder URL carries the
+      configured port, not a bare path'
+    - 't2922_greenfield_first_inception.bats: t2922: _watchtower_base_or_placeholder
+      returns exit 2 + a URL when down'
+    - "upgrade_live_simulation.bats: T-2092: live upgrade end-to-end in docker container\
+      \ (\u22645 min, VERSION advances, bin/fw rewritten)"
+    error: null
+    file_durations:
+      fw_self_test.bats: 900
+      upgrade_live_simulation.bats: 530
+      t2501_claude_fw_drift.bats: 360
+      fw_test_onboarding.bats: 358
+      fw_init.bats: 289
+      readme_five_minute_by_hand.bats: 218
+      fw_setup.bats: 186
+      fw_onboarding_greenfield.bats: 169
+      fw_fabric.bats: 135
+      check_tier0.bats: 126
+      claude_fw_restart_terminator.bats: 100
+      fw_doctor.bats: 81
+      cron_install.bats: 67
+      t2922_greenfield_first_inception.bats: 66
+      t2499_supervision_notice.bats: 49
+      fw_validate_init.bats: 32
+      continuous_loop_auto_restart_advance.bats: 30
+      fw_docs.bats: 30
+      fw_vendor.bats: 30
+      handover_latest_symlink.bats: 25
+      claude_fw_startup_banner.bats: 22
+      fw_audit.bats: 17
+      budget_gate.bats: 15
+      check_project_boundary.bats: 14
+      fw_handover.bats: 14
+      fw_work_on.bats: 14
+      error_watchdog.bats: 13
+      check_active_task.bats: 12
+      fw_pickup.bats: 12
+      fw_test_cmd.bats: 11
+      fw_upstream.bats: 10
+      budget_gauge_stdin_transcript.bats: 9
+      continuous_loop_critical_signal.bats: 9
+      test_single_host_parallel.bats: 9
+      fw_inception.bats: 8
+      fw_resume.bats: 8
+      review_queue_arc.bats: 8
+      fw_task.bats: 7
+      test_framework_mcp_server.bats: 7
+      continuous_loop.bats: 6
+      fw_config.bats: 6
+      fw_healing.bats: 6
+      fw_upgrade.bats: 6
+      audit_blocks_review_and_decide.bats: 5
+      fw_context.bats: 5
+      fw_notify.bats: 5
+      fw_cron.bats: 4
+      fw_promote.bats: 4
+      fw_scan.bats: 4
+      fw_self_audit.bats: 4
+      verify_acs_arc.bats: 4
+      fw_dispatch.bats: 3
+      fw_git.bats: 3
+      fw_metrics.bats: 3
+      fw_plugin_audit.bats: 3
+      fw_practices.bats: 3
+      fw_recall.bats: 3
+      check_dispatch.bats: 2
+      check_fabric_new_file.bats: 2
+      fw_approvals.bats: 2
+      fw_ask.bats: 2
+      fw_assumption.bats: 2
+      fw_build.bats: 2
+      fw_bus.bats: 2
+      fw_consolidate.bats: 2
+      fw_costs.bats: 2
+      fw_enforcement.bats: 2
+      fw_hook.bats: 2
+      fw_mcp.bats: 2
+      fw_note.bats: 2
+      fw_patterns.bats: 2
+      fw_preflight.bats: 2
+      fw_search.bats: 2
+      fw_traceability.bats: 2
+      fw_update.bats: 2
+      test_arc010_hm_a_demo_evidence.bats: 2
+      test_termlink_dispatch_allowed_tools.bats: 2
+      block_plan_mode.bats: 1
+      fw_decisions.bats: 1
+      fw_fix_learned.bats: 1
+      fw_gaps.bats: 1
+      fw_harvest.bats: 1
+      fw_help.bats: 1
+      fw_onboarding.bats: 1
+      fw_termlink.bats: 1
+      fw_tier0.bats: 1
+      fw_timeline.bats: 1
+      fw_version.bats: 1
+      test_termlink_dispatch_framework_root.bats: 1
+      test_termlink_dispatch_mcp_config.bats: 1
+      test_termlink_dispatch_permission_mode.bats: 1
+      fw_learnings.bats: 0
+      fw_serve.bats: 0
+      transcript_dir_name_sanitization.bats: 0
+  pytest:
+    files: 5
+    files_completed: 5
+    files_timed_out: []
+    files_not_run: 0
+    files_not_run_names: []
+    files_not_determined: []
+    budget_seconds: 2225
+    tests: 17
+    failed_count: 3
+    skipped: 0
+    exit: 1
+    failed:
+    - tests/integration/t3684_sidecar_watcher_e2e_test.py::test_4_watcher_killed_reported_not_live_and_restarted
+    - tests/integration/t3684_sidecar_watcher_e2e_test.py::test_6_two_sessions_one_project_idle_gets_it_busy_pty_gets_nothing
+    - tests/integration/t3693_sidecar_e2e_test.py::test_real_termlink_inject_reaches_the_tagged_session
+    error: null
+    file_durations:
+      t3684_sidecar_watcher_e2e_test.py: 747
+      t3693_sidecar_e2e_test.py: 413
+      t3782_waiting_recover_e2e_test.py: 183
+      test_recall_miss_live.py: 12
+      test_csrf_error_template.py: 2
+tmp_leftovers:
+  dir: /tmp
+  count: 5
+  names:
+  - fw-audit-read.jOFL0U
+  - fw-audit-read.kmV5Tq
+  - fw-e2e-EeQitsgV
+  - fw-search-index-272090-w8l_fgif
+  - fw-search-index-733316-5gh9u98l

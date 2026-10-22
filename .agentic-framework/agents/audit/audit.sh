@@ -3353,6 +3353,26 @@ if ! fw_is_linked_worktree "$PROJECT_ROOT" && [ -f "$_wt_cur_pid_f" ] \
     fi
 fi
 
+# T-4637 (T-4635 RCA): long-lived agent processes (claude-fw, Watchtower, the
+# TermLink hub, tmux servers) in a session-*.scope of a user without linger are
+# SIGKILLed when systemd force-tears that slice down under load — six workers and
+# the parent died at once on 2026-10-22, with nothing reporting it. Same predicate
+# as fw doctor's [host] WARN (G-079). WARN: host state, fixed by the operator.
+if ! fw_is_linked_worktree "$PROJECT_ROOT" && [ -f "$FRAMEWORK_ROOT/lib/process_placement.py" ]; then
+    _pp_rc=0
+    _pp_out=$(python3 "$FRAMEWORK_ROOT/lib/process_placement.py" \
+        --watchtower-pid-file "$PROJECT_ROOT/.context/working/watchtower.pid" 2>/dev/null) || _pp_rc=$?
+    if [ "$_pp_rc" -eq 1 ]; then
+        while IFS= read -r _pp_line; do
+            [ -n "$_pp_line" ] || continue
+            warn "Fragile process placement: ${_pp_line%% lives in *}" "$_pp_line" \
+                 "${_pp_line##*Fix: }"
+        done <<< "$_pp_out"
+    elif [ "$_pp_rc" -eq 0 ]; then
+        pass "Process placement: no long-lived agent process in a non-lingering session scope"
+    fi
+fi
+
 # T-3317 (OBS-336): exec-bit drift — tracked *.sh / bin/fw whose git index mode
 # is 100755 but whose on-disk copy is not executable. Origin: a worker rewrite
 # of agents/audit/audit.sh dropped the x-bit and `fw audit` died exit 126 —
@@ -4015,12 +4035,22 @@ _audit_is_prepush_scope() {
     [ "${SECTIONS:-}" = "structure" ]
 }
 check_unit_suite_report() {
-    local _report="${FW_UNIT_SUITE_REPORT:-$CONTEXT_DIR/audits/unit-suite/LATEST.yaml}"
-    local _baseline="${FW_UNIT_SUITE_BASELINE:-$CONTEXT_DIR/audits/unit-suite/baseline.yaml}"
+    # T-4634: the same grader reads the integration-suite report
+    # (FW_UNIT_SUITE_KIND=integration); the kind names the corpus, its report,
+    # its cron job and its re-run command on every line.
+    local _us_kind="unit-suite" _us_name="Unit suite" _us_noun="unit test(s)"
+    local _us_rerun="agents/audit/unit-suite.sh"
+    if [ "${FW_UNIT_SUITE_KIND:-unit}" = integration ]; then
+        _us_kind="integration-suite" _us_name="Integration suite" _us_noun="integration test(s)"
+        _us_rerun="agents/audit/integration-suite.sh"
+    fi
+    local _us_cron="${_us_kind}-nightly" _us_rel=".context/audits/${_us_kind}/LATEST.yaml"
+    local _report="${FW_UNIT_SUITE_REPORT:-$CONTEXT_DIR/audits/${_us_kind}/LATEST.yaml}"
+    local _baseline="${FW_UNIT_SUITE_BASELINE:-$CONTEXT_DIR/audits/${_us_kind}/baseline.yaml}"
     if [ ! -f "$_report" ]; then
-        warn "Unit suite NOT CHECKED — no report at .context/audits/unit-suite/LATEST.yaml (T-3302)" \
-             "The nightly unit-suite runner has not produced a report; unit-suite reds are invisible until it does" \
-             "Run once by hand: agents/audit/unit-suite.sh — or wait for the nightly cron (unit-suite-nightly)"
+        warn "$_us_name NOT CHECKED — no report at $_us_rel (T-3302)" \
+             "The scheduled runner ($_us_cron) has not produced a report; its reds are invisible until it does" \
+             "Run once by hand: $_us_rerun — or wait for the nightly cron ($_us_cron)"
         return 0
     fi
 
@@ -4200,10 +4230,10 @@ except Exception:
 PYEOF
 )
     if [ -z "$_parsed" ]; then
-        warn_unenumerable ".context/audits/unit-suite/LATEST.yaml" \
-             "Unit suite green" \
+        warn_unenumerable "$_us_rel" \
+             "$_us_name green" \
              "The report exists but could not be parsed — 'could not read' must not render as green (T-3302)" \
-             "Inspect the report, then re-run: agents/audit/unit-suite.sh"
+             "Inspect the report, then re-run: $_us_rerun"
         return 0
     fi
 
@@ -4214,14 +4244,14 @@ PYEOF
     IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names \
         _us_ran _us_ftimed _us_partial _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir _us_fdir \
         _us_fb _us_fblabel _us_fbnote <<< "$_parsed"
-    local _us_label="Unit suite${_us_dir:+ ($_us_dir)}"
+    local _us_label="$_us_name${_us_dir:+ ($_us_dir)}"
 
     # T-3794: pre-push, incomplete LATEST, nothing complete to grade instead.
     # WARN would let the push through on a run that measured almost nothing.
     if [ "${_us_fb:-none}" = "missing" ]; then
         fail "$_us_label COULD NOT DETERMINE — the latest run is INCOMPLETE and no complete run is on record — pre-push ratchet (T-3794)" \
              "${_us_fbnote}. Grading only the files that ran would read the unmeasured rest as green" \
-             "Run the suite to completion and do not interrupt it: agents/audit/unit-suite.sh (a complete run writes LAST-COMPLETE.yaml; nightly cron: unit-suite-nightly)"
+             "Run the suite to completion and do not interrupt it: $_us_rerun (a complete run writes LAST-COMPLETE.yaml; nightly cron: $_us_cron)"
         return 0
     fi
     # T-3794: the fallback names the run it graded, on every line it emits.
@@ -4263,7 +4293,7 @@ PYEOF
             if [ "${_us_nnew:-0}" -gt 0 ] || [ "${_us_nexp:-0}" -gt 0 ]; then
                 fail "$_us_label: ${_us_nnew} NEW red(s), ${_us_nexp} EXPIRED baselined red(s) — pre-push ratchet (T-3621)" \
                      "${_us_incomplete}NEW (not in baseline): ${_us_new:-none}. EXPIRED (baselined, past expiry): ${_us_exp:-none}. ${_us_nbase} other baselined red(s) grade WARN" \
-                     "${_us_kept}New red: fix it or file a task (one bug = one task); only the operator may accept it into the baseline (python3 agents/audit/unit_suite_baseline.py add --i-am-human --name '<name>'). Expired: fix it, or the operator re-arms it the same way. Report: .context/audits/unit-suite/LATEST.yaml"
+                     "${_us_kept}New red: fix it or file a task (one bug = one task); only the operator may accept it into the baseline (python3 agents/audit/unit_suite_baseline.py add --i-am-human --name '<name>'). Expired: fix it, or the operator re-arms it the same way. Report: $_us_rel"
                 return 0
             fi
             warn "$_us_label: ${_us_nbase} BASELINED red(s), 0 new, 0 expired — pre-push ratchet grade; the full fw audit still FAILs them (T-3621)" \
@@ -4272,14 +4302,14 @@ PYEOF
             # Unchanged rule: a stale report is still called stale.
             if [ "$_us_age" -lt 0 ] || [ "$_us_age" -ge 48 ]; then
                 warn "$_us_label report STALE — last run ${_us_age}h ago, threshold 48h (T-3302)" \
-                     "The nightly unit-suite cron (unit-suite-nightly) has not produced a fresh report; reds since then are invisible" \
-                     "Check the schedule (fw cron status, grep 'agentic-cron' syslog) or run by hand: agents/audit/unit-suite.sh"
+                     "The scheduled cron ($_us_cron) has not produced a fresh report; reds since then are invisible" \
+                     "Check the schedule (fw cron status, grep 'agentic-cron' syslog) or run by hand: $_us_rerun"
             fi
             return 0
         fi
-        fail "$_us_label: $_us_failed of $_us_total unit test(s) RED (T-3302, T-3602)" \
+        fail "$_us_label: $_us_failed of $_us_total $_us_noun RED (T-3302, T-3602)" \
              "${_us_incomplete:-$_us_ran. }${_us_bl_note}runner_exit=$_us_rc; recorded failures: ${_us_names:-none listed}" \
-             "${_us_kept}Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
+             "${_us_kept}Read the report ($_us_rel), fix or file per red (one bug = one task), re-run: $_us_rerun"
         return 0
     fi
 
@@ -4294,9 +4324,9 @@ PYEOF
     fi
 
     if [ "$_us_rc" -ne 0 ]; then
-        fail "$_us_label: $_us_failed of $_us_total unit test(s) RED (T-3302)" \
+        fail "$_us_label: $_us_failed of $_us_total $_us_noun RED (T-3302)" \
              "runner_exit=$_us_rc; first failures: ${_us_names:-none listed}" \
-             "${_us_kept}Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
+             "${_us_kept}Read the report ($_us_rel), fix or file per red (one bug = one task), re-run: $_us_rerun"
         return 0
     fi
 
@@ -4304,16 +4334,33 @@ PYEOF
     # "checked two days ago" must not keep rendering as "checked".
     if [ "$_us_age" -lt 0 ] || [ "$_us_age" -ge 48 ]; then
         warn "$_us_label report STALE — last run ${_us_age}h ago, threshold 48h (T-3302)" \
-             "The nightly unit-suite cron (unit-suite-nightly) has not produced a fresh report; reds since then are invisible" \
-             "Check the schedule (fw cron status, grep 'agentic-cron' syslog) or run by hand: agents/audit/unit-suite.sh"
+             "The scheduled cron ($_us_cron) has not produced a fresh report; reds since then are invisible" \
+             "Check the schedule (fw cron status, grep 'agentic-cron' syslog) or run by hand: $_us_rerun"
         return 0
     fi
 
-    pass_over "$_us_total" "unit test(s)${_us_dir:+ ($_us_dir)}" "$_us_label green" \
+    pass_over "$_us_total" "${_us_noun}${_us_dir:+ ($_us_dir)}" "$_us_label green" \
          "report parsed but recorded zero tests across both legs — a harness error, not a green corpus (T-3302)" \
-         "Run manually and read the output: agents/audit/unit-suite.sh"
+         "Run manually and read the output: $_us_rerun"
 }
 check_unit_suite_report
+
+# T-4634: tests/integration ran in no gate — not at commit, not at pre-push, not
+# in the nightly unit run (T-4596 RCA: claude_fw_restart_terminator.bats broke
+# twice unseen). agents/audit/integration-suite.sh runs it nightly into its own
+# report; this grades it with the same reader. There is no integration baseline
+# and none may be created: every red FAILs, and the reds go to tasks. Skipped at
+# the pre-push scope only — with no baseline, the open reds would block every
+# push; the */30 cron and the daily audit grade it.
+check_integration_suite_report() {
+    if _audit_is_prepush_scope; then
+        info "Integration suite not graded at pre-push — graded by the */30 and daily audits (T-4634)"
+        return 0
+    fi
+    FW_UNIT_SUITE_KIND=integration FW_UNIT_SUITE_REPORT="${FW_INTEGRATION_SUITE_REPORT:-}" \
+        FW_UNIT_SUITE_BASELINE="" check_unit_suite_report
+}
+check_integration_suite_report
 
 # T-2577 (T-2571 S4): designer ghost↔task drift sweep, both directions.
 # The save-time mint is non-fatal by contract (a failed mint must never break

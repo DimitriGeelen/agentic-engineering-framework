@@ -1,10 +1,17 @@
 ---
 id: T-4634
-name: "tests/integration/ runs in no gate: breakage there goes unseen (found by T-4596; cloud run showed 31 integration reds)"
+name: "tests/integration/ runs in no gate: breakage there goes unseen (found by T-4596;
+  cloud run showed 31 integration reds)"
 description: >
-  T-4596 RCA: tests/integration/ is run neither at commit nor at pre-push nor by the nightly unit suite, which is why two changes broke claude_fw_restart_terminator.bats unnoticed; the 2026-10-22 cloud per-failure run listed 31 integration failures. Add the integration suite to a gate with a bounded cost: e.g. the nightly unit-suite job runs tests/integration with its own per-file cap and reports into the same ratchet (separate baseline section, never auto-added), or a weekly job. Decide with measured runtime; record it. Do not add any test to a baseline.
+  T-4596 RCA: tests/integration/ is run neither at commit nor at pre-push nor by the
+  nightly unit suite, which is why two changes broke claude_fw_restart_terminator.bats
+  unnoticed; the 2026-10-22 cloud per-failure run listed 31 integration failures.
+  Add the integration suite to a gate with a bounded cost: e.g. the nightly unit-suite
+  job runs tests/integration with its own per-file cap and reports into the same ratchet
+  (separate baseline section, never auto-added), or a weekly job. Decide with measured
+  runtime; record it. Do not add any test to a baseline.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: [T-4596, T-4589]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T11:24:37Z
-last_update: 2026-10-22T11:24:37Z
-date_finished: null
+last_update: 2026-10-22T12:54:48Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T11:25:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T11:30:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=300,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4634: tests/integration/ runs in no gate: breakage there goes unseen (found by T-4596; cloud run showed 31 integration reds)
@@ -62,8 +96,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Measured: tests/integration run in the foreground, per-file cap 900 s, -j4; wall time, file count and red count recorded in ## Decisions
+- [x] A scheduled gate runs tests/integration (both bats and pytest files) with a per-file cap and writes a report to .context/audits/integration-suite/LATEST.yaml, separate from the unit-suite report and baseline
+- [x] `fw audit` grades that report (FAIL on reds, WARN when missing/stale) and no integration test is added to any baseline
+- [x] Regression test proves the integration report is read and graded (fails without the wiring)
+- [x] Existing integration reds are filed as tasks (not baselined), task ids listed in ## Decisions
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +285,16 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n agents/audit/audit.sh && bash -n agents/audit/integration-suite.sh
+timeout 600 bats tests/unit/t4634_integration_suite_gate.bats > /tmp/.t4634v 2>&1 && ! grep -q "^not ok" /tmp/.t4634v
+test "$(grep -c '# skip' /tmp/.t4634v)" -eq 0
+timeout 600 bats tests/unit/t3302_unit_suite_schedule.bats > /tmp/.t4634w 2>&1 && ! grep -q "^not ok" /tmp/.t4634w
+grep -q '^check_integration_suite_report$' agents/audit/audit.sh
+python3 -c "import yaml; d=yaml.safe_load(open('.context/audits/integration-suite/LATEST.yaml')); assert d['suite_dir'].endswith('tests/integration')"
+test ! -e .context/audits/integration-suite/baseline.yaml
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4634l 2>&1 && grep -q clean /tmp/.t4634l
+bin/fw vendor self --check --task T-4634
 
 ## RCA
 
@@ -264,6 +311,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/integration/claude_fw_restart_terminator.bats` was broken twice by unrelated changes and nobody saw it (T-4596); a cloud per-failure run on 2026-10-22 listed 31 integration reds.
+
+**Root cause:** no gate ran `tests/integration/`. The nightly runner `agents/audit/unit-suite.sh:59` defaults its corpus to `tests/unit` only, the only cron job that runs a corpus (`unit-suite-nightly`, `.context/cron-registry.yaml`) runs that runner, and `fw audit` graded only `.context/audits/unit-suite/LATEST.yaml` (`check_unit_suite_report`, `agents/audit/audit.sh`). Pre-push runs `audit --section structure` and the commit hooks run no test corpus.
+
+**Why structurally allowed:** the unit-suite gate (T-3302) was scoped to the corpus named in OBS-361. Nothing listed which test directories exist versus which are scheduled, so a whole directory could sit outside every gate and its absence looked like "no reds".
+
+**Prevention:** `agents/audit/integration-suite.sh` runs tests/integration nightly (`integration-suite-nightly`, 01:33) into its own report; `check_integration_suite_report` in `fw audit` FAILs on its reds and WARNs when it is missing or older than 48h. `tests/unit/t4634_integration_suite_gate.bats` pins the wrapper, the grading, the pre-push exclusion and the cron entry. Not covered: a third test directory added later would again be ungated (no "every test dir is scheduled" check exists).
 
 ## Evolution
 
@@ -329,6 +384,26 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — measured run (foreground, -j4, per-file cap 900 s)
+- **Run:** `agents/audit/integration-suite.sh`, 2026-10-22T11:27:01Z → 12:00:52Z, **wall 2031 s** (34 min), report `.context/audits/integration-suite/LATEST.yaml`.
+- **Files:** 99 (94 bats, 5 pytest); 585 tests (568 bats, 17 pytest).
+- **Reds:** 9 failing tests in 7 files, plus `fw_self_test.bats` killed at the 900 s cap. Slowest files: fw_self_test 900 s (cap), upgrade_live_simulation 530 s, t2501_claude_fw_drift 360 s, fw_test_onboarding 358 s.
+- The cloud run's 31 reds did not reproduce at this count on this host; T-4596 had already fixed claude_fw_restart_terminator.bats.
+
+### 2026-10-22 — which gate
+- **Chose:** a separate nightly job (`integration-suite-nightly`, 01:33) using the unit-suite runner with its own report dir and lock, graded by the same reader in `fw audit` under its own name. No integration baseline; not graded at pre-push.
+- **Why:** 34 min is too slow for pre-push or commit. Running it inside the 03:03 unit-suite job would add 34 min to that run and mix the two corpora in one report and one ratchet baseline, which the task forbids. 01:33 ends before 03:03, so the two heavy runs do not overlap. With no baseline, grading at pre-push would block every push on the 7 open reds; the daily and */30 audits FAIL on them instead.
+- **Rejected:** weekly job (a breakage could stay unseen for 7 days, which is the failure this task is about); pre-push grading with a baseline (the task says no test goes into a baseline).
+
+### 2026-10-22 — integration reds filed (none baselined)
+- T-4640 fw_onboarding_greenfield.bats tests 9-10
+- T-4641 fw_termlink.bats test 2
+- T-4642 t2922_greenfield_first_inception.bats tests 5, 7
+- T-4643 upgrade_live_simulation.bats (docker time budget)
+- T-4644 fw_self_test.bats (900 s per-file cap)
+- T-4645 t3684_sidecar_watcher_e2e_test.py tests 4, 6
+- T-4646 t3693_sidecar_e2e_test.py (termlink inject)
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -345,3 +420,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4634-testsintegration-runs-in-no-gate-breakag.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:25:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

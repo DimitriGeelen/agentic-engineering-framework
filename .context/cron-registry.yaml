@@ -414,6 +414,21 @@ jobs:
     \ 'audit.sh --section structure', which contends the shared audit lock (T-3070\
     \ collision class) \u2014 the runner takes its OWN overlap lock (.context/locks/unit-suite.lock,\
     \ skip-if-held logged exit 0) and never holds the audit lock itself."
+- id: integration-suite-nightly
+  name: Integration-suite corpus run (tests/integration, nightly)
+  schedule: 33 1 * * *
+  command: /opt/999-Agentic-Engineering-Framework/agents/audit/integration-suite.sh
+  source_file: agentic-audit.crontab
+  origin_task: T-4634
+  status: active
+  description: "T-4634 — runs tests/integration (94 bats + 5 pytest files) nightly\
+    \ through the unit-suite runner (per-file cap 900s, -j4) into its OWN report\
+    \ .context/audits/integration-suite/LATEST.yaml and its own lock, which fw audit\
+    \ grades as 'Integration suite' (FAIL on red, WARN missing/>48h; not graded at\
+    \ pre-push). Before this tests/integration ran in no gate, so\
+    \ claude_fw_restart_terminator.bats broke twice unseen (T-4596). Measured 2031s\
+    \ wall; 01:33 so it finishes before unit-suite-nightly (03:03). No integration\
+    \ baseline exists: reds go to tasks."
 - id: fabric-describe-daily
   name: Fabric card describe sweep (daily)
   schedule: 26 4 * * *
