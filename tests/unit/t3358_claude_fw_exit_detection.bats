@@ -24,6 +24,10 @@
 # its project; under a fixture it outlives the test, writes into the deleted
 # tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
 export CLAUDE_FW_NO_SIDECAR=1
+# T-4636: these E2E runs have a 12 s budget; the systemd scope probe and re-exec claude-fw now
+# does at start cost seconds of it under host load (3 reds at load ~70). Placement is pinned by
+# t4636_agent_scope.bats, not here.
+export FW_AGENT_SCOPE=0
 
 setup() {
     FRAMEWORK_ROOT="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"
