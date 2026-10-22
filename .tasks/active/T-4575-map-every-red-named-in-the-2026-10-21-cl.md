@@ -1,13 +1,22 @@
 ---
 id: T-4575
-name: "Map every red named in the 2026-10-21 cloud reports to a baseline entry or a task (T-4508 AC 2)"
+name: "Map every red named in the 2026-10-21 cloud reports to a baseline entry or
+  a task (T-4508 AC 2)"
 description: >
-  T-4508 AC 2: every failure the cloud reports name is known (baselined, filed) or filed. Go through docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md and, for each named red not covered by the tasks filed alongside this one (upgrade hooks, revived hook lines, bats 1.10 fixtures, /file 404, fw build js-yaml, hanging files, Playwright triage), check it against .context/audits/unit-suite/baseline.yaml and open tasks; file the rest. Note env-only classes (missing modules, mcp, termlink, ollama, cron, ss) as env, not defects. Also: job 1's setup omitted web/requirements.txt modules — fix docs/reports/T-4508-cloud-prompts/job1-clean-room-unit-suite.md to install them.
+  T-4508 AC 2: every failure the cloud reports name is known (baselined, filed) or
+  filed. Go through docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md
+  and, for each named red not covered by the tasks filed alongside this one (upgrade
+  hooks, revived hook lines, bats 1.10 fixtures, /file 404, fw build js-yaml, hanging
+  files, Playwright triage), check it against .context/audits/unit-suite/baseline.yaml
+  and open tasks; file the rest. Note env-only classes (missing modules, mcp, termlink,
+  ollama, cron, ss) as env, not defects. Also: job 1's setup omitted web/requirements.txt
+  modules — fix docs/reports/T-4508-cloud-prompts/job1-clean-room-unit-suite.md to
+  install them.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, cloud]
 components: []
 related_tasks: [T-4508]
@@ -39,8 +48,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:49:16Z
-last_update: 2026-10-21T21:49:16Z
-date_finished: null
+last_update: '2026-10-22T07:36:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +60,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:36:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4575: Map every red named in the 2026-10-21 cloud reports to a baseline entry or a task (T-4508 AC 2)
@@ -63,8 +89,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] docs/reports/T-4575-cloud-red-map.md maps every red named in reports-2026-10-21-relayed-by-ring20.md to exactly one of: sibling task (T-4568..T-4574), baseline entry (with owner), existing task, newly filed task, env (not a defect), or "passes on current bleeding-edge" with the evidence
+- [ ] Every row marked "newly filed" names a task id that exists in .tasks/active/
+- [ ] job1-clean-room-unit-suite.md setup installs web/requirements.txt (markdown2, ollama, ruamel.yaml, tantivy, bleach) and cffi, via `python3 -m pip` so it reaches the python3 on PATH
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +276,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+test -f docs/reports/T-4575-cloud-red-map.md
+grep -q "web/requirements.txt" docs/reports/T-4508-cloud-prompts/job1-clean-room-unit-suite.md && grep -q "python3 -m pip install -r web/requirements.txt" docs/reports/T-4508-cloud-prompts/job1-clean-room-unit-suite.md
+bash -c 'set -o pipefail; for t in $(grep -o "filed T-[0-9]*" docs/reports/T-4575-cloud-red-map.md | cut -d" " -f2 | sort -u); do ls .tasks/active/$t-*.md .tasks/completed/$t-*.md 2>/dev/null | grep -q . || { echo "missing $t"; exit 1; }; done'
 
 ## RCA
 
@@ -346,3 +376,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4575-map-every-red-named-in-the-2026-10-21-cl.md
 - **Context:** Initial task creation
+
+### 2026-10-22T07:36:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
