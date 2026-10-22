@@ -1,10 +1,15 @@
 ---
 id: T-4620
-name: "Push blocker: test_next_directive_schema XPASS(strict) — checkpoint.sh directive snippet no longer a SyntaxError"
+name: "Push blocker: test_next_directive_schema XPASS(strict) — checkpoint.sh directive
+  snippet no longer a SyntaxError"
 description: >
-  New red 2026-10-22 (.context/audits/unit-suite/failures/2026-10-22T08:47:18Z/pytest/test_next_directive_schema.py.out): a strict xfail ('checkpoint.sh directive snippet is a SyntaxError since T-3989') now passes, so a fix landed (likely T-4577 checkpoint/handover). Remove the xfail and make the test assert the fixed behaviour; check the related FAILED test_checkpoint_directive_extraction_helper_present_when_file too.
+  New red 2026-10-22 (.context/audits/unit-suite/failures/2026-10-22T08:47:18Z/pytest/test_next_directive_schema.py.out):
+  a strict xfail ('checkpoint.sh directive snippet is a SyntaxError since T-3989')
+  now passes, so a fix landed (likely T-4577 checkpoint/handover). Remove the xfail
+  and make the test assert the fixed behaviour; check the related FAILED test_checkpoint_directive_extraction_helper_present_when_file
+  too.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T09:33:13Z
-last_update: 2026-10-22T09:33:13Z
-date_finished: null
+last_update: '2026-10-22T09:36:01Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:36:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4620: Push blocker: test_next_directive_schema XPASS(strict) — checkpoint.sh directive snippet no longer a SyntaxError
@@ -62,8 +84,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Stale strict xfail in tests/unit/test_next_directive_schema.py removed; the test asserts the fixed behaviour (checkpoint.sh directive snippet compiles and extracts)
+- [x] test_checkpoint_directive_extraction_helper_present_when_file failure diagnosed and fixed at its cause (test asserts a real property)
+- [x] tests/unit/test_next_directive_schema.py fully green run alone
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +271,8 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 python3 -m pytest tests/unit/test_next_directive_schema.py -q -p no:cacheprovider > /tmp/.t4620.out 2>&1 && grep -q passed /tmp/.t4620.out && ! grep -qE "failed|xpass|XPASS" /tmp/.t4620.out
+! grep -q "SyntaxError since T-3989" tests/unit/test_next_directive_schema.py
 
 ## RCA
 
@@ -264,6 +289,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** pytest `tests/unit/test_next_directive_schema.py::test_checkpoint_directive_extraction_helper_present_when_file` reported `XPASS(strict)` → FAILED (unit-suite run 2026-10-22T08:47:18Z), blocking push. The "related FAILED test" in the description is the same test: strict XPASS is reported as FAILED.
+
+**Root cause:** T-4577 (acdbb8d59, 2026-10-22) repaired the IndentationError in the directive snippet embedded in `agents/context/checkpoint.sh`. It added its own regression tests (`tests/integration/continuous_loop_critical_signal.bats`), but it did not remove the `@pytest.mark.xfail(strict=True, …)` marker at `tests/unit/test_next_directive_schema.py:90`, which T-4380 put there to flag that known bug. The production fix was correct. The test file was stale.
+
+**Why structurally allowed:** T-4577's verification ran its own bats files and not the pytest file that held the xfail, so the strict marker only went off in the nightly full suite. Nothing links a known-bug xfail to the task that owns the fix.
+
+**Prevention:** The strict xfail did what it was built to do: it turned red the moment the bug was fixed. That is the designed hand-off. Now that the marker is gone, the test runs with `check=True` and asserts the exact decoded directive value, so a snippet that stops compiling, or that returns the wrong value, fails it again.
 
 ## Evolution
 
@@ -345,3 +378,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4620-push-blocker-testnextdirectiveschema-xpa.md
 - **Context:** Initial task creation
+
+### 2026-10-22T09:35:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

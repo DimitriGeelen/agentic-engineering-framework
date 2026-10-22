@@ -14,7 +14,6 @@ import re
 import subprocess
 from pathlib import Path
 
-import pytest
 import yaml
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -81,13 +80,9 @@ def test_schema_optional_fields_present_in_fixture():
         assert opt in data, f"optional field {opt} should be documented in fixture"
 
 
-# KNOWN PRODUCTION BUG (found by T-4380 running the shipped snippet): since T-3989
-# (b0758d0fc) the python in agents/context/checkpoint.sh has lost its indentation
-# (`try:` is followed by an unindented `with`), so it is a SyntaxError. The 2>/dev/null
-# swallows it and the restart signal never carries the directive. The test below
-# is the regression test for the fix; strict xfail turns it into a failure the
-# moment checkpoint.sh is repaired, so the marker gets removed with the fix.
-@pytest.mark.xfail(strict=True, reason="checkpoint.sh directive snippet is a SyntaxError since T-3989")
+# Regression test for the T-3989 indentation loss (found by T-4380, fixed by T-4577):
+# the shipped snippet was a SyntaxError swallowed by 2>/dev/null, so the restart
+# signal never carried the directive. check=True makes a non-compiling snippet fail.
 def test_checkpoint_directive_extraction_helper_present_when_file(tmp_path):
     """When .next-directive.yaml exists with a directive: field, the python
     snippet in checkpoint.sh produces a ',directive:"<text>"' JSON fragment."""
