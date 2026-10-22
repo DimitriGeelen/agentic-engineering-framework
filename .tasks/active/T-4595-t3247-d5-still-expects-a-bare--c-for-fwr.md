@@ -8,10 +8,10 @@ description: >
   (T-4497). Stale pin: update the test to the T-4497 contract. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (line 103). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -43,7 +43,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:34:42Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T10:52:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction on current bleeding-edge checked: t3247 test 5 was `not ok` at line 174 (`[ "$got" = "-c" ]`) before the fix
+- [x] t3247 test 5 asserts the T-4497 contract (`--resume <id>`, never bare `-c`) and the whole file is green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,6 +280,9 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t3247_restart_headless_prompt.bats > /tmp/.t4595.out 2>&1 && ! grep -q "^not ok" /tmp/.t4595.out
+test "$(grep -c '# skip' /tmp/.t4595.out)" -eq 0
+grep -q '"--resume conv1"' tests/unit/t3247_restart_headless_prompt.bats
 
 ## RCA
 
@@ -296,6 +299,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/unit/t3247_restart_headless_prompt.bats` test 5 (D5) red: relaunch argv was not `-c`.
+
+**Root cause:** stale pin. T-4497 added `_resolve_continue` (`bin/claude-fw:1263`), which rewrites every `-c` (including the `FW_RESTART_MODE=continue` relaunch set at `bin/claude-fw:1640`) to `--resume <id>` of this project's interactive conversation, or drops it (fresh) when none exists. D5 (`tests/unit/t3247_restart_headless_prompt.bats:174`) still asserted the pre-T-4497 bare `-c`; its fixture had no conversation, so the relaunch was fresh. The wrapper is correct; the test was not updated.
+
+**Why structurally allowed:** T-4497 updated its own suite (t4497) but not sibling suites that pin claude-fw relaunch argv; nothing maps a behaviour change in `bin/claude-fw` to every suite asserting its argv, and the full unit suite is only run nightly.
+
+**Prevention:** D5 now plants a fake interactive transcript and pins the T-4497 contract (`--resume conv1`, no directive), so it fails both if continue mode regresses to bare `-c` and if the headless fix reroutes continue mode to `-p <directive>`.
 
 ## Evolution
 
@@ -377,3 +388,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4595-t3247-d5-still-expects-a-bare--c-for-fwr.md
 - **Context:** Initial task creation
+
+### 2026-10-22T10:52:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

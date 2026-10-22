@@ -165,13 +165,21 @@ PY
 
 # ── D5: FW_RESTART_MODE=continue is not re-routed by the headless fix ───────
 
-@test "D5: FW_RESTART_MODE=continue still yields a bare -c, even headless with a directive" {
+# T-4595: since T-4497 the continue relaunch's -c is resolved to `--resume <id>` of
+# this project's interactive conversation (never a bare -c), so the fixture plants one
+# fake interactive transcript under the sandbox HOME for the resolver to find.
+@test "D5: FW_RESTART_MODE=continue still resumes (--resume <id>, not -p directive), even headless" {
+    enc=$(printf '%s' "$(cd "$TDIR" && pwd -P)" | sed 's/[^A-Za-z0-9-]/-/g')
+    mkdir -p "${TDIR}/.claude/projects/${enc}"
+    printf '{"type":"summary"}\n{"type":"user","entrypoint":"cli","sessionId":"conv1"}\n' \
+        > "${TDIR}/.claude/projects/${enc}/conv1.jsonl"
     write_signal "$DIRECTIVE"
     export FW_RESTART_MODE=continue
     run_headless
 
     got=$(relaunch_argv | head -1)
-    [ "$got" = "-c" ]
+    [ "$got" = "--resume conv1" ]
+    [[ "$got" != *"$DIRECTIVE"* ]]
 }
 
 # ── D6: scope — the fix must not change interactive behaviour ──────────────
