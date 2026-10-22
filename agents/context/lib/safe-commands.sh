@@ -698,6 +698,25 @@ _fw_git_grep_opens_pager() {
     return 1
 }
 
+# T-4631: git help -w / --web starts a web browser (via its web--browse helper) whatever the
+# configuration says, so it is an action, not a read. Judged on the dequoted words:
+# a short bundle holding w, any prefix of --web (git accepts --w, --we), or a word
+# that begins with an expansion. Words after `--` are refused as well.
+# _fw_git_help_opens_browser <normalised "git help args...">; 0 = may open one.
+_fw_git_help_opens_browser() {
+    local i tok
+    _fw_option_words "$1" || return 0
+    for (( i=2; i<${#_FW_OW[@]}; i++ )); do
+        tok="${_FW_OW[i]}"
+        [ "${_FW_OWK[i]}" = E ] && return 0
+        case "$tok" in
+            --?*) case --web in "${tok%%=*}"*) return 0 ;; esac ;;
+            -?*) case "${tok:1}" in *w*) return 0 ;; esac ;;
+        esac
+    done
+    return 1
+}
+
 # T-4629: git remote and git reflog are mixed verbs (T-2888's class): `remote add|
 # remove|set-url|…` write .git/config, `reflog expire|delete|drop` destroy history.
 # remote is admitted only bare, after -v/--verbose, or with show / get-url; reflog
@@ -1301,6 +1320,18 @@ _fw_single_command_is_safe() {
             case "$git_sub" in
                 ls-remote|fetch|push) _fw_git_transport_runs_program "$git_norm" && return 1 ;;
             esac
+            # T-4631: git help -w / --web starts a browser.
+            [ "$git_sub" = help ] && _fw_git_help_opens_browser "$git_norm" && return 1
+            # T-4631 (decision): --ext-diff and --textconv are NOT refused. Measured on
+            # git 2.43: plain `git diff` already runs diff.external, and plain diff /
+            # show / log -p already run textconv drivers, so refusing the flags would
+            # close nothing. The programs come from configuration, and this arm trusts
+            # only configuration the command line cannot choose: the repository is held
+            # to PROJECT_ROOT (T-4343, T-4408), and -c, GIT_CONFIG_*, GIT_EXTERNAL_DIFF
+            # and the other injection channels are refused above. `git config` is gated.
+            # Residual, not closed here: the Write/Edit gate exempts PROJECT_ROOT/.git/*
+            # (check-active-task.sh), so a tool write to .git/config can name a driver
+            # (or core.fsmonitor, which plain `git status` runs) with no task.
             case "$git_sub" in
                 # T-2888 added the second line. The first had grown one verb per
                 # incident — T-2052, T-2054, T-2462 and T-2878 each patched this

@@ -1,10 +1,17 @@
 ---
 id: T-4631
-name: "Read-only allowlist: git --ext-diff/--textconv and git help -w run configured programs"
+name: "Read-only allowlist: git --ext-diff/--textconv and git help -w run configured
+  programs"
 description: >
-  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh in their repo): the command passes has_bash_write_pattern and is_bash_safe_command (agents/context/lib/safe-commands.sh) yet runs whatever configuration names (low severity): git diff --ext-diff, git log --ext-diff -p (diff.external / diff drivers), git show --textconv, git cat-file --textconv, and git help -w (web browser). Refuse --ext-diff/--textconv and help -w, or document why configured drivers are trusted; decide with evidence and record it.
+  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh
+  in their repo): the command passes has_bash_write_pattern and is_bash_safe_command
+  (agents/context/lib/safe-commands.sh) yet runs whatever configuration names (low
+  severity): git diff --ext-diff, git log --ext-diff -p (diff.external / diff drivers),
+  git show --textconv, git cat-file --textconv, and git help -w (web browser). Refuse
+  --ext-diff/--textconv and help -w, or document why configured drivers are trusted;
+  decide with evidence and record it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "9e201103"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T10:38:18Z
-last_update: 2026-10-22T10:38:18Z
-date_finished: null
+last_update: 2026-10-22T12:55:09Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +58,54 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T10:45:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T10:45:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4631: Read-only allowlist: git --ext-diff/--textconv and git help -w run configured programs
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+ring20-dashboard round-2 probe (msg 9e201103, low severity): `git diff --ext-diff`,
+`git log --ext-diff -p`, `git show --textconv`, `git cat-file --textconv` and `git help -w` classify
+SAFE in `agents/context/lib/safe-commands.sh` although they run a program named by configuration
+(or, for help -w, a web browser). The task asks to refuse them or document why configured drivers
+are trusted, deciding with evidence.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Measured (scratch repo, recorded in Decisions): whether plain `git diff` / `git show` / `git log -p` run `diff.external` and a `textconv` driver WITHOUT the flags
+- [x] Decision recorded in `## Decisions` with that evidence, and the trust boundary written as a comment at the git arm of `agents/context/lib/safe-commands.sh`
+- [x] `is_bash_safe_command` refuses `git help -w` / `--web` (any abbreviation, short bundle, quoted/expanded spelling), which starts a browser regardless of configuration
+- [x] The channels that would let a command line choose the driver stay refused (pinned): `GIT_EXTERNAL_DIFF=` prefix, `git -c diff.external=…`, `GIT_CONFIG_PARAMETERS=`, `git -C /outside diff`
+- [x] Controls stay SAFE: `git diff`, `git diff --ext-diff`, `git show --textconv HEAD`, `git cat-file --textconv HEAD:F`, `git help log`, `git help -a`, `git help --guides`
+- [x] Regression test `tests/unit/t4631_git_drivers_help_web.bats` fails on the pre-fix code (help -w) and passes after; existing safe-commands suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,8 +290,30 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4631_git_drivers_help_web.bats > /tmp/.t4631.out 2>&1 && ! grep -q "^not ok" /tmp/.t4631.out
+test "$(grep -c '# skip' /tmp/.t4631.out)" -eq 0
+timeout 900 bats tests/unit/context_safe_commands.bats tests/unit/test_safe_commands_git_commit.bats tests/unit/t4408_git_env_repo_boundary.bats > /tmp/.t4631b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4631b.out
+grep -q 'T-4631 (decision)' agents/context/lib/safe-commands.sh
+bin/fw vendor self --check --task T-4631
 
 ## RCA
+
+**Symptom:** `git help -w log` (and `--web`) classified SAFE and so ran with no active task,
+although it launches a web browser. The reported `--ext-diff` / `--textconv` forms also classify
+SAFE and run a configured program.
+
+**Root cause:** `agents/context/lib/safe-commands.sh` `_fw_single_command_is_safe`, git arm: `help`
+sits in the read-verb list (T-4368 line) and returns 0 on the verb name; `diff|log|show|cat-file`
+likewise. No option on these verbs was judged except `--output` (T-4367).
+
+**Why structurally allowed:** the verb list assumed a read verb's options are all reads. For the
+driver flags that is partly irrelevant (measured below: the default forms already run the
+drivers), so the real boundary is the configuration git reads, which T-4343/T-4408 hold to
+PROJECT_ROOT and which no command-line channel (-c, GIT_CONFIG_*, GIT_EXTERNAL_DIFF) may set.
+
+**Prevention:** `_fw_git_help_opens_browser` refuses help -w/--web in every spelling; the trust
+decision is written at the git arm so the next reviewer meets the evidence instead of re-deriving
+it; `tests/unit/t4631_git_drivers_help_web.bats` pins both the refusal and the injection channels.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -321,6 +384,23 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-22 — --ext-diff / --textconv: trust configured drivers; refuse help -w
+- **Chose:** keep `--ext-diff` and `--textconv` admitted on diff/log/show/cat-file; refuse `git help -w` / `--web`.
+- **Why (evidence):** measured in a scratch repo on git 2.43.0 with a marker-writing script:
+  plain `git diff` RAN `diff.external` with no flag; plain `git show`, plain `git diff HEAD~1` and plain
+  `git log -p -1` each RAN a textconv driver set by `.gitattributes` + `diff.<x>.textconv`; only
+  `git log -p` without `--ext-diff` did not run `diff.external`. So refusing the flags would leave
+  the same program running from `git diff` / `git show`; the only real control is over the config,
+  and the allowlist already refuses every command-line channel that sets it (`-c`, `GIT_CONFIG_*`,
+  `GIT_EXTERNAL_DIFF`, a repository outside PROJECT_ROOT via -C/--git-dir/GIT_DIR). `help -w` is
+  different: it starts a browser whatever the config says, an action with no read value.
+- **Rejected:** refusing the flags (cosmetic, per the measurement); refusing diff/show/log outright
+  (would gate the commonest read commands in exactly the null-focus states the allowlist exists for).
+- **Residual (not closed here, for the parent to register):** the Write/Edit gate exempts
+  `PROJECT_ROOT/.git/*` (`agents/context/check-active-task.sh:572`), so with no active task a tool
+  write to `.git/config` can name a diff driver, textconv or `core.fsmonitor` that a later
+  allowlisted `git diff` / `git status` runs. That is a gate-exemption gap, independent of these flags.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -346,3 +426,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4631-read-only-allowlist-git---ext-diff--text.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:17:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
