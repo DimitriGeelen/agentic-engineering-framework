@@ -9,12 +9,12 @@ description: >
   Also suggestion: adb read-only verbs (adb devices -l, adb shell pm list packages)
   not on the allowlist.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/lib/safe-commands.sh, lib/shell_write_scan.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T15:42:50Z
-last_update: 2026-10-22T19:08:31Z
-date_finished:
+last_update: 2026-10-22T19:16:29Z
+date_finished: 2026-10-22T19:16:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -411,3 +411,20 @@ bin/fw vendor self --check --task T-4650
 
 ### 2026-10-22T19:07:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-355e6f20
+- **Timestamp:** 2026-10-22T19:17:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T19:16:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

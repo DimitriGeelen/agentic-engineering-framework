@@ -117,3 +117,7 @@ affected. Running processes keep their old copy until relaunched.
   `.context/handovers/` (`S-2026-1022-1721.md`, `.discard-manifest.yaml`), computed from 1409's own task
   tree. No commit was made in 1409 and nothing was pushed; 1409 quarantined both files, and its
   LATEST.md had already been re-pointed by its own 17:36 handover. Damage is closed for 050→1409.
+- **055 (21:30):** its own tmux wrappers (fleet launcher, rehome, cockpit) had the same deny-list hole
+  (055 T-538); now an allow-list (055 commit 34e78fe1) with an A-after-B polluted private-server test
+  that was red on the old code — the model for the G-116/G-124 close test. 055's post-reboot host scan:
+  256 agent processes, 0 foreign TASKS_DIR/CONTEXT_DIR, tmux global environment clean.

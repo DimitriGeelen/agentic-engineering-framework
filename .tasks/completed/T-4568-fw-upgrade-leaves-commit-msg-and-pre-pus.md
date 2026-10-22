@@ -11,12 +11,12 @@ description: >
   is a false parse failure on the old framework's own lines. Reproduce in a throwaway
   consumer, fix, regression test in the fresh-machine simulation.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, upgrade, git-hook]
-components: []
+components: [agents/git/lib/hooks.sh, tools/gen-stock-hook-digests.sh]
 related_tasks: [T-4508]
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -46,8 +46,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:48:03Z
-last_update: '2026-10-21T22:00:13Z'
-date_finished:
+last_update: 2026-10-22T19:05:09Z
+date_finished: 2026-10-22T19:05:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -102,7 +102,7 @@ cost_estimate_proposed:
 - [x] A stock hook from any released framework version (exactly, or with project lines appended) installs cleanly: only the appended lines are kept, no old template lines carried
 - [x] Genuine project lines are still protected: an unknown hook body (not a known stock template) is merged or REFUSED as before
 - [x] Regression bats test fails without the fix and passes with it; upgrade_fresh_machine_simulation.bats stays green
-- [ ] Vendored copy synced (`bin/fw vendor self --check --task T-4568` clean)
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4568` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -400,3 +400,20 @@ bin/fw vendor self --check --task T-4568
 ### 2026-10-21T21:50:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2e20650b
+- **Timestamp:** 2026-10-22T19:15:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T19:05:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

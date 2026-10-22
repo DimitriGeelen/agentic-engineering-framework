@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4568: fw upgrade leaves commit-msg and pre-push un-updated when the project lines do not parse after the framework block (cloud job 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T19:15:38Z
+# ============================================================================
+
+task_id: T-4568
+task_name: "fw upgrade leaves commit-msg and pre-push un-updated when the project lines do not parse after the framework block (cloud job 2)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T21:48:03Z
+completed: 2026-10-22T19:05:09Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-21T23:49:36+02:00
+last_commit: 2026-10-22T21:04:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file eight tasks from the 2026-10-21 cloud reports (T-4568..T-4575). install-hooks recognises a stock pre-block framework hook by template digest (stock-hook-digests.txt, generated from hooks.sh history) and replaces it whole, keeping only appended lines — a v1.8.14 consumer no longer has commit-msg/pre-push REFUSED; edits inside a template still take the protective path; regression bats on the real v1.8.14 templates; vendor synced. t4568 append-leg pins what is kept (active or T-4569-inert), not that it runs; vendored hooks.sh synced to the source 41aec13c6 committed (it carried T-4569's inert split, vendored copy lagged). split the appended-line test — post-commit (no final exit) keeps it active; commit-msg (ends in exit 0) keeps it inert per T-4569; the old test contradicted T-4569 landed in the same commit
+
+# Key outcomes
+outcomes:
+  - 'Reproduced: install-hooks from bleeding-edge over a stock v1.8.14 hook set REFUSES commit-msg/pre-push (throwaway repo under /tmp, never this repo''s hooks)'
+  - 'A stock hook from any released framework version (exactly, or with project lines appended) installs cleanly: only the appended lines are kept, no old template lines carried'
+  - 'Genuine project lines are still protected: an unknown hook body (not a known stock template) is merged or REFUSED as before'
+  - 'Regression bats test fails without the fix and passes with it; upgrade_fresh_machine_simulation.bats stays green'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4568` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/tools/gen-stock-hook-digests.sh'
+  - 'agents/git/lib/hooks.sh'
+  - 'agents/git/lib/stock-hook-digests.txt'
+  - '.tasks/active/T-4568-fw-upgrade-leaves-commit-msg-and-pre-pus.md'
+  - '.tasks/active/T-4569-t-4515-revives-dead-project-hook-lines-a.md'
+  - '.tasks/active/T-4570-bats-110-aborts-the-whole-unit-suite-her.md'
+  - '.tasks/active/T-4571-watchtower-filedocsstyle-guidemd-returns.md'
+  - '.tasks/active/T-4572-fw-build-fails-esbuild-cannot-resolve-js.md'
+  - '.tasks/active/T-4573-testsunithandoverbats-and-testsintegrati.md'
+  - '.tasks/active/T-4574-triage-the-41-50-playwright-failures-fro.md'
+  - '.tasks/active/T-4575-map-every-red-named-in-the-2026-10-21-cl.md'
+  - 'tests/unit/t4568_stock_hook_upgrade.bats'
+  - 'tools/gen-stock-hook-digests.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T23:49:36'
+    action: 'T-4568: file eight tasks from the 2026-10-21 cloud reports (T-4568..T-4575)'
+  - time: '2026-10-22T00:02:46'
+    action: 'T-4568: install-hooks recognises a stock pre-block framework hook by template digest (stock-hook-digests.txt, generated from hooks.sh history) and replaces it whole, keeping only appended lines — a v1.8.14 consumer no longer has commit-msg/pre-push REFUSED; edits inside a template still take the protective path; regression bats on the real v1.8.14 templates; vendor synced'
+  - time: '2026-10-22T09:38:49'
+    action: 'T-4568: t4568 append-leg pins what is kept (active or T-4569-inert), not that it runs; vendored hooks.sh synced to the source 41aec13c6 committed (it carried T-4569''s inert split, vendored copy lagged)'
+  - time: '2026-10-22T21:04:59'
+    action: 'T-4568: split the appended-line test — post-commit (no final exit) keeps it active; commit-msg (ends in exit 0) keeps it inert per T-4569; the old test contradicted T-4569 landed in the same commit'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1277 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, upgrade, git-hook]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1277
+  commits: 4
+  files_changed: 14
+  lines_added: 3268
+  lines_removed: 35
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4568-fw-upgrade-leaves-commit-msg-and-pre-pus.md
+generated_by: context-agent-hybrid

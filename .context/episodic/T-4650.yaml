@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4650: is_bash_safe_command refuses sed -n Np with a glob FILE operand (over-block; field report dimitri-mint-dev be.3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T19:17:19Z
+# ============================================================================
+
+task_id: T-4650
+task_name: "is_bash_safe_command refuses sed -n Np with a glob FILE operand (over-block; field report dimitri-mint-dev be.3)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T15:42:50Z
+completed: 2026-10-22T19:16:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T17:43:18+02:00
+last_commit: 2026-10-22T21:15:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture sed -n glob-FILE over-block from dimitri-mint-dev be.3 field report. admit glob FILE operands in sed -n print-only forms (option_words globs mode, kind G); script position stays strict; regression bats. Agent ACs ticked, verification run green
+
+# Key outcomes
+outcomes:
+  - '`is_bash_safe_command ''sed -n 1,5p docs/T-037-*.md''` returns 0 (glob in a sed FILE operand of a print-only form is accepted); the literal-filename form still returns 0'
+  - 'sed SCRIPT stays strict: `sed -n 1p *.md w out`, `sed -i ... *.md`, `sed -n ''w x'' f`, `sed -n "$(...)" f`, a glob in the script position, and `sed -e ''s/a/b/e'' f` are all refused'
+  - 'Decision recorded on glob-in-FILE for cat/head/tail/grep/wc, applied where the operand is unambiguously a file'
+  - 'Decision recorded: adb NOT added (adb shell runs arbitrary device commands)'
+  - 'Regression test tests/unit/t4650_sed_glob_file_operand.bats passes with 0 skips; neighbouring safe-commands tests still pass'
+  - '`bin/fw vendor self --check --task T-4650` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — how a glob is admitted for sed'
+    chose: 'opt-in `option_words(globs=True)` returning kind `G` only for a glob word whose first character is a literal other than `-` (so no expansion can be an option). sed refuses a G as the script or as an -e/--expression value, and admits G FILE operands only when every script line is print-only (`ADDR[,ADDR]p`, ADDR = N, `$` or `/re/`) and no operand is a bare sed command letter (w W e r R), so `sed -n 1p d/*.md w out` stays refused.'
+    rationale: 'a leading wildcard (`sed -n 1p *.md`) can expand to a file named `-i` and GNU sed permutes options, so that form stays refused; the reported shapes (`docs/T-037-*.md`, `.tasks/completed/T-166-*.md`) all begin with a literal.'
+    alternatives_rejected: ['dropping the glob refusal in option_words globally (it also feeds find/curl/git/sort/uniq checks where a glob may sit in an option or output position).']
+  - decision: '2026-10-22 — glob-in-FILE for cat/head/tail/grep/wc'
+    chose: 'no change. Measured before the fix: `cat docs/*.md`, `head -5 docs/*.md`, `tail -3 docs/T-?.md`, `grep -n foo docs/*.md`, `wc -l docs/*.md` already return safe — those arms never call option_words. sort/uniq stay refused with globs (sort -o and uniq''s second operand are output positions; out of this task''s scope).'
+    rationale: 'the over-block was specific to the sed (and sort/uniq) option-word checks.'
+  - decision: '2026-10-22 — adb not added'
+    chose: 'do NOT allowlist adb (`adb devices -l`, `adb shell pm list packages` suggested by the reporter).'
+    rationale: '`adb shell` runs an arbitrary command on the device, and other adb verbs (install, push, reboot, root, uninstall) change device state; a verb-scoped split would have to parse the remote shell command line, which the gate cannot prove read-only. Under a task the gate does not block it anyway.'
+    alternatives_rejected: ['allowlisting `adb devices` alone — low value, and adds a tool family to the list that invites widening.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.context/episodic/T-9902.yaml'
+  - '.context/episodic/T-9905.yaml'
+  - '.context/episodic/T-9906.yaml'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4650-isbashsafecommand-refuses-sed--n-np-with.md'
+  - '.tasks/completed/T-9902-redteam.md'
+  - '.tasks/completed/T-9905-redteam.md'
+  - '.tasks/completed/T-9906-redteam.md'
+  - 'tests/unit/t4650_sed_glob_file_operand.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T17:43:18'
+    action: 'T-4650: capture sed -n glob-FILE over-block from dimitri-mint-dev be.3 field report'
+  - time: '2026-10-22T21:14:27'
+    action: 'T-4650: admit glob FILE operands in sed -n print-only forms (option_words globs mode, kind G); script position stays strict; regression bats'
+  - time: '2026-10-22T21:15:31'
+    action: 'T-4650: Agent ACs ticked, verification run green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 213 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 213
+  commits: 3
+  files_changed: 12
+  lines_added: 926
+  lines_removed: 35
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4650-isbashsafecommand-refuses-sed--n-np-with.md
+generated_by: context-agent-hybrid
