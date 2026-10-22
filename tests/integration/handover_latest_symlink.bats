@@ -63,11 +63,16 @@ setup() {
     PROJ="$(mktemp -d)"
     ( cd "$PROJ" && git init -q && git config user.email t@t && git config user.name t \
         && git commit -q --allow-empty -m init )
-    mkdir -p "$PROJ/.context/handovers"
+    mkdir -p "$PROJ/.context/handovers" "$PROJ/.tasks/active"
+    # T-4601: a project marker. Without one bin/fw refuses with "not in an AEF
+    # project" (T-2746) before doctor runs, and the grep below never had a chance.
+    echo "framework_root: $FRAMEWORK_ROOT" > "$PROJ/.framework.yaml"
     # Dangling: LATEST -> a file that does not exist.
     ln -sf "S-does-not-exist.md" "$PROJ/.context/handovers/LATEST.md"
 
-    run bash -c "cd '$PROJ' && PROJECT_ROOT='$PROJ' '$FW' doctor 2>&1"
+    run bash -c "cd '$PROJ' && PROJECT_ROOT='$PROJ' '$FW' doctor 2>&1 </dev/null"
+    # The fixture must reach doctor itself, not the project-detection refusal.
+    ! echo "$output" | grep -q "not in an AEF project" || false
     # Doctor is allowed to exit non-zero (warnings); we assert the message fires.
     echo "$output" | grep -qi "Handover LATEST.md is dangling"
     rm -rf "$PROJ"

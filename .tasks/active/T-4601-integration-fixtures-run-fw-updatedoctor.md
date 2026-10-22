@@ -9,10 +9,10 @@ description: >
   WARN). Fixtures need a real initialised/vendored project. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (lines 44, 47). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -44,7 +44,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:39:35Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T10:52:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge: both tests run and the result (still red / already green) is recorded in ## RCA
+- [x] `tests/integration/fw_update.bats` "fw update --check: shows version info" reaches the update code (no "No vendored framework" refusal) and passes
+- [x] `tests/integration/handover_latest_symlink.bats` "fw doctor: WARNs on a dangling LATEST.md" reaches doctor's handover check (no "not in an AEF project" refusal) and passes
+- [x] Each fixed test asserts the refusal text is absent, so a fixture regression fails loudly instead of matching a loose pattern
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +283,9 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/integration/fw_update.bats > /tmp/.t4601a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4601a.out && test "$(grep -c '# skip' /tmp/.t4601a.out)" -eq 0
+timeout 600 bats tests/integration/handover_latest_symlink.bats > /tmp/.t4601b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4601b.out && test "$(grep -c '# skip' /tmp/.t4601b.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4601c.out 2>&1 && grep -q "clean" /tmp/.t4601c.out
 
 ## RCA
 
@@ -297,6 +302,29 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Reproduction (2026-10-22, bleeding-edge after T-4619..T-4623):** still red — `not ok 2` in
+both `tests/integration/fw_update.bats` and `tests/integration/handover_latest_symlink.bats`.
+
+**Symptom:** `fw update --check: shows version info` failed with
+`ERROR: No vendored framework at $TMP/.agentic-framework`; `fw doctor: WARNs on a dangling
+LATEST.md` failed because doctor never ran (`not in an AEF project`).
+
+**Root cause:** the fixtures predate two intended behaviour changes and were never updated.
+(1) `lib/update.sh:126-134` serves only a vendored project since T-2800/D-377 (no global
+fallback); `fw_update.bats` built a bare tmp project with no `.agentic-framework/`. (2)
+`bin/fw:1301-1303` (T-2746) refuses non-TTY commands outside a project, and the project
+markers are `.framework.yaml` or `.tasks/` (`bin/fw:82-131`); `handover_latest_symlink.bats:62`
+created only `.context/handovers/`, so it was not a project.
+
+**Why structurally allowed:** neither test asserted it had reached the code under test, so
+a fixture that no longer qualified as a project read as a product failure; fw_update's loose
+`*"Framework"*|*"Current"*|*"update"*` pattern could have passed on unrelated output too. The
+integration suite is not in the pre-push gate, so the reds surfaced only in the cloud run.
+
+**Prevention:** each fixed test now asserts the refusal text is absent (`No vendored framework`,
+`not in an AEF project`) before asserting the real behaviour, and `fw_update` asserts exact
+version lines from a hermetic local upstream (no network) plus that `--check` mutated nothing.
 
 ## Evolution
 
@@ -378,3 +406,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4601-integration-fixtures-run-fw-updatedoctor.md
 - **Context:** Initial task creation
+
+### 2026-10-22T10:52:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
