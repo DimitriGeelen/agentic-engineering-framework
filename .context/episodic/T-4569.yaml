@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4569: T-4515 revives dead project hook lines: a line after 'exit 0' in v1.8.14 pre-commit runs on every commit after upgrade (cloud job 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T09:58:46Z
+# ============================================================================
+
+task_id: T-4569
+task_name: "T-4515 revives dead project hook lines: a line after 'exit 0' in v1.8.14 pre-commit runs on every commit after upgrade (cloud job 2)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T21:48:13Z
+completed: 2026-10-22T09:57:44Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-22T00:11:38+02:00
+last_commit: 2026-10-22T00:11:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lines after an old hook's unconditional exit stay inert on upgrade (commented under a T-4569 header), reachable project lines stay ACTIVE — hooks.sh fix (_fw_hook_first_exit, inert split in _fw_hook_compose) landed inside 41aec13c6; t4569 bats runs the hook for dead / live+dead / stock v1.8.14 (3/3, 3/3 fail without the fix); t4515/t4403 fixtures put their gate before the old exit 0 so they test a gate that ran; RCA + verification
+
+# Key outcomes
+outcomes:
+  - 'Upgrading an old framework hook whose project line sits after a top-level unconditional `exit` keeps that line inert: it is commented out with a T-4569 notice, and a commit does not run it'
+  - 'Project lines that were reachable in the old hook (before any top-level exit) stay ACTIVE and run, as T-4515 intends'
+  - 'Regression bats under tests/unit/ covers both cases and fails without the fix; existing t4515 hook bats stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'lines after an old hook''s unconditional exit stay inert on upgrade (commented under a T-4569 header), reachable project lines stay ACTIVE — hooks.sh fix (_fw_hook_first_exit, inert split in _fw_hook_compose) landed inside 41aec13c6; t4569 bats runs the hook for dead / live+dead / stock v1.8.14 (3/3, 3/3 fail without the fix); t4515/t4403 fixtures put their gate before the old exit 0 so they test a gate that ran; RCA + verification'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4569-t-4515-revives-dead-project-hook-lines-a.md'
+  - 'tests/unit/t4403_hook_block_preserve.bats'
+  - 'tests/unit/t4515_install_hooks_keep_gates_active.bats'
+  - 'tests/unit/t4569_install_hooks_dead_lines_stay_inert.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:11:38'
+    action: 'T-4569: lines after an old hook''s unconditional exit stay inert on upgrade (commented under a T-4569 header), reachable project lines stay ACTIVE — hooks.sh fix (_fw_hook_first_exit, inert split in _fw_hook_compose) landed inside 41aec13c6; t4569 bats runs the hook for dead / live+dead / stock v1.8.14 (3/3, 3/3 fail without the fix); t4515/t4403 fixtures put their gate before the old exit 0 so they test a gate that ran; RCA + verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 729 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, git-hook, G-122]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 729
+  commits: 1
+  files_changed: 4
+  lines_added: 182
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4569-t-4515-revives-dead-project-hook-lines-a.md
+generated_by: context-agent-hybrid

@@ -11,12 +11,12 @@ description: >
   an unconditional exit in the old hook must stay inert (commented, with a notice).
   Regression test.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, git-hook, G-122]
-components: []
+components: [tests/unit/t4515_install_hooks_keep_gates_active.bats]
 related_tasks: [T-4515]
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -46,8 +46,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:48:13Z
-last_update: '2026-10-21T22:00:13Z'
-date_finished:
+last_update: 2026-10-22T09:57:44Z
+date_finished: 2026-10-22T09:57:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -398,3 +398,20 @@ bin/fw vendor self --check --task T-4569
 ### 2026-10-21T21:52:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cb41037c
+- **Timestamp:** 2026-10-22T09:58:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T09:57:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
