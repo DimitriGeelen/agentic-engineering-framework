@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4587: upgrade_fresh_machine_simulation.bats overlay_upstream cannot push when the framework checkout is on a detached HEAD
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:24:20Z
+# ============================================================================
+
+task_id: T-4587
+task_name: "upgrade_fresh_machine_simulation.bats overlay_upstream cannot push when the framework checkout is on a detached HEAD"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T07:47:22Z
+completed: 2026-10-22T10:14:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T10:18:02+02:00
+last_commit: 2026-10-22T10:18:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  overlay_upstream pushes to an explicit branch (HEAD:refs/heads/fw-test-overlay) and points the upstream bare's HEAD at it, so the overlay lands when the framework checkout is a detached HEAD; regression test detaches the bare's HEAD (red on the old helper, green now; file 19/19)
+
+# Key outcomes
+outcomes:
+  - 'Reproduced: with the bare upstream''s HEAD detached, the current overlay_upstream leaves the overlay commit unreachable from a fresh clone of the bare'
+  - 'overlay_upstream pushes to an explicit branch ref and points the bare''s HEAD at it, so a clone of the bare checks out the overlay whether the source was on a branch or a detached HEAD'
+  - 'Regression test in upgrade_fresh_machine_simulation.bats detaches the bare''s HEAD, runs overlay_upstream, and asserts a clone sees the overlay; it fails on the old helper and passes on the new one'
+  - 'upgrade_fresh_machine_simulation.bats is fully green (no `not ok`, no skips); bats dead-negation lint clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4587-upgradefreshmachinesimulationbats-overla.md'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T10:18:02'
+    action: 'T-4587: overlay_upstream pushes to an explicit branch (HEAD:refs/heads/fw-test-overlay) and points the upstream bare''s HEAD at it, so the overlay lands when the framework checkout is a detached HEAD; regression test detaches the bare''s HEAD (red on the old helper, green now; file 19/19)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 147 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, cloud]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 147
+  commits: 1
+  files_changed: 2
+  lines_added: 83
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4587-upgradefreshmachinesimulationbats-overla.md
+generated_by: context-agent-hybrid
