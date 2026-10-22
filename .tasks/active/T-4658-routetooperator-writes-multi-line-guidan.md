@@ -95,7 +95,7 @@ cost_estimate_proposed:
 - [x] Regression test in tests/unit/test_t3579_verdict_ledger.py escalates a fixture criterion with multi-line guidance and asserts `criterion_digest` is identical before and after `_route_to_operator`; it fails on the pre-fix code
 - [x] `_route_to_operator` (lib/verdict_ledger.py) writes the escalation as exactly one line (guidance whitespace collapsed) that names the ledger row holding the full text; the verdicts ledger row keeps the guidance verbatim
 - [x] Guidance containing a checkbox-shaped line (`- [ ] ...`) does not add a criterion to the task after escalation (same test file)
-- [ ] Existing tests/unit/test_t3579_verdict_ledger.py stay green; `bin/fw vendor self --check --task T-4658` clean
+- [x] Existing tests/unit/test_t3579_verdict_ledger.py stay green; `bin/fw vendor self --check --task T-4658` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
