@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:19:23Z
-last_update: 2026-10-22T08:28:31Z
+last_update: '2026-10-22T08:30:46Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,6 +76,16 @@ bvp_scores_proposed:
       (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T08:30:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=355,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4591: Push blocker: verdict ledger has 13 rows that no longer verify (T-4490 judge dispatches not in the review-dispatch registry)
@@ -91,7 +101,7 @@ bvp_scores_proposed:
 - [x] Root cause of the 13 unverifiable verdict rows is localised to a file:line and recorded in ## RCA
 - [x] Cause fixed without editing or deleting any verdict-ledger row; `python3 lib/verdict_ledger.py audit` reports 0 rows failing
 - [x] Regression test added that fails without the fix and passes with it
-- [ ] Vendored copies in sync (`bin/fw vendor self --check --task T-4591` clean)
+- [x] Vendored copies in sync (`bin/fw vendor self --check --task T-4591` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
