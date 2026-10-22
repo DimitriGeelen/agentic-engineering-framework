@@ -150,23 +150,34 @@ def test_30_cold_graduation_requests_leave_server_responsive(monkeypatch):
     wall clock, which a loaded 4-vCPU runner missed (3.18s). The property is an
     ORDERING one — / must not wait for the scan — so the scan is now held on an
     event that is released only after / and the static file have answered. A
-    wedged / would block until the safety timer releases the scan, and the
-    assertion on `released_early` names that, with no wall-clock budget."""
+    wedged / never answers while the scan is held, so its thread is still alive
+    at the hang bound. There is no safety timer: a 60s one released the scan
+    while a slow-but-unblocked / was still rendering under heavy load (T-4616,
+    3/10 with ten copies beside 24 CPU burners), which read as "waited"."""
     from web.app import app
     client = app.test_client()
     client.get("/")  # warm / so we measure contention, not its own cold build
     real = discovery._scan_application_refs
     entered, release = threading.Event(), threading.Event()
-    released_early = []
 
     def slow():
         entered.set()
-        release.wait(120)  # a cold corpus scan, held until / has answered
+        release.wait(1800)  # a cold corpus scan, held until / has answered
         return real()
 
-    def safety():
-        released_early.append(True)
-        release.set()
+    def answered_while_held(path, hang_bound=900):
+        """Status of GET path if it answered while the scan was held, else None."""
+        out = []
+
+        def get():
+            r = app.test_client().get(path)
+            out.append(r.status_code)
+            r.close()
+
+        t = threading.Thread(target=get, daemon=True)
+        t.start()
+        t.join(hang_bound)
+        return out[0] if out and not release.is_set() else None
 
     monkeypatch.setattr(discovery, "_scan_application_refs", slow)
     discovery.signature_cached.__globals__["_SIG_CACHES"].pop("graduation-app-index", None)
@@ -176,21 +187,15 @@ def test_30_cold_graduation_requests_leave_server_responsive(monkeypatch):
     for t in threads:
         t.start()
     assert entered.wait(60), "no /graduation request reached the cold scan"
-    timer = threading.Timer(60, safety)
-    timer.start()
     try:
-        assert app.test_client().get("/").status_code == 200
-        root_during_scan = not release.is_set()
-        r = app.test_client().get("/static/pico.min.css")
-        static_during_scan = not release.is_set()
-        r.close()
+        root = answered_while_held("/")
+        static = answered_while_held("/static/pico.min.css")
     finally:
-        timer.cancel()
         release.set()
     for t in threads:
-        t.join(60)
-    assert root_during_scan and not released_early, "/ waited for the cold /graduation scan"
-    assert static_during_scan, "static waited for the cold /graduation scan"
+        t.join(600)
+    assert root == 200, "/ waited for the cold /graduation scan"
+    assert static == 200, "static waited for the cold /graduation scan"
     assert len(codes) == 30 and set(codes) <= {200, 503}
     assert codes.count(503) >= 30 - discovery.GRADUATION_INFLIGHT
 

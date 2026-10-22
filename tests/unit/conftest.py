@@ -277,6 +277,27 @@ def termlink_tripwire(monkeypatch, tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# T-4616: L-421's cause (2) — `del sys.modules[...]` + reimport replaces the
+# module object. tests/unit/test_t4223_gaps_perf.py deletes every web.* module;
+# test_t4458's module-level `import web.search as search_mod` then patched a copy
+# /search no longer read (2 reds in the -j4 cloud run, green alone). Restore the
+# original objects after every test. Defined after the value restores above so
+# its teardown runs FIRST and they then inspect the restored originals.
+# ---------------------------------------------------------------------------
+sys.path.insert(0, str(_REPO / "tests" / "lib"))
+import module_identity  # noqa: E402
+
+_IDENTITY_PREFIXES = ("web", "lib", "agents")
+
+
+@pytest.fixture(autouse=True)
+def _restore_replaced_modules():
+    before = module_identity.snapshot(_IDENTITY_PREFIXES)
+    yield
+    module_identity.restore(before, _IDENTITY_PREFIXES)
+
+
+# ---------------------------------------------------------------------------
 # T-4378: the shared hermetic fixture (temp project, stripped env, private TMPDIR,
 # decoy Watchtower and live-state tripwires). Opt-in: a test asks for `hermetic`.
 # Implementation and contract: tests/unit/hermetic.py (bats twin:

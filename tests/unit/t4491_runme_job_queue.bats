@@ -249,14 +249,15 @@ answers() { printf '%s\n' "$@" > "$ANS"; }
     manifest two '{"title":"'"$long"'","steps":[{"title":"s","argv":["touch","'"$TMPP"'/two-ran"]}]}'
     "$FW" runme job dry-run one
     "$FW" runme job dry-run two
-    run env -u FW_RUNME_TEST -u FW_RUNME_TEST_ANSWERS -u CLAUDECODE python3 - "$FW" <<'PY'
+    # T-4616: -u COLUMNS/LINES — shutil.get_terminal_size reads them before the pty.
+    run env -u FW_RUNME_TEST -u FW_RUNME_TEST_ANSWERS -u CLAUDECODE -u COLUMNS -u LINES python3 - "$FW" <<'PY'
 import os, pty, sys, time, struct, fcntl, termios, select
 pid, fd = pty.fork()
 if pid == 0:
     os.execvp(sys.argv[1], [sys.argv[1], "runme", "queue"])
 fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", 24, 80, 0, 0))
 buf, sent = b"", []
-deadline = time.time() + 20
+deadline = time.time() + 120  # T-4616: ends at EOF; the cap only bounds a hang
 while time.time() < deadline:
     r, _, _ = select.select([fd], [], [], 0.2)
     if r:
@@ -277,6 +278,8 @@ PY
     echo "$output" | grep -q "Chosen: 002-two"
     menu=$(printf '%s\n' "$output" | tr -d '\r' | grep -E '^  [0-9]+\. 00')
     [ -n "$menu" ]
-    while IFS= read -r ln; do [ "${#ln}" -le 80 ]; done <<< "$menu"
+    # Characters, not bytes (T-4616): a truncated line ends in a 3-byte "…", and
+    # bash's ${#ln} counts bytes under the C/POSIX locale cron and env -i give us.
+    printf '%s\n' "$menu" | python3 -c 'import sys; sys.exit(max(len(l) for l in sys.stdin.buffer.read().decode("utf-8").splitlines()) > 80)'
     [ -e "$TMPP/two-ran" ]
 }

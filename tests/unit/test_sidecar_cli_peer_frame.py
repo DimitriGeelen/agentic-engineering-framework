@@ -88,6 +88,12 @@ def test_alerts(monkeypatch):
     rows = [{"route": "consult", "id": "m" * 20, "from": EVIL, "conversation_id": EVIL,
              "urgent": True, "first_line": f"{INJECT} {hooks.CLOSE}"}]
     monkeypatch.setattr(alerts, "collect", lambda limit=None: rows)
+    # T-4616: cmd_alerts also lists orphan inboxes, which derives our hub id —
+    # unpinned, that read the checkout's .context/sidecar/hub-id and raised
+    # CircuitError wherever PROJECT_ROOT/cwd pointed elsewhere. Not this test's
+    # subject: pin the hub and stub the orphan scan.
+    monkeypatch.setenv("FW_SIDECAR_HUB_ID", "0123456789abcdef")
+    monkeypatch.setattr(cli.addressing, "orphan_inboxes", lambda **k: [])
     out = _run(cli.cmd_alerts, SimpleNamespace(json=False, limit=5, mark_seen=False))
     _check(out, 1)
 
