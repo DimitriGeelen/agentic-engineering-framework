@@ -63,6 +63,14 @@ unset _bd_extra_raw _bd_extra_list _bd_p
 # Read stdin (JSON from Claude Code)
 INPUT=$(cat)
 
+# T-4652: with python3 unusable every decode below yields '' and the hook would fall
+# through to `exit 0`. Scan the raw payload in bash instead; block on a foreign path.
+source "$FRAMEWORK_ROOT/lib/hook-degraded.sh"
+if ! hook_python_ok; then
+    hook_degraded_boundary "$INPUT" "python3 cannot import json/re/os/hashlib"
+    exit 0
+fi
+
 # Extract tool name
 TOOL_NAME=$(echo "$INPUT" | python3 -c "
 import sys, json
@@ -993,7 +1001,12 @@ print('SAFE')
 PYEOF
 )
 
-    if [ -z "$MATCH_RESULT" ] || [ "$MATCH_RESULT" = "SAFE" ]; then
+    # T-4652: the matcher always prints SAFE or BLOCKED; no output means it crashed.
+    if [ -z "$MATCH_RESULT" ]; then
+        hook_degraded_boundary "$INPUT" "python matcher produced no verdict (crash or nonzero exit)"
+        exit 0
+    fi
+    if [ "$MATCH_RESULT" = "SAFE" ]; then
         exit 0
     fi
 

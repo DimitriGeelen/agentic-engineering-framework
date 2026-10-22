@@ -1,10 +1,14 @@
 ---
 id: T-4652
-name: "check-tier0.sh and check-project-boundary.sh fail OPEN when the JSON decoder or python matcher cannot run"
+name: "check-tier0.sh and check-project-boundary.sh fail OPEN when the JSON decoder
+  or python matcher cannot run"
 description: >
-  When decoding fails the hooks allow everything. Proposed: bash-only keyword/absolute-path scan of the raw payload, block on a hit (over-blocks only while degraded). Source: ring20 per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category 5), ring20 patch #2-#4. Verify against our code before fixing.
+  When decoding fails the hooks allow everything. Proposed: bash-only keyword/absolute-path
+  scan of the raw payload, block on a hit (over-blocks only while degraded). Source:
+  ring20 per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category
+  5), ring20 patch #2-#4. Verify against our code before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T19:31:03Z
-last_update: 2026-10-22T19:31:03Z
-date_finished: null
+last_update: '2026-10-22T19:45:14Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T19:38:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T19:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=307,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4652: check-tier0.sh and check-project-boundary.sh fail OPEN when the JSON decoder or python matcher cannot run
@@ -62,8 +93,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Claim verified against our code: with a broken python3 first on PATH the Tier 0 hook and the project-boundary hook are shown (by test) to allow or not allow; result recorded in ## RCA
+- [x] On decoder/matcher failure both hooks run a bash-only degraded scan of the raw payload and BLOCK on a hit (destructive keywords for Tier 0; foreign absolute project path for boundary), with a message saying the hook is degraded and why
+- [x] On decoder/matcher failure with no hit, the hook allows and prints a one-line degraded warning to stderr
+- [x] Healthy-python behaviour is unchanged
+- [x] tests/unit/t4652_hook_fail_closed_degraded.bats passes (broken python + destructive blocked; broken python + benign allowed with warning; healthy unchanged) with zero skips
+- [x] Over-block trade-off recorded in ## Decisions; .claude/settings.json not edited; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,7 +284,17 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 900 bats tests/unit/t4652_hook_fail_closed_degraded.bats > /tmp/.t4652.out 2>&1 && ! grep -q "^not ok" /tmp/.t4652.out
+test "$(grep -c '# skip' /tmp/.t4652.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/ 2>&1 | grep -q clean
+bin/fw vendor self --check --task T-4652
+
 ## RCA
+
+**Symptom:** with a broken python3 first on PATH both PreToolUse gates allowed every tool call, silently (confirmed: the decoders print '' and the hooks fall through to exit 0).
+**Root cause:** every python failure path collapses to an empty string that the hooks treat as "nothing to check": check-tier0.sh:120 (`[ -z "$COMMAND" ] && exit 0`) and :529 (`[ -z "$MATCH_RESULT" ] ... exit 0`); check-project-boundary.sh `[ -z "$FILE_PATH" ] && exit 0` (Write/Edit), `[ -z "$COMMAND" ] && exit 0` (Bash), `[ -z "$MATCH_RESULT" ] ... exit 0`, and the trailing "not a Write/Edit/Bash tool" `exit 0` (empty TOOL_NAME). The matcher prints SAFE or BLOCKED on success, so empty output means crash, but was read as SAFE.
+**Why structurally allowed:** "defensive: don't block on parse failure" was written as allow; no test ran the hooks with an unusable interpreter.
+**Prevention:** lib/hook-degraded.sh (bash-only raw-payload scan, blocks on hit, warns otherwise) wired into both hooks at python-health and empty-matcher points; tests/unit/t4652_hook_fail_closed_degraded.bats (15 tests incl. a matcher-crash case).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -320,14 +365,10 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-22 — Degraded mode over-blocks, by design
+- **Chose:** while python is unusable, grep the raw (still JSON-escaped) payload and block on any Tier 0 keyword (rm -r*, git push with --force/-f/+ref, reset --hard, branch -D, git clean -f, DROP/TRUNCATE, mkfs, dd if=, the word tier0) or, for the boundary hook, any /opt, /home, /root (not .claude/.local), /srv, /mnt path that remains after removing PROJECT_ROOT. No hit: allow with a one-line stderr warning.
+- **Why:** the healthy matcher is a grammar that knows e.g. `rm -rf /var/lib/x` is not Tier 0; the bash scan cannot parse, so it errs toward blocking. Over-block (a keyword in prose/heredoc, or a harmless read of /opt/other) is recoverable and visible; a silent allow is not. It only happens while degraded, and the message names the cause.
+- **Rejected:** (a) block everything while degraded: makes a broken python a total outage including the repair commands; (b) keep allow-with-warning only: still lets a destructive command through; (c) edit .claude/settings.json to add a second hook: operator-only.
 
 ## Decision
 
@@ -345,3 +386,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4652-check-tier0sh-and-check-project-boundary.md
 - **Context:** Initial task creation
+
+### 2026-10-22T19:38:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

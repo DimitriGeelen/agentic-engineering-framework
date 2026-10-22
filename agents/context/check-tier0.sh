@@ -65,6 +65,14 @@ APPROVAL_FILE="$PROJECT_ROOT/.context/working/.tier0-approval"
 # Read stdin JSON from Claude Code
 INPUT=$(cat)
 
+# T-4652: with python3 unusable the decoder below yields an empty command and the
+# hook would allow everything. Scan the raw payload in bash instead; block on a hit.
+source "$FRAMEWORK_ROOT/lib/hook-degraded.sh"
+if ! hook_python_ok; then
+    hook_degraded_tier0 "$INPUT" "python3 cannot import json/re/os/hashlib"
+    exit 0
+fi
+
 # T-3593 round 7: the exact-text approval key is the sha256 of the ORIGINAL
 # command bytes, computed from the JSON value itself (a shell variable would
 # already have lost trailing newlines and any NUL). No whitespace is collapsed
@@ -524,8 +532,14 @@ if found:
 print('SAFE')
 " 2>/dev/null)
 
-# If Python failed or returned SAFE, allow
-if [ -z "$MATCH_RESULT" ] || [ "$MATCH_RESULT" = "SAFE" ]; then
+# T-4652: the matcher always prints SAFE or BLOCKED; no output means it crashed.
+if [ -z "$MATCH_RESULT" ]; then
+    hook_degraded_tier0 "$INPUT" "python matcher produced no verdict (crash or nonzero exit)"
+    exit 0
+fi
+
+# Matcher returned SAFE: allow
+if [ "$MATCH_RESULT" = "SAFE" ]; then
     exit 0
 fi
 
