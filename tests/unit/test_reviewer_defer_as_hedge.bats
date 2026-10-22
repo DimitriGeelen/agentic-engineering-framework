@@ -14,8 +14,17 @@ setup() {
     [ -f "$FRAMEWORK_ROOT/bin/fw" ] || skip "bin/fw not found"
     [ -f "$FRAMEWORK_ROOT/policy/anti-patterns.yaml" ] || skip "anti-patterns catalogue not found"
 
-    TEST_TASKS="$FRAMEWORK_ROOT/.tasks/active"
-    TEST_REPORTS="$FRAMEWORK_ROOT/docs/reports"
+    # T-4588: fixtures live in a throwaway project. In the checkout, the reviewer
+    # appended every scan to the repo's own .context/working/feedback-stream.yaml.
+    TEST_ROOT="$BATS_TEST_TMPDIR/proj"
+    mkdir -p "$TEST_ROOT/.tasks/active" "$TEST_ROOT/.tasks/completed" "$TEST_ROOT/.context/working" \
+        "$TEST_ROOT/docs/reports" "$TEST_ROOT/policy"
+    # policy/: detect_defer_as_hedge resolves docs/reports/ against the nearest
+    # ancestor holding a policy/ dir (lib/reviewer/static_scan.py, Gate 4).
+    echo "framework_root: $FRAMEWORK_ROOT" > "$TEST_ROOT/.framework.yaml"
+    export PROJECT_ROOT="$TEST_ROOT"
+    TEST_TASKS="$TEST_ROOT/.tasks/active"
+    TEST_REPORTS="$TEST_ROOT/docs/reports"
     POSITIVE_TASK="$TEST_TASKS/T-9957-defer-positive-fixture.md"
     POSITIVE_ARTIFACT="$TEST_REPORTS/T-9957-defer-positive-rca.md"
     NEGATIVE_GO_TASK="$TEST_TASKS/T-9958-defer-neg-go-fixture.md"

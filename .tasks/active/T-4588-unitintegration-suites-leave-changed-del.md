@@ -1,13 +1,21 @@
 ---
 id: T-4588
-name: "Unit/integration suites leave changed, deleted and untracked paths in the checkout they run in"
+name: "Unit/integration suites leave changed, deleted and untracked paths in the checkout
+  they run in"
 description: >
-  Cloud report 1 ('the suite changed or deleted tracked files in the clone') and report 4 ('The suite left 134 changed paths in the clone (94 untracked, 4 deleted, 36 modified)') at 6f60b69b5 / cc094b509 (T-4508). The per-path list was lost with the sandbox. Reproduce: in a clean clone run the fast tier (FW_UNIT_SUITE_TIER=fast bash agents/audit/unit-suite.sh), then git status --porcelain; attribute each path to the test file that wrote it (run files singly), and fix tests that write into FRAMEWORK_ROOT instead of a temp project. Audit outputs the runner itself writes (.context/audits/unit-suite/) are expected and should be listed as such.
+  Cloud report 1 ('the suite changed or deleted tracked files in the clone') and report
+  4 ('The suite left 134 changed paths in the clone (94 untracked, 4 deleted, 36 modified)')
+  at 6f60b69b5 / cc094b509 (T-4508). The per-path list was lost with the sandbox.
+  Reproduce: in a clean clone run the fast tier (FW_UNIT_SUITE_TIER=fast bash agents/audit/unit-suite.sh),
+  then git status --porcelain; attribute each path to the test file that wrote it
+  (run files singly), and fix tests that write into FRAMEWORK_ROOT instead of a temp
+  project. Audit outputs the runner itself writes (.context/audits/unit-suite/) are
+  expected and should be listed as such.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, cloud]
 components: []
 related_tasks: [T-4575, T-4508]
@@ -39,8 +47,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T07:47:41Z
-last_update: 2026-10-22T07:47:41Z
-date_finished: null
+last_update: '2026-10-22T08:00:46Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:55:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T08:00:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4588: Unit/integration suites leave changed, deleted and untracked paths in the checkout they run in
@@ -63,8 +98,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge: the fast tier is run in a clean clone and `git status --porcelain` is captured afterwards; the result (leaks or none) is recorded in this task with the commit it ran at
+- [x] Every path the fast tier leaves in the clone is attributed to the test file that wrote it, or the absence of leaks is recorded as the evidence that T-4523 already closed this
+- [x] Each leaking test (if any) writes to a temp project instead of FRAMEWORK_ROOT, with a regression test that fails before the fix and passes after (t4588_tests_leave_checkout_clean.bats: 9/9 red with the pre-fix files via T4588_TESTS_FROM, 9/9 green after; t3062 excepted, see ## Decisions)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -250,7 +286,30 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 590 env -u FRAMEWORK_ROOT bats tests/unit/t4588_tests_leave_checkout_clean.bats > /tmp/.t4588.out 2>&1 && ! grep -q "^not ok" /tmp/.t4588.out
+test "$(grep -c '# skip' /tmp/.t4588.out)" -eq 0
+timeout 120 python3 -m pytest -q -p no:cacheprovider tests/unit/test_bpmn_promote.py tests/unit/test_review_link_validator.py > /tmp/.t4588py.out 2>&1 && grep -q passed /tmp/.t4588py.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4588lint.out 2>&1 && grep -q "clean" /tmp/.t4588lint.out
+
 ## RCA
+
+**Reproduction (2026-10-22, a1b0b13a1, clean clone in /tmp/t4588-repro).** Both cloud reports ran at 6f60b69b5 / cc094b509, which predate T-4523's leak fixes (c51a23d50). On current bleeding-edge the fast tier still leaves 5 paths (the run hit its 560 s window, so files it never reached are not covered):
+`.context/audits/go-scope-unpropagated/LATEST.md`, `.context/working/.bpmn-promote-audit.jsonl`, `.context/working/.gate-bypass-log.yaml`, `.context/working/.hook-counter`, `.context/working/feedback-stream.yaml`. Runner-own outputs (`.context/audits/unit-suite/LATEST.yaml`, `runs.log`, `<date>.yaml`) are expected.
+
+**Attribution (each file run alone in the reset clone, FRAMEWORK_ROOT and PROJECT_ROOT unset):**
+- `feedback-stream.yaml` — `test_reviewer_review_link_homework.bats`, `test_reviewer_audience_mismatch.bats`, `test_reviewer_prose_mismatch.bats`, `reviewer_human_ac_mechanical_signal.bats`, `test_reviewer_defer_as_hedge.bats`: each writes T-99xx fixtures into `$FRAMEWORK_ROOT/.tasks/active` and runs the real `bin/fw reviewer`, which appends scan events to `$PROJECT_ROOT/.context/working/feedback-stream.yaml` (`lib/reviewer/static_scan.py:3132,3169`, PROJECT_ROOT falls back to cwd = the checkout).
+- `.gate-bypass-log.yaml` — `test_review_link_validator.py::test_main_enforce_bypassed_by_env_var` (sets FW_ALLOW_REVIEW_LINK_HOMEWORK, no PROJECT_ROOT; `lib/review_link_validator.py:352` falls back to the framework root) and `rail_mcp_label_guard.bats`.
+- `.bpmn-promote-audit.jsonl` — `test_bpmn_promote.py`.
+- `.hook-counter` — `audit_task_tools.bats`.
+- `go-scope-unpropagated/LATEST.md` (plus `full-audit-timing.yaml`, `metrics-history.yaml`, `audits/<date>.yaml` when run alone) — `t3062_prepush_runtime.bats`, which runs the live structure audit on purpose (`live-audit-ok`, T-4401). See ## Decisions.
+
+**Root cause:** these tests take the checkout as their project — fixtures, gate logs and counters go to `FRAMEWORK_ROOT` because the code under test resolves its project from `PROJECT_ROOT`, falling back to cwd or its own location, and the tests set neither to a temp dir.
+
+**Why nothing caught it:** T-4523's tree guard names the leak but not the writer; its RCA listed these five paths as "seen in the full run, not reproduced alone". Running files alone from an agent session reproduces nothing, because the session's exported `FRAMEWORK_ROOT` sends the writes to the live repo instead of the clone (this happened during this task: solo reviewer runs appended T-9960..T-9962 events to the live `feedback-stream.yaml`).
+
+**Fix:** the five reviewer bats files build their T-99xx fixtures in `$BATS_TEST_TMPDIR/proj` with `PROJECT_ROOT` exported (defer-as-hedge also gets an empty `policy/`, because its artifact lookup walks up to the nearest dir holding one, `lib/reviewer/static_scan.py:1628`); `rail_mcp_label_guard.bats`'s CLI test arms and consumes the token in its fixture project; `audit_task_tools.bats`'s `fw hook` test runs in `create_test_project`; the two pytest cases set `PROJECT_ROOT=tmp_path`. Each now also asserts the write landed in the fixture.
+
+**Prevention:** `tests/unit/t4588_tests_leave_checkout_clean.bats` runs each of these nine files alone, the way the runner does (FRAMEWORK_ROOT/PROJECT_ROOT unset, cwd = checkout), in a throwaway `git clone --shared`, and compares the tree by content (status + diff hash + untracked hashes), so an append to an already-dirty file still fails. It runs in the slow tier (unassigned → slow). The runner's tree guard (T-4523) remains the corpus-wide net.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -321,6 +380,18 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-22 — t3062_prepush_runtime.bats: operator question (not fixed here)
+- **Question:** `t3062_prepush_runtime.bats` (fast tier) runs `audit.sh --section structure` against the live repo on purpose (`live-audit-ok`, T-4401: it measures this repo's pre-push cost). Every run rewrites tracked audit outputs: `.context/audits/go-scope-unpropagated/LATEST.md`, and when run alone also `full-audit-timing.yaml`, `project/metrics-history.yaml`, `audits/<date>.yaml`. In a clean clone that is a tree-guard FAIL on every fast-tier run. Which fix do you want?
+  1. Add an audit knob (e.g. `FW_AUDIT_NO_REPORTS=1`) that skips report writes; t3062 sets it. Measures the same checks, writes nothing. Changes `agents/audit/audit.sh` (vendored).
+  2. Move t3062 to the perf tier (it is a wall-clock test, and perf runs serially) and list its outputs as expected tree-guard exclusions there.
+  3. Accept it: document the four paths as expected writes of the fast tier.
+- **Recommendation:** 1 — the leak is a property of the audit (tracked report files written by every structure run), not of the test; a no-reports switch keeps the measurement honest and removes the leak for any other caller that only wants the verdict. 2 is a sensible addition on top, since a timing test in a 20-way parallel pool measures contention.
+
+### 2026-10-22 — noted, out of scope
+- `detect_defer_as_hedge` resolves `docs/reports/…` against the nearest ancestor with a `policy/` dir. A consumer project has no `policy/`, so the detector can never find the artifact there and is silently inert for consumers. Worth its own task.
+- During attribution, this session's exported `FRAMEWORK_ROOT` made solo reviewer runs append T-9960..T-9962 scan events to the live `.context/working/feedback-stream.yaml` (append-only log, other writers active; left in place rather than hand-edited).
+- The reproduction run hit its 560 s window (bats and pytest legs rc=124), so fast-tier files it never reached were not checked for leaks.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -346,3 +417,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4588-unitintegration-suites-leave-changed-del.md
 - **Context:** Initial task creation
+
+### 2026-10-22T07:55:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

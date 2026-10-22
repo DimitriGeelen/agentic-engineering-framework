@@ -174,6 +174,9 @@ def test_stamp_provenance_idempotent(tmp_path):
 
 
 def test_apply_new_creates_via_gate_and_stamps(tmp_path, monkeypatch):
+    # T-4588: the write path appends to $PROJECT_ROOT/.context/working/.bpmn-promote-audit.jsonl;
+    # unset, that was the checkout the suite ran in.
+    monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
     _, manifests = _stage(tmp_path)
     actions = bpmn_promote.reconcile(manifests, existing={}, only_uid=None)
 

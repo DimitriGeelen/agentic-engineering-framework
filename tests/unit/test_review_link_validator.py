@@ -283,8 +283,12 @@ def test_main_enforce_bypassed_by_env_var(tmp_path, monkeypatch):
     task = tmp_path / "T-9999-x.md"
     task.write_text(_body_with_homework(), encoding="utf-8")
     monkeypatch.setenv("FW_ALLOW_REVIEW_LINK_HOMEWORK", "1")
+    # T-4588: the bypass logs a Tier-2 entry under $PROJECT_ROOT; unset, that
+    # was the framework checkout's own .gate-bypass-log.yaml.
+    monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
     rc = V.main([str(task), BASE, "--enforce"])
     assert rc == 0
+    assert "review-link-homework" in (tmp_path / ".context" / "working" / ".gate-bypass-log.yaml").read_text()
 
 
 def test_main_inception_block_message_names_inception_class(tmp_path, capsys):

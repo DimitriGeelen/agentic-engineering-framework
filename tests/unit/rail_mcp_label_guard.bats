@@ -111,20 +111,21 @@ print(json.dumps({'tool_name': tool_name, 'tool_input': ti}))
 # --- companion CLI: `fw rail allow-unlabeled-mcp` arms the token ------------
 
 @test "fw rail allow-unlabeled-mcp: arms a fresh bypass token the hook accepts" {
-    # `fw`'s PROJECT_ROOT resolution is cwd-derived, not an env override (see
-    # rail_identity_guard.bats for the same convention) — run it for real
-    # against FRAMEWORK_ROOT and clean up the token file afterward so this
-    # test cannot leave live-repo state behind.
-    cd "$FRAMEWORK_ROOT"
-    local real_token="$FRAMEWORK_ROOT/.context/working/.rail-mcp-label-bypass"
-    rm -f "$real_token"
+    # T-4588: run it for real, but in the fixture project (cwd + PROJECT_ROOT +
+    # .framework.yaml). Against FRAMEWORK_ROOT, the hook consuming the token
+    # appended a Tier-2 entry to the checkout's own .gate-bypass-log.yaml.
+    echo "framework_root: $FRAMEWORK_ROOT" > "$TEST_ROOT/.framework.yaml"
+    echo "- []" > "$TEST_ROOT/.context/working/.gate-bypass-log.yaml"
+    cd "$TEST_ROOT"
+    local token="$TEST_ROOT/.context/working/.rail-mcp-label-bypass"
 
-    run bin/fw rail allow-unlabeled-mcp
+    run "$FRAMEWORK_ROOT/bin/fw" rail allow-unlabeled-mcp
     [ "$status" -eq 0 ]
-    [ -f "$real_token" ]
+    [ -f "$token" ]
 
     input="$(mk_input 'mcp__termlink__termlink_channel_post' '')"
-    run env PROJECT_ROOT="$FRAMEWORK_ROOT" bash "$HOOK" <<< "$input"
+    run bash "$HOOK" <<< "$input"
     [ "$status" -eq 0 ]
-    [ ! -f "$real_token" ]  # one-shot: the hook consumed it
+    [ ! -f "$token" ]  # one-shot: the hook consumed it
+    grep -q "rail-mcp-label" "$TEST_ROOT/.context/working/.gate-bypass-log.yaml"
 }

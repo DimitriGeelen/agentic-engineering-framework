@@ -17,7 +17,13 @@ setup() {
     [ -f "$FRAMEWORK_ROOT/bin/fw" ] || skip "bin/fw not found"
     [ -f "$FRAMEWORK_ROOT/policy/anti-patterns.yaml" ] || skip "anti-patterns catalogue not found"
 
-    TEST_TASKS="$FRAMEWORK_ROOT/.tasks/active"
+    # T-4588: fixtures live in a throwaway project. In the checkout, the reviewer
+    # appended every scan to the repo's own .context/working/feedback-stream.yaml.
+    TEST_ROOT="$BATS_TEST_TMPDIR/proj"
+    mkdir -p "$TEST_ROOT/.tasks/active" "$TEST_ROOT/.tasks/completed" "$TEST_ROOT/.context/working"
+    echo "framework_root: $FRAMEWORK_ROOT" > "$TEST_ROOT/.framework.yaml"
+    export PROJECT_ROOT="$TEST_ROOT"
+    TEST_TASKS="$TEST_ROOT/.tasks/active"
     POSITIVE_TASK="$TEST_TASKS/T-9952-aud-positive-fixture.md"
     NEGATIVE_REANCHOR_TASK="$TEST_TASKS/T-9953-aud-neg-reanchor-fixture.md"
     NEGATIVE_AGENT_TASK="$TEST_TASKS/T-9954-aud-neg-agent-subhead-fixture.md"

@@ -54,6 +54,12 @@ HOOK="$FRAMEWORK_ROOT/agents/context/audit-task-tools.sh"
 }
 
 @test "audit-task-tools: routable via fw hook" {
-    output=$(echo '{"tool_name":"TaskCreate"}' | "$FRAMEWORK_ROOT/bin/fw" hook audit-task-tools)
+    # T-4588: `fw hook` records the fire in <project>/.context/working/.hook-counter;
+    # run from the checkout, that was the framework repo's own counter.
+    local proj; proj="$(create_test_project)"
+    guard_project_root "$proj"
+    cd "$proj"
+    output=$(echo '{"tool_name":"TaskCreate"}' | PROJECT_ROOT="$proj" "$FRAMEWORK_ROOT/bin/fw" hook audit-task-tools)
     echo "$output" | python3 -c "import json,sys; d=json.load(sys.stdin); assert 'additionalContext' in d"
+    grep -q '^audit-task-tools=' "$proj/.context/working/.hook-counter"
 }
