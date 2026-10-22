@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4619: Push blocker: t3298_audit_lock_integrity #9 source pin expects the old flock EXIT trap
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T12:04:10Z
+# ============================================================================
+
+task_id: T-4619
+task_name: "Push blocker: t3298_audit_lock_integrity #9 source pin expects the old flock EXIT trap"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T09:32:45Z
+completed: 2026-10-22T12:03:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T11:34:57+02:00
+last_commit: 2026-10-22T11:40:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file five unit-suite push blockers (T-4619 T-4620 T-4621 T-4622 T-4623). t3298 #9 pins the fallback rm-release by operand, not exact trap text (T-4542 added the holder file to the same trap; property intact); new behavioural test: no-flock audit leaves no lock or holder file after exit — both shown to bite on a mutant
+
+# Key outcomes
+outcomes:
+  - 'Decided: T-4542 kept the safety property (the flock arm never unlinks the lock, and the fallback arm still rm-releases it on EXIT). Only the literal text of the trap changed, so the pin follows the code and no audit.sh change is needed'
+  - 't3298 test 9 pins the fallback rm-release by its shape (an EXIT trap whose rm operands include `$AUDIT_LOCK_FILE`), so extra operands such as the T-4542 holder file pass and dropping the lock from the trap fails'
+  - 'New behavioural test: a fallback-arm (no flock) audit leaves no lock file and no holder file behind after a normal exit'
+  - '`timeout 900 bats tests/unit/t3298_audit_lock_integrity.bats` all green, no skips; bats dead-negation lint clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4619-push-blocker-t3298auditlockintegrity-9-s.md'
+  - '.tasks/active/T-4620-push-blocker-testnextdirectiveschema-xpa.md'
+  - '.tasks/active/T-4621-push-blocker-t3248usefulheadroom-6-unkno.md'
+  - '.tasks/active/T-4622-push-blocker-sessionstarthookwarning-2-r.md'
+  - '.tasks/active/T-4623-push-blocker-t3062prepushruntime-pre-pus.md'
+  - 'tests/unit/t3298_audit_lock_integrity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T11:34:57'
+    action: 'T-4619: file five unit-suite push blockers (T-4619 T-4620 T-4621 T-4622 T-4623)'
+  - time: '2026-10-22T11:40:01'
+    action: 'T-4619: t3298 #9 pins the fallback rm-release by operand, not exact trap text (T-4542 added the holder file to the same trap; property intact); new behavioural test: no-flock audit leaves no lock or holder file after exit — both shown to bite on a mutant'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 150 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, push-blocker, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 150
+  commits: 2
+  files_changed: 6
+  lines_added: 1803
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4619-push-blocker-t3298auditlockintegrity-9-s.md
+generated_by: context-agent-hybrid
