@@ -1434,12 +1434,34 @@ METAEOF
 # started that server. Same list as lib/spawn-env.sh (t4647 bats pins them equal); this runtime
 # is self-contained, so it is copied, not sourced. Project paths are set below from PROJECT_DIR.
 if [ -z "${_FW_RUNTIME_ENV_CLEAN:-}" ]; then
-    FW_SPAWN_ENV_ALLOW='^(PATH|HOME|USER|LOGNAME|SHELL|LANG|LANGUAGE|LC_[A-Z_]+|TERM|COLORTERM|TZ|TMPDIR|TMUX|TMUX_PANE|TMUX_TMPDIR|TERMLINK_RUNTIME_DIR|TERMLINK_RUNTIME_DIR_FALLBACK|TERMLINK_BIN|XDG_[A-Z_]+|DBUS_SESSION_BUS_ADDRESS|SSH_AUTH_SOCK|ANTHROPIC_[A-Z0-9_]+|CLAUDE_CONFIG_DIR|CLAUDE_CODE_OAUTH_TOKEN|http_proxy|https_proxy|no_proxy|HTTP_PROXY|HTTPS_PROXY|NO_PROXY|SSL_CERT_FILE|SSL_CERT_DIR|NODE_EXTRA_CA_CERTS)$'
+    FW_SPAWN_ENV_ALLOW='^(HOME|USER|LOGNAME|SHELL|LANG|LANGUAGE|LC_[A-Z_]+|TERM|COLORTERM|TZ|TMPDIR|TMUX|TMUX_PANE|TMUX_TMPDIR|TERMLINK_RUNTIME_DIR|TERMLINK_RUNTIME_DIR_FALLBACK|TERMLINK_BIN|XDG_[A-Z_]+|DBUS_SESSION_BUS_ADDRESS|SSH_AUTH_SOCK|ANTHROPIC_[A-Z0-9_]+|CLAUDE_CONFIG_DIR|CLAUDE_CODE_OAUTH_TOKEN|http_proxy|https_proxy|no_proxy|HTTP_PROXY|HTTPS_PROXY|NO_PROXY|SSL_CERT_FILE|SSL_CERT_DIR|NODE_EXTRA_CA_CERTS)$'
     _KEEP=()
     while IFS= read -r _K; do
         [[ "$_K" =~ $FW_SPAWN_ENV_ALLOW ]] && _KEEP+=("$_K=${!_K}")
     done < <(compgen -e)
-    exec env -i "${_KEEP[@]}" _FW_RUNTIME_ENV_CLEAN=1 "$BASH" "$0" "$@"
+    # T-4666: PATH by construction (lib/spawn-env.sh fw_spawn_path), never the session's — a
+    # foreign .agentic-framework/bin first made the worker run another project's fw. The
+    # framework bin is the one the worker's own project resolves to (as FRAMEWORK_ROOT below);
+    # a review's pinned worker binary adds its dir (codex is `#!/usr/bin/env node`).
+    _FWB="$2/bin"
+    if [ ! -f "$2/FRAMEWORK.md" ]; then
+        if [ -d "$2/.agentic-framework" ]; then _FWB="$2/.agentic-framework/bin"; else _FWB="${7%/*}"; fi
+    fi
+    _DIRS=("$_FWB")
+    for _K in claude termlink node "$(cat "$3/worker_bin" 2>/dev/null)"; do
+        _K=$(command -v "$_K" 2>/dev/null) || continue
+        case "$_K" in /*) _DIRS+=("${_K%/*}") ;; esac
+    done
+    [ -n "${HOME:-}" ] && _DIRS+=("$HOME/.local/bin" "$HOME/.cargo/bin")
+    _DIRS+=(/usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin)
+    _P=""; _SEEN=":"
+    for _K in "${_DIRS[@]}"; do
+        case "$_K" in */.agentic-framework/bin) [ "$_K" = "$_FWB" ] || continue ;; esac
+        [ -d "$_K" ] || continue
+        case "$_SEEN" in *":$_K:"*) continue ;; esac
+        _SEEN="$_SEEN$_K:"; _P="${_P:+$_P:}$_K"
+    done
+    exec env -i "${_KEEP[@]}" PATH="$_P" _FW_RUNTIME_ENV_CLEAN=1 "$BASH" "$0" "$@"
 fi
 unset _FW_RUNTIME_ENV_CLEAN
 WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"; MODEL="$5"

@@ -98,3 +98,53 @@ wait_for_file() { local i; for i in $(seq 1 150); do [ -s "$1" ] && return 0; sl
 @test "T-4665: no TERMLINK_ prefix pattern in either allow-list copy" {
     ! grep -n 'TERMLINK_\[A-Z0-9_\]+' "$ROOT/lib/spawn-env.sh" "$TL" || false
 }
+
+# T-4666: PATH is built, never copied. A caller PATH with another project's .agentic-framework/bin
+# (or any other foreign bin) first made the worker run that project's fw.
+_foreign_bins() {
+    mkdir -p "$T/other/.agentic-framework/bin" "$T/junk/bin"
+    printf '#!/bin/sh\necho foreign\n' > "$T/other/.agentic-framework/bin/fw"
+    cp "$T/other/.agentic-framework/bin/fw" "$T/junk/bin/fw"
+    chmod +x "$T/other/.agentic-framework/bin/fw" "$T/junk/bin/fw"
+}
+
+@test "T-4666: fw_spawn_env builds PATH — foreign bins dropped, this framework's fw first, tools still found" {
+    _foreign_bins
+    run env -i PATH="$T/other/.agentic-framework/bin:$T/junk/bin:$STUB:/usr/local/bin:/usr/bin:/bin" HOME="$HOME" \
+        bash -c '. "$1"; fw_spawn_env; printf "%s\n" "${FW_SPAWN_ENV[@]}"' _ "$ROOT/lib/spawn-env.sh"
+    [ "$status" -eq 0 ]
+    p=$(echo "$output" | sed -n 's/^PATH=//p')
+    echo "PATH=$p"
+    [ "$(echo "$output" | grep -c '^PATH=')" -eq 1 ]
+    case ":$p:" in *":$T/other/"*|*":$T/junk/bin:"*) echo "foreign bin kept"; false ;; esac
+    [ "${p%%:*}" = "$ROOT/bin" ]
+    [ "$(PATH="$p" command -v fw)" = "$ROOT/bin/fw" ]
+    # The resolved claude/termlink stay reachable (their dir is added), and so do the host tools.
+    [ "$(PATH="$p" command -v claude)" = "$STUB/claude" ]
+    [ "$(PATH="$p" command -v termlink)" = "$STUB/termlink" ]
+    for b in git python3 bash; do PATH="$p" command -v "$b" >/dev/null || { echo "no $b"; false; }; done
+}
+
+@test "T-4666: a dispatch with a foreign fw first on PATH — the worker resolves its own project's fw" {
+    _foreign_bins
+    C="$T/consumer"; mkdir -p "$C"; ln -s "$ROOT" "$C/.agentic-framework"
+    cat > "$STUB/claude" <<EOS
+#!/bin/bash
+tr '\0' '\n' < /proc/\$\$/environ > "$T/worker.env"
+for b in fw termlink git python3 bats; do printf '%s=%s\n' "\$b" "\$(command -v \$b)"; done > "$T/worker.which"
+echo '{"type":"result","result":"done"}'
+EOS
+    chmod +x "$STUB/claude"
+    run env PATH="$T/other/.agentic-framework/bin:$T/junk/bin:$STUB:$PATH" FW_DISPATCH_DIR="$DD" \
+        timeout 120 bash "$TL" dispatch --task T-4666 --name t4666-w --project "$C" --prompt "noop"
+    echo "$output"
+    [ "$status" -eq 0 ]
+    wait_for_file "$T/worker.which" || { cat "$T/inject.out" "$DD/t4666-w/stderr.log" 2>/dev/null; false; }
+    cat "$T/worker.which"
+    ! grep -E "^PATH=.*$T/(other|junk)/" "$T/worker.env" "$T/spawn.env" || false
+    grep -qx "fw=$C/.agentic-framework/bin/fw" "$T/worker.which"
+    grep -qx "termlink=$STUB/termlink" "$T/worker.which"
+    grep -qE '^git=/' "$T/worker.which"
+    grep -qE '^python3=/' "$T/worker.which"
+    if command -v bats >/dev/null; then grep -qE '^bats=/' "$T/worker.which"; fi
+}
