@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4266: init.sh's T-000 bootstrap recovery commit is refused by the focus-drift gate.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T09:57:30Z
+# ============================================================================
+
+task_id: T-4266
+task_name: "init.sh's T-000 bootstrap recovery commit is refused by the focus-drift gate."
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-17T15:27:59Z
+completed: 2026-10-22T09:43:25Z
+duration_days: 5
+updates_count: 2
+first_commit: 2026-10-21T23:21:10+02:00
+last_commit: 2026-10-21T23:21:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init bootstrap recovery advice names the session's focused task (fw_init_bootstrap_task_ref, reads $CLAUDE_PROJECT_DIR focus) instead of a hard-coded T-000 the focus-drift gate refuses; gate unchanged; regression bats. restore T-4240's fw init restart notice that 922c812aa reverted (blob built from the pre-68fc1e575 HEAD); T-4266 hunks kept
+
+# Key outcomes
+outcomes:
+  - '`lib/init.sh` has a helper `fw_init_bootstrap_task_ref` that returns the focused task of the Claude Code session (`$CLAUDE_PROJECT_DIR/.context/working/focus.yaml`, the same root the PreToolUse hook gates) and `T-000` only when no task is focused'
+  - 'Both bootstrap recovery advice lines in `lib/init.sh` (empty-tree warning, commit-failed warning) print `git commit -m "<that id>: …"` instead of a hard-coded `T-000`'
+  - 'Regression bats `tests/unit/t4266_init_bootstrap_advice_focus.bats`: with focus set, the advised commit command passes the focus-drift gate (exit 0) under `CLAUDECODE=1`; with no focus it is `T-000`; fails before the fix'
+  - 'The focus-drift gate itself is unchanged (no T-000 exemption); `tests/unit/focus_drift_gate.bats`, `tests/unit/init_head_bootstrap.bats` and `tests/unit/upgrade_fresh_machine_simulation.bats` stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'restore T-4240''s fw init restart notice that 922c812aa reverted (blob built from the pre-68fc1e575 HEAD); T-4266 hunks kept'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-21 — fix the advice, not the gate'
+    chose: 'init''s recovery advice names the session''s focused task (read from `$CLAUDE_PROJECT_DIR/.context/working/focus.yaml`), falling back to `T-000` when nothing is focused.'
+    rationale: 'the drift gate is about attribution, and `T-000` means "no task". Exempting it would let any focused session commit unattributed work as `T-000` with no log. Fixing the advice changes no governance.'
+    alternatives_rejected: ['a T-000 special case in the focus-drift gate (that loosens governance and would be the operator''s call); a `T-XXX` placeholder in the advice (not copy-pasteable, against §Copy-Pasteable Commands).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - 'lib/init.sh'
+  - '.tasks/active/T-4266-initshs-t-000-bootstrap-recovery-commit-.md'
+  - 'tests/unit/t4266_init_bootstrap_advice_focus.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T23:21:10'
+    action: 'T-4266: fw init bootstrap recovery advice names the session''s focused task (fw_init_bootstrap_task_ref, reads $CLAUDE_PROJECT_DIR focus) instead of a hard-coded T-000 the focus-drift gate refuses; gate unchanged; regression bats'
+  - time: '2026-10-21T23:21:43'
+    action: 'T-4266: restore T-4240''s fw init restart notice that 922c812aa reverted (blob built from the pre-68fc1e575 HEAD); T-4266 hunks kept'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6855 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6855
+  commits: 2
+  files_changed: 4
+  lines_added: 213
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4266-initshs-t-000-bootstrap-recovery-commit-.md
+generated_by: context-agent-hybrid
