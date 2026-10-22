@@ -1,13 +1,16 @@
 ---
 id: T-4551
-name: "v1.1 aef:io follow-ups: ref as data-flow join key, typeRef version pinning, forward compile reads aef:io"
+name: "v1.1 aef:io follow-ups: ref as data-flow join key, typeRef version pinning,
+  forward compile reads aef:io"
 description: >
-  Open build items left by T-4415 DRAFT 2: define and implement ref as the step-to-step data-flow join key, typeRef version pinning syntax, and make the forward compile read aef:io into generated tasks.
+  Open build items left by T-4415 DRAFT 2: define and implement ref as the step-to-step
+  data-flow join key, typeRef version pinning syntax, and make the forward compile
+  read aef:io into generated tasks.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [mapping, aef-io, T-4415]
 components: []
 related_tasks: [T-4415]
@@ -39,8 +42,8 @@ origin: {kind: "peer", source: "832", ref: "770531b2"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T14:32:07Z
-last_update: 2026-10-21T14:32:07Z
-date_finished: null
+last_update: 2026-10-22T12:54:59Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +54,56 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-22T07:45:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:46:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4551: v1.1 aef:io follow-ups: ref as data-flow join key, typeRef version pinning, forward compile reads aef:io
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Standard: `policy/standards/aef-bpmn-mapping-v1.1-io.md`. §13 leaves items (1) `ref` as data-flow
+join key and (2) `typeRef` version pinning explicitly **not decided**, so both are written as options
+with a recommendation under `## Decisions` and NOT implemented (they change the standard 832 and
+greenfield verified). Item (3), the forward compile (`tools/bpmn_to_tasks.py`) reading `aef:io`, is
+built: §2–§8 fix everything it reads.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `## Decisions` records options + a recommendation for (1) ref-as-join-key and (2) typeRef version pinning; `policy/standards/aef-bpmn-mapping-v1.1-io.md` is not modified by this task
+- [x] `parse_bpmn` attaches an `io` list to each skeleton from the node's `aef:io` (inputs and outputs, attributes verbatim, `type` defaulted to `string` and aliases `int`/`bool` resolved per §3, `aef:field`/`aef:when`/`aef:expect`/`aef:example` children); unknown children are carried verbatim, never dropped (§1.4)
+- [x] §2.3 `ref` read rule and §2.5 system derivation applied from the process-level `aef:meta` / `aef:prefixes`
+- [x] A `mappingVersion` other than `1.1` makes the compile refuse naming the value (§1.5)
+- [x] `update`/`upsert`/`delete` with no `role="match"` field (§4.3) and an undetermined match key (§4.4) each produce a compile warning
+- [x] `render_skeleton` emits `io:` in YAML-parseable frontmatter plus pre/postcondition AC seeds from `aef:expect`; a node with no `aef:io` renders byte-identically to before
+- [x] New pytest `tests/unit/test_bpmn_to_tasks_io.py` covers every §11 worked example and passes; existing `tests/unit/test_bpmn_to_tasks.py` still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +288,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_bpmn_to_tasks_io.py -q > /tmp/.t4551-io.out 2>&1 && grep -q passed /tmp/.t4551-io.out
+python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q > /tmp/.t4551-base.out 2>&1 && grep -q passed /tmp/.t4551-base.out
+test -z "$(git log --format=%H --grep='^T-4551' -- policy/standards/aef-bpmn-mapping-v1.1-io.md)"
+bin/fw vendor self --check --task T-4551
 
 ## RCA
 
@@ -265,6 +308,20 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** a map carrying structured `aef:io` (v1.0 or v1.1) compiled to task skeletons with no trace
+of its inputs, outputs, field roles or expectations, and a `mappingVersion="9.9"` map compiled clean.
+
+**Root cause:** `tools/bpmn_to_tasks.py:parse_bpmn` (pass 1, the task-node loop) reads only `aef:uid`,
+lane authority and `aef:meta workflowType`; nothing in the compiler visits `aef:io` or the process-level
+`aef:meta`, so §1.4 (preserve or refuse, never drop) and §1.5 (refuse unknown versions) were violated by
+omission. The v1.1 work (T-4549 spec round-trip, T-4550 lint) covered `corpus_spec`/`corpus_lint` only.
+
+**Why structurally allowed:** the compiler matches extension elements by local name and ignores every
+one it does not ask for; unlike typed events (T-2552) and gateways (T-2557) there was no WARN pass for
+`aef:io`, so the loss was silent and no test fixture carried `aef:io`.
+
+**Prevention:** `tests/unit/test_bpmn_to_tasks_io.py` pins io extraction on the §11 examples, the
+version refusal, and byte-identical output for io-free nodes.
 
 ## Evolution
 
@@ -330,6 +387,44 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — (1) `ref` as the step-to-step data-flow join key (§13 item 1) — NOT implemented, needs the ruling
+- **Options:**
+  1. **`ref` is the join key** — an output and a later input with the same `ref` are the same data. Zero new
+     attributes, but `ref` already carries two meanings (v1 data-object identity, and fieldRef under §2.3);
+     a third overloads it further, and under §2.3 a field-kind prefix would turn every join into a field join.
+  2. **A dedicated attribute** (e.g. `flowRef` / `bindsTo="<step uid>/<io name>"`) on `aef:input` naming the
+     producing output. Explicit, one meaning, addable as [v1.1-only]; costs one attribute and a lint rule
+     (dangling bind).
+  3. **Derive from BPMN** — `bpmn:dataObjectReference` + `dataInputAssociation`/`dataOutputAssociation`, the
+     standard's own data-flow construct; `ref` stays identity only. Most portable (D4), but neither 832's
+     designer nor greenfield's maps draw associations today.
+- **Recommendation:** option 3 as the normative carrier, with option 2 as the authoring shorthand only if the
+  designer cannot draw associations; do NOT overload `ref` (option 1). Rationale: `ref`'s §2.3 read rule
+  already makes its meaning depend on the prefix map, and a join key that changes meaning when a prefix is
+  declared is a silent-misread class (D2).
+
+### 2026-10-22 — (2) `typeRef` version pinning (§13 item 2) — NOT implemented, needs the ruling
+- **Options:**
+  1. **Version inside the IRI** (`tacton:v3/Opportunity`, or a versioned prefix `tacton3:`). No new attribute;
+     works with prefix maps (§6) by declaring a versioned prefix IRI; but a version bump rewrites every QName.
+  2. **Separate attribute** (`typeVersion="3"` beside `typeRef`). Keeps QNames stable; adds an attribute every
+     generator must remember, and splits identity across two attributes.
+  3. **Version on the prefix** (`<aef:prefix name="tacton" iri="…" version="3"/>`). One place per map, QNames
+     unchanged, matches how the prefix already carries `system` and `kind`; cannot pin two versions of one
+     ontology in one map without a second prefix.
+- **Recommendation:** option 3 (pin on `aef:prefix`), falling back to a second prefix (option 1's versioned
+  prefix) when one map needs two versions. It is additive like §6 (v1.0 readers preserve it) and keeps the
+  version where the other per-ontology facts already live.
+
+### 2026-10-22 — (3) forward compile carries aef:io as JSON flow mappings in frontmatter
+- **Chose:** `io:` list in the skeleton frontmatter, one JSON object per item (JSON is YAML), attributes
+  verbatim plus read-rule results (`type`, `fieldRef`/`fieldRef_from`, `sourceSystem`/`targetSystem` +
+  `system_from`); `aef:expect` also seeds `# precondition:`/`# postcondition: [NEEDS-FILL]` comment lines.
+- **Why:** the compiler is stdlib-only (no PyYAML) and JSON escaping is safe YAML; comments keep the AC seed
+  style the compiler already uses for constituents.
+- **Rejected:** importing `tools/corpus_spec.py`'s `_io_parse` — namespace-exact and SystemExit-based, where
+  this compiler is local-name-agnostic and raises typed errors that `main` maps to exit 3.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -346,3 +441,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4551-v11-aefio-follow-ups-ref-as-data-flow-jo.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:36:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
