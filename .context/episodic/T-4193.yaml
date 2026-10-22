@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4193: episodic: join decisions.yaml by task id; say so when the register has an entry the task lacks (832 OBS-458, their T-1150)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:28:32Z
+# ============================================================================
+
+task_id: T-4193
+task_name: "episodic: join decisions.yaml by task id; say so when the register has an entry the task lacks (832 OBS-458, their T-1150)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T19:11:00Z
+completed: 2026-10-22T10:28:03Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-10-22T00:34:33+02:00
+last_commit: 2026-10-22T00:34:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  episodic joins decisions.yaml by task id — register-only decisions are emitted with source: register under a comment saying the task file lacks them, instead of concluding 'no decisions to record'; entries already in the task file (same/prefix Chose text) not repeated; t4193 bats 6 legs (3 red before); vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduces on bleeding-edge: a task with an empty `## Decisions` section but a `.context/project/decisions.yaml` entry `task: <id>` yields an episodic with no decisions and `enrichment_status: auto-complete` ("no decisions to record")'
+  - '`generate-episodic` joins `decisions.yaml` by task id: register entries for the task appear under `decisions:` with `source: register`, and enrichment is not `auto-complete`'
+  - 'When the register has an entry the task file lacks, the episodic says so (a comment naming the register), rather than concluding absence; register entries already present in the task file (same chose text) are not duplicated'
+  - 'Regression bats test fails before the fix and passes after; neighbouring episodic tests still pass; generated YAML parses'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'episodic joins decisions.yaml by task id — register-only decisions are emitted with source: register under a comment saying the task file lacks them, instead of concluding ''no decisions to record''; entries already in the task file (same/prefix Chose text) not repeated; t4193 bats 6 legs (3 red before); vendor synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/episodic.sh'
+  - '.agentic-framework/agents/context/lib/extract_decisions.py'
+  - 'agents/context/lib/episodic.sh'
+  - 'agents/context/lib/extract_decisions.py'
+  - '.tasks/active/T-4193-episodic-join-decisionsyaml-by-task-id-s.md'
+  - 'tests/unit/t4193_episodic_register_join.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:34:33'
+    action: 'T-4193: episodic joins decisions.yaml by task id — register-only decisions are emitted with source: register under a comment saying the task file lacks them, instead of concluding ''no decisions to record''; entries already in the task file (same/prefix Chose text) not repeated; t4193 bats 6 legs (3 red before); vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12437 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12437
+  commits: 1
+  files_changed: 6
+  lines_added: 364
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4193-episodic-join-decisionsyaml-by-task-id-s.md
+generated_by: context-agent-hybrid

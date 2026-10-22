@@ -11,12 +11,12 @@ description: >
   and where the register has an entry the task file lacks, say so instead of concluding
   absence.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/lib/episodic.sh, agents/context/lib/extract_decisions.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:11:00Z
-last_update: 2026-10-21T22:26:40Z
-date_finished:
+last_update: 2026-10-22T10:28:03Z
+date_finished: 2026-10-22T10:28:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -392,3 +392,20 @@ bin/fw vendor self --check --task T-4193
 ### 2026-10-21T22:26:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9053ed08
+- **Timestamp:** 2026-10-22T10:28:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Reproduces on bleeding-edge: a task with an empty `## Decisions` section but a `.context/project/decisions.yaml` entry `task: <id>` yields an episodic with no decisions and `enrichment_status: auto-co
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/decisions.yaml in: Reproduces on bleeding-edge: a task with an empty `## Decisions` section but a `.context/project/decisions.yaml` entry `task: <id>` yields an episodic`
+
+### 2026-10-22T10:28:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
