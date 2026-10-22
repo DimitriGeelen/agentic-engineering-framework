@@ -4060,6 +4060,22 @@ except Exception:
             echo -e "         Unset embed_host in .context/settings.yaml to resolve to ollama_host, or start the endpoint. See T-3045."
         fi
     fi
+
+    # Check: review seats' pinned models still listed by their harness (T-4506).
+    # A retired pin (glm-5.2) failed every opencode seat with 'Unexpected server
+    # error'; this names it. Silent when opencode is absent; a failed listing is
+    # INFO, never a retirement.
+    if [ -f "$FRAMEWORK_ROOT/lib/review_model_preflight.py" ]; then
+        local _rmp_line
+        while IFS= read -r _rmp_line; do
+            case "$_rmp_line" in
+                OK\ *)        echo -e "  ${GREEN}OK${NC}  review model pin ${_rmp_line#OK }" ;;
+                RETIRED\ *)   echo -e "  ${YELLOW}WARN${NC}  review model pin retired: ${_rmp_line#RETIRED }"
+                              warnings=$((warnings + 1)) ;;
+                UNCHECKED\ *) echo -e "  ${CYAN}INFO${NC}  review model pin unchecked: ${_rmp_line#UNCHECKED }" ;;
+            esac
+        done < <(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/review_model_preflight.py" 2>/dev/null)
+    fi
     fi  # T-2452/F6: end --quick guard for litellm/ollama curls
 
     # Check: TypeScript build health (optional)

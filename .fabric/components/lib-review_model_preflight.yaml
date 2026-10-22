@@ -1,0 +1,21 @@
+id: lib/review_model_preflight.py
+name: review_model_preflight
+type: script
+subsystem: framework-core
+location: lib/review_model_preflight.py
+tags: []
+
+purpose: "Pinned-model preflight for review backends: `python3 lib/review_model_preflight.py [--json]`."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-22
+created_by: unknown
