@@ -1843,13 +1843,19 @@ cmd_wait() {
         local wdir="$DISPATCH_DIR/$name"
         [ -d "$wdir" ] || die "No worker named '$name'"
 
-        # Event-based wait first, file confirmation fallback
-        # (from tl-dispatch.sh — termlink event wait is faster than polling)
-        termlink list 2>/dev/null | grep -q "$name" && \
-            termlink event wait "$name" --topic worker.done --timeout "$timeout" >/dev/null 2>&1 || true
-
-        local deadline=$(($(date +%s) + timeout))
-        while ! _worker_done "$wdir" && [ "$(date +%s)" -lt "$deadline" ]; do sleep 1; done
+        # T-4582: the file is the truth, the event only a speed-up. `event wait` misses a
+        # worker.done emitted before it subscribes, so check the file first and wait on the
+        # event in short slices, re-checking between them, under one deadline.
+        local deadline=$(($(date +%s) + timeout)) left slice
+        while ! _worker_done "$wdir" && [ "$(date +%s)" -lt "$deadline" ]; do
+            left=$((deadline - $(date +%s))); slice=$(( left < 5 ? left : 5 ))
+            [ "$slice" -gt 0 ] || break
+            if termlink list 2>/dev/null | grep -q "$name"; then
+                termlink event wait "$name" --topic worker.done --timeout "$slice" >/dev/null 2>&1 || true
+            else
+                sleep 1
+            fi
+        done
 
         if _worker_done "$wdir"; then
             local ec

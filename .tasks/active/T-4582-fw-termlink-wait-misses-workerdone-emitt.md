@@ -1,10 +1,17 @@
 ---
 id: T-4582
-name: "fw termlink wait misses worker.done emitted before it subscribes and idles the full timeout"
+name: "fw termlink wait misses worker.done emitted before it subscribes and idles
+  the full timeout"
 description: >
-  1409-sprind T-2540 (msg b199bdb2): agents/termlink/termlink.sh cmd_wait runs 'termlink event wait N --topic worker.done --timeout T' first and checks _worker_done only afterwards. A worker that emits worker.done before the wait subscribes (two workers finishing in the same second) is missed and the call idles the full timeout with exit_code already on disk; measured 1500.2 s idle on 2026-10-21. Fix: check _worker_done before the event wait, and wait in short slices re-checking the file between slices. Regression test with a worker that is already done before wait starts.
+  1409-sprind T-2540 (msg b199bdb2): agents/termlink/termlink.sh cmd_wait runs 'termlink
+  event wait N --topic worker.done --timeout T' first and checks _worker_done only
+  afterwards. A worker that emits worker.done before the wait subscribes (two workers
+  finishing in the same second) is missed and the call idles the full timeout with
+  exit_code already on disk; measured 1500.2 s idle on 2026-10-21. Fix: check _worker_done
+  before the event wait, and wait in short slices re-checking the file between slices.
+  Regression test with a worker that is already done before wait starts.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "1409-sprind", ref: "b199bdb2"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T07:22:49Z
-last_update: 2026-10-22T07:22:49Z
-date_finished: null
+last_update: '2026-10-22T07:25:00Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:25:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4582: fw termlink wait misses worker.done emitted before it subscribes and idles the full timeout
@@ -63,8 +87,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `cmd_wait` checks `_worker_done` before any `termlink event wait`; a worker already done returns its exit code at once, without waiting on the event
+- [x] The single-worker wait runs the event wait in short slices (≤5 s) with a `_worker_done` check between slices, under ONE deadline computed before the first slice (total wait never exceeds `--timeout`)
+- [x] Regression test `tests/unit/t4582_termlink_wait_missed_event.bats` (stub termlink whose `event wait` never fires) fails before the fix and passes after
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +274,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4582_termlink_wait_missed_event.bats > /tmp/.t4582.out 2>&1 && ! grep -q "^not ok" /tmp/.t4582.out
+test "$(grep -c '# skip' /tmp/.t4582.out)" -eq 0
+bash -n agents/termlink/termlink.sh
+bin/fw vendor self --check --task T-4582
 
 ## RCA
 
@@ -265,6 +294,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw termlink wait --name W` idled the full timeout (1500.2 s measured by 1409-sprind, 2026-10-21) although W's `exit_code` was already on disk.
+
+**Root cause:** `agents/termlink/termlink.sh` `cmd_wait` (single-worker branch, ~line 1847) ran `termlink event wait W --topic worker.done --timeout T` FIRST and only consulted `_worker_done` afterwards. `event wait` only sees events emitted after it subscribes, so a worker that emitted `worker.done` before the wait started (two workers finishing in the same second; the parent waits on one, then the other) was never seen and the call blocked for all of T. The file deadline was also computed after the event wait, so the worst case was 2×T.
+
+**Why structurally allowed:** no test exercised `cmd_wait` at all; the event wait was treated as a pure speed-up with a "file confirmation fallback", but the fallback only ran after the blocking call returned.
+
+**Prevention:** `tests/unit/t4582_termlink_wait_missed_event.bats` stubs a termlink whose event wait never fires and asserts the already-done and finishes-mid-wait cases return promptly and that the total wait honours `--timeout`.
 
 ## Evolution
 
@@ -346,3 +383,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4582-fw-termlink-wait-misses-workerdone-emitt.md
 - **Context:** Initial task creation
+
+### 2026-10-22T07:24:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
