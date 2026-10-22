@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4221: Triage the long-lived baselined unit reds: 28 tests in 16 files expired 2026-10-15 (4 files untriaged) plus the load-sensitive t1719 latency budget
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:27:36Z
+# ============================================================================
+
+task_id: T-4221
+task_name: "Triage the long-lived baselined unit reds: 28 tests in 16 files expired 2026-10-15 (4 files untriaged) plus the load-sensitive t1719 latency budget"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T03:04:20Z
+completed: 2026-10-22T10:26:47Z
+duration_days: 5
+updates_count: 2
+first_commit: 2026-10-17T05:04:53+02:00
+last_commit: 2026-10-22T01:18:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file triage of the long-lived baselined unit reds. operator runmes — enforcement re-baseline after the visual hook (t4220-rebaseline) and 29 baselined reds extended to 2026-10-31 (t4221-extend-baseline). operator baselined 3 load-flaky unit tests (green alone) to 2026-10-31 via runme t4221-baseline-flaky3. triage of all 28 baselined unit-red files; fix watchtower port_in_use/_watchtower_port_listening reading ss SIGPIPE (141 under pipefail) as free — t3662 reds; T-2888 verb scan reads tracked files only (was 5 min over gitignored scratch); regression bats t4221 (2 legs red pre-fix) + scan leg; file T-4581 for bin/fw heredoc lint; vendor synced. fabric card for t4221_port_in_use_sigpipe.bats
+
+# Key outcomes
+outcomes:
+  - 'Every file named in `.context/audits/unit-suite/baseline.yaml` was run alone in the foreground on current bleeding-edge and has a per-entry verdict (green-alone / red + cause) in `## Triage` below'
+  - 'Each red owned by T-4221 is either fixed here (with a regression test that fails without the fix) or handed to one filed task per independent cause'
+  - 'The baseline was not edited by hand and no entry was added (`git diff` on baseline.yaml is empty for this task''s commits)'
+  - '`port_in_use` (bin/watchtower.sh) and `_watchtower_port_listening` (lib/watchtower.sh) report a held port as held under pipefail when `ss` output is large; `tests/unit/t4221_port_in_use_sigpipe.bats` fails without the fix and passes with it'
+  - 'The T-2888 git-verb scan in `context_safe_commands.bats` reads tracked files only (not gitignored `.context/scratch`); the regression leg in the same file fails without the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'triage of all 28 baselined unit-red files; fix watchtower port_in_use/_watchtower_port_listening reading ss SIGPIPE (141 under pipefail) as free — t3662 reds; T-2888 verb scan reads tracked files only (was 5 min over gitignored scratch); regression bats t4221 (2 legs red pre-fix) + scan leg; file T-4581 for bin/fw heredoc lint; vendor synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/lib/watchtower.sh'
+  - 'bin/watchtower.sh'
+  - '.context/audits/unit-suite/baseline.yaml'
+  - '.context/project/enforcement-baseline.sha256'
+  - '.fabric/components/tests-unit-t4221_port_in_use_sigpipe.yaml'
+  - 'lib/watchtower.sh'
+  - '.tasks/active/T-4221-triage-the-long-lived-baselined-unit-red.md'
+  - '.tasks/active/T-4581-binfw-heredoc-in-cmd-sub-lint-red-doctor.md'
+  - 'tests/unit/context_safe_commands.bats'
+  - 'tests/unit/t4221_port_in_use_sigpipe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T05:04:53'
+    action: 'T-4221: file triage of the long-lived baselined unit reds'
+  - time: '2026-10-17T10:27:38'
+    action: 'T-4221: operator runmes — enforcement re-baseline after the visual hook (t4220-rebaseline) and 29 baselined reds extended to 2026-10-31 (t4221-extend-baseline)'
+  - time: '2026-10-17T14:39:53'
+    action: 'T-4221: operator baselined 3 load-flaky unit tests (green alone) to 2026-10-31 via runme t4221-baseline-flaky3'
+  - time: '2026-10-22T01:17:55'
+    action: 'T-4221: triage of all 28 baselined unit-red files; fix watchtower port_in_use/_watchtower_port_listening reading ss SIGPIPE (141 under pipefail) as free — t3662 reds; T-2888 verb scan reads tracked files only (was 5 min over gitignored scratch); regression bats t4221 (2 legs red pre-fix) + scan leg; file T-4581 for bin/fw heredoc lint; vendor synced'
+  - time: '2026-10-22T01:18:07'
+    action: 'T-4221: fabric card for t4221_port_in_use_sigpipe.bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 7642 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7642
+  commits: 5
+  files_changed: 11
+  lines_added: 1065
+  lines_removed: 790
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4221-triage-the-long-lived-baselined-unit-red.md
+generated_by: context-agent-hybrid
