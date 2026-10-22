@@ -1,22 +1,16 @@
 ---
-id: T-4617
-name: "Fixtures that break on a detached-HEAD checkout beyond T-4587 (t3698 _overlay,
-  web test_app git info)"
+id: T-4671
+name: "tests/governance/test_register_requirements_gate.bats runs in the REAL repo: fw task update --status work-completed git-mv's its T-99xx redteam fixtures into the live index, and an unrelated commit picks them up"
 description: >
-  tests/unit/t3698_mcp_termlink_runtime_pin.bats _overlay pushes origin HEAD (fails
-  detached, same pattern T-4587 owns for upgrade_fresh_machine_simulation); web/test_app.py::TestSessionCockpit::test_session_status_shows_git_info
-  asserts 'master' in the strip. CI and cloud clones check out detached; tests should
-  not assume a branch. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
-  (lines 113, 209). Triaged in T-4589.
+  Observed 2026-10-22: a2e53a22a (T-4650 capture) committed .tasks/completed/T-9902/9905/9906-redteam.md and their episodic files, already staged in the real index; the test's setup later rm'd them, leaving tracked deletions. The test cds to FRAMEWORK_ROOT and writes .tasks/.context/docs/architecture there. Fix: run against a temp project (copy or fw init fixture with PROJECT_ROOT set, git init'd), never the live tree; add a guard that fails the test if the real repo's index or tree changed. Check t3586_skip_flag_policy.bats and test_t3896_inception_readiness.py for the same pattern.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
-tags: [cloud, test]
+tags: []
 components: []
-related_tasks: [T-4589]
-origin: {kind: "agent"}
+related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -43,9 +37,9 @@ origin: {kind: "agent"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T08:49:58Z
-last_update: 2026-10-22T20:21:26Z
-date_finished:
+created: 2026-10-22T21:43:33Z
+last_update: 2026-10-22T21:43:33Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,36 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-22T09:00:25Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 0
-      D2: 0
-      D3: 0
-      D4: 0
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-22T09:00:49Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4617: Fixtures that break on a detached-HEAD checkout beyond T-4587 (t3698 _overlay, web test_app git info)
+# T-4671: tests/governance/test_register_requirements_gate.bats runs in the REAL repo: fw task update --status work-completed git-mv's its T-99xx redteam fixtures into the live index, and an unrelated commit picks them up
 
 ## Context
 
@@ -95,10 +62,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `tests/unit/t3698_mcp_termlink_runtime_pin.bats` `_overlay` pushes to an explicit branch (`HEAD:refs/heads/fw-test-overlay`) and points the bare's HEAD at it, as T-4587 did for `overlay_upstream`; no `push origin HEAD` remains in either fixture
-- [x] A regression test in t3698 detaches the upstream bare's HEAD and proves `_overlay` still lands the overlay (fails with the old `push origin HEAD`)
-- [x] `web/test_app.py::TestSessionCockpit::test_session_status_shows_git_info` asserts the strip shows the checkout's actual branch (or `unknown` when detached), not a hard-coded `master`/`main`
-- [x] t3698, upgrade_fresh_machine_simulation and the TestSessionCockpit tests pass both here (bleeding-edge) and from a detached-HEAD scratch clone (`git clone` + `git checkout --detach`)
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,23 +248,8 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-! grep -n "push --quiet origin HEAD 2>/dev/null\|push --quiet origin HEAD$" tests/unit/t3698_mcp_termlink_runtime_pin.bats tests/unit/upgrade_fresh_machine_simulation.bats
-timeout 900 bats tests/unit/t3698_mcp_termlink_runtime_pin.bats > /tmp/.t4617-bats 2>&1 && ! grep -q "^not ok" /tmp/.t4617-bats && grep -q "T-4617: _overlay lands the overlay" /tmp/.t4617-bats
-test "$(grep -c '# skip' /tmp/.t4617-bats)" -eq 0
-timeout 600 python3 -m pytest web/test_app.py -q -k TestSessionCockpit > /tmp/.t4617-py 2>&1 && grep -q passed /tmp/.t4617-py
-! grep -q '"master" in html or "main" in html' web/test_app.py
-python3 tools/bats-dead-negation-lint.py tests/unit/t3698_mcp_termlink_runtime_pin.bats > /tmp/.t4617-lint 2>&1 && grep -q clean /tmp/.t4617-lint
-bin/fw vendor self --check --task T-4617
 
 ## RCA
-
-**Symptom:** on a detached-HEAD checkout (CI, cloud clones) t3698's `fw upgrade` producer tests fail — the consumer never sees the overlaid framework files — and `TestSessionCockpit::test_session_status_shows_git_info` fails because the strip shows `unknown`, not `master`/`main` (docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt lines 113, 209).
-
-**Root cause:** two fixtures assumed a branch. (1) `tests/unit/t3698_mcp_termlink_runtime_pin.bats` `_overlay` ran `git push origin HEAD` from a clone of the upstream bare; when the bare is built from a detached checkout its HEAD is a bare sha, the clone has no branch, `push origin HEAD` has nothing to update and fails — silenced by `2>/dev/null` — so the overlay never landed. (2) `web/test_app.py:386` asserted `"master" in html or "main" in html`, hard-coding a branch name; the strip (`web/blueprints/session.py:93`) renders `branch or "unknown"`, which is correct behaviour on a detached HEAD (and on this repo's `bleeding-edge` it only passed because "main"/"master" appeared elsewhere in the page).
-
-**Why structurally allowed:** every local run happens on a branch, so the detached path was never exercised; the push error was discarded by `2>/dev/null`, turning a fixture failure into a distant, confusing assertion failure. T-4587 fixed the same pattern in `upgrade_fresh_machine_simulation.bats` but the sibling copy in t3698 was not swept.
-
-**Prevention:** `_overlay` now pushes to an explicit `refs/heads/fw-test-overlay` and points the bare's HEAD at it, with the push error no longer silenced; a new t3698 test detaches the bare's HEAD and asserts the overlay lands (verified to fail against the old `push origin HEAD`). The web test now derives the expected branch from the checkout (`git branch --show-current`, `unknown` when empty), and a second test pins the detached rendering. A Verification line greps both bats fixtures for the bare `push origin HEAD` form.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -391,20 +341,7 @@ bin/fw vendor self --check --task T-4617
 
 ## Updates
 
-### 2026-10-22T08:49:58Z — task-created [task-create-agent]
+### 2026-10-22T21:43:33Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4617-fixtures-that-break-on-a-detached-head-c.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4671-testsgovernancetestregisterrequirementsg.md
 - **Context:** Initial task creation
-
-### 2026-10-22 — AC4 evidence (worker w4617b)
-### 2026-10-22 — AC4 re-run at HEAD f901e0bb1 (worker w4617)
-- Here (bleeding-edge, f901e0bb1): `bats tests/unit/t3698_mcp_termlink_runtime_pin.bats` 9/9 ok, 0 skips; `pytest web/test_app.py -k TestSessionCockpit` 10 passed; `bats tests/unit/upgrade_fresh_machine_simulation.bats` 19/19 ok (run via `--filter` chunks, the file exceeds one 600 s call).
-- Detached clone: `git clone /opt/999-Agentic-Engineering-Framework <tmp>/c && git -C <tmp>/c checkout --detach f901e0bb1` (`git symbolic-ref -q HEAD` exit 1), tests run from inside the clone: t3698 9/9 ok; TestSessionCockpit 10 passed; simulation 19/19 ok. No fixture change needed. Scratch clone removed.
-
-- Detached scratch clone of 526ab6596 (`git symbolic-ref -q HEAD` exit 1): t3698 9/9 ok; upgrade_fresh_machine_simulation 19/19 ok (run in 6 filtered chunks, each test is slow); TestSessionCockpit 10 passed.
-- On bleeding-edge: t3698 9/9 ok, TestSessionCockpit 10 passed. upgrade_fresh_machine_simulation was NOT re-run on the branch (this task does not change it; the full suite takes ~40 min). AC4 left unticked for the parent to confirm.
-- Old-fixture probe: the new T-4617 test fails against `push --quiet origin HEAD 2>/dev/null` (overlay file missing from the clone).
-
-### 2026-10-22T11:19:06Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)

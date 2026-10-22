@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4617: Fixtures that break on a detached-HEAD checkout beyond T-4587 (t3698 _overlay, web test_app git info)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T21:42:20Z
+# ============================================================================
+
+task_id: T-4617
+task_name: "Fixtures that break on a detached-HEAD checkout beyond T-4587 (t3698 _overlay, web test_app git info)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T08:49:58Z
+completed: 2026-10-22T21:40:13Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-10-22T15:00:52+02:00
+last_commit: 2026-10-22T23:39:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  detached-HEAD-safe fixtures — t3698 _overlay pushes an explicit branch; cockpit git-info test expects the checkout's real branch (+ regression tests). vendor web/test_app.py; vendor check in Verification. tick ACs 1-3; record detached-clone evidence for AC4. AC4 evidence — t3698, upgrade simulation, TestSessionCockpit green on bleeding-edge and detached clone at f901e0bb1
+
+# Key outcomes
+outcomes:
+  - '`tests/unit/t3698_mcp_termlink_runtime_pin.bats` `_overlay` pushes to an explicit branch (`HEAD:refs/heads/fw-test-overlay`) and points the bare''s HEAD at it, as T-4587 did for `overlay_upstream`; no `push origin HEAD` remains in either fixture'
+  - 'A regression test in t3698 detaches the upstream bare''s HEAD and proves `_overlay` still lands the overlay (fails with the old `push origin HEAD`)'
+  - '`web/test_app.py::TestSessionCockpit::test_session_status_shows_git_info` asserts the strip shows the checkout''s actual branch (or `unknown` when detached), not a hard-coded `master`/`main`'
+  - 't3698, upgrade_fresh_machine_simulation and the TestSessionCockpit tests pass both here (bleeding-edge) and from a detached-HEAD scratch clone (`git clone` + `git checkout --detach`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'detached-HEAD-safe fixtures — t3698 _overlay pushes an explicit branch; cockpit git-info test expects the checkout''s real branch (+ regression tests)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/test_app.py'
+  - '.tasks/active/T-4617-fixtures-that-break-on-a-detached-head-c.md'
+  - 'tests/unit/t3698_mcp_termlink_runtime_pin.bats'
+  - 'web/test_app.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T15:00:52'
+    action: 'T-4617: detached-HEAD-safe fixtures — t3698 _overlay pushes an explicit branch; cockpit git-info test expects the checkout''s real branch (+ regression tests)'
+  - time: '2026-10-22T15:13:21'
+    action: 'T-4617: vendor web/test_app.py; vendor check in Verification'
+  - time: '2026-10-22T15:54:31'
+    action: 'T-4617: tick ACs 1-3; record detached-clone evidence for AC4'
+  - time: '2026-10-22T23:39:02'
+    action: 'T-4617: AC4 evidence — t3698, upgrade simulation, TestSessionCockpit green on bleeding-edge and detached clone at f901e0bb1'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 770 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cloud, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 770
+  commits: 4
+  files_changed: 4
+  lines_added: 132
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4617-fixtures-that-break-on-a-detached-head-c.md
+generated_by: context-agent-hybrid
