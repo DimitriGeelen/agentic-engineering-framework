@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4189: generate_id: high-water mark so a deleted task's id is never reissued (T-2966 pattern) (832 OBS-426, their T-1150)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:43:25Z
+# ============================================================================
+
+task_id: T-4189
+task_name: "generate_id: high-water mark so a deleted task's id is never reissued (T-2966 pattern) (832 OBS-426, their T-1150)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T19:09:28Z
+completed: 2026-10-22T10:42:43Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-10-22T00:11:28+02:00
+last_commit: 2026-10-22T00:11:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  generate_id takes the max with a persisted high-water mark (.tasks/.id-highwater, read from every task view, ignored past the quarantine gap) so deleting the top task file no longer reissues its id; regression bats t4189; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'generate_id persists a high-water mark (`.tasks/.id-highwater`, gitignored) at allocation time and takes the max of it and the main-cluster max, so deleting the highest-numbered task file does not let its id be reissued'
+  - 'The mark is read from every task view (all worktrees), and a mark more than FW_ID_QUARANTINE_GAP above the main cluster is ignored, so T-100202 quarantine still holds'
+  - 'Regression bats `tests/unit/t4189_task_id_highwater.bats` fails before the fix and passes after; t100202_id_quarantine.bats, create_task.bats and task_id_race.bats stay green'
+  - 'Vendored copy synced (`bin/fw vendor self --check --task T-4189` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'generate_id takes the max with a persisted high-water mark (.tasks/.id-highwater, read from every task view, ignored past the quarantine gap) so deleting the top task file no longer reissues its id; regression bats t4189; vendor synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - 'agents/task-create/create-task.sh'
+  - '.gitignore'
+  - '.tasks/active/T-4189-generateid-high-water-mark-so-a-deleted-.md'
+  - 'tests/unit/t4189_task_id_highwater.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:11:28'
+    action: 'T-4189: generate_id takes the max with a persisted high-water mark (.tasks/.id-highwater, read from every task view, ignored past the quarantine gap) so deleting the top task file no longer reissues its id; regression bats t4189; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12453 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12453
+  commits: 1
+  files_changed: 5
+  lines_added: 161
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4189-generateid-high-water-mark-so-a-deleted-.md
+generated_by: context-agent-hybrid
