@@ -20,27 +20,33 @@
 #
 # Allocation rule (see T-4402 ## Decisions): business = who decides what and what
 # comes out; logical = how the flow hangs together; technical = how it is built and run.
+# Where the process-layer package INSTRUCTIONS §2.2 and 832's T-281 speak, they win:
+# technical = "+ endpoints, contextReads/artifactsWrites, tiers, routing, components",
+# and ids and the authority decoration are for the technical reader. Where both are
+# silent (triggeredBy, emits, the authority field), this file matches 832's interim
+# lens-definition 0.25.0 was tested with (832 msg 98232bb9, 2026-10-22).
 order: [business, logical, technical]
 lenses:
   business:
     label: Business
-    fields: [owner, triggeredBy, emits, decisionInput, decisionOutputs, decisionOwner, note]
+    fields: [owner, decisionInput, decisionOutputs, decisionOwner, note]
     bpmn: [Name, Lane]
     sections: [BPMN, Extensions]
-    canvas: [authority]
+    canvas: []
   logical:
     label: Logical
     extends: business
-    fields: [workflowType, horizon, determinism, contextReads, artifactsWrites, scopeOf,
+    fields: [triggeredBy, emits, authority, workflowType, horizon, determinism,
              workflowRef, name, targetWorkflow, linkId, errorStatus, timerSpec, busTopic,
              hostRef, boundaryPos, interrupting]
-    bpmn: [Display ID]
+    bpmn: []
     sections: [Constituents, I/O contract]
-    canvas: [ids, io, constituents]
+    canvas: [io, constituents]
   technical:
     label: Technical
     extends: logical
-    fields: [authority, tier, agentType, endpoint, sideEffect, fabricRef, links]
-    bpmn: [Slug, UID]
+    fields: [contextReads, artifactsWrites, scopeOf, tier, agentType, endpoint, sideEffect,
+             fabricRef, links]
+    bpmn: [Display ID, Slug, UID]
     sections: [Other extensions]
-    canvas: [findings, ns]
+    canvas: [authority, ids, findings, ns]
