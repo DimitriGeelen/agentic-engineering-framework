@@ -99,12 +99,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Part 1: every uncommitted .tasks/active file outside the excluded set (T-4661/4662/4663/4667/4672/4673/4674/4675/4676) has a row in ## Updates naming its writer and whether it was committed; explained edits are committed under T-4676; no `### Human` tick without a provenance row is committed
-- [ ] Part 2: the chosen structural fix is recorded in ## Decisions
-- [ ] The estimator sweep (`fw bvp estimate sweep --cron`) and the cost-estimator sweep (`fw bvp estimate-cost sweep --cron`) commit the task files they wrote, in one commit per sweep whose subject names a task id
-- [ ] A sweep commit contains only files that sweep wrote, and a file that already had uncommitted edits before the sweep is neither written nor committed by it
-- [ ] Regression test in a temp git repo fails before the fix and passes after
-- [ ] `bin/fw vendor self` run; `bin/fw vendor self --check --task T-4676` clean
+- [x] Part 1: every uncommitted .tasks/active file outside the excluded set (T-4661/4662/4663/4667/4672/4673/4674/4675/4676) has a row in ## Updates naming its writer and whether it was committed; explained edits are committed under T-4676; no `### Human` tick without a provenance row is committed
+- [x] Part 2: the chosen structural fix is recorded in ## Decisions
+- [x] The estimator sweep (`fw bvp estimate sweep --cron`) and the cost-estimator sweep (`fw bvp estimate-cost sweep --cron`) commit the task files they wrote, in one commit per sweep whose subject names a task id
+- [x] A sweep commit contains only files that sweep wrote, and a file that already had uncommitted edits before the sweep is neither written nor committed by it
+- [x] Regression test in a temp git repo fails before the fix and passes after
+- [x] `bin/fw vendor self` run; `bin/fw vendor self --check --task T-4676` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,8 +289,21 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 python3 -m pytest tests/unit/test_t4676_sweep_self_commit.py -q > /tmp/.t4676-a.out 2>&1 && grep -q " passed" /tmp/.t4676-a.out && ! grep -qE "failed|skipped" /tmp/.t4676-a.out
+timeout 600 python3 -m pytest tests/unit/test_t3551_cost_sweep_partial_complete.py tests/unit/test_bvp_estimator.py -q > /tmp/.t4676-b.out 2>&1 && grep -q " passed" /tmp/.t4676-b.out && ! grep -qE "failed|skipped" /tmp/.t4676-b.out
+grep -q "_commit_sweep_writes(written, \"T-1923\"" agents/termlink/bvp-estimator/estimator.py && grep -q "_commit_sweep_writes(written, \"T-1935\"" agents/termlink/bvp-estimator/estimator.py
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+bin/fw vendor self --check --task T-4676
 
 ## RCA
+
+**Symptom:** 2026-10-22/23: 443 uncommitted files under `.tasks/active`, 415 of them holding only `bvp-estimator-v1-heuristic` proposals (427 written in one 07:45Z pass). They stayed dirty until an unrelated broad commit swept them up, and they buried 28 real task-file edits, including a Human-AC tick whose provenance had to be traced by hand.
+
+**Root cause:** the two cron sweeps write task frontmatter and have no commit step. `cmd_sweep` (`agents/termlink/bvp-estimator/estimator.py`, the `write_proposed` call in its loop) and `cmd_cost_sweep` (the `write_proposed_cost` call) end with a summary print and `return`; nothing in `lib/bvp.sh` (`estimate` / `estimate-cost` routing) or the cron line (`.context/cron-registry.yaml` `bvp-estimator-sweep-15m`, `bvp-cost-estimator-sweep-15m`) commits either. A 24h staleness window makes every active task due once a day, so one pass dirties the whole active corpus. They also wrote into files that already had someone else's uncommitted edit, mixing the two.
+
+**Why structurally allowed:** P-009 commit cadence binds agents, not cron writers; no audit or doctor check counts uncommitted task files or attributes them to a writer. The leak only became visible as a side effect (T-4671's broad-commit class).
+
+**Prevention:** in `--cron` mode each sweep now snapshots dirty `.tasks/` files first and skips them, then commits exactly the files it wrote with `git commit -- <paths>` (one commit per sweep: `T-1923:` / `T-1935:` subject), retrying on `index.lock` and exiting 1 with a stderr line if the commit fails, so the cron log shows it. Pinned by `tests/unit/test_t4676_sweep_self_commit.py` (8 tests in a temp git repo; 5 failed before the fix). Live run 2026-10-23: commits 627a030a5 (cost sweep, 4 files) and d06be038a (bvp sweep, 3 files), skipped-dirty 9 and 5.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -370,6 +383,12 @@ cost_estimate_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-23 — where estimator writes go
+- **Chose:** (a) the cron sweeps commit their own writes: one commit per sweep, subject `T-1923:` (bvp sweep) / `T-1935:` (cost sweep), only the files that sweep wrote, via `git commit -- <paths>` so other workers' staged files stay out. Files that were dirty when the sweep started are skipped (not written). Manual (non-`--cron`) runs are unchanged: they write and leave committing to the operator.
+- **Why:** smallest change; every reader of proposals (`fw bvp`, Watchtower, auto-promote, arc readiness) keeps reading frontmatter as today. The skip-dirty rule also stops the sweep writing into a file someone is editing.
+- **Rejected:** (b) a side store (`.context/bvp/proposals.jsonl`): it moves the dirt, it does not remove it (the store still needs committing), and every proposal reader would have to change. Not clearly simpler.
+- **Accepted costs:** a file that stays dirty for days is not re-scored until it is committed. A daily commit touching most active task files adds history churn. If both sweeps write the same file in the same minute, the first commit can carry the other's write; the second then finds the file clean and skips it, so nothing is lost or committed twice.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -390,3 +409,25 @@ cost_estimate_proposed:
 ### 2026-10-22T22:21:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
+
+### 2026-10-23 — Part 1 reconciliation (worker w4676)
+Scope: `git status --short .tasks/active` minus T-4661/4662/4663/4667/4672/4673/4674/4675/4676 (another worker owns those): 20 modified and 2 untracked task files. Also `.context/reviews/applied.jsonl` and two evidence files. No `### Human` tick without provenance was found, so nothing was left for that reason.
+
+| File | Writer of each change | Result | Why |
+|---|---|---|---|
+| T-2892 | estimator + cost sweep proposals | committed f1c9d2737 | estimator only |
+| T-3299 | bvp sweep proposal + ruamel re-wrap of description | committed f1c9d2737 | sweep dump re-wraps long lines |
+| T-4124 | bvp sweep proposal + ruamel re-wrap of description | committed f1c9d2737 | same |
+| T-4198, T-4269, T-4394, T-4571 | cost sweep proposal | committed f1c9d2737 | estimator only |
+| T-4351, T-4432 | cost sweep proposal + re-wrap of `components:` | committed f1c9d2737 | same |
+| T-4532 | cost sweep proposal | committed f1c9d2737 | estimator only |
+| T-4559, T-4564, T-4625, T-4646 | both sweeps + re-wrap of name/description, `date_finished: null` → empty | committed f1c9d2737 | ruamel dump of the sweep |
+| T-4361 | bvp sweep proposal; Human AC1 `[REVIEW]` tick + reviewer-verdict line by `fw reviewer verdict apply` 2026-10-22T09:03Z | committed a4f5477f5 with its `applied.jsonl` row | verdict path: green V-20261020-7fae2184 already committed (a54bc6b19), evidence files committed |
+| T-4624, T-4633 | close at 12:06–12:08Z that stopped at partial-complete (status work-completed, owner human, components, Reviewer Verdict block) | committed 14deae6ed | normal partial-complete state |
+| T-3580 | Agent AC "Live proof" ticked with an evidence line (the T-4361 verdict run) | committed d98ca2ff0 | Agent section, evidence cites committed rows |
+| T-1991 | `fw task update --horizon now` (status-update entry) | committed d98ca2ff0 | task-update agent |
+| T-4574 | `fw work-on` start (status/horizon), real ACs, Verification, RCA, plus sweep proposals | committed d98ca2ff0 | owner's authoring edits + estimator |
+| T-4471, T-4648 (untracked) | task-create agent, never committed | committed d98ca2ff0 | new task files |
+| `.context/reviews/evidence/T-4000/AC1-judge-t-4000-r3-de0d56a71171.md`, `.../T-4001/AC1-judge-t-4001-r3-6bfe26af8e59.md` | reviewer workers of two completed 2026-10-08 judge dispatches that recorded no verdict | committed 01ba64098 | evidence only, licenses no tick |
+
+Part 2 shipped in `agents/termlink/bvp-estimator/estimator.py` (see ## Decisions, ## RCA).

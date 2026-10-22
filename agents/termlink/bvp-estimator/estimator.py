@@ -31,6 +31,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 from datetime import datetime, timezone
@@ -3383,6 +3384,84 @@ def _proposed_is_stale(fm: dict, stale_hours: int) -> bool:
     return age.total_seconds() >= stale_hours * 3600
 
 
+# ---- T-4676: cron sweeps commit their own writes ----------------------------
+#
+# The two cron sweeps wrote proposals into task frontmatter and never committed
+# them: 427 dirty task files after one 2026-10-22 pass, picked up later by
+# whichever unrelated commit staged broadly, and burying the real task-file
+# edits among them. In --cron mode a sweep now (1) skips any task file that was
+# already dirty when it started — that edit belongs to someone else, and a
+# proposal written on top of it would be committed with it — and (2) commits
+# exactly the files it wrote, one commit per sweep, with `git commit -- <paths>`
+# so another worker's staged files stay out of it.
+
+def _git(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", "-C", str(PROJECT_ROOT), *args],
+                          capture_output=True, text=True)
+
+
+def _git_toplevel() -> Path | None:
+    r = _git("rev-parse", "--show-toplevel")
+    if r.returncode != 0 or not r.stdout.strip():
+        return None
+    return Path(r.stdout.strip())
+
+
+def _dirty_task_files() -> set[Path] | None:
+    """Absolute paths of modified/staged/untracked files under .tasks/, or
+    None when PROJECT_ROOT is not in a git work tree (nothing to commit to)."""
+    top = _git_toplevel()
+    if top is None:
+        return None
+    r = _git("status", "--porcelain=v1", "-z", "--untracked-files=all",
+             "--", str(PROJECT_ROOT / ".tasks"))
+    if r.returncode != 0:
+        return None
+    dirty: set[Path] = set()
+    entries = r.stdout.split("\0")
+    i = 0
+    while i < len(entries):
+        e = entries[i]
+        i += 1
+        if len(e) < 4:
+            continue
+        dirty.add((top / e[3:]).resolve())
+        if e[0] in "RC":
+            i += 1  # rename/copy: the next entry is the source path
+    return dirty
+
+
+def _commit_sweep_writes(written: set[Path], task_id: str, label: str) -> bool:
+    """Commit only `written`, one commit. True when there was nothing to commit
+    or the commit landed; False (with a stderr line) when it failed."""
+    if not written:
+        return True
+    top = _git_toplevel()
+    now_dirty = _dirty_task_files()
+    if top is None or now_dirty is None:
+        return True
+    # A concurrent sweep may already have committed a file we also wrote.
+    paths = sorted(str(p.relative_to(top)) for p in written if p in now_dirty)
+    if not paths:
+        return True
+    msg = (f"{task_id}: {label} — proposals for {len(paths)} task file(s)\n\n"
+           f"Committed by the sweep itself (T-4676): only files this sweep wrote;\n"
+           f"files with other uncommitted edits were skipped, not written.")
+    r = None
+    for _ in range(6):
+        r = subprocess.run(["git", "-C", str(top), "commit", "-q", "-m", msg,
+                            "--", *paths], capture_output=True, text=True)
+        if r.returncode == 0:
+            return True
+        if "index.lock" not in (r.stderr + r.stdout):
+            break
+        time.sleep(5)  # another worker is committing
+    detail = ((r.stderr or r.stdout).strip().splitlines() or ["no output"])[-1]
+    print(f"ERROR: {label}: commit of {len(paths)} task file(s) failed — "
+          f"they stay uncommitted: {detail}", file=sys.stderr)
+    return False
+
+
 def cmd_sweep(stale_hours: int = 24,
               statuses: list[str] | None = None,
               cron: bool = False) -> int:
@@ -3401,9 +3480,14 @@ def cmd_sweep(stale_hours: int = 24,
     statuses = statuses or ["started-work", "captured"]
     task_files = sorted((PROJECT_ROOT / ".tasks" / "active").glob("T-*.md"))
 
-    n_scored = n_unscored_cleared = n_skipped = n_err = 0
+    n_scored = n_unscored_cleared = n_skipped = n_err = n_dirty = 0
+    dirty = _dirty_task_files() if cron else None  # T-4676
+    written: set[Path] = set()
     for tp in task_files:
         try:
+            if dirty is not None and tp.resolve() in dirty:
+                n_dirty += 1
+                continue  # T-4676: someone else's uncommitted edit
             fm, _ = parse_task(tp)
             if not fm:
                 continue
@@ -3424,7 +3508,9 @@ def cmd_sweep(stale_hours: int = 24,
                 # Re-read to get the (post-write) frontmatter and clear flag
                 if _clear_unscored_flag(tp):
                     n_unscored_cleared += 1
+                    written.add(tp.resolve())
             if wrote:
+                written.add(tp.resolve())
                 n_scored += 1
                 if not cron:
                     sc = " ".join(f"{k}={v}" for k, v in result["scores"].items())
@@ -3435,10 +3521,13 @@ def cmd_sweep(stale_hours: int = 24,
             n_err += 1
             print(f"ERROR on {tp.name}: {e}", file=sys.stderr)
 
+    committed = True
+    if dirty is not None:
+        committed = _commit_sweep_writes(written, "T-1923", "bvp estimator sweep")
     print(f"sweep: scored {n_scored}, unscored-cleared {n_unscored_cleared}, "
-          f"skipped {n_skipped}, errors {n_err} "
+          f"skipped {n_skipped}, skipped-dirty {n_dirty}, errors {n_err} "
           f"(stale_hours={stale_hours}, statuses={','.join(statuses)})")
-    return 0 if n_err == 0 else 1
+    return 0 if n_err == 0 and committed else 1
 
 
 def cmd_with_sla(task_id: str, timeout_s: int = 10) -> int:
@@ -3685,11 +3774,16 @@ def cmd_cost_sweep(stale_hours: int = 24,
     for sub in ("active", "completed"):
         task_files.extend(sorted((PROJECT_ROOT / ".tasks" / sub).glob("T-*.md")))
 
-    n_scored = n_skip = n_err = 0
+    n_scored = n_skip = n_err = n_dirty = 0
     total_latency = 0.0
+    dirty = _dirty_task_files() if cron else None  # T-4676
+    written: set[Path] = set()
 
     for tp in task_files:
         try:
+            if dirty is not None and tp.resolve() in dirty:
+                n_dirty += 1
+                continue  # T-4676: someone else's uncommitted edit
             fm, _ = parse_task(tp)
             if not _cost_sweep_in_scope(fm, tp, statuses):
                 continue
@@ -3706,6 +3800,7 @@ def cmd_cost_sweep(stale_hours: int = 24,
             )
             total_latency += result["latency_s"]
             if wrote:
+                written.add(tp.resolve())
                 n_scored += 1
                 if had_unscored:
                     _clear_unscored_flag(tp)
@@ -3716,14 +3811,18 @@ def cmd_cost_sweep(stale_hours: int = 24,
             if not cron:
                 print(f"ERROR on {tp.name}: {e}", file=sys.stderr)
 
-    msg = (f"cost-sweep: scored {n_scored}, skipped {n_skip}, errored {n_err}; "
+    committed = True
+    if dirty is not None:
+        committed = _commit_sweep_writes(written, "T-1935", "bvp cost-estimator sweep")
+    msg = (f"cost-sweep: scored {n_scored}, skipped {n_skip}, "
+           f"skipped-dirty {n_dirty}, errored {n_err}; "
            f"total latency {total_latency:.2f}s")
     if cron:
         # Cron uses logger -t agentic-cron — stdout is sufficient.
         print(msg)
     else:
         print(msg)
-    return 0 if n_err == 0 else 1
+    return 0 if n_err == 0 and committed else 1
 
 
 def cmd_cost_determinism(task_id: str, runs: int = 3) -> int:
