@@ -21,9 +21,18 @@ teardown() {
 }
 
 @test "fw test: runs test suite" {
-    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' test unit 2>&1 | head -5"
+    # T-4615: a fixture suite, not the repo's tests/unit/ (1000+ files). A bare
+    # `fw test unit` ran the whole unit suite and the file hit 900 s; `| head -5`
+    # neither stopped it nor let a failing exit status through.
+    local fixture="$TEST_TEMP_DIR/fixture-suite"
+    mkdir -p "$fixture"
+    printf '@test "fixture bats ok" {\n    true\n}\n' > "$fixture/fixture_ok.bats"
+    printf 'def test_fixture_pytest_ok():\n    assert True\n' > "$fixture/test_fixture_ok.py"
+    run timeout 120 env FRAMEWORK_ROOT="$FRAMEWORK_ROOT" PROJECT_ROOT="$PROJECT_ROOT" "$FW" test unit -- "$fixture"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"Unit Tests"* ]] || [[ "$output" == *"ok"* ]] || [[ "$output" == *"1.."* ]]
+    [[ "$output" == *"Bats Unit Tests"* ]]
+    [[ "$output" == *"ok 1 fixture bats ok"* ]]
+    [[ "$output" == *"test_fixture_pytest_ok PASSED"* ]]
 }
 
 @test "fw test lint: runs shellcheck" {

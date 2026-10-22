@@ -2,12 +2,16 @@
 id: T-4615
 name: "fw_test_cmd.bats hangs: its first test runs the full test suite recursively"
 description: >
-  tests/integration/fw_test_cmd.bats 'fw test: runs test suite' invokes fw test, which runs the whole suite (including this file) — timed out at 900 s in the cloud, alone too; 4 tests unreported. Bound the test to a fixture or a single tiny suite. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (line 143). Triaged in T-4589.
+  tests/integration/fw_test_cmd.bats 'fw test: runs test suite' invokes fw test, which
+  runs the whole suite (including this file) — timed out at 900 s in the cloud, alone
+  too; 4 tests unreported. Bound the test to a fixture or a single tiny suite. Source:
+  docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (line 143). Triaged in
+  T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -39,8 +43,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:48:58Z
-last_update: 2026-10-22T08:48:58Z
-date_finished: null
+last_update: 2026-10-22T11:13:25Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +55,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:00:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:00:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4615: fw_test_cmd.bats hangs: its first test runs the full test suite recursively
@@ -63,8 +94,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on current bleeding-edge: the old first test does not finish within 120 s
+- [x] `fw test: runs test suite` runs `fw test unit` against a fixture dir (one tiny .bats + one tiny test_*.py) in the temp project, never the repo's tests/unit/
+- [x] The test asserts fw test's real exit status (no `| head` masking it) and that both the bats and pytest legs ran the fixture
+- [x] `tests/integration/fw_test_cmd.bats` finishes in under 120 s with no `not ok`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +282,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 120 bats tests/integration/fw_test_cmd.bats > /tmp/.t4615.out 2>&1 && ! grep -q "^not ok" /tmp/.t4615.out && grep -q "^ok 1 " /tmp/.t4615.out
+test "$(grep -c '# skip' /tmp/.t4615.out)" -eq 0
+grep -q 'test unit -- ' tests/integration/fw_test_cmd.bats && ! grep -q "test unit 2>&1 | head" tests/integration/fw_test_cmd.bats
 
 ## RCA
 
@@ -265,6 +301,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/integration/fw_test_cmd.bats` timed out at 900 s in the cloud run (alone too); `1..4` printed, no test result. Reproduced on bleeding-edge 2026-10-22: `bats -f "runs test suite"` killed by `timeout 120` (rc 124).
+
+**Root cause:** `tests/integration/fw_test_cmd.bats:23-27` ran a bare `fw test unit`, which in `bin/fw` (`--unit|unit` leg, ~line 11300) runs `bats "$FRAMEWORK_ROOT/tests/unit/"` (1027 files) and then `pytest tests/unit/`. The whole unit suite, not a literal recursion into this file. The `| head -5` did not bound it: the pipeline waits for `fw` to exit. It also hid `fw`'s exit status, because without pipefail `$status` was `head`'s, so the test could never fail on a red suite.
+
+**Why structurally allowed:** the test was written (T-755) when the unit suite was small enough to finish. Nothing bounds a single bats test's wall time, so it slowed down as the suite grew until it hit the cloud per-file timeout. The `| head` made it look bounded when it was not.
+
+**Prevention:** the test now runs `fw test unit -- <fixture dir>` (one tiny .bats, one tiny test_*.py) under `timeout 120`, and asserts the real exit status and both legs' output. It cannot grow with the repo. Verification pins the file at under 120 s and refuses the `test unit 2>&1 | head` shape returning.
 
 ## Evolution
 
@@ -346,3 +390,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4615-fwtestcmdbats-hangs-its-first-test-runs-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:13:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
