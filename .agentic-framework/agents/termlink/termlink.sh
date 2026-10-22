@@ -410,7 +410,12 @@ cmd_spawn() {
         source "$FRAMEWORK_ROOT/lib/agent-scope.sh"
         fw_agent_scope_prefix "termlink spawn $name"
     fi
-    env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM -u TASKS_DIR -u CONTEXT_DIR \
+    # T-4647 (SEV-1 T-4635): an ALLOW-LIST, not the name list above — any variable not on
+    # lib/spawn-env.sh's list (every FW_*, CONTEXT_DIR, TASKS_DIR, …) never reaches the spawn.
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/spawn-env.sh"
+    fw_spawn_env
+    env -i "${FW_SPAWN_ENV[@]}" \
         ${FW_AGENT_SCOPE_CMD[@]+"${FW_AGENT_SCOPE_CMD[@]}"} termlink spawn "${spawn_args[@]}"
     echo -e "${GREEN}OK${NC}  Session '$name' registered"
     # T-4067: `if`, not `[ ] && echo` — as the function's last statement a false
@@ -1424,6 +1429,19 @@ METAEOF
     # Adapted from tl-dispatch.sh — battle-tested with 3 parallel workers
     cat > "$wdir/run.sh" <<'RUNEOF'
 #!/bin/bash
+# T-4647 (SEV-1 T-4635): start over from an ALLOW-LIST. The session shell carries the tmux
+# server's global env — another project's CONTEXT_DIR/TASKS_DIR/FW_* when a polluted spawn
+# started that server. Same list as lib/spawn-env.sh (t4647 bats pins them equal); this runtime
+# is self-contained, so it is copied, not sourced. Project paths are set below from PROJECT_DIR.
+if [ -z "${_FW_RUNTIME_ENV_CLEAN:-}" ]; then
+    FW_SPAWN_ENV_ALLOW='^(PATH|HOME|USER|LOGNAME|SHELL|LANG|LANGUAGE|LC_[A-Z_]+|TERM|COLORTERM|TZ|TMPDIR|TMUX|TMUX_PANE|TMUX_TMPDIR|TERMLINK_[A-Z0-9_]+|XDG_[A-Z_]+|DBUS_SESSION_BUS_ADDRESS|SSH_AUTH_SOCK|ANTHROPIC_[A-Z0-9_]+|CLAUDE_CONFIG_DIR|CLAUDE_CODE_OAUTH_TOKEN|http_proxy|https_proxy|no_proxy|HTTP_PROXY|HTTPS_PROXY|NO_PROXY|SSL_CERT_FILE|SSL_CERT_DIR|NODE_EXTRA_CA_CERTS)$'
+    _KEEP=()
+    while IFS= read -r _K; do
+        [[ "$_K" =~ $FW_SPAWN_ENV_ALLOW ]] && _KEEP+=("$_K=${!_K}")
+    done < <(compgen -e)
+    exec env -i "${_KEEP[@]}" _FW_RUNTIME_ENV_CLEAN=1 "$BASH" "$0" "$@"
+fi
+unset _FW_RUNTIME_ENV_CLEAN
 WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"; MODEL="$5"
 TASK_TYPE="$6"; FW_BIN="$7"
 cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" >> "$WDIR/stderr.log"; exit 1; }

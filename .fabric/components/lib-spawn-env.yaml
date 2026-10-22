@@ -1,0 +1,21 @@
+id: lib/spawn-env.sh
+name: spawn-env
+type: script
+subsystem: framework-core
+location: lib/spawn-env.sh
+tags: []
+
+purpose: "lib/spawn-env.sh — T-4647 (SEV-1 T-4635, G-116): the environment a spawned session or dispatch worker starts with is built from an ALLOW-LIST, never \"the caller's minus a few\"."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-22
+created_by: unknown

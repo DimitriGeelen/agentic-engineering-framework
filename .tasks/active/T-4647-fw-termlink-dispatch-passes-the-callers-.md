@@ -1,10 +1,22 @@
 ---
 id: T-4647
-name: "fw termlink dispatch passes the caller's exported CONTEXT_DIR/TASKS_DIR into every spawn; build the spawn environment from an allow-list"
+name: "fw termlink dispatch passes the caller's exported CONTEXT_DIR/TASKS_DIR into
+  every spawn; build the spawn environment from an allow-list"
 description: >
-  SEV-1 T-4635: 1409-sprind traced the 13:39 server seeding to tools/review_dispatch.sh -> fw termlink dispatch; fw itself exports its project's CONTEXT_DIR/TASKS_DIR (lib/paths.sh), the dispatch inherits them, and the first spawn after a tmux server (re)start makes them the server's global environment; a polluted parent also seeds every worker it dispatches (AEF workers after the 14:55 cleanup still carried them). T-4217 only stripped PROJECT_ROOT/FRAMEWORK_ROOT (a name list). Fix: build the child environment for every spawn/dispatch path (agents/termlink/termlink.sh dispatch and spawn, run.sh/env.sh) from an explicit allow-list (or env -i plus a minimal set: PATH, HOME, LANG, TERM, the worker's own task/dispatch vars), with the worker's project paths derived from its --project/cwd, never inherited. Test: dispatch from a shell exporting a FOREIGN CONTEXT_DIR/TASKS_DIR/PROJECT_ROOT and an arbitrary FW_FOO, and assert the worker's /proc environ holds none of them (the G-116 close-condition test).
+  SEV-1 T-4635: 1409-sprind traced the 13:39 server seeding to tools/review_dispatch.sh
+  -> fw termlink dispatch; fw itself exports its project's CONTEXT_DIR/TASKS_DIR (lib/paths.sh),
+  the dispatch inherits them, and the first spawn after a tmux server (re)start makes
+  them the server's global environment; a polluted parent also seeds every worker
+  it dispatches (AEF workers after the 14:55 cleanup still carried them). T-4217 only
+  stripped PROJECT_ROOT/FRAMEWORK_ROOT (a name list). Fix: build the child environment
+  for every spawn/dispatch path (agents/termlink/termlink.sh dispatch and spawn, run.sh/env.sh)
+  from an explicit allow-list (or env -i plus a minimal set: PATH, HOME, LANG, TERM,
+  the worker's own task/dispatch vars), with the worker's project paths derived from
+  its --project/cwd, never inherited. Test: dispatch from a shell exporting a FOREIGN
+  CONTEXT_DIR/TASKS_DIR/PROJECT_ROOT and an arbitrary FW_FOO, and assert the worker's
+  /proc environ holds none of them (the G-116 close-condition test).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +51,8 @@ origin: {kind: "peer", source: "1409-sprind", ref: "3dff225a"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T13:28:44Z
-last_update: 2026-10-22T13:28:44Z
-date_finished: null
+last_update: 2026-10-22T13:33:43Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +63,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T13:30:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T13:30:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4647: fw termlink dispatch passes the caller's exported CONTEXT_DIR/TASKS_DIR into every spawn; build the spawn environment from an allow-list
@@ -63,8 +102,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `cmd_spawn` (used by `fw termlink spawn` and `fw termlink dispatch`) starts `termlink spawn` under `env -i` with an explicit allow-list (`lib/spawn-env.sh`), so the spawn process — and any tmux server it starts — carries no `PROJECT_ROOT`/`FRAMEWORK_ROOT`/`CONTEXT_DIR`/`TASKS_DIR`/`FW_*`/other unlisted variable of the caller
+- [ ] The dispatch runtime (`run.sh`) re-executes itself under `env -i` with the same allow-list before anything else, so a worker launched from a polluted shell or tmux server gets only allow-listed host variables plus what run.sh/env.sh set (project paths derived from `--project`)
+- [ ] Regression bats `tests/unit/t4647_spawn_env_allowlist.bats`: dispatch from a shell exporting a FOREIGN `CONTEXT_DIR`/`TASKS_DIR`/`PROJECT_ROOT` and an arbitrary `FW_FOO`; the spawn's env and the worker's `/proc/<pid>/environ` hold none of them, and the worker's `PROJECT_ROOT` is its own `--project`. Fails on the pre-fix termlink.sh
+- [ ] Existing neighbouring suites stay green: t4217, t4222, t4152, t4636 bats; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +290,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4647_spawn_env_allowlist.bats > /tmp/.t4647.out 2>&1 && ! grep -q "^not ok" /tmp/.t4647.out
+test "$(grep -c '# skip' /tmp/.t4647.out)" -eq 0
+timeout 900 bats tests/unit/t4217_spawn_env_isolation.bats tests/unit/t4222_inherited_env_dirs.bats tests/unit/t4152_dispatch_endpoint_leak.bats tests/unit/t4636_agent_scope.bats > /tmp/.t4647n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4647n.out
+bash -n agents/termlink/termlink.sh && bash -n lib/spawn-env.sh
+bin/fw vendor self --check --task T-4647
 
 ## RCA
 
@@ -265,6 +311,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after a tmux server (re)start at 13:39 on 2026-10-22 (T-4635), the default tmux server's global environment held 1409-sprind's `CONTEXT_DIR`/`TASKS_DIR`; every session and dispatch worker started on it inherited another project's paths (055 read 1409's focus). AEF workers dispatched after the 14:55 cleanup still carried them, because their dispatcher was polluted.
+
+**Root cause:** the child environment of a spawn/dispatch was the caller's environment minus a hand-written name list. `agents/termlink/termlink.sh:413` (`cmd_spawn`) ran `env -u PROJECT_ROOT -u FRAMEWORK_ROOT … termlink spawn`: every variable not on the deny-list (and every one added later — the list grew T-4217 → T-4222) reached `termlink spawn` and the tmux server it starts. And the dispatch runtime (`run.sh`, the RUNEOF heredoc) ran with whatever environment the session shell had — the tmux server's global env — so a server seeded once seeded every worker on it; run.sh only overwrote `PROJECT_ROOT`/`FRAMEWORK_ROOT`, leaving `CONTEXT_DIR`/`TASKS_DIR`/`FW_*` from the parent.
+
+**Why structurally allowed:** a deny-list fails open: the safe state needs someone to remember each new variable, and nothing asserted the worker's actual environment — t4217 checked only the six named variables in the tmux global env, never the worker process.
+
+**Prevention:** the child environment is now built from an allow-list (`lib/spawn-env.sh`, mirrored in run.sh), so an unknown variable is dropped by default; `tests/unit/t4647_spawn_env_allowlist.bats` asserts on the worker's `/proc/<pid>/environ` (foreign paths and an arbitrary `FW_FOO` absent, `PROJECT_ROOT` = its own `--project`) and pins the run.sh allow-list equal to the lib's.
 
 ## Evolution
 
@@ -346,3 +400,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4647-fw-termlink-dispatch-passes-the-callers-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T13:33:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

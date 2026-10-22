@@ -13,9 +13,10 @@ setup() {
     # Short path: a unix socket path is capped at ~108 bytes.
     D="$(mktemp -d /tmp/t4217.XXXXXX)"
     SOCK="$D/sock"
-    export T4217_SOCK="$SOCK"
     mkdir -p "$D/bin" "$D/dispatch"
-    printf '#!/bin/bash\nexec tmux -S "$T4217_SOCK" new-session -d -s w "sleep 60"\n' > "$D/bin/termlink"
+    # T-4647: the socket is baked into the stub — spawn now runs under an allow-listed env, so an
+    # exported test variable would not reach it.
+    printf '#!/bin/bash\nexec tmux -S %q new-session -d -s w "sleep 60"\n' "$SOCK" > "$D/bin/termlink"
     chmod +x "$D/bin/termlink"
 }
 
