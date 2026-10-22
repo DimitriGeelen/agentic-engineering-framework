@@ -1,13 +1,20 @@
 ---
 id: T-4585
-name: "t2436_vendor_self_check.bats t4 fails whenever HEAD already carries vendor drift"
+name: "t2436_vendor_self_check.bats t4 fails whenever HEAD already carries vendor
+  drift"
 description: >
-  tests/unit/t2436_vendor_self_check.bats:81-89 plants drift in lib/colors.sh, removes it, then asserts 'vendor self --dry-run' prints no 'would sync' and --check exits 0 for the WHOLE tree. Any unrelated drift committed at HEAD (2026-10-22 clean clone of e785e48b9: agents/git/lib/hooks.sh, mid-sync by another worker) turns it red, and cloud report 4 saw the same at cc094b509 ('t2436 vendor --check vs --dry-run disagree'). Make the clone start from a synced tree (run vendor self in _clone_with_drift first) or scope the assertions to the planted file.
+  tests/unit/t2436_vendor_self_check.bats:81-89 plants drift in lib/colors.sh, removes
+  it, then asserts 'vendor self --dry-run' prints no 'would sync' and --check exits
+  0 for the WHOLE tree. Any unrelated drift committed at HEAD (2026-10-22 clean clone
+  of e785e48b9: agents/git/lib/hooks.sh, mid-sync by another worker) turns it red,
+  and cloud report 4 saw the same at cc094b509 ('t2436 vendor --check vs --dry-run
+  disagree'). Make the clone start from a synced tree (run vendor self in _clone_with_drift
+  first) or scope the assertions to the planted file.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, cloud]
 components: []
 related_tasks: [T-4575, T-4508]
@@ -39,8 +46,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T07:46:32Z
-last_update: 2026-10-22T07:46:32Z
-date_finished: null
+last_update: '2026-10-22T08:00:45Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:55:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T08:00:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4585: t2436_vendor_self_check.bats t4 fails whenever HEAD already carries vendor drift
@@ -63,8 +97,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_clone_with_drift` brings the clone to a synced baseline (real `vendor self` + commit) before planting drift, so unrelated drift at HEAD cannot turn t3/t4 red
+- [x] New regression test plants UNRELATED drift (lib/colors.sh is not touched, another vendored file is) committed at HEAD of the source repo stand-in and t4's assertions still pass
+- [x] `tests/unit/t2436_vendor_self_check.bats` fully green, no skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,8 +284,19 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 580 bats tests/unit/t2436_vendor_self_check.bats > /tmp/.t4585.out 2>&1 && ! grep -q "^not ok" /tmp/.t4585.out && grep -q "t6 (T-4585)" /tmp/.t4585.out
+test "$(grep -c '# skip' /tmp/.t4585.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/t2436_vendor_self_check.bats > /tmp/.t4585l.out 2>&1 && grep -q clean /tmp/.t4585l.out
 
 ## RCA
+
+**Symptom:** `t2436 t4` red on current bleeding-edge (line 87: `--dry-run` still printed "would sync" after the planted drift was removed); cloud report 4 saw the same at cc094b509.
+
+**Root cause:** `tests/unit/t2436_vendor_self_check.bats:57` `_clone_with_drift` cloned HEAD as-is and assumed it was vendor-synced; t4's in-sync leg (lines 87-88) asserts the WHOLE tree. Whenever HEAD carries committed source whose vendored copy is not yet committed (a worker mid-sync; reproduced here: lib/ + tools/ "would sync" in a clean clone), the assertion fails on drift the test never planted.
+
+**Why structurally allowed:** T-3972 moved t3/t4 onto a clone to escape live-tree concurrency, but kept the implicit "HEAD is synced" precondition; on the dev box HEAD is usually synced, so the precondition was never exercised.
+
+**Prevention:** the helper now runs a real `vendor self`, commits it and asserts `--check` is clean before planting (precondition is enforced, not assumed). New t6 plants unrelated drift (lib/paths.sh) at the cloned repo's HEAD and pins that the in-sync leg still holds — it fails without the baseline step (verified: "would sync 1 file(s) to .agentic-framework/lib/").
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -346,3 +392,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4585-t2436vendorselfcheckbats-t4-fails-whenev.md
 - **Context:** Initial task creation
+
+### 2026-10-22T07:55:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

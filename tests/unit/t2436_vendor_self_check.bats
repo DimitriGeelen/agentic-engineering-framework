@@ -19,6 +19,7 @@
 #   --check NEVER mutates the vendored tree           — t3 (behavioral)
 #   --check exit code agrees with --dry-run state     — t4 (behavioral)
 #   --help documents --check                          — t5
+#   in-sync leg survives unrelated drift at HEAD      — t6 (T-4585)
 
 load ../test_helper
 
@@ -54,9 +55,18 @@ FW="$FRAMEWORK_ROOT/bin/fw"
 # `fw vendor self` (an agent at work during the nightly) turned t3 red with no defect, and
 # on a clean live tree t3 could not see a mutation at all — nothing was there to sync.
 # They now run on a throwaway clone of HEAD with drift planted on purpose.
+# T-4585: the clone starts from a SYNCED baseline. HEAD can itself carry committed
+# drift (another worker mid-sync); without this, t4's "drift removed → in sync" leg
+# asserted the whole tree and went red on drift the test never planted.
+# Optional $1: repo to clone (default the live framework) — the regression test passes
+# a repo with unrelated drift committed at its HEAD.
 _clone_with_drift() {
     CL="$BATS_TEST_TMPDIR/fw"
-    git clone -q --shared "$FRAMEWORK_ROOT" "$CL"
+    git clone -q --shared "${1:-$FRAMEWORK_ROOT}" "$CL"
+    _cfw vendor self >/dev/null 2>&1 || { echo "baseline vendor self failed"; return 1; }
+    git -C "$CL" add -A .agentic-framework
+    git -C "$CL" -c user.email=t@t -c user.name=t commit -qm "T-4585: synced baseline" --allow-empty
+    _cfw vendor self --check >/dev/null 2>&1 || { echo "baseline not in sync after vendor self"; return 1; }
     printf '# t2436 planted drift\n' >> "$CL/lib/colors.sh"   # source changed, vendored copy not
     # Committed: a REAL sync withholds uncommitted source (T-3165), so with the drift left
     # uncommitted a --check that wrongly synced would copy nothing and t3 could not see it.
@@ -85,6 +95,19 @@ _cfw() {   # the clone's fw, rooted in the clone (no inherited live PROJECT_ROOT
     git -C "$CL" show HEAD~1:lib/colors.sh > "$CL/lib/colors.sh"
     git -C "$CL" -c user.email=t@t -c user.name=t commit -qam "T-3972: drift removed"
     run _cfw vendor self --dry-run; [[ "$output" != *"would sync"* ]]
+    run _cfw vendor self --check;   [ "$status" -eq 0 ]
+}
+
+@test "t2436 t6 (T-4585): t4's in-sync leg holds when HEAD already carries unrelated drift" {
+    SRC="$BATS_TEST_TMPDIR/src"
+    git clone -q --shared "$FRAMEWORK_ROOT" "$SRC"
+    printf '# t4585 unrelated drift at HEAD\n' >> "$SRC/lib/paths.sh"
+    git -C "$SRC" -c user.email=t@t -c user.name=t commit -qam "T-4585: unrelated drift"
+    _clone_with_drift "$SRC"
+    run _cfw vendor self --check;   [ "$status" -eq 1 ]
+    git -C "$CL" show HEAD~1:lib/colors.sh > "$CL/lib/colors.sh"
+    git -C "$CL" -c user.email=t@t -c user.name=t commit -qam "T-4585: drift removed"
+    run _cfw vendor self --dry-run; [[ "$output" != *"would sync"* ]] || { echo "$output" | grep "would sync"; return 1; }
     run _cfw vendor self --check;   [ "$status" -eq 0 ]
 }
 
