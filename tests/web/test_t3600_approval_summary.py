@@ -53,8 +53,23 @@ TICKED = """# T-9103: fixture
 BODIES = {"T-9101": NEEDS_REVIEW, "T-9102": NO_HUMAN, "T-9103": TICKED, "T-9104": NEEDS_REVIEW}
 
 
+def _pin_readiness(monkeypatch, state):
+    """Pin review readiness for the fixture tasks (T-4611).
+
+    The live predicate (T-4053) reads the independent-review ledger for `[REVIEW]`
+    criteria and falls back to waiting for a task file that does not exist, which every
+    fixture path is. Pinned in both lookups: approvals.py's binding and web.shared's,
+    where `review_queue_groups` resolves it.
+    """
+    reasons = [] if state == shared.READY else ["pinned waiting"]
+    pinned = lambda *_a, **_k: (state, list(reasons))  # noqa: E731
+    monkeypatch.setattr(ap, "review_readiness", pinned)
+    monkeypatch.setattr(shared, "review_readiness", pinned)
+
+
 @pytest.fixture()
 def fixture_corpus(monkeypatch):
+    _pin_readiness(monkeypatch, shared.READY)
     meta = [
         {"id": tid, "name": tid, "status": "work-completed", "workflow_type": "build",
          "_location": "active", "_path": f"/fixture/{tid}.md"}
@@ -91,6 +106,17 @@ def test_summary_counts_equal_page_counts_on_fixture(fixture_corpus):
     assert {k: summary[k] for k in TILE_KEYS} == {k: ctx[k] for k in TILE_KEYS}
     # 2 pending tier0 + 1 go + 2 AC tasks + 1 paused + 2 arcs + 3 bvp + 1 decided
     assert summary == {"total_count": 12, "tier0_count": 2, "go_count": 1, "ac_task_count": 2}
+
+
+def test_summary_and_page_agree_when_tasks_are_waiting(fixture_corpus, monkeypatch):
+    # T-4611: parity holds when the review tasks are waiting on the agent; neither
+    # surface counts them.
+    _pin_readiness(monkeypatch, shared.WAITING_ON_AGENT)
+    with app.test_request_context("/"):
+        ctx = ap._build_approvals_context()
+        summary = ap.approval_summary()
+    assert {k: summary[k] for k in TILE_KEYS} == {k: ctx[k] for k in TILE_KEYS}
+    assert summary == {"total_count": 10, "tier0_count": 2, "go_count": 1, "ac_task_count": 0}
 
 
 def test_summary_does_not_render_criteria(fixture_corpus, monkeypatch):

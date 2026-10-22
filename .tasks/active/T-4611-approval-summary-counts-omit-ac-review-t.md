@@ -2,12 +2,15 @@
 id: T-4611
 name: "Approval summary counts omit AC-review tasks (test_t3600 summary vs page)"
 description: >
-  tests/web/test_t3600_approval_summary.py: summary total_count 10 vs page 12, ac_task_count 0 vs 2 on the fixture; test_summary_does_not_render_criteria 0 == 2. The summary path does not see the fixture's AC-review tasks the page counts. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (lines 201-202). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
+  tests/web/test_t3600_approval_summary.py: summary total_count 10 vs page 12, ac_task_count
+  0 vs 2 on the fixture; test_summary_does_not_render_criteria 0 == 2. The summary
+  path does not see the fixture's AC-review tasks the page counts. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
+  (lines 201-202). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -39,8 +42,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:46:44Z
-last_update: 2026-10-22T08:46:44Z
-date_finished: null
+last_update: 2026-10-22T11:12:19Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +54,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:00:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:00:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4611: Approval summary counts omit AC-review tasks (test_t3600 summary vs page)
@@ -63,8 +93,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on bleeding-edge HEAD: tests/web/test_t3600_approval_summary.py run and result recorded in ## RCA (2 failed, 2 passed; summary == page, both 10/0)
+- [x] Fixture pins review readiness to READY explicitly, so tests/web/test_t3600_approval_summary.py passes (summary == page == 12/2)
+- [x] New regression test: with readiness pinned WAITING, summary and page agree and both count 0 AC tasks (parity holds in both readiness states)
+- [x] No production code changed: the summary/page parity was never broken, the fixture expectation was stale
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +281,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 python3 -m pytest tests/web/test_t3600_approval_summary.py -q -p no:cacheprovider > /tmp/.t4611.out 2>&1 && grep -q "5 passed" /tmp/.t4611.out
+grep -q "def test_summary_and_page_agree_when_tasks_are_waiting" tests/web/test_t3600_approval_summary.py
+bin/fw watchtower current
 
 ## RCA
 
@@ -265,6 +300,34 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** tests/web/test_t3600_approval_summary.py has 2 red tests on bleeding-edge HEAD
+63121c581 (reproduced 2026-10-22, 2 failed / 2 passed): `test_summary_counts_equal_page_counts_on_fixture`
+fails on `summary == {total 12, ac_task_count 2}` (got 10/0), and
+`test_summary_does_not_render_criteria` gets `ac_task_count` 0 where it expects 2.
+
+**Root cause:** the task title ("summary omits AC-review tasks the page counts") misreads
+the failure. The parity assertion (test line 91: summary == page on all four tile keys)
+PASSES, and both sides count 0. What fails is the hard-coded expectation on line 93. The
+fixture's two `[REVIEW]` tasks were "ready" when T-3600 wrote the test. Since then T-4053
+(`web/shared.py:1834` `review_readiness`) and T-3557 made a `[REVIEW]` criterion
+reviewer-judged: it is READY only with a green independent verdict, and
+`_compute_readiness` (`web/shared.py:1809-1828`) falls back to WAITING when the verdict
+state cannot be read. The fixture paths `/fixture/T-910x.md` do not exist, so
+`review_readiness` drops the path and `verdict_ledger._task_ctx` raises "task is not an
+active task file". Both fixture tasks land in `waiting`, which neither the page
+(`web/blueprints/approvals.py:1071`) nor the tile (`approvals.py:1037`) counts. Production
+behaviour is correct and consistent. The fixture never pinned the readiness state that its
+expected numbers depend on.
+
+**Why structurally allowed:** the fixture relied on the live readiness predicate without
+saying so. T-4053 changed that predicate's default for `[REVIEW]` criteria, and the tests/web
+run that would have caught this file was not part of that task's verification.
+
+**Prevention:** the fixture now pins `review_readiness` to READY in both places it is
+looked up (the `approvals.py` module binding and `web.shared`, where `review_queue_groups`
+resolves it), so the expected counts no longer depend on the ledger. A second test pins
+WAITING and asserts summary and page still agree at 0, so parity is checked in both states.
 
 ## Evolution
 
@@ -346,3 +409,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4611-approval-summary-counts-omit-ac-review-t.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:12:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
