@@ -243,9 +243,13 @@ def _ledger_lock(root: Path):
 
 
 def _ledger_paths(root: Path, extra: list[str] | None = None) -> list[str]:
-    """What a verdict commit stages: the ledger files that exist, plus the row's evidence."""
+    """What a verdict commit stages: the ledger files that exist, plus the row's evidence.
+    T-4591: plus the provenance a row is verified against (dispatch registry, runs, completions).
+    Left uncommitted, a `git stash` in the shared checkout or a fresh clone loses those rows, and
+    every committed verdict citing them stops verifying."""
     paths = [str(p) for p in (extra or []) if (root / p).exists()]
-    return paths + [str(r) for r in (VERDICTS, RECORDED, REFUSALS, APPLIED) if (root / r).exists()]
+    return paths + [str(r) for r in (VERDICTS, RECORDED, REFUSALS, APPLIED, DISPATCHES, RUNS,
+                                      COMPLETIONS) if (root / r).exists()]
 
 
 def _restore_committed_evidence(root: Path, env: dict) -> list[str]:

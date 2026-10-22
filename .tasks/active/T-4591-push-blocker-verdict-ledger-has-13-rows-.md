@@ -1,10 +1,19 @@
 ---
 id: T-4591
-name: "Push blocker: verdict ledger has 13 rows that no longer verify (T-4490 judge dispatches not in the review-dispatch registry)"
+name: "Push blocker: verdict ledger has 13 rows that no longer verify (T-4490 judge
+  dispatches not in the review-dispatch registry)"
 description: >
-  Pre-push audit 2026-10-22 FAILs 'Reviewer-verdict ledger: 13 row(s) do not verify', e.g. V-20261020-d1296ebc (T-4490): dispatch judge-t-4490-r5-claude-code-76608b11475b not in the review-dispatch registry. On 2026-10-21 the same ledger audited 34 rows, 0 failures. Find what changed (registry file .context/reviews/review-dispatches.jsonl rewritten or pruned? a cleanup change such as T-4558/T-4561/T-4526 touching review dispatch records? rows added by a T-4490 judge run without registration?). Do not delete or edit ledger rows (append-only); fix the cause, and if rows are genuinely unverifiable use the sanctioned acknowledge path only if a fixed framework defect caused it. Run python3 lib/verdict_ledger.py audit before and after.
+  Pre-push audit 2026-10-22 FAILs 'Reviewer-verdict ledger: 13 row(s) do not verify',
+  e.g. V-20261020-d1296ebc (T-4490): dispatch judge-t-4490-r5-claude-code-76608b11475b
+  not in the review-dispatch registry. On 2026-10-21 the same ledger audited 34 rows,
+  0 failures. Find what changed (registry file .context/reviews/review-dispatches.jsonl
+  rewritten or pruned? a cleanup change such as T-4558/T-4561/T-4526 touching review
+  dispatch records? rows added by a T-4490 judge run without registration?). Do not
+  delete or edit ledger rows (append-only); fix the cause, and if rows are genuinely
+  unverifiable use the sanctioned acknowledge path only if a fixed framework defect
+  caused it. Run python3 lib/verdict_ledger.py audit before and after.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:19:23Z
-last_update: 2026-10-22T08:19:23Z
-date_finished: null
+last_update: 2026-10-22T08:28:31Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T08:21:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4591: Push blocker: verdict ledger has 13 rows that no longer verify (T-4490 judge dispatches not in the review-dispatch registry)
@@ -62,8 +88,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of the 13 unverifiable verdict rows is localised to a file:line and recorded in ## RCA
+- [x] Cause fixed without editing or deleting any verdict-ledger row; `python3 lib/verdict_ledger.py audit` reports 0 rows failing
+- [x] Regression test added that fails without the fix and passes with it
+- [ ] Vendored copies in sync (`bin/fw vendor self --check --task T-4591` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +276,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 python3 -m pytest tests/unit/test_t4591_verdict_commit_carries_provenance.py tests/unit/test_t4008_verdict_commit_ignored_evidence.py tests/unit/test_t3863_verdict_commit_gitignored_context.py -q > /tmp/.t4591.out 2>&1 && grep -q passed /tmp/.t4591.out && ! grep -q failed /tmp/.t4591.out
+timeout 600 python3 lib/verdict_ledger.py audit > /tmp/.t4591-audit.out 2>&1; grep -q "row(s), 0 failure(s)" /tmp/.t4591-audit.out
+bin/fw vendor self --check --task T-4591
 
 ## RCA
 
@@ -264,6 +295,38 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** pre-push audit 2026-10-22 FAILs "Reviewer-verdict ledger: 13 row(s) do not verify" —
+13 committed rows (T-4490, T-4475, T-4361, T-4407, all 2026-10-20) name dispatches "not in the
+review-dispatch registry". The 2026-10-21 audit of the same 34 rows was clean.
+
+**Root cause:** two parts.
+1. *Trigger:* at 2026-10-22 07:32:14Z the T-4578 worker (session b3555021) ran a bare
+   `git stash -q` in the shared main checkout. That swept every worker's uncommitted
+   working-tree changes into stash@{0} ("WIP on bleeding-edge: fa17ac8a7"), including 18
+   dispatch-registry rows, 11 run rows, 36 completion rows and 24 cost rows that were never
+   committed. Those files went back to their HEAD (aaa3876f8) contents, so the rows were gone.
+2. *Defect that made it fatal:* `lib/verdict_ledger.py:248` `_ledger_paths` staged only
+   VERDICTS, RECORDED, REFUSALS and APPLIED for a verdict commit. The provenance a row is
+   verified against (DISPATCHES `review-dispatches.jsonl`, RUNS, COMPLETIONS) was left
+   uncommitted. So a committed verdict depended on working-tree state that any stash,
+   checkout or fresh clone throws away. d8496bc41 ("T-4490: reviewer verdict") shows it: it
+   adds verdicts.jsonl and recorded.jsonl only. The registry rows had previously reached git
+   only because an operator committed them by hand (aaa3876f8, "judge ledgers from today's runs").
+
+**Why structurally allowed:** the ledger checks *verdict* rows for being committed
+(`_uncommitted_why`), but nothing checked that the registry rows a committed verdict cites
+were committed too. `fw audit` reads the working tree, so the gap stayed green for as long as
+the uncommitted rows sat on disk. A fresh clone (cloud runs, consumers) would have FAILed
+straight away.
+
+**Prevention:** `_ledger_paths` now also stages DISPATCHES, RUNS and COMPLETIONS. Each verdict
+commit then carries the provenance it is verified against. All three are signed or append-only,
+so committing the appended rows is safe.
+`tests/unit/test_t4591_verdict_commit_carries_provenance.py` runs a `git stash -u` after the
+commit and asserts the row still verifies. The lost rows were restored byte-for-byte from
+stash@{0}: each file there is HEAD plus appended lines, and the rows are HMAC-signed, so the
+audit re-verifies them rather than trusting the restore.
 
 ## Evolution
 
@@ -329,6 +392,27 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — restore the lost rows, do not acknowledge them
+- **Chose:** restore the registry, runs, completions and cost rows byte-for-byte from stash@{0}
+  (each file there is HEAD plus appended lines; the rows are HMAC-signed, so the audit
+  re-verifies them). Then commit them so they are durable.
+- **Why:** the rows were valid and still exist. `acknowledge` is for rows that fail to verify
+  because of a fixed framework defect, and it never makes a row count. Using it here would have
+  thrown away 13 real verdicts.
+- **Rejected:** `fw reviewer verdict acknowledge` on the 13 rows (they lose standing for good);
+  `git stash pop` (stash@{0} also carries other workers' half-recovered edits and would conflict).
+
+### 2026-10-22 — operator action: 5 Human-AC tick rows are still in stash@{0}
+The same stash also took 5 rows of `.context/reviews/human-ac-ticks.jsonl` (HEAD 144 lines →
+149 in the stash). The Human-tick guard (T-3695) refuses any agent write to that file, so I
+have not restored them. If the operator wants them back, they run:
+```
+cd /opt/999-Agentic-Engineering-Framework && git diff --quiet HEAD -- .context/reviews/human-ac-ticks.jsonl && git show 'stash@{0}:.context/reviews/human-ac-ticks.jsonl' > .context/reviews/human-ac-ticks.jsonl && git commit -m "T-4591: restore 5 human-ac-tick rows lost to the 2026-10-22 stash" -- .context/reviews/human-ac-ticks.jsonl
+```
+(The `git diff --quiet` guard refuses if the file has changed since HEAD. In that case,
+append only the last 5 lines of the stash copy.) stash@{0} also holds other workers'
+uncommitted edits from 07:32Z. Do not drop it until those owners have checked it.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -345,3 +429,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4591-push-blocker-verdict-ledger-has-13-rows-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T08:21:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
