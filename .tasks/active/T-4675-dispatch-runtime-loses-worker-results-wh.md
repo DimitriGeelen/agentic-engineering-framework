@@ -1,10 +1,20 @@
 ---
 id: T-4675
-name: "Dispatch runtime loses worker results when /tmp is remounted: wdir lives in /tmp/tl-dispatch, and result/status/exit_code are looked up by path"
+name: "Dispatch runtime loses worker results when /tmp is remounted: wdir lives in
+  /tmp/tl-dispatch, and result/status/exit_code are looked up by path"
 description: >
-  2026-10-23 00:00: a systemd tmp.mount (8G tmpfs, unit created 2026-10-22 21:43, not by AEF) mounted over /tmp. Every /tmp/tl-dispatch/<worker> dir was hidden; running workers kept writing through open fds but fw termlink wait/result/status could not find them, and run.sh's copy to .context/dispatch-results/ tests $WDIR/result.md by path and fails. Seen on AEF w4654/w4655/w4657, 055 and 832 (832 sidecar ed922254). Fix: keep the worker dir (or at least result.jsonl, exit_code, meta.json) under the project (.context/dispatch/<worker>/, gitignored) from the start, or keep /tmp only for scratch; status/wait resolve through the project path. T-818 already says workers write repo paths. Test: a wdir that disappears mid-run (bind-mount or rename) still yields result + exit_code.
+  2026-10-23 00:00: a systemd tmp.mount (8G tmpfs, unit created 2026-10-22 21:43,
+  not by AEF) mounted over /tmp. Every /tmp/tl-dispatch/<worker> dir was hidden; running
+  workers kept writing through open fds but fw termlink wait/result/status could not
+  find them, and run.sh's copy to .context/dispatch-results/ tests $WDIR/result.md
+  by path and fails. Seen on AEF w4654/w4655/w4657, 055 and 832 (832 sidecar ed922254).
+  Fix: keep the worker dir (or at least result.jsonl, exit_code, meta.json) under
+  the project (.context/dispatch/<worker>/, gitignored) from the start, or keep /tmp
+  only for scratch; status/wait resolve through the project path. T-818 already says
+  workers write repo paths. Test: a wdir that disappears mid-run (bind-mount or rename)
+  still yields result + exit_code.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T22:07:15Z
-last_update: 2026-10-22T22:07:15Z
-date_finished: null
+last_update: '2026-10-22T22:15:22Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +60,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T22:13:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T22:15:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=297,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4675: Dispatch runtime loses worker results when /tmp is remounted: wdir lives in /tmp/tl-dispatch, and result/status/exit_code are looked up by path
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Worker dirs lived only in the host-shared /tmp/tl-dispatch; a tmpfs mounted over /tmp hid them from every by-path lookup. Move them under the dispatching project (.context/dispatch/<name>, gitignored) and resolve by name project-first, with the legacy /tmp root as a read fallback for workers already running there.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw termlink dispatch` (no FW_DISPATCH_DIR) creates the worker dir under `<project>/.context/dispatch/<name>`, not under /tmp/tl-dispatch; harness review seats (codex/opencode/antigravity) stay in /tmp (another user must read their export)
+- [ ] `fw termlink wait/result/status/vanished/cleanup` resolve a worker by name through the project root first and the legacy /tmp root second, so workers already running in /tmp stay readable
+- [ ] With the legacy /tmp root removed mid-run (the remount case), a project-root worker still yields its result and exit_code via `fw termlink result`/`status`/`wait` (regression test)
+- [ ] `lib/dispatch_tokens.py`, `lib/termlink_worker.py` and `tools/wait-dispatch.sh` resolve the same roots (project first, legacy fallback). `web/blueprints/orchestrator.py` (reads /tmp only) is left for a follow-up: it is a render surface with its own review gate
+- [ ] `.context/dispatch/` is gitignored
+- [ ] Existing termlink dispatch/cleanup/wait bats suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +289,13 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4675_dispatch_wdir_durable.bats > /tmp/.t4675.out 2>&1 && ! grep -q "^not ok" /tmp/.t4675.out
+test "$(grep -c '# skip' /tmp/.t4675.out)" -eq 0
+timeout 900 bats tests/unit/t4561_dispatch_reused_dir.bats tests/unit/t4582_termlink_wait_missed_event.bats tests/unit/t4558_cleanup_project_scope.bats tests/unit/t4637_vanished_workers.bats tests/unit/t3910_dispatch_limits.bats tests/unit/t3651_termlink_cleanup_guards.bats > /tmp/.t4675b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4675b.out
+git check-ignore -q .context/dispatch/x/result.jsonl
+bash -n agents/termlink/termlink.sh && bash -n tools/wait-dispatch.sh
+python3 -m py_compile lib/dispatch_tokens.py lib/termlink_worker.py
+bin/fw vendor self --check --task T-4675
 
 ## RCA
 
@@ -264,6 +312,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 2026-10-23 00:00 a systemd tmpfs mounted over /tmp. Every running worker's /tmp/tl-dispatch/<name> dir disappeared from view; the workers kept writing through open fds, but `fw termlink wait/result/status` reported no worker / no result, and run.sh's copy to .context/dispatch-results/ (which tests `$WDIR/result.md` by path) silently did nothing. Seen on AEF w4654/w4655/w4657, 055 and 832.
+
+**Root cause:** `agents/termlink/termlink.sh:35` set the only worker root to `/tmp/tl-dispatch` (host-shared, not durable), and every reader resolved it by path: `cmd_wait`/`cmd_result` (`$DISPATCH_DIR/$name`), `cmd_status`/`cmd_vanished`/`cmd_cleanup`/`_running_workers` (globs over `$DISPATCH_DIR`), `lib/dispatch_tokens.py:62`, `lib/termlink_worker.py:47`, `web/blueprints/orchestrator.py:115`, `tools/wait-dispatch.sh:80`. run.sh writes exit_code/finished_at/meta.json by path after the worker exits, so once /tmp was replaced those writes landed in a directory that no longer existed.
+
+**Why structurally allowed:** T-818 already ruled that workers write repo paths, and T-3580 round 4 noticed /tmp "is not durable", but it patched one file (a result copy) instead of moving the state, and that copy itself depends on the /tmp path. No test exercised a wdir that disappears.
+
+**Prevention:** worker state now lives under the dispatching project from creation; `tests/unit/t4675_dispatch_wdir_durable.bats` pins the default root, the project-first/legacy-fallback lookup, and a legacy /tmp root removed mid-run (the remount case) leaving result and exit_code readable.
 
 ## Evolution
 
@@ -345,3 +401,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4675-dispatch-runtime-loses-worker-results-wh.md
 - **Context:** Initial task creation
+
+### 2026-10-22T22:13:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

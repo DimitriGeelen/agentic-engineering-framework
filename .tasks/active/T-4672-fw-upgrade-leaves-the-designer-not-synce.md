@@ -1,13 +1,20 @@
 ---
 id: T-4672
-name: "fw upgrade leaves the designer NOT SYNCED with the new pin; consumers serve the old designer until fw designer install runs"
+name: "fw upgrade leaves the designer NOT SYNCED with the new pin; consumers serve
+  the old designer until fw designer install runs"
 description: >
-  832 be.3 field report (sidecar 023c051c): after fw upgrade, fw designer reported NOT SYNCED until fw designer install ran. Either run the install as an upgrade step (dry-run aware, skip when designer is not installed) or print it in upgrade's final lines as a required next command; doctor already reports the state. Also noted by 832: be.3 upgrade took 38 min on their consumer (worth a timing look), and T-4639 changed the exempt-path arm body in check-active-task.sh (tests anchored on it need re-anchoring; FYI only).
+  832 be.3 field report (sidecar 023c051c): after fw upgrade, fw designer reported
+  NOT SYNCED until fw designer install ran. Either run the install as an upgrade step
+  (dry-run aware, skip when designer is not installed) or print it in upgrade's final
+  lines as a required next command; doctor already reports the state. Also noted by
+  832: be.3 upgrade took 38 min on their consumer (worth a timing look), and T-4639
+  changed the exempt-path arm body in check-active-task.sh (tests anchored on it need
+  re-anchoring; FYI only).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T21:48:53Z
-last_update: 2026-10-22T21:48:53Z
-date_finished: null
+last_update: 2026-10-22T22:13:31Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T22:00:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T22:00:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4672: fw upgrade leaves the designer NOT SYNCED with the new pin; consumers serve the old designer until fw designer install runs
@@ -345,3 +379,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4672-fw-upgrade-leaves-the-designer-not-synce.md
 - **Context:** Initial task creation
+
+### 2026-10-22T22:13:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

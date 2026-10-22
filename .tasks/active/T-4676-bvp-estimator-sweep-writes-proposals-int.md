@@ -1,13 +1,23 @@
 ---
 id: T-4676
-name: "BVP estimator sweep writes proposals into hundreds of task files and never commits them; the tree stays dirty and broad commits sweep them up"
+name: "BVP estimator sweep writes proposals into hundreds of task files and never
+  commits them; the tree stays dirty and broad commits sweep them up"
 description: >
-  Found 2026-10-23: 443 uncommitted .tasks/active files, 415 of them pure bvp-estimator-v1-heuristic proposals from the 15-min sweep (bvp-estimator-sweep-15m, T-1923), 427 written in one 07:45Z pass on 2026-10-22, plus cost_estimate_proposed writes. Nothing commits them: they sit until an unrelated commit stages broadly (the same leak class as T-4671), and they bury real task-file edits (28 mixed files, some human-AC removals of unknown origin). Options: the sweep commits its own writes (one commit per sweep, its own task id, only the files it touched, skipping files with other uncommitted edits); or proposals move to a side store (.context/bvp/proposals.jsonl) instead of task frontmatter. Record the choice; the 415 files were committed by hand in this task.
+  Found 2026-10-23: 443 uncommitted .tasks/active files, 415 of them pure bvp-estimator-v1-heuristic
+  proposals from the 15-min sweep (bvp-estimator-sweep-15m, T-1923), 427 written in
+  one 07:45Z pass on 2026-10-22, plus cost_estimate_proposed writes. Nothing commits
+  them: they sit until an unrelated commit stages broadly (the same leak class as
+  T-4671), and they bury real task-file edits (28 mixed files, some human-AC removals
+  of unknown origin). Options: the sweep commits its own writes (one commit per sweep,
+  its own task id, only the files it touched, skipping files with other uncommitted
+  edits); or proposals move to a side store (.context/bvp/proposals.jsonl) instead
+  of task frontmatter. Record the choice; the 415 files were committed by hand in
+  this task.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T22:18:57Z
-last_update: 2026-10-22T22:18:57Z
-date_finished: null
+last_update: 2026-10-22T22:21:19Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T22:21:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4676: BVP estimator sweep writes proposals into hundreds of task files and never commits them; the tree stays dirty and broad commits sweep them up
@@ -62,8 +89,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Part 1: every uncommitted .tasks/active file outside the excluded set (T-4661/4662/4663/4667/4672/4673/4674/4675/4676) has a row in ## Updates naming its writer and whether it was committed; explained edits are committed under T-4676; no `### Human` tick without a provenance row is committed
+- [ ] Part 2: the chosen structural fix is recorded in ## Decisions
+- [ ] The estimator sweep (`fw bvp estimate sweep --cron`) and the cost-estimator sweep (`fw bvp estimate-cost sweep --cron`) commit the task files they wrote, in one commit per sweep whose subject names a task id
+- [ ] A sweep commit contains only files that sweep wrote, and a file that already had uncommitted edits before the sweep is neither written nor committed by it
+- [ ] Regression test in a temp git repo fails before the fix and passes after
+- [ ] `bin/fw vendor self` run; `bin/fw vendor self --check --task T-4676` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -345,3 +376,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4676-bvp-estimator-sweep-writes-proposals-int.md
 - **Context:** Initial task creation
+
+### 2026-10-22T22:21:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
