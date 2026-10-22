@@ -46,6 +46,7 @@ run_drift() {  # run_drift <drift.sh path>
         PROJECT_ROOT="'"$P"'"
         FABRIC_DIR="'"$P"'/.fabric"
         COMPONENTS_DIR="'"$P"'/.fabric/components"
+        LIB_DIR="'"$FRAMEWORK_ROOT"'/agents/fabric/lib"   # T-4654: location_kind.py
         CYAN=""; NC=""; GREEN=""; YELLOW=""; RED=""; BOLD=""
         ensure_fabric_dirs() { :; }
         source "'"$1"'"
@@ -56,9 +57,9 @@ run_drift() {  # run_drift <drift.sh path>
 # Run the audit's orphan counter — the real embedded python, extracted verbatim
 # so a divergence between this test and the shipped code cannot hide.
 run_audit_count() {  # run_audit_count <audit.sh path>
-    python3 - "$P" "$1" <<'PY'
+    python3 - "$P" "$1" "$FRAMEWORK_ROOT" <<'PY'
 import sys, re, subprocess
-proj, audit_path = sys.argv[1], sys.argv[2]
+proj, audit_path, fw = sys.argv[1], sys.argv[2], sys.argv[3]
 src = open(audit_path).read()
 # Pull the orphan-count python block out of the shell heredoc-ish -c string.
 m = re.search(r'drift_result=\$\(python3 -c "\n(.*?)\n" 2>&1\)', src, re.S)
@@ -68,7 +69,7 @@ body = m.group(1).replace('\\"', '"').replace('\\$', '$')
 # there rather than prepending — a prepended assignment is overwritten and the
 # whole harness then runs against the real repo, silently.
 assert "'$PROJECT_ROOT'" in body, "PROJECT_ROOT interpolation not found"
-prog = body.replace("'$PROJECT_ROOT'", repr(proj))
+prog = body.replace("'$PROJECT_ROOT'", repr(proj)).replace("'$FRAMEWORK_ROOT'", repr(fw))
 r = subprocess.run([sys.executable, "-c", prog], capture_output=True, text=True)
 print(r.stdout.strip() or r.stderr.strip())
 PY
@@ -146,7 +147,7 @@ PY
 
 @test "A4 — mutation: removing the drift.sh skip flags the URL again" {
     card saas-billing "Billing SaaS" "https://billing.example.com/account"
-    sed 's#\[a-zA-Z\]\*://\*) continue ;;#[a-zA-Z]*://*) : ;;#' "$DRIFT" > "$TMP/m.sh"
+    sed 's#grep -qxF -- "$loc" <<<"$nonpath_locs"#false#' "$DRIFT" > "$TMP/m.sh"
     if cmp -s "$TMP/m.sh" "$DRIFT"; then false; fi          # the substitution must have landed
     run run_drift "$TMP/m.sh"
     [[ "$output" == *"file missing"* ]]
@@ -159,7 +160,7 @@ PY
     mkdir -p "$P/lib"
     printf 'x\n' > "$P/lib/real.sh"
     card real "Real thing" "lib/real.sh"
-    sed 's#\[a-zA-Z\]\*://\*) continue ;;#[a-zA-Z]*://*) : ;;#' "$DRIFT" > "$TMP/m.sh"
+    sed 's#grep -qxF -- "$loc" <<<"$nonpath_locs"#false#' "$DRIFT" > "$TMP/m.sh"
     run run_drift "$TMP/m.sh"
     [[ "$output" == *"Orphaned cards"* ]]
     [[ "$output" != *"file missing"* ]]
@@ -167,7 +168,7 @@ PY
 
 @test "A4 — mutation: removing the audit skip counts the URL again" {
     card saas-billing "Billing SaaS" "https://billing.example.com/account"
-    sed "s#if re.match(r'^\[a-zA-Z\]\[a-zA-Z0-9+.-\]\*://', loc):#if False:#" \
+    sed "s#if not is_path_location(loc):#if False:#" \
         "$AUDIT" > "$TMP/ma.sh"
     if cmp -s "$TMP/ma.sh" "$AUDIT"; then false; fi
     run run_audit_count "$TMP/ma.sh"

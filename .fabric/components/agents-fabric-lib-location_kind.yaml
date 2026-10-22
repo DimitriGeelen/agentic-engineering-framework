@@ -1,0 +1,21 @@
+id: agents/fabric/lib/location_kind.py
+name: location_kind
+type: script
+subsystem: component-fabric
+location: agents/fabric/lib/location_kind.py
+tags: []
+
+purpose: "Is a fabric card's `location:` a file path? (T-4654)"
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-22
+created_by: unknown

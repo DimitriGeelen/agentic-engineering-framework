@@ -49,22 +49,26 @@ do_drift() {
 
     # 2. Check for orphaned cards (file referenced doesn't exist)
     echo -e "${CYAN}Orphaned cards:${NC}"
+    # T-3049, T-4654: a location that is not a file path (URL, IPv4, CIDR,
+    # host:port, descriptive text) has no file to be missing — decline the
+    # question instead of answering no. Neither later escape catches these: the
+    # T-1673 branch tests only for a leading /, and git check-ignore on such a
+    # string returns not-ignored. The rule lives in ONE predicate,
+    # location_kind.py, which the audit orphan count calls too — so the CLI and
+    # the daily audit cannot disagree. One python pass for all cards, not one
+    # per card (T-1674: per-card spawns cost minutes on 500+ cards).
+    local _loc_sed="s/^location:[[:space:]]*//; s/^\"(.*)\"\$/\\1/; s/^'(.*)'\$/\\1/"
+    local _lk_dir="${LIB_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
+    local nonpath_locs
+    nonpath_locs=$({ grep -h "^location:" "$COMPONENTS_DIR"/*.yaml 2>/dev/null || true; } \
+        | sed -E "$_loc_sed" | python3 "$_lk_dir/location_kind.py" --non-path)
     for card in "$COMPONENTS_DIR"/*.yaml; do
         [ -f "$card" ] || continue
         local loc
-        loc=$({ grep "^location:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^location: //')
-        # T-3049: a URL location is not a path, and "does this file exist" has no
-        # answer for it — so decline the question instead of answering no. Cards
-        # for hosted services (saas-account cards in consumer projects) carry
-        # https:// locations and were flagged (file missing) permanently.
-        # Neither existing escape catches it: the T-1673 branch below tests only
-        # for a leading /, and git check-ignore on a URL string returns
-        # not-ignored, so T-2519's exemption passes it through to the warning.
-        # Requires the full :// separator — a path containing a bare colon, or a
-        # malformed http:/single-slash, is still a path and still checked.
-        case "$loc" in
-            [a-zA-Z]*://*) continue ;;
-        esac
+        loc=$({ grep "^location:" "$card" 2>/dev/null || true; } | head -1 | sed -E "$_loc_sed")
+        if [ -n "$loc" ] && grep -qxF -- "$loc" <<<"$nonpath_locs"; then
+            continue
+        fi
         # T-1673: handle absolute paths (cross-repo cards from T-1652) — don't
         # join with PROJECT_ROOT when the location is already absolute.
         local resolved

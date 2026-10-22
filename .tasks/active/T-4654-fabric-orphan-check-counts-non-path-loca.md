@@ -1,13 +1,16 @@
 ---
 id: T-4654
-name: "Fabric orphan check counts non-path location: values (IPv4, CIDR, descriptive) as missing files"
+name: "Fabric orphan check counts non-path location: values (IPv4, CIDR, descriptive)
+  as missing files"
 description: >
-  T-3049 skips scheme:// only; drift.sh and audit.sh must stay in agreement. Source: ring20 per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category 5), ring20 patch #19,#20. Verify against our code before fixing.
+  T-3049 skips scheme:// only; drift.sh and audit.sh must stay in agreement. Source:
+  ring20 per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category
+  5), ring20 patch #19,#20. Verify against our code before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T19:31:47Z
-last_update: 2026-10-22T19:31:47Z
-date_finished: null
+last_update: 2026-10-22T22:00:18Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T19:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T19:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4654: Fabric orphan check counts non-path location: values (IPv4, CIDR, descriptive) as missing files
@@ -62,8 +92,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Claim reproduced on our code: a fixture card with `location: 192.168.10.0/24` (or another non-path value) is reported as an orphan by `fw fabric drift` before the fix (failing test recorded in ## Updates)
+- [x] One shared predicate (`is_path_location` in `agents/fabric/lib/location_kind.py`) decides "is this location a file path"; both `agents/fabric/lib/drift.sh` and `agents/audit/audit.sh` orphan checks call it, and neither keeps its own `scheme://` case
+- [x] Non-path shapes are skipped: URL (`https://…`), IPv4, IPv4 CIDR, `host:port`, IPv4:port, and descriptive text containing whitespace
+- [x] Path shapes are still checked: relative path, absolute path, dotted filename (`bin/fw`, `lib/x.sh`, `/opt/x/y.py`, `README.md`) — a missing one still flags as orphan
+- [x] Regression bats test exercises the predicate per shape and runs drift + audit orphan logic on fixture cards; it fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +281,22 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4654_fabric_non_path_location.bats > /tmp/.t4654-a.out 2>&1 && grep -q "^ok 7 " /tmp/.t4654-a.out && ! grep -q "^not ok" /tmp/.t4654-a.out
+timeout 300 bats tests/unit/t4654_fabric_non_path_location.bats > /tmp/.t4654-b.out 2>&1; test "$(grep -c '# skip' /tmp/.t4654-b.out)" -eq 0
+timeout 300 bats tests/unit/t3049_fabric_url_location.bats > /tmp/.t4654-c.out 2>&1 && grep -q "^ok 11 " /tmp/.t4654-c.out && ! grep -q "^not ok" /tmp/.t4654-c.out
+timeout 300 bats tests/unit/t3049_fabric_url_location.bats > /tmp/.t4654-d.out 2>&1; test "$(grep -c '# skip' /tmp/.t4654-d.out)" -eq 0
+python3 agents/fabric/lib/location_kind.py --is-path lib/x.sh && ! python3 agents/fabric/lib/location_kind.py --is-path 192.168.10.0/24
+bin/fw vendor self --check --task T-4654
 
 ## RCA
+
+**Symptom:** consumer projects (ring20, patches #19/#20) carrying fabric cards for hosts, networks and services (`location: 192.168.10.0/24`, `pve1.lan:8006`, `proxmox node pve1`) saw those cards permanently reported as orphaned — "(file missing)" in `fw fabric drift`, a WARN in the daily audit.
+
+**Root cause:** both orphan checks treated every non-URL `location:` as a file path. `agents/fabric/lib/drift.sh:59-64` (pre-fix) skipped only `[a-zA-Z]*://*`, and `agents/audit/audit.sh:~2880` (pre-fix) skipped only `re.match(r'^[a-zA-Z][a-zA-Z0-9+.-]*://', loc)`; anything else was joined onto PROJECT_ROOT and tested with `-f` / `os.path.exists`. The "is this a path" rule was also written twice, in two languages, kept in step only by a comment.
+
+**Why structurally allowed:** this repo has no non-path cards, so the daily audit that runs here can never fire on the class (same blind spot T-3049 named for URLs). The T-3049 fix answered one shape instead of the question, and its tests pinned the regex text, not the rule.
+
+**Prevention:** the rule now lives in one predicate (`agents/fabric/lib/location_kind.py:is_path_location`) imported by audit.sh and called (one pass) by drift.sh; `tests/unit/t4654_fabric_non_path_location.bats` pins every shape at both sites on a shared fixture and S1 fails if either site regains a private rule.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +392,13 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4654-fabric-orphan-check-counts-non-path-loca.md
 - **Context:** Initial task creation
+
+### 2026-10-22T21:59:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-23 — reproduced and fixed [w4654]
+- **Reproduced (claim holds on our code):** before the fix, `tests/unit/t4654_fabric_non_path_location.bats` D1 failed (`drift.sh` printed "(file missing)" for IPv4/CIDR/host:port/descriptive cards) and A1 failed (audit count was not `4 0`).
+- **Fix:** new `agents/fabric/lib/location_kind.py` (`is_path_location`, CLI `--is-path` / `--non-path`); `drift.sh` computes the non-path set in one python pass and skips members (also unquotes `"..."`/`'...'` values so it sees what yaml sees); `audit.sh` imports the predicate. T-3049's mutation tests retargeted to the new call sites; its harness now substitutes `$FRAMEWORK_ROOT`.
+- **Tests:** t4654 7/7, t3049 11/11, neighbouring fabric suites (test_fabric_exclude, fabric_globstar, t3430, test_fabric_drift_absolute_paths.py) green. Live `fw fabric drift` and `fw audit --check fabric-coverage` agree (1 orphan each, a genuinely missing test file).
+- A bare word (`pve1`, `Makefile`) stays a path by design: indistinguishable from a file name, and silencing it would hide real deletions.
