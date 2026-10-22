@@ -1,0 +1,21 @@
+id: agents/audit/integration-suite.sh
+name: integration-suite
+type: script
+subsystem: audit
+location: agents/audit/integration-suite.sh
+tags: []
+
+purpose: "agents/audit/integration-suite.sh — T-4634: scheduled tests/integration run."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-22
+created_by: unknown
