@@ -1,10 +1,15 @@
 ---
 id: T-4621
-name: "Push blocker: t3248_useful_headroom #6 unknown-measurement branch no longer writes level unknown"
+name: "Push blocker: t3248_useful_headroom #6 unknown-measurement branch no longer
+  writes level unknown"
 description: >
-  New red 2026-10-22 (.context/audits/unit-suite/failures/2026-10-22T08:47:18Z/bats/t3248_useful_headroom.bats.out): test 6 expects '"level": "unknown"' in budget-status on an unknown measurement. Likely changed by T-4174 (budget gauge reads unknown / provisional reading). Find whether the contract changed deliberately (then update the test with reason) or regressed (fix code).
+  New red 2026-10-22 (.context/audits/unit-suite/failures/2026-10-22T08:47:18Z/bats/t3248_useful_headroom.bats.out):
+  test 6 expects '"level": "unknown"' in budget-status on an unknown measurement.
+  Likely changed by T-4174 (budget gauge reads unknown / provisional reading). Find
+  whether the contract changed deliberately (then update the test with reason) or
+  regressed (fix code).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T09:33:38Z
-last_update: 2026-10-22T09:33:38Z
-date_finished: null
+last_update: '2026-10-22T09:35:59Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:35:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4621: Push blocker: t3248_useful_headroom #6 unknown-measurement branch no longer writes level unknown
@@ -62,8 +84,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of t3248_useful_headroom #6 red identified with file:line (deliberate contract change vs regression)
+- [x] Cause fixed; `bats tests/unit/t3248_useful_headroom.bats` fully green, test still asserts a real property of the unknown-measurement branch
+- [x] Nothing added to the unit-suite baseline
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +271,20 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t3248_useful_headroom.bats > /tmp/.t4621.out 2>&1 && ! grep -q "^not ok" /tmp/.t4621.out && grep -q "young-session" /tmp/.t4621.out
+test "$(grep -c '# skip' /tmp/.t4621.out)" -eq 0
+timeout 900 bats tests/unit/t4174_budget_young_session.bats tests/unit/t3241_budget_status_unknown_state.bats > /tmp/.t4621b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4621b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t3248_useful_headroom.bats 2>&1 | grep -q clean
 
 ## RCA
+
+**Symptom:** `tests/unit/t3248_useful_headroom.bats` #6 red since 2026-10-22: a single-usage-entry transcript (50,000 tokens, window 300,000) no longer writes `"level": "unknown"` to `.budget-status`.
+
+**Root cause:** deliberate contract change, not a code regression. T-4174 (2c327981c) changed `agents/context/budget-gate.sh:585-590`: a young session (<2 in-scope usage entries) whose lone reading is below the warn line is now reported as `level: ok` + real tokens + `provisional: true`; only a lone reading at/above warn (T-2885 poisoning shape) and failed scans stay `unknown`. T-4174 updated the sibling `t3241_budget_status_unknown_state.bats` single-entry fixture to a lone HIGH reading but missed t3248 #6, which used the same low single-entry fixture to reach the unknown branch.
+
+**Why structurally allowed:** T-4174's worker ran its own and the t3241 tests, not every bats file that drives budget-gate.sh's unknown branch; nothing maps a changed branch to all the tests that reach it, so the stale fixture surfaced only in the nightly suite.
+
+**Prevention:** test #6 now reaches the unknown branch with a lone HIGH reading (280,000 at window 300,000 — above warn) and a new test #7 pins the young-session branch's headroom fields as null with `provisional: true`, so both branches T-4174 split assert the "never a fabricated number" property. Code unchanged.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +380,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4621-push-blocker-t3248usefulheadroom-6-unkno.md
 - **Context:** Initial task creation
+
+### 2026-10-22T09:35:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -119,13 +119,31 @@ EOF
     echo "$STATUS_JSON" | grep -q '"headroom_ratio": 0.82'
 }
 
+# T-4621: T-4174 split the single-entry case. A lone reading BELOW the warn line
+# is a provisional young-session reading (level ok); only a lone reading at or
+# above it (the T-2885 poisoning shape) stays unknown. Both branches must write
+# null headroom fields — the baseline needs 2 entries in either case.
 @test "budget-status: unknown-measurement branch writes null headroom fields, never a fabricated number" {
     single="$TEST_TEMP_DIR/single2.jsonl"
-    printf '%s\n' '{"message":{"model":"claude-fable-5","usage":{"input_tokens":100,"cache_read_input_tokens":0,"cache_creation_input_tokens":49900}}}' > "$single"
+    # 280,000 at a 300,000 window is above the warn line -> untrusted lone reading.
+    printf '%s\n' '{"message":{"model":"claude-fable-5","usage":{"input_tokens":100,"cache_read_input_tokens":0,"cache_creation_input_tokens":279900}}}' > "$single"
     run_gate "nulls" "$single" 300000
     [ "$status" -eq 0 ]
     echo "$STATUS_JSON" | grep -q '"level": "unknown"'
     echo "$STATUS_JSON" | grep -q '"baseline_tokens": null'
+    echo "$STATUS_JSON" | grep -q '"headroom_ratio": null'
+}
+
+@test "budget-status: young-session branch (lone low reading) is provisional with null headroom fields" {
+    single="$TEST_TEMP_DIR/single3.jsonl"
+    printf '%s\n' '{"message":{"model":"claude-fable-5","usage":{"input_tokens":100,"cache_read_input_tokens":0,"cache_creation_input_tokens":49900}}}' > "$single"
+    run_gate "young" "$single" 300000
+    [ "$status" -eq 0 ]
+    echo "$STATUS_JSON" | grep -q '"level": "ok"'
+    echo "$STATUS_JSON" | grep -q '"tokens": 50000'
+    echo "$STATUS_JSON" | grep -q '"provisional": true'
+    echo "$STATUS_JSON" | grep -q '"baseline_tokens": null'
+    echo "$STATUS_JSON" | grep -q '"headroom_tokens": null'
     echo "$STATUS_JSON" | grep -q '"headroom_ratio": null'
 }
 
