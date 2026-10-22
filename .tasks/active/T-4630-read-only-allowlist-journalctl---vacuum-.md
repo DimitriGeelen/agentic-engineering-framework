@@ -1,10 +1,16 @@
 ---
 id: T-4630
-name: "Read-only allowlist: journalctl --vacuum-*/--rotate/--flush and dmesg -c/-C/--clear change system state"
+name: "Read-only allowlist: journalctl --vacuum-*/--rotate/--flush and dmesg -c/-C/--clear
+  change system state"
 description: >
-  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh in their repo): the command passes has_bash_write_pattern and is_bash_safe_command (agents/context/lib/safe-commands.sh) yet changes system state: journalctl --vacuum-time|--vacuum-size|--vacuum-files, --rotate, --flush delete or rotate journal files; dmesg -C/--clear/-c clears the kernel ring buffer. Refuse those options. Tests plus controls (journalctl -u x, dmesg alone stay safe).
+  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh
+  in their repo): the command passes has_bash_write_pattern and is_bash_safe_command
+  (agents/context/lib/safe-commands.sh) yet changes system state: journalctl --vacuum-time|--vacuum-size|--vacuum-files,
+  --rotate, --flush delete or rotate journal files; dmesg -C/--clear/-c clears the
+  kernel ring buffer. Refuse those options. Tests plus controls (journalctl -u x,
+  dmesg alone stay safe).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +45,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "9e201103"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T10:37:39Z
-last_update: 2026-10-22T10:37:39Z
-date_finished: null
+last_update: 2026-10-22T11:12:52Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +57,53 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T10:45:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T10:45:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4630: Read-only allowlist: journalctl --vacuum-*/--rotate/--flush and dmesg -c/-C/--clear change system state
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+ring20-dashboard round-2 probe (msg 9e201103): `journalctl --vacuum-*|--rotate|--flush` and
+`dmesg -C|--clear|-c` classify SAFE in `agents/context/lib/safe-commands.sh` although they delete,
+rotate or clear logs. `journalctl --help` (systemd 255) lists more of the same kind, covered too:
+`--sync`, `--relinquish-var`, `--smart-relinquish-var`, `--update-catalog`, `--setup-keys`,
+`--cursor-file=FILE` ("update FILE"); `dmesg --help` adds `-D`/`-E`/`-n` (console state).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `is_bash_safe_command` refuses journalctl `--vacuum-time|--vacuum-size|--vacuum-files`, `--rotate`, `--flush`, `--sync`, `--relinquish-var`, `--smart-relinquish-var`, `--update-catalog`, `--setup-keys`, `--cursor-file`, in any getopt abbreviation (`--rot`, `--vacuum-t`) and quoted/expanded spelling
+- [x] `is_bash_safe_command` refuses dmesg `-C`/`--clear`, `-c`/`--read-clear`, `-D`/`--console-off`, `-E`/`--console-on`, `-n`/`--console-level`, in short bundles (`-Hc`), abbreviations and quoted/expanded spellings
+- [x] `SYSTEMD_PAGER` / `SYSTEMD_PAGERSECURE` env prefixes are denied (journalctl hands SYSTEMD_PAGER to a shell)
+- [x] Controls stay SAFE: `journalctl -u x`, `journalctl -u x -n 50 --no-pager`, `journalctl --cursor=abc`, `journalctl --since today -o json`, `journalctl --verify`, `dmesg`, `dmesg -T`, `dmesg --level=err`, `dmesg -H --color=never`
+- [x] Regression test `tests/unit/t4630_journal_dmesg_state.bats` fails on the pre-fix code and passes after; existing safe-commands suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,8 +288,29 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4630_journal_dmesg_state.bats > /tmp/.t4630.out 2>&1 && ! grep -q "^not ok" /tmp/.t4630.out
+test "$(grep -c '# skip' /tmp/.t4630.out)" -eq 0
+timeout 900 bats tests/unit/context_safe_commands.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/safe_commands_env_prefix.bats > /tmp/.t4630b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4630b.out
+bin/fw vendor self --check --task T-4630
 
 ## RCA
+
+**Symptom:** `journalctl --vacuum-time=1s`, `journalctl --rotate`, `dmesg -C` and siblings classified
+SAFE and ran with no active task, although they delete or rotate journal files or clear the kernel
+ring buffer.
+
+**Root cause:** `agents/context/lib/safe-commands.sh` `_fw_single_command_is_safe`, Category 3b arm
+(`pgrep|pidof|getent|journalctl|dmesg|…`) returns 0 on the program name. Its own comment says the arm
+is "verb-scoped where the tool has both forms; omitted entirely where it does not", but journalctl
+and dmesg have both forms and were neither scoped nor omitted.
+
+**Why structurally allowed:** the T-3096 sweep classified tools by their common use; no test
+asserted any maintenance option, so the omission was invisible.
+
+**Prevention:** `_fw_option_changes_state` judges journalctl/dmesg on the dequoted words (getopt
+abbreviations and short bundles included, fail closed on expansions), SYSTEMD_PAGER joins the
+env-prefix denylist, and `tests/unit/t4630_journal_dmesg_state.bats` pins every option plus SAFE
+controls.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -346,3 +406,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4630-read-only-allowlist-journalctl---vacuum-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:12:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -499,6 +499,8 @@ _fw_env_prefix_is_denied() {
         PAGER|EDITOR|VISUAL) return 0 ;;
         # T-4626: an rg config file can carry --pre / --hostname-bin.
         RIPGREP_CONFIG_PATH) return 0 ;;
+        # T-4630: journalctl (and every systemd tool) runs SYSTEMD_PAGER via a shell.
+        SYSTEMD_PAGER|SYSTEMD_PAGERSECURE) return 0 ;;
         *) return 1 ;;
     esac
 }
@@ -972,6 +974,41 @@ _fw_filter_operand_writes() {
     esac
 }
 
+# T-4630: does this journalctl/dmesg clause change system state? journalctl's
+# maintenance options delete, rotate, flush or sync journal files, regenerate the
+# catalog or FSS keys, and --cursor-file=FILE rewrites FILE; dmesg -C/-c clear the
+# ring buffer and -D/-E/-n change console logging. Both use getopt_long, so any
+# prefix of a long option counts (an ambiguous one fails in the tool, so refusing it
+# costs nothing); `--cursor` itself is journalctl's read option and stays. dmesg
+# short bundles are scanned whole (fail closed). Judged on the dequoted words; a
+# word that cannot be resolved, or one that begins with an expansion, counts.
+_fw_option_changes_state() {
+    local base="$1" i j tok longs
+    case "$base" in
+        journalctl) longs="--vacuum-time --vacuum-size --vacuum-files --rotate --flush --sync --relinquish-var --smart-relinquish-var --update-catalog --setup-keys --cursor-file" ;;
+        dmesg) longs="--clear --read-clear --console-off --console-on --console-level" ;;
+        *) return 1 ;;
+    esac
+    _fw_option_words "$2" || return 0
+    for (( i=1; i<${#_FW_OW[@]}; i++ )); do
+        tok="${_FW_OW[i]}"
+        [ "${_FW_OWK[i]}" = E ] && return 0
+        [ "$tok" = -- ] && return 1
+        case "$tok" in
+            --?*)
+                tok="${tok%%=*}"
+                [ "$base:$tok" = journalctl:--cursor ] && continue
+                for j in $longs; do
+                    case "$j" in "$tok"*) return 0 ;; esac
+                done ;;
+            -?*)
+                [ "$base" = dmesg ] || continue
+                case "${tok:1}" in *[cCDEn]*) return 0 ;; esac ;;
+        esac
+    done
+    return 1
+}
+
 # T-4626: does this sort/rg clause name an option that STARTS a program? sort
 # --compress-program=CMD runs CMD when it spills to temp files (getopt accepts any
 # unambiguous prefix; `--c` alone is ambiguous with --check, so `--co…` is it). rg
@@ -1420,6 +1457,8 @@ _fw_single_command_is_safe() {
         # (`kill`, `ip`, `mount` and friends are NOT here — `ip addr` reads but `ip link
         # set` writes, and a verb-level split there is wider than this task measured).
         pgrep|pidof|getent|journalctl|dmesg|tty|logname|groups|locale|ulimit)
+            # T-4630: journalctl --vacuum-*/--rotate/… and dmesg -C/-c/-n change state.
+            _fw_option_changes_state "$base" "$cmd" && return 1
             return 0
             ;;
         systemctl)
