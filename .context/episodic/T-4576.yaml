@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4576: Register fabric cards for files added 2026-10-21/22 that the commit hook flagged as unregistered
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:45:49Z
+# ============================================================================
+
+task_id: T-4576
+task_name: "Register fabric cards for files added 2026-10-21/22 that the commit hook flagged as unregistered"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-21T22:12:27Z
+completed: 2026-10-22T10:45:04Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-22T00:12:50+02:00
+last_commit: 2026-10-22T00:16:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file fabric registration chore. register fabric cards for the 4 drift-listed files added since 2026-10-21 (lib/working-gitignore.sh, lib/task_link_fields.py, tools/gen-framework-hook-lines.sh, tools/gen-stock-hook-digests.sh); ACs + verification
+
+# Key outcomes
+outcomes:
+  - 'Every file added to git since 2026-10-21 that `bin/fw fabric drift` lists as unregistered has a card in `.fabric/components/` created with `bin/fw fabric register` (4: lib/working-gitignore.sh, lib/task_link_fields.py, tools/gen-framework-hook-lines.sh, tools/gen-stock-hook-digests.sh)'
+  - '`bin/fw fabric drift` no longer lists any file added since 2026-10-21 as unregistered'
+  - 'Only `.fabric/components/*.yaml` cards (and this task file) are committed; no source changes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/lib-task_link_fields.yaml'
+  - '.fabric/components/lib-working-gitignore.yaml'
+  - '.fabric/components/tools-gen-framework-hook-lines.yaml'
+  - '.fabric/components/tools-gen-stock-hook-digests.yaml'
+  - '.tasks/active/T-4576-register-fabric-cards-for-files-added-20.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:12:50'
+    action: 'T-4576: file fabric registration chore'
+  - time: '2026-10-22T00:16:25'
+    action: 'T-4576: register fabric cards for the 4 drift-listed files added since 2026-10-21 (lib/working-gitignore.sh, lib/task_link_fields.py, tools/gen-framework-hook-lines.sh, tools/gen-stock-hook-digests.sh); ACs + verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 752 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fabric, chore]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 752
+  commits: 2
+  files_changed: 5
+  lines_added: 477
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4576-register-fabric-cards-for-files-added-20.md
+generated_by: context-agent-hybrid
