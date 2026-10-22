@@ -1,0 +1,1231 @@
+                 "$AUTHORITY_ROOT/.agentic-framework/agents/git/lib/worktree-corpus-guard.sh"; do
+                # Count dependents (depended_by entries)
+                # Probe says free yet the audit still reports contention: the
+                # Waiting blind burns the window for nothing — give up after 2
+                # audit resolving a different CONTEXT_DIR, an exotic host).
+                # consecutive blind retries and fall through to the BLOCK.
+                # contended lock is not one this probe can observe (a vendored
+                COMP_COUNT=$((COMP_COUNT + 1))
+                COMP_NAMES="${COMP_NAMES:+$COMP_NAMES, }$name"
+                DEP_COUNT=$((DEP_COUNT + deps))
+                FOUND=1
+                [ "$_t3125_lsha" = "$_zero" ] && continue
+                [ "$_t3297_blind" -ge 2 ] && break
+                [ -z "$_t3125_lref" ] && continue
+                _lw_tags="${_lw_tags} ${_local_ref#refs/tags/}"
+                _t3125_ref="$_t3125_lsha"
+                _t3297_blind=$(( _t3297_blind + 1 ))
+                break
+                case "$_t3125_lref" in refs/heads/*) ;; *) continue ;; esac
+                deps=$(grep -c "target:" "$card" 2>/dev/null || true)
+                echo "          or fw inception decide $TASK_REF no-go --rationale 'reason'"
+                echo "          or: $(_emit_user_command "inception decide $TASK_REF no-go --rationale 'reason'")"
+                echo "    $(_emit_user_command "inception decide $TASK_REF go --rationale '...'")"
+                echo "    fw inception decide $TASK_REF go --rationale '...'"
+                echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
+                echo "  1. Review: $(_emit_user_command "task review $TASK_REF")"
+                echo "  1. Review: fw task review $TASK_REF  (creates review marker)"
+                echo "  2. Decide: $(_emit_user_command "inception decide $TASK_REF go --rationale 'reason'")"
+                echo "  2. Decide: fw inception decide $TASK_REF go --rationale 'reason'"
+                echo "  After exploration: fw inception decide $TASK_REF go|no-go --rationale '...'"
+                echo "  After exploration:"
+                echo "  Configure: $(_emit_user_command "config set inception_commit_limit N")"
+                echo "  Configure: fw config set inception_commit_limit N"
+                echo "  FW_SKIP_SELF_VENDOR_CHECK=1 git push" >&2
+                echo "  If intentional, proceed. If accidental: git checkout HEAD -- ${_yaml_file}"
+                echo "  Use 'fw context add-learning' instead of direct file edits."
+                echo "  cd $PROJECT_ROOT && bin/fw vendor self && git add .agentic-framework/ && git commit -m 'T-XXX: refresh vendored copies'" >&2
+                echo "  fw inception decide $TASK_REF go --rationale 'reason'"
+                echo "  fw inception decide $TASK_REF no-go --rationale 'reason'"
+                echo "  fw tier0 approve"
+                echo "  git commit --no-verify"
+                echo "  git push --no-verify" >&2
+                echo ""
+                echo "" >&2
+                echo "$_sv_out" | grep "would sync" | head -3 >&2
+                echo "BLOCKED: Inception gate — $TASK_REF has no go/no-go decision"
+                echo "Bypass (Tier 0):" >&2
+                echo "Bypass (logged Tier-2):" >&2
+                echo "Bypass: git commit --no-verify"
+                echo "ERROR: Push blocked — self-vendor drift detected (T-2240):" >&2
+                echo "Emergency bypass (human only): fw tier0 approve && git commit --no-verify"
+                echo "Emergency bypass (human only):"
+                echo "Emergency bypass: git commit --no-verify"
+                echo "Fix:" >&2
+                echo "Inception tasks allow $INCEPTION_COMMIT_LIMIT exploration commits, then require a decision."
+                echo "Inception tasks allow 2 exploration commits, then require a decision."
+                echo "NOTE: Inception task $TASK_REF — no decision yet (commit $((INCEPTION_COMMITS + 1))/$INCEPTION_COMMIT_LIMIT before gate)"
+                echo "NOTE: Inception task $TASK_REF — no decision yet (commit $((INCEPTION_COMMITS + 1))/2 before gate)"
+                echo "Record a decision:"
+                echo "Stale in the COMMITTED tree being pushed (T-3125), first 5:" >&2
+                echo "This inception task has $INCEPTION_COMMITS commits but no decision."
+                echo "Vendored .agentic-framework/ is stale; see the 'would sync' line(s)" >&2
+                echo "WARNING: ${_yaml_file} shrunk from ${_old_lines} to ~${_remaining} entries (>50% loss)"
+                echo "above for the affected class(es). Consumers that vendor from origin" >&2
+                echo "would inherit the divergence silently." >&2
+                exit 1
+                name=$(grep "^name:" "$card" | head -1 | sed 's/^name: //')
+                name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
+                printf '%s\n' "$_sv_committed" | head -5 | sed 's/^/  /' >&2
+              "$_t3594_root/.agentic-framework/lib/tier0_action.py" \
+              "$_t3594_root/lib/tier0_action.py"; do
+            # "<local-ref> <local-sha> <remote-ref> <remote-sha>" on stdin, already
+            # Anchor with ":" (T-1328) so substring overlaps don't overcount —
+            # Count existing commits for this inception task
+            # Count existing commits for this inception task.
+            # Count existing exploration commits for this inception task (T-2195).
+            # Fall back to HEAD when stdin carried nothing usable (manual
+            # Lock looks free — retry now. The retry may still lose the
+            # Match only commits whose SUBJECT starts with "T-XXX:" (T-1328) —
+            # Origin: T-2186 hit the limit at commit 3 (Step 0 findings) because
+            # Skip deletions (local_sha is all zeros)
+            # Storage commits (task-file-only edits: filing, demote, status flips,
+            # T-3125: which ref is actually being pushed? git feeds pre-push
+            # T-3165: point at the NARROWED invocation. The bare form used to sweep
+            # `fw vendor self` now withholds those by default and names them; naming
+            # approximation, and it is still strictly better than the working
+            # buffered into $_stdin_buf by the T-1603 block above. Take the first
+            # diff and counts only those touching files outside the task's own .md.
+            # e.g. T-1130 must not match T-11300, and a body mentioning "T-1130 pickup"
+            # every dirty vendored-class file, including a concurrent task's, so this
+            # filing + demote consumed 2/2 with zero exploration — a scoring-shaped
+            # frontmatter changes) are exempt. The classifier looks at each commit's
+            # in another task's commit must not count toward T-1130's gate.
+            # invocation, tag-only push, deletion): HEAD is the closest committed
+            # non-deletion branch sha — that is the tree consumers will vendor.
+            # re-acquire race and return 75 again; keep waiting if so.
+            # remedy for your drift silently staged someone else's unfinished work.
+            # rigidity in the very system the inception was recalibrating.
+            # so anchor on the subject after the sha.
+            # the same ID in unrelated commits. --oneline gives "<sha> <subject>"
+            # tree, which is what the false positive was made of.
+            # using --grep against the full message would match body mentions of
+            # your own paths is what actually clears the gate.
+            --project-root "$PROJECT_ROOT" --commit "$_fp_sha" 2>/dev/null || true
+            .context/*|.fabric/*|.tasks/*|.claude/*|.git/*|docs/*|*.md|*.yaml|*.yml|*.json) continue ;;
+            :   # forward in commit time despite VERSION decrease — allow
+            ;;
+            CORPUS_GUARD="$_afp/agents/git/lib/worktree-corpus-guard.sh"
+            HAS_DECISION=true
+            HAS_EXISTING_ARTIFACT=true
+            INCEPTION_COMMITS=$(_count_inception_exploration_commits "$TASK_REF")
+            INCEPTION_COMMITS=$(git log --oneline --grep="$TASK_REF" 2>/dev/null | wc -l | tr -d ' ')
+            INCEPTION_COMMITS=$(git log --oneline --grep="$TASK_REF:" 2>/dev/null | wc -l | tr -d ' ')
+            INCEPTION_COMMITS=$(git log --oneline 2>/dev/null | grep -cE "^[0-9a-f]+ ${TASK_REF}:" || true)
+            UNREG="${UNREG:+$UNREG, }$file"
+            UNREG_COUNT=$((UNREG_COUNT + 1))
+            [ -f "$card" ] || continue
+            [ -n "$_t3125_ref" ] || _t3125_ref="HEAD"
+            _block_lines="${_block_lines}${_block_lines:+
+            _remaining=$((_old_lines - _del_lines + _new_lines))
+            _sv_committed=$(_t3125_committed_drift "$_t3125_ref")
+            _t3125_ref=""
+            _t3297_blind=0
+            _t3297_run_audit
+            _tag_type=$(git cat-file -t "$_local_sha" 2>/dev/null || echo "")
+            case "$_local_sha" in 0000000000000000000000000000000000000000) continue ;; esac
+            done <<EOF
+            echo "    FW_VENDOR_ONLY=\"<your-path> <your-path>\" bin/fw vendor self" >&2
+            echo "    cd $_t3594_root && $_t3594_fw tier0 approve" >&2
+            echo "  $_t3126_ref_fails failure(s) are REF-scoped — present in the commit being"
+            echo "  Affected class(es):" >&2
+            echo "  Before COMMITTING your edits, sync only YOUR files:" >&2
+            echo "  FW_SKIP_MCP_DRIFT_CHECK=1 git push" >&2
+            echo "  FW_SKIP_SELF_VENDOR_CHECK=1 git push" >&2
+            echo "  Failure scope could not be determined (no AUDIT-SCOPE line — the audit"
+            echo "  High connectivity ($DEP_COUNT edges) — consider: $(_fw_cmd 2>/dev/null || echo fw) fabric blast-radius HEAD"
+            echo "  High connectivity ($DEP_COUNT edges) — consider: fw fabric blast-radius HEAD"
+            echo "  Run 'bin/fw vendor self' before COMMITTING those edits." >&2
+            echo "  Run: $(_emit_user_command "handover --commit" 2>/dev/null || echo "fw handover --commit")"
+            echo "  Run: fw handover --commit"
+            echo "  The approval module (lib/tier0_action.py) was not found, so no approval" >&2
+            echo "  The bare form withholds any dirty file you did not name and lists it," >&2
+            echo "  The tree being pushed ($_t3125_ref) is IN SYNC: every vendored-class" >&2
+            echo "  This is enforced at git pre-push, so it applies however the push was" >&2
+            echo "  an undetermined scope is not a determination that the ref is clean."
+            echo "  can be checked — refusing (fail closed). Run 'fw upgrade' / 'fw vendor'." >&2
+            echo "  cd $PROJECT_ROOT && bin/fw mcp emit-manifest && git add agents/mcp/framework-mcp-manifest.json && git commit -m 'T-XXX: refresh MCP manifest'" >&2
+            echo "  cd $PROJECT_ROOT && bin/fw vendor self && git add .agentic-framework/ && git commit -m 'T-XXX: refresh vendored copies'" >&2
+            echo "  cd $PROJECT_ROOT && bin/fw vendor self && git add .agentic-framework/lib/ && git commit -m 'T-XXX: refresh vendored libs'" >&2
+            echo "  docs/reports/${TASK_REF}-<topic>.md"
+            echo "  file matches its vendored copy in that commit, so consumers vendoring" >&2
+            echo "  from origin inherit nothing stale. The drift above lives only in" >&2
+            echo "  git push --no-verify" >&2
+            echo "  it, the operator (human-only) runs:" >&2
+            echo "  launched (typed, script, make). A request has been recorded; to approve" >&2
+            echo "  predates T-3126, or its output could not be captured). Blocking:"
+            echo "  pushed, not just in your working tree."
+            echo "  so you no longer have to already know which files are someone else's." >&2
+            echo "  then push again. One approval covers one ref update, once, for a bounded time." >&2
+            echo "  uncommitted edits — yours or a concurrent session's." >&2
+            echo ""
+            echo "" >&2
+            echo "$_mcp_out" | head -3 >&2
+            echo "$_sv_out" | grep "would sync" | head -3 >&2
+            echo "$_sv_out" | grep "would sync" | head -3 | sed 's/^ */    /' >&2
+            echo ".agentic-framework/lib/ is stale relative to lib/. Consumers that" >&2
+            echo "BLOCKED: inception commit for $TASK_REF — no research artifact (C-001/G-009)"
+            echo "Bypass (Tier 0):" >&2
+            echo "Bypass (logged Tier-2):" >&2
+            echo "Create the artifact BEFORE conducting research:"
+            echo "ERROR: Push blocked — MCP manifest drift detected (T-2294):" >&2
+            echo "ERROR: Push blocked — self-vendor drift detected (T-2240):" >&2
+            echo "Emergency bypass: git commit --no-verify"
+            echo "Fix:" >&2
+            echo "HANDOVER STALE: Last handover has $TODO_COUNT unfilled [TODO] sections (${ELAPSED}min old)"
+            echo "Inception tasks require a research artifact in docs/reports/"
+            echo "The thinking trail IS the artifact — conversations are ephemeral, files are permanent."
+            echo "Vendored .agentic-framework/ is stale; see the 'would sync' line(s)" >&2
+            echo "WARN: Self-vendor drift is working-tree-only — push allowed (T-3125)" >&2
+            echo "above for the affected class(es). Consumers that vendor from origin" >&2
+            echo "agents/mcp/framework-mcp-manifest.json is out of sync with" >&2
+            echo "manifest as a capability gate would see the stale tool catalogue." >&2
+            echo "policy/capability-overlay/tool-set.yaml. Consumers reading the" >&2
+            echo "vendor from origin would inherit the divergence silently." >&2
+            echo "would inherit the divergence silently." >&2
+            else
+            exit 1
+            fi
+            if [ "$INCEPTION_COMMITS" -ge "$INCEPTION_COMMIT_LIMIT" ]; then
+            if [ "$INCEPTION_COMMITS" -ge 2 ]; then
+            if [ "$_remaining" -lt $((_old_lines / 2)) ]; then
+            if [ "$_tag_type" = "commit" ]; then
+            if [ "$audit_exit" -eq 75 ]; then
+            if [ -n "$_sv_committed" ]; then
+            if grep -q "^location: $file" "$card" 2>/dev/null; then
+            printf '%s\n' "$_path"
+            total=$((total + 1))
+            while IFS=' ' read -r _t3125_lref _t3125_lsha _t3125_rref _t3125_rsha; do
+            | sed -e 's/^AUDIT-SCOPE-WORKTREE: /    - /'
+           && git cat-file -e "$_remote_sha" 2>/dev/null \
+           && git merge-base --is-ancestor "$_remote_sha" "$_local_sha" 2>/dev/null; then
+         && git merge-base --is-ancestor "$_r_sha" "$_l_sha" 2>/dev/null; then
+        "$AUDIT_SCRIPT" --section structure
+        "$AUDIT_SCRIPT" --section structure 2>&1 | tee "$_t3126_out"
+        # Check if a decision has been recorded by fw inception decide
+        # Check if docs/reports/ changes are in this commit
+        # Check if docs/reports/T-XXX-* already exists on disk
+        # Count dependents (depended_by entries)
+        # If ANY file is outside .tasks/{active,completed}/T-XXX-*, this is exploration.
+        # If the remote sha is locally known AND is an ancestor of local sha,
+        # T-1829: tag-counter reset (e.g. v1.6.2 created after v1.5.X stamping)
+        # and the gate below treats a missing scope line as "block" — degraded to the
+        # drops <commits-since-tag> back to 0, making local-VERSION numerically
+        # grep -v matches storage-pattern lines; if anything remains, we count.
+        # less than remote-VERSION despite local being forward in commit time.
+        # local-is-ancestor-of-remote shape).
+        # mktemp unavailable: run exactly as before. No capture means no scope line,
+        # pre-T-3126 behaviour, never to something weaker.
+        # shellcheck source=/dev/null
+        # strict-block behaviour that T-1602 motivated (HEAD-reset rollback,
+        # the push is genuinely forward — allow. Otherwise fall back to the
+        . "$FRAMEWORK_ROOT/lib/prepush-lock-wait.sh"
+        .tasks/templates/*.md)                      return 0 ;;
+        AUDIT_SCRIPT="$FW_PATH/agents/audit/audit.sh"
+        COMP_COUNT=$((COMP_COUNT + 1))
+        COMP_COUNT=0
+        COMP_NAMES="${COMP_NAMES:+$COMP_NAMES, }$name"
+        DEP_COUNT=$((DEP_COUNT + deps))
+        ELAPSED=$(( (NOW - HANDOVER_TIME) / 60 ))
+        FOUND=0
+        HANDOVER_TIME=$(stat -c %Y "$LATEST" 2>/dev/null || stat -f %m "$LATEST" 2>/dev/null || echo 0)
+        HAS_DECISION=false
+        HAS_EXISTING_ARTIFACT=false
+        HAS_STAGED_RESEARCH=$(git diff --cached --name-only | grep -c "^docs/reports/" || true)
+        NOW=$(date +%s)
+        [ ! -f "$_t3297_lock_file" ]
+        [ "$_changed_n" -gt "$_FAB_DETAIL_MAX" ] && continue
+        [ "$_r_sha" = "$_zero" ] && continue
+        [ "$audit_exit" -eq 75 ] && sleep 1
+        [ -e "$_t3297_lock_file" ] || return 0
+        [ -f "$PROJECT_ROOT/.context/episodic/$_fp_task.yaml" ] || continue
+        [ -n "$_c" ] && [ -f "$_c" ] && { _t3594_py="$_c"; break; }
+        [ -n "$_floc" ] && [ -z "${_FAB_LOC[$_floc]+x}" ] && _FAB_LOC["$_floc"]="$_fcard"
+        [ -n "$_t3126_out" ] && rm -f "$_t3126_out"
+        [ -n "$card" ] || continue
+        [ -z "$file" ] && continue
+        [ -z "$sha" ] && continue
+        _afp=$(grep "^framework_path:" "$AUTHORITY_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+        _base="${_version%%-*}"
+        _block_lines="${_block_lines}${_block_lines:+
+        _commits="${_rest%%-*}"
+        _del_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^-- " || echo 0)
+        _del_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^-- " || true)
+        _err=$(python3 -c "
+        _fcard="${_fl%%:location: *}"
+        _floc="${_fl#*:location: }"
+        _floc="${_floc%"${_floc##*[![:space:]]}"}"
+        _major_minor="${_base%.*}"
+        _mcp_exit=$("$PROJECT_ROOT/bin/fw" mcp check >/dev/null 2>&1; echo $?)
+        _mcp_out=$("$PROJECT_ROOT/bin/fw" mcp check 2>&1 || true)
+        _meta="${_line%%$'\t'*}"
+        _new_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^+- " || echo 0)
+        _new_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^+- " || true)
+        _old_lines=$(git show HEAD:"${_yaml_file}" 2>/dev/null | grep -c "^- " || echo 0)
+        _old_lines=$(git show HEAD:"${_yaml_file}" 2>/dev/null | grep -c "^- " || true)
+        _path="${_line#*$'\t'}"
+        _remote_ver=$(git show "$_local_sha~1:VERSION" 2>/dev/null | tr -d '[:space:]')
+        _remote_ver=$(git show "$_remote_sha:VERSION" 2>/dev/null | tr -d '[:space:]')
+        _rest="${_version#*-}"
+        _sha="${_meta##* }"
+        _stamped="$_version"
+        _stamped="${_major_minor}.${_commits}"
+        _sv_out=$("$PROJECT_ROOT/bin/fw" vendor self --dry-run 2>&1 || true)
+        _t3125_blob["$_path"]="$_sha"
+        _t3125_vendor_class "$_path" || continue
+        _t3126_ref_fails=$(printf '%s\n' "$_t3126_scope_line" | sed -n 's/.*[[:space:]]ref=\([0-9][0-9]*\).*/\1/p')
+        _t3126_wt_fails=$(printf '%s\n' "$_t3126_scope_line" | sed -n 's/.*[[:space:]]worktree=\([0-9][0-9]*\).*/\1/p')
+        _t3297_log_bypass
+        _t3297_wait="$(fw_prepush_lock_wait_default "$PROJECT_ROOT" 2>/dev/null)"
+        _t3297_wait=360
+        _t3297_wait_source="derived from .context/audits/full-audit-timing.yaml (T-3421)"
+        _t3297_wait_source="fallback default (T-3421)"
+        _verb="branch-delete"
+        _verb="force-push"
+        _verb="force-push"                          # T-3594 A1: a tag was moved
+        _yaml_failures="${_yaml_failures}
+        agents/*.sh|agents/*.py|agents/*.md)        return 0 ;;
+        audit_exit=$?
+        audit_exit=${PIPESTATUS[0]}
+        bash "$CORPUS_GUARD" scan-staged || exit 1
+        bin/*)                                      return 0 ;;
+        bin/*.pyc)                                  return 1 ;;
+        card="${_FAB_LOC[$file]:-}"
+        case "$_path" in .agentic-framework/*) continue ;; esac
+        case "$file" in
+        case "$file" in .context/*|.fabric/*|.tasks/*|docs/*) continue ;; esac
+        continue
+        deps=$(grep -c "target:" "$card" 2>/dev/null || true)
+        done
+        echo "                                       .large-file-allowlist." >&2
+        echo "                                   and add it to .gitignore." >&2
+        echo "           grep '^status:' .tasks/{active,completed}/T-NNNN-*.md" >&2
+        echo "         git rm the orphan, and re-commit. Cross-check status:"   >&2
+        echo "       (seconds to wait for the lock; 0 disables the wait)"
+        echo "       Applies only when the audit could not run (exit 75) — a real audit"
+        echo "       FAIL still blocks. Logged to .context/working/.gate-bypass-log.yaml."
+        echo "  'git push --no-verify', a core.hooksPath override (-c, an included file, or" >&2
+        echo "  'git push --no-verify', a core.hooksPath override, plumbing (send-pack) or" >&2
+        echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
+        echo "  (Tier 0 — prompts for human approval in agent context. Prefer 2 or 3.)"
+        echo "  - $_t" >&2
+        echo "  .context/working/.gate-bypass-log.yaml)."
+        echo "  1. Wait for the running audit(s) to finish, then push again."
+        echo "  2. Wait longer in-gate:  FW_PREPUSH_LOCK_WAIT=300 git push"
+        echo "  2. Wait longer in-gate:  FW_PREPUSH_LOCK_WAIT=600 git push"
+        echo "  3. Tier-2 bypass, CONTENTION ONLY:  FW_PUSH_SKIP_AUDIT_ON_CONTENTION=1 git push"
+        echo "  Check: ls -l $PROJECT_ROOT/.context/locks/audit.lock; pgrep -af audit.sh"
+        echo "  Class: T-2240 — vendored .agentic-framework/lib/ may diverge from lib/" >&2
+        echo "  Class: T-2240/T-2241 — vendored .agentic-framework/ may diverge from source" >&2
+        echo "  Class: T-2294 — agents/mcp/framework-mcp-manifest.json may diverge from tool-set.yaml" >&2
+        echo "  FW_LARGE_FILE_BLOCK_BYTES=104857600 git commit ..." >&2
+        echo "  FW_PUSH_SKIP_AUDIT_ON_CONTENTION=1 (Tier-2, logged to"
+        echo "  Limit: 'git push --no-verify' skips this hook (a git property). Typed, it is" >&2
+        echo "  Limit: any path that skips client-side hooks skips this one too —" >&2
+        echo "  No audit verdict exists for this push; run 'fw audit' once the lock frees."
+        echo "  Register: $(_fw_cmd 2>/dev/null || echo fw) fabric register <path>"
+        echo "  Register: fw fabric register <path>"
+        echo "  These findings are in the WORKING TREE: uncommitted edits, untracked"
+        echo "  They are NOT in the ref being pushed — a clean checkout of that commit"
+        echo "  They are still real. Fix them before COMMITTING the edits that caused"
+        echo "  They are therefore NOT BLOCKING THIS PUSH."
+        echo "  Worktree-scoped failure(s):"
+        echo "  a Tier 0 command; inside a script it is not seen. Server-side branch" >&2
+        echo "  a config file chosen by HOME / XDG_CONFIG_HOME / GIT_CONFIG_*), plumbing (send-pack) or" >&2
+        echo "  caller: 'pre-push audit gate (T-3297)'"
+        echo "  does not contain them."
+        echo "  echo 0 > $COMMIT_COUNTER_FILE"
+        echo "  files, or host state such as /etc/cron.d."
+        echo "  flag: 'FW_PUSH_SKIP_AUDIT_ON_CONTENTION=1'"
+        echo "  forge-API ref updates. Typed, --no-verify and core.hooksPath are Tier 0;" >&2
+        echo "  git tag -d $_t && git tag -a $_t -m \"Release $_t\"" >&2
+        echo "  inside a script none of them is seen. Server-side branch and tag" >&2
+        echo "  protection (e.g. OneDev) is the stronger control — an operator decision." >&2
+        echo "  reason: 'audit lock contention (exit 75) — no verdict produced; contention-only Tier-2 skip after ${_t3297_waited:-0}s wait'"
+        echo "  session. Details: the [FAIL] blocks above, each with a 'Scope:' line."
+        echo "  task: '${_t3297_task:-unknown}'"
+        echo "  them — or, if they are a concurrent session's, leave them to that"
+        echo ""
+        echo "" >&2
+        echo "$_dt_hits" >&2
+        echo "$_lf_hits" >&2
+        echo "$_stamped" > "$PROJECT_ROOT/.agentic-framework/VERSION"
+        echo "- timestamp: '$(date -u +'%Y-%m-%dT%H:%M:%SZ')'"
+        echo ".agentic-framework/bin/fw"
+        echo "After user confirms, reset the counter:"
+        echo "Bypass: git commit --no-verify   (Tier 0, logged)"                >&2
+        echo "Bypass: git commit --no-verify   (Tier 0, logged)" >&2
+        echo "Bypass: git push --no-verify"
+        echo "CIRCUIT BREAKER: $CONSECUTIVE consecutive commits without user check-in"
+        echo "ERROR: Commit blocked — FW_SECRET_SCAN_STRICT=1 and scanner missing." >&2
+        echo "ERROR: Commit blocked — duplicate task IDs in staged tree:" >&2
+        echo "ERROR: Commit blocked — large-file gate flagged staged content:" >&2
+        echo "ERROR: Push blocked - audit COULD NOT RUN (another audit holds the lock)"
+        echo "ERROR: Push blocked - audit has FAILURES"
+        echo "ERROR: Push blocked — forced update or ref deletion without a Tier 0 approval (T-3594):" >&2
+        echo "Emergency bypass: git commit --no-verify"
+        echo "FABRIC: $COMP_COUNT component(s) modified across $_changed_n changed files (detail skipped above $_FAB_DETAIL_MAX) — $(_fw_cmd 2>/dev/null || echo fw) fabric blast-radius HEAD"
+        echo "FABRIC: $COMP_COUNT component(s) modified: $COMP_NAMES"
+        echo "FABRIC: $UNREG_COUNT new file(s) without component cards (list skipped above 20) — $(_fw_cmd 2>/dev/null || echo fw) fabric drift"
+        echo "FABRIC: $UNREG_COUNT new file(s) without component cards: $UNREG"
+        echo "Fix the issues above before pushing."
+        echo "If it's a deliberate vendored artefact: add the path-prefix regex to" >&2
+        echo "If this file should not be in git: unstage it (git restore --staged <path>)" >&2
+        echo "If you need a one-off larger threshold:" >&2
+        echo "Last resort: git push --no-verify"
+        echo "NOTE: $commits_since commits since $latest_tag. Consider: fw version bump patch --tag"
+        echo "Origin: T-1845 — sibling prevention to T-1844 (T-1834 force-push surfaced 36MB+78MB tracked binaries)." >&2
+        echo "Origin: T-1863 — T-1859 active+completed orphan caught 3 days late." >&2
+        echo "Resolve: keep the canonical version (usually .tasks/completed/),"  >&2
+        echo "Show them what you've done and ask if they want to continue."
+        echo "Stop and check in with the user before continuing."
+        echo "The gate waited ${_t3297_waited:-0}s of its ${_t3297_wait:-0}s window (${_t3297_wait_source:-FW_PREPUSH_LOCK_WAIT})"
+        echo "The gate waited ${_t3297_waited:-0}s of its ${_t3297_wait:-0}s window (FW_PREPUSH_LOCK_WAIT)"
+        echo "This is not an audit failure. No verdict was produced, so the gate has"
+        echo "Tier 0 action approval consumed (T-3594):" >&2
+        echo "WARN: MCP manifest drift check skipped (FW_SKIP_MCP_DRIFT_CHECK=1)" >&2
+        echo "WARN: Self-vendor drift check skipped (FW_SKIP_SELF_VENDOR_CHECK=1)" >&2
+        echo "WARNING: Audit FAILED, but every failure is in the WORKING TREE (T-3126)"
+        echo "WARNING: audit COULD NOT RUN (lock contention) — push allowed by"
+        echo "What to do — each command works as-is from this blocked state:"
+        echo "bin/fw"
+        echo "for the lock to free. Cron audits can stack when a run overlaps the next"
+        echo "fw"
+        echo "is sized from the last measured structure audit, so more than one queued"
+        echo "nothing to pass you on."
+        echo "pusher can still outlast it (T-3421)."
+        echo "trigger, so the lock may stay held for many minutes (T-3297)."
+        echo "trigger, so the lock may stay held for many minutes (T-3297); the window"
+        else
+        esac
+        exit 1
+        fi
+        files=$(git show --name-only --format= "$sha" 2>/dev/null || echo "")
+        flock -n "$_t3297_lock_file" -c true 2>/dev/null
+        for card in "$FABRIC_DIR"/*.yaml; do
+        grep -E '^AUDIT-SCOPE-WORKTREE: ' "$_t3126_out" 2>/dev/null \
+        if [ "$DEP_COUNT" -gt 5 ]; then
+        if [ "$ELAPSED" -gt 60 ]; then
+        if [ "$FOUND" -eq 0 ]; then
+        if [ "$HAS_DECISION" = false ]; then
+        if [ "$HAS_STAGED_RESEARCH" -eq 0 ] && [ "$HAS_EXISTING_ARTIFACT" = false ]; then
+        if [ "$_mcp_exit" != "0" ]; then
+        if [ "$_old_lines" -gt 10 ] && [ "$_del_lines" -gt 0 ]; then
+        if [ "$_remote_sha" != "$_zero" ] \
+        if [ "${_t3125_blob[.agentic-framework/$_path]:-}" != "${_t3125_blob[$_path]}" ]; then
+        if [ -f "$_cand" ]; then CORPUS_GUARD="$_cand"; break; fi
+        if [ -n "$_afp" ] && [ -f "$_afp/agents/git/lib/worktree-corpus-guard.sh" ]; then
+        if [ -n "$_t3126_ref_fails" ]; then
+        if [ -z "$_t3594_py" ]; then
+        if [ -z "${_FAB_LOC[$file]:-}" ]; then
+        if _t3297_lock_free; then
+        if echo "$_sv_out" | grep -q "would sync"; then
+        if echo "$files" | grep -vE "^\.tasks/(active|completed)/${task_ref}-" | grep -q '[^[:space:]]'; then
+        if grep -q '^\*\*Decision\*\*: \(GO\|NO-GO\|DEFER\)' "$TASK_FILE" 2>/dev/null; then
+        if ls "$PROJECT_ROOT/docs/reports/${TASK_REF}-"* >/dev/null 2>&1; then
+        lib/*.sh|lib/*.py|lib/*.md)                 return 0 ;;
+        name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
+        policy/value-drivers.yaml|policy/bvp-scoring-rubric.md|policy/capability-overlay/tool-set.yaml|policy/anti-patterns.yaml|policy/escalation-patterns.yaml|policy/designer-pin.yaml) return 0 ;;
+        printf '%s\n' "$_t3594_lines" >&2
+        printf '%s\n' "$_t3594_ok" | sed 's/^/  /' >&2
+        python3 "$FOOTPRINT_LIB" "$_fp_task" \
+        refs/tags/*)
+        web/*.sh|web/*.py|web/*.html|web/*.css|web/*.js|web/*.svg|web/*.j2|web/*.jinja2) return 0 ;;
+        | grep -E '^vendored_path:' | head -1 \
+        | sed -e 's/^vendored_path:[[:space:]]*//' -e 's/#.*//' -e 's/^"//' -e 's/"[[:space:]]*$//' -e 's/[[:space:]]*$//')
+    "") ;;
+    "$AUDIT_SCRIPT" --section structure
+    "$AUDIT_SCRIPT" --section structure 2>&1 | tee "$_t3126_out"
+    #
+    # 2026-08-11 with an invariant RED at the time.
+    # A worktree-scoped FAIL is real — the audit is right to report it — but it is
+    # BLOCK rather than warn. The asymmetry is what decides it: a push blocked on
+    # Degrade to ALLOW — a guard that failed closed on its own missing dependency
+    # Degrade to ALLOW, but never silently (T-2647). The guard itself has a loud
+    # Designer class: only the build the ref's own pin names. The vendored tree
+    # Equal is OK — no change. Higher is OK — bump.
+    # Lower fails: sort -V says first is lower-or-equal; if remote sorts BEFORE
+    # One refresh per distinct task id in the message; `sort -u` because a
+    # Only check branch refs — tags carry their own version meaning
+    # Read VERSION from local commit being pushed
+    # Read VERSION from remote tip if known; if remote_sha is zero, this is a
+    # Scanner missing — fail open with a clear message, don't block legitimate work.
+    # Scoped to projects that declare a framework or carry a task corpus: a plain
+    # Skip deletions (local_sha is all zeros)
+    # Subject-anchored match (T-1328) avoids counting body-mentions.
+    # T-1252 (G-006): do NOT stamp .agentic-framework/VERSION — the vendored
+    # T-1328: anchor on subject prefix so body-mentions don't inflate the count
+    # T-1328: anchor with ":" so substring overlaps don't overcount
+    # T-2061 bash-invoke pattern: gate on -f, run via `bash`, so a vendored copy
+    # T-2061: bash-invoke pattern — see secret-scan note above.
+    # T-2195: exploration-only counter; storage commits exempt.
+    # T-2647 (832 G-001/F4): a security control that silently no-ops is worse
+    # T-2930 / OBS-221: 75 = EX_TEMPFAIL = the audit DID NOT RUN (lock contention).
+    # T-3126: block only on REF-scoped failures.
+    # T-3297: contention-only Tier-2 bypass. It is checked HERE, inside the
+    # The downgrade requires PROOF: a scope line saying ref=0 with at least one
+    # The main checkout and every worktree-free consumer print nothing, ever.
+    # This is not a pass. Before this branch existed, contention exited 0 and landed
+    # Tier-2 call; skipping one that produced a FAIL verdict would be a false
+    # a property of uncommitted edits, untracked files, or host state, none of
+    # and consumers committed for weeks with no secret scanning. Default stays
+    # and the gate below treats a missing scope line as "block" — degraded to the
+    # blocking every commit on it would be hostile), but the warning is now
+    # broken-framework_path test, which passed the merge and said nothing.
+    # contention costs seconds — wait for the other audit and push again — whereas a
+    # could have mattered: a linked worktree of a repo that has a task corpus.
+    # degradation path, and it is UNREACHABLE when the guard file is the thing
+    # deliberately prunes superseded builds, so matching vendor/designer/*.html
+    # does downstream, discovered later and attributed elsewhere.
+    # exit-75 branch, and nowhere else — so a real FAIL (exit 2) still blocks
+    # fail-open (a missing scanner usually means a stale vendored payload, and
+    # framework's VERSION must reflect the framework release that was vendored,
+    # git repo with neither has nothing to guard, and warning there on every merge
+    # in the "no failures" path, so a push during the daily audit cron was waved
+    # is the noise that trains people to stop reading hook output.
+    # local, local is higher → ok. If local sorts before remote, local is lower
+    # local, local is higher → ok. If local sorts before remote, local is lower → block.
+    # message may name the same task several times.
+    # missing — so the message has to exist here too. Found by the T-3511 suite's
+    # mktemp unavailable: run exactly as before. No capture means no scope line,
+    # new branch — fall back to comparing against $_local_sha~1's VERSION.
+    # not the consumer project's version.
+    # pass, and no env var buys that.
+    # pre-T-3126 behaviour, never to something weaker.
+    # push waved through on an unevaluated gate costs whatever the unaudited commit
+    # routinely somebody ELSE's in-flight work: on 2026-08-23 a concurrent
+    # session's uncommitted bin/fw + agents/audit/audit.sh and two untracked
+    # shellcheck disable=SC2086  # _t3594_args is a verb/ref word list by construction
+    # tests/lint/*.bats files held a push of a ref containing neither.
+    # than one that is absent — the old one-line "(skipping)" note was ignorable
+    # that landed without +x still runs.
+    # that no-ops is indistinguishable from one that passed), and only where it
+    # the capture failed), a non-numeric count, or ref>0 — blocks.
+    # through with the gate never having evaluated anything — observed live
+    # unmissable and names the fix. FW_SECRET_SCAN_STRICT=1 opts into blocking.
+    # which any git ref contains. Refusing the push does not fix it, and it is
+    # with the env set. Skipping a gate that produced NO verdict is a logged
+    # worktree-scoped failure. Anything else — no line (audit predates T-3126, or
+    # would block every commit in the repo. But not SILENTLY (T-2647: a control
+    # would report 8 permanent phantoms and never let the gate downgrade.
+    # → check forward-in-time via ancestor relation (T-1829).
+    && FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
+    && [ -f "$PROJECT_ROOT/.agentic-framework/agents/git/lib/parked-merge-guard.sh" ] \
+    && [ -f "$PROJECT_ROOT/.agentic-framework/agents/git/lib/secret-scan.sh" ] \
+    *)  _fw_gcd="$PROJECT_ROOT/$_fw_gcd" ;;
+    /*) ;;
+    AUDIT_SCRIPT="$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
+    AUDIT_SCRIPT="$PROJECT_ROOT/agents/audit/audit.sh"
+    CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null)
+    COMP_COUNT=0
+    COMP_NAMES=""
+    CONSECUTIVE=$(cat "$COMMIT_COUNTER_FILE" 2>/dev/null | tr -d '[:space:]')
+    CONSECUTIVE=${CONSECUTIVE:-0}
+    DEP_COUNT=0
+    FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
+    FW_PATH=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+    INCEPTION_COMMITS=$(_count_inception_exploration_commits "$TASK_REF")
+    INCEPTION_COMMITS=$(git log --oneline --grep="$TASK_REF" 2>/dev/null | wc -l | tr -d ' ')
+    INCEPTION_COMMITS=$(git log --oneline --grep="$TASK_REF:" 2>/dev/null | wc -l | tr -d ' ')
+    INCEPTION_COMMITS=$(git log --oneline 2>/dev/null | grep -cE "^[0-9a-f]+ ${TASK_REF}:" || true)
+    NEW_FILES=$(git diff-tree --no-commit-id --name-only --diff-filter=A -r HEAD 2>/dev/null)
+    PROJECT_ROOT="$PROJECT_ROOT" FW_AUTHORITY_ROOT="$AUTHORITY_ROOT" \
+    PROJECT_ROOT="$PROJECT_ROOT" bash "$MASTER_GUARD" check || exit 1
+    PROJECT_ROOT="$PROJECT_ROOT" bash "$PARKED_GUARD" check || exit 1
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "$STALE_INDEX_GUARD" || exit 1
+    TASK_FILE=$(find "$PROJECT_ROOT/.tasks/active" -name "${TASK_REF}-*.md" -type f 2>/dev/null | head -1)
+    TASK_FILE=$(find_task_file "$TASK_REF" active)
+    TODO_COUNT=$(grep -c '\[TODO' "$LATEST" 2>/dev/null || true)
+    UNREG=""
+    UNREG_COUNT=0
+    [ "$_local_sha" = "$_zero" ] && continue
+    [ "$_local_ver" = "$_remote_ver" ] && continue
+    [ -f "$_y" ] || continue
+    [ -n "$_fw_path" ] && [ -d "$_fw_path" ] && FRAMEWORK_ROOT="$_fw_path"
+    [ -n "$_t3125_pinned_designer" ] && [ "$1" = "$_t3125_pinned_designer" ] && return 0
+    [ -n "$_t3126_out" ] && rm -f "$_t3126_out"
+    [ -z "$_l_ref" ] && continue
+    [ -z "$_local_ref" ] && continue
+    [ -z "$_local_ver" ] && continue
+    [ -z "$_remote_ver" ] && continue
+    _changed_n=$(printf '%s\n' "$CHANGED_FILES" | grep -c . || true)
+    _dt_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$DUP_TASK_SCANNER" scan-staged 2>&1)
+    _dt_hits=$(PROJECT_ROOT="$PROJECT_ROOT" bash "$DUP_TASK_SCANNER" scan-staged 2>&1)
+    _dt_rc=$?
+    _first=$(printf '%s\n%s\n' "$_local_ver" "$_remote_ver" | sort -V | head -1)
+    _fp_sha=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)
+    _fw_path=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+    _lf_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$LARGE_FILE_SCANNER" scan-staged 2>&1)
+    _lf_hits=$(PROJECT_ROOT="$PROJECT_ROOT" bash "$LARGE_FILE_SCANNER" scan-staged 2>&1)
+    _lf_rc=$?
+    _local_ver=$(git show "$_local_sha:VERSION" 2>/dev/null | tr -d '[:space:]')
+    _t3125_pinned_designer=$(git -C "$PROJECT_ROOT" show "$_ref:policy/designer-pin.yaml" 2>/dev/null \
+    _t3126_scope_line=$(grep -E '^AUDIT-SCOPE: ' "$_t3126_out" 2>/dev/null | tail -1)
+    _t3297_blind=0
+    _t3297_deadline=$(( _t3297_start + _t3297_wait ))
+    _t3297_log_dir="$PROJECT_ROOT/.context/working"
+    _t3297_start=$(date +%s)
+    _t3297_task=$(sed -n 's/^current_task:[[:space:]]*//p' "$_t3297_log_dir/focus.yaml" 2>/dev/null | head -1)
+    _t3297_wait=""
+    _t3297_wait="$FW_PREPUSH_LOCK_WAIT"
+    _t3297_waited=$(( $(date +%s) - _t3297_start ))
+    _t3594_args="${_t3594_args} ${_verb} ${_r_ref}"
+    _t3594_fw="fw"
+    _t3594_fwp=$(grep "^framework_path:" "$_t3594_root/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+    _t3594_lines="${_t3594_lines}${_t3594_lines:+
+    _t3594_py=""
+    _verb=""
+    _version="${_version#v}"
+    _version=$(git describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+    audit_exit=$?
+    audit_exit=${PIPESTATUS[0]}
+    case "$1" in
+    case "$_local_ref" in
+    case "$_local_ref" in refs/heads/*) ;; *) continue ;; esac
+    commits_since=$(git rev-list --count "${latest_tag}..HEAD" 2>/dev/null || echo 0)
+    declare -A _t3125_blob
+    done
+    done < <(git -C "$PROJECT_ROOT" ls-tree -r -z "$_ref" 2>/dev/null)
+    done < <(git log --oneline 2>/dev/null | grep -E "^[0-9a-f]+ ${task_ref}:" | awk '{print $1}')
+    done < <(grep -H "^location: " "$FABRIC_DIR"/*.yaml 2>/dev/null)
+    done <<< "$CHANGED_FILES"
+    done <<< "$NEW_FILES"
+    echo "       fw tier0 approve"
+    echo "       git commit --no-verify"
+    echo "  $AUTHORITY_ROOT/agents/git/lib/worktree-corpus-guard.sh" >&2
+    echo "  $PARKED_GUARD" >&2
+    echo "  $SCANNER" >&2
+    echo "  ($PROJECT_ROOT/.secret-scan-allowlist — not .agentic-framework/, which fw upgrade replaces)." >&2
+    echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
+    echo "  (Tier 0 will prompt for approval on --no-verify. Bypasses are logged.)" >&2
+    echo "  (framework repo: bin/fw vendor self)" >&2
+    echo "  ./agents/git/git.sh log-bypass --commit $(git rev-parse --short HEAD) --reason \"your reason\""
+    echo "  1. Add task reference: git commit -m \"T-XXX: your message\""
+    echo "  2. Create a task: $(_fw_entry) work-on \"your task name\" --type build"
+    echo "  2. Create a task: ./agents/task-create/create-task.sh"
+    echo "  3. Emergency bypass (human only): fw tier0 approve && git commit --no-verify"
+    echo "  3. Emergency bypass (human only):"
+    echo "  3. Emergency bypass: git commit --no-verify"
+    echo "  Bypass: git push --no-verify (Tier 0 protected, logged)" >&2
+    echo "  Check: ls -l $PROJECT_ROOT/.context/locks/audit.lock"
+    echo "  Checked: $PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
+    echo "  Checked: $PROJECT_ROOT/agents/audit/audit.sh"
+    echo "  Checked: .framework.yaml -> framework_path"
+    echo "  Commit allowed (Tier 1 warning)."
+    echo "  Consider: create a new task, or reopen this one."
+    echo "  Push blocked — fix framework path or install audit agent"
+    echo "  Usually the daily cron audit — it finishes within a minute or two."
+    echo "  cd $PROJECT_ROOT && .agentic-framework/bin/fw upgrade" >&2
+    echo "  fw tier0 approve"
+    echo "  git push --no-verify"
+    echo ""
+    echo "" >&2
+    echo "$_hits" >&2
+    echo "$_stamped" > "$PROJECT_ROOT/VERSION"
+    echo "$total"
+    echo "0" > "$COUNTER_FILE"
+    echo "0" > "$EDIT_COUNTER"
+    echo "Audit lock held — waiting up to ${_t3297_wait}s for it to free (FW_PREPUSH_LOCK_WAIT=$_t3297_wait, 0 disables)..."
+    echo "Bypass: git commit --no-verify"
+    echo "Bypass: git commit --no-verify" >&2
+    echo "Bypass: git push --no-verify (Tier 0 protected)" >&2
+    echo "Bypass: git push --no-verify (Tier 0 protected, logged)" >&2
+    echo "Bypass: git push --no-verify"
+    echo "Bypasses are logged."
+    echo "Commits touching .tasks/ from this worktree are unguarded." >&2
+    echo "Consider addressing the issues above."
+    echo "ERROR: Audit script not found"
+    echo "ERROR: Commit blocked — secret-scan detected matches:" >&2
+    echo "ERROR: No task reference found in commit message"
+    echo "ERROR: Push blocked - audit COULD NOT RUN (another audit holds the lock)"
+    echo "ERROR: Push blocked - audit has FAILURES"
+    echo "ERROR: Push blocked — VERSION monotonicity violation:" >&2
+    echo "ERROR: Push blocked — YAML parse failure in tracked project file(s):" >&2
+    echo "ERROR: Push blocked — lightweight tag(s) detected:" >&2
+    echo "Emergency bypass (human only): fw tier0 approve && git push --no-verify"
+    echo "Emergency bypass (human only):"
+    echo "Emergency bypass: git push --no-verify"
+    echo "Every commit is going through WITHOUT secret scanning." >&2
+    echo "Fix at the authority: cd $AUTHORITY_ROOT && bin/fw upgrade" >&2
+    echo "Fix the YAML, then push again." >&2
+    echo "Fix the issues above before pushing."
+    echo "Fix: cd $PROJECT_ROOT && bin/fw upgrade   (framework repo: bin/fw vendor self)" >&2
+    echo "Fix: refresh the vendored framework payload:" >&2
+    echo "If this is a false positive: add a regex to .secret-scan-allowlist in the project root" >&2
+    echo "If this is a false positive: add a regex to .secret-scan-allowlist." >&2
+    echo "If this is a real secret: remove it from the staged content and re-commit." >&2
+    echo "If this is intentional (rare — major-version reset, etc.):" >&2
+    echo "Lightweight tags break OneDev→GitHub mirror (T-1591/T-1592)." >&2
+    echo "Merges of deliberately-parked branches are unguarded in this repo." >&2
+    echo "NOTE: $CURRENT_COUNT consecutive commits without user check-in (circuit breaker at 3)"
+    echo "Note: --no-verify is Tier 0 protected. Bypasses are logged."
+    echo "Note: Bypasses should be logged with: ./agents/git/git.sh log-bypass"
+    echo "Origin: T-1599/T-1610 — silent .context/project/*.yaml corruption" >&2
+    echo "Origin: T-1602 surfaced cc38e98f5 silent rollback (1.5.463 → 1.5.19)." >&2
+    echo "Origin: T-1844 — root-cause prevention for the T-1828/T-1834 leak class." >&2
+    echo "Please log this bypass:"
+    echo "Push allowed, but audit enforcement is disabled"
+    echo "Recreate as annotated:" >&2
+    echo "Strict mode: set FW_SECRET_SCAN_STRICT=1 to make this block commits." >&2
+    echo "This is not an audit failure. No verdict was produced, so the gate has"
+    echo "To fix:"
+    echo "VERSION is tracked — not stamped (fw release is its only writer, T-3821)"
+    echo "VERSION rolled back without authorization (T-1603)." >&2
+    echo "VERSION stamped: $_stamped"
+    echo "WARNING: Audit has warnings (push allowed)"
+    echo "WARNING: Audit script not found at $AUDIT_SCRIPT"
+    echo "WARNING: Commit made without task reference (bypass detected)"
+    echo "WARNING: SECRET SCAN IS NOT RUNNING — scanner missing:" >&2
+    echo "WARNING: Task $TASK_REF is closed (in .tasks/completed/)"
+    echo "WARNING: parked-branch merge guard is NOT running (T-3511) — not found at:" >&2
+    echo "WARNING: task-corpus commit guard is NOT running (T-3110) — not found at:" >&2
+    echo "What to do: wait for the running audit to finish, then push again."
+    echo "Your message: $COMMIT_MSG"
+    echo "must not cross-fan-out to consumer projects." >&2
+    echo "nothing to pass you on."
+    echo "secret-scan: scanner not found at $SCANNER (skipping)" >&2
+    elif [ "$UNREG_COUNT" -gt 0 ]; then
+    elif [ "$_r_sha" = "$_zero" ] || [ "$_l_sha" = "$_r_sha" ]; then
+    elif [ "${_r_ref#refs/tags/}" != "$_r_ref" ]; then
+    elif [ -x "$_t3594_root/.agentic-framework/bin/fw" ]; then _t3594_fw=".agentic-framework/bin/fw"; fi
+    elif [ -x "./.agentic-framework/bin/fw" ]; then
+    elif command -v fw >/dev/null 2>&1; then
+    elif git cat-file -e "$_r_sha" 2>/dev/null \
+    else
+    esac
+    exit 0
+    exit 1
+    fi
+    for _c in "${_t3594_fwp:+$_t3594_fwp/lib/tier0_action.py}" \
+    for _cand in "$AUTHORITY_ROOT/agents/git/lib/worktree-corpus-guard.sh" \
+    for _fp_task in $(echo "$COMMIT_MSG" | grep -oE 'T-[0-9]+' | sort -u); do
+    for _path in "${!_t3125_blob[@]}"; do
+    for _t in $_lw_tags; do
+    if ! python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$_y" 2>/dev/null; then
+    if [ "$COMP_COUNT" -gt 0 ] && [ "$_changed_n" -gt "$_FAB_DETAIL_MAX" ]; then
+    if [ "$COMP_COUNT" -gt 0 ]; then
+    if [ "$CONSECUTIVE" -ge "$CIRCUIT_BREAKER_THRESHOLD" ]; then
+    if [ "$INCEPTION_COMMITS" -gt 0 ]; then
+    if [ "$UNREG_COUNT" -gt 0 ]; then
+    if [ "$UNREG_COUNT" -gt 20 ]; then
+    if [ "$_dt_rc" -ne 0 ]; then
+    if [ "$_first" = "$_local_ver" ] && [ "$_local_ver" != "$_remote_ver" ]; then
+    if [ "$_first" = "$_local_ver" ]; then
+    if [ "$_l_sha" = "$_zero" ]; then
+    if [ "$_lf_rc" -ne 0 ]; then
+    if [ "$_remote_sha" = "$_zero" ]; then
+    if [ "$_t3126_ref_fails" = "0" ] && [ -n "$_t3126_wt_fails" ] && [ "$_t3126_wt_fails" != "0" ]; then
+    if [ "$commits_since" -gt 50 ]; then
+    if [ "${FW_PUSH_SKIP_AUDIT_ON_CONTENTION:-0}" = "1" ]; then
+    if [ "${FW_SECRET_SCAN_STRICT:-0}" = "1" ]; then
+    if [ "${FW_SKIP_MCP_DRIFT_CHECK:-0}" = "1" ]; then
+    if [ "${FW_SKIP_SELF_VENDOR_CHECK:-0}" = "1" ]; then
+    if [ "${TODO_COUNT:-0}" -gt 3 ]; then
+    if [ -d "$PROJECT_ROOT/.agentic-framework" ]; then
+    if [ -f "$FRAMEWORK_ROOT/lib/prepush-lock-wait.sh" ]; then
+    if [ -n "$FW_PATH" ] && [ -f "$FW_PATH/agents/audit/audit.sh" ]; then
+    if [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE"; then
+    if [ -n "$_t3126_out" ]; then
+    if [ -n "$_t3126_scope_line" ]; then
+    if [ -n "$_t3594_py" ] && _t3594_ok=$(PROJECT_ROOT="$_t3594_root" python3 "$_t3594_py" prepush "$_t3594_remote" $_t3594_args 2>&1); then
+    if [ -x "$_t3594_root/bin/fw" ]; then _t3594_fw="bin/fw"
+    if [ -x "./bin/fw" ] && [ -f "./FRAMEWORK.md" ]; then
+    if [ -z "$CORPUS_GUARD" ] && [ -f "$AUTHORITY_ROOT/.framework.yaml" ]; then
+    if [ -z "$_t3297_wait" ]; then
+    if [[ "$_version" == *-*-* ]]; then
+    if command -v flock >/dev/null 2>&1; then
+    if git diff --cached --name-only | grep -q "^${_yaml_file}$"; then
+    local _ref="$1" _line _meta _path _sha
+    local sha files
+    local task_ref="$1"
+    local total=0
+    mkdir -p "$_t3297_log_dir" 2>/dev/null || return 0
+    msg = str(e).splitlines()[0] if str(e) else 'unknown YAML error'
+    print(msg)
+    printf '%s\n' "$_block_lines" >&2
+    printf '%s\n' "$_yaml_failures" >&2
+    return 1
+    source "$FRAMEWORK_ROOT/lib/config.sh"
+    source "$FRAMEWORK_ROOT/lib/paths.sh"
+    source "$FRAMEWORK_ROOT/lib/tasks.sh"
+    unset _fp_sha _fp_task
+    while IFS= read -r -d '' _line; do
+    while IFS= read -r _fl; do
+    while IFS= read -r file; do
+    while IFS= read -r sha; do
+    while [ "$audit_exit" -eq 75 ] && [ "$(date +%s)" -lt "$_t3297_deadline" ]; do
+    yaml.safe_load(open(sys.argv[1]))
+    {
+    } >> "$_t3297_log_dir/.gate-bypass-log.yaml" 2>/dev/null || true
+  - ${_y##*/}: ${_err}"
+" "$_y" 2>&1 | head -1)
+"$AUDIT_SCRIPT"
+"$AUDIT_SCRIPT" --section structure
+#
+#                   + Secret Scan (T-1844)
+#                   + stale-index guard (T-4167) + Secret Scan (T-1844)
+#                  old tag and read a moved release tag as a fast-forward)
+#                  treats every tag update as forced; is-ancestor would peel the
+#   1. .framework.yaml -> framework_path (explicit consumer config)
+#   2. $PROJECT_ROOT/agents/audit/audit.sh (framework repo: source-of-truth)
+#   3. $PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh (vendored bootstrap fallback)
+#   anything else  (incl. remote sha unknown locally)       → force-push
+#   delete         local sha all zeros                      → branch-delete
+#   fast-forward   remote sha is an ancestor of local sha   → allowed
+#   new ref        remote sha all zeros                     → allowed
+#   tag moved      refs/tags/*, remote sha not all zeros    → force-push (git
+# "<local-ref> <local-sha> <remote-ref> <remote-sha>"
+# (T-3298: flock binds an inode, the path is a permanent rendezvous point), so a
+# (T-3593 round 4; CLAUDE.md lists exactly which); inside a script none is seen. Server-side branch and tag protection is
+# (Tier-2) or git commit --no-verify (Tier-0). See agents/git/lib/master-guard.sh.
+# (e.g. release prep where vendor refresh is the next commit). Tier-2 visibility
+# (forward in time, allowed) with "HEAD reset to older commit" (the cc38e98f5
+# (it takes tens of seconds) while PIPESTATUS preserves the audit's own exit code —
+# (lib/bin/agents/web/policy/.tasks-templates/designer). It is a deliberate
+# (lib/prepush-lock-wait.sh: 1.25x, clamped [90,600], 360 without a ledger).
+# (shim installed, framework vendored) long after the hook was written.
+# (was previously only caught at audit time, often days after the leak).
+# --- Circuit Breaker (T-128) ---
+# --- Circuit Breaker: increment commit counter (T-128) ---
+# --- Context checkpoint: reset tool counter on commit ---
+# --- Critical YAML Shrinkage Guard (T-1243) ---
+# --- Fabric blast-radius note (T-236) ---
+# --- Handover staleness check ---
+# --- Inception Gate (T-126) ---
+# --- Inception Gate (T-126, T-1176) ---
+# --- Inception commit classifier (T-2195) ---
+# --- New file auto-registration advisory (T-247) ---
+# --- Research Artifact Enforcement (C-001, C-002, G-009, T-226) ---
+# --- Research Artifact Enforcement (C-001, G-009, T-226) ---
+# --- T-3130: refresh the episodic git footprint now the commit exists ---
+# --- T-591: Reset edit counter on commit (commit cadence warning) ---
+# --- Task reference check ---
+# --no-verify per L-399 producer/consumer-parity discipline. Block message
+# -f catches the only failure that actually matters here: file missing.
+# .agentic-framework/bin/fw unless the PATH shim is installed. This hook is the
+# .agentic-framework/lib/ stale. `fw upgrade` is the only flow that catches it,
+# .agentic-framework/lib/ to drift). Consumer-safe by construction.
+# / GIT_CONFIG_COUNT), another repo's own config (-C, --git-dir, GIT_DIR), and
+# 2.43.0. So the same guard runs from here too, otherwise a parked branch merged
+# 2/2 with zero exploration. Same scoring-shaped rigidity the inception was
+# 90s window expired before the audit it waited for could finish, and every
+# A "storage" commit (filing-only, status flip, demote, frontmatter edit) is
+# A matching approval (same verb, same ref, same remote) is consumed and logged;
+# Advisory only (WARN, not BLOCK) — legitimate cleanup is rare but possible.
+# Allow merge commits (no task ref required)
+# Allow rebase commits
+# Allows merges/rebases/fast-forwards/feature-branches. Bypass: FW_ALLOW_MASTER_COMMIT=1
+# An explicit FW_PREPUSH_LOCK_WAIT still wins, exactly as before.
+# An inception commit is "exploration" (counts toward budget) if its diff touches
+# Annotated-vs-lightweight tag SHA mismatch caused 22h+ of broken AEF→GitHub
+# Block commits after N consecutive commits without user check-in
+# Block commits on inception tasks after exploration threshold unless decision recorded
+# Block inception commits after the first if no docs/reports/T-XXX artifact exists.
+# Bypass: FW_SKIP_MCP_DRIFT_CHECK=1 (sibling to FW_SKIP_SELF_VENDOR_CHECK) and
+# Catches active/T-NNNN + completed/T-NNNN orphans before they land in git
+# Check for task reference
+# Check if it has a task reference
+# Check if referenced task is closed (Tier 1 warning — does not block)
+# Check vendored framework path (T-520: framework_path removed in T-498)
+# Default-off (config PROTECT_MASTER) → consumer-safe; opt-in per project.
+# Every other scanner in this hook resolves off `git rev-parse --show-toplevel`,
+# Extract task reference and project root
+# FW-HOOK-BLOCK: t3110-corpus-guard
+# FW-HOOK-BLOCK: t3511-parked-merge (conflicted-merge leg)
+# FW-HOOK-BLOCK: t4167-stale-index-guard
+# Find project root (where .git is)
+# Find project root (where .git is) and export for audit script
+# First commit is allowed (task creation). Subsequent commits must have the artifact
+# Get the commit message
+# Guard 1: only run in the framework repo (consumers have no root-level bin/fw —
+# Guard 2: FW_SKIP_SELF_VENDOR_CHECK=1 bypass for legitimate skip scenarios
+# Guard: framework repo only (consumers have no agents/mcp/manifest.py source).
+# Installed by: ./agents/git/git.sh install-hooks
+# LIMIT, stated plainly: `git push --no-verify` skips every client-side hook,
+# LIMIT, stated plainly: any path that skips client-side hooks skips this one
+# Need to capture stdin once; tee to FD 9 so the lightweight-tag loop below
+# ONLY framework gate a by-hand operator ever trips — the PreToolUse task gate
+# Only `git_mining: ok` episodics are touched. `skipped` ones are T-3129's
+# Origin: T-1599 surfaced concerns.yaml corruption (consumer-local writer landed
+# Origin: T-1602 surfaced silent VERSION rollback in cc38e98f5 (1.5.463 → 1.5.19,
+# Origin: T-2095 extracted _self_vendor_libs() into `fw vendor self`; T-2232 made
+# Origin: T-2293 commit 7e647bd1e leaked a bats artefact (fake_drift_tool_t2290)
+# Parse the T-3126 partition. Absent line, unparseable count, or no capture at all
+# Part of: Agentic Engineering Framework
+# Prints every class-matching source path whose vendored counterpart in $1 is
+# Probe mirrors audit.sh's own arm selection: flock when available, else the
+# RESOLVED FROM THE AUTHORITY, DELIBERATELY NOT FROM $FRAMEWORK_ROOT.
+# Read git's stdin format: "<local-ref> <local-sha> <remote-ref> <remote-sha>"
+# Resolve FRAMEWORK_ROOT and source task helpers (T-456)
+# Resolve FRAMEWORK_ROOT and source task helpers (T-456, T-520)
+# Resolve FRAMEWORK_ROOT for _emit_user_command (T-1204)
+# Resolve FRAMEWORK_ROOT — framework / consumer / vendored layouts.
+# Resolve audit script. Priority (T-1396):
+# Resolve audit script: check .framework.yaml first, then local agents/
+# Resolve the fw entry point for THIS project shape (T-2816, T-1257 class).
+# Returns the count on stdout. Assumes TASK_REF is set.
+# Root-level agents/ only exists in the framework repo itself; preferring it when
+# Run audit
+# Run the scanner against the staged diff.
+# Skip if audit script doesn't exist
+# Skip if audit script not found anywhere
+# So the dry-run stays as the cheap DETECTOR, and these two helpers decide
+# Source config for configurable inception limit (T-1176, R-032)
+# Source paths for _emit_user_command (T-1204, T-1146 GO)
+# Stamp VERSION file from git describe (T-648: git-derived versioning)
+# Structure checks: dirs exist, YAML parses, fabric valid — fast and catches real breaks
+# T-1593 (T-1591/T-1592 RCA Prevention #2): Reject lightweight tag pushes.
+# T-1603: VERSION monotonicity check.
+# T-1610: YAML well-formedness gate for tracked .context/project/*.yaml.
+# T-1845: Large-file gate — sibling prevention to secret-scan. Blocks staged
+# T-1863: Duplicate-task-ID gate — G-052 prevention at the commit boundary.
+# T-2061 bash-invoke pattern: gate on -f and run via `bash`, so a vendored copy
+# T-2061: bash-invoke + gate on -f (exec bit irrelevant for vendored copies).
+# T-2061: gate on -f not -x. We invoke via `bash "$SCANNER"` below, so the
+# T-2061: invoke via `bash` so the exec bit is irrelevant (vendor copies
+# T-2061: see secret-scan note above — gate on -f, not -x.
+# T-2240: Self-vendor drift gate (F2 N×M closure).
+# T-2294: MCP manifest drift gate (arc-010 sibling to T-2240).
+# T-2396 (inception T-2394 G1): Master-as-merge-only guard. Runs FIRST so a
+# T-3110 (R7 leg L1, docs/design/task-corpus-concurrency-model.md): task-corpus
+# T-3125: the detector above judges the WORKING TREE; the property this gate
+# T-3126: the output is captured as well as shown, because the FAIL verdict alone
+# T-3297 / OBS-305: bounded wait for the audit lock before giving up.
+# T-3297: Tier-2 log writer for the contention-only bypass (same entry shape as
+# T-3297: one audit attempt — shared by the first run and the bounded-wait
+# T-3421: the 90s default decayed the same way T-3297's "minute or two" did —
+# T-3511. A CONFLICTED merge fires no hook during `git merge`; the resolving
+# T-3594 (T-3576 GO): forced ref updates and ref deletions need a Tier 0 ACTION
+# T-3740: the location -> card map is built ONCE (one grep over all cards) and
+# T-3821: only an UNTRACKED (generated) VERSION is stamped. A tracked VERSION
+# T-4167: refuse a commit whose staged .tasks/** or .context/episodic/** blob is
+# T-862: Run fast audit subset for pre-push (full audit takes >90s with 100+ tasks)
+# The default is now DERIVED from the last measured structure duration
+# The episodic is generated by `fw task update --status work-completed`, which
+# The exit-75 BLOCK below is correct (a gate that did not run is not a gate that
+# The framework repo carries bin/fw at its root; a consumer carries only
+# The guard returns immediately unless MERGE_HEAD is present, so an ordinary
+# This is the re-ask, and it hangs off the COMMIT rather than the completion
+# Threshold configurable via FW_INCEPTION_COMMIT_LIMIT (default: 2)
+# VERSION=1.0
+# VERSION=1.1
+# VERSION=1.10
+# VERSION=1.11
+# VERSION=1.12
+# VERSION=1.13
+# VERSION=1.14
+# VERSION=1.15
+# VERSION=1.16
+# VERSION=1.17
+# VERSION=1.2
+# VERSION=1.3
+# VERSION=1.4
+# VERSION=1.5
+# VERSION=1.6
+# VERSION=1.7
+# VERSION=1.8
+# VERSION=1.9
+# Version staleness advisory (T-606)
+# Warn when learnings.yaml, patterns.yaml, or practices.yaml lose >50% of entries.
+# XDG_CONFIG_HOME, GIT_CONFIG_GLOBAL/SYSTEM, or carried by GIT_CONFIG_PARAMETERS
+# _t3125_vendor_class mirrors the classes `fw vendor self --check` syncs
+# `- id: G-XXX` outside parent mapping) — survived all gates until downstream
+# `commit --only` / scratch indexes). Override: FW_ALLOW_STALE_INDEX=1 (Tier-2,
+# `fw tier0 approve`. Fails CLOSED when the approval module cannot be found.
+# `git commit` then fires pre-commit, not pre-merge-commit — measured on git
+# `git_mining: ok`: a measured zero, true for one second, and never re-asked.
+# a forge API. Typed, --no-verify and core.hooksPath are Tier 0 in the text gate;
+# absent measurements and are repaired by backfill — filling them from here
+# after any push it disagreed with the commit, the release's reconcile commit
+# agents/audit/audit.sh — for both, `git show HEAD:<src>` was byte-identical to
+# an OLDER committed version of that path — a stale index entry that would
+# an uncommitted edit to a vendored-class file blocked EVERY other session's
+# and test-artefact leaks.
+# and upgrade is not part of the push flow — so consumers that vendor from
+# anything OUTSIDE the inception's own task file in .tasks/{active,completed}/.
+# approval (T-3593) — enforced HERE, at the ref level, so it holds for any push
+# approval (T-3593) — enforced HERE, at the ref level, so it holds however the
+# because the completion is the wrong vantage point by construction.
+# budget at its 3rd commit (Step 0 findings) because filing + demote consumed
+# by design runs BEFORE the commit carrying the task's work — that ordering is
+# can re-read it via /dev/fd/9 (mkfifo not portable enough across hosts).
+# canonical filters and their mismatch is a separate open defect (T-2607) which
+# class — local is ancestor of remote, blocked). Read git's stdin format:
+# commit guard. Refuses a commit that stages any path under `.tasks/` when the
+# commit is made from a LINKED WORKTREE. Silent otherwise; source-only commits
+# commit pays a single stat.
+# commit-msg hook - Task Reference Enforcement
+# commits held for hours by a concurrent session's uncommitted bin/fw and
+# consumers. yaml.safe_load with sys.argv path (not f-string interpolation) so
+# contended push failed and re-ran a fresh 292s audit against the next pusher.
+# contends (observed 2026-08-16: 3 concurrent framework audits + 2 from another
+# control and is the operator's decision.
+# core.hooksPath=… push`), and ref updates through plumbing (`git send-pack`) or
+# core.hooksPath=… push`, an included file, or a config file selected by HOME,
+# currently-at). Read git's stdin format: "<local-ref> <local-sha> <remote-ref> <remote-sha>"
+# differs, so a newly committed lib/foo.sh that was never vendored is drift and
+# direct authored commit on a protected branch is refused before any scan work.
+# does not say WHICH TREE the failure lives in. The audit reads the working tree;
+# dry-run wording ("would sync" vs "synced"). The gap T-2240 closes: editing
+# each changed file is looked up in it. The old loop ran one grep per changed
+# early when its scanner is missing. Inherits GIT_INDEX_FILE (git sets it for
+# either on disk already or in the staged changes.
+# exec bit is irrelevant — gating on -x silently disabled the scanner when
+# exempt — these are bookkeeping, not exploration. Origin: T-2186 hit the
+# existed. This block runs `fw mcp check` (T-2293) and refuses push on non-zero
+# exit. Catches both real edit-drift (developer forgot `fw mcp emit-manifest`)
+# failure on force=false, and silent SHA-drift even on force=true.
+# fallback lock file's existence. The flock arm never unlinks the lock file
+# file in a git checkout — it derives the same string from git describe.
+# file per card: a re-vendor commit (1561 files x 506 cards, 832 T-1004) sat in
+# files >10MiB by default; allowlist exempts deliberate vendored cases.
+# from a worktree are the normal supported flow and are untouched.
+# gate labels --no-verify and the hooksPath/config-file overrides HOOK BYPASS
+# gate only sees typed commands (T-2742); this hook sees what git is about to do.
+# gate's coverage would depend on whether the branches happened to collide.
+# git merge-base --is-ancestor). T-1829 added the ancestor refinement: a pure
+# has exactly one writer, `fw release` (tag-as-canonical, T-3242). Stamping it
+# here rewrote the working tree to <major.minor>.<commits> on every push, so
+# heredoc that writes this file is quoted, and the project may be re-shaped
+# historically landed without +x and silently fail-open under the older -x gate).
+# history lands in one completion commit records `commits: 0` beside
+# inception-research-warnings: audit marker (C-002 OE check)
+# inside a script it is not seen. Server-side branch protection is the stronger
+# inside a script none of them is seen. Server-side branch and tag protection is
+# into agents/mcp/framework-mcp-manifest.json because the test's prior crash had
+# is a Claude Code hook and never fires for a human at a terminal — so a remedy
+# is what vendor-self iterates: it syncs when the destination is absent OR
+# lib/*.sh without running `fw vendor self` leaves the vendored copy at
+# lib/review.sh:_log_empty_recommendation_bypass and the other gate writers).
+# loaders failed silently. Block at push so corruption can't cross-fan-out to
+# logged). Origin: ring20-manager T-2215.
+# match its siblings; that silently deletes the only version-independent leg.
+# minute or two") decayed: structural-30m cron audits stack when a run overlaps
+# mirror builds (T-1591 RCA). Lightweight tags are commits; annotated tags are
+# missing or different. Walks SOURCE paths (not the vendored tree) because that
+# must still BLOCK. One `git ls-tree` fork, compared in-memory by blob sha.
+# names both mechanisms (T-1890).
+# not be substituted for the audit's.
+# odd characters in paths don't break the check.
+# one anchor that does not fork, so this block walks back to the main checkout
+# only — a class listed here that vendor-self does not sync could hold a real
+# origin/master inherit the stale lib/ silently.
+# otherwise the whole push is refused and a pending request is written for
+# passed — T-2930), but its original premise ("the cron audit finishes within a
+# pause instead of a failed push, without weakening the no-false-pass rule:
+# polluted tool-set.yaml. The push went through clean — no manifest drift gate
+# possibly months-stale copy. That is precisely the circularity R7 describes: the
+# post-commit for 10+ minutes.
+# post-commit hook - Bypass Detection
+# post-commit hook - Bypass Detection + Context Checkpoint
+# pre-commit hook - Master-merge-only guard (T-2396) + Secret Scan (T-1844)
+# pre-commit hook - Master-merge-only guard (T-2396) + task-corpus guard (T-3110)
+# pre-commit hook - Secret Scan (T-1844)
+# pre-merge-commit hook - Parked-branch merge guard (T-3511)
+# pre-push hook - Audit Enforcement
+# pre-push hook - Audit Enforcement + forced-update guard + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240, T-3125, T-3126, T-3297, T-3594)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection (T-1593)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity (T-1593, T-1603)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity (T-1593, T-1603, T-1829)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240, T-3125)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240, T-3125, T-3126)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240, T-3125, T-3126, T-3297)
+# present ensures the framework-repo pre-push hook runs HEAD's audit, not the
+# project). Waiting a bounded window converts most contention hits into a short
+# protects is about the PUSHED REF. `fw vendor self --dry-run` compares
+# push was launched: typed, `bash push.sh`, make, python. The PreToolUse text
+# push, so keep it conservative. VERSION is excluded on purpose: it is
+# push, with no exit but a Tier-2 or Tier-0 bypass. Observed live 2026-08-23: 19
+# read-only MIRROR, not a shared list: bin/fw and agents/audit/audit.sh own the
+# ref updates through plumbing (`git send-pack`) or a forge API. Typed, the text
+# ref. 12 consumers paid the cost (pins ahead of HEAD for 4 days). Block any push
+# replica supplying the code meant to constrain the replica. `.git/hooks` is the
+# retries below. Sets $audit_exit; captures to $_t3126_out when available.
+# silently revert later commits. Placed before the secret scan, which exits 0
+# sort -V comparison conflated "new commit lowers VERSION via tag-counter reset"
+# stale vendored bootstrap copy.
+# stdin already consumed into $_stdin_buf above (T-1603); re-feed via heredoc.
+# sync-only, outside --check, and is rewritten on every commit.
+# tag objects with their own SHA. Mixing them across remotes guarantees mirror
+# that decreases VERSION on a branch (compare local-being-pushed vs remote
+# that does not contain the commit being described, and a task whose whole
+# that does not exist here is the first and possibly only enforcement message
+# that landed without the exec bit still runs.
+# that operator ever reads. Resolved at hook runtime, not at install time: the
+# that runs this hook: typed, `bash push.sh`, make, python. The PreToolUse text
+# the in-consumer upgrade path durable via .upstream sentinel; T-2239 split the
+# the next trigger, so the lock can stay held for many minutes and every push
+# the stronger control and is the operator's decision.
+# the structure audit this gate runs measures ~292s in the timing ledger, so a
+# the vendored blob. The ref being pushed was clean; the block was false.
+# the whole point of the exit-75 branch below is that the pipeline's exit code must
+# their fw lives at .agentic-framework/bin/fw and they don't have a vendored
+# this gate decides a REF operation. `tee` keeps the run streaming to the operator
+# this one included (a git property). The typed flag is Tier 0 in the text gate;
+# this task does not touch. Getting the mirror wrong is safe in one direction
+# too — `git push --no-verify`, a `core.hooksPath` override (`git -c
+# transient `flock -n <file> -c true` is a safe held/free probe.
+# trying to recalibrate.
+# vendor copies landed without the exec bit (T-2052 found this hot, 2026-06-08).
+# via --git-common-dir and loads the guard from there. Do not "simplify" it to
+# via stderr WARN — matches existing hook pattern (no separate log writes).
+# went empty, and v1.8.0 attempt 2 refused. `fw version` does not need the
+# what lets the completion gate block. So `git log --grep=T-XXX` mines a history
+# whether the drift it found actually exists in the COMMITTED tree.
+# which in a linked worktree IS the worktree — i.e. the replica's own tracked,
+# whose local commit is NOT forward-in-time of the remote commit (compare via
+# window exhausted → the same BLOCK as before, verbatim in effect.
+# with a conflict lands unguarded while the clean-merge case is refused, and the
+# working-tree source against working-tree vendored copies, so ANY session with
+# would erase the evidence that generation-time mining failed.
+# ~440 patch versions dropped) as a side-effect of `git checkout` against a stale
+# → _t3126_ref_fails stays empty → the FAILURES branch blocks, exactly as before.
+#!/bin/bash
+$_stdin_buf
+${_stdin_buf}
+AUDIT_SCRIPT=""
+AUDIT_SCRIPT="$PROJECT_ROOT/agents/audit/audit.sh"
+AUTHORITY_ROOT=""
+CIRCUIT_BREAKER_THRESHOLD=3
+COMMIT_COUNTER_FILE="$PROJECT_ROOT/.context/working/.commit-counter"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+COMMIT_MSG=$(git log -1 --format=%B HEAD)
+COMMIT_MSG_FILE="$1"
+CORPUS_GUARD=""
+COUNTER_FILE="$PROJECT_ROOT/.context/working/.tool-counter"
+CURRENT_COUNT=$((CURRENT_COUNT + 1))
+CURRENT_COUNT=$(cat "$COMMIT_COUNTER_FILE" 2>/dev/null | tr -d '[:space:]')
+CURRENT_COUNT=${CURRENT_COUNT:-0}
+DUP_TASK_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/dup-task-scan.sh"
+EDIT_COUNTER="$PROJECT_ROOT/.context/working/.edit-counter"
+EOF
+FABRIC_DIR="$PROJECT_ROOT/.fabric/components"
+FOOTPRINT_LIB="$FRAMEWORK_ROOT/lib/episodic_footprint.py"
+FRAMEWORK_ROOT="$PROJECT_ROOT"
+INCEPTION_COMMIT_LIMIT=$(fw_config "INCEPTION_COMMIT_LIMIT" 2 2>/dev/null || echo 2)
+LARGE_FILE_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/large-file-scan.sh"
+LATEST="$PROJECT_ROOT/.context/handovers/LATEST.md"
+MASTER_GUARD="$FRAMEWORK_ROOT/agents/git/lib/master-guard.sh"
+PARKED_GUARD="$FRAMEWORK_ROOT/agents/git/lib/parked-merge-guard.sh"
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
+STALE_INDEX_GUARD="$FRAMEWORK_ROOT/agents/git/lib/stale-index-guard.py"
+TASKS_DIR="$PROJECT_ROOT/.tasks"
+TASK_REF=$(echo "$COMMIT_MSG" | grep -oE "T-[0-9]+" | head -1)
+[ ! -f "$FRAMEWORK_ROOT/agents/git/lib/parked-merge-guard.sh" ] \
+[ ! -f "$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh" ] \
+[ ! -f "$FRAMEWORK_ROOT/lib/paths.sh" ] && [ -f "$PROJECT_ROOT/.agentic-framework/lib/paths.sh" ] && FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
+[ -f "$FRAMEWORK_ROOT/lib/paths.sh" ] && source "$FRAMEWORK_ROOT/lib/paths.sh"
+[ -n "$_fw_gcd" ] && AUTHORITY_ROOT=$(cd "$(dirname "$_fw_gcd")" 2>/dev/null && pwd)
+[ -n "$_t3126_out" ] && rm -f "$_t3126_out"
+_FAB_DETAIL_MAX=200
+_block_lines=""
+_count_inception_exploration_commits() {
+_fw_entry() {
+_fw_gcd=$(git rev-parse --git-common-dir 2>/dev/null)
+_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$SCANNER" scan-staged 2>&1)
+_hits=$(PROJECT_ROOT="$PROJECT_ROOT" bash "$SCANNER" scan-staged 2>&1)
+_lw_tags=""
+_rc=$?
+_stdin_buf=$(cat)
+_t3125_committed_drift() {
+_t3125_vendor_class() {
+_t3126_out=$(mktemp -t fw-prepush-audit-XXXXXX 2>/dev/null || echo "")
+_t3126_ref_fails=""
+_t3126_wt_fails=""
+_t3297_lock_file="$PROJECT_ROOT/.context/locks/audit.lock"
+_t3297_lock_free() {
+_t3297_log_bypass() {
+_t3297_run_audit
+_t3297_run_audit() {
+_t3297_wait="${FW_PREPUSH_LOCK_WAIT:-90}"
+_t3297_wait_source="FW_PREPUSH_LOCK_WAIT"
+_t3297_waited=0
+_t3594_args=""
+_t3594_lines=""
+_t3594_remote="${1:-}"
+_t3594_root="$(git rev-parse --show-toplevel 2>/dev/null)"
+_version=""
+_version=$(git describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+_yaml_failures=""
+_zero="0000000000000000000000000000000000000000"
+audit_exit=$?
+case "$_fw_gcd" in
+case "$_t3297_wait" in ''|*[!0-9]*) _t3297_wait=360; _t3297_wait_source="fallback default (T-3421)" ;; esac
+case "$_t3297_wait" in ''|*[!0-9]*) _t3297_wait=90 ;; esac
+declare -A _FAB_LOC=()
+done
+done <<EOF
+echo ""
+echo "$CURRENT_COUNT" > "$COMMIT_COUNTER_FILE"
+echo "=== Pre-Push Audit Check ==="
+elif [ $audit_exit -eq 1 ]; then
+elif [ $audit_exit -eq 2 ]; then
+elif [ -f "$PROJECT_ROOT/.framework.yaml" ] || [ -d "$PROJECT_ROOT/.tasks" ]; then
+elif [ -n "$AUTHORITY_ROOT" ] && [ "$AUTHORITY_ROOT" != "$PROJECT_ROOT" ] && [ -d "$AUTHORITY_ROOT/.tasks" ]; then
+else
+esac
+except yaml.YAMLError as e:
+exit 0
+export PROJECT_ROOT
+fi
+for _y in "$PROJECT_ROOT"/.context/project/*.yaml; do
+for _yaml_file in .context/project/learnings.yaml .context/project/patterns.yaml .context/project/practices.yaml; do
+if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
+if [ ! -f "$AUDIT_SCRIPT" ]; then
+if [ ! -f "$FRAMEWORK_ROOT/lib/tasks.sh" ] && [ -f "$PROJECT_ROOT/.agentic-framework/lib/tasks.sh" ]; then
+if [ ! -f "$SCANNER" ]; then
+if [ ! -x "$SCANNER" ]; then
+if [ "$CURRENT_COUNT" -ge 2 ]; then
+if [ "$_rc" -ne 0 ]; then
+if [ "$audit_exit" -eq 75 ] && [ "$_t3297_wait" -gt 0 ]; then
+if [ $audit_exit -eq 2 ]; then
+if [ $audit_exit -eq 75 ]; then
+if [ -d "$FABRIC_DIR" ]; then
+if [ -d ".git/rebase-merge" ] || [ -d ".git/rebase-apply" ]; then
+if [ -f "$COMMIT_COUNTER_FILE" ]; then
+if [ -f "$COUNTER_FILE" ]; then
+if [ -f "$DUP_TASK_SCANNER" ]; then
+if [ -f "$EDIT_COUNTER" ]; then
+if [ -f "$FOOTPRINT_LIB" ] && command -v python3 >/dev/null 2>&1; then
+if [ -f "$FRAMEWORK_ROOT/lib/config.sh" ]; then
+if [ -f "$FRAMEWORK_ROOT/lib/paths.sh" ]; then
+if [ -f "$FRAMEWORK_ROOT/lib/tasks.sh" ]; then
+if [ -f "$LARGE_FILE_SCANNER" ]; then
+if [ -f "$LATEST" ]; then
+if [ -f "$MASTER_GUARD" ]; then
+if [ -f "$PARKED_GUARD" ]; then
+if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
+if [ -f "$STALE_INDEX_GUARD" ] && command -v python3 >/dev/null 2>&1; then
+if [ -n "$AUTHORITY_ROOT" ]; then
+if [ -n "$CORPUS_GUARD" ]; then
+if [ -n "$TASK_REF" ] && [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE" 2>/dev/null; then
+if [ -n "$TASK_REF" ] && ls "$PROJECT_ROOT/.tasks/completed/${TASK_REF}-"* >/dev/null 2>&1; then
+if [ -n "$TASK_REF" ]; then
+if [ -n "$_block_lines" ]; then
+if [ -n "$_lw_tags" ]; then
+if [ -n "$_t3126_out" ] && [ -f "$_t3126_out" ]; then
+if [ -n "$_t3126_out" ]; then
+if [ -n "$_t3594_args" ]; then
+if [ -n "$_version" ]; then
+if [ -n "$_yaml_failures" ]; then
+if [ -n "$latest_tag" ]; then
+if [ -n "${FW_PREPUSH_LOCK_WAIT:-}" ]; then
+if [ -x "$DUP_TASK_SCANNER" ]; then
+if [ -x "$LARGE_FILE_SCANNER" ]; then
+if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -d "$PROJECT_ROOT/.agentic-framework/lib" ]; then
+if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -f "$PROJECT_ROOT/agents/mcp/manifest.py" ]; then
+if [ -z "$AUDIT_SCRIPT" ] && [ -f "$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh" ]; then
+if [ -z "$AUDIT_SCRIPT" ] && [ -f "$PROJECT_ROOT/agents/audit/audit.sh" ]; then
+if [ -z "$AUDIT_SCRIPT" ]; then
+if git -C "$PROJECT_ROOT" ls-files --error-unmatch VERSION >/dev/null 2>&1; then
+if git rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1; then
+import yaml, sys
+latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || true)
+try:
+while IFS=' ' read -r _l_ref _l_sha _r_ref _r_sha; do
+while IFS=' ' read -r _local_ref _local_sha _remote_ref _remote_sha; do
+}
+}  ${_local_ref#refs/heads/}: VERSION ${_local_ver} < remote ${_remote_ver}"
+}  ${_verb}: ${_r_ref} on remote '${_t3594_remote}'"

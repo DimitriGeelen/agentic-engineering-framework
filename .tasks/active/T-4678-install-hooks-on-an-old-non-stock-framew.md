@@ -15,7 +15,7 @@ description: >
   project lines; refusing with a precise message stays the fallback. Source: proxmox-ring20-management
   be.4 field report (sidecar 4aade009, 2026-10-23).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T22:25:15Z
-last_update: '2026-10-22T22:28:51Z'
+last_update: 2026-10-22T23:06:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Fixtures reconstruct ring20's shape from real history: an old pre-commit template (`# VERSION=1.5`, secret-scan echo) read via `git show <commit>:agents/git/lib/hooks.sh`, plus a multi-line project `if/then/fi` block (nested command + comment) at the end (fixture A) and between template lines (fixture B); the regression test fails against the pre-fix hooks.sh
+- [x] A line found in ANY pre-block shipped template body (generated list `agents/git/lib/stock-hook-lines.txt`, written by `tools/gen-stock-hook-digests.sh`) is template residue, never a project line
+- [x] Old-framework-hook merge keeps whole top-level constructs: the installed hook is split into the smallest chunks that each pass `bash -n`; a chunk holding any non-template line is kept whole (if...fi through its matching close, even when inner lines coincide with template lines); chunks of only template lines are dropped
+- [x] If the merged hook still does not parse, the refusal names the exact line numbers and the fix
+- [x] `tests/unit/t4678_old_hook_project_block.bats`: both fixtures merge (exit 0, no REFUSED), project block kept whole and active (inert if after an unconditional exit, per T-4569), no template residue outside it, `bash -n` passes; t4568 stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,6 +289,13 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t4678_old_hook_project_block.bats > /tmp/.t4678.out 2>&1 && ! grep -q "^not ok" /tmp/.t4678.out
+test "$(grep -c '# skip' /tmp/.t4678.out)" -eq 0
+timeout 900 bats tests/unit/t4568_stock_hook_upgrade.bats > /tmp/.t4678b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4678b.out
+test "$(grep -c '# skip' /tmp/.t4678b.out)" -eq 0
+bash -n agents/git/lib/hooks.sh
+python3 tools/bats-dead-negation-lint.py tests/unit/t4678_old_hook_project_block.bats > /tmp/.t4678c.out 2>&1 && grep -q clean /tmp/.t4678c.out
+bin/fw vendor self --check --task T-4678
 
 ## RCA
 
@@ -302,6 +312,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** ring20 (be.4) `fw git install-hooks` REFUSED their pre-commit — an old framework template (`# VERSION=1.5`, secret-scan echo lines) with their own T-2215 `if ... fi` block inserted — printing kept "lines" that were old-template residue plus a project block cut after its nested `if`. Reproduced exactly by `tests/unit/t4678_old_hook_project_block.bats` against the pre-fix hooks.sh (tests 2-7 red, same REFUSED listing).
+
+**Root cause:** `agents/git/lib/hooks.sh` `_fw_hook_compose`, "old framework hook" branch (pre-fix lines 145-147): an awk kept each line of the installed hook that was absent from the CURRENT template, one line at a time. (1) Lines of an OLDER template that the current one dropped (`# VERSION=1.5`, the removed `echo "If this is a false positive…"`) were indistinguishable from project lines. (2) A project block's inner lines that coincide with template lines (`    exit 1`, `    fi`, `fi`, `echo "" >&2`) were dropped, so the kept `if` had no `fi` and the merged hook failed `bash -n` → REFUSED.
+
+**Why structurally allowed:** T-4568 fixed only the STOCK case (whole-prefix digest match); its fixtures were stock hooks with single lines appended, so the non-stock path never met a multi-line construct or old-template residue. The kept-lines extract was line-based while the thing it must preserve (a shell construct) is not; no test fed it a real historical template with a block inserted.
+
+**Fix / prevention:** residue = any line of any shipped pre-block template (`agents/git/lib/stock-hook-lines.txt`, emitted by `tools/gen-stock-hook-digests.sh`) or of the current block; the installed hook is split into top-level commands (`_fw_hook_chunks`: smallest run that passes `bash -n`, no trailing continuation) and a command holding any project line is kept whole; T-4569 inertness is decided per command; a residual parse failure is refused with the exact line numbers, the parser message and the fix. The bats file pins both field shapes (block at the end, block between template lines), activeness via a real commit, the inert case and the refusal message.
 
 ## Evolution
 
@@ -383,3 +400,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4678-install-hooks-on-an-old-non-stock-framew.md
 - **Context:** Initial task creation
+
+### 2026-10-22T23:06:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

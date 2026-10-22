@@ -99,13 +99,43 @@ _fw_hook_first_exit() {
     awk '/^exit([[:space:]]|;|$)/ { print NR; found = 1; exit } END { if (!found) print 0 }' "$1"
 }
 
+# T-4678: every line of every pre-block template body (same generator). A line an
+# old NON-stock hook shares with any of them is template residue, not a project line.
+_FW_STOCK_HOOK_LINES="$(dirname "${BASH_SOURCE[0]}")/stock-hook-lines.txt"
+
+# _fw_hook_chunks FILE — "<start> <end>" for each top-level command of FILE from
+# line 2: the smallest run of lines that parses on its own (bash -n) and does not
+# end in a continuation. An if...fi, a loop or a function is one chunk, so a
+# project block is kept or dropped whole. A line that opens what nothing closes
+# is a chunk alone (the merge then fails bash -n and is refused).
+_fw_hook_chunks() {
+    local -a L=()
+    local line total s e
+    while IFS= read -r line || [ -n "$line" ]; do L+=("$line"); done < "$1"
+    total=${#L[@]}
+    s=2
+    while [ "$s" -le "$total" ]; do
+        e=$s
+        while :; do
+            if [[ "${L[e-1]}" != *\\ ]] && printf '%s\n' "${L[@]:s-1:e-s+1}" | bash -n 2>/dev/null; then
+                break
+            fi
+            [ "$e" -ge "$total" ] && { e=$s; break; }
+            e=$((e + 1))
+        done
+        echo "$s $e"
+        s=$((e + 1))
+    done
+}
+
 # _fw_hook_compose INSTALLED BLOCK OUT — write the new hook to OUT: the block,
 # with everything the installed file held outside it kept in place. An unmarked
 # installed hook is migrated (backed up to INSTALLED.pre-fw-block first):
 #   - a stock old framework hook (T-4568: a shipped template, per its digest) is
 #     replaced whole; lines appended after it are kept, after the block;
-#   - any other old framework hook keeps only the lines the template does not
-#     contain, after the block — the template lines are never duplicated;
+#   - any other old framework hook keeps, after the block, each top-level command
+#     holding a line no shipped template contains — whole (T-4678), so an
+#     if...fi project block is never cut; template lines are never duplicated;
 #   - a consumer's own sh/bash hook keeps its whole body, after the block;
 #   - a hook in another language, or a merge that does not parse, is REFUSED:
 #     the installed file is left as it is and the function returns 2.
@@ -135,16 +165,33 @@ _fw_hook_compose() {
     if [ "$stock" -gt 0 ]; then
         # T-4568: a stock old framework hook, possibly with lines appended. The
         # template is replaced whole; only the appended lines are kept.
-        awk -v s="$stock" 'NR > s { print NR "\t" $0 }' "$installed" > "$kept.n"
-        grep -q '[^[:space:]]' "$kept.n" || : > "$kept.n"
+        awk -v s="$stock" 'NR > s { print NR "\t" NR "\t" $0 }' "$installed" > "$kept.n"
+        awk '{ sub(/^[0-9]+\t[0-9]+\t/, "") } /[^[:space:]]/ { f = 1 } END { exit !f }' "$kept.n" || : > "$kept.n"
         note="appended to a stock framework hook — they now run after the framework checks pass"
     elif grep -qE 'Agentic Engineering Framework|agents/git/git\.sh install-hooks|^# [<>]{3} agentic-framework hook' "$installed"; then
-        # An old framework hook: lines the current template lacks are either the
-        # consumer's or an OLDER template's, and nothing tells them apart. Keep
-        # them all ACTIVE (T-4515): a consumer gate must keep running.
-        awk 'FNR == NR { t[$0] = 1; next }
-             FNR > 1 && !($0 in t) && $0 !~ /^[[:space:]]*$/ && $0 !~ /^# [<>][<>][<>] agentic-framework hook/ {
-                 print FNR "\t" $0 }' "$block" "$installed" > "$kept.n"
+        # An old framework hook that is not stock. A line in the current template
+        # or in ANY shipped one (T-4678) is template residue; every other line is
+        # the project's, kept ACTIVE (T-4515): a consumer gate must keep running.
+        # Kept by whole top-level command (T-4678): a chunk holding one project
+        # line is kept from its opening line through its matching close, even
+        # where inner lines (`exit 1`, `fi`) coincide with template lines.
+        _fw_hook_chunks "$installed" > "$kept.c"
+        awk -v blk="$block" -v lines="$_FW_STOCK_HOOK_LINES" -v chunks="$kept.c" '
+            BEGIN {
+                while ((getline l < blk) > 0) t[l] = 1
+                while ((getline l < lines) > 0) t[l] = 1
+                while ((getline l < chunks) > 0) { split(l, c, " "); en[c[1]] = c[2] }
+            }
+            { L[NR] = $0 }
+            END {
+                for (s = 2; s in en; s = en[s] + 1) {
+                    keep = 0
+                    for (i = s; i <= en[s]; i++)
+                        if (L[i] !~ /^[[:space:]]*$/ && !(L[i] in t) && L[i] !~ /^# [<>][<>][<>] agentic-framework hook/) keep = 1
+                    if (keep) for (i = s; i <= en[s]; i++) print i "\t" s "\t" L[i]
+                }
+            }' "$installed" > "$kept.n"
+        rm -f "$kept.c"
         note="still active — delete any that came from an older framework hook"
     elif [[ "$first" =~ ^#!(/usr)?/bin/(env[[:space:]]+)?(ba)?sh([[:space:]]|$) ]]; then
         tail -n +2 "$installed" > "$kept"
@@ -160,11 +207,14 @@ _fw_hook_compose() {
         # hook's unconditional top-level exit never ran; kept ACTIVE below the
         # block it would start running on every commit. It stays inert.
         dead=$(_fw_hook_first_exit "$installed")
-        awk -F '\t' -v d="$dead" -v k="$kept" -v i="$inert" '{
-            n = $1; sub(/^[0-9]+\t/, "")
-            if (d > 0 && n > d) print > i; else print > k }' "$kept.n"
-        touch "$kept"
+        # The line carries its chunk's start (T-4678): a block is inert or active whole.
+        awk -F '\t' -v d="$dead" -v k="$kept" -v i="$inert" -v kl="$kept.l" '{
+            n = $1; s = $2; sub(/^[0-9]+\t[0-9]+\t/, "")
+            if (d > 0 && s > d) print > i; else { print > k; print "line " n ": " $0 > kl } }' "$kept.n"
+        touch "$kept" "$kept.l"
         rm -f "$kept.n"
+    else
+        awk '{ print "line " NR + 1 ": " $0 }' "$kept" > "$kept.l"
     fi
     { echo '#!/bin/bash'; cat "$block"
       if [ -s "$kept" ]; then
@@ -175,18 +225,21 @@ _fw_hook_compose() {
           echo "# T-4569: project lines kept INERT from the previous $name by fw git install-hooks — they sat after its unconditional exit (line $dead) and never ran; uncomment any that should run; original: $(basename "$backup")"
           sed 's/^/# /' "$inert"
       fi; } > "$out"
-    if [ -s "$kept" ] && ! bash -n "$out" 2>/dev/null; then
+    local perr
+    if [ -s "$kept" ] && ! perr=$(bash -n "$out" 2>&1); then
+        # T-4678: name the exact lines (numbered as in the installed hook) and the fix.
         echo -e "${RED}REFUSED: the lines of $name outside the framework template do not parse after the framework block — installing would disable them. $name left unchanged (its checks still run).${NC}" >&2
-        echo "  Lines:" >&2
-        sed 's/^/    | /' "$kept" | head -20 >&2
-        echo "  Fix: delete the lines that came from an older framework hook (or make the rest parse on its own), then re-run fw git install-hooks." >&2
-        rm -f "$kept" "$inert" "$out"
+        echo "  Parser: $(echo "$perr" | head -1 | sed 's|^[^:]*: ||')" >&2
+        echo "  Lines kept from $installed (by line number there):" >&2
+        sed 's/^/    | /' "$kept.l" | head -40 >&2
+        echo "  Fix: in $installed, close (or delete) the construct those lines open — every if/fi, do/done, case/esac, {/} must pair up within the project lines — or delete lines that came from an older framework hook; then re-run fw git install-hooks." >&2
+        rm -f "$kept" "$kept.l" "$inert" "$out"
         return 2
     fi
     [ -s "$kept" ] || [ -s "$inert" ] || [ -z "$note" ] && cp -p "$installed" "$backup" 2>/dev/null
     [ -s "$kept" ] && echo -e "${YELLOW}$name: kept $(wc -l < "$kept") line(s) of the previous hook below the framework block ($note); previous file: $backup${NC}" >&2
     [ -s "$inert" ] && echo -e "${YELLOW}$name: kept $(wc -l < "$inert") line(s) commented out — they sat after the previous hook's unconditional exit (line $dead) and never ran; previous file: $backup${NC}" >&2
-    rm -f "$kept" "$inert"
+    rm -f "$kept" "$kept.l" "$inert"
     return 0
 }
 

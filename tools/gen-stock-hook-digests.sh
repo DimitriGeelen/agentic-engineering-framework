@@ -13,12 +13,20 @@
 # The set is closed: since T-4403 install-hooks never writes a bare template, so
 # versions with _FW_HOOK_BEGIN are skipped and regenerating changes nothing.
 #
+# T-4678: it also writes agents/git/lib/stock-hook-lines.txt — every line of
+# those bodies, once each, no header (any line in it reads as template). A line
+# an old NON-stock hook shares with any shipped template is template residue,
+# never a project line; without it `# VERSION=1.5` and an old secret-scan echo
+# were kept as "project lines" and the merge did not parse (ring20 be.4).
+#
 # Usage (framework repo, needs git history): tools/gen-stock-hook-digests.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 out=agents/git/lib/stock-hook-digests.txt
+lines_out=agents/git/lib/stock-hook-lines.txt
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
+: > "$tmp/lines"
 git log --all --format=%H -- agents/git/lib/hooks.sh | while read -r c; do
     git show "$c:agents/git/lib/hooks.sh" > "$tmp/hooks.sh" 2>/dev/null || continue
     grep -q '_FW_HOOK_BEGIN=' "$tmp/hooks.sh" && continue
@@ -27,6 +35,7 @@ git log --all --format=%H -- agents/git/lib/hooks.sh | while read -r c; do
         /^HOOK_EOF$/ { on = 0 } on { print > (d "/body." n) }' "$tmp/hooks.sh"
     for b in "$tmp"/body.*; do
         [ -f "$b" ] || continue
+        cat "$b" >> "$tmp/lines"
         printf '%s %s\n' "$(wc -l < "$b" | tr -d ' ')" "$(sha256sum < "$b" | cut -d' ' -f1)"
     done
 done | LC_ALL=C sort -u > "$tmp/digests"
@@ -37,3 +46,6 @@ done | LC_ALL=C sort -u > "$tmp/digests"
 } > "$out.tmp"
 mv "$out.tmp" "$out"
 echo "wrote $out ($(grep -vc '^#' "$out") digests)"
+grep '[^[:space:]]' "$tmp/lines" | LC_ALL=C sort -u > "$lines_out.tmp"
+mv "$lines_out.tmp" "$lines_out"
+echo "wrote $lines_out ($(wc -l < "$lines_out" | tr -d ' ') lines)"
