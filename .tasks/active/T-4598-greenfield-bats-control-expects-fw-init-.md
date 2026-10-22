@@ -9,10 +9,10 @@ description: >
   empty. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (line 38).
   Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -44,7 +44,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:36:36Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T11:03:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced on bleeding-edge: the greenfield test "an empty cron registry is not reported as drift" fails on its `jobs: []` control because `fw init` now seeds jobs (lib/init.sh:368 → lib/cron-seed.sh)
+- [x] The T-2844 assertion is re-anchored on a genuinely empty registry: a copy of the greenfield fixture with `jobs: []` is doctored, and the test asserts the "registry declares no jobs" SKIP fired and no cron drift WARN appeared (control proves the copy really is empty)
+- [x] The seeded greenfield registry keeps its own assertion (non-empty, declares the seeded jobs) so the stale assumption is replaced, not deleted
+- [x] `tests/integration/fw_onboarding_greenfield.bats` cron tests pass; dead-negation lint clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +283,9 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats -f "cron registry" tests/integration/fw_onboarding_greenfield.bats > /tmp/.t4598.out 2>&1 && grep -q '^ok 1 ' /tmp/.t4598.out && ! grep -q '^not ok' /tmp/.t4598.out
+test "$(grep -c '# skip' /tmp/.t4598.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/integration/fw_onboarding_greenfield.bats > /tmp/.t4598.lint 2>&1 && grep -q clean /tmp/.t4598.lint
 
 ## RCA
 
@@ -297,6 +302,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/integration/fw_onboarding_greenfield.bats` "an empty cron registry is not reported as drift" failed on its control `[[ "$output" == *"jobs: []"* ]]`. Reproduced on bleeding-edge (2026-10-22).
+
+**Root cause:** the test assumed `fw init` leaves the cron registry empty. `lib/init.sh:368` now calls `cron_seed_ensure_jobs` (lib/cron-seed.sh, T-3673/T-3783), which appends `sidecar-sweep-5m` and `index-reindex-hourly`. The greenfield registry is no longer empty, so the control no longer holds. The doctor code was correct; the test was stale, and its T-2844 assertion no longer exercised the empty-registry branch (bin/fw:4498) at all.
+
+**Why structurally allowed:** the seeding change (T-3673/T-3783) was verified with unit tests. This integration file runs only in the nightly or full suite, so nobody saw the stale control when the seeding landed.
+
+**Prevention:** `setup_file` now doctors a copy of the fixture whose registry is `jobs: []`. The T-2844 test asserts that the "registry declares no jobs" SKIP fired on that copy, that the copy really is empty, and that doctor ran against the copy. A new test covers the seeded registry and asserts it declares ≥1 job, so the next change to what init seeds turns one of the two controls red instead of quietly emptying the check.
 
 ## Evolution
 
@@ -321,6 +334,11 @@ cost_estimate_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-22 — what the empty-registry doctor run showed
+- **What changed:** a doctor run on a `jobs: []` copy of the greenfield fixture exits 2: the cron drift checks SKIP correctly, but the T-3783 recall-health check FAILs ("cron registry lacks index-reindex-hourly"). That FAIL is correct for an empty registry, so the test does not assert that run's exit status.
+- **Plan impact:** none. The only remaining red in the file is test 9 (cron not installed, termlink missing), which was already triaged as an env failure.
+- **Triggered:** nothing new.
 
 ## Recommendation
 
@@ -378,3 +396,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4598-greenfield-bats-control-expects-fw-init-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:03:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

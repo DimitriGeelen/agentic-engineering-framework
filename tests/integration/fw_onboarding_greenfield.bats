@@ -95,6 +95,19 @@ setup_file() {
     ( cd /tmp && env -u FRAMEWORK_ROOT -u PROJECT_ROOT CLAUDE_PROJECT_DIR="$GDIR/proj" HOME="$GDIR/home" \
         "$GDIR/proj/.agentic-framework/bin/fw" doctor > "$GDIR/doctor.log" 2>&1
       echo "$?" > "$GDIR/doctor.rc" )
+
+    # T-4598: `fw init` now seeds framework-owned cron jobs (lib/cron-seed.sh,
+    # T-3673/T-3783), so the greenfield registry is no longer empty and cannot
+    # anchor the T-2844 empty-registry assertion. Doctor a copy of the fixture
+    # whose registry really does declare `jobs: []` — same assembly, same
+    # foreign-CWD invocation, one variable changed. Its exit status is not
+    # asserted: an empty registry also trips the T-3783 recall-health FAIL
+    # (index-reindex-hourly missing), which is correct and not drift.
+    cp -a "$GDIR/proj" "$GDIR/proj-empty"
+    sed -i '/^jobs:/,$d' "$GDIR/proj-empty/.context/cron-registry.yaml"
+    echo 'jobs: []' >> "$GDIR/proj-empty/.context/cron-registry.yaml"
+    ( cd /tmp && env -u FRAMEWORK_ROOT -u PROJECT_ROOT CLAUDE_PROJECT_DIR="$GDIR/proj-empty" HOME="$GDIR/home" \
+        "$GDIR/proj-empty/.agentic-framework/bin/fw" doctor > "$GDIR/doctor-empty.log" 2>&1 || true )
 }
 
 # --- helpers ---
@@ -222,16 +235,30 @@ _findings() {
     [[ "$output" != *"Framework path ambiguity"* ]]
 }
 
-@test "greenfield: an empty cron registry is not reported as drift" {
-    # T-2844: `fw init` seeds `jobs: []`; the drift checks gated on the registry
-    # FILE existing rather than on it declaring jobs.
+@test "greenfield: the seeded cron registry is not reported as drift" {
     run _plain "$GDIR/doctor.log"
     [[ "$output" != *"Cron registry edited but not generated"* ]]
     [[ "$output" != *"Cron registry present but not generated"* ]]
-    # Control: the seed really is empty, so the assertion above is about the
+    # Control (T-4598): init seeds jobs, so the drift checks really ran here.
+    run grep -c '^- id:' "$GDIR/proj/.context/cron-registry.yaml"
+    [ "$output" -ge 1 ]
+}
+
+@test "greenfield: an empty cron registry is not reported as drift" {
+    # T-2844: the drift checks gated on the registry FILE existing rather than
+    # on it declaring jobs. Measured on the `jobs: []` copy (T-4598).
+    run _plain "$GDIR/doctor-empty.log"
+    [[ "$output" == *"registry declares no jobs"* ]]
+    [[ "$output" != *"Cron registry edited but not generated"* ]]
+    [[ "$output" != *"Cron registry present but not generated"* ]]
+    [[ "$output" != *"Cron registry declares no jobs but a deployed crontab"* ]]
+    # Anchor: that doctor ran against the copy, not the seeded fixture.
+    [[ "$output" == *"$GDIR/proj-empty"* ]]
+    # Control: the copy really is empty, so the assertions above are about the
     # checker's logic and not about a registry that happens to be absent.
-    run cat "$GDIR/proj/.context/cron-registry.yaml"
+    run cat "$GDIR/proj-empty/.context/cron-registry.yaml"
     [[ "$output" == *"jobs: []"* ]]
+    [[ "$output" != *"- id:"* ]]
 }
 
 # --- the seeded onboarding set (arc-017 invariant) ---
