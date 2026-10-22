@@ -1,16 +1,17 @@
 ---
-id: T-4658
-name: "_route_to_operator writes multi-line guidance under a criterion; lines after
-  the first change the criterion digest and invalidate the escalated row"
+id: T-4655
+name: "metrics.sh id counters hardcode L-/D-/P- prefixes at fixed indent and a quoted
+  last_update breaks the date parse"
 description: >
-  Only the first line matches the generated-annotation regex. Source: ring20 per-patch
-  triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category 5), ring20
-  patch #31. Verify against our code before fixing.
+  A project with a different id style reads 0; quoted last_update breaks stale counts.
+  Optional: recency-only frozen-WIP counter. Source: ring20 per-patch triage vs be.3
+  (docs/reports/T-4649-ring20-patch-triage.md, category 5), ring20 patch #22,#23,#33.
+  Verify against our code before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -40,9 +41,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T19:33:24Z
-last_update: 2026-10-22T21:59:51Z
-date_finished:
+created: 2026-10-22T19:32:11Z
+last_update: 2026-10-22T22:09:39Z
+date_finished: 2026-10-22T22:09:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -82,7 +83,7 @@ cost_estimate_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4658: _route_to_operator writes multi-line guidance under a criterion; lines after the first change the criterion digest and invalidate the escalated row
+# T-4655: metrics.sh id counters hardcode L-/D-/P- prefixes at fixed indent and a quoted last_update breaks the date parse
 
 ## Context
 
@@ -92,10 +93,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Regression test in tests/unit/test_t3579_verdict_ledger.py escalates a fixture criterion with multi-line guidance and asserts `criterion_digest` is identical before and after `_route_to_operator`; it fails on the pre-fix code
-- [x] `_route_to_operator` (lib/verdict_ledger.py) writes the escalation as exactly one line (guidance whitespace collapsed) that names the ledger row holding the full text; the verdicts ledger row keeps the guidance verbatim
-- [x] Guidance containing a checkbox-shaped line (`- [ ] ...`) does not add a criterion to the task after escalation (same test file)
-- [x] Existing tests/unit/test_t3579_verdict_ledger.py stay green; `bin/fw vendor self --check --task T-4658` clean
+- [x] metrics.sh counts patterns/learnings/decisions by parsing the YAML (python3 yaml), so a store with any indent (2-space `- id:`, `-` on its own line, 4-space) or any id prefix reads its true entry count
+- [x] An unreadable/unparseable store prints an ERROR line naming the file (stderr) and shows `?`, never a silent 0
+- [x] A quoted `last_update` ("…" or '…') parses: a fresh quoted task is not counted stale, and an old quoted task is counted stale
+- [x] Recency-only "Frozen WIP (>14d)" line counts started-work tasks whose last_update is older than 14 days
+- [x] tests/unit/t4655_metrics_counters.bats covers both store shapes, unreadable store, quoted dates and frozen WIP; fails on the pre-fix metrics.sh, passes after
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,12 +282,15 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 900 python3 -m pytest tests/unit/test_t3579_verdict_ledger.py -q -k "escalat" > /tmp/.t4658-a 2>&1 && grep -q passed /tmp/.t4658-a && ! grep -qE "[0-9]+ (failed|error)" /tmp/.t4658-a
-grep -q "test_escalation_guidance_does_not_change_digest" tests/unit/test_t3579_verdict_ledger.py
-timeout 1800 python3 -m pytest tests/unit/test_t3579_verdict_ledger.py -q > /tmp/.t4658-b 2>&1 && grep -q passed /tmp/.t4658-b
-bin/fw vendor self --check --task T-4658
+bash -n metrics.sh
+timeout 300 bats tests/unit/t4655_metrics_counters.bats > /tmp/.t4655.out 2>&1 && ! grep -q "^not ok" /tmp/.t4655.out && grep -q "^ok 7 " /tmp/.t4655.out
+timeout 300 bats tests/unit/t4655_metrics_counters.bats > /tmp/.t4655s.out 2>&1; test "$(grep -c '# skip' /tmp/.t4655s.out)" -eq 0
+python3 lib/silent_zero_scan.py metrics.sh > /tmp/.t4655z.out 2>&1; ! grep -q "metrics.sh" /tmp/.t4655z.out
+bin/fw vendor self --check --task T-4655
 
-<!-- RCA (filled below, after Evolution). REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+## RCA
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
 
@@ -298,6 +303,14 @@ bin/fw vendor self --check --task T-4658
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw metrics` CONTEXT FABRIC counts read 0 on stores serialised in another shape. This affects our own repo: learnings.yaml puts `-` on its own line, so `grep -c "^  - id: L-"` = 0 against 741 entries. Patterns read 18 of 19 because an AP- entry has no FSW prefix. The stale count also skipped any old task whose `last_update` was quoted.
+
+**Root cause:** metrics.sh:150-157 (pre-fix) counted with fixed-indent, fixed-prefix greps (`^  - id: [FSW]P-`, `^  - id: L-`, `^  - id: D-`) instead of parsing the YAML. metrics.sh:96-99 (pre-fix) kept the quotes in `last_update` (`cut -dT` gives `"2026-…`). `_date_to_epoch` then fails and echoes 0, `|| echo 0` adds a second 0, and `[ "0\n0" -lt … ]` errors, which evaluates to false. The task silently drops out of the stale count.
+
+**Why structurally allowed:** A grep that matches nothing exits like a store that holds nothing, and prints a plausible 0. That is the T-2680 silent-zero class. metrics.sh lives at the repo root, while lib/silent_zero_scan.py scans only lib/agents/bin by default, so the detector never looked at it. No test covered metrics.sh's counters.
+
+**Prevention:** Counts now come from a YAML parse (`count_store_entries`). It prints ERROR + `?` for an unreadable store. Unparseable dates are skipped and reported with a WARN, never folded into a number. tests/unit/t4655_metrics_counters.bats pins both store shapes, foreign prefixes, the unreadable store, quoted dates and frozen WIP. Five of its 7 tests fail on the pre-fix script. Verification also runs silent_zero_scan.py against metrics.sh.
 
 ## Evolution
 
@@ -322,16 +335,6 @@ bin/fw vendor self --check --task T-4658
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
-
-## RCA
-
-**Symptom:** an `escalate` verdict whose guidance spans several lines invalidates itself: after routing, the criterion's digest no longer equals the row's `ac_digest`, so the escalated row reads as stale (ring20 patch #31, T-4649 category 5).
-
-**Root cause:** `lib/verdict_ledger.py:_route_to_operator` inserts `**Reviewer escalation (...):** {guidance}` verbatim. `judge_verdict.verdict` only `.strip()`s guidance, so embedded newlines survive. `lib/delegation.py:parse_criteria` folds every line up to the next checkbox/subhead into the criterion, and `criterion_body` (lib/verdict_ledger.py) drops only lines matching `GENERATED_ANNOTATION_RE` (`^\s*\*\*Reviewer (verdict|escalation)`) — i.e. the first note line. Lines 2..n become criterion text and change the digest; a guidance line shaped `- [ ] …` would even create a new criterion.
-
-**Why structurally allowed:** the only escalation test (`test_escalate_reroutes_to_operator_with_reason_visible`) used one-line guidance and never compared digests before/after; the docstring asserted "does not disturb the digest" without a test pinning it.
-
-**Prevention:** the note is written as a single line (whitespace collapsed, ledger row named for the full text), and `test_escalation_guidance_does_not_change_digest` pins digest equality and criterion count with multi-line, checkbox-shaped guidance.
 
 ## Recommendation
 
@@ -385,11 +388,33 @@ bin/fw vendor self --check --task T-4658
 
 ## Updates
 
-### 2026-10-22T19:33:24Z — task-created [task-create-agent]
+### 2026-10-22T19:32:11Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4658-routetooperator-writes-multi-line-guidan.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4655-metricssh-id-counters-hardcode-l-d-p--pr.md
 - **Context:** Initial task creation
 
-### 2026-10-22T21:59:36Z — status-update [task-update-agent]
+### 2026-10-22T21:59:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-23 — claims verified on our code [w4655]
+- (a) holds, worse than reported. Our own learnings.yaml (dash on its own line) read **0 of 741**, and patterns read 18 of 19 (AP- prefix). After the fix the live repo reads 19 / 741 / 782.
+- (b) holds, but the effect is the inverse of what was assumed. A quoted date did not inflate the stale count: the `-lt` test errored to false, so old quoted tasks were silently **dropped** from it.
+- New bats: 7/7 pass on the fix. On the pre-fix script (git show HEAD:metrics.sh) 5 fail; tests 3 and 5 are controls that pass on both.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c4f2751d
+- **Timestamp:** 2026-10-22T22:09:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T22:09:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

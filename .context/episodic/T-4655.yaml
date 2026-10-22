@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4655: metrics.sh id counters hardcode L-/D-/P- prefixes at fixed indent and a quoted last_update breaks the date parse
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T22:09:56Z
+# ============================================================================
+
+task_id: T-4655
+task_name: "metrics.sh id counters hardcode L-/D-/P- prefixes at fixed indent and a quoted last_update breaks the date parse"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T19:32:11Z
+completed: 2026-10-22T22:09:39Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-23T00:08:35+02:00
+last_commit: 2026-10-23T00:08:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  metrics.sh counts stores by YAML parse (indent/prefix-tolerant, ERROR not 0), strips quoted last_update, adds Frozen WIP; 7 bats
+
+# Key outcomes
+outcomes:
+  - 'metrics.sh counts patterns/learnings/decisions by parsing the YAML (python3 yaml), so a store with any indent (2-space `- id:`, `-` on its own line, 4-space) or any id prefix reads its true entry count'
+  - 'An unreadable/unparseable store prints an ERROR line naming the file (stderr) and shows `?`, never a silent 0'
+  - 'A quoted `last_update` ("…" or ''…'') parses: a fresh quoted task is not counted stale, and an old quoted task is counted stale'
+  - 'Recency-only "Frozen WIP (>14d)" line counts started-work tasks whose last_update is older than 14 days'
+  - 'tests/unit/t4655_metrics_counters.bats covers both store shapes, unreadable store, quoted dates and frozen WIP; fails on the pre-fix metrics.sh, passes after'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'metrics.sh counts stores by YAML parse (indent/prefix-tolerant, ERROR not 0), strips quoted last_update, adds Frozen WIP; 7 bats'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/metrics.sh'
+  - 'metrics.sh'
+  - '.tasks/active/T-4655-metricssh-id-counters-hardcode-l-d-p--pr.md'
+  - 'tests/unit/t4655_metrics_counters.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T00:08:35'
+    action: 'T-4655: metrics.sh counts stores by YAML parse (indent/prefix-tolerant, ERROR not 0), strips quoted last_update, adds Frozen WIP; 7 bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 157 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 157
+  commits: 1
+  files_changed: 4
+  lines_added: 266
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4655-metricssh-id-counters-hardcode-l-d-p--pr.md
+generated_by: context-agent-hybrid

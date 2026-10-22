@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4658: _route_to_operator writes multi-line guidance under a criterion; lines after the first change the criterion digest and invalidate the escalated row
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T22:11:01Z
+# ============================================================================
+
+task_id: T-4658
+task_name: "_route_to_operator writes multi-line guidance under a criterion; lines after the first change the criterion digest and invalidate the escalated row"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T19:33:24Z
+completed: 2026-10-22T22:10:20Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T00:04:08+02:00
+last_commit: 2026-10-23T00:05:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  _route_to_operator writes escalation guidance as one line so it cannot change the criterion digest; regression test. tick Agent ACs (verification lines all pass)
+
+# Key outcomes
+outcomes:
+  - 'Regression test in tests/unit/test_t3579_verdict_ledger.py escalates a fixture criterion with multi-line guidance and asserts `criterion_digest` is identical before and after `_route_to_operator`; it fails on the pre-fix code'
+  - '`_route_to_operator` (lib/verdict_ledger.py) writes the escalation as exactly one line (guidance whitespace collapsed) that names the ledger row holding the full text; the verdicts ledger row keeps the guidance verbatim'
+  - 'Guidance containing a checkbox-shaped line (`- [ ] ...`) does not add a criterion to the task after escalation (same test file)'
+  - 'Existing tests/unit/test_t3579_verdict_ledger.py stay green; `bin/fw vendor self --check --task T-4658` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-4658-routetooperator-writes-multi-line-guidan.md'
+  - 'tests/unit/test_t3579_verdict_ledger.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T00:04:08'
+    action: 'T-4658: _route_to_operator writes escalation guidance as one line so it cannot change the criterion digest; regression test'
+  - time: '2026-10-23T00:05:17'
+    action: 'T-4658: tick Agent ACs (verification lines all pass)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 156 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 156
+  commits: 2
+  files_changed: 4
+  lines_added: 92
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4658-routetooperator-writes-multi-line-guidan.md
+generated_by: context-agent-hybrid

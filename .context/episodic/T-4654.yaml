@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4654: Fabric orphan check counts non-path location: values (IPv4, CIDR, descriptive) as missing files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T22:09:37Z
+# ============================================================================
+
+task_id: T-4654
+task_name: "Fabric orphan check counts non-path location: values (IPv4, CIDR, descriptive) as missing files"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T19:31:47Z
+completed: 2026-10-22T22:09:15Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-23T00:05:30+02:00
+last_commit: 2026-10-23T00:05:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric orphan checks share one location predicate; IPv4/CIDR/host:port/descriptive locations are not missing files
+
+# Key outcomes
+outcomes:
+  - 'Claim reproduced on our code: a fixture card with `location: 192.168.10.0/24` (or another non-path value) is reported as an orphan by `fw fabric drift` before the fix (failing test recorded in ## Updates)'
+  - 'One shared predicate (`is_path_location` in `agents/fabric/lib/location_kind.py`) decides "is this location a file path"; both `agents/fabric/lib/drift.sh` and `agents/audit/audit.sh` orphan checks call it, and neither keeps its own `scheme://` case'
+  - 'Non-path shapes are skipped: URL (`https://…`), IPv4, IPv4 CIDR, `host:port`, IPv4:port, and descriptive text containing whitespace'
+  - 'Path shapes are still checked: relative path, absolute path, dotted filename (`bin/fw`, `lib/x.sh`, `/opt/x/y.py`, `README.md`) — a missing one still flags as orphan'
+  - 'Regression bats test exercises the predicate per shape and runs drift + audit orphan logic on fixture cards; it fails without the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/fabric/lib/drift.sh'
+  - '.agentic-framework/agents/fabric/lib/location_kind.py'
+  - 'agents/audit/audit.sh'
+  - 'agents/fabric/lib/drift.sh'
+  - 'agents/fabric/lib/location_kind.py'
+  - '.fabric/components/agents-fabric-lib-location_kind.yaml'
+  - '.tasks/active/T-4654-fabric-orphan-check-counts-non-path-loca.md'
+  - 'tests/unit/t3049_fabric_url_location.bats'
+  - 'tests/unit/t4654_fabric_non_path_location.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T00:05:30'
+    action: 'T-4654: fabric orphan checks share one location predicate; IPv4/CIDR/host:port/descriptive locations are not missing files'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 157 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 157
+  commits: 1
+  files_changed: 10
+  lines_added: 395
+  lines_removed: 52
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4654-fabric-orphan-check-counts-non-path-loca.md
+generated_by: context-agent-hybrid

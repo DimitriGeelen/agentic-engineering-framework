@@ -1,18 +1,18 @@
 ---
-id: T-4654
-name: "Fabric orphan check counts non-path location: values (IPv4, CIDR, descriptive)
-  as missing files"
+id: T-4656
+name: "audit D12 reads .context/project/bypass-log.yaml while writers use $CONTEXT_DIR/bypass-log.yaml,
+  and counts approved inception decisions as bypasses"
 description: >
-  T-3049 skips scheme:// only; drift.sh and audit.sh must stay in agreement. Source:
-  ring20 per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category
-  5), ring20 patch #19,#20. Verify against our code before fixing.
+  Reports PASS with no log; counts inception decisions as bypasses. Source: ring20
+  per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category 5),
+  ring20 patch #35,#36. Verify against our code before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,9 +40,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T19:31:47Z
-last_update: 2026-10-22T22:00:18Z
-date_finished:
+created: 2026-10-22T19:32:32Z
+last_update: 2026-10-22T22:09:58Z
+date_finished: 2026-10-22T22:09:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -82,7 +82,7 @@ cost_estimate_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4654: Fabric orphan check counts non-path location: values (IPv4, CIDR, descriptive) as missing files
+# T-4656: audit D12 reads .context/project/bypass-log.yaml while writers use $CONTEXT_DIR/bypass-log.yaml, and counts approved inception decisions as bypasses
 
 ## Context
 
@@ -92,11 +92,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Claim reproduced on our code: a fixture card with `location: 192.168.10.0/24` (or another non-path value) is reported as an orphan by `fw fabric drift` before the fix (failing test recorded in ## Updates)
-- [x] One shared predicate (`is_path_location` in `agents/fabric/lib/location_kind.py`) decides "is this location a file path"; both `agents/fabric/lib/drift.sh` and `agents/audit/audit.sh` orphan checks call it, and neither keeps its own `scheme://` case
-- [x] Non-path shapes are skipped: URL (`https://…`), IPv4, IPv4 CIDR, `host:port`, IPv4:port, and descriptive text containing whitespace
-- [x] Path shapes are still checked: relative path, absolute path, dotted filename (`bin/fw`, `lib/x.sh`, `/opt/x/y.py`, `README.md`) — a missing one still flags as orphan
-- [x] Regression bats test exercises the predicate per shape and runs drift + audit orphan logic on fixture cards; it fails without the fix
+- [x] Claim reproduced on our code: every bypass-log writer and reader listed (grep of lib agents bin web) in ## Updates, with the path each uses; D12 shown to read a path no writer writes (or recorded as not-reproduced)
+- [x] D12 reads the same path the writers write (`$CONTEXT_DIR/bypass-log.yaml`)
+- [x] D12 excludes inception decisions (decide-recorded GO/NO-GO entries) from the bypass count
+- [x] Regression bats test: a fixture log at the writer path is read (D12 not "no log"); an inception-decision entry is not counted; a real bypass entry is counted — fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,22 +280,20 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4654_fabric_non_path_location.bats > /tmp/.t4654-a.out 2>&1 && grep -q "^ok 7 " /tmp/.t4654-a.out && ! grep -q "^not ok" /tmp/.t4654-a.out
-timeout 300 bats tests/unit/t4654_fabric_non_path_location.bats > /tmp/.t4654-b.out 2>&1; test "$(grep -c '# skip' /tmp/.t4654-b.out)" -eq 0
-timeout 300 bats tests/unit/t3049_fabric_url_location.bats > /tmp/.t4654-c.out 2>&1 && grep -q "^ok 11 " /tmp/.t4654-c.out && ! grep -q "^not ok" /tmp/.t4654-c.out
-timeout 300 bats tests/unit/t3049_fabric_url_location.bats > /tmp/.t4654-d.out 2>&1; test "$(grep -c '# skip' /tmp/.t4654-d.out)" -eq 0
-python3 agents/fabric/lib/location_kind.py --is-path lib/x.sh && ! python3 agents/fabric/lib/location_kind.py --is-path 192.168.10.0/24
-bin/fw vendor self --check --task T-4654
+timeout 300 bats tests/unit/t4656_audit_d12_bypass_log.bats > /tmp/.t4656-a.out 2>&1 && grep -q "^ok 4 " /tmp/.t4656-a.out && ! grep -q "^not ok" /tmp/.t4656-a.out
+timeout 300 bats tests/unit/t4656_audit_d12_bypass_log.bats > /tmp/.t4656-b.out 2>&1; test "$(grep -c '# skip' /tmp/.t4656-b.out)" -eq 0
+! grep -q '^BYPASS_LOG=.*context/project/' agents/audit/audit.sh
+bin/fw vendor self --check --task T-4656
 
 ## RCA
 
-**Symptom:** consumer projects (ring20, patches #19/#20) carrying fabric cards for hosts, networks and services (`location: 192.168.10.0/24`, `pve1.lan:8006`, `proxmox node pve1`) saw those cards permanently reported as orphaned — "(file missing)" in `fw fabric drift`, a WARN in the daily audit.
+**Symptom:** audit D12 (bypass-log growth) always reported `PASS — no log file`, even with 110 entries in the bypass log; had it read the log, it would have counted every human-approved `fw inception decide` as a bypass (ring20 patches #35/#36).
 
-**Root cause:** both orphan checks treated every non-URL `location:` as a file path. `agents/fabric/lib/drift.sh:59-64` (pre-fix) skipped only `[a-zA-Z]*://*`, and `agents/audit/audit.sh:~2880` (pre-fix) skipped only `re.match(r'^[a-zA-Z][a-zA-Z0-9+.-]*://', loc)`; anything else was joined onto PROJECT_ROOT and tested with `-f` / `os.path.exists`. The "is this a path" rule was also written twice, in two languages, kept in step only by a comment.
+**Root cause:** `agents/audit/audit.sh:8237` (pre-fix) set `BYPASS_LOG="$PROJECT_ROOT/.context/project/bypass-log.yaml"`, a path no writer uses; all writers and the CTL-010 reader use `$CONTEXT_DIR/bypass-log.yaml`. The counting python counted every entry, including the Tier-0 records `check-tier0.sh:361` writes with risk `INCEPTION DECISION: …` when the human approves a decide.
 
-**Why structurally allowed:** this repo has no non-path cards, so the daily audit that runs here can never fire on the class (same blind spot T-3049 named for URLs). The T-3049 fix answered one shape instead of the question, and its tests pinned the regex text, not the rule.
+**Why structurally allowed:** the missing-file branch is a PASS, so a wrong path is indistinguishable from a clean project — a false green that nothing prompts anyone to look at. The path was spelled out per check instead of shared, and D12 had no test.
 
-**Prevention:** the rule now lives in one predicate (`agents/fabric/lib/location_kind.py:is_path_location`) imported by audit.sh and called (one pass) by drift.sh; `tests/unit/t4654_fabric_non_path_location.bats` pins every shape at both sites on a shared fixture and S1 fails if either site regains a private rule.
+**Prevention:** D12 now uses `$CONTEXT_DIR/bypass-log.yaml` like the other readers; `tests/unit/t4656_audit_d12_bypass_log.bats` runs the real D12 block (cut from audit.sh) against fixtures: writer-path log read, dead path not read, inception decision not counted, real bypasses counted and WARN at 5.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -388,17 +385,36 @@ bin/fw vendor self --check --task T-4654
 
 ## Updates
 
-### 2026-10-22T19:31:47Z — task-created [task-create-agent]
+### 2026-10-22T19:32:32Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4654-fabric-orphan-check-counts-non-path-loca.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4656-audit-d12-reads-contextprojectbypass-log.md
 - **Context:** Initial task creation
 
-### 2026-10-22T21:59:30Z — status-update [task-update-agent]
+### 2026-10-22T21:59:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
 ### 2026-10-23 — reproduced and fixed [w4654]
-- **Reproduced (claim holds on our code):** before the fix, `tests/unit/t4654_fabric_non_path_location.bats` D1 failed (`drift.sh` printed "(file missing)" for IPv4/CIDR/host:port/descriptive cards) and A1 failed (audit count was not `4 0`).
-- **Fix:** new `agents/fabric/lib/location_kind.py` (`is_path_location`, CLI `--is-path` / `--non-path`); `drift.sh` computes the non-path set in one python pass and skips members (also unquotes `"..."`/`'...'` values so it sees what yaml sees); `audit.sh` imports the predicate. T-3049's mutation tests retargeted to the new call sites; its harness now substitutes `$FRAMEWORK_ROOT`.
-- **Tests:** t4654 7/7, t3049 11/11, neighbouring fabric suites (test_fabric_exclude, fabric_globstar, t3430, test_fabric_drift_absolute_paths.py) green. Live `fw fabric drift` and `fw audit --check fabric-coverage` agree (1 orphan each, a genuinely missing test file).
-- A bare word (`pve1`, `Makefile`) stays a path by design: indistinguishable from a file name, and silencing it would hide real deletions.
+- **Writers, all `.context/bypass-log.yaml`:** `agents/git/lib/common.sh:7` (`$CONTEXT_DIR`), `agents/context/check-tier0.sh:683,791`, `lib/tier0_action.py:651`, `bin/fw:9907` (onboarding skip), `lib/init.sh:382` (creates it).
+- **Readers:** `agents/audit/audit.sh:5664,5782,6759,6799` (`$CONTEXT_DIR`), `agents/context/lib/status.sh:109`, `bin/fw:8725`, `web/blueprints/enforcement.py:66` — all `.context/bypass-log.yaml`. Only D12 (`audit.sh:8237`) read `.context/project/bypass-log.yaml`, which does not exist here.
+- **Reproduced:** both claims hold. t4656 R1–R4 all failed before the fix. The live log holds 110 entries, 10 of them Tier-0 `INCEPTION DECISION` approvals of `fw inception decide`.
+- **Fix:** D12 reads `$CONTEXT_DIR/bypass-log.yaml`; entries whose `risk` starts with `INCEPTION DECISION` are dropped before counting (`FW FORCE` decide bypasses still count). Live D12 now: `PASS total=100` (was "no log file").
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d24f33dd
+- **Timestamp:** 2026-10-22T22:10:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — D12 reads the same path the writers write (`$CONTEXT_DIR/bypass-log.yaml`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=CONTEXT_DIR/bypass-log.yaml in: D12 reads the same path the writers write (`$CONTEXT_DIR/bypass-log.yaml`)`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T22:09:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
