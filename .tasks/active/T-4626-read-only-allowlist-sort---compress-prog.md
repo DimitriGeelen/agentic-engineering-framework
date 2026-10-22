@@ -1,10 +1,15 @@
 ---
 id: T-4626
-name: "Read-only allowlist: sort --compress-program and rg --pre run an arbitrary program"
+name: "Read-only allowlist: sort --compress-program and rg --pre run an arbitrary
+  program"
 description: >
-  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh in their repo): the command passes has_bash_write_pattern and is_bash_safe_command (agents/context/lib/safe-commands.sh) yet runs a program: sort --compress-program=CMD (runs when sort spills; sort -o is already gated) and rg --pre CMD / --pre=CMD (runs per searched file). Refuse both options in every spelling, test each plus controls.
+  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh
+  in their repo): the command passes has_bash_write_pattern and is_bash_safe_command
+  (agents/context/lib/safe-commands.sh) yet runs a program: sort --compress-program=CMD
+  (runs when sort spills; sort -o is already gated) and rg --pre CMD / --pre=CMD (runs
+  per searched file). Refuse both options in every spelling, test each plus controls.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +44,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "9e201103"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T10:35:23Z
-last_update: 2026-10-22T10:35:23Z
-date_finished: null
+last_update: 2026-10-22T10:52:41Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +56,49 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T10:45:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T10:45:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4626: Read-only allowlist: sort --compress-program and rg --pre run an arbitrary program
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+ring20-dashboard round-2 probe (msg 9e201103): `sort --compress-program=CMD` and `rg --pre CMD`
+classify SAFE in `agents/context/lib/safe-commands.sh` although both run CMD.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `is_bash_safe_command` refuses sort's --compress-program in every spelling getopt accepts (`=CMD`, separate value, unambiguous abbreviation `--co`…, quoted/brace-built, a word beginning with an expansion)
+- [x] `is_bash_safe_command` refuses rg `--pre CMD` / `--pre=CMD` (and `--hostname-bin`, the other rg option that runs a program), quoted or expanded spellings included; `RIPGREP_CONFIG_PATH=` prefix is denied (a config file can carry --pre)
+- [x] Controls stay SAFE: `sort -n F`, `sort -k2 -t, F`, `sort --check F`, `rg pattern`, `rg -n --pre-glob '*.x' foo`, `grep -r foo .`
+- [x] Regression test `tests/unit/t4626_sort_rg_program.bats` fails on the pre-fix code and passes after; existing safe-commands suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,8 +283,29 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4626_sort_rg_program.bats > /tmp/.t4626.out 2>&1 && ! grep -q "^not ok" /tmp/.t4626.out
+test "$(grep -c '# skip' /tmp/.t4626.out)" -eq 0
+timeout 900 bats tests/unit/t4512_option_check_dequote.bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_env_prefix.bats > /tmp/.t4626b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4626b.out
+bin/fw vendor self --check --task T-4626
 
 ## RCA
+
+**Symptom:** `sort --compress-program=touch F` and `rg --pre touch x` classified SAFE by the
+read-only allowlist, so they ran with no active task although each starts an arbitrary program.
+
+**Root cause:** `agents/context/lib/safe-commands.sh` admits `sort` in the Category 2b filter arm
+(`_fw_single_command_is_safe`, `sed|awk|sort|…` line ~1246) after checking only for `-o`
+(`_fw_filter_option_writes`), and `rg` in the Category 3 arm (`grep|rg|which|…` line ~1186) by name
+alone. Neither arm knew that sort's `--compress-program` and rg's `--pre` / `--hostname-bin` execute
+a program, and `RIPGREP_CONFIG_PATH` was not on the env-prefix denylist (an rg config can carry `--pre`).
+
+**Why structurally allowed:** the allowlist is keyed on the first word; options were judged only
+for the write family (`-i`, `-o`, `--output`). The "can this option run a program" question was
+answered per tool as each incident arrived (awk T-4509, sed T-4510, git grep T-4513), never swept.
+
+**Prevention:** `_fw_option_runs_program` judges sort and rg on the dequoted option words
+(the T-4512 tokenizer, so quoted / brace-built / expanded spellings fail closed), and
+`tests/unit/t4626_sort_rg_program.bats` pins every probe spelling plus SAFE controls.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -321,6 +376,11 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-22 — words that begin with an expansion
+- **Chose:** a sort/rg word that begins with a quoted expansion (`rg "$P" x`) is refused, as T-4512 does for sed/sort/curl.
+- **Why:** `rg "$X"` with X=`--pre=sh` runs sh; the gate cannot see the value.
+- **Rejected:** admitting expansions (reopens the hole); the T-4536 literal-assignment exception (curl-only today, can follow if the over-block bites).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -346,3 +406,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4626-read-only-allowlist-sort---compress-prog.md
 - **Context:** Initial task creation
+
+### 2026-10-22T10:52:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

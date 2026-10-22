@@ -497,6 +497,8 @@ _fw_env_prefix_is_denied() {
         # early, never point it at another repository.
         # generic spawn-a-program hooks
         PAGER|EDITOR|VISUAL) return 0 ;;
+        # T-4626: an rg config file can carry --pre / --hostname-bin.
+        RIPGREP_CONFIG_PATH) return 0 ;;
         *) return 1 ;;
     esac
 }
@@ -847,6 +849,27 @@ _fw_filter_option_writes() {
     return 1
 }
 
+# T-4626: does this sort/rg clause name an option that STARTS a program? sort
+# --compress-program=CMD runs CMD when it spills to temp files (getopt accepts any
+# unambiguous prefix; `--c` alone is ambiguous with --check, so `--co…` is it). rg
+# --pre CMD runs CMD per searched file and --hostname-bin CMD runs it once; rg takes
+# no abbreviations. Judged on _fw_option_words like the write check above: a word
+# that cannot be resolved, or one that begins with an expansion, counts as the option.
+_fw_option_runs_program() {
+    local base="$1" i tok
+    _fw_option_words "$2" || return 0
+    for (( i=1; i<${#_FW_OW[@]}; i++ )); do
+        tok="${_FW_OW[i]}"
+        [ "${_FW_OWK[i]}" = E ] && return 0
+        [ "$tok" = -- ] && return 1
+        case "$base:${tok%%=*}" in
+            sort:--co*) case --compress-program in "${tok%%=*}"*) return 0 ;; esac ;;
+            rg:--pre|rg:--hostname-bin) return 0 ;;
+        esac
+    done
+    return 1
+}
+
 # Single (non-compound) command classification. This is the original
 # is_bash_safe_command body, unchanged apart from the name.
 _fw_single_command_is_safe() {
@@ -1184,6 +1207,8 @@ _fw_single_command_is_safe() {
 
         # Category 3: Searching
         grep|rg|which|where|type|command)
+            # T-4626: rg --pre / --hostname-bin run a program.
+            [ "$base" = rg ] && _fw_option_runs_program rg "$cmd" && return 1
             return 0
             ;;
 
@@ -1247,6 +1272,8 @@ _fw_single_command_is_safe() {
             # T-4512: the outer sed -i / sort -o rules read raw text; a quoted or
             # brace-built option is judged here on the dequoted words.
             case "$base" in sed|sort) _fw_filter_option_writes "$base" "$cmd" && return 1 ;; esac
+            # T-4626: sort --compress-program runs a program.
+            [ "$base" = sort ] && _fw_option_runs_program sort "$cmd" && return 1
             # T-4509: awk runs commands with system(), | getline, print | and |&.
             [ "$base" = awk ] && _fw_awk_runs_command "$cmd" && return 1
             # T-4510: GNU sed runs commands with the e command and the e flag of s.
