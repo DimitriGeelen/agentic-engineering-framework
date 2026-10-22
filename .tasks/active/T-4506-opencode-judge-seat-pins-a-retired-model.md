@@ -14,7 +14,7 @@ description: >
   model appears in 'opencode models <provider>' so a retirement names itself instead
   of 'server error'.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -49,7 +49,7 @@ origin: {kind: "agent", source: "T-4456"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T19:56:22Z
-last_update: '2026-10-22T07:46:12Z'
+last_update: 2026-10-22T11:07:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -117,8 +117,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `policy/review-backends.yaml` opencode model pin is `zai-coding-plan/glm-5.3` (no `glm-5.2` left in the registry), and whatever signed-registry follow-up the change requires is done
+- [ ] A preflight checks each pinned opencode model against `opencode models <provider>`; it names a retired pin explicitly and skips cleanly when opencode is absent
+- [ ] `fw doctor` and `fw reviewer judge` run the preflight
+- [ ] Regression test covers: listed pin passes, unlisted pin fails naming the model, opencode absent skips
+- [ ] One real `opencode run` with the new pin answers; its cost is logged with `bin/fw review cost log`
+- [ ] Vendored copies in sync (`bin/fw vendor self --check --task T-4506` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -303,6 +307,13 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+grep -q 'model: zai-coding-plan/glm-5.3$' policy/review-backends.yaml && ! grep -q 'glm-5.2' policy/review-backends.yaml
+git show HEAD:policy/review-backends.yaml > /tmp/.t4506-reg && grep -q 'model: zai-coding-plan/glm-5.3$' /tmp/.t4506-reg
+timeout 300 python3 -m pytest tests/unit/test_t4506_model_preflight.py -q > /tmp/.t4506-pt 2>&1 && grep -q passed /tmp/.t4506-pt
+python3 lib/review_model_preflight.py > /tmp/.t4506-pf 2>&1 && ! grep -q RETIRED /tmp/.t4506-pf
+grep -q 'review_model_preflight' bin/fw && grep -q 'review_model_preflight' lib/reviewer/judge_cli.py
+grep -q '"backend": "opencode"' .context/costs/reviews.jsonl && grep 'T-4506' .context/costs/reviews.jsonl | grep -q opencode
+bin/fw vendor self --check --task T-4506
 
 ## RCA
 
@@ -319,6 +330,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** every opencode judge seat failed with `UnknownError: Unexpected server error` (T-4456 probe 2026-10-20, 832 2026-10-22); T-4457 read it as provider-side.
+
+**Root cause:** `policy/review-backends.yaml:111` pinned `model: zai-coding-plan/glm-5.2`, a model Z.AI retired. `opencode models zai-coding-plan` lists only glm-5.3 / glm-5.3-flash / glm-5.3-highspeed; the dispatcher (`agents/termlink/termlink.sh:1582`, `-m "$MODEL"` from the registry) launched the retired name, and the provider answers an unknown model with a generic server error rather than "model not found".
+
+**Why structurally allowed:** the registry pin is a static string; nothing ever compared it with what the harness can actually serve. `fw doctor` checked the registry parses, `fw reviewer judge` checked the kind is dispatchable — neither asked opencode which models exist, so a vendor-side retirement surfaced only as an opaque error inside a seat.
+
+**Prevention:** `lib/review_model_preflight.py` lists `opencode models <provider>` for each opencode-backed registry entry and reports a pin missing from the list as RETIRED, naming the model and the listed alternatives. `fw doctor` WARNs on it; `fw reviewer judge` treats a retired-pin kind as undispatchable for the run and prints why, instead of launching a seat that can only fail. Skips cleanly when opencode is absent; a listing failure is reported as unchecked, never as retired. Regression test: `tests/unit/test_t4506_model_preflight.py`.
 
 ## Evolution
 
@@ -405,3 +424,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4506-opencode-judge-seat-pins-a-retired-model.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:07:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

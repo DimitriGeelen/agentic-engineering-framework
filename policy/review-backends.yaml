@@ -108,7 +108,7 @@ backends:
     credential:
       source: cli-login
       note: "opencode auth login with the Z.ai coding plan (opencode's own auth store) — the CLI authenticates itself"
-    model: zai-coding-plan/glm-5.2
+    model: zai-coding-plan/glm-5.3
     binary: /root/.opencode/bin/opencode
     match:
       - '(^|[;&|]\s*|/)opencode\s'

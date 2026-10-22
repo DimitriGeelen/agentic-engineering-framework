@@ -121,12 +121,12 @@ The panel's criterion satisfied `satisfying_verdict`: three seats, three vendors
 
 - **Binary / version:** `/root/.opencode/bin/opencode`, 1.18.31. **Verified.**
 - **Interactive:** `opencode` (*unverified here*).
-- **Headless (verified):** `opencode run -m zai-coding-plan/glm-5.2 "<prompt>" < /dev/null`
+- **Headless (verified):** `opencode run -m zai-coding-plan/glm-5.3 "<prompt>" < /dev/null`
   - The default format has ANSI escapes.
   - `--format json` emits raw JSON events, one per line: `step_start`, `text`, `step_finish`
     (verified).
 - **Headless, as a pinned review worker (verified; run.sh builds this):**
-  `opencode run -m zai-coding-plan/glm-5.2 --agent plan --pure --format json "<prompt>" < /dev/null`
+  `opencode run -m zai-coding-plan/glm-5.3 --agent plan --pure --format json "<prompt>" < /dev/null`
   - `--agent plan` is opencode's built-in no-edit agent.
   - `--pure` loads no external plugins.
 - **Resume (unverified, from `--help`):**

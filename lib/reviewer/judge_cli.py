@@ -59,6 +59,7 @@ if str(_HERE.parent) not in sys.path:
     sys.path.insert(0, str(_HERE.parent))
 
 from lib import dispatch_tokens  # noqa: E402
+from lib import review_model_preflight  # noqa: E402
 from lib import review_policy  # noqa: E402
 from lib import task_commits  # noqa: E402
 from lib import verdict_ledger as vl  # noqa: E402
@@ -992,8 +993,13 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
           dispatcher: Dispatcher | None = None, capture: Capturer | None = None,
           now: datetime | None = None, worker_kinds: set[str] | None = None,
           kind_vendors: dict | None = None,
-          exclude_kinds: set[str] | frozenset = frozenset()) -> dict:
-    """Run one judgement. Returns a result dict; never writes a verdict."""
+          exclude_kinds: set[str] | frozenset = frozenset(),
+          model_preflight: Callable[[list[dict]], list[dict]] | None = None) -> dict:
+    """Run one judgement. Returns a result dict; never writes a verdict.
+
+    `model_preflight` (T-4506): checks each seat's pinned model against what its harness lists
+    (`lib/review_model_preflight.check`). It runs by default only when the dispatchable kinds come
+    from the real dispatcher (`worker_kinds` is None); a caller injecting kinds injects this too."""
     task_data = _load_task(task_id, root)
     if not task_data:
         return {"error": f"Task {task_id} not found", "code": 1}
@@ -1025,9 +1031,22 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     res.update(rung_due=due, rung=rung, rung_reason=reason, ceiling_note=note,
                impact=imp, weekly_spend=spent, ceiling=ceiling)
 
+    kinds = _dispatchable_kinds(root) if worker_kinds is None else set(worker_kinds)
+    # T-4506: a seat whose pinned model its harness no longer lists can only fail with an opaque
+    # provider error ('Unexpected server error' for a retired glm-5.2). Name it and do not
+    # dispatch that kind this run; a listing that fails is not a retirement.
+    preflight = model_preflight or (review_model_preflight.check if worker_kinds is None else None)
+    if preflight:
+        try:
+            pf = preflight(_backends(root)[0])
+        except Exception:  # noqa: BLE001 - the registry error is reported by _plan_seats below
+            pf = []
+        retired = review_model_preflight.retired_kinds(pf)
+        if retired:
+            res["model_retired"] = retired
+            kinds -= set(retired)
     try:
-        plan = _plan_seats(root, rung,
-                           _dispatchable_kinds(root) if worker_kinds is None else set(worker_kinds),
+        plan = _plan_seats(root, rung, kinds,
                            _kind_vendors(root) if kind_vendors is None else dict(kind_vendors),
                            exclude_kinds=set(exclude_kinds))
     except Exception as e:  # noqa: BLE001 - an unreadable registry is a refusal, not a default
@@ -1282,6 +1301,8 @@ def _print_result(res: dict) -> None:
         print(f"  COST NOT LOGGED for seat {e['seat']}: {e['error']}")
     if res.get("ceiling_note"):
         print(f"  {res['ceiling_note']}")
+    for kind, why in sorted((res.get("model_retired") or {}).items()):
+        print(f"  seat kind {kind} not dispatched - pinned model retired: {why} (T-4506)")
     ev = res.get("evidence", {})
     if ev.get("needed"):
         print(f"Screenshots: {len(ev['shots'])} (pages: {', '.join(ev['pages']) or 'none'})"
