@@ -9,10 +9,10 @@ description: >
   substitution (e.g. read -r -d '' VAR <<'PY' then python3 -c "$VAR"), keeping doctor
   output identical. Found by T-4221 triage; baseline entry owner T-4221.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T23:14:11Z
-last_update: '2026-10-21T23:15:29Z'
+last_update: 2026-10-22T07:38:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] bin/fw contains no heredoc inside a `$( … )` command substitution (doctor arc-driver-reviewer and continuous-run checks hoisted to `read -r -d '' VAR <<'PY'` + `python3 -c "$VAR"`)
+- [x] tests/unit/test_bin_fw_no_heredoc_cmd_sub.bats passes (it failed before the fix on lines 2679 and 3143)
+- [x] `bash -n bin/fw` clean and both doctor checks print the same lines as before the fix (compared before and after: "Arc driver reviewer records: 9 scoped driver(s) …" and "Continuous-run wrapper last recorded ARMED (start, restarts=0, …)")
+- [x] Vendored copy synced (`bin/fw vendor self --check --task T-4581` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,6 +282,10 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n bin/fw
+timeout 300 bats tests/unit/test_bin_fw_no_heredoc_cmd_sub.bats > /tmp/.t4581.out 2>&1 && ! grep -q "^not ok" /tmp/.t4581.out
+test "$(grep -c '# skip' /tmp/.t4581.out)" -eq 0
+bin/fw vendor self --check --task T-4581
 
 ## RCA
 
@@ -296,6 +302,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/unit/test_bin_fw_no_heredoc_cmd_sub.bats` (T-1946 lint) red on bleeding-edge, flagging bin/fw:2679 and bin/fw:3143.
+
+**Root cause:** two doctor checks were written as `VAR=$(python3 - ARG <<'PY' … PY)`, the heredoc-in-command-substitution shape L-332/L-408 forbid: `_adr_out` in the arc-driver-reviewer check (6cbc5dd55, T-3429) and `_crl_out` in the continuous-run check (b072d815f). Fix: read each heredoc into a variable first (`read -r -d '' _adr_py <<'PY' || true`) and run `python3 -c "$_adr_py" ARG` inside the `$( )`. argv is the same (`sys.argv[1]` = the arg), and so is the output.
+
+**Why structurally allowed:** the lint is a unit test that runs in the nightly suite and at pre-push. The T-1945 edit-time hook only WARNs. Both commits landed without the bats file being run, and the red then sat in the unit-suite baseline (owner T-4221).
+
+**Prevention:** the existing T-1946 lint is the regression test (it failed before this fix and passes after). Once it is green, removing its baseline entry makes pre-push FAIL on any new instance, not just WARN.
 
 ## Evolution
 
@@ -377,3 +391,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4581-binfw-heredoc-in-cmd-sub-lint-red-doctor.md
 - **Context:** Initial task creation
+
+### 2026-10-22T07:33:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

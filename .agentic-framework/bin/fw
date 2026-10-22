@@ -2675,8 +2675,9 @@ else:
     # `reviewer:` block (or a failing one) is a certification claim with nothing
     # behind it. WARN-only. Silent when no in-progress arc has scoped drivers.
     if [ -d "$PROJECT_ROOT/.context/arcs" ]; then
-        local _adr_out _adr_total _adr_rows
-        _adr_out=$(python3 - "$PROJECT_ROOT/.context/arcs" <<'PY' 2>/dev/null
+        local _adr_out _adr_total _adr_rows _adr_py
+        # Heredoc read into a var, not inside $( ) (L-332/L-408, T-4581).
+        read -r -d '' _adr_py <<'PY' || true
 import sys
 from pathlib import Path
 
@@ -2707,7 +2708,7 @@ print(total)
 for row in bad:
     print("\t".join(str(x) for x in row))
 PY
-)
+        _adr_out=$(python3 -c "$_adr_py" "$PROJECT_ROOT/.context/arcs" 2>/dev/null)
         if [ -n "$_adr_out" ]; then
             _adr_total=$(printf '%s\n' "$_adr_out" | head -1)
             _adr_rows=$(printf '%s\n' "$_adr_out" | tail -n +2 | grep . || true)
@@ -3139,8 +3140,9 @@ PY
     # against: an absent log and a healthy loop must not look alike.
     local _crl="$PROJECT_ROOT/.context/working/continuous-run.jsonl"
     if [ -f "$_crl" ]; then
-        local _crl_out
-        _crl_out=$(python3 - "$_crl" <<'PY' 2>/dev/null || true
+        local _crl_out _crl_py
+        # Heredoc read into a var, not inside $( ) (L-332/L-408, T-4581).
+        read -r -d '' _crl_py <<'PY' || true
 import json, sys
 last = None
 try:
@@ -3166,7 +3168,7 @@ else:
     detail = str(last.get("detail", ""))
     print(f"{ev}\t{reason}\t{ts}\t{pid}\t{count}\t{detail}")
 PY
-        )
+        _crl_out=$(python3 -c "$_crl_py" "$_crl" 2>/dev/null || true)
         local _crl_ev _crl_reason _crl_ts _crl_pid _crl_count _crl_detail
         _crl_ev=$(printf '%s' "$_crl_out" | cut -f1)
         _crl_reason=$(printf '%s' "$_crl_out" | cut -f2)
