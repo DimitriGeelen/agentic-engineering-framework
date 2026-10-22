@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4160: fw fabric enrich misses real edges: scripts run by path from a shell suite (bash/python3/node ROOT/x), source files read by teeth/CDP scripts, and Python imports by module name (832 field report: 154 real edges missed)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:36:02Z
+# ============================================================================
+
+task_id: T-4160
+task_name: "fw fabric enrich misses real edges: scripts run by path from a shell suite (bash/python3/node ROOT/x), source files read by teeth/CDP scripts, and Python imports by module name (832 field report: 154 real edges missed)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T15:23:01Z
+completed: 2026-10-22T10:35:09Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-10-22T00:25:55+02:00
+last_commit: 2026-10-22T00:25:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric enrich finds three missed edge classes — python3/node/perl/ruby run a script by path like bash does (python3 -m / node -e abandon), "path|message" check-table entries, literal-path file reads (any top-level dir, comments and Python docstring backticks excluded, carded targets only) as reads/read_by, .mjs/.cjs scanned as JS, and bare imports resolved through sys.path dirs; consumer-layout fixture test 13/13 (8 failed pre-fix); +111 edges on this repo, 0 lost; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Pattern 1: a shell suite running a script by path through `python3`/`node` (`python3 "$ROOT/tests/test_x.py"`, `node tools/x.mjs`) or listing it in a `"path|message"` array yields a depends_on edge (bash/sh already did)'
+  - 'Pattern 2: a script that reads a source file by literal path (`readFileSync(path.join(ROOT,''designer'',''app.js''))`, `(ROOT / "designer" / "app.js").read_text()`, any top-level dir) yields a `reads` edge (so the target gets `read_by`); `.mjs`/`.cjs` files are scanned as JS at all'
+  - 'Pattern 3: `import designer_console` resolves through a `sys.path.insert/append` of a project dir (`ROOT / "tests"`) to `tests/designer_console.py`'
+  - 'Regression test `tests/unit/test_t4160_enrich_missed_edges.py` fails on the pre-fix enrich.py and passes after; existing enrich tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fabric enrich finds three missed edge classes — python3/node/perl/ruby run a script by path like bash does (python3 -m / node -e abandon), "path|message" check-table entries, literal-path file reads (any top-level dir, comments and Python docstring backticks excluded, carded targets only) as reads/read_by, .mjs/.cjs scanned as JS, and bare imports resolved through sys.path dirs; consumer-layout fixture test 13/13 (8 failed pre-fix); +111 edges on this repo, 0 lost; vendor synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/fabric/lib/enrich.py'
+  - 'agents/fabric/lib/enrich.py'
+  - '.tasks/active/T-4160-fw-fabric-enrich-misses-real-edges-scrip.md'
+  - 'tests/unit/test_t4160_enrich_missed_edges.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:25:55'
+    action: 'T-4160: fabric enrich finds three missed edge classes — python3/node/perl/ruby run a script by path like bash does (python3 -m / node -e abandon), "path|message" check-table entries, literal-path file reads (any top-level dir, comments and Python docstring backticks excluded, carded targets only) as reads/read_by, .mjs/.cjs scanned as JS, and bare imports resolved through sys.path dirs; consumer-layout fixture test 13/13 (8 failed pre-fix); +111 edges on this repo, 0 lost; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12672 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12672
+  commits: 1
+  files_changed: 4
+  lines_added: 581
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4160-fw-fabric-enrich-misses-real-edges-scrip.md
+generated_by: context-agent-hybrid

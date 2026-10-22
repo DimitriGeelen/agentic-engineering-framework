@@ -14,12 +14,12 @@ description: >
   under-reports the tests that would catch a regression; 172/507 cards edgeless in
   832, 210/1373 here. Each pattern gets a failing-first test on a fixture.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/fabric/lib/enrich.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:23:01Z
-last_update: '2026-10-21T22:12:25Z'
-date_finished:
+last_update: 2026-10-22T10:35:09Z
+date_finished: 2026-10-22T10:35:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -399,3 +399,20 @@ bin/fw vendor self --check --task T-4160
 ### 2026-10-21T22:12:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7009861e
+- **Timestamp:** 2026-10-22T10:35:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Pattern 1: a shell suite running a script by path through `python3`/`node` (`python3 "$ROOT/tests/test_x.py"`, `node tools/x.mjs`) or listing it in a `"path|message"` array yields a depends_on edge (b
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=ROOT/tests/test_x.py in: Pattern 1: a shell suite running a script by path through `python3`/`node` (`python3 "$ROOT/tests/test_x.py"`, `node tools/x.mjs`) or listing it in a `
+
+### 2026-10-22T10:35:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
