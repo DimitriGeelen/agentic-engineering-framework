@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.24.0"
-sha256: "a42f16b309ea6e815f5e49dfdcd5c122c0acdf7d61cb43f088393fbb1201fe2f"
-bytes: 1176028
+version: "0.25.0"
+sha256: "2cbcca06b4f2157f8b1ff4c1b85ca98586289ac7fd02460fc2dd43649e0fb8ee"
+bytes: 1226527
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.24.0.html"
-source_tag: "designer-v0.24.0"
+source_artifact: "dist/aef-workflow-designer-0.25.0.html"
+source_tag: "designer-v0.25.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -163,7 +163,11 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   preserved (832 T-1220); link events kept; unnamed start/end gain an aef:meta slug on next save (no element id
 #   change); the one-way exclusive-gateway finding is now W-GW-OUTGOING/W-XML-GW-OUTGOING (was the E- prefixed
 #   id), FAIL->WARN (exit 2 -> 1). AEF grep for the old ids and for an exit-2 expectation: none.
-vendored_path: "vendor/designer/aef-workflow-designer-0.24.0.html"
+# T-4633 (2026-10-22): re-pinned 0.24.0 -> 0.25.0 (832 announce a061bcad, src 2b6bd876; notes
+#   docs/releases/RELEASE-NOTES-0.25.0.md in 832). aef:io v1.1 opened read-only and saved losslessly; lens
+#   switch (GET /api/lens-definition, T-4402, is not served here yet, so only 'All' shows); labels placed
+#   off the flows and zoom-aware layout on large maps. Pulled with `fw designer sync --from-tag`.
+vendored_path: "vendor/designer/aef-workflow-designer-0.25.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
@@ -180,4 +184,4 @@ cdn_fonts: false
 # ever regresses this capability, flip back to false — the dual-form emit and
 # the lint gate reactivate automatically (T-2612 guard).
 resolves_workflow_ref: true
-notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority)"
+notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority); 0.25.0: aef:io v1.1 read-only + lossless save, lens switch, labels off flows"

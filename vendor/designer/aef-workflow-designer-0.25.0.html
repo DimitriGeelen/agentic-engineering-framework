@@ -190,7 +190,8 @@ font-family: 'Outfit';
     justify-content: flex-start;
     min-height: 48px;
     box-sizing: border-box;
-    gap: 6px;   /* 8px left the inline frame at 1920 (1894px wide) one Save button short of a single row */
+    gap: 4px;   /* 8px left the inline frame at 1920 (1894px wide) one Save button short of a single row; 6px again once
+                   the T-1241 lens select arrived (T-1241 toolbar fit) */
     padding: 6px 14px;
     background: linear-gradient(180deg, #15192266 0%, transparent 100%), var(--surface);
     border-bottom: 1px solid var(--border);
@@ -307,6 +308,12 @@ font-family: 'Outfit';
   .actions { display: contents; }
   .tb-group { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
   .tb-group-zoom { margin-left: auto; }
+  /* T-1241: lens switch, one group like zoom and view so a narrow window never splits label from select */
+  /* Compact (toolbar fit): a half-filled lens icon and the lens name instead of "Lens: Technical", and a small drawn chevron instead
+     of the native arrow; aria-label and title still say "Audience lens". */
+  .tb-group-lens { gap: 3px; }
+  .lens-glyph { color: var(--text-dim); cursor: pointer; display: inline-flex; }
+  #lens-select { font-size: 12px; background: var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%238b91a3'/%3E%3C/svg%3E") no-repeat right 5px center; color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 3px 16px 3px 5px; appearance: none; -webkit-appearance: none; cursor: pointer; }
   header .btn, header .btn-icon { white-space: nowrap; }   /* T-1176: "Pending refs…" wrapped to 2 lines and overflowed */
   .btn {
     font-family: var(--sans);
@@ -698,7 +705,7 @@ font-family: 'Outfit';
   /* The badge sits above the top-right corner, where incoming edges cross; a surface-coloured pill
      under the text keeps it legible over an edge line (read in the T-884 screenshots, not measured). */
   .node-instance-pill { fill: var(--surface); stroke: var(--border-strong); stroke-width: .5px; pointer-events: none; }
-  #instancePicker { margin-left: 8px; font-size: 12px; max-width: 260px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 1px 4px; }
+  #instancePicker { font-size: 12px; max-width: 260px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 1px 4px; }
   /* T-355: the real tag of a foreign (out-of-allowlist) flow node, drawn above the shape.
      Mono because it is a literal from the source document, not prose; --text-dim rather
      than --text-faint so it stays legible — this is the one mark that says what the
@@ -803,6 +810,7 @@ font-family: 'Outfit';
     opacity: 0.7;
   }
   .edge-label { fill: var(--text-dim); font-family: var(--mono); font-size: 10px; pointer-events: none;
+    text-rendering: geometricPrecision; /* T-1256: unhinted, so a label's width does not change with zoom or engine */
     paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; }
   .edge-hit { fill: none; stroke: transparent; stroke-width: 16; cursor: pointer; }
 
@@ -1186,6 +1194,20 @@ font-family: 'Outfit';
     transition: all 0.1s ease;
   }
   .io-add:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  /* T-1249: mapping v1.1 io constructs, read-only, under their io row; and the workflow's mapping declaration */
+  .io-v11, .wf-v11 { font-family: var(--mono); font-size: 10px; line-height: 1.5; color: var(--text-dim); min-width: 0; }
+  .io-v11 { margin: -1px 0 3px 2px; padding: 2px 0 2px 7px; border-left: 2px solid var(--border); }
+  .io-v11-kv { line-height: 1.5; }
+  .io-v11 .kv, .wf-v11 .kv { display: inline-block; max-width: 100%; overflow-wrap: anywhere; margin-right: 4px; }
+  .io-v11-kid { overflow-wrap: anywhere; }
+  .io-v11 .k, .wf-v11 .k { color: var(--text-faint); }
+  .io-v11 .v, .wf-v11 .v { color: var(--text); }
+  .io-v11 .d { color: var(--text-faint); font-style: italic; margin-left: 4px; }
+  .io-v11-kid { padding-left: 2px; }
+  .io-v11-kid .tag { color: var(--accent); }
+  .io-v11-when { padding-left: 14px; }
+  .wf-v11 .wf-v11-pfx { display: grid; grid-template-columns: auto 1fr; gap: 0 8px; margin-top: 3px; }
+  .wf-v11 .wf-v11-pfx > span { overflow-wrap: anywhere; min-width: 0; }
 
   /* Routing section */
   .routing-info {
@@ -1418,6 +1440,9 @@ font-family: 'Outfit';
       <button class="btn-icon" id="btn-toggle-props" title="Hide properties panel" aria-pressed="false">◨</button>
       <button class="btn-icon" id="btn-focus-mode" title="Focus mode — hide all panels and fill the screen (Esc exits)">⛶</button>
       </span>
+      <!-- T-1241: audience lens — business / logical / technical / all. Narrows the side panel, the details view and
+           the canvas decoration at once; a view only, saved bytes never change. Options come from /api/lens-definition. -->
+      <span class="tb-group tb-group-lens"><label for="lens-select" class="lens-glyph" aria-hidden="true" title="Audience lens"><svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M6 1a5 5 0 0 1 0 10z" fill="currentColor"/></svg></label><select id="lens-select" aria-label="Audience lens" title="Audience lens: which fields and canvas decorations you see. A view only — the saved map never changes."><option value="all">All</option></select></span>
       <button class="btn" id="btn-add-lane">+ Add Lane</button>
       <button class="btn" id="btn-reset">Reset</button>
       <button class="btn" id="btn-clean" title="Tidy + branch pitch + align rows on every lane — one click, Ctrl+Z reverts">✨ Clean layout</button>
@@ -3304,12 +3329,38 @@ function setZoom(f, anchorX, anchorY) {
   const ay = anchorY != null ? anchorY : wr.top + canvasWrap.clientHeight / 2;
   const pt = clientToSvg(ax, ay);
   zoomFactor = f == null ? null : Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, f));
+  _zoomFromOpen = false;   // T-1256: a zoom the person chose stays across opens
   applyCanvasZoom();
   if (zoomFactor != null) {
     const vb = svg.viewBox.baseVal;
     canvasWrap.scrollLeft = (pt.x - vb.x) * zoomFactor - (ax - wr.left);
     canvasWrap.scrollTop = (pt.y - vb.y) * zoomFactor - (ay - wr.top);
   }
+  syncOverlayPin();
+}
+// T-1256: a map opens readable. Fit is the default view, but on a narrow canvas a large map fits only by drawing its
+// text too small to read (aef-task-lifecycle at 1024 behind both panels: 2.7px; 5.0px at 1440; 7.6px at 1920, which
+// both T-1241 reviewers read). When fit would draw the smallest node or gateway name below OPEN_MIN_TEXT_PX, the map
+// opens at the zoom that draws it at that size, scrolled to the top-left corner; the rest is reached by scroll,
+// nothing is hidden, and Fit still shows the whole map. Only on opening a document, and never over a zoom the person
+// chose (setZoom clears _zoomFromOpen); a zoom this function set is re-judged on the next open. View state only.
+const OPEN_MIN_TEXT_PX = 7;
+let _zoomFromOpen = false;
+function openingZoom() {
+  if (zoomFactor != null && !_zoomFromOpen) return;
+  zoomFactor = null; _zoomFromOpen = false;
+  applyCanvasZoom();
+  let fit = 1, min = Infinity;
+  try { fit = svg.getScreenCTM().a; } catch (e) { aefRecordFault('opening-zoom:ctm', e); return; }   // T-821: no CTM, the map stays at fit
+  for (const t of gNodes.querySelectorAll('text.node-label')) {
+    const px = parseFloat(getComputedStyle(t).fontSize) * fit;
+    if (px > 0 && px < min) min = px;
+  }
+  if (!(min < OPEN_MIN_TEXT_PX) || !(fit > 0)) return;
+  zoomFactor = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.ceil(fit * OPEN_MIN_TEXT_PX / min * 100) / 100));
+  _zoomFromOpen = true;
+  applyCanvasZoom();
+  canvasWrap.scrollLeft = 0; canvasWrap.scrollTop = 0;
   syncOverlayPin();
 }
 // The status overlay and clean-nudge are absolutely positioned INSIDE the wrap,
@@ -3847,7 +3898,7 @@ function renderPool() {
 
   // pool header strip
   gPool.appendChild(el('rect', { x: px, y: py, width: pw, height: POOL_HEADER, fill: 'var(--surface-2)' }));
-  if (labelPrefs.showPool) gPool.appendChild(el('text', { x: px + 14, y: py + 21, class: 'pool-label' }, [text(state.pool.name + '  ·  workflow:' + state.workflowMeta.id)]));
+  if (labelPrefs.showPool) gPool.appendChild(el('text', { x: px + 14, y: py + 21, class: 'pool-label' }, [text(state.pool.name + (lensDeco('ids') ? '  ·  workflow:' + state.workflowMeta.id : ''))]));
 
   // lanes
   let yCursor = py + POOL_HEADER;
@@ -3878,7 +3929,7 @@ function renderPool() {
     // T-1164: a lane-anchored validator finding marks the header strip — severity on the strip's edge and a ✖/⚠ pill
     // at its top, the node marker's pill and glyph. Read from findingsView only (replaced on every check), so a mark
     // cannot outlive the check that made it. A marked lane's label is fitted below the pill.
-    const laneFnd = findingsView.byLane && findingsView.byLane.get(lane.id);
+    const laneFnd = lensDeco('findings') && findingsView.byLane && findingsView.byLane.get(lane.id);
     const PILL_ROOM = laneFnd ? 18 : 0;
     if (laneFnd) {
       const sev = laneFnd.severity === 'ERROR' ? 'ERROR' : 'WARN';
@@ -3941,8 +3992,19 @@ function text(s) { const t = document.createTextNode(s); return t; }
 // a host-relative perimeter point, not at free x/y"). boundaryHostOf resolves the host
 // (or null for an in-flow event / dangling ref); boundaryPerimeterPoint walks the host
 // rect clockwise from top-left by the boundaryPos fraction (default: bottom-centre).
+// T-1222: a third-party event the designer has no type for (it keeps its native definition) is a PLAIN event:
+// rendered as a plain catch/throw, never with link semantics (reviewer ruling, 2026-10-20).
+function isPlainEvent(n) {
+  return !!n && (n.type === 'linkEventCatch' || n.type === 'linkEventThrow') && !n.linkDef
+    && (n.nativeEventDefs || []).length > 0;
+}
+// T-1222: a catch imported from a third-party bpmn:boundaryEvent keeps its host, with or without a definition (a
+// designer-made link event never carries hostRef: that field belongs to the typed-event schema).
+function isPlainBoundary(n) {
+  return !!n && n.type === 'linkEventCatch' && !n.linkDef && !!(n.aef && n.aef.hostRef);
+}
 function boundaryHostOf(n) {
-  if (!EVENT_KIND[n.type] || !n.aef || !n.aef.hostRef) return null;
+  if (!(EVENT_KIND[n.type] || isPlainBoundary(n)) || !n.aef || !n.aef.hostRef) return null;
   return findNode(n.aef.hostRef) || null;
 }
 function boundaryPerimeterPoint(host, frac) {
@@ -4011,7 +4073,7 @@ function renderNodes() {
   // explicit S port). Their id caption is centred under the box, so that flow would run
   // straight through it; those captions move just right of the line instead.
   const bottomFlow = new Set();
-  if (labelPrefs.showIds) {
+  if (labelPrefs.showIds && lensDeco('ids')) {
     for (const e of state.edges) {
       const s = findNode(e.source), t = findNode(e.target);
       const lp = lShapePorts(e, s, t);
@@ -4021,7 +4083,12 @@ function renderNodes() {
   }
   const authDeclared = mapDeclaresAuthority();      // T-1092
   const authCount = { missing: 0, total: 0 };
-  for (const n of state.nodes) {
+  // T-1222: boundary events are drawn after every other node, so a boundary circle always sits on top of its host.
+  // The designer's own boundaries got that by being created after their hosts; an imported file can list a boundary
+  // event before its host, and the host box then hid the top half of the circle. Draw order only: state.nodes (and
+  // so the saved element order) is untouched.
+  const drawOrder = [...state.nodes.filter(n => !boundaryHostOf(n)), ...state.nodes.filter(n => boundaryHostOf(n))];
+  for (const n of drawOrder) {
     const def = NODE_DEFAULTS[n.type];
     const isPrimary = selection?.kind === 'node' && selection.id === n.id;
     const isInMulti = multiSelect.has(n.id);
@@ -4106,6 +4173,20 @@ function renderNodes() {
       const stroke = 'var(--text-faint)';
       g.appendChild(el('circle', { cx, cy, r, class: 'node-shape', fill: 'var(--surface-2)', stroke, 'stroke-width': '1.5' }));
       g.appendChild(el('circle', { cx, cy, r: r - 3.5, fill: 'none', stroke, 'stroke-width': '1.2' }));
+      // T-1222: a plain third-party boundary catch keeps the BPMN boundary ring (dashed when non-interrupting).
+      if (boundaryHostOf(n)) {
+        const ringAttrs = { cx, cy, r: r + 3, fill: 'none', stroke, 'stroke-width': '1.2' };
+        if (n.aef.interrupting === 'false') ringAttrs['stroke-dasharray'] = '3 2';
+        g.appendChild(el('circle', ringAttrs));
+      }
+    } else if (isPlainEvent(n) && n.type === 'linkEventThrow') {
+      // T-1222: plain throw event — the document names a kind the designer does not model (signal, escalation,
+      // message, compensate, ...). Plain intermediate event in the muted palette, the inner ring filled for a
+      // throw; no link chevron, because it is not a link.
+      const cx = n.x + def.w / 2, cy = n.y + def.h / 2, r = def.w / 2;
+      const stroke = 'var(--text-faint)';
+      g.appendChild(el('circle', { cx, cy, r, class: 'node-shape', fill: 'var(--surface-2)', stroke, 'stroke-width': '1.5' }));
+      g.appendChild(el('circle', { cx, cy, r: r - 3.5, fill: 'var(--text-faint)', 'fill-opacity': '0.35', stroke, 'stroke-width': '1.2' }));
     } else if (n.type === 'linkEventThrow' || n.type === 'linkEventCatch') {
       // Off-page connector: hollow circle with a chevron arrow inside.
       // Throw = chevron pointing right (data leaves); catch = chevron pointing left (data enters).
@@ -4177,14 +4258,14 @@ function renderNodes() {
       const io = n.io || {};
       const inN = (io.inputs || []).filter(i => i.name).length;
       const outN = (io.outputs || []).filter(i => i.name).length;
-      if (inN || outN) {
+      if ((inN || outN) && lensDeco('io')) {
         const badge = `${inN}→${outN}`;
         const bw = badge.length * 5.4 + 8;
         g.appendChild(el('rect', { x: n.x + def.w - bw - 4, y: n.y + 4, width: bw, height: 12, rx: 2, fill: 'var(--surface-3)', stroke: 'var(--border)', 'stroke-width': '0.5' }));
         g.appendChild(el('text', { x: n.x + def.w - bw / 2 - 4, y: n.y + 12, class: 'node-io-badge', 'text-anchor': 'middle' }, [text(badge)]));
       }
       // ID below the rectangle, centered — or just right of a bottom-centre flow (T-1090)
-      if (labelPrefs.showIds) g.appendChild(el('text', bottomFlow.has(n.id)
+      if (labelPrefs.showIds && lensDeco('ids')) g.appendChild(el('text', bottomFlow.has(n.id)
         ? { x: lx + 6, y: n.y + def.h + 12, class: 'node-id-badge', 'text-anchor': 'start' }
         : { x: lx, y: n.y + def.h + 12, class: 'node-id-badge', 'text-anchor': 'middle' }, [text(displayIdOf(n))]));
     } else {
@@ -4194,14 +4275,14 @@ function renderNodes() {
       // labels stay single-line and tightly packed maps gain no new vertical collisions.
       g.appendChild(el('text', { x: lx, y: ly, class: 'node-label', 'text-anchor': 'middle', 'data-nl': n.uid }, [text(n.name)]));
       // ID below the name, in mono and lower contrast
-      if (labelPrefs.showIds) g.appendChild(el('text', { x: lx, y: ly + 12, class: 'node-id-badge', 'text-anchor': 'middle', 'data-nl': n.uid }, [text(displayIdOf(n))]));
+      if (labelPrefs.showIds && lensDeco('ids')) g.appendChild(el('text', { x: lx, y: ly + 12, class: 'node-id-badge', 'text-anchor': 'middle', 'data-nl': n.uid }, [text(displayIdOf(n))]));
     }
     // T-081: constituent-count badge — any node carrying aef.constituents
     // (FC-11 composites live on gateways too, not only subProcess). Bottom-left
     // corner of the bounding box: free on task rects, beside the diamond on
     // gateways, clear of the subProcess [+] marker at bottom-centre.
     const nConsts = Array.isArray(n.aef?.constituents) ? n.aef.constituents.length : 0;
-    if (nConsts) {
+    if (nConsts && lensDeco('constituents')) {
       const cbTxt = `▣${nConsts}`;
       const cbW = cbTxt.length * 6 + 8;
       g.appendChild(el('rect', { x: n.x + 3, y: n.y + def.h - 15, width: cbW, height: 12, rx: 2, fill: 'var(--purple-soft)', stroke: 'var(--purple)', 'stroke-width': '0.5' }));
@@ -4217,7 +4298,7 @@ function renderNodes() {
     // render); the full text is always the <title>, so a short form loses nothing on hover.
     // T-1092: Settings can hide all markers (default ON); on a map that declares no authority
     // anywhere, a 'missing' marker is not drawn per element but counted for the one summary.
-    if (labelPrefs.showAuthority) {
+    if (labelPrefs.showAuthority && lensDeco('authority')) {
       const lane = findLane(n.lane);
       let mstate = authorityMarkerState(n.aef?.authority, effectiveLaneDefault(lane));
       authCount.total++;
@@ -4274,7 +4355,7 @@ function renderNodes() {
     // by construction — findingsView is replaced wholesale on every check, and cleared to
     // 'unavailable' with an empty byNode when the validator could not be reached.
     {
-      const fnd = findingsView.byNode.get(n.id);
+      const fnd = lensDeco('findings') ? findingsView.byNode.get(n.id) : null;
       if (fnd) {
         const sev = (fnd.severity === 'ERROR') ? 'ERROR' : 'WARN';
         g.setAttribute('data-finding', sev);
@@ -4295,6 +4376,9 @@ function renderNodes() {
   deCollideBelowLabels();
   adjustLabelPlacements();
   adjustEdgeLabelPlacements();
+  clearLabelsOfFlows();     // T-1256: last, off every drawn flow and clear of the flow labels just placed
+  adjustEdgeLabelPlacements();   // T-1256: a flow label still on a line may find room the moved names left; strictly better only
+  clearFlowLabels();             // T-1256: last word on flow labels: off other drawn flows and off every other label
   addIdBadgeHalos();
   layerIdBadges();
   fitPoolToLabels();   // T-1154: last, after every label and badge is placed; most renderNodes() calls bypass renderAll
@@ -4694,6 +4778,289 @@ function adjustLabelPlacements() {
   // "Investigation requested" on the default map sat 5-9px on the header strip that way (T-1068 F1).
   for (const n of state.nodes)
     if (isLabelBelow(n)) bboxScore(Array.from(gNodes.querySelectorAll(`text[data-nl="${n.uid}"]`)), n);
+}
+
+// Flow clearance (T-1256): the last word on where a gateway/event name block and a task's id caption sit.
+// adjustLabelPlacements() leaves three cases on the flows (the T-1241 reviewer, aef-task-lifecycle): it skips a
+// block of one line (a name with id captions off), its side places are centred on the shape's cy, which is where
+// a gateway's own E/W flows leave it, and it weighs a crossed flow (1) below hanging into the next lane (3), so
+// a crossed label is often its best. A task's id caption only ever dodged a flow on its own bottom centre
+// (T-1090). This pass moves ONLY a block that a DRAWN flow segment (the path the canvas shows, read off its `d`,
+// so manually routed flows count too) or another label actually crosses, to the first of a fixed list of places
+// (below, beside a vertical flow, beside the shape above or below its own flow axis, above), a name also as one
+// line or two balanced lines, with the lowest cost: a flow segment or another label (with a word-space beside it)
+// 10 each, a shape 30, outside its own lane 3, on the lane header 2, outside the pool 1. A place is kept only when
+// it is STRICTLY better, so an uncontested map is not touched. It runs after the flow labels are placed and keeps
+// clear of them, so every flow label stands where it stood before this pass (none is pushed onto a line). Deterministic;
+// render-only (PD-044): nothing here is written to the document (no BPMNLabel is emitted, see buildBpmnXml).
+function clearLabelsOfFlows() {
+  const PAD = 1, GAP = 6;
+  const segs = [];
+  for (const p of gEdges.querySelectorAll('g.edge > path.edge-path')) {
+    const pl = polylineFromPath(p.getAttribute('d'));
+    for (let i = 0; i < pl.length - 1; i++) segs.push([pl[i], pl[i + 1]]);
+  }
+  if (!segs.length) return;
+  // Liang-Barsky: does the segment a-b enter the box r?
+  const segHits = (a, b, r) => {
+    let t0 = 0, t1 = 1;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const P = [-dx, dx, -dy, dy], Q = [a.x - r.x1, r.x2 - a.x, a.y - r.y1, r.y2 - a.y];
+    for (let i = 0; i < 4; i++) {
+      if (P[i] === 0) { if (Q[i] < 0) return false; continue; }
+      const t = Q[i] / P[i];
+      if (P[i] < 0) { if (t > t1) return false; if (t > t0) t0 = t; }
+      else { if (t < t0) return false; if (t < t1) t1 = t; }
+    }
+    return true;
+  };
+  const inter = (a, b) => a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2;
+  const boxOf = t => { const b = t.getBBox(); return b.width ? { x1: b.x - PAD, y1: b.y - PAD, x2: b.x + b.width + PAD, y2: b.y + b.height + PAD } : null; };
+  const shapes = state.nodes.map(n => { const d = NODE_DEFAULTS[n.type]; return { x1: n.x - 2, y1: n.y - 2, x2: n.x + d.w + 2, y2: n.y + d.h + 2 }; });
+  const bandTop = POOL_Y + POOL_HEADER, lanes = [];
+  { let y = bandTop; for (const l of getLanes()) { lanes.push({ y1: y, y2: y + l.height }); y += l.height; } }
+  const pw = contentRightEdge() - POOL_X, ph = poolHeight();
+  const hasPool = lanes.length > 0 && pw > 0 && ph > 0;
+  const isBelow = n => n.type === 'startEvent' || n.type === 'endEvent' ||
+    n.type.endsWith('Gateway') || n.type.startsWith('linkEvent') || n.type.startsWith('event');
+  // [els, x, firstBaseline, anchor] for a block of k lines; LH as adjustLabelPlacements' side stack.
+  const LH = 12, ASC = 9, DESC = 3;
+  // T-1068 F1 holds here too: a block never starts on the lane header strip; it is nudged right by its overrun
+  // before it is judged, so it is judged where it will be drawn.
+  const headerEdge = POOL_X + LANE_HEADER + 1;
+  const put = (els, x, b0, anchor) => {
+    els.forEach((t, i) => { t.setAttribute('x', x); t.setAttribute('y', b0 + i * LH); t.setAttribute('text-anchor', anchor); });
+    if (!hasPool) return;
+    let x1 = Infinity;
+    for (const t of els) { const bb = t.getBBox(); if (bb.width) x1 = Math.min(x1, bb.x); }
+    if (x1 < headerEdge) for (const t of els) t.setAttribute('x', (+t.getAttribute('x') + headerEdge - x1).toFixed(1));
+  };
+  const blocks = [];
+  for (const n of state.nodes) {
+    const d = NODE_DEFAULTS[n.type];
+    let els;
+    if (isBelow(n)) els = Array.from(gNodes.querySelectorAll(`text[data-nl="${n.uid}"]`));
+    else {
+      const g = gNodes.querySelector(`g[data-id="${n.id}"]`);
+      els = g ? Array.from(g.querySelectorAll(':scope > text.node-id-badge')) : [];
+    }
+    if (els.length) blocks.push({ n, d, els });
+  }
+  for (const blk of blocks) {
+    const { n, d } = blk;
+    let els = blk.els;
+    const own = () => new Set(els);
+    // Another label counts with a word-space of room beside it, so two names never run on as one phrase. Flow
+    // labels are already placed (this pass runs after them) and stay where they are; a name keeps clear of them.
+    const mineAtStart = own();
+    const others = Array.from(gNodes.querySelectorAll('text')).filter(t => !mineAtStart.has(t) && !(t.getAttribute('data-nl') === n.uid))
+      .concat(Array.from(gEdges.querySelectorAll('text.edge-label'))).map(boxOf).filter(Boolean)
+      .map(r => ({ x1: r.x1 - GAP, y1: r.y1, x2: r.x2 + GAP, y2: r.y2 }));
+    const cy = n.y + d.h / 2, lane = lanes.find(b => cy >= b.y1 && cy < b.y2) || null;
+    const cost = () => {
+      let c = 0, hard = 0;
+      for (const t of els) {
+        const r = boxOf(t); if (!r) continue;
+        for (const [a, b] of segs) if (segHits(a, b, r)) { c += 10; hard++; }
+        for (const o of others) if (inter(r, o)) { c += 10; hard++; }
+        for (const s of shapes) if (inter(r, s)) c += 30;
+        if (hasPool) {
+          if (r.x1 < POOL_X || r.x2 > POOL_X + pw || r.y1 < bandTop || r.y2 > POOL_Y + ph) c += 1;
+          if (r.x1 < POOL_X + LANE_HEADER) c += 2;
+          if (lane && (r.y1 < lane.y1 - 1 || r.y2 > lane.y2 + 1)) c += 3;
+        }
+      }
+      return { c, hard };
+    };
+    const now = cost();
+    if (!now.hard) continue;                                   // nothing crosses it: leave it where it is
+    const orig = els.map(t => [t.getAttribute('x'), t.getAttribute('y'), t.getAttribute('text-anchor')]);
+    // A gateway/event name may also stand as one line or as two balanced lines (its id caption stays last).
+    const isName = t => t.getAttribute('class') === 'node-label';
+    const origLines = els.filter(isName).map(t => t.textContent);
+    const variants = [origLines];
+    if (isBelow(n) && origLines.length) {
+      const alt = [[n.name]];
+      if (labelPrefs.wrapNames && n.name.length > 12) alt.push(wrapText(n.name, Math.max(8, Math.ceil(n.name.length / 2) + 2)));
+      for (const v of alt) if (!variants.some(w => w.join('\n') === v.join('\n'))) variants.push(v);
+    }
+    const setLines = lines => {
+      const names = els.filter(isName), idEl = els.find(t => !isName(t));
+      if (names.map(t => t.textContent).join('\n') === lines.join('\n')) return;
+      const g = names[0].parentNode;
+      names.forEach(t => t.remove());
+      const made = lines.map(line => {
+        const t = el('text', { x: 0, y: 0, class: 'node-label', 'text-anchor': 'middle', 'data-nl': n.uid }, [text(line)]);
+        if (idEl && idEl.parentNode === g) g.insertBefore(t, idEl); else g.appendChild(t);
+        return t;
+      });
+      els = made.concat(idEl ? [idEl] : []);
+    };
+    const cx = n.x + d.w / 2, top = n.y, bot = n.y + d.h;
+    // Beside the shape, clear of its own E/W flow axis: just above it, or just below it. A diamond narrows
+    // away from its side corners, so the block starts a quarter in from the corner.
+    const inset = n.type.endsWith('Gateway') ? d.w / 4 : 0;
+    const candsFor = k => {
+      const h = (k - 1) * LH;
+      const below = bot + (isBelow(n) ? 14 : 12), above = top - 4 - DESC - h;
+      const sideUp = cy - 4 - DESC - h, sideDown = cy + 4 + ASC;
+      return [
+        [cx, below, 'middle'], [cx + 6, below, 'start'], [cx - 6, below, 'end'],
+        [n.x + d.w - inset + 4, sideUp, 'start'], [n.x + d.w - inset + 4, sideDown, 'start'],
+        [n.x + inset - 4, sideUp, 'end'], [n.x + inset - 4, sideDown, 'end'],
+        [cx, above, 'middle'], [cx + 6, above, 'start'], [cx - 6, above, 'end'],
+        [n.x + d.w + 8, below, 'start'], [n.x - 8, below, 'end'],
+      ];
+    };
+    let best = null;
+    search: for (const lines of variants) {
+      setLines(lines);
+      for (const [x, b0, a] of candsFor(els.length)) {
+        put(els, x, b0, a);
+        const sc = cost();
+        if (sc.c < now.c && (!best || sc.c < best.sc.c)) best = { lines, x, b0, a, sc };
+        if (best && best.sc.c === 0) break search;
+      }
+    }
+    if (best) { setLines(best.lines); put(els, best.x, best.b0, best.a); }
+    else { setLines(origLines); els.forEach((t, i) => { t.setAttribute('x', orig[i][0]); t.setAttribute('y', orig[i][1]); t.setAttribute('text-anchor', orig[i][2]); }); }
+  }
+}
+
+// Flow-label clearance (T-1256, second round; the T-1241 reviewer's amber of 2026-10-21 on aef-task-lifecycle:
+// "yes — status: issues" and "shelved — …" crossed by a vertical flow, "next/later — backlog" under the pad of
+// "shelved — …" with its descender cut). adjustEdgeLabelPlacements() judges a flow label against the flows'
+// _renderedPolyline bounding boxes and only against the labels placed BEFORE it in that run, so its second run (after
+// clearLabelsOfFlows) may put an early label on a later one, and a label it could not clear stays wherever its best
+// score was. This pass moves ONLY a flow label that a DRAWN segment of another flow (read off the path's `d`, so
+// manually routed flows count) or another label (flow label with its pad, gateway/event name, id caption) actually
+// overlaps, to the first place along its OWN flow (5..95% of each segment, longest first; above/below a run, beside a
+// drop, hugging the line then one line further out; as one line, then as two balanced lines) with the lowest cost:
+// another flow 10, another label 25 (text under a pad is lost, a line through it is not; closer than a word-space 2),
+// a shape 30, its own line 10.
+// A place is kept only when it is STRICTLY better, so a clear label is never touched. Every other label is an obstacle
+// where it stands now, so a move never lands on a label placed later in the order. Deterministic; render-only
+// (PD-044): nothing is written to the document. Flow labels measure with text-rendering: geometricPrecision (CSS
+// .edge-label): hinted metrics changed a label's width with the zoom and the engine (131 vs 114 units for
+// "next/later — backlog" at 1920 and 1440), so the same map got other places at each width; now it gets the same.
+function clearFlowLabels() {
+  const GAPX = 4, GAPY = 2;
+  const segsOf = new Map();
+  for (const p of gEdges.querySelectorAll('g.edge > path.edge-path')) {
+    const pl = polylineFromPath(p.getAttribute('d')), id = p.parentNode.getAttribute('data-id');
+    const list = segsOf.get(id) || [];
+    for (let i = 0; i < pl.length - 1; i++) list.push([pl[i], pl[i + 1]]);
+    segsOf.set(id, list);
+  }
+  const allSegs = [];
+  for (const [id, list] of segsOf) for (const s of list) allSegs.push([id, s[0], s[1]]);
+  if (!allSegs.length) return;
+  const segHits = (a, b, r) => {
+    let t0 = 0, t1 = 1;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const P = [-dx, dx, -dy, dy], Q = [a.x - r.x1, r.x2 - a.x, a.y - r.y1, r.y2 - a.y];
+    for (let i = 0; i < 4; i++) {
+      if (P[i] === 0) { if (Q[i] < 0) return false; continue; }
+      const t = Q[i] / P[i];
+      if (P[i] < 0) { if (t > t1) return false; if (t > t0) t0 = t; }
+      else { if (t < t0) return false; if (t < t1) t1 = t; }
+    }
+    return true;
+  };
+  const inter = (a, b) => a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2;
+  // The text's box with the room its pad (halo) takes, plus a little air, so two labels never touch.
+  const boxOf = t => { const b = t.getBBox(); return b.width ? { x1: b.x - 3, y1: b.y - 1, x2: b.x + b.width + 3, y2: b.y + b.height + 1 } : null; };
+  const shapes = state.nodes.map(n => { const d = NODE_DEFAULTS[n.type]; return { x1: n.x - 2, y1: n.y - 2, x2: n.x + d.w + 2, y2: n.y + d.h + 2 }; });
+  const nodeBoxes = Array.from(gNodes.querySelectorAll('text.node-label, text.node-id-badge, text.node-io-badge'))
+    .filter(t => !t.closest('#g-sticky-lanes')).map(boxOf).filter(Boolean);
+  const flowTexts = Array.from(gEdges.querySelectorAll('text.edge-label[data-el]'));
+  const edgeOf = t => state.edges.find(x => x.id === t.getAttribute('data-el'));
+  const grow = r => ({ x1: r.x1 - GAPX, y1: r.y1 - GAPY, x2: r.x2 + GAPX, y2: r.y2 + GAPY });
+  // Cost of t where it stands, against every other label where IT stands now.
+  const cost = t => {
+    const r = boxOf(t); if (!r) return { c: 0, hard: 0 };
+    const id = t.getAttribute('data-el');
+    let c = 0, hard = 0;
+    const crossed = new Set();
+    for (const [sid, a, b] of allSegs) if (segHits(a, b, r)) { if (sid === id) c += 10; else crossed.add(sid); }
+    c += 10 * crossed.size; hard += crossed.size;
+    // Pad on pad is an overlap (25, the label is moved for it); closer than a word-space of air only costs 2.
+    const near = o => { if (inter(r, o)) { c += 25; hard++; } else if (inter(r, grow(o))) c += 2; };
+    for (const o of nodeBoxes) near(o);
+    for (const o of flowTexts) if (o !== t) { const ob = boxOf(o); if (ob) near(ob); }
+    for (const s of shapes) if (inter(r, s)) c += 30;
+    return { c, hard };
+  };
+  const apply = (t, x, y, anchor) => {
+    t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('text-anchor', anchor);
+    for (const ts of t.querySelectorAll('tspan')) ts.setAttribute('x', x);
+  };
+  const setLines = (t, lines) => {
+    t.textContent = '';
+    if (lines.length < 2) { t.textContent = lines[0]; return; }
+    lines.forEach((ln, i) => t.appendChild(el('tspan', { x: t.getAttribute('x'), dy: i ? 11 : 0 }, [text(ln)])));
+  };
+  const where = t => ({ x: t.getAttribute('x'), y: t.getAttribute('y'), a: t.getAttribute('text-anchor'),
+    lines: t.querySelector('tspan') ? Array.from(t.querySelectorAll('tspan')).map(ts => ts.textContent) : [t.textContent] });
+  const put = (t, p) => { setLines(t, p.lines); apply(t, p.x, p.y, p.a); };
+  // Every place along t's own flow, in a fixed order: one line, then two balanced lines.
+  const placesOf = t => {
+    const e = edgeOf(t), own = segsOf.get(t.getAttribute('data-el')) || [];
+    if (!e || !own.length) return [];
+    const segList = own.map(([a, b]) => ({ a, b, dx: Math.abs(b.x - a.x), dy: Math.abs(b.y - a.y) }))
+      .filter(s => Math.max(s.dx, s.dy) >= 16).map(s => ({ ...s, horiz: s.dx >= s.dy, len: Math.max(s.dx, s.dy) }));
+    segList.sort((s1, s2) => s2.len - s1.len);
+    const variants = [where(t).lines.length > 1 ? where(t).lines : [e.name]];
+    // Two lines halve the width a drop needs beside it (a short name too: "yes — status: issues" has 115 px between
+    // its drop and the next flow at 1920); kept only when strictly better, like T-089's wrap.
+    if (variants[0].length === 1 && e.name.length > 12 && e.name.includes(' ')) {
+      let max = Math.ceil(e.name.length / 2) + 2, lines = wrapText(e.name, max);
+      while (lines.length > 2) { max += 2; lines = wrapText(e.name, max); }
+      if (lines.length === 2) variants.push(lines);
+    }
+    const out = [];
+    for (const lines of variants) {
+      const lift = (lines.length - 1) * 11;
+      for (const [above, below, side] of [[-6 - lift, 13, 8], [-17 - lift, 24, 20]]) {
+        for (const s of segList) {
+          for (const f of [0.5, 0.3, 0.7, 0.15, 0.85, 0.05, 0.95]) {
+            const mx = s.a.x + (s.b.x - s.a.x) * f, my = s.a.y + (s.b.y - s.a.y) * f;
+            if (s.horiz) out.push({ lines, x: mx, y: my + above, a: 'middle' }, { lines, x: mx, y: my + below, a: 'middle' });
+            else out.push({ lines, x: mx + side, y: my + 3 - lift / 2, a: 'start' }, { lines, x: mx - side, y: my + 3 - lift / 2, a: 'end' });
+          }
+        }
+      }
+    }
+    return out;
+  };
+  // The cheapest place for t (the first of equals), measured; t is left where it was.
+  const search = t => {
+    const home = where(t);
+    let best = null;
+    for (const p of placesOf(t)) {
+      put(t, p);
+      const sc = cost(t);
+      if (!best || sc.c < best.c) best = { ...p, c: sc.c };
+      if (best.c === 0) break;
+    }
+    put(t, home);
+    return best;
+  };
+  const halo = t => {
+    const h = gEdges.querySelector(`rect[data-elr="${t.getAttribute('data-el')}"]`), bb = t.getBBox();
+    if (h && bb.width) { h.setAttribute('x', bb.x - 4); h.setAttribute('y', bb.y - 1); h.setAttribute('width', bb.width + 8); h.setAttribute('height', bb.height + 2); }
+  };
+  // The longest label first: it has the fewest places it fits, so a short one must not take its only room first.
+  // Ties keep the document order. A second sweep gives a label another chance at room an earlier move freed.
+  const order = flowTexts.map((t, i) => [t, i])
+    .sort((a, b) => (edgeOf(b[0])?.name || '').length - (edgeOf(a[0])?.name || '').length || a[1] - b[1]).map(p => p[0]);
+  for (const t of order.concat(order)) {
+    const now = cost(t);
+    if (!now.hard) continue;
+    const best = search(t);
+    if (best && best.c < now.c) put(t, best);
+  }
+  for (const t of flowTexts) halo(t);
 }
 
 // Post-pass over freshly rendered EDGE labels (T-082, survey R-5 slice 2).
@@ -6662,6 +7029,62 @@ function renderMultiSelectProps(props) {
 // reverted with zero signal — the T-263 / rail-225 "didn't rebind" trap.
 let _idRenameNotice = null;
 
+// T-1241 (T-281 slice 1): audience lenses. A lens is DATA (GET /api/lens-definition, the interim stand-in for
+// AEF's shared lens file, their T-4402): per lens the Extensions fields, BPMN-section fields, panel sections and
+// canvas decorations it shows; `extends` adds the parent lens's lists. It only NARROWS what the field profile
+// allows (never shows a field the profile hides) and is a view: no lens changes a byte of buildBpmnXml output.
+// No definition (404, standalone file, bad file) = no lens switch effect: every field, as before.
+var _lensDef = null;      // var, not let: hoisted, so a render before this line runs reads "no lens" instead of a TDZ error
+var _lensName = 'all';
+try { const l = localStorage.getItem('aefLens'); if (l) _lensName = l; } catch (e) { aefRecordFault('prefs-read:lens', e); }
+function _lensResolve(name, seen) {
+  const l = _lensDef && _lensDef.lenses && _lensDef.lenses[name];
+  if (!l) return null;
+  seen = seen || new Set();
+  if (seen.has(name)) return null;
+  seen.add(name);
+  const parent = l.extends ? _lensResolve(l.extends, seen) : null;
+  const u = k => Array.from(new Set(((parent && parent[k]) || []).concat(Array.isArray(l[k]) ? l[k] : [])));
+  return { label: l.label || name, fields: u('fields'), bpmn: u('bpmn'), sections: u('sections'), canvas: u('canvas') };
+}
+function lensSpec() { return _lensName === 'all' ? null : _lensResolve(_lensName); }
+function lensDeco(d) { const l = lensSpec(); return !l || l.canvas.includes(d); }          // canvas decoration shown?
+function lensField(k) { const l = lensSpec(); return !l || l.fields.includes(k); }         // Extensions field shown?
+function lensSection(t) { const l = lensSpec(); return !l || l.sections.includes(t); }     // panel section shown?
+function lensBpmn(label) { const l = lensSpec(); return !l || l.bpmn.includes(label); }    // BPMN-section field shown?
+function renderLensSelect() {
+  const sel = $('lens-select');
+  if (!sel) return;
+  const names = _lensDef && _lensDef.lenses ? (Array.isArray(_lensDef.order) ? _lensDef.order : Object.keys(_lensDef.lenses)).filter(n => _lensDef.lenses[n]) : [];
+  sel.innerHTML = '';
+  for (const n of names.concat(['all'])) {
+    const o = document.createElement('option');
+    o.value = n; o.textContent = (n === 'all' ? 'All' : ((_lensDef.lenses[n] || {}).label || n));
+    sel.appendChild(o);
+  }
+  if (_lensName !== 'all' && !names.includes(_lensName)) _lensName = 'all';
+  sel.value = _lensName;
+  document.body.dataset.lens = _lensName;
+}
+function setLens(name) {
+  _lensName = name;
+  try { localStorage.setItem('aefLens', name); } catch (e) { aefRecordFault('prefs-persist:lens', e); }
+  renderLensSelect();
+  if (typeof renderAll === 'function') renderAll();
+  renderProperties();
+}
+async function loadLensDefinition() {
+  try {
+    const r = await fetch('/api/lens-definition', { cache: 'no-store' });
+    const ct = (r.headers && r.headers.get && r.headers.get('content-type')) || '';
+    const d = (r.ok || /json/i.test(ct)) ? await r.json().catch(() => null) : null;
+    _lensDef = (r.ok && d && d.ok && d.definition && d.definition.lenses) ? d.definition : null;
+  } catch (e) { _lensDef = null; aefRecordFault('lens-definition:load', e); }
+  renderLensSelect();
+  if (typeof renderAll === 'function' && lensSpec()) renderAll();
+  if (typeof renderProperties === 'function') renderProperties();
+}
+
 // T-1124 (T-1118 B1): which selection has its empty Extensions fields opened (null = none).
 let _emptyFieldsRevealed = null;
 // T-1125 (T-1118 B2): the project's field profile, from GET /api/field-profile (gallery-serve.py
@@ -7041,6 +7464,9 @@ function renderDetails() {
   const n = findNode(_detailsUid);
   if (!n || !selection || selection.id !== _detailsUid) { closeDetails(); return; }
   $('details-title').textContent = (n.name || displayIdOf(n)) + ' — details';
+  // T-1241: "all fields" is only true under All; a lens names the fields it shows.
+  const l = lensSpec(), sub = document.querySelector('#details-modal .details-sub');
+  if (sub) sub.textContent = (l ? l.label.toLowerCase() + ' fields' : 'all fields, filled or empty') + ' · edits apply to the element';
   _renderPropsInto($('details-body'), true);
 }
 
@@ -7125,6 +7551,8 @@ function _renderPropsInto(props, details) {
       // gloss lives on the canvas badge where there is room for it.
     }, 'unset · illustrative · actionable'));
     props.appendChild(sMeta);
+    const sMap = wfV11Section(state);   // T-1249: mappingVersion + aef:prefixes, read-only
+    if (sMap) props.appendChild(sMap);
 
     // Recently-opened section — quick view of all loaded workflows (T-159: operator
     // relabel, "Library" → "Recently opened"; the list IS the maps opened this session).
@@ -7426,7 +7854,7 @@ function _renderPropsInto(props, details) {
   // T-308: a bare catch event is presented as the neutral intermediate event it
   // actually is — the underlying n.type is unchanged and still exports as
   // <bpmn:intermediateCatchEvent>.
-  props.appendChild(propsHeader(isBareCatchEvent(n) ? 'intermediateEvent' : n.type, displayIdOf(n),
+  props.appendChild(propsHeader(isBareCatchEvent(n) ? 'intermediateEvent' : n.type, lensDeco('ids') ? displayIdOf(n) : '',
     details ? null : () => deleteNode(n.id)));   // T-1127: no delete from inside the details view
   if (!details) {   // T-1127: every element can open its full details (a handoff's double-click jumps instead)
     const all = document.createElement('button');
@@ -7508,7 +7936,13 @@ function _renderPropsInto(props, details) {
     renderNodes(); renderEdges();
     renderProperties();
   }));
-  props.appendChild(sBpmn);
+  // T-1241: the lens narrows the BPMN section to the fields it names (matched on the label's own text, before its hint).
+  for (const f of Array.from(sBpmn.querySelectorAll(':scope > .field'))) {
+    const l = f.querySelector('.field-label');
+    const t = l && l.firstChild ? String(l.firstChild.textContent).trim() : '';
+    if (!lensBpmn(t)) f.remove();
+  }
+  if (lensSection('BPMN')) props.appendChild(sBpmn);
 
   // AEF extensions
   // T-308: a bare catch event has no aef:link, so the link schema's target fields
@@ -7516,7 +7950,7 @@ function _renderPropsInto(props, details) {
   // as a broken connector. Hide them, say what the node actually is, and offer an
   // explicit way to declare handoff intent (session-scoped — sessionAuthoredLinks).
   const bareCatch = isBareCatchEvent(n);
-  const aefFields = bareCatch ? [] : fieldPlanFor(n.type).keys;   // T-1126: built-in + approved fields
+  const aefFields = bareCatch ? [] : fieldPlanFor(n.type).keys.filter(lensField);   // T-1126: built-in + approved fields; T-1241: narrowed by the lens
   if (bareCatch) {
     // Not an aef: field group — this node has no aef: extensions at all, which is
     // the whole point. Passing isAef would badge it as one.
@@ -7542,7 +7976,7 @@ function _renderPropsInto(props, details) {
     // from under the author.
     sessionAuthoredLinks.add(n.uid);
   }
-  if (aefFields && aefFields.length) {
+  if (aefFields && aefFields.length && lensSection('Extensions')) {
     const sAef = section('Extensions', true);
     n.aef = n.aef || {};
     // T-1124 (T-1118 B1): an empty field is folded into one "+ N empty fields" row unless
@@ -7550,6 +7984,7 @@ function _renderPropsInto(props, details) {
     // A field with a value is always drawn — hiding only ever removes empty boxes, never data
     // (the T-566 lesson). `selection` is a fresh object on every click, so the opened state
     // ends when the author selects anything else.
+    const lensOn = !!lensSpec();   // T-1241: a lens never shows a field the profile hides — not even in the details view, not even with a value
     const revealed = details || viewPrefs.showAllFields
       || (_emptyFieldsRevealed && _emptyFieldsRevealed.sel === selection && _emptyFieldsRevealed.uid === n.uid);
     let foldedEmpty = 0;
@@ -7560,6 +7995,7 @@ function _renderPropsInto(props, details) {
       // T-1125: a field the project hides is not drawn and not offered under "+ N empty fields" —
       // unless it carries a value (value-never-hidden) or "Show all fields" is on.
       const profileHidden = plan.hidden.has(f) && !viewPrefs.showAllFields && !details;
+      if (lensOn && plan.hidden.has(f)) continue;
       if (profileHidden && !hasValue) continue;
       // T-1127: the details view draws it anyway and says why the side panel does not.
       const hiddenInPanel = details && plan.hidden.has(f);
@@ -7695,7 +8131,7 @@ function _renderPropsInto(props, details) {
     // derived value and the authority it came from so the collapse is legible;
     // it updates automatically when the Lane select above changes (which
     // re-renders the panel). external/none → "— none —" (no task).
-    if (OWNER_BEARING_TYPES.has(n.type)) {
+    if (OWNER_BEARING_TYPES.has(n.type) && lensField('owner')) {
       const ownerLane = findLane(n.lane);
       const ownerAuth = ownerLane ? ownerLane.authority : 'none';
       const derivedOwner = ownerFromAuthority(ownerAuth);
@@ -7766,6 +8202,7 @@ function _renderPropsInto(props, details) {
   shownKeys.add('constituents');
   const hiddenKeys = Object.keys(n.aef || {})
     .filter(k => !shownKeys.has(k))
+    .filter(() => lensSection('Other extensions'))   // T-1241: the lens may drop the whole section
     // Objects and arrays are structured payloads with their own surfaces, not scalars
     // to print. Empty strings are absence, not content.
     .filter(k => {
@@ -7804,7 +8241,7 @@ function _renderPropsInto(props, details) {
   // Always offered on subProcess; shown on any other node that already carries
   // them (composites live on gateways too). One line per entry: id | name | ref.
   const hasConsts = Array.isArray(n.aef?.constituents) && n.aef.constituents.length;
-  if (n.type === 'subProcess' || hasConsts) {
+  if ((n.type === 'subProcess' || hasConsts) && lensSection('Constituents')) {
     n.aef = n.aef || {};
     const sConst = section(`Constituents${hasConsts ? ' · ' + n.aef.constituents.length : ''}`, true);
     const toText = list => (list || []).map(c =>
@@ -7824,14 +8261,22 @@ function _renderPropsInto(props, details) {
 
   // I/O contract (data flowing through the workflow, not filesystem side-effects)
   const ioSpec = NODE_IO[n.type];
-  if (ioSpec && (ioSpec.in || ioSpec.out)) {
+  if (ioSpec && (ioSpec.in || ioSpec.out) && lensSection('I/O contract')) {
     n.io = n.io || {};
     const sIo = section('I/O contract', true);
-    if (ioSpec.in)  sIo.appendChild(ioListField('inputs',  n.io.inputs  || (n.io.inputs  = []), true));
-    if (ioSpec.out) sIo.appendChild(ioListField('outputs', n.io.outputs || (n.io.outputs = []), false));
+    if (ioSpec.in)  sIo.appendChild(ioListField('inputs',  n.io.inputs  || (n.io.inputs  = []), true, n));
+    if (ioSpec.out) sIo.appendChild(ioListField('outputs', n.io.outputs || (n.io.outputs = []), false, n));
     props.appendChild(sIo);
   }
 }
+// T-1241: under a lens (not All) the header names the element type in plain words instead of the BPMN token.
+// Not the palette names: those are terse button captions ("Start", "Exclusive (XOR)"), not a type word.
+const LENS_TYPE_WORD = {
+  startEvent: 'Start event', endEvent: 'End event', serviceTask: 'Service task', userTask: 'User task',
+  scriptTask: 'Script task', subProcess: 'Sub-process', exclusiveGateway: 'Gateway (one path)',
+  parallelGateway: 'Gateway (all paths)', linkEventThrow: 'Handoff out', linkEventCatch: 'Handoff in',
+  eventError: 'Error event', eventTimer: 'Timer event', eventMessage: 'Message event', intermediateEvent: 'Event',
+};
 function propsHeader(typeName, id, onDelete) {
   const h = document.createElement('div');
   h.className = 'props-header';
@@ -7842,7 +8287,7 @@ function propsHeader(typeName, id, onDelete) {
   info.className = 'props-type-info';
   const name = document.createElement('div');
   name.className = 'props-type-name';
-  name.textContent = typeName;
+  name.textContent = lensSpec() ? (LENS_TYPE_WORD[typeName] || typeName) : typeName;
   const idEl = document.createElement('div');
   idEl.className = 'props-type-id';
   idEl.textContent = id;
@@ -7884,7 +8329,7 @@ function section(title, isAef) {
   const t = document.createElement('div');
   t.className = 'props-section-title';
   t.textContent = title;
-  if (isAef) {
+  if (isAef && lensDeco('ns')) {
     const ns = document.createElement('span');
     ns.className = 'ns-tag';
     ns.textContent = 'aef:';
@@ -8019,7 +8464,7 @@ function tierField(value, onInput) {
 
 // I/O list editor — renders a small label, then a list of {name, type, required?} rows,
 // then an "add" button. Mutates `items` in place and re-renders.
-function ioListField(kind /* 'inputs' | 'outputs' */, items, isInput) {
+function ioListField(kind /* 'inputs' | 'outputs' */, items, isInput, node) {
   const wrap = document.createElement('div');
   wrap.className = 'field io-block';
   const lbl = document.createElement('div');
@@ -8039,7 +8484,11 @@ function ioListField(kind /* 'inputs' | 'outputs' */, items, isInput) {
     empty.textContent = isInput ? '(no inputs)' : '(no outputs)';
     list.appendChild(empty);
   }
-  items.forEach((item, idx) => list.appendChild(ioRow(item, idx, items, isInput)));
+  items.forEach((item, idx) => {
+    list.appendChild(ioRow(item, idx, items, isInput));
+    const v11 = ioV11Block(item, isInput, node);   // T-1249: read-only
+    if (v11) list.appendChild(v11);
+  });
   wrap.appendChild(list);
 
   const addBtn = document.createElement('div');
@@ -8051,6 +8500,145 @@ function ioListField(kind /* 'inputs' | 'outputs' */, items, isInput) {
   };
   wrap.appendChild(addBtn);
   return wrap;
+}
+
+// ── T-1249 (slice 1 of T-1242): SHOW the mapping v1.1 io constructs, read-only ──
+// AEF's mapping v1.1 io text (T-4548): attributes fieldRef, typeRef|schemaRef, conceptRef, role, operation,
+// cardinality, sourceSystem/targetSystem on aef:input/aef:output; children aef:field (with aef:when), aef:expect
+// (with aef:value), aef:example; mappingVersion and aef:prefixes on the process-level aef:meta. Everything here reads
+// the data kept for the round trip (item.extra, item.children, state.procMetaKept) and writes nothing back; a v1 io
+// with none of it renders exactly as before (no block at all). Editing is slices 2-3.
+const IO_V11_ATTRS = ['fieldRef', 'typeRef', 'schemaRef', 'conceptRef', 'role', 'operation', 'cardinality', 'sourceSystem', 'targetSystem'];
+const IO_V11_KEYWORDS = ['const', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'pattern', 'present', 'absent', 'description'];
+const AEF_EXT_NS = 'http://anchorpoint.framework/aef/extensions';
+let _procMetaInfoCache = { key: null, info: null };
+function procMetaInfo(s) {   // { mappingVersion, prefixes: [{name, iri, system, kind}] } from the kept process aef:meta
+  const kept = (s && s.procMetaKept) || [];
+  const key = kept.join('\n');
+  if (_procMetaInfoCache.key === key) return _procMetaInfoCache.info;
+  const info = { mappingVersion: null, prefixes: [] };
+  for (const x of kept) {
+    const el = v11ParseFragment(x)[0];
+    if (!el) continue;
+    if (el.hasAttribute('mappingVersion')) info.mappingVersion = el.getAttribute('mappingVersion');
+    for (const p of el.getElementsByTagNameNS(AEF_EXT_NS, 'prefix')) {
+      info.prefixes.push({ name: p.getAttribute('name') || '', iri: p.getAttribute('iri') || '',
+                           system: p.getAttribute('system') || '', kind: p.getAttribute('kind') || '' });
+    }
+  }
+  _procMetaInfoCache = { key, info };
+  return info;
+}
+function v11ParseFragment(xmlParts) {   // kept child xml (aef: declared on the root, so not on the part) -> elements
+  const src = Array.isArray(xmlParts) ? xmlParts.join('') : String(xmlParts || '');
+  if (!src) return [];
+  const doc = new DOMParser().parseFromString(`<w xmlns:aef="http://anchorpoint.framework/aef/extensions">${src}</w>`, 'application/xml');   // literal: T-044 checks every xmlns:aef value
+  if (doc.getElementsByTagName('parsererror').length) return [];
+  return Array.from(doc.documentElement.children);
+}
+function v11Span(parent, k, v, derived) {
+  const sp = document.createElement('span');
+  sp.className = 'kv';
+  const ks = document.createElement('span'); ks.className = 'k'; ks.textContent = k + ' '; sp.appendChild(ks);
+  const vs = document.createElement('span'); vs.className = 'v'; vs.textContent = v; sp.appendChild(vs);
+  if (derived) { const d = document.createElement('span'); d.className = 'd'; d.textContent = derived; sp.appendChild(d); }
+  if (parent.childNodes.length) parent.appendChild(document.createTextNode(' '));
+  parent.appendChild(sp);
+  return sp;
+}
+function ioV11Block(item, isInput, node) {
+  const attrs = new Map(item.extra || []);
+  const kids = v11ParseFragment(item.children || []).filter(c => c.namespaceURI === AEF_EXT_NS &&
+    (c.localName === 'field' || c.localName === 'expect' || c.localName === 'example'));
+  const meta = procMetaInfo(state);
+  const pfx = q => { const m = /^([A-Za-z_][\w.-]*):/.exec(q || ''); return m ? meta.prefixes.find(p => p.name === m[1]) : null; };
+  // the system this io's direction names (2.5): the io's own attribute; else the step default on the step's aef:meta;
+  // else the system of the declared prefix of its fieldRef/typeRef. Only the first is written in the map.
+  const sysKey = isInput ? 'sourceSystem' : 'targetSystem';
+  let derivedSys = null;
+  if (!attrs.has(sysKey)) {
+    const stepDefault = node && node.aef && node.aef[sysKey];
+    const p = pfx(attrs.get('fieldRef')) || pfx(attrs.get('typeRef'));
+    if (stepDefault) derivedSys = [String(stepDefault), 'derived · step default'];
+    else if (p && p.system) derivedSys = [p.system, `derived · prefix ${p.name}`];
+  }
+  // 2.3: in a map that is not v1.1, a `ref` whose prefix is declared kind="field" reads as fieldRef
+  let refAsField = null;
+  if (meta.mappingVersion !== '1.1' && attrs.has('ref') && !attrs.has('fieldRef') && !attrs.has('typeRef')) {
+    const p = pfx(attrs.get('ref'));
+    if (p && p.kind === 'field') refAsField = attrs.get('ref');
+  }
+  const shown = IO_V11_ATTRS.filter(k => attrs.has(k));
+  if (!shown.length && !kids.length && !derivedSys && !refAsField) return null;
+
+  const box = document.createElement('div');
+  box.className = 'io-v11';
+  box.title = 'mapping v1.1 · read-only';
+  if (shown.length || derivedSys || refAsField) {
+    const kv = document.createElement('div');
+    kv.className = 'io-v11-kv';
+    if (refAsField) v11Span(kv, 'fieldRef', refAsField, 'derived · from ref');
+    for (const k of shown) v11Span(kv, k, attrs.get(k));
+    if (derivedSys) v11Span(kv, sysKey, derivedSys[0], derivedSys[1]);
+    box.appendChild(kv);
+  }
+  const addr = el => el.getAttribute('path') || el.getAttribute('fieldRef') || '(key not named)';
+  const keywords = el => {   // [[keyword, value], ...] of an aef:expect / aef:when (section 8)
+    const out = [];
+    for (const k of IO_V11_KEYWORDS) if (el.hasAttribute(k)) out.push([k, el.getAttribute(k)]);
+    const vals = Array.from(el.children).filter(c => c.localName === 'value').map(c => c.textContent);
+    if (vals.length) out.push(['enum', vals.join(', ')]);
+    if (el.hasAttribute('ruleRef')) out.push(['ruleRef', el.getAttribute('ruleRef') + (el.hasAttribute('ruleLanguage') ? ` (${el.getAttribute('ruleLanguage')})` : '')]);
+    return out;
+  };
+  const kidLine = (cls, tagText, address, pairs) => {
+    const line = document.createElement('div');
+    line.className = cls;
+    const head = document.createElement('span'); head.className = 'kv';
+    const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = tagText + ' '; head.appendChild(tag);
+    const a = document.createElement('span'); a.className = 'v'; a.textContent = address; head.appendChild(a);
+    line.appendChild(head);
+    for (const [k, v] of pairs) v11Span(line, k, v);
+    box.appendChild(line);
+  };
+  for (const c of kids) {
+    if (c.localName === 'field') {
+      const more = ['role', 'required', 'cardinality'].filter(k => c.hasAttribute(k)).map(k => [k, c.getAttribute(k)]);
+      if (c.hasAttribute('path') && c.hasAttribute('fieldRef')) more.unshift(['fieldRef', c.getAttribute('fieldRef')]);
+      kidLine('io-v11-kid', 'field', addr(c), more);
+      for (const w of Array.from(c.children).filter(x => x.localName === 'when')) kidLine('io-v11-kid io-v11-when', 'when', addr(w), keywords(w));
+    } else if (c.localName === 'expect') kidLine('io-v11-kid', 'expect', addr(c), keywords(c));
+    else kidLine('io-v11-kid', 'example', `${addr(c)} = ${c.getAttribute('value') || ''}`, []);   // documentation only (9.1)
+  }
+  return box;
+}
+// The workflow panel's read-only "Mapping" section: mappingVersion and the prefix map (name, iri, system, kind).
+function wfV11Section(s) {
+  const info = procMetaInfo(s);
+  if (!info.mappingVersion && !info.prefixes.length) return null;
+  const sec = section('Mapping', true);
+  const box = document.createElement('div');
+  box.className = 'wf-v11';
+  box.title = 'mapping v1.1 · read-only';
+  const kv = document.createElement('div');
+  kv.className = 'io-v11-kv';
+  v11Span(kv, 'mappingVersion', info.mappingVersion || '1.0', info.mappingVersion ? '' : '(not declared)');
+  box.appendChild(kv);
+  if (info.prefixes.length) {
+    const g = document.createElement('div');
+    g.className = 'wf-v11-pfx';
+    for (const p of info.prefixes) {
+      const n = document.createElement('span'); n.className = 'v'; n.textContent = p.name;
+      const r = document.createElement('span');
+      r.textContent = p.iri;
+      const extra = [p.system && `system ${p.system}`, p.kind && `kind ${p.kind}`].filter(Boolean).join(' · ');
+      if (extra) { const e = document.createElement('span'); e.className = 'k'; e.textContent = ' · ' + extra; r.appendChild(e); }
+      g.append(n, r);
+    }
+    box.appendChild(g);
+  }
+  sec.appendChild(box);
+  return sec;
 }
 
 function ioRow(item, idx, items, isInput) {
@@ -8323,6 +8911,7 @@ document.addEventListener('keydown', e => {
   if (!typing) e.stopPropagation();
 }, true);
 $('btn-close-details').onclick = () => closeDetails();
+$('lens-select').addEventListener('change', e => setLens(e.target.value));   // T-1241
 $('details-modal').addEventListener('mousedown', e => { if (e.target === $('details-modal')) closeDetails(); });
 $('set-attach-middle').addEventListener('change', () => setRoutingAttach('middle'));
 $('set-attach-spread').addEventListener('change', () => setRoutingAttach('spread'));
@@ -10568,7 +11157,9 @@ function renderInstancePicker() {
   sel.innerHTML = '';
   const opt = (value, label, selected) => { const o = document.createElement('option'); o.value = value; o.textContent = label; if (selected) o.selected = true; sel.appendChild(o); };
   const v = instanceView;
-  if (v.available === false) opt('', 'instances: unavailable', !v.selected);
+  // T-1241: 'n/a', not 'unavailable': the 45 px it saves keep the header one row in the 1894 px inline frame with the
+  // lens select added; the picker's title still says what the overlay is and why it can be absent.
+  if (v.available === false) opt('', 'instances: n/a', !v.selected);
   else if (v.available === null) opt('', 'instances: loading…', !v.selected);
   else if (!v.instances.length) opt('', 'instances: none for ' + (v.template || 'this map'), !v.selected);
   else opt('', 'instance: none (' + v.instances.length + ' on ' + (v.template || 'this map') + ')', !v.selected);
@@ -10600,6 +11191,7 @@ async function detectSaveApi() {
       if (bc) bc.style.display = '';
       refreshUuidIndex();   // T-240: bind uuid workflowRefs to live maps at startup
       loadFieldProfile();   // T-1125: the project's field profile (404 = designer default)
+      loadLensDefinition(); // T-1241: the audience lenses (404 = no lens, every field)
     }
   } catch (_) { /* static gallery — leave the button hidden */ }
 }
@@ -11096,6 +11688,7 @@ async function revertToVersion(id, v) {
     const bpmn = await res.text();
     closeVersionsModal();
     adoptImportedXml(bpmn, { userImport: false, replace: true, projectId: id });   // T-1089
+    openingZoom();   // T-1256
     setLoadedSavedVersion(v);   // T-157: now viewing snapshot vN
     // Accurate, action-free confirmation (T-148) — NOT the autosave-restore banner.
     if (typeof showToast === 'function') showToast(`↩ Reverted to ${id} v${v}.`);
@@ -11111,6 +11704,7 @@ async function openVersionInPlace(id, v) {
     const bpmn = await res.text();
     closeVersionsModal();
     adoptImportedXml(bpmn, { userImport: false, replace: true, projectId: id });   // T-1089
+    openingZoom();   // T-1256
     setLoadedSavedVersion(v);   // reflect that we're now viewing snapshot vN
     if (typeof showToast === 'function') showToast(`⤢ Opened ${id} v${v}.`);
   } catch (e) { aefRecordFault('open', e); alert('Open failed: ' + (e && e.message || e)); }
@@ -11365,6 +11959,7 @@ async function openProjectMap(m) {
     // replace: overwrite the in-memory entry for this id (no _v2). userImport: apply the
     // same clean-on-import/nudge behaviour a gallery ?load open has.
     adoptImportedXml(text, { replace: true, userImport: true, projectId: m.id });   // T-1089
+    openingZoom();   // T-1256
     // T-157: reflect the loaded snapshot (or clear for a rendered baseline).
     setLoadedSavedVersion(ot.kind === 'version' ? ot.v : null);
     loadInstanceSnapshot();   // T-884: the overlay follows the loaded template
@@ -11881,6 +12476,7 @@ $('btn-load').onclick = () => {
     const text = await file.text();
     try {
       adoptImportedXml(text, { userImport: true });
+      openingZoom();   // T-1256
     } catch (e) {
       console.error('Load failed:', e);
       aefRecordFault('workflow-parse', e);   // T-821: the alert is seen once and gone
@@ -11924,6 +12520,7 @@ function projectIdFromLoadSrc(src) {
     if (typeof _suppressDeepLink !== 'undefined' && _suppressDeepLink) { loadInstanceSnapshot(); settled = 'suppressed'; return; }
     const projectId = projectIdFromLoadSrc(src);   // T-1109
     adoptImportedXml(await res.text(), projectId ? { userImport: true, projectId } : { userImport: true });
+    openingZoom();             // T-1256: open readable
     _loadSrcKey = activeKey;   // T-234: remember which map identity this ?load adopted
     loadInstanceSnapshot();    // T-884: the overlay follows the loaded template
     settled = 'adopted';
@@ -11990,6 +12587,73 @@ function ioExtraAttrs(el, named) {
 function ioExtraAttrXml(extra) {
   return (extra || []).filter(([k]) => XML_ATTR_NAME.test(k)).map(([k, v]) => ` ${k}="${escAttr(v)}"`).join('');
 }
+// T-1243: CHILD elements inside <aef:input>/<aef:output> are kept the same way (a producer's nested attribute tree,
+// a schema reference, any extension; T-1242). The designer names no children of an io, so every element child is
+// kept, verbatim, in order. XMLSerializer re-declares a namespace on a subtree serialised alone; a declaration that
+// buildBpmnXml's root always makes (bpmn, bpmndi, dc, di, aef, same URI) is redundant there and is dropped, so a save
+// adds no xmlns noise and a second save is byte-identical to the first.
+// T-1272: only those five. Any other prefix the SOURCE root declared (`xmlns:x` for `<x:schema>`) is not on our
+// export's root, so its declaration stays on the kept element; dropping it made the export not well-formed.
+const IO_EXPORT_ROOT_NS = { bpmn: 'http://www.omg.org/spec/BPMN/20100524/MODEL', bpmndi: 'http://www.omg.org/spec/BPMN/20100524/DI',
+                            dc: 'http://www.omg.org/spec/DD/20100524/DC', di: 'http://www.omg.org/spec/DD/20100524/DI',
+                            aef: 'http://anchorpoint.framework/aef/extensions' };
+function ioChildXml(el) {
+  const ser = new XMLSerializer(), parts = [];
+  for (const c of Array.from(el.childNodes)) {
+    if (c.nodeType !== 1) continue;
+    let x = ser.serializeToString(c);
+    x = x.replace(/^(<[^\s>\/]+)((?:\s+[^\s=>]+="[^"]*")*)/, (m, tag, attrs) => tag + attrs.replace(/\s+xmlns(?::([A-Za-z_][\w.-]*))?="([^"]*)"/g,
+      (d, pfx, uri) => (pfx && IO_EXPORT_ROOT_NS[pfx] === uri) ? '' : d));
+    parts.push(x);
+  }
+  return parts.length ? parts : null;
+}
+// T-1249: a mapping v1.1 io often names no `name` or `type` (`<aef:output typeRef="sfdc:Account" operation="create">`),
+// writes `required` after a v1.1 attribute, or says `required="false"`. The canonical writer below would add
+// name=""/type="string", move `required` forward or drop it, and the nameless item was not written at all. `raw` keeps
+// the element's own attribute layout, and is set ONLY when the canonical write would differ, so every map the canonical
+// write already reproduces parses to exactly the state it always did. Used while name/type/required are unedited.
+function ioRawLayout(el, item, isInput) {
+  const order = Array.from(el.attributes).map(a => a.name).filter(n => XML_ATTR_NAME.test(n));
+  const canon = ['name', 'type'].concat(isInput && item.required ? ['required'] : [], (item.extra || []).map(([k]) => k));
+  const same = order.length === canon.length && order.every((n, i) => n === canon[i]) && el.hasAttribute('type');
+  if (same) return null;
+  return { order, name: el.getAttribute('name'), type: el.getAttribute('type'), required: el.getAttribute('required') };
+}
+function ioAttrsXml(i, isInput) {
+  const r = i.raw;
+  if (r && i.name === (r.name || '') && i.type === (r.type || 'string') && (!isInput || !!i.required === (r.required === 'true'))) {
+    const extra = new Map(i.extra || []);
+    return r.order.map(k => {
+      const v = k === 'name' ? r.name : k === 'type' ? r.type : (k === 'required' && isInput) ? r.required : extra.get(k);
+      return v == null ? '' : ` ${k}="${escAttr(v)}"`;
+    }).join('');
+  }
+  const reqAttr = isInput && i.required ? ' required="true"' : '';
+  return ` name="${escAttr(i.name)}" type="${escAttr(i.type)}"${reqAttr}${ioExtraAttrXml(i.extra)}`;
+}
+// T-1249: the whole <aef:io> as read is written back verbatim while its items are unedited. A producer lays io out its
+// own way (greenfield writes each aef:io on one line, the designer one item per line), and a save must not move those
+// bytes. `kept` is set only when the canonical block below differs from the source, so a map the designer wrote parses
+// to exactly the state it always did; any edit to an item (the signature changes) falls back to the canonical writer.
+function ioSig(io) { return JSON.stringify([io.inputs || [], io.outputs || []]); }
+function ioBlockXml(inputs, outputs) {
+  let out = `<aef:io>\n`;
+  for (const i of inputs) out += ioOpen(`          <aef:input${ioAttrsXml(i, true)}`, i.children);
+  for (const o of outputs) out += ioOpen(`          <aef:output${ioAttrsXml(o, false)}`, o.children);
+  return out + `        </aef:io>`;
+}
+function ioKeptXml(ioEl, io) {
+  const x = ioChildXml({ ownerDocument: ioEl.ownerDocument, childNodes: [ioEl] });
+  const src = x && x[0];
+  if (!src || src === ioBlockXml(io.inputs, io.outputs)) return null;
+  return { xml: src, sig: ioSig(io) };
+}
+function ioOpen(tagAndAttrs, children) {   // '<aef:input ...' + children -> self-closing, or open/children/close
+  if (!children || !children.length) return `${tagAndAttrs}/>\n`;
+  const tag = tagAndAttrs.trim().split(/\s/)[0].slice(1);
+  return `${tagAndAttrs}>\n` + children.map(c => `            ${c}\n`).join('') + `          </${tag}>\n`;
+}
 // escText is deliberately NOT given the same treatment: normalisation applies to attribute
 // values only, and newlines in element text content are legal and preserved. Escaping them here
 // would invent a behaviour rather than restore one.
@@ -12033,8 +12697,8 @@ function aefExtensionXml(node) {
   const aef = node.aef || {};
   const io = node.io || {};
   const aefKeys = Object.keys(aef).filter(k => aef[k] !== '' && aef[k] != null);
-  const inputs = (io.inputs  || []).filter(i => i.name);
-  const outputs = (io.outputs || []).filter(i => i.name);
+  const inputs = (io.inputs  || []).filter(i => i.name || i.raw);   // T-1249: a nameless v1.1 io read from a file is kept
+  const outputs = (io.outputs || []).filter(i => i.name || i.raw);
   // Always emit the extension block to preserve the uid (so XML re-import keeps identity).
 
   let out = '      <bpmn:extensionElements>\n';
@@ -12161,6 +12825,9 @@ function aefExtensionXml(node) {
   if (EVENT_KIND[node.type]) {
     const bindField = EVENT_BINDING_FIELD[node.type];
     const binding = bindField ? (aef[bindField] || '') : '';
+    // T-1222: a node typed from its native definition carries its kind there; <aef:eventDef> is added only once a
+    // binding is set, so an unedited open-and-save adds nothing and a user's binding edit is never dropped.
+    if (binding || !(node.nativeEventDefs || []).length)
     out += `        <aef:eventDef kind="${escAttr(EVENT_KIND[node.type])}" binding="${escAttr(binding)}"/>\n`;
   } else if (aef.eventDefKind) {
     // T-259 (T-257 GO): re-emit the preservation passthrough captured at import
@@ -12181,15 +12848,8 @@ function aefExtensionXml(node) {
 
   // I/O data contract
   if (inputs.length || outputs.length) {
-    out += `        <aef:io>\n`;
-    for (const i of inputs) {
-      const reqAttr = i.required ? ' required="true"' : '';
-      out += `          <aef:input name="${escAttr(i.name)}" type="${escAttr(i.type)}"${reqAttr}${ioExtraAttrXml(i.extra)}/>\n`;
-    }
-    for (const o of outputs) {
-      out += `          <aef:output name="${escAttr(o.name)}" type="${escAttr(o.type)}"${ioExtraAttrXml(o.extra)}/>\n`;
-    }
-    out += `        </aef:io>\n`;
+    const kept = io.kept && io.kept.sig === ioSig(io) ? io.kept.xml : null;   // T-1249
+    out += `        ${kept || ioBlockXml(inputs, outputs)}\n`;
   }
 
   // T-063: structured aef values — dedicated child elements, in parity with the
@@ -12342,7 +13002,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.24.0';
+const APP_VERSION = '0.25.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -12514,6 +13174,7 @@ function buildBpmnXml(s) {
   // exports byte-identically and the UNSET default stays genuinely inert.
   if (wm.kind) wmAttrs.push(`kind="${escAttr(wm.kind)}"`);
   lines.push(`      <aef:workflowMeta ${wmAttrs.join(' ')}/>`);
+  for (const x of s.procMetaKept || []) lines.push(`      ${x}`);   // T-1249: process-level aef:meta, verbatim
   lines.push(`    </bpmn:extensionElements>`);
   // T-1096: the process's own ioSpecification, kept — tCallableElement places it before the laneSet
   if (s.dataKept) for (const x of s.dataKept.procIo || []) lines.push(`    ${x}`);
@@ -12548,7 +13209,8 @@ function buildBpmnXml(s) {
     // in-flow form. hostRef stores the host uid (resolved to its displayId here). A
     // dangling hostRef (host deleted) degrades to the plain in-flow tag.
     let boundaryAttrs = '';
-    if (EVENT_KIND[n.type] && n.aef && n.aef.hostRef) {
+    // T-1222: widened to a third-party boundary catch (exports as boundaryEvent + attachedToRef + cancelActivity).
+    if ((EVENT_KIND[n.type] || isPlainBoundary(n)) && n.aef && n.aef.hostRef) {
       const host = findNode(n.aef.hostRef);
       if (host) {
         tag = 'boundaryEvent';
@@ -12581,6 +13243,9 @@ function buildBpmnXml(s) {
       const ldName = (n.aef && n.aef.linkId) || n.linkDef.name;
       lines.push(`      <bpmn:linkEventDefinition${n.linkDef.id ? ` id="${escAttr(n.linkDef.id)}"` : ''}${ldName ? ` name="${escAttr(ldName)}"` : ''}/>`);
     }
+    // T-1222: the other kept native definitions, verbatim, in their original order (eventDefinition follows
+    // incoming/outgoing in tCatchEvent/tThrowEvent).
+    for (const x of n.nativeEventDefs || []) lines.push(`      ${x}`);
     // T-1096: the task's kept data content, after incoming/outgoing in tActivity's order
     const kd = s.dataKept && s.dataKept.perNode && s.dataKept.perNode[n.uid];
     if (kd) for (const t of DATA_TASK_TAGS) for (const x of kd[t] || []) lines.push(`      ${x}`);
@@ -12650,6 +13315,8 @@ function buildBpmnXml(s) {
   lines.push(`  </bpmn:process>`);
   // T-1119: the processes behind the other pools and the messages the kept flows name, verbatim.
   if (s.collab) for (const x of [...(s.collab.processes || []), ...(s.collab.messages || [])]) { lines.push(``); lines.push(`  ${x}`); }
+  // T-1222: the root elements kept native event definitions name, verbatim.
+  for (const x of s.eventRoots || []) { lines.push(``); lines.push(`  ${x}`); }
   lines.push(``);
   // SUPERSEDED 2026-08-23 (T-423). This block previously read:
   //
@@ -12825,6 +13492,24 @@ const DATA_PROC_TAGS = new Set(['dataObject', 'dataObjectReference', 'dataStoreR
 // task output -> process output) — keeping the association without it would write a dangling reference.
 const DATA_TASK_TAGS = ['ioSpecification', 'property', 'dataInputAssociation', 'dataOutputAssociation'];
 const DATA_ASSOC_TAGS = new Set(['dataInputAssociation', 'dataOutputAssociation']);
+// T-1222: a kept native event definition can name a root-level element (messageRef, signalRef, errorRef,
+// escalationRef). Keep each such element verbatim so the export never points at an id it does not contain;
+// a message the collaboration capture already keeps (T-1119) is not kept twice. Empty for every map without them.
+function captureEventRoots(doc, nodes, collab) {
+  const refs = new Set();
+  for (const n of nodes) for (const x of n.nativeEventDefs || []) {
+    for (const m of x.matchAll(/\b(?:messageRef|signalRef|errorRef|escalationRef)="([^"]+)"/g)) refs.add(m[1]);
+  }
+  if (!refs.size) return [];
+  const kept = new Set(((collab && collab.messages) || []).map(x => (x.match(/\bid="([^"]+)"/) || [])[1]));
+  const ROOT_KINDS = new Set(['message', 'signal', 'error', 'escalation']);
+  const BPMN = 'http://www.omg.org/spec/BPMN/20100524/MODEL';
+  return Array.from(doc.documentElement.children)
+    .filter(c => c.namespaceURI === BPMN && ROOT_KINDS.has(c.localName) && refs.has(c.getAttribute('id')) && !kept.has(c.getAttribute('id')))
+    .map(c => new XMLSerializer().serializeToString(c)
+      .replace(/ xmlns(:bpmn)?="http:\/\/www\.omg\.org\/spec\/BPMN\/20100524\/MODEL"/g, ''));
+}
+
 function captureProcessData(doc, proc, displayIdToUid) {
   const ROOT_NS = { bpmn: 'http://www.omg.org/spec/BPMN/20100524/MODEL', bpmndi: 'http://www.omg.org/spec/BPMN/20100524/DI',
                     dc: 'http://www.omg.org/spec/DD/20100524/DC', di: 'http://www.omg.org/spec/DD/20100524/DI',
@@ -13134,6 +13819,12 @@ function parseBpmnXml(text) {
   const procId = proc.getAttribute('id') || 'imported';
   const procName = proc.getAttribute('name') || procId.replace(/^Pool_/, '');
   const aefMetaEl = byAef(proc, 'workflowMeta')[0];
+  // T-1249: mapping v1.1 declares mappingVersion and the prefix map (aef:prefixes) on the PROCESS-level <aef:meta>, a
+  // direct child of the process's own extensionElements. The designer names none of it; it is kept verbatim, in order,
+  // and written back after aef:workflowMeta (it was dropped on save before). Read for display by procMetaInfo().
+  const procExt = Array.from(proc.children).find(c => c.localName === 'extensionElements');
+  const procMetaKept = procExt ? ioChildXml({ ownerDocument: proc.ownerDocument,
+    childNodes: Array.from(procExt.children).filter(c => c.localName === 'meta' && c.namespaceURI === AEF_NS) }) : null;
   const workflowMeta = {
     // T-563 (T-501 §Decision item 1). The chain was `authored id || procName || 'imported'`,
     // and procName is a DISPLAY LABEL — `proc.getAttribute('name')`, or procId minus a
@@ -13254,6 +13945,10 @@ function parseBpmnXml(text) {
   REVERSE_TYPE['intermediateCatchEvent'] = 'linkEventCatch';
   REVERSE_TYPE['linkEventThrow'] = 'linkEventThrow';
   REVERSE_TYPE['linkEventCatch'] = 'linkEventCatch';
+  // T-1222: a boundaryEvent is a CATCH event. Without this it fell back to serviceTask, so a third-party boundary
+  // event (no <aef:eventDef> to type it) was saved as a task and lost its attachedToRef. The designer's own
+  // boundary events carry <aef:eventDef> and are typed below as before.
+  REVERSE_TYPE['boundaryEvent'] = 'linkEventCatch';
 
   const nodes = [];
   const displayIdToUid = new Map(); // for resolving sourceRef/targetRef on edges
@@ -13448,6 +14143,13 @@ function parseBpmnXml(text) {
           if (!aef.linkId && linkDef.name) aef.linkId = linkDef.name;
         }
       }
+      // T-1222: every other native event definition (message, timer, signal, error, escalation, conditional,
+      // compensate, cancel, terminate) is kept as the XML it arrived as and written back after incoming/outgoing.
+      // Before, a save dropped 46 of the 49 in the third-party fixtures (tools/_t1222-event-definitions-kept.py).
+      const nativeDefEls = Array.from(el.children)
+        .filter(c => c.namespaceURI === BPMN_NS && /EventDefinition$/.test(c.localName) && c.localName !== 'linkEventDefinition');
+      const nativeEventDefs = nativeDefEls.map(c => new XMLSerializer().serializeToString(c)
+        .replace(/ xmlns(:bpmn)?="http:\/\/www\.omg\.org\/spec\/BPMN\/20100524\/MODEL"/g, ''));
       // T-204: typed intermediate event — <aef:eventDef> disambiguates the shared
       // intermediateCatchEvent tag (which also decodes to linkEventCatch) into the
       // specific typed-event node type, and restores the kind-specific binding
@@ -13471,6 +14173,14 @@ function parseBpmnXml(text) {
           if (bindField) aef[bindField] = eventDefEl.getAttribute('binding') || '';
           _eventDefConsumed = true;
         }
+      }
+      // T-1222: a third-party catch (intermediate catch or boundary) whose one native definition is a kind the
+      // designer models (timer, message, error) takes that type. The native definition stays the carrier: no
+      // <aef:eventDef> is written for it until a binding is set (aefExtensionXml). Start and throw hosts are never
+      // typed (typed events export as catches, T-237); they keep their tag and definition as plain events.
+      if (!eventDefEl && !linkDef && _catchHost && type === 'linkEventCatch' && nativeDefEls.length === 1) {
+        const k = nativeDefEls[0].localName.replace(/EventDefinition$/, '');
+        if (EVENT_KIND_TYPE[k]) type = EVENT_KIND_TYPE[k];
       }
       // T-259 (T-257 GO): preservation passthrough. Any <aef:eventDef> the
       // typed-catch override did NOT consume (startEvent / intermediateThrowEvent
@@ -13509,6 +14219,10 @@ function parseBpmnXml(text) {
           };
           const extra = ioExtraAttrs(inp, IO_NAMED_ATTRS.input);
           if (extra.length) item.extra = extra;
+          const kids = ioChildXml(inp);   // T-1243
+          if (kids) item.children = kids;
+          const raw = ioRawLayout(inp, item, true);   // T-1249
+          if (raw) item.raw = raw;
           io.inputs.push(item);
         }
         for (const out of byAef(ioEl, 'output')) {
@@ -13518,8 +14232,14 @@ function parseBpmnXml(text) {
           };
           const extra = ioExtraAttrs(out, IO_NAMED_ATTRS.output);
           if (extra.length) item.extra = extra;
+          const kids = ioChildXml(out);   // T-1243
+          if (kids) item.children = kids;
+          const raw = ioRawLayout(out, item, false);   // T-1249
+          if (raw) item.raw = raw;
           io.outputs.push(item);
         }
+        const kept = ioKeptXml(ioEl, io);   // T-1249: the block as read, while unedited
+        if (kept) io.kept = kept;
       }
 
       // T-063: structured aef values — read back the dedicated child elements the
@@ -13588,6 +14308,7 @@ function parseBpmnXml(text) {
         ...(documentation.length ? { documentation } : {}),
         ...(foreignTag ? { foreignTag } : {}),
         ...(linkDef ? { linkDef } : {}),
+        ...(nativeEventDefs.length ? { nativeEventDefs } : {}),
       });
       displayIdToUid.set(displayId, uid);
     }
@@ -13601,6 +14322,33 @@ function parseBpmnXml(text) {
       const hostUid = displayIdToUid.get(n.aef._hostDisplayId);
       if (hostUid) n.aef.hostRef = hostUid;
       delete n.aef._hostDisplayId;
+    }
+  }
+  // T-1222: third-party boundary events carry no <aef:boundaryPos>, so every one on a host landed at the default
+  // bottom-centre point and two on the same host drew on top of each other. When more than one such event shares a
+  // host, spread them evenly along the host's bottom edge. Only events that came from a third-party file (a plain
+  // boundary, or one typed from its native definition) are placed: the designer's own boundary events, with or
+  // without a position, are untouched, so its own maps save byte-identically.
+  {
+    const byHost = new Map();
+    for (const n of nodes) {
+      if (!n.aef || !n.aef.hostRef || n.aef.boundaryPos) continue;
+      const thirdParty = (n.type === 'linkEventCatch' && !n.linkDef) || (n.nativeEventDefs || []).length > 0;
+      if (!thirdParty) continue;
+      if (!byHost.has(n.aef.hostRef)) byHost.set(n.aef.hostRef, []);
+      byHost.get(n.aef.hostRef).push(n);
+    }
+    for (const [hostUid, evs] of byHost) {
+      if (evs.length < 2) continue;
+      const host = nodes.find(h => h.uid === hostUid);
+      const hd = (host && NODE_DEFAULTS[host.type]) || NODE_DEFAULTS.serviceTask;
+      const P = 2 * (hd.w + hd.h);
+      // bottom edge runs right-to-left in the perimeter walk: d from w+h (bottom-right) to 2w+h (bottom-left);
+      // spread across 10%..90% of it so the labels under neighbouring events have room
+      evs.forEach((n, i) => {
+        const t = 0.1 + 0.8 * i / (evs.length - 1);
+        n.aef.boundaryPos = ((hd.w + hd.h + hd.w * t) / P).toFixed(4);
+      });
     }
   }
 
@@ -13657,6 +14405,7 @@ function parseBpmnXml(text) {
   const partEl = _parts.find(p => p.getAttribute('processRef') === proc.getAttribute('id')) || _parts[0];
   const collab = captureCollaboration(doc, proc, partEl, displayIdToUid);   // T-1119
   const dataKept = captureProcessData(doc, proc, displayIdToUid);         // T-1096
+  const eventRoots = captureEventRoots(doc, nodes, collab);              // T-1222
 
   // Snap y-coords to lane centers for nodes that lacked explicit positions
   const result = {
@@ -13687,6 +14436,10 @@ function parseBpmnXml(text) {
     ...(collab ? { collab } : {}),
     // T-1096: data objects/stores and the tasks' data associations, kept verbatim (null: byte-identical).
     ...(dataKept ? { dataKept } : {}),
+    // T-1222: root-level message/signal/error/escalation elements a kept native event definition names, verbatim.
+    ...(eventRoots.length ? { eventRoots } : {}),
+    // T-1249: the process-level <aef:meta> (mapping v1.1: mappingVersion, aef:prefixes), verbatim (null: byte-identical).
+    ...(procMetaKept ? { procMetaKept } : {}),
   };
   // Use a temporary state so laneCenterY() resolves correctly during patching
   const prev = state;
@@ -13818,6 +14571,7 @@ function autoLoadStored() {
   // fetch for this same src is in flight, suppress it so it can't overwrite the restore.
   if (load && (s.src || null) === load) _suppressDeepLink = true;
   try { adoptImportedXml(s.xml, { userImport: false, replace: true }); } catch (e) { aefRecordFault('autosave-adopt', e); return; }
+  openingZoom();   // T-1256: a restored map opens readable too
   // T-234: a same-src restore means the restored document IS the deep-link's map —
   // track its identity so autosaveNow keeps stamping src for it (and stops after a jump).
   if (load && (s.src || null) === load) _loadSrcKey = activeKey;

@@ -1,10 +1,18 @@
 ---
 id: T-4633
-name: "Re-pin designer 0.24.0 -> 0.25.0 (v1.1 io read-only, lossless save of v1.1 maps, lens switch, label/zoom layout)"
+name: "Re-pin designer 0.24.0 -> 0.25.0 (v1.1 io read-only, lossless save of v1.1
+  maps, lens switch, label/zoom layout)"
 description: >
-  832 released designer-v0.25.0 (commit 2b6bd876): dist/aef-workflow-designer-0.25.0.html, sha256 2cbcca06b4f2157f8b1ff4c1b85ca98586289ac7fd02460fc2dd43649e0fb8ee, 1226527 bytes; notes docs/releases/RELEASE-NOTES-0.25.0.md in their repo. Follow the pin protocol (pull by tag, sha256-verify, update policy/designer-pin.yaml, vendor into vendor/designer/, serve), like T-4448 did for 0.24.0. Check: Watchtower /designer serves 0.25.0; T-4607 thumbnails still render; a v1.1 map round-trips byte-exactly through save (T-4549 cases). Note GET /api/lens-definition (T-4402) does not exist yet, so only 'All' shows; record that.
+  832 released designer-v0.25.0 (commit 2b6bd876): dist/aef-workflow-designer-0.25.0.html,
+  sha256 2cbcca06b4f2157f8b1ff4c1b85ca98586289ac7fd02460fc2dd43649e0fb8ee, 1226527
+  bytes; notes docs/releases/RELEASE-NOTES-0.25.0.md in their repo. Follow the pin
+  protocol (pull by tag, sha256-verify, update policy/designer-pin.yaml, vendor into
+  vendor/designer/, serve), like T-4448 did for 0.24.0. Check: Watchtower /designer
+  serves 0.25.0; T-4607 thumbnails still render; a v1.1 map round-trips byte-exactly
+  through save (T-4549 cases). Note GET /api/lens-definition (T-4402) does not exist
+  yet, so only 'All' shows; record that.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +47,8 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "a061bcad"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T11:06:41Z
-last_update: 2026-10-22T11:06:41Z
-date_finished: null
+last_update: '2026-10-22T11:09:08Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T11:09:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4633: Re-pin designer 0.24.0 -> 0.25.0 (v1.1 io read-only, lossless save of v1.1 maps, lens switch, label/zoom layout)
@@ -63,8 +88,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `bin/fw designer sync --from-tag designer-v0.25.0 --dry-run` verifies the tag's MANIFEST: sha256 2cbcca06…ee and 1226527 bytes match
+- [ ] `policy/designer-pin.yaml` pins 0.25.0 (version, sha256, bytes, source_artifact, source_tag, vendored_path, notes), mirrored into `.agentic-framework/policy/designer-pin.yaml`
+- [ ] `vendor/designer/aef-workflow-designer-0.25.0.html` is committed and its sha256 equals the pin; `bin/fw designer` reports the pin present
+- [ ] After `bin/fw watchtower restart`, /designer/app serves the 0.25.0 build and /api/thumb for aef-task-lifecycle returns 200
+- [ ] Designer tests nearest the pin (standard_pin, pin drift, T-4549 round-trip) pass in the foreground
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +277,15 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+grep -q '^version: "0.25.0"' policy/designer-pin.yaml && grep -q '^sha256: "2cbcca06b4f2157f8b1ff4c1b85ca98586289ac7fd02460fc2dd43649e0fb8ee"' policy/designer-pin.yaml && grep -q '^bytes: 1226527' policy/designer-pin.yaml
+test "$(sha256sum vendor/designer/aef-workflow-designer-0.25.0.html | cut -d' ' -f1)" = 2cbcca06b4f2157f8b1ff4c1b85ca98586289ac7fd02460fc2dd43649e0fb8ee
+test "$(stat -c %s vendor/designer/aef-workflow-designer-0.25.0.html)" -eq 1226527
+timeout 300 bin/fw designer sync --from-tag designer-v0.25.0 --dry-run > /tmp/.t4633-sync 2>&1 && grep -q "dry-run OK" /tmp/.t4633-sync
+curl -sf "$(bin/fw watchtower url)/designer/app" -o /tmp/.t4633-app && grep -q "0\.25\.0" /tmp/.t4633-app
+test "$(curl -s -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/api/thumb?id=aef-task-lifecycle")" = 200
+timeout 600 bats tests/unit/standard_pin.bats tests/unit/doctor_designer_pin_drift.bats tests/unit/designer_sync_sha256.bats > /tmp/.t4633-bats 2>&1 && ! grep -q "^not ok" /tmp/.t4633-bats
+timeout 600 python3 -m pytest tests/unit/test_t4549_aef_io_v11_roundtrip.py -q > /tmp/.t4633-py 2>&1 && grep -q passed /tmp/.t4633-py
+bin/fw vendor self --check --task T-4633
 
 ## RCA
 
@@ -346,3 +383,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4633-re-pin-designer-0240---0250-v11-io-read-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:09:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
