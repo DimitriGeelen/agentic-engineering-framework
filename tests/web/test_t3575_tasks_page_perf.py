@@ -79,25 +79,29 @@ def test_board_columns_capped_but_list_filter_reaches_everything():
     columns = len(re.findall(r'class="kanban-column"', html))
     # only backlog/archive columns are capped now; the rest show everything
     assert cards <= sum(counts_by_status(html, BOARD_COLUMN_CAP).values())
-    counts = [int(n) for n in re.findall(r'class="count">\((\d+)\)', html)]
-    if max(counts) > BOARD_COLUMN_CAP:
+    # T-4610: status columns only; the derived Awaiting review column has no status filter
+    counts = {s: n for (attr, s), n in _column_counts(html).items() if attr == "status"}
+    status = max(counts, key=lambda s: counts[s])
+    if counts[status] > BOARD_COLUMN_CAP:
         assert "more &rarr;" in html  # overflow link present
         # the filter the overflow link targets still lists every task of that status
-        big = counts.index(max(counts))
-        status = re.findall(r'class="kanban-column" data-status="([^"]+)"', html)[big]
         lst = c.get(f"/tasks?view=list&status={status}").get_data(as_text=True)
-        assert lst.count('data-bulk-select="T-') >= max(counts)
+        assert lst.count('data-bulk-select="T-') >= counts[status]
+
+
+def _column_counts(html):
+    """{(attr, key): header count} for every board column - status columns AND derived ones
+    (T-4045's data-column="awaiting-review"), so no rendered card escapes the bound (T-4610)."""
+    return {(attr, key): int(n) for attr, key, n in re.findall(
+        r'class="kanban-column" data-(status|column)="([^"]+)">\s*'
+        r'<div class="kanban-column-header">.*?class="count">\((\d+)\)', html, re.S)}
 
 
 def counts_by_status(html, cap):
-    """{status: max cards the board may show} - capped columns at the cap, others uncapped."""
+    """{column: max cards the board may show} - capped columns at the cap, others uncapped."""
     from web.blueprints.tasks import BOARD_CAPPED_STATUSES
-    out = {}
-    for status, n in re.findall(
-            r'data-status="([^"]+)">\s*<div class="kanban-column-header">.*?class="count">\((\d+)\)',
-            html, re.S):
-        out[status] = min(int(n), cap) if status in BOARD_CAPPED_STATUSES else int(n)
-    return out
+    return {key: min(n, cap) if attr == "status" and key in BOARD_CAPPED_STATUSES else n
+            for (attr, key), n in _column_counts(html).items()}
 
 
 def _seed(monkeypatch, tmp_path, n_started=30, n_captured=25):
@@ -163,3 +167,41 @@ def test_task_signature_computed_once_per_request(monkeypatch, tmp_path):
         shared.get_all_task_metadata()
         shared.get_all_task_metadata()
     assert len(calls) == 8  # mutating requests are never memoised
+
+
+def test_bound_counts_derived_awaiting_review_column(monkeypatch, tmp_path):
+    """T-4610: a ready task leaves In Progress for the derived Awaiting review column
+    (T-4045, data-column, no data-status). The bound must count it, or every ready task
+    on the live board reads as an uncapped-column card."""
+    import subprocess
+    from web.app import app
+    from web.blueprints import tasks as tb
+    from web.blueprints.tasks import BOARD_COLUMN_CAP
+    act = tmp_path / ".tasks" / "active"
+    act.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "-c", "user.name=t", "-c", "user.email=t@t",
+                    "commit", "-q", "--allow-empty", "-m", "init"], check=True)
+    monkeypatch.setattr(shared, "PROJECT_ROOT", tmp_path)
+    shared._READINESS_CACHE.clear()
+    shared._LEDGER_CACHE.clear()
+    metas = []
+    for tid, status, box in [("T-9301", "started-work", "x"), ("T-9302", "started-work", " ")] + [
+            (f"T-94{i:02d}", "captured", " ") for i in range(1, 26)]:
+        p = act / f"{tid}-f.md"
+        p.write_text(
+            f"---\nid: {tid}\nname: f {tid}\nstatus: {status}\nworkflow_type: build\nowner: agent\n"
+            f"horizon: now\nlast_update: 2026-10-11T10:00:00Z\n---\n\n## Acceptance Criteria\n\n"
+            f"### Agent\n- [{box}] agent work\n### Human\n- [ ] [RUBBER-STAMP] Run it\n"
+            f"  **Steps:**\n  1. Run `ls /tmp`\n  **Expected:** output contains `tmp`\n"
+            f"  **If not:** fix it\n\n## Verification\ntrue\n")
+        metas.append({"id": tid, "name": f"f {tid}", "status": status, "workflow_type": "build",
+                      "horizon": "now", "owner": "agent", "last_update": "2026-10-11T10:00:00Z",
+                      "_location": "active", "_path": str(p), "tags": []})
+    monkeypatch.setattr(tb, "get_all_task_metadata", lambda: metas)
+    monkeypatch.setattr(tb, "get_episodic_tags", lambda: {})
+    html = app.test_client().get("/tasks").get_data(as_text=True)
+    assert _column_counts(html)[("column", "awaiting-review")] == 1  # fixture premise
+    cards = len(re.findall(r"<article class=\"kanban-card\"", html))
+    # exact: 1 awaiting + 1 in progress + captured capped at BOARD_COLUMN_CAP
+    assert cards == sum(counts_by_status(html, BOARD_COLUMN_CAP).values()) == 2 + BOARD_COLUMN_CAP

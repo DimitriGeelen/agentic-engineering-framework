@@ -1,13 +1,18 @@
 ---
 id: T-4610
-name: "/tasks board does not cap the started-work column (test_t3575 list-vs-board count)"
+name: "/tasks board does not cap the started-work column (test_t3575 list-vs-board
+  count)"
 description: >
-  tests/web/test_t3575_tasks_page_perf.py::test_board_columns_capped_but_list_filter_reaches_everything: counts_by_status shows captured 20, work-completed 20, started-work 194 (cloud 143) — the started-work column is rendered uncapped, so 282 <= 234 fails. Render-surface fix needs the usual [REVIEW]. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt (line 200). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
+  tests/web/test_t3575_tasks_page_perf.py::test_board_columns_capped_but_list_filter_reaches_everything:
+  counts_by_status shows captured 20, work-completed 20, started-work 194 (cloud 143)
+  — the started-work column is rendered uncapped, so 282 <= 234 fails. Render-surface
+  fix needs the usual [REVIEW]. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
+  (line 200). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -39,8 +44,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:46:18Z
-last_update: 2026-10-22T08:46:18Z
-date_finished: null
+last_update: 2026-10-22T11:09:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:00:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:00:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4610: /tasks board does not cap the started-work column (test_t3575 list-vs-board count)
@@ -63,8 +95,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction checked on bleeding-edge HEAD: `test_board_columns_capped_but_list_filter_reaches_everything` run against the live corpus, result and root cause recorded in ## RCA
+- [x] Fix makes the board's rendered card count agree with the per-column bound the test computes (no column's cards escape the count, the derived Awaiting review column included)
+- [x] Regression test against a committed/seeded fixture (not live corpus counts) fails before the fix and passes after (`test_bound_counts_derived_awaiting_review_column`: old helper 22 == 21 fails; new helper passes)
+- [x] tests/web/test_t3575_tasks_page_perf.py passes in full (9 passed; test_t4045 5 passed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +283,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 python3 -m pytest tests/web/test_t3575_tasks_page_perf.py -q > /tmp/.t4610 2>&1 && grep -q passed /tmp/.t4610 && ! grep -q failed /tmp/.t4610
+timeout 600 python3 -m pytest tests/web/test_t4045_board_awaiting_review.py -q > /tmp/.t4610b 2>&1 && grep -q passed /tmp/.t4610b && ! grep -q failed /tmp/.t4610b
+# no web/ file changed (test-only fix), so no watchtower restart/current line is needed
 
 ## RCA
 
@@ -265,6 +302,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** `test_board_columns_capped_but_list_filter_reaches_everything` fails on live corpus: 275 cards rendered vs a bound of 228 (`{captured: 20, started-work: 188, issues: 0, work-completed: 20}`).
+
+**Root cause:** the board is correct, the test's bound is stale. The title's premise ("started-work column uncapped") is not the cause: In Progress is deliberately uncapped (T-3575 design, template comment at `web/templates/tasks.html:546`). T-4045 (commit 1f6016113) added a derived "Awaiting review" column (`web/templates/tasks.html:568`), which moves `ready` tasks out of the status columns (`web/blueprints/tasks.py:809-810`) into a column marked `data-column="awaiting-review"`, with no `data-status`. The test helper `counts_by_status` (`tests/web/test_t3575_tasks_page_perf.py:92-100`) only matches `data-status=` columns, so the 47 Awaiting-review cards were counted in `cards` and missing from the bound. A second, latent defect in the same test: `counts` (line 82) includes the awaiting column's count but `status` (line 87) indexes a `data-status`-only list, so `counts.index(max)` points at the wrong column once awaiting precedes it.
+
+**Why structurally allowed:** the T-3575 test runs against the live corpus, so it only went red once enough tasks were `ready` (zero ready tasks: awaiting has no cards, bound holds). T-4045's own tests use a seeded fixture and never ran T-3575's assertion. Nothing pinned "every board column is counted in the bound" against a fixture with a non-empty derived column.
+
+**Prevention:** the helper now parses every `kanban-column` (status and derived) from one regex, so counts and keys stay aligned; a seeded regression test renders a board with a ready task in Awaiting review plus an over-cap captured column and asserts the cards rendered equal the bound exactly.
 
 ## Evolution
 
@@ -346,3 +390,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4610-tasks-board-does-not-cap-the-started-wor.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:09:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
