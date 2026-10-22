@@ -10,12 +10,12 @@ description: >
   AC (P-013). Related: T-4151 (vibe worker kind, Mistral subscription — a different
   credential: the CLI's own login, not an API key).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/secrets_store.py, web/templates/settings.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T21:09:49Z
-last_update: 2026-10-21T22:36:10Z
-date_finished:
+last_update: 2026-10-22T11:20:52Z
+date_finished: 2026-10-22T11:20:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -123,7 +123,7 @@ upstream, not a bug fix.
 ### Human
 - [ ] [REVIEW] Mistral option appears in the API-key form
   **Steps:**
-  1. Open the Watchtower URL printed by `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`, then go to `/settings`
+  1. Open http://192.168.10.107:3000/settings/
   2. Open the "Key Name" dropdown in the API key form
   **Expected:** a "Mistral (La Plateforme)" entry sits below OpenRouter and OpenAI, styled like them
   **If not:** run `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower current` (restart if stale) and note what the dropdown shows
@@ -367,7 +367,7 @@ bin/fw vendor self --check --task T-4198
 **Rationale:** Two one-line additions matching 1409's rendered instance; the env-var mapping and the form option are pinned by a regression test (3 of 4 legs red before), and the live Watchtower serves the option. Only the visual check of the dropdown remains.
 **Evidence:**
 - `tests/unit/test_t4198_mistral_key.py` 4 passed (3 failed pre-fix); neighbours test_settings_nav_link, test_estate_ingest/push green
-- `curl -sfL $(bin/fw watchtower url)/settings/` contains "Mistral (La Plateforme)"; `bin/fw watchtower current` rc 0
+- http://192.168.10.107:3000/settings/ (fetched with `curl -sfL`) contains "Mistral (La Plateforme)"; `bin/fw watchtower current` rc 0
 - `bin/fw vendor self --check --task T-4198` clean
 
 ## Decisions
@@ -401,3 +401,19 @@ bin/fw vendor self --check --task T-4198
 ### 2026-10-21T22:36:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-48eaf67b
+- **Timestamp:** 2026-10-22T11:21:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **secret-handling** (high) — Secret or credential changes
+     - matched: `API key`
+
+### 2026-10-22T11:20:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
