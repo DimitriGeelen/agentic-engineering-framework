@@ -98,7 +98,7 @@ cost_estimate_proposed:
 - [x] `FW_SPAWN_ENV_ALLOW` in `lib/spawn-env.sh` lists TERMLINK_* variables by exact name; no `TERMLINK_[A-Z0-9_]+` prefix remains there or in the run.sh copy in `agents/termlink/termlink.sh`
 - [x] Canaries TERMLINK_SIDECAR_SOCKET, TERMLINK_AGENT_ID and TERMLINK_ZZ_CANARY are dropped by `fw_spawn_env`; every kept TERMLINK_* name passes (bats regression test, fails on the old prefix)
 - [x] Kept list and the reason for each name recorded in `## Decisions`
-- [ ] Existing T-4647 and T-4651 bats suites stay green; vendor copy in sync
+- [x] Existing T-4647 and T-4651 bats suites stay green; vendor copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

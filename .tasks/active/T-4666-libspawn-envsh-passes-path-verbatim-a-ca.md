@@ -92,9 +92,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw_spawn_env` builds PATH by construction (this framework's bin, dirs of resolved claude/termlink, ~/.local/bin, ~/.cargo/bin, system dirs; only those that exist) and never copies the caller's PATH; the run.sh copy does the same
-- [ ] A caller PATH with a foreign `.agentic-framework/bin` first is dropped; the worker resolves this project's `fw`, and still finds claude, termlink, git, python3, bats (bats regression test, fails on the old verbatim PATH)
-- [ ] Existing T-4647 and T-4651 bats suites stay green; vendor copy in sync
+- [x] `fw_spawn_env` builds PATH by construction (this framework's bin, dirs of resolved claude/termlink, ~/.local/bin, ~/.cargo/bin, system dirs; only those that exist) and never copies the caller's PATH; the run.sh copy does the same
+- [x] A caller PATH with a foreign `.agentic-framework/bin` first is dropped; the worker resolves this project's `fw`, and still finds claude, termlink, git, python3, bats (bats regression test, fails on the old verbatim PATH)
+- [x] Existing T-4647 and T-4651 bats suites stay green; vendor copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
