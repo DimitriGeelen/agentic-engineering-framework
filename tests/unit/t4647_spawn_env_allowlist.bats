@@ -78,3 +78,23 @@ wait_for_file() { local i; for i in $(seq 1 150); do [ -s "$1" ] && return 0; sl
     echo "$output" | grep -qx 'TERMLINK_RUNTIME_DIR=/x'
     ! echo "$output" | grep -qE '^(CONTEXT_DIR|TASKS_DIR|FW_FOO|GIT_DIR|PYTHONPATH)=' || false
 }
+
+# T-4665: TermLink variables are allow-listed by exact name. The old TERMLINK_[A-Z0-9_]+ prefix
+# handed a worker the spawning agent's sidecar socket and agent id (read its mail, sign as it).
+@test "T-4665: fw_spawn_env drops TermLink identity/socket canaries, keeps the named hub settings" {
+    run env -i PATH=/usr/bin:/bin HOME=/root \
+        TERMLINK_RUNTIME_DIR=/rt TERMLINK_RUNTIME_DIR_FALLBACK=/fb TERMLINK_BIN=/b/termlink \
+        TERMLINK_SIDECAR_SOCKET=/s.sock TERMLINK_SIDECAR_STATUS_SOCKET=/st.sock \
+        TERMLINK_AGENT_ID=parent TERMLINK_IDENTITY_FILE=/id TERMLINK_SESSION_ID=tl-parent \
+        TERMLINK_SESSION=parent TERMLINK_ZZ_CANARY=1 \
+        bash -c '. "$1"; fw_spawn_env; printf "%s\n" "${FW_SPAWN_ENV[@]}"' _ "$ROOT/lib/spawn-env.sh"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -qx 'TERMLINK_RUNTIME_DIR=/rt'
+    echo "$output" | grep -qx 'TERMLINK_RUNTIME_DIR_FALLBACK=/fb'
+    echo "$output" | grep -qx 'TERMLINK_BIN=/b/termlink'
+    ! echo "$output" | grep -qE '^TERMLINK_(SIDECAR_SOCKET|SIDECAR_STATUS_SOCKET|AGENT_ID|IDENTITY_FILE|SESSION_ID|SESSION|ZZ_CANARY)=' || false
+}
+
+@test "T-4665: no TERMLINK_ prefix pattern in either allow-list copy" {
+    ! grep -n 'TERMLINK_\[A-Z0-9_\]+' "$ROOT/lib/spawn-env.sh" "$TL" || false
+}

@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T20:41:22Z
-last_update: 2026-10-22T20:42:45Z
+last_update: '2026-10-22T20:45:15Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,6 +73,16 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T20:45:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4665: lib/spawn-env.sh forwards every TERMLINK_* variable: a dispatched worker inherits the spawning agent's TERMLINK_SIDECAR_SOCKET and TERMLINK_AGENT_ID (can read its mail, sign as it)
@@ -85,8 +95,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `FW_SPAWN_ENV_ALLOW` in `lib/spawn-env.sh` lists TERMLINK_* variables by exact name; no `TERMLINK_[A-Z0-9_]+` prefix remains there or in the run.sh copy in `agents/termlink/termlink.sh`
+- [x] Canaries TERMLINK_SIDECAR_SOCKET, TERMLINK_AGENT_ID and TERMLINK_ZZ_CANARY are dropped by `fw_spawn_env`; every kept TERMLINK_* name passes (bats regression test, fails on the old prefix)
+- [x] Kept list and the reason for each name recorded in `## Decisions`
+- [ ] Existing T-4647 and T-4651 bats suites stay green; vendor copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -271,8 +283,22 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4647_spawn_env_allowlist.bats > /tmp/.t4665-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4665-a.out && grep -q "T-4665: fw_spawn_env drops TermLink" /tmp/.t4665-a.out
+test "$(grep -c '# skip' /tmp/.t4665-a.out)" -eq 0
+timeout 600 bats tests/unit/t4651_polluted_tmux_server.bats > /tmp/.t4665-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4665-b.out
+test "$(grep -c '# skip' /tmp/.t4665-b.out)" -eq 0
+! grep -n 'TERMLINK_\[A-Z0-9_\]+' lib/spawn-env.sh agents/termlink/termlink.sh
+bin/fw vendor self --check --task T-4665
 
 ## RCA
+
+**Symptom:** a worker started by `fw termlink dispatch` inherited the spawning agent's `TERMLINK_SIDECAR_SOCKET` and `TERMLINK_AGENT_ID` (010-termlink be.3 field report, sidecar 6829fbaa, 2026-10-22): it could read that agent's consult mail and sign channel posts as it.
+
+**Root cause:** `lib/spawn-env.sh:FW_SPAWN_ENV_ALLOW` (T-4647) allow-listed the whole prefix `TERMLINK_[A-Z0-9_]+`, and the self-contained copy in the run.sh heredoc (`agents/termlink/termlink.sh`, `FW_SPAWN_ENV_ALLOW=` inside RUNEOF) did the same. A prefix is a deny-list in disguise: every agent-scoped TermLink variable (identity file/dir, agent id, sidecar sockets, session ids) matched it.
+
+**Why structurally allowed:** the T-4647 tests asserted only that the foreign *project* variables (PROJECT_ROOT, CONTEXT_DIR, FW_*) were dropped and that `TERMLINK_RUNTIME_DIR` passed; nothing named an agent-scoped TermLink variable as a canary, so the prefix's over-reach was never measured. TermLink itself had removed the same forwarding from `termlink spawn` (its T-3463) without the framework's copy following.
+
+**Prevention:** `tests/unit/t4647_spawn_env_allowlist.bats` now carries canaries (`TERMLINK_SIDECAR_SOCKET`, `TERMLINK_SIDECAR_STATUS_SOCKET`, `TERMLINK_AGENT_ID`, `TERMLINK_IDENTITY_FILE`, `TERMLINK_SESSION_ID`, `TERMLINK_SESSION`, `TERMLINK_ZZ_CANARY`) that must be dropped, each kept name must pass, and a static test refuses any `TERMLINK_[A-Z0-9_]+` prefix in either copy; the existing equality test keeps the two copies identical. Red-before: HEAD's `lib/spawn-env.sh` forwards all three named canaries.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -351,6 +377,14 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-22 — which TERMLINK_* names a worker gets from its parent
+- **Chose:** exactly three, from a grep of every `TERMLINK_*` the framework reads (lib/ agents/ bin/) and the names the termlink binary reads:
+  - `TERMLINK_RUNTIME_DIR` — where the hub and session registry live; a worker without it can register in `/tmp/termlink-$UID` while the hub listens elsewhere (split-brain, T-3779).
+  - `TERMLINK_RUNTIME_DIR_FALLBACK` — the host's list of known hub dirs read by `lib/termlink-runtime.sh`; host-level, not agent-level.
+  - `TERMLINK_BIN` — the binary override read by the templated scripts (`lib/templates/scripts/*.sh`); host-level.
+- **Never forwarded:** `TERMLINK_AGENT_ID`, `TERMLINK_IDENTITY_FILE`, `TERMLINK_IDENTITY_DIR`, `TERMLINK_IDENTITY_NO_CREATE` (identity: sign as the parent), `TERMLINK_SIDECAR_SOCKET`, `TERMLINK_SIDECAR_STATUS_SOCKET`, `TERMLINK_SIDECAR_*` (the parent's mailbox), `TERMLINK_SESSION`, `TERMLINK_SESSION_ID` (the parent's session; `termlink spawn` sets the worker's own in its PTY, and `lib/sidecar_cli.py` resolves the consult agent id from `TERMLINK_SESSION`), `TERMLINK_TASK_GOVERNANCE` (comes from the worker's own `.mcp.json`), and the framework's own config names (`TERMLINK_MAX_WORKERS` etc. are read via `fw_config`/`FW_*`, not inherited).
+- **Rejected:** keeping the prefix with a deny-list of agent-scoped names — the same fail-open shape T-4647 replaced; any new TermLink identity variable would leak by default.
 
 ## Decision
 
