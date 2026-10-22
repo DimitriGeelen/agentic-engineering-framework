@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4231: Consumers get ~16 runtime files under .context/working (.verb-counter, *.lock, .session-baseline, fw-vec-index.db*, recall-telemetry.jsonl, continuous-run.jsonl, watchtower-ensure.log, ...) with no ignore rule, so the audit's uncommitted-changes rail counts them
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T19:37:31Z
+# ============================================================================
+
+task_id: T-4231
+task_name: "Consumers get ~16 runtime files under .context/working (.verb-counter, *.lock, .session-baseline, fw-vec-index.db*, recall-telemetry.jsonl, continuous-run.jsonl, watchtower-ensure.log, ...) with no ignore rule, so the audit's uncommitted-changes rail counts them"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-17T13:10:21Z
+completed: 2026-10-22T19:17:28Z
+duration_days: 5
+updates_count: 3
+first_commit: 2026-10-17T15:46:26+02:00
+last_commit: 2026-10-21T23:41:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  add 1023's sidecar-runtime ignore addendum; T-4245: fabric register REFUSED wording. fw init/upgrade gitignore runtime state under .context/working (counters, locks, pid/url, cursors, logs, telemetry) from one shared list, lib/working-gitignore.sh; sidecar receiver also ignores pid/port/url, inbox cursors, hub-id/peers caches, waiting/; jsonl ledgers stay tracked; regression bats. tick regression-test AC (t4231 7/7, fresh-machine simulation 18/18)
+
+# Key outcomes
+outcomes:
+  - 'Reproduced on current bleeding-edge: a fresh `fw init` consumer''s own bootstrap commit tracks `.context/working/.verb-counter`, `.verb-counter.lock` and `.budget-gate-counter`; its `.context/working/.gitignore` names five files'
+  - 'One shared rule list (`lib/working-gitignore.sh`) names the runtime files written there; `fw init` writes it and `fw upgrade` appends the missing rules (idempotent, dry-run aware) and prints the untrack command for runtime files a project already tracks'
+  - 'Sidecar runtime state from the 1023 addendum (receiver.pid/port/url, inbox-state.json(+.lock), hub-id, peers.json, waiting/, *.tmp) is ignored; the *.jsonl ledgers stay tracked (recorded in ## Decisions)'
+  - 'Regression bats `tests/unit/t4231_working_runtime_gitignore.bats` fails before the fix and passes after; `tests/unit/upgrade_fresh_machine_simulation.bats` stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-21 — which files are runtime, which are records'
+    chose: 'ignore host/process state only (counters, locks, pid/url/port, cursors, logs, telemetry jsonl, tier0 pending approvals; sidecar receiver.pid/port/url, inbox-state.json, hub-id, peers.json, waiting/). Keep tracked: `.gate-bypass-log.yaml`, `feedback-stream.yaml`, `reviewer-overrides.yaml`, `delegations.jsonl`, `tier0-action-events.jsonl`, `happiness.jsonl`, `pending-updates.yaml`, `arc-focus.yaml`, and the sidecar ledgers `awaiting-ack.jsonl`, `direct-ack.jsonl`, `receipts.jsonl`, `receipts-sent.jsonl`, `refusals.jsonl`.'
+    rationale: 'the kept files are audit trails or sovereignty rails other gates read from git history; the ignored ones are regenerated per host/session.'
+    alternatives_rejected: ['ignoring `.context/working/*` wholesale (loses the records); `git rm --cached` from `fw upgrade` (mutates the consumer''s index unasked) — upgrade prints the untrack command instead.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/sidecar/lifecycle.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/working-gitignore.sh'
+  - 'lib/init.sh'
+  - 'lib/sidecar/lifecycle.py'
+  - 'lib/upgrade.sh'
+  - 'lib/working-gitignore.sh'
+  - '.tasks/active/T-4231-consumers-get-16-runtime-files-under-con.md'
+  - '.tasks/active/T-4245-fw-fabric-register-prints-refused-no-sub.md'
+  - 'tests/unit/t4231_working_runtime_gitignore.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T15:46:26'
+    action: 'T-4231: add 1023''s sidecar-runtime ignore addendum; T-4245: fabric register REFUSED wording'
+  - time: '2026-10-21T23:31:09'
+    action: 'T-4231: fw init/upgrade gitignore runtime state under .context/working (counters, locks, pid/url, cursors, logs, telemetry) from one shared list, lib/working-gitignore.sh; sidecar receiver also ignores pid/port/url, inbox cursors, hub-id/peers caches, waiting/; jsonl ledgers stay tracked; regression bats'
+  - time: '2026-10-21T23:41:23'
+    action: 'T-4231: tick regression-test AC (t4231 7/7, fresh-machine simulation 18/18)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 7567 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7567
+  commits: 3
+  files_changed: 11
+  lines_added: 861
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4231-consumers-get-16-runtime-files-under-con.md
+generated_by: context-agent-hybrid
