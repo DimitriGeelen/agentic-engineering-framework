@@ -20,7 +20,7 @@ components: []
 related_tasks: [T-1928, T-1929, T-2166, T-2168, T-2169]
 arc_id: value-prioritisation
 created: 2026-06-01T22:20:01Z
-last_update: '2026-08-17T12:36:06Z'
+last_update: '2026-10-22T07:45:11Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -129,6 +129,25 @@ bvp_scores_proposed:
       D2=0 (no-signal); D3=2 (body:default-change); D4=2 
       (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=4 
       (body:auto-promote-class-eligibility); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-22T07:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      estimator-fidelity: 0
+      D1: 2
+      D2: 0
+      D3: 2
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 4
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: estimator-fidelity=0 (no-signal); D1=2 (body:learning-ref); D2=0 
+      (no-signal); D3=2 (body:default-change); D4=0 (no-signal); F-RECALL=0 
+      (no-signal); F-AUTONOMY=4 (body:auto-promote-class-eligibility); F3=1 
       (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
