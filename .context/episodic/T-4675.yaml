@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4675: Dispatch runtime loses worker results when /tmp is remounted: wdir lives in /tmp/tl-dispatch, and result/status/exit_code are looked up by path
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T23:10:45Z
+# ============================================================================
+
+task_id: T-4675
+task_name: "Dispatch runtime loses worker results when /tmp is remounted: wdir lives in /tmp/tl-dispatch, and result/status/exit_code are looked up by path"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T22:07:15Z
+completed: 2026-10-22T23:08:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T00:07:57+02:00
+last_commit: 2026-10-23T00:30:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture dispatch results lost when /tmp is remounted (832 report, seen on AEF workers). dispatch worker dirs live under the project (.context/dispatch), /tmp/tl-dispatch is a read fallback
+
+# Key outcomes
+outcomes:
+  - '`fw termlink dispatch` (no FW_DISPATCH_DIR) creates the worker dir under `<project>/.context/dispatch/<name>`, not under /tmp/tl-dispatch; harness review seats (codex/opencode/antigravity) stay in /tmp (another user must read their export)'
+  - '`fw termlink wait/result/status/vanished/cleanup` resolve a worker by name through the project root first and the legacy /tmp root second, so workers already running in /tmp stay readable'
+  - 'With the legacy /tmp root removed mid-run (the remount case), a project-root worker still yields its result and exit_code via `fw termlink result`/`status`/`wait` (regression test)'
+  - '`lib/dispatch_tokens.py`, `lib/termlink_worker.py` and `tools/wait-dispatch.sh` resolve the same roots (project first, legacy fallback). `web/blueprints/orchestrator.py` (reads /tmp only) is left for a follow-up: it is a render surface with its own review gate'
+  - '`.context/dispatch/` is gitignored'
+  - 'Existing termlink dispatch/cleanup/wait bats suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/dispatch_tokens.py'
+  - '.agentic-framework/lib/termlink_worker.py'
+  - '.agentic-framework/tools/wait-dispatch.sh'
+  - 'agents/termlink/termlink.sh'
+  - '.gitignore'
+  - 'lib/dispatch_tokens.py'
+  - 'lib/termlink_worker.py'
+  - '.tasks/active/T-4675-dispatch-runtime-loses-worker-results-wh.md'
+  - 'tests/unit/t3595_cleanup_scope.bats'
+  - 'tests/unit/t4675_dispatch_wdir_durable.bats'
+  - 'tools/wait-dispatch.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T00:07:57'
+    action: 'T-4675: capture dispatch results lost when /tmp is remounted (832 report, seen on AEF workers)'
+  - time: '2026-10-23T00:30:48'
+    action: 'T-4675: dispatch worker dirs live under the project (.context/dispatch), /tmp/tl-dispatch is a read fallback'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 61 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 61
+  commits: 2
+  files_changed: 12
+  lines_added: 746
+  lines_removed: 52
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4675-dispatch-runtime-loses-worker-results-wh.md
+generated_by: context-agent-hybrid

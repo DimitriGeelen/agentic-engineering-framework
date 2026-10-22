@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4672: fw upgrade leaves the designer NOT SYNCED with the new pin; consumers serve the old designer until fw designer install runs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T23:33:02Z
+# ============================================================================
+
+task_id: T-4672
+task_name: "fw upgrade leaves the designer NOT SYNCED with the new pin; consumers serve the old designer until fw designer install runs"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T21:48:53Z
+completed: 2026-10-22T23:26:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T23:49:33+02:00
+last_commit: 2026-10-23T00:58:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture designer not synced after fw upgrade (832 be.3 field report). fw upgrade re-installs the pinned Workflow Designer in consumers that had one installed (dry-run: WOULD INSTALL), so a pin bump no longer leaves it NOT SYNCED
+
+# Key outcomes
+outcomes:
+  - '`lib/upgrade.sh` step 4b, after the vendor sync, installs the newly pinned Workflow Designer build into the consumer (same sha256-vs-pin verification as `fw designer install`) when the consumer already has a designer build installed and the pinned one is missing or differs'
+  - '`--dry-run` installs nothing and prints a `WOULD INSTALL` line naming the pinned version'
+  - 'A consumer with no designer build installed is skipped quietly (no install, no output); an already-current install is a no-op'
+  - 'Regression test `tests/unit/t4672_upgrade_syncs_designer.bats` covers all four cases and fails without the fix; `tests/unit/upgrade_fresh_machine_simulation.bats` stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — install inside upgrade, only where a designer was installed'
+    chose: 'run the install as part of step 4b (reusing `fw_init_install_designer`, so verification and wording match init), only when the consumer already has a designer build in the install dir; dry-run prints WOULD INSTALL.'
+    rationale: 'the install is local, offline and sha256-verified (no network, no hang, T-3064 A4), so nothing argues for leaving it to the operator; restricting it to consumers that already had a designer keeps upgrade from onboarding a feature the project never took.'
+    alternatives_rejected: ['printing `fw designer install` as a required next command — that is the step 832 had to discover by hand, and a printed instruction is the one an operator skips. Superseded installed builds are left in place (not pruned): they may be tracked in the consumer''s git, and status/serving read only the pinned path.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4672-fw-upgrade-leaves-the-designer-not-synce.md'
+  - 'tests/unit/t4672_upgrade_syncs_designer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T23:49:33'
+    action: 'T-4672: capture designer not synced after fw upgrade (832 be.3 field report)'
+  - time: '2026-10-23T00:58:56'
+    action: 'T-4672: fw upgrade re-installs the pinned Workflow Designer in consumers that had one installed (dry-run: WOULD INSTALL), so a pin bump no longer leaves it NOT SYNCED'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 97 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 97
+  commits: 2
+  files_changed: 4
+  lines_added: 575
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4672-fw-upgrade-leaves-the-designer-not-synce.md
+generated_by: context-agent-hybrid

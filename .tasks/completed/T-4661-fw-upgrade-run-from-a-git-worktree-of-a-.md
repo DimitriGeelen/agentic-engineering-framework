@@ -1,26 +1,19 @@
 ---
-id: T-4678
-name: "install-hooks on an old NON-stock framework hook with a project block: the
-  kept-lines extract carries old-template residue (# VERSION=1.5, a secret-scan echo)
-  and cuts the project block between if and fi, so the merged hook does not parse
-  and is REFUSED"
+id: T-4661
+name: "fw upgrade run from a git worktree of a release tag resolves the framework
+  to the worktree's main clone and pins its HEAD (master 2328ae76b) instead of the
+  tag"
 description: >
-  ring20's pre-commit (old framework template + their own T-2215 block) was REFUSED
-  live on be.4 though t4568 bats pass. The T-4515 'old framework hook' path keeps
-  lines the current template lacks, line by line, so a multi-line project block straddling
-  template lines is split and old template lines survive. Fix: keep project blocks
-  as contiguous ranges (from the first non-template line to its matching end), recognise
-  residue from ANY shipped template version (stock-hook-digests history), and test
-  with ring20's shape (old template + an if...fi project block). Never silently drop
-  project lines; refusing with a precise message stays the fallback. Source: proxmox-ring20-management
-  be.4 field report (sidecar 4aade009, 2026-10-23).
+  050 ran fw upgrade from a worktree checkout of v1.8.15-be.3; the pinned version_sha
+  was the main clone's master, not the tag; a standalone clone worked. Source: 050-email-archive
+  field report on be.3 upgrade (sidecar 5b5b40e9, 2026-10-22).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,9 +41,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T22:25:15Z
-last_update: 2026-10-22T23:06:53Z
-date_finished:
+created: 2026-10-22T20:29:39Z
+last_update: 2026-10-22T23:17:31Z
+date_finished: 2026-10-22T23:17:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,18 +54,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-22T22:27:40Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-22T22:28:51Z'
+  - ts: '2026-10-22T20:30:18Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
@@ -88,23 +71,31 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T20:30:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4678: install-hooks on an old NON-stock framework hook with a project block: the kept-lines extract carries old-template residue (# VERSION=1.5, a secret-scan echo) and cuts the project block between if and fi, so the merged hook does not parse and is REFUSED
+# T-4661: fw upgrade run from a git worktree of a release tag resolves the framework to the worktree's main clone and pins its HEAD (master 2328ae76b) instead of the tag
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw upgrade` invoked through a linked worktree's `bin/fw` must pin (and sync from) that worktree's checkout, not the main clone's.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Fixtures reconstruct ring20's shape from real history: an old pre-commit template (`# VERSION=1.5`, secret-scan echo) read via `git show <commit>:agents/git/lib/hooks.sh`, plus a multi-line project `if/then/fi` block (nested command + comment) at the end (fixture A) and between template lines (fixture B); the regression test fails against the pre-fix hooks.sh
-- [x] A line found in ANY pre-block shipped template body (generated list `agents/git/lib/stock-hook-lines.txt`, written by `tools/gen-stock-hook-digests.sh`) is template residue, never a project line
-- [x] Old-framework-hook merge keeps whole top-level constructs: the installed hook is split into the smallest chunks that each pass `bash -n`; a chunk holding any non-template line is kept whole (if...fi through its matching close, even when inner lines coincide with template lines); chunks of only template lines are dropped
-- [x] If the merged hook still does not parse, the refusal names the exact line numbers and the fix
-- [x] `tests/unit/t4678_old_hook_project_block.bats`: both fixtures merge (exit 0, no REFUSED), project block kept whole and active (inert if after an unconditional exit, per T-4569), no template residue outside it, `bash -n` passes; t4568 stays green
+- [x] `bin/fw` does not re-exec the main checkout's binary for `upgrade` when the invoked binary lives in a linked worktree (the worktree is the release source the operator chose); every other command still redirects (T-3111 suite green)
+- [x] Regression test `tests/unit/t4661_upgrade_from_worktree_source.bats` (real `git worktree add` of a tag in a temp repo whose main clone has moved on) fails before the fix and passes after: upgrade runs the worktree's binary with FRAMEWORK_ROOT = the worktree, and the recorded version_sha is the tag commit, not the main clone's HEAD
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,13 +280,13 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 900 bats tests/unit/t4678_old_hook_project_block.bats > /tmp/.t4678.out 2>&1 && ! grep -q "^not ok" /tmp/.t4678.out
-test "$(grep -c '# skip' /tmp/.t4678.out)" -eq 0
-timeout 900 bats tests/unit/t4568_stock_hook_upgrade.bats > /tmp/.t4678b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4678b.out
-test "$(grep -c '# skip' /tmp/.t4678b.out)" -eq 0
-bash -n agents/git/lib/hooks.sh
-python3 tools/bats-dead-negation-lint.py tests/unit/t4678_old_hook_project_block.bats > /tmp/.t4678c.out 2>&1 && grep -q clean /tmp/.t4678c.out
-bin/fw vendor self --check --task T-4678
+timeout 600 bats tests/unit/t4661_upgrade_from_worktree_source.bats > /tmp/.t4661a 2>&1 && ! grep -q "^not ok" /tmp/.t4661a
+test "$(grep -c '# skip' /tmp/.t4661a)" -eq 0
+timeout 600 bats tests/unit/t3111_worktree_reexec.bats > /tmp/.t4661b 2>&1 && ! grep -q "^not ok" /tmp/.t4661b
+test "$(grep -c '# skip' /tmp/.t4661b)" -eq 0
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4661c 2>&1 && ! grep -q "^not ok" /tmp/.t4661c
+bash -n bin/fw
+bin/fw vendor self --check --task T-4661
 
 ## RCA
 
@@ -312,13 +303,14 @@ bin/fw vendor self --check --task T-4678
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-**Symptom:** ring20 (be.4) `fw git install-hooks` REFUSED their pre-commit — an old framework template (`# VERSION=1.5`, secret-scan echo lines) with their own T-2215 `if ... fi` block inserted — printing kept "lines" that were old-template residue plus a project block cut after its nested `if`. Reproduced exactly by `tests/unit/t4678_old_hook_project_block.bats` against the pre-fix hooks.sh (tests 2-7 red, same REFUSED listing).
 
-**Root cause:** `agents/git/lib/hooks.sh` `_fw_hook_compose`, "old framework hook" branch (pre-fix lines 145-147): an awk kept each line of the installed hook that was absent from the CURRENT template, one line at a time. (1) Lines of an OLDER template that the current one dropped (`# VERSION=1.5`, the removed `echo "If this is a false positive…"`) were indistinguishable from project lines. (2) A project block's inner lines that coincide with template lines (`    exit 1`, `    fi`, `fi`, `echo "" >&2`) were dropped, so the kept `if` had no `fi` and the merged hook failed `bash -n` → REFUSED.
+**Symptom:** 050 ran `fw upgrade` with the `bin/fw` of a git worktree checked out at tag v1.8.15-be.3; the consumer's `.framework.yaml` got `version_sha` = the main clone's HEAD (master 2328ae76b), and the code synced was the main clone's, not the tag's. A standalone clone of the same tag worked.
 
-**Why structurally allowed:** T-4568 fixed only the STOCK case (whole-prefix digest match); its fixtures were stock hooks with single lines appended, so the non-stock path never met a multi-line construct or old-template residue. The kept-lines extract was line-based while the thing it must preserve (a shell construct) is not; no test fed it a real historical template with a block inserted.
+**Root cause:** `bin/fw:_fw_reexec_authority` (T-3111, R7 leg L2, bin/fw ~440-530) re-execs the MAIN checkout's `bin/fw` with `FRAMEWORK_ROOT` exported to the main checkout whenever the invoked binary (`FW_BIN_DIR`) or `PROJECT_ROOT` is a linked worktree. The redirect exists so a governance *session* in a stale worktree runs current enforcement, but it applied to every command — including `upgrade`, where the worktree is the release *source* the operator picked. After the exec, `lib/upgrade.sh` saw `FRAMEWORK_ROOT` = main clone, synced from it, and `fw_record_version_sha` (lib/version-relation.sh:207) ran `git -C <main clone> rev-parse HEAD`.
 
-**Fix / prevention:** residue = any line of any shipped pre-block template (`agents/git/lib/stock-hook-lines.txt`, emitted by `tools/gen-stock-hook-digests.sh`) or of the current block; the installed hook is split into top-level commands (`_fw_hook_chunks`: smallest run that passes `bash -n`, no trailing continuation) and a command holding any project line is kept whole; T-4569 inertness is decided per command; a residual parse failure is refused with the exact line numbers, the parser message and the fix. The bats file pins both field shapes (block at the end, block between template lines), activeness via a real commit, the inert case and the refusal message.
+**Why structurally allowed:** T-3111's tests only asserted that the redirect fires (version string, argv, FRAMEWORK_ROOT handoff); none asked which commands it must NOT apply to. The upgrade suites run from a plain clone, never from a linked worktree, so source identity under a worktree was never exercised.
+
+**Prevention:** `tests/unit/t4661_upgrade_from_worktree_source.bats` builds a temp repo, tags a commit, moves the main clone on, `git worktree add`s the tag, and asserts that `upgrade` through the worktree's binary keeps FRAMEWORK_ROOT on the worktree and that the sha the pin writer records is the tag commit; the T-3111 suite keeps proving every other command still redirects.
 
 ## Evolution
 
@@ -396,10 +388,28 @@ bin/fw vendor self --check --task T-4678
 
 ## Updates
 
-### 2026-10-22T22:25:15Z — task-created [task-create-agent]
+### 2026-10-22T20:29:39Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4678-install-hooks-on-an-old-non-stock-framew.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4661-fw-upgrade-run-from-a-git-worktree-of-a-.md
 - **Context:** Initial task creation
 
-### 2026-10-22T23:06:27Z — status-update [task-update-agent]
+### 2026-10-22T22:13:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-30ab4679
+- **Timestamp:** 2026-10-22T23:25:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T23:17:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

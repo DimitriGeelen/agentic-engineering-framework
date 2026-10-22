@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4662: T-4409: is_bash_safe_command refuses every git read when neither payload cwd nor PWD==PROJECT_ROOT is known; consumer test harnesses that source safe-commands.sh changed behaviour silently
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T23:08:06Z
+# ============================================================================
+
+task_id: T-4662
+task_name: "T-4409: is_bash_safe_command refuses every git read when neither payload cwd nor PWD==PROJECT_ROOT is known; consumer test harnesses that source safe-commands.sh changed behaviour silently"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T20:29:59Z
+completed: 2026-10-22T23:06:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T01:02:48+02:00
+last_commit: 2026-10-23T01:02:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  safe-commands no-cwd refusal becomes an explicit contract — _FW_PAYLOAD_CWD opt-in documented, one-time stderr reason; foreign-repo refusal kept; 8 bats
+
+# Key outcomes
+outcomes:
+  - 'A caller with no hook payload (no `_FW_PAYLOAD_CWD`, `$PWD` not PROJECT_ROOT) that asks `is_bash_safe_command "git status"` is still refused (T-4409 kept), and stderr names the reason and the opt-in (`_FW_PAYLOAD_CWD`), at most once per process'
+  - 'The documented opt-in works: the same harness call with `_FW_PAYLOAD_CWD=<abs dir inside PROJECT_ROOT>` returns SAFE, with nothing on stderr'
+  - 'Foreign-repo refusal unchanged: `_FW_PAYLOAD_CWD=/tmp/evil` (outside PROJECT_ROOT) and `cd /tmp/evil && git status` stay NOT SAFE, and print no harness note (the cwd is known, just foreign)'
+  - 'The contract is written in the safe-commands.sh header; regression bats `tests/unit/t4662_safe_commands_no_cwd_contract.bats` passes, and existing safe-commands/git suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — refusal kept, made an explicit contract'
+    chose: 'keep T-4409''s refusal for callers with no known cwd. Make `_FW_PAYLOAD_CWD=<absolute cwd>` the documented opt-in for harness callers (it is the variable the hook already sets, so the harness and the hook take one code path). Print a one-time stderr reason when a git clause is refused only because the cwd is unknown and no payload cwd was given.'
+    rationale: 'the hook process''s `$PWD` does not follow the Bash tool''s shell cwd, which persists across calls. "`$PWD` inside PROJECT_ROOT" would therefore not tell us where the shell is. It is a narrower form of the T-4409 red row (`git status`, no payload cwd, hook PWD=/tmp → SAFE). A harness knows its own cwd and can state it in one export.'
+    alternatives_rejected: ['(a) fall back to `$PWD` when it resolves inside PROJECT_ROOT: reopens T-4409 for any hook payload missing `cwd` while the hook runs from a project subdirectory. (b) a new public `FW_*` env var: a second name for the same value, plus registry and parity overhead, for no extra safety.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4662-t-4409-isbashsafecommand-refuses-every-g.md'
+  - 'tests/unit/t4662_safe_commands_no_cwd_contract.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T01:02:48'
+    action: 'T-4662: safe-commands no-cwd refusal becomes an explicit contract — _FW_PAYLOAD_CWD opt-in documented, one-time stderr reason; foreign-repo refusal kept; 8 bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 156 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 156
+  commits: 2
+  files_changed: 18
+  lines_added: 2300
+  lines_removed: 73
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4662-t-4409-isbashsafecommand-refuses-every-g.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4673: Release tags do not reach the GitHub mirror: be-tag --push pushes origin only, and fw mirror status/sync compare master HEAD only, so a missing tag reads 'in sync
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T23:11:29Z
+# ============================================================================
+
+task_id: T-4673
+task_name: "Release tags do not reach the GitHub mirror: be-tag --push pushes origin only, and fw mirror status/sync compare master HEAD only, so a missing tag reads 'in sync"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T22:04:23Z
+completed: 2026-10-22T23:10:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T00:20:55+02:00
+last_commit: 2026-10-23T00:20:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  release/be tags pushed to every remote and read back with ls-remote; fw mirror status/sync compare and push missing v* tags (new refs only)
+
+# Key outcomes
+outcomes:
+  - '`fw release be-tag --push` pushes the new tag to every remote (push URL not `no_push`), github included, then checks each with `ls-remote`; a remote missing the tag makes it print the remote name and exit non-zero (tests/unit/t4673_tags_reach_mirror.bats, two bare remotes)'
+  - '`fw release tag-and-release` verifies the tag with `ls-remote` on every remote after the atomic pushes and fails loudly (non-zero, names the remote) when any lacks it'
+  - '`fw mirror status` lists `refs/tags/v*` present on origin but missing on a mirror (branch-head line kept), so a tag-only gap no longer reads "in sync"'
+  - '`fw mirror sync` pushes missing v* tags to the mirror as new refs only: never `--force`, never deletes, and a tag whose SHA differs on the mirror is reported, not moved'
+  - 'Existing mirror and be-tag suites stay green (test_mirror_sync.bats, test_mirror_stderr_capture.bats, t4431_be_tags.bats)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/mirror.sh'
+  - '.agentic-framework/lib/release.sh'
+  - '.agentic-framework/lib/release-tags.sh'
+  - 'lib/mirror.sh'
+  - 'lib/release.sh'
+  - 'lib/release-tags.sh'
+  - '.tasks/active/T-4673-release-tags-do-not-reach-the-github-mir.md'
+  - 'tests/unit/t4673_tags_reach_mirror.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T00:20:55'
+    action: 'T-4673: release/be tags pushed to every remote and read back with ls-remote; fw mirror status/sync compare and push missing v* tags (new refs only)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 66 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 66
+  commits: 1
+  files_changed: 8
+  lines_added: 508
+  lines_removed: 38
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4673-release-tags-do-not-reach-the-github-mir.md
+generated_by: context-agent-hybrid

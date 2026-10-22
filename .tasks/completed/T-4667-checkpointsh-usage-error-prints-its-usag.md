@@ -1,19 +1,18 @@
 ---
-id: T-4661
-name: "fw upgrade run from a git worktree of a release tag resolves the framework
-  to the worktree's main clone and pins its HEAD (master 2328ae76b) instead of the
-  tag"
+id: T-4667
+name: "checkpoint.sh usage error prints its usage line to stdout instead of stderr
+  (T-4227 follow-up)"
 description: >
-  050 ran fw upgrade from a worktree checkout of v1.8.15-be.3; the pinned version_sha
-  was the main clone's master, not the tag; a standalone clone worked. Source: 050-email-archive
-  field report on be.3 upgrade (sidecar 5b5b40e9, 2026-10-22).
+  TermLink keeps a local >&2 patch; one-line fix plus a test that the usage line is
+  on stderr and exit is non-zero. Source: 010-termlink be.3 field report (sidecar
+  6829fbaa, 2026-10-22).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/checkpoint.sh, tests/unit/checkpoint.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,9 +40,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T20:29:39Z
-last_update: 2026-10-22T22:13:54Z
-date_finished:
+created: 2026-10-22T20:41:52Z
+last_update: 2026-10-22T23:06:10Z
+date_finished: 2026-10-22T23:06:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,7 +54,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-22T20:30:18Z'
+  - ts: '2026-10-22T20:45:08Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
@@ -72,7 +71,7 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-22T20:30:38Z'
+  - ts: '2026-10-22T20:45:16Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -83,19 +82,18 @@ cost_estimate_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4661: fw upgrade run from a git worktree of a release tag resolves the framework to the worktree's main clone and pins its HEAD (master 2328ae76b) instead of the tag
+# T-4667: checkpoint.sh usage error prints its usage line to stdout instead of stderr (T-4227 follow-up)
 
 ## Context
 
-`fw upgrade` invoked through a linked worktree's `bin/fw` must pin (and sync from) that worktree's checkout, not the main clone's.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `bin/fw` does not re-exec the main checkout's binary for `upgrade` when the invoked binary lives in a linked worktree (the worktree is the release source the operator chose); every other command still redirects (T-3111 suite green)
-- [x] Regression test `tests/unit/t4661_upgrade_from_worktree_source.bats` (real `git worktree add` of a tag in a temp repo whose main clone has moved on) fails before the fix and passes after: upgrade runs the worktree's binary with FRAMEWORK_ROOT = the worktree, and the recorded version_sha is the tag commit, not the main clone's HEAD
-- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
+- [x] `agents/context/checkpoint.sh <bogus>` prints its `Usage:` line on stderr, nothing on stdout, and exits non-zero (1)
+- [x] Regression test in `tests/unit/checkpoint.bats` separates the streams and fails on the pre-fix code; the existing checkpoint suite stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,13 +278,12 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 600 bats tests/unit/t4661_upgrade_from_worktree_source.bats > /tmp/.t4661a 2>&1 && ! grep -q "^not ok" /tmp/.t4661a
-test "$(grep -c '# skip' /tmp/.t4661a)" -eq 0
-timeout 600 bats tests/unit/t3111_worktree_reexec.bats > /tmp/.t4661b 2>&1 && ! grep -q "^not ok" /tmp/.t4661b
-test "$(grep -c '# skip' /tmp/.t4661b)" -eq 0
-timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4661c 2>&1 && ! grep -q "^not ok" /tmp/.t4661c
-bash -n bin/fw
-bin/fw vendor self --check --task T-4661
+
+timeout 300 bats tests/unit/checkpoint.bats > /tmp/.t4667.out 2>&1 && ! grep -q "^not ok" /tmp/.t4667.out
+test "$(grep -c '# skip' /tmp/.t4667.out)" -eq 0
+out=$(agents/context/checkpoint.sh bogus 2>/dev/null); rc=$?; [ "$rc" -ne 0 ] && [ -z "$out" ]
+agents/context/checkpoint.sh bogus >/dev/null 2>/tmp/.t4667.err; grep -q "Usage: checkpoint.sh" /tmp/.t4667.err
+bin/fw vendor self --check --task T-4667
 
 ## RCA
 
@@ -304,13 +301,13 @@ bin/fw vendor self --check --task T-4661
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** 050 ran `fw upgrade` with the `bin/fw` of a git worktree checked out at tag v1.8.15-be.3; the consumer's `.framework.yaml` got `version_sha` = the main clone's HEAD (master 2328ae76b), and the code synced was the main clone's, not the tag's. A standalone clone of the same tag worked.
+**Symptom:** `checkpoint.sh <unknown subcommand>` writes its `Usage:` line to stdout. A caller that parses stdout (TermLink, which keeps a local `>&2` patch) gets the usage text as data.
 
-**Root cause:** `bin/fw:_fw_reexec_authority` (T-3111, R7 leg L2, bin/fw ~440-530) re-execs the MAIN checkout's `bin/fw` with `FRAMEWORK_ROOT` exported to the main checkout whenever the invoked binary (`FW_BIN_DIR`) or `PROJECT_ROOT` is a linked worktree. The redirect exists so a governance *session* in a stale worktree runs current enforcement, but it applied to every command — including `upgrade`, where the worktree is the release *source* the operator picked. After the exec, `lib/upgrade.sh` saw `FRAMEWORK_ROOT` = main clone, synced from it, and `fw_record_version_sha` (lib/version-relation.sh:207) ran `git -C <main clone> rev-parse HEAD`.
+**Root cause:** in the `*)` arm of the subcommand case (agents/context/checkpoint.sh:767), a bare `echo` printed the usage line. T-4227 later added `fw_hook_usage_exit 1` (lib/config.sh:195) on the next line. That helper already prints its MESSAGE argument to stderr, but it was called without one, so the stdout `echo` survived. The exit code was already 1.
 
-**Why structurally allowed:** T-3111's tests only asserted that the redirect fires (version string, argv, FRAMEWORK_ROOT handoff); none asked which commands it must NOT apply to. The upgrade suites run from a plain clone, never from a linked worktree, so source identity under a worktree was never exercised.
+**Why structurally allowed:** the only test (`tests/unit/checkpoint.bats` "invalid subcommand shows usage") used bats `run`, which merges stdout and stderr into `$output`. It could not tell the two streams apart.
 
-**Prevention:** `tests/unit/t4661_upgrade_from_worktree_source.bats` builds a temp repo, tags a commit, moves the main clone on, `git worktree add`s the tag, and asserts that `upgrade` through the worktree's binary keeps FRAMEWORK_ROOT on the worktree and that the sha the pin writer records is the tag commit; the T-3111 suite keeps proving every other command still redirects.
+**Prevention:** the usage text is now passed to `fw_hook_usage_exit` (stderr). A new bats test asserts the stream: stdout is empty and stderr carries `Usage:`. The old merged-stream test stays.
 
 ## Evolution
 
@@ -388,11 +385,28 @@ bin/fw vendor self --check --task T-4661
 
 ## Updates
 
-### 2026-10-22T20:29:39Z — task-created [task-create-agent]
+### 2026-10-22T20:41:52Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4661-fw-upgrade-run-from-a-git-worktree-of-a-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4667-checkpointsh-usage-error-prints-its-usag.md
 - **Context:** Initial task creation
 
-### 2026-10-22T22:13:29Z — status-update [task-update-agent]
+### 2026-10-22T22:13:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6eb21099
+- **Timestamp:** 2026-10-22T23:06:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T23:06:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

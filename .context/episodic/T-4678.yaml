@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4678: install-hooks on an old NON-stock framework hook with a project block: the kept-lines extract carries old-template residue (# VERSION=1.5, a secret-scan echo) and cuts the project block between if and fi, so the merged hook does not parse and is REFUSED
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T23:34:36Z
+# ============================================================================
+
+task_id: T-4678
+task_name: "install-hooks on an old NON-stock framework hook with a project block: the kept-lines extract carries old-template residue (# VERSION=1.5, a secret-scan echo) and cuts the project block between if and fi, so the merged hook does not parse and is REFUSED"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T22:25:15Z
+completed: 2026-10-22T23:33:37Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T01:18:53+02:00
+last_commit: 2026-10-23T01:18:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  install-hooks keeps an old non-stock framework hook's project block whole — residue is any line of any shipped template (stock-hook-lines.txt, from gen-stock-hook-digests), kept by top-level command (bash -n chunks) so if...fi is never cut; refusal names exact lines + fix; ring20-shape bats
+
+# Key outcomes
+outcomes:
+  - 'Fixtures reconstruct ring20''s shape from real history: an old pre-commit template (`# VERSION=1.5`, secret-scan echo) read via `git show <commit>:agents/git/lib/hooks.sh`, plus a multi-line project `if/then/fi` block (nested command + comment) at the end (fixture A) and between template lines (fixture B); the regression test fails against the pre-fix hooks.sh'
+  - 'A line found in ANY pre-block shipped template body (generated list `agents/git/lib/stock-hook-lines.txt`, written by `tools/gen-stock-hook-digests.sh`) is template residue, never a project line'
+  - 'Old-framework-hook merge keeps whole top-level constructs: the installed hook is split into the smallest chunks that each pass `bash -n`; a chunk holding any non-template line is kept whole (if...fi through its matching close, even when inner lines coincide with template lines); chunks of only template lines are dropped'
+  - 'If the merged hook still does not parse, the refusal names the exact line numbers and the fix'
+  - '`tests/unit/t4678_old_hook_project_block.bats`: both fixtures merge (exit 0, no REFUSED), project block kept whole and active (inert if after an unconditional exit, per T-4569), no template residue outside it, `bash -n` passes; t4568 stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'install-hooks keeps an old non-stock framework hook''s project block whole — residue is any line of any shipped template (stock-hook-lines.txt, from gen-stock-hook-digests), kept by top-level command (bash -n chunks) so if...fi is never cut; refusal names exact lines + fix; ring20-shape bats'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/tools/gen-stock-hook-digests.sh'
+  - 'agents/git/lib/hooks.sh'
+  - 'agents/git/lib/stock-hook-lines.txt'
+  - '.tasks/active/T-4678-install-hooks-on-an-old-non-stock-framew.md'
+  - 'tests/unit/t4678_old_hook_project_block.bats'
+  - 'tools/gen-stock-hook-digests.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T01:18:53'
+    action: 'T-4678: install-hooks keeps an old non-stock framework hook''s project block whole — residue is any line of any shipped template (stock-hook-lines.txt, from gen-stock-hook-digests), kept by top-level command (bash -n chunks) so if...fi is never cut; refusal names exact lines + fix; ring20-shape bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 68 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 68
+  commits: 1
+  files_changed: 7
+  lines_added: 1584
+  lines_removed: 44
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4678-install-hooks-on-an-old-non-stock-framew.md
+generated_by: context-agent-hybrid

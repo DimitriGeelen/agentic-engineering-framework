@@ -1,18 +1,26 @@
 ---
-id: T-4667
-name: "checkpoint.sh usage error prints its usage line to stdout instead of stderr
-  (T-4227 follow-up)"
+id: T-4678
+name: "install-hooks on an old NON-stock framework hook with a project block: the
+  kept-lines extract carries old-template residue (# VERSION=1.5, a secret-scan echo)
+  and cuts the project block between if and fi, so the merged hook does not parse
+  and is REFUSED"
 description: >
-  TermLink keeps a local >&2 patch; one-line fix plus a test that the usage line is
-  on stderr and exit is non-zero. Source: 010-termlink be.3 field report (sidecar
-  6829fbaa, 2026-10-22).
+  ring20's pre-commit (old framework template + their own T-2215 block) was REFUSED
+  live on be.4 though t4568 bats pass. The T-4515 'old framework hook' path keeps
+  lines the current template lacks, line by line, so a multi-line project block straddling
+  template lines is split and old template lines survive. Fix: keep project blocks
+  as contiguous ranges (from the first non-template line to its matching end), recognise
+  residue from ANY shipped template version (stock-hook-digests history), and test
+  with ring20's shape (old template + an if...fi project block). Never silently drop
+  project lines; refusing with a precise message stays the fallback. Source: proxmox-ring20-management
+  be.4 field report (sidecar 4aade009, 2026-10-23).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh, tools/gen-stock-hook-digests.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,9 +48,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T20:41:52Z
-last_update: 2026-10-22T23:02:56Z
-date_finished:
+created: 2026-10-22T22:25:15Z
+last_update: 2026-10-22T23:33:37Z
+date_finished: 2026-10-22T23:33:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -53,8 +61,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-22T22:27:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-22T20:45:08Z'
+  - ts: '2026-10-22T22:28:51Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
@@ -70,19 +88,9 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-22T20:45:16Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4667: checkpoint.sh usage error prints its usage line to stdout instead of stderr (T-4227 follow-up)
+# T-4678: install-hooks on an old NON-stock framework hook with a project block: the kept-lines extract carries old-template residue (# VERSION=1.5, a secret-scan echo) and cuts the project block between if and fi, so the merged hook does not parse and is REFUSED
 
 ## Context
 
@@ -92,8 +100,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `agents/context/checkpoint.sh <bogus>` prints its `Usage:` line on stderr, nothing on stdout, and exits non-zero (1)
-- [x] Regression test in `tests/unit/checkpoint.bats` separates the streams and fails on the pre-fix code; the existing checkpoint suite stays green
+- [x] Fixtures reconstruct ring20's shape from real history: an old pre-commit template (`# VERSION=1.5`, secret-scan echo) read via `git show <commit>:agents/git/lib/hooks.sh`, plus a multi-line project `if/then/fi` block (nested command + comment) at the end (fixture A) and between template lines (fixture B); the regression test fails against the pre-fix hooks.sh
+- [x] A line found in ANY pre-block shipped template body (generated list `agents/git/lib/stock-hook-lines.txt`, written by `tools/gen-stock-hook-digests.sh`) is template residue, never a project line
+- [x] Old-framework-hook merge keeps whole top-level constructs: the installed hook is split into the smallest chunks that each pass `bash -n`; a chunk holding any non-template line is kept whole (if...fi through its matching close, even when inner lines coincide with template lines); chunks of only template lines are dropped
+- [x] If the merged hook still does not parse, the refusal names the exact line numbers and the fix
+- [x] `tests/unit/t4678_old_hook_project_block.bats`: both fixtures merge (exit 0, no REFUSED), project block kept whole and active (inert if after an unconditional exit, per T-4569), no template residue outside it, `bash -n` passes; t4568 stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,12 +289,13 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-
-timeout 300 bats tests/unit/checkpoint.bats > /tmp/.t4667.out 2>&1 && ! grep -q "^not ok" /tmp/.t4667.out
-test "$(grep -c '# skip' /tmp/.t4667.out)" -eq 0
-out=$(agents/context/checkpoint.sh bogus 2>/dev/null); rc=$?; [ "$rc" -ne 0 ] && [ -z "$out" ]
-agents/context/checkpoint.sh bogus >/dev/null 2>/tmp/.t4667.err; grep -q "Usage: checkpoint.sh" /tmp/.t4667.err
-bin/fw vendor self --check --task T-4667
+timeout 900 bats tests/unit/t4678_old_hook_project_block.bats > /tmp/.t4678.out 2>&1 && ! grep -q "^not ok" /tmp/.t4678.out
+test "$(grep -c '# skip' /tmp/.t4678.out)" -eq 0
+timeout 900 bats tests/unit/t4568_stock_hook_upgrade.bats > /tmp/.t4678b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4678b.out
+test "$(grep -c '# skip' /tmp/.t4678b.out)" -eq 0
+bash -n agents/git/lib/hooks.sh
+python3 tools/bats-dead-negation-lint.py tests/unit/t4678_old_hook_project_block.bats > /tmp/.t4678c.out 2>&1 && grep -q clean /tmp/.t4678c.out
+bin/fw vendor self --check --task T-4678
 
 ## RCA
 
@@ -300,14 +312,13 @@ bin/fw vendor self --check --task T-4667
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** ring20 (be.4) `fw git install-hooks` REFUSED their pre-commit — an old framework template (`# VERSION=1.5`, secret-scan echo lines) with their own T-2215 `if ... fi` block inserted — printing kept "lines" that were old-template residue plus a project block cut after its nested `if`. Reproduced exactly by `tests/unit/t4678_old_hook_project_block.bats` against the pre-fix hooks.sh (tests 2-7 red, same REFUSED listing).
 
-**Symptom:** `checkpoint.sh <unknown subcommand>` writes its `Usage:` line to stdout. A caller that parses stdout (TermLink, which keeps a local `>&2` patch) gets the usage text as data.
+**Root cause:** `agents/git/lib/hooks.sh` `_fw_hook_compose`, "old framework hook" branch (pre-fix lines 145-147): an awk kept each line of the installed hook that was absent from the CURRENT template, one line at a time. (1) Lines of an OLDER template that the current one dropped (`# VERSION=1.5`, the removed `echo "If this is a false positive…"`) were indistinguishable from project lines. (2) A project block's inner lines that coincide with template lines (`    exit 1`, `    fi`, `fi`, `echo "" >&2`) were dropped, so the kept `if` had no `fi` and the merged hook failed `bash -n` → REFUSED.
 
-**Root cause:** in the `*)` arm of the subcommand case (agents/context/checkpoint.sh:767), a bare `echo` printed the usage line. T-4227 later added `fw_hook_usage_exit 1` (lib/config.sh:195) on the next line. That helper already prints its MESSAGE argument to stderr, but it was called without one, so the stdout `echo` survived. The exit code was already 1.
+**Why structurally allowed:** T-4568 fixed only the STOCK case (whole-prefix digest match); its fixtures were stock hooks with single lines appended, so the non-stock path never met a multi-line construct or old-template residue. The kept-lines extract was line-based while the thing it must preserve (a shell construct) is not; no test fed it a real historical template with a block inserted.
 
-**Why structurally allowed:** the only test (`tests/unit/checkpoint.bats` "invalid subcommand shows usage") used bats `run`, which merges stdout and stderr into `$output`. It could not tell the two streams apart.
-
-**Prevention:** the usage text is now passed to `fw_hook_usage_exit` (stderr). A new bats test asserts the stream: stdout is empty and stderr carries `Usage:`. The old merged-stream test stays.
+**Fix / prevention:** residue = any line of any shipped pre-block template (`agents/git/lib/stock-hook-lines.txt`, emitted by `tools/gen-stock-hook-digests.sh`) or of the current block; the installed hook is split into top-level commands (`_fw_hook_chunks`: smallest run that passes `bash -n`, no trailing continuation) and a command holding any project line is kept whole; T-4569 inertness is decided per command; a residual parse failure is refused with the exact line numbers, the parser message and the fix. The bats file pins both field shapes (block at the end, block between template lines), activeness via a real commit, the inert case and the refusal message.
 
 ## Evolution
 
@@ -385,11 +396,29 @@ bin/fw vendor self --check --task T-4667
 
 ## Updates
 
-### 2026-10-22T20:41:52Z — task-created [task-create-agent]
+### 2026-10-22T22:25:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4667-checkpointsh-usage-error-prints-its-usag.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4678-install-hooks-on-an-old-non-stock-framew.md
 - **Context:** Initial task creation
 
-### 2026-10-22T22:13:34Z — status-update [task-update-agent]
+### 2026-10-22T23:06:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-200b60fc
+- **Timestamp:** 2026-10-22T23:34:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — A line found in ANY pre-block shipped template body (generated list `agents/git/lib/stock-hook-lines.txt`, written by `tools/gen-stock-hook-digests.sh`) is template residue, never a project line
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/gen-stock-hook-digests.sh in: A line found in ANY pre-block shipped template body (generated list `agents/git/lib/stock-hook-lines.txt`, written by `tools/gen-stock-hook-digests.sh`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T23:33:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

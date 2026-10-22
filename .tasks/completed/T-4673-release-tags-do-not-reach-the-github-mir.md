@@ -1,20 +1,21 @@
 ---
-id: T-4662
-name: "T-4409: is_bash_safe_command refuses every git read when neither payload cwd
-  nor PWD==PROJECT_ROOT is known; consumer test harnesses that source safe-commands.sh
-  changed behaviour silently"
+id: T-4673
+name: "Release tags do not reach the GitHub mirror: be-tag --push pushes origin only,
+  and fw mirror status/sync compare master HEAD only, so a missing tag reads 'in sync'"
 description: >
-  Decide whether the refusal is right for harness callers (no payload) and either
-  document it as a contract change with an explicit opt-in, or fall back to a cwd
-  that is knowable; add a test for the no-cwd caller. Source: 050-email-archive field
-  report on be.3 upgrade (sidecar 5b5b40e9, 2026-10-22).
+  2026-10-23: v1.8.15-be.4 was tagged and pushed to origin (OneDev) but field projects
+  (TermLink, dimitri-mint-dev) clone from GitHub and saw tags only up to be.3; fw
+  mirror status said 'github: in sync'. Fix: be-tag --push (and tag-and-release) push
+  the tag to every remote fw push uses (github included), and fw mirror status/sync
+  compare release tags (v*) as well as branch heads, re-pushing missing tags. Test
+  with two bare remotes.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/mirror.sh, lib/release-tags.sh, lib/release.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T20:29:59Z
-last_update: 2026-10-22T22:13:55Z
-date_finished:
+created: 2026-10-22T22:04:23Z
+last_update: 2026-10-22T23:10:50Z
+date_finished: 2026-10-22T23:10:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,7 +57,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-22T20:45:08Z'
+  - ts: '2026-10-22T22:13:25Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
@@ -73,18 +74,18 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-22T20:45:15Z'
+  - ts: '2026-10-22T22:15:22Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=4)
+      (workflow:build); effort=8 (lines=300,acs=7)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4662: T-4409: is_bash_safe_command refuses every git read when neither payload cwd nor PWD==PROJECT_ROOT is known; consumer test harnesses that source safe-commands.sh changed behaviour silently
+# T-4673: Release tags do not reach the GitHub mirror: be-tag --push pushes origin only, and fw mirror status/sync compare master HEAD only, so a missing tag reads 'in sync'
 
 ## Context
 
@@ -94,10 +95,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] A caller with no hook payload (no `_FW_PAYLOAD_CWD`, `$PWD` not PROJECT_ROOT) that asks `is_bash_safe_command "git status"` is still refused (T-4409 kept), and stderr names the reason and the opt-in (`_FW_PAYLOAD_CWD`), at most once per process
-- [x] The documented opt-in works: the same harness call with `_FW_PAYLOAD_CWD=<abs dir inside PROJECT_ROOT>` returns SAFE, with nothing on stderr
-- [x] Foreign-repo refusal unchanged: `_FW_PAYLOAD_CWD=/tmp/evil` (outside PROJECT_ROOT) and `cd /tmp/evil && git status` stay NOT SAFE, and print no harness note (the cwd is known, just foreign)
-- [x] The contract is written in the safe-commands.sh header; regression bats `tests/unit/t4662_safe_commands_no_cwd_contract.bats` passes, and existing safe-commands/git suites stay green
+- [x] `fw release be-tag --push` pushes the new tag to every remote (push URL not `no_push`), github included, then checks each with `ls-remote`; a remote missing the tag makes it print the remote name and exit non-zero (tests/unit/t4673_tags_reach_mirror.bats, two bare remotes)
+- [x] `fw release tag-and-release` verifies the tag with `ls-remote` on every remote after the atomic pushes and fails loudly (non-zero, names the remote) when any lacks it
+- [x] `fw mirror status` lists `refs/tags/v*` present on origin but missing on a mirror (branch-head line kept), so a tag-only gap no longer reads "in sync"
+- [x] `fw mirror sync` pushes missing v* tags to the mirror as new refs only: never `--force`, never deletes, and a tag whose SHA differs on the mirror is reported, not moved
+- [x] Existing mirror and be-tag suites stay green (test_mirror_sync.bats, test_mirror_stderr_capture.bats, t4431_be_tags.bats)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,37 +284,12 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-
-timeout 300 bats tests/unit/t4662_safe_commands_no_cwd_contract.bats > /tmp/.t4662.out 2>&1 && ! grep -q "^not ok" /tmp/.t4662.out
-test "$(grep -c '# skip' /tmp/.t4662.out)" -eq 0
-timeout 600 bats tests/unit/t4409_git_cwd_repo_boundary.bats tests/unit/t4343_git_repo_path_boundary.bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats > /tmp/.t4662b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4662b.out
-test "$(grep -c '# skip' /tmp/.t4662b.out)" -eq 0
-bash -n agents/context/lib/safe-commands.sh
-bin/fw vendor self --check --task T-4662
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
-
-**Symptom:** after the be.3 upgrade, a consumer (050-email-archive) test harness that sources `agents/context/lib/safe-commands.sh` and calls `is_bash_safe_command "git status"` with no hook payload started getting NOT SAFE. Nothing said why.
-
-**Root cause:** T-4409 made the git arm require a known effective cwd inside PROJECT_ROOT (`_fw_git_skip_globals`, agents/context/lib/safe-commands.sh:635; `is_commit_checkpoint_command` :2406). The starting cwd comes from `_fw_initial_git_cwd` (:193): an absolute `_FW_PAYLOAD_CWD`, else `$PWD` only when it equals PROJECT_ROOT, else unknown. A harness has no payload, and its `$PWD` is usually a bats temp dir or a subdirectory, so the cwd is unknown and the call fails closed. The refusal is deliberate. What was missing was a contract: `_FW_PAYLOAD_CWD` was a private variable set by `check-active-task.sh:170`, the refusal was silent, and nothing in the library said that callers without a payload must supply it.
-
-**Why structurally allowed:** T-4409 updated the framework's own suites so they export `_FW_PAYLOAD_CWD`. That fixed this repo's callers without making the requirement visible to callers in other repos. A boolean predicate that fails closed with no message cannot be told apart from a predicate that changed its rules.
-
-**Prevention:** the library header now states the contract. A refusal caused by an unknown cwd, when no payload cwd was given, prints a one-time stderr note that names `_FW_PAYLOAD_CWD`. `tests/unit/t4662_safe_commands_no_cwd_contract.bats` pins three things: the note, the opt-in, and the unchanged foreign-repo refusal.
+timeout 600 bats tests/unit/t4673_tags_reach_mirror.bats > /tmp/.t4673.out 2>&1 && ! grep -q "^not ok" /tmp/.t4673.out && grep -q "^ok 1 " /tmp/.t4673.out
+test "$(grep -c '# skip' /tmp/.t4673.out)" -eq 0
+timeout 600 bats tests/unit/test_mirror_sync.bats tests/unit/test_mirror_stderr_capture.bats tests/unit/t4431_be_tags.bats > /tmp/.t4673b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4673b.out
+test "$(grep -c '# skip' /tmp/.t4673b.out)" -eq 0
+bash -n lib/mirror.sh && bash -n lib/release-tags.sh && bash -n lib/release.sh
+bin/fw vendor self --check --task T-4673
 
 ## Evolution
 
@@ -337,6 +314,16 @@ bin/fw vendor self --check --task T-4662
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** v1.8.15-be.4 reached origin (OneDev) but not GitHub; field projects cloning from GitHub saw tags up to be.3, while `fw mirror status` said "github: in sync".
+
+**Root cause:** `lib/release-tags.sh` `release_be_tag` pushed with a hard-coded `git push origin refs/tags/<tag>` (the `--push` branch), inheriting the T-1255 rule that only origin is pushed and OneDev's PushRepository mirrors the rest — but that mirror does not carry new tags reliably, so github never got the tag. `lib/mirror.sh` `mirror_status`/`mirror_sync_one` compared only `ls-remote origin HEAD` against the mirror's default-branch head, so tags were outside both the check and the repair.
+
+**Why structurally allowed:** neither push path verified the result on the consumer-facing remote (`tag-and-release` pushed to every remote but never read back with `ls-remote`), and the only mirror detector measured branch heads, so a tag-only gap produced the same output as a healthy mirror (false green). Tests covered be-tag locally and mirror branch parity only.
+
+**Prevention:** tag pushes now go to every remote and are read back with `ls-remote` (fail loudly per missing remote); `fw mirror status` reports missing v* tags and the 15-minute `fw mirror sync` cron pushes them (new refs only). Pinned by tests/unit/t4673_tags_reach_mirror.bats against two bare remotes.
 
 ## Recommendation
 
@@ -378,11 +365,6 @@ bin/fw vendor self --check --task T-4662
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-23 — refusal kept, made an explicit contract
-- **Chose:** keep T-4409's refusal for callers with no known cwd. Make `_FW_PAYLOAD_CWD=<absolute cwd>` the documented opt-in for harness callers (it is the variable the hook already sets, so the harness and the hook take one code path). Print a one-time stderr reason when a git clause is refused only because the cwd is unknown and no payload cwd was given.
-- **Why:** the hook process's `$PWD` does not follow the Bash tool's shell cwd, which persists across calls. "`$PWD` inside PROJECT_ROOT" would therefore not tell us where the shell is. It is a narrower form of the T-4409 red row (`git status`, no payload cwd, hook PWD=/tmp → SAFE). A harness knows its own cwd and can state it in one export.
-- **Rejected:** (a) fall back to `$PWD` when it resolves inside PROJECT_ROOT: reopens T-4409 for any hook payload missing `cwd` while the hook runs from a project subdirectory. (b) a new public `FW_*` env var: a second name for the same value, plus registry and parity overhead, for no extra safety.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -395,11 +377,27 @@ bin/fw vendor self --check --task T-4662
 
 ## Updates
 
-### 2026-10-22T20:29:59Z — task-created [task-create-agent]
+### 2026-10-22T22:04:23Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4662-t-4409-isbashsafecommand-refuses-every-g.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4673-release-tags-do-not-reach-the-github-mir.md
 - **Context:** Initial task creation
 
-### 2026-10-22T22:13:33Z — status-update [task-update-agent]
+### 2026-10-22T22:13:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3b7a8e46
+- **Timestamp:** 2026-10-22T23:11:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T23:10:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

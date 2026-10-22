@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4661: fw upgrade run from a git worktree of a release tag resolves the framework to the worktree's main clone and pins its HEAD (master 2328ae76b) instead of the tag
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T23:26:19Z
+# ============================================================================
+
+task_id: T-4661
+task_name: "fw upgrade run from a git worktree of a release tag resolves the framework to the worktree's main clone and pins its HEAD (master 2328ae76b) instead of the tag"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T20:29:39Z
+completed: 2026-10-22T23:17:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T00:35:35+02:00
+last_commit: 2026-10-23T00:35:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade through a linked worktree's bin/fw keeps that worktree as source (no T-3111 authority redirect), so version_sha pins the worktree HEAD
+
+# Key outcomes
+outcomes:
+  - '`bin/fw` does not re-exec the main checkout''s binary for `upgrade` when the invoked binary lives in a linked worktree (the worktree is the release source the operator chose); every other command still redirects (T-3111 suite green)'
+  - 'Regression test `tests/unit/t4661_upgrade_from_worktree_source.bats` (real `git worktree add` of a tag in a temp repo whose main clone has moved on) fails before the fix and passes after: upgrade runs the worktree''s binary with FRAMEWORK_ROOT = the worktree, and the recorded version_sha is the tag commit, not the main clone''s HEAD'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4661-fw-upgrade-run-from-a-git-worktree-of-a-.md'
+  - 'tests/unit/t4661_upgrade_from_worktree_source.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T00:35:35'
+    action: 'T-4661: fw upgrade through a linked worktree''s bin/fw keeps that worktree as source (no T-3111 authority redirect), so version_sha pins the worktree HEAD'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 167 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 167
+  commits: 1
+  files_changed: 4
+  lines_added: 160
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4661-fw-upgrade-run-from-a-git-worktree-of-a-.md
+generated_by: context-agent-hybrid
