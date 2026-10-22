@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4599: fw setup ignores PROJECT_ROOT and reports 'already initialized' on the cwd/framework repo
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T11:44:07Z
+# ============================================================================
+
+task_id: T-4599
+task_name: "fw setup ignores PROJECT_ROOT and reports 'already initialized' on the cwd/framework repo"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T08:37:34Z
+completed: 2026-10-22T11:42:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T12:59:37+02:00
+last_commit: 2026-10-22T12:59:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw_setup.bats was stale — fw setup (alias of fw init) takes [dir] defaulting to cwd, never PROJECT_ROOT; test now passes the target dir, runs from the framework repo, and asserts the named dir was set up and not 'already initialized'
+
+# Key outcomes
+outcomes:
+  - 'Reproduction status of tests/integration/fw_setup.bats on current bleeding-edge recorded (reproduces or not, with evidence)'
+  - 'If it reproduces: `fw setup` with PROJECT_ROOT=<dir> sets up <dir> (or the stale test is corrected), and tests/integration/fw_setup.bats passes with no `not ok`'
+  - 'The corrected test names the target dir explicitly (as fw_init.bats does), runs from the framework repo as cwd, and asserts setup did NOT answer "already initialized" and DID create .framework.yaml/.tasks/.context in the named dir'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — defect or stale test'
+    chose: 'stale test; corrected the test, left `fw setup` / `fw init` unchanged.'
+    rationale: '`fw setup` is documented as a deprecated alias of `fw init`, whose contract is `fw init [dir]` defaulting to cwd (pinned by fw_init.bats, which passes the dir). Making the alias read PROJECT_ROOT would make it diverge from the command it aliases.'
+    alternatives_rejected: ['teaching `do_init` to honour PROJECT_ROOT — changes init semantics for every caller (bin/fw exports a resolved PROJECT_ROOT), and would still fail this fixture, which pre-wrote .framework.yaml.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4599-fw-setup-ignores-projectroot-and-reports.md'
+  - 'tests/integration/fw_setup.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T12:59:37'
+    action: 'T-4599: fw_setup.bats was stale — fw setup (alias of fw init) takes [dir] defaulting to cwd, never PROJECT_ROOT; test now passes the target dir, runs from the framework repo, and asserts the named dir was set up and not ''already initialized'''
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 184 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cloud, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 184
+  commits: 1
+  files_changed: 2
+  lines_added: 45
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4599-fw-setup-ignores-projectroot-and-reports.md
+generated_by: context-agent-hybrid
