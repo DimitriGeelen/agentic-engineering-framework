@@ -51,6 +51,18 @@ caught it (`inherited TASKS_DIR … is outside project …; using …`) and fell
 own directories, so no data crossed, but every hook now prints the warning and any
 tool that reads those variables without that guard would write into another project.
 
+## Containment (2026-10-22 14:55)
+
+055 reported the same leak as an isolation breach: its vendored 1.8.10 predates T-4222
+(lib/paths.sh re-derives a foreign TASKS_DIR/CONTEXT_DIR), so its hooks read 1409's focus
+and any fw write would have landed in /opt/1409-sprind (055 reports nothing was written).
+The leak sat in the DEFAULT tmux server's global environment (`tmux show-environment -g`),
+which hosts every project's `tl-claude-master-*` session; the claude-fw `fw-agents` server
+was clean (up since 2026-10-11). Both variables were removed with `tmux set-environment
+-g -u CONTEXT_DIR` / `-u TASKS_DIR` (verified: 0 left), and every peer was told to check
+`env` in sessions started or restarted between 13:39 and 14:55 and relaunch once if
+affected. Running processes keep their old copy until relaunched.
+
 ## Why nothing caught it
 
 - Nothing checks where long-lived framework processes live (which cgroup, and whether
