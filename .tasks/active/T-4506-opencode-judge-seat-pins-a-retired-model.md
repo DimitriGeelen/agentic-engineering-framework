@@ -384,6 +384,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — re-pin the opencode seat to glm-5.3 (operator ruling)
+- **Chose:** re-pin `policy/review-backends.yaml` opencode from `zai-coding-plan/glm-5.2` to `zai-coding-plan/glm-5.3`.
+- **Why:** glm-5.2 is retired by Z.AI ("Unexpected server error" on every launch, confirmed here 2026-10-20 and by 832 2026-10-22, refs err_c051cd21 / err_ac2840bf); glm-5.3 is listed and answers. Operator asked "re-pin? yes/no" and answered verbatim: "1 yes" (2026-10-22).
+- **Rejected:** leaving the seat dead in every rung-5 panel.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
