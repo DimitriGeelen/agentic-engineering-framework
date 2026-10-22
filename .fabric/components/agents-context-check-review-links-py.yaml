@@ -1,0 +1,21 @@
+id: agents/context/check-review-links.py
+name: check-review-links
+type: script
+subsystem: context-fabric
+location: agents/context/check-review-links.py
+tags: []
+
+purpose: "T-4624 (G-123): review-link allowlist at task-file write time."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-22
+created_by: unknown

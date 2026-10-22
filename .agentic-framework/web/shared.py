@@ -1084,6 +1084,88 @@ def protect_path_underscores(text: str) -> str:
     return "".join(parts)
 
 
+# T-4624 (G-123): Human Steps reach the operator as `$(cd … && bin/fw watchtower url)/designer`
+# or as a backticked bare `/designer`. Authors keep producing them (the idiom is correct in
+# ## Verification), so the render layer resolves both to full own-origin URLs. Applied only
+# to the AC-field / Recommendation renderers, never to the raw task body (## Verification).
+_WT_URL_SUBST_RE = re_mod.compile(
+    r"\$\(\s*(?:cd\s+[^()&;|]*?\s*&&\s*)?(?:[\w./~-]*/)?fw\s+watchtower\s+url\s*\)"
+)
+_FENCE_SPLIT_RE = re_mod.compile(r"(```.*?```)", re_mod.DOTALL)
+_CODE_ROUTE_HTML_RE = re_mod.compile(r"<code>(/[^<\s\"'`]*)</code>")
+
+
+def external_base_url() -> str:
+    """The Watchtower origin the operator reached us on, without a trailing slash.
+
+    Inside a request: ``request.host_url`` (what the browser used). Outside one:
+    ``.context/working/watchtower.url`` (written on start). '' when neither exists.
+    """
+    if has_request_context():
+        return request.host_url.rstrip("/")
+    try:
+        return (PROJECT_ROOT / ".context" / "working" / "watchtower.url").read_text().strip().rstrip("/")
+    except OSError:
+        return ""
+
+
+def resolve_watchtower_refs(text: str, base_url: str | None = None) -> str:
+    """Replace ``$(…bin/fw watchtower url)`` with the literal base URL (T-4624).
+
+    ``$(cd /x && bin/fw watchtower url)/designer`` → ``http://host:3000/designer``.
+    Backticks and quotes around it are kept, so the downstream URL linkers make
+    it an anchor. Fenced code blocks are left alone.
+    """
+    if not text or "watchtower" not in text:
+        return text
+    base = external_base_url() if base_url is None else base_url.rstrip("/")
+    parts = _FENCE_SPLIT_RE.split(text)
+    for i in range(0, len(parts), 2):
+        parts[i] = _WT_URL_SUBST_RE.sub(lambda _m: base, parts[i])
+    return "".join(parts)
+
+
+def _is_watchtower_route(path: str) -> bool:
+    """True when ``path`` (query dropped) matches a GET rule in the running app."""
+    from flask import current_app
+    from werkzeug.exceptions import HTTPException
+    from werkzeug.routing import RequestRedirect
+
+    try:
+        adapter = current_app.url_map.bind("localhost")
+    except RuntimeError:
+        return False  # no app context — cannot know the routes
+    bare = path.split("?", 1)[0].split("#", 1)[0]
+    if not bare or bare == "/":
+        return False
+    try:
+        adapter.match(bare, method="GET")
+        return True
+    except RequestRedirect:
+        return True  # trailing-slash redirect: the route exists
+    except HTTPException:
+        return False
+
+
+def link_route_code_spans(html: str, base_url: str | None = None) -> str:
+    """Turn ``<code>/designer</code>`` into a full-URL anchor when the path is a
+    Watchtower route (T-4624). File paths and unknown paths are left as code."""
+    if not html or "<code>/" not in html:
+        return html
+    import html as html_mod
+
+    base = external_base_url() if base_url is None else base_url.rstrip("/")
+
+    def _sub(m):
+        raw = html_mod.unescape(m.group(1))
+        if "<" in raw or ">" in raw or not _is_watchtower_route(raw):
+            return m.group(0)
+        url = base + m.group(1)
+        return f'<a href="{url}"><code>{url}</code></a>'
+
+    return _CODE_ROUTE_HTML_RE.sub(_sub, html)
+
+
 def render_markdown_safe(text: str, extras: list[str] | None = None) -> str:
     """Render Markdown to HTML with safe_mode='escape', auto-link T-XXX refs
     and bare http(s) URLs.
@@ -1108,6 +1190,7 @@ def render_markdown_safe(text: str, extras: list[str] | None = None) -> str:
         import markdown2
     except ImportError:
         return text  # graceful degradation
+    text = resolve_watchtower_refs(text)  # T-4624
     text = _TASK_REF_RE_SHARED.sub(r"[\1](/tasks/\1)", text)
     text = protect_path_underscores(text)
     text = _BARE_URL_RE_SHARED.sub(lambda m: f"[{m.group(1).rstrip('.,;:!?')}]({m.group(1).rstrip('.,;:!?')})", text)
@@ -1122,6 +1205,7 @@ def render_markdown_safe(text: str, extras: list[str] | None = None) -> str:
         lambda m: f'<a href="{m.group(1)}"><code>{m.group(1)}</code></a>',
         html,
     )
+    html = link_route_code_spans(html)  # T-4624
     # T-1722: artefact paths (docs/reports/*, .tasks/*, .fabric/components/*, etc.)
     # become clickable /file/ links. Existence-gated; same rendering-layer
     # contract as the T-1575 URL/T-NNNN shape — agent need not pre-format.

@@ -66,6 +66,20 @@ _BARE_PATH_BULLET_RE = re.compile(
     re.MULTILINE,
 )
 
+# T-4624 (G-123): the denylist above closed one phrasing per incident. These
+# three detectors make the check an allowlist — inside ### Human and
+# ## Recommendation a page reference must be a literal http(s):// URL.
+#   1. a `$( … )` substitution that names watchtower or is followed by a /path
+#   2. any other mention of `fw watchtower url` (the operator cannot run it)
+#   3. a bare /route token whose first segment is a Watchtower route
+_SUBST_RE = re.compile(r'\$\((?:[^()]|\([^()]*\))*\)(/[^\s`"\'<>)\]]*)?')
+_WT_URL_MENTION_RE = re.compile(r'\bfw\s+watchtower\s+url\b', re.IGNORECASE)
+# A /token not glued to a host, a path or a word: `/designer`, (/review/T-1).
+_ROUTE_TOKEN_RE = re.compile(r'(?<![\w.:/~$@%-])/([A-Za-z][\w-]*)(?:[/?#][^\s`"\'<>)\]]*)?')
+_ROUTE_DECL_RE = re.compile(r'''(?:route|url_prefix\s*=)\s*\(?\s*["']/([A-Za-z][\w-]*)''')
+_HTML_COMMENT_RE = re.compile(r'<!--.*?-->', re.DOTALL)
+_ROUTE_PREFIXES_CACHE: set | None = None
+
 # Frontmatter workflow_type extraction — simple line match, no YAML parser needed.
 _WORKFLOW_TYPE_RE = re.compile(r'^workflow_type:\s*([A-Za-z0-9_-]+)\s*$', re.MULTILINE)
 
@@ -221,24 +235,91 @@ def detect_homework_patterns(body: str):
     document examples (block-message renderings, anti-pattern catalogues),
     not to instruct the reviewer.
     """
-    steps_raw = extract_human_steps(body)
+    # T-4624: ## Recommendation is read by the operator on the same page, so it
+    # is held to the same rule. HTML comments (the template's examples) are not
+    # instructions and are stripped with fenced code.
+    steps_raw = extract_human_steps(body) + "\n" + extract_section(body, "Recommendation")
     findings: list[tuple[str, str]] = []
-    if not steps_raw:
+    if not steps_raw.strip():
         return findings
-    steps = _strip_fenced_code(steps_raw)
+    steps = _strip_fenced_code(_HTML_COMMENT_RE.sub("", steps_raw))
+
+    # T-4624 (1): shell substitutions standing in for a page URL. Removed from
+    # the text once reported so (2) and (3) do not report the same spot again.
+    def _subst(m):
+        if "watchtower" in m.group(0).lower() or m.group(1):
+            findings.append((
+                "block",
+                f"shell expression where a URL belongs: {m.group(0)} "
+                f"(write the literal http://… URL)",
+            ))
+            return " "
+        return m.group(0)
+
+    steps = _SUBST_RE.sub(_subst, steps)
+
+    legacy_hit = False
     for regex, label in _HOMEWORK_PATTERNS:
         if regex.search(steps):
+            legacy_hit = True
             findings.append(("block", f"homework pattern in Steps: {label}"))
+    # T-4624 (2): any other spelling that sends the operator to the CLI for a URL.
+    if not legacy_hit and _WT_URL_MENTION_RE.search(steps):
+        findings.append((
+            "block",
+            "`fw watchtower url` named in Steps/Recommendation — resolve it yourself "
+            "and write the literal URL",
+        ))
     # Bare-path bullets that aren't preceded on the same line by http(s)://
+    bullet_lines = set()
     for m in _BARE_PATH_BULLET_RE.finditer(steps):
         line = m.group(0)
         if "http://" in line or "https://" in line:
             continue  # has a scheme on this line — fine
+        bullet_lines.add(line.strip())
         findings.append((
             "block",
             f"bare-path bullet in Steps (no http:// prefix): {line.strip()}",
         ))
+    # T-4624 (3): a bare Watchtower route anywhere in the text (`/designer`,
+    # "open /review/T-1"). File paths (/opt/…, /tmp/…) are not routes.
+    prefixes = route_prefixes()
+    seen = set()
+    for line in steps.splitlines():
+        if line.strip() in bullet_lines:
+            continue
+        for m in _ROUTE_TOKEN_RE.finditer(line):
+            if m.group(1) in prefixes and m.group(0) not in seen:
+                seen.add(m.group(0))
+                findings.append((
+                    "block",
+                    f"bare route path (no http:// prefix): {m.group(0)}",
+                ))
     return findings
+
+
+def route_prefixes() -> set:
+    """First path segments of every Watchtower route, read from web/**/*.py source.
+
+    Static scan (no Flask import) so the PreToolUse hook stays fast. A route the
+    scan misses only means a bare token is not flagged — the safe direction.
+    """
+    global _ROUTE_PREFIXES_CACHE
+    if _ROUTE_PREFIXES_CACHE is not None:
+        return _ROUTE_PREFIXES_CACHE
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    found: set = set()
+    for dirpath, _dirs, files in os.walk(os.path.join(root, "web")):
+        for name in files:
+            if not name.endswith(".py"):
+                continue
+            try:
+                with open(os.path.join(dirpath, name), encoding="utf-8") as fh:
+                    found.update(_ROUTE_DECL_RE.findall(fh.read()))
+            except OSError:
+                continue
+    _ROUTE_PREFIXES_CACHE = found
+    return found
 
 
 def class_aware_handoff_hint(workflow_type: str, task_id: str) -> str:
@@ -265,6 +346,9 @@ def main(argv=None) -> int:
     if len(argv) < 2:
         return 0
     enforce = "--enforce" in argv
+    # T-4624: --links-only skips the route probe (imports Flask, HTTP-probes) so
+    # the close gate and the PreToolUse hook check only the URL-form allowlist.
+    links_only = "--links-only" in argv
     pos = [a for a in argv if not a.startswith("--")]
     if len(pos) < 2:
         return 0
@@ -280,7 +364,7 @@ def main(argv=None) -> int:
         return 0
 
     try:
-        path_results = validate(task_file, base_url)
+        path_results = [] if links_only else validate(task_file, base_url)
         with open(task_file, encoding="utf-8") as fh:
             body = fh.read()
         homework_results = detect_homework_patterns(body)

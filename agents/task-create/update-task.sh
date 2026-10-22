@@ -507,6 +507,25 @@ PYREC
     esac
 }
 
+# Review-link Gate (T-4624, G-123): on the partial-complete transition the operator
+# is about to be sent to /review/<id>. Refuse BEFORE the flip when Human Steps or the
+# Recommendation hand them a shell expression or bare route instead of a literal URL.
+# emit_review runs the same check later, but after the flip and with its exit ignored.
+# Bypass: FW_ALLOW_REVIEW_LINK_HOMEWORK=1 (the validator logs it Tier-2).
+check_review_links_for_partial() {
+    [ "${PARTIAL_COMPLETE:-false}" = true ] || return 0
+    local validator="$FRAMEWORK_ROOT/lib/review_link_validator.py"
+    [ -f "$validator" ] || return 0
+    local base_url
+    base_url=$(cat "$PROJECT_ROOT/.context/working/watchtower.url" 2>/dev/null || true)
+    [ -n "$base_url" ] || base_url="http://localhost:3000"
+    if ! python3 "$validator" "$TASK_FILE" "$base_url" --enforce --links-only; then
+        echo -e "${RED}ERROR: Cannot reach partial-complete — review links are not literal full URLs (T-4624).${NC}" >&2
+        echo "Fix the findings above in $TASK_FILE, then retry." >&2
+        exit 1
+    fi
+}
+
 # T-679: Auto-emit review on partial-complete transition
 # Called after work-completed transition when human ACs remain.
 # Also available standalone: fw task review T-XXX
@@ -2388,6 +2407,7 @@ PY
         # Reviewers see /review/T-XXX — it must surface an agent advisory.
         if [ "$NEW_STATUS" = "work-completed" ]; then
             check_recommendation_for_review
+            check_review_links_for_partial
         fi
 
         # === RCA Gate (T-1550, G-019 structural remediation) ===

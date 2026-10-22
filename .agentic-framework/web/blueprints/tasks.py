@@ -16,6 +16,7 @@ from web.shared import (
     extract_recommendation, extract_reviewer_verdict, render_markdown_safe,
     protect_path_underscores,
     _auto_link_files,
+    resolve_watchtower_refs, link_route_code_spans,
     count_human_acs,
     task_review_state,
 )
@@ -376,6 +377,7 @@ def _render_md_inline(text):
     """
     if not text:
         return ''
+    text = resolve_watchtower_refs(text)  # T-4624
     text = _auto_link_watchtower_paths(text)
     text = _auto_link_task_refs(text)
     text = _auto_link_bare_urls(text)
@@ -385,6 +387,7 @@ def _render_md_inline(text):
     if html.startswith('<p>') and html.endswith('</p>'):
         html = html[3:-4]
     html = _linkify_code_urls(html)
+    html = link_route_code_spans(html)  # T-4624
     # T-1722: artefact paths → /file/ anchors (existence-gated, idempotent).
     return _auto_link_files(html)
 
@@ -394,6 +397,7 @@ def _render_md_block(text):
     (Expected, If-not). T-1551."""
     if not text:
         return ''
+    text = resolve_watchtower_refs(text)  # T-4624
     text = _auto_link_watchtower_paths(text)
     text = _auto_link_task_refs(text)
     text = _auto_link_bare_urls(text)
@@ -401,6 +405,7 @@ def _render_md_block(text):
     text = protect_path_underscores(text)  # T-3587
     html = markdown2.markdown(text, safe_mode='escape').strip()
     html = _linkify_code_urls(html)
+    html = link_route_code_spans(html)  # T-4624
     # T-1722: artefact paths → /file/ anchors (existence-gated, idempotent).
     return _auto_link_files(html)
 

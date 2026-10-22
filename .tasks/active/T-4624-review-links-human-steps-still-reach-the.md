@@ -1,10 +1,27 @@
 ---
 id: T-4624
-name: "Review links: Human Steps still reach the operator as shell expressions, not full clickable URLs (T-2030 class, 5th recurrence)"
+name: "Review links: Human Steps still reach the operator as shell expressions, not
+  full clickable URLs (T-2030 class, 5th recurrence)"
 description: >
-  Operator 2026-10-22 on /review/T-4607: document/page references are not full clickable URLs, again. Step 1 reads $(cd /opt/... && bin/fw watchtower url)/designer. History: rule set 2026-05-24 (T-2027/T-2028); T-2030 GO (A generate + B detect + C route-validate); T-2050/T-2139 lib/review_link_validator.py --enforce at fw task review; T-2140 reviewer detector; T-2181 chat RCA. Why it recurs: (1) enforcement is a denylist of three literal phrasings, so the shell-substitution spelling passes fw task review; (2) CLAUDE.md teaches $(bin/fw watchtower url) for ## Verification and workers carry that idiom into Human Steps, and workers do not load the parent's memory rule; (3) the render surface trusts author text. Persistent fix: (a) RENDER: Watchtower's task/review markdown rendering resolves $(...bin/fw watchtower url)<path> and backticked Watchtower route paths (/designer, /review/T-X, /api/...) to full own-origin http URLs rendered as anchors (fixes all existing tasks); (b) VALIDATE: review_link_validator becomes an allowlist: inside ### Human Steps/Expected/If-not, every page reference must be a literal http(s):// URL; $( ... ) or bare /route tokens block; enforce at fw task review, at the partial-complete transition, and as a PreToolUse check on task-file Write/Edit; (c) tests for each spelling seen so far plus the shell form.
+  Operator 2026-10-22 on /review/T-4607: document/page references are not full clickable
+  URLs, again. Step 1 reads $(cd /opt/... && bin/fw watchtower url)/designer. History:
+  rule set 2026-05-24 (T-2027/T-2028); T-2030 GO (A generate + B detect + C route-validate);
+  T-2050/T-2139 lib/review_link_validator.py --enforce at fw task review; T-2140 reviewer
+  detector; T-2181 chat RCA. Why it recurs: (1) enforcement is a denylist of three
+  literal phrasings, so the shell-substitution spelling passes fw task review; (2)
+  CLAUDE.md teaches $(bin/fw watchtower url) for ## Verification and workers carry
+  that idiom into Human Steps, and workers do not load the parent's memory rule; (3)
+  the render surface trusts author text. Persistent fix: (a) RENDER: Watchtower's
+  task/review markdown rendering resolves $(...bin/fw watchtower url)<path> and backticked
+  Watchtower route paths (/designer, /review/T-X, /api/...) to full own-origin http
+  URLs rendered as anchors (fixes all existing tasks); (b) VALIDATE: review_link_validator
+  becomes an allowlist: inside ### Human Steps/Expected/If-not, every page reference
+  must be a literal http(s):// URL; $( ... ) or bare /route tokens block; enforce
+  at fw task review, at the partial-complete transition, and as a PreToolUse check
+  on task-file Write/Edit; (c) tests for each spelling seen so far plus the shell
+  form.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +56,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T09:47:27Z
-last_update: 2026-10-22T09:47:27Z
-date_finished: null
+last_update: '2026-10-22T10:00:53Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +68,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:50:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T10:00:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=339,acs=10)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4624: Review links: Human Steps still reach the operator as shell expressions, not full clickable URLs (T-2030 class, 5th recurrence)
@@ -63,10 +107,21 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] RENDER: `web/shared.py` `resolve_watchtower_refs` / `link_route_code_spans` are applied by `render_markdown_safe` and `web/blueprints/tasks.py` `_render_md_inline`/`_render_md_block`; `$(…bin/fw watchtower url)<path>` (with or without `cd` prefix, with or without backticks or quotes) renders as an anchor to the server's own external base URL + path, and backticked route paths that exist in `app.url_map` (`/designer`, `/review/T-1`, `/api/thumb?id=x`) render as full-URL anchors; file paths and unknown paths stay untouched; fenced code is never rewritten
+- [x] RENDER regression test `tests/unit/test_t4624_review_links.py` feeds the exact T-4607 Step 1 and If-not strings (pre-5e54fc4b1) through `_parse_ac_body` and asserts full-URL anchors
+- [x] VALIDATE: `lib/review_link_validator.py` is an allowlist for `### Human` Steps/Expected/If-not and `## Recommendation`: a page reference must be a literal `http(s)://` URL; a `$(…)` page substitution, any `bin/fw watchtower url` mention (T-2138's three phrasings included) and bare `/route` tokens are `block` findings; a `--links-only` mode skips the slow route probe
+- [x] VALIDATE enforced at `fw task review` (unchanged call site), at the partial-complete transition in `agents/task-create/update-task.sh` (refuses before the transition, bypass `FW_ALLOW_REVIEW_LINK_HOMEWORK=1` logged Tier-2), and by a new PreToolUse hook `agents/context/check-review-links.sh` on Write/Edit of `.tasks/active/T-*.md` (registration entry in ## Decisions — `.claude/settings.json` is operator-only)
+- [x] VALIDATE tests: every spelling (three T-2138 phrasings, bare path bullet, bare inline `/route`, backticked `/route`, `$(bin/fw watchtower url)/x`, `$(cd … && bin/fw watchtower url)/x`) blocks; a literal URL, a file path and a fenced example pass; hook blocks a bad Edit and allows a clean one
+- [x] CLAUDE.md §Human AC Format Requirements has one paragraph stating the split: `$(bin/fw watchtower url)` only in `## Verification`; Human Steps and Recommendation carry literal full URLs
+- [x] `bin/fw watchtower restart` run; `bin/fw watchtower current` passes; `bin/fw vendor self` run
 
 ### Human
+- [ ] [REVIEW] Review-page links are clickable full URLs
+  **Steps:**
+  1. Open http://192.168.10.107:3000/review/T-4607 in a browser (hard-refresh)
+  2. Look at the Human criterion's Steps and If-not, and at the Recommendation
+  **Expected:** every page reference is a full `http://192.168.10.107:3000/...` link you can click; none reads as a shell expression or a bare route path
+  **If not:** note the exact text that is not a full link and paste it into T-4624
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -249,8 +304,25 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 python3 -m pytest tests/unit/test_t4624_review_links.py tests/unit/test_review_link_validator.py -q > /tmp/.t4624-py 2>&1 && grep -q passed /tmp/.t4624-py && ! grep -qE "[0-9]+ failed" /tmp/.t4624-py
+timeout 300 python3 -m pytest tests/unit/test_review_markdown_render.py tests/unit/test_ac_body_parser_steps.py tests/unit/test_extract_recommendation.py tests/unit/test_t4290_ac_fields_escaped.py tests/unit/test_ac_field_render_safety.py -q > /tmp/.t4624-py2 2>&1 && grep -q passed /tmp/.t4624-py2
+timeout 600 bats tests/unit/review_link_blocking_gate.bats tests/unit/t4624_review_link_gates.bats > /tmp/.t4624-bats 2>&1 && ! grep -q "^not ok" /tmp/.t4624-bats
+test "$(grep -c '# skip' /tmp/.t4624-bats)" -eq 0
+grep -q 'only in `## Verification`' CLAUDE.md
+python3 -c "import ast; ast.parse(open('lib/review_link_validator.py').read()); ast.parse(open('agents/context/check-review-links.py').read())"
+bash -n agents/task-create/update-task.sh
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4624
 
 ## RCA
+
+**Symptom:** Operator opened /review/T-4607 (2026-10-22) and Step 1 read `$(cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url)/designer` — a shell expression, not a clickable link. Fifth recurrence of the T-2030 class (rule dates from 2026-05-24).
+
+**Root cause:** Three layers each trusted the author. (1) `lib/review_link_validator.py:49` `_HOMEWORK_PATTERNS` is a denylist of the literal phrasings seen so far (`URL from bin/fw watchtower url`, `base from …`, `(Watchtower URL from`), and `:64` `_BARE_PATH_BULLET_RE` only fires when a bullet line is nothing but a path — so `$(… bin/fw watchtower url)/designer` inside a numbered step passed `fw task review --enforce`. (2) `web/blueprints/tasks.py:371` `_render_md_inline` / `:392` `_render_md_block` and `web/shared.py:1087` `render_markdown_safe` render author text verbatim; only literal `http(s)://` URLs and a hard-coded blueprint whitelist become links. (3) CLAUDE.md teaches `$(bin/fw watchtower url)` as the correct form in `## Verification`, and dispatched workers carry the idiom into Human Steps; the "literal URL" rule lives in the parent's memory, which workers do not load.
+
+**Why structurally allowed:** A denylist closes one spelling per incident; every new spelling is a new miss. The partial-complete transition (`update-task.sh` Trigger 2) calls `emit_review` after the task is already flipped and ignores its exit code, and no task-file write hook looked at Human Steps at all — so the first gate a bad link met was the operator.
+
+**Prevention:** Allowlist validation (a page reference in Human Steps/Expected/If-not/Recommendation must be a literal `http(s)://` URL; `$(` page substitutions, any `watchtower url` mention and bare route tokens all block) at three points: task-file Write/Edit (new PreToolUse hook), the partial-complete transition (gate before the flip), and `fw task review`. The render layer resolves the shell form and backticked routes to full own-origin links, so tasks already written are fixed for the operator too. CLAUDE.md now states the split explicitly where Human AC format is taught. Tests pin every spelling seen so far.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -319,6 +391,14 @@ date_finished: null
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** All three layers shipped with tests. Watchtower now resolves the shell form and backticked route paths to full own-origin links, including on tasks written before this fix. The validator is an allowlist and runs at task-file write (hook script ready, registration is yours), at the partial-complete transition and at `fw task review`. CLAUDE.md states the split where Human AC format is taught. Still open: your visual check, and registering the hook (one-liner in Decisions).
+**Evidence:**
+- `tests/unit/test_t4624_review_links.py`: render + validator, built from the exact T-4607 strings. 41 tests pass alongside the 28 existing validator tests.
+- `tests/unit/t4624_review_link_gates.bats`: 11 passed (hook blocks/allows/bypass, partial-complete gate). `review_link_blocking_gate.bats`: 5 passed.
+- Neighbouring render suites: 181 passed.
+- Live: http://192.168.10.107:3000/review/T-4607 serves `href="http://192.168.10.107:3000/designer"`; `bin/fw watchtower current` passes after restart.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -329,6 +409,20 @@ date_finished: null
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-22 — hook registration is the operator's (settings.json is gated)
+- **Chose:** ship `agents/context/check-review-links.{sh,py}` and leave `.claude/settings.json` untouched (`check-active-task.sh:436` refuses agent edits to it). Operator one-liner: `cd /opt/999-Agentic-Engineering-Framework && bin/fw hook-enable --name check-review-links --matcher "Write|Edit" --event PreToolUse && bin/fw enforcement baseline`. Exact entry it adds to the PreToolUse `Write|Edit` block (verified with `--dry-run`): `{"type": "command", "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-review-links"}`.
+- **Why:** the hook is live through `bin/fw hook check-review-links` today (0.25 s per call); only the registration is operator-owned.
+- **Rejected:** editing settings.json from the worker — the gate exists for exactly that.
+
+### 2026-10-22 — which `$( … )` counts as a page reference
+- **Chose:** flag a substitution when it names `watchtower` or is directly followed by a `/path`; flag any other `fw watchtower url` mention; flag a bare `/token` only when its first segment is a Watchtower route (static scan of `route(`/`url_prefix=` in `web/**/*.py`, no Flask import).
+- **Why:** a blanket `$(` ban would block legitimate operator commands and Evidence lines quoting verification commands; a blanket `/token` ban would block file paths (`/opt/…`, `/tmp/…`). Both are references to something other than a page.
+- **Rejected:** importing `web.app` for `url_map` in the validator — ~2 s per call, too slow for a PreToolUse hook. The render layer, which runs inside the app, does use `url_map`.
+
+### 2026-10-22 — hook blocks only findings the write introduces
+- **Chose:** compare findings before vs after the write; block only new ones.
+- **Why:** many older active tasks already carry bad links; blocking every edit to them (ticking an Agent AC, adding an Update) would hold them hostage. The partial-complete gate and `fw task review` still catch the existing ones at handoff, and the render layer resolves them for the operator.
 
 ## Decision
 
@@ -346,3 +440,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4624-review-links-human-steps-still-reach-the.md
 - **Context:** Initial task creation
+
+### 2026-10-22T09:50:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
