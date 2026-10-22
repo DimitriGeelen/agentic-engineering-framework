@@ -1,0 +1,21 @@
+id: tests/unit/t4579_pretooluse_gates_no_hardcoded_root.bats
+name: t4579_pretooluse_gates_no_hardcoded_root
+type: script
+subsystem: tests
+location: tests/unit/t4579_pretooluse_gates_no_hardcoded_root.bats
+tags: []
+
+purpose: "T-4579: tests/governance/test_pretooluse_gates.bats built its hook inputs with file_path literals under the origin host's checkout path."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-22
+created_by: unknown
