@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4577: checkpoint.sh auto-handover restart signal never carries the .next-directive.yaml directive: embedded Python has an IndentationError (budget_gate.bats test 28 red)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:04:02Z
+# ============================================================================
+
+task_id: T-4577
+task_name: "checkpoint.sh auto-handover restart signal never carries the .next-directive.yaml directive: embedded Python has an IndentationError (budget_gate.bats test 28 red)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-21T23:03:52Z
+completed: 2026-10-22T10:02:59Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-22T09:28:08+02:00
+last_commit: 2026-10-22T09:28:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  checkpoint.sh directive fold — fix IndentationError in embedded python so the auto-handover restart signal carries .next-directive.yaml; snippet-compile + exact-value regression tests; budget_gate.bats pins FW_CHECKPOINT_SH=/bin/true
+
+# Key outcomes
+outcomes:
+  - 'agents/context/checkpoint.sh directive-fold Python snippet is correctly indented (try/except body), matching budget-gate.sh'
+  - 'Regression test drives the real checkpoint.sh critical path with a .next-directive.yaml and asserts the directive VALUE lands in .restart-requested (fails before fix)'
+  - 'tests/integration/budget_gate.bats pins FW_CHECKPOINT_SH=/bin/true so the detached checkpoint auto-handover cannot overwrite the gate''s signal (test 28 race)'
+  - 'Vendored copy synced (bin/fw vendor self --check --task T-4577 clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'checkpoint.sh directive fold — fix IndentationError in embedded python so the auto-handover restart signal carries .next-directive.yaml; snippet-compile + exact-value regression tests; budget_gate.bats pins FW_CHECKPOINT_SH=/bin/true'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — should budget_gate.bats pin FW_CHECKPOINT_SH?'
+    chose: 'Yes, `FW_CHECKPOINT_SH=/bin/true` in `run_gate`.'
+    rationale: 'The suite tests the gate''s own signal; the detached checkpoint handover is covered by t3989_budget_critical_handover.bats and continuous_loop_critical_signal.bats. Same convention as t4005/t4171 suites (T-4006).'
+    alternatives_rejected: ['Leaving it unpinned — nondeterministic race, plus a real handover spawned per blocked case.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - 'agents/context/checkpoint.sh'
+  - '.tasks/active/T-4577-checkpointsh-auto-handover-restart-signa.md'
+  - 'tests/integration/budget_gate.bats'
+  - 'tests/integration/continuous_loop_critical_signal.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T09:28:08'
+    action: 'T-4577: checkpoint.sh directive fold — fix IndentationError in embedded python so the auto-handover restart signal carries .next-directive.yaml; snippet-compile + exact-value regression tests; budget_gate.bats pins FW_CHECKPOINT_SH=/bin/true'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 659 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, cloud, t4575]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 659
+  commits: 1
+  files_changed: 5
+  lines_added: 453
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4577-checkpointsh-auto-handover-restart-signa.md
+generated_by: context-agent-hybrid
