@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4586: test_t3077_approvals_surface_isolation.bats A1 aborts in a fresh clone: find on missing .context/approvals fails under set -e
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:14:26Z
+# ============================================================================
+
+task_id: T-4586
+task_name: "test_t3077_approvals_surface_isolation.bats A1 aborts in a fresh clone: find on missing .context/approvals fails under set -e"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T07:46:58Z
+completed: 2026-10-22T10:14:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T10:00:57+02:00
+last_commit: 2026-10-22T10:00:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  guard the surface finds in test_t3077 with || true — .context/approvals is untracked, so absent in a fresh clone, and the unguarded find aborted A1 under errexit; regression test t4586 runs both helpers under set -e against a root with neither dir (4/4 red before, green after)
+
+# Key outcomes
+outcomes:
+  - '`_live_surface_paths` and `_surface_manifest` in tests/governance/test_t3077_approvals_surface_isolation.bats return 0 under `set -e` when `.context/approvals` and/or `.context/working` are absent (fresh clone)'
+  - 'Regression test tests/unit/t4586_t3077_helpers_missing_dirs.bats fails before the fix (4/4 not ok) and passes after (4/4 ok)'
+  - 'test_t3077 still parses (2 tests) and test 2 passes; A1 in the main checkout is red for an unrelated, pre-existing reason (see Decisions)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — A1 red in the live checkout is out of scope'
+    chose: 'fix only the fresh-clone abort; do not change A1''s sighting semantics.'
+    rationale: 'In the main checkout A1 fails because `.context/approvals/pending-72a180442d0c.yaml` and `.context/working/.tier0-approval.{pending,lock}` were written at 07:58:03Z by a concurrent `claude` session''s real Tier 0 block (task WM-002, `git branch -D` test command), not by the gates suite. A1 records every sighting, including state that existed before the run, so any pending operator card (and the persistent `.tier0-approval.lock`) turns it red. That is a separate defect (baseline not subtracted from sightings) and deserves its own task; not filed here (worker scope).'
+    alternatives_rejected: ['subtracting the pre-run baseline in this task — changes what the guard asserts, which is the guard''s owner''s call.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4586-testt3077approvalssurfaceisolationbats-a.md'
+  - 'tests/governance/test_t3077_approvals_surface_isolation.bats'
+  - 'tests/unit/t4586_t3077_helpers_missing_dirs.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T10:00:57'
+    action: 'T-4586: guard the surface finds in test_t3077 with || true — .context/approvals is untracked, so absent in a fresh clone, and the unguarded find aborted A1 under errexit; regression test t4586 runs both helpers under set -e against a root with neither dir (4/4 red before, green after)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 147 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, cloud]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 147
+  commits: 1
+  files_changed: 3
+  lines_added: 115
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4586-testt3077approvalssurfaceisolationbats-a.md
+generated_by: context-agent-hybrid
