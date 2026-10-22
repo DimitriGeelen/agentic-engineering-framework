@@ -9,10 +9,10 @@ description: >
   (defect) or the test should pass the target dir (stale). Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (line 41). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -44,7 +44,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:37:34Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-22T10:52:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction status of tests/integration/fw_setup.bats on current bleeding-edge recorded (reproduces or not, with evidence)
+- [x] If it reproduces: `fw setup` with PROJECT_ROOT=<dir> sets up <dir> (or the stale test is corrected), and tests/integration/fw_setup.bats passes with no `not ok`
+- [x] The corrected test names the target dir explicitly (as fw_init.bats does), runs from the framework repo as cwd, and asserts setup did NOT answer "already initialized" and DID create .framework.yaml/.tasks/.context in the named dir
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +282,10 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/integration/fw_setup.bats > /tmp/.t4599.out 2>&1 && ! grep -q "^not ok" /tmp/.t4599.out
+test "$(grep -c '# skip' /tmp/.t4599.out)" -eq 0
+grep -qF "setup '\$PROJECT_ROOT'" tests/integration/fw_setup.bats
+python3 tools/bats-dead-negation-lint.py tests/integration/fw_setup.bats > /tmp/.t4599.lint 2>&1 && grep -q clean /tmp/.t4599.lint
 
 ## RCA
 
@@ -297,6 +302,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/integration/fw_setup.bats:29` red — `fw setup` printed "Project already initialized at /opt/999-Agentic-Engineering-Framework" instead of setting up the test's temp dir. Reproduced on bleeding-edge HEAD 961c19464 (2026-10-22): `ok 1`, `not ok 2`.
+
+**Root cause:** a stale test, not a code defect. `bin/fw:9728` routes `setup` to `do_init "$@"`, and `lib/init.sh:117-120` takes the target from the positional `[dir]`, defaulting to `$PWD`; init never reads `PROJECT_ROOT` (it creates a project, PROJECT_ROOT names an existing one). The test exported `PROJECT_ROOT=<tmp>`, passed no dir, and ran from the bats cwd (the framework repo), so setup targeted the framework repo and hit the already-initialised check at `lib/init.sh:132`. Its fixture also pre-wrote `.framework.yaml` into the tmp dir, so even a PROJECT_ROOT-honouring alias would have answered "already initialized". The assertion was a loose OR over output strings (`Task system` / `.tasks` / `Setting up`) that some earlier output version happened to contain.
+
+**Why structurally allowed:** the test asserted on narration text, not on the effect (files in the target dir), so it never checked *which* directory was set up; it also ran a mutating command with the framework repo as its implicit target.
+
+**Prevention:** the rewritten test passes the target explicitly (same shape as `tests/integration/fw_init.bats`), runs from the framework repo as cwd on purpose, and asserts the effect in the named dir plus the absence of "already initialized" — so a regression to cwd-targeting fails it. Verified: the HEAD version of the test still fails, the new one passes.
 
 ## Evolution
 
@@ -362,6 +375,11 @@ cost_estimate_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-22 — defect or stale test
+- **Chose:** stale test; corrected the test, left `fw setup` / `fw init` unchanged.
+- **Why:** `fw setup` is documented as a deprecated alias of `fw init`, whose contract is `fw init [dir]` defaulting to cwd (pinned by fw_init.bats, which passes the dir). Making the alias read PROJECT_ROOT would make it diverge from the command it aliases.
+- **Rejected:** teaching `do_init` to honour PROJECT_ROOT — changes init semantics for every caller (bin/fw exports a resolved PROJECT_ROOT), and would still fail this fixture, which pre-wrote .framework.yaml.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -378,3 +396,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4599-fw-setup-ignores-projectroot-and-reports.md
 - **Context:** Initial task creation
+
+### 2026-10-22T10:52:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
