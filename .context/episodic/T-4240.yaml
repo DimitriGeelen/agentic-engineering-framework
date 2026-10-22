@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4240: fw init --provider claude prints no restart notice: the running Claude Code session stays ungoverned until it is restarted in the project
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T11:19:23Z
+# ============================================================================
+
+task_id: T-4240
+task_name: "fw init --provider claude prints no restart notice: the running Claude Code session stays ungoverned until it is restarted in the project"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T13:43:20Z
+completed: 2026-10-22T11:13:31Z
+duration_days: 5
+updates_count: 3
+first_commit: 2026-10-21T23:17:16+02:00
+last_commit: 2026-10-22T09:51:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init and install.sh end with a restart notice — Claude Code loads CLAUDE.md and hooks at session start, so the session that ran init stays ungoverned until restarted in the project with claude-fw; regression bats pins it (cursor as negative control). one restart notice per init/install — install.sh runs fw init with FW_INIT_NO_RESTART_NOTICE=1 and its banner carries the single notice, absorbing T-4263's CLAUDECODE wording (settings.json path, 'exit this session, then: cd "<dir>" && claude-fw'); t4240/t4263 bats updated to the single wording with one-notice count legs; carries T-4263's uncommitted active->completed move with its integration note. vendor self — lib/init.sh single restart notice. integration verified — t4240/t4263/t4259/init_head_bootstrap/focus_drift_gate/upgrade_fresh_machine_simulation all green; T-4266 gate-unchanged AC ticked, fresh-machine suite added to its Verification; T-4259 duplicate Verification lines dropped
+
+# Key outcomes
+outcomes:
+  - '`fw init --provider claude` (and generic, which also writes Claude Code hooks) ends with a restart notice naming the target dir and `claude-fw`, stating governance is not active in the current session'
+  - '`fw init --provider cursor` does NOT print the Claude Code restart notice (negative control)'
+  - '`install.sh` closing block for a project install prints the same restart notice when the provider is claude/generic'
+  - 'Regression bats `tests/unit/t4240_init_restart_notice.bats` fails before the fix and passes after; vendored copy in sync'
+  - 'Integration with T-4263 (2026-10-22): a project install prints the restart notice ONCE in its whole output — install.sh runs `fw init` with `FW_INIT_NO_RESTART_NOTICE=1` and its banner carries the single notice, which absorbs T-4263''s CLAUDECODE wording (`CLAUDECODE is set`, `<dir>/.claude/settings.json`, `exit this session, then: cd "<dir>" && claude-fw`); t4240 test 4 counts exactly one `Restart Claude Code` line'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.context/episodic/T-4258.yaml'
+  - 'install.sh'
+  - 'lib/init.sh'
+  - '.tasks/active/T-4240-fw-init---provider-claude-prints-no-rest.md'
+  - '.tasks/active/T-4258-initinstall-neither-start-nor-mention-th.md'
+  - '.tasks/active/T-4259-fw-init-seeds-a-cron-registry-but-leaves.md'
+  - '.tasks/active/T-4266-initshs-t-000-bootstrap-recovery-commit-.md'
+  - '.tasks/completed/T-4263-installer-gives-no-restart-instruction-t.md'
+  - 'tests/unit/t4240_init_restart_notice.bats'
+  - 'tests/unit/t4263_install_agent_restart_note.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T23:17:16'
+    action: 'T-4240: fw init and install.sh end with a restart notice — Claude Code loads CLAUDE.md and hooks at session start, so the session that ran init stays ungoverned until restarted in the project with claude-fw; regression bats pins it (cursor as negative control)'
+  - time: '2026-10-22T01:18:01'
+    action: 'T-4240: one restart notice per init/install — install.sh runs fw init with FW_INIT_NO_RESTART_NOTICE=1 and its banner carries the single notice, absorbing T-4263''s CLAUDECODE wording (settings.json path, ''exit this session, then: cd "<dir>" && claude-fw''); t4240/t4263 bats updated to the single wording with one-notice count legs; carries T-4263''s uncommitted active->completed move with its integration note'
+  - time: '2026-10-22T01:19:33'
+    action: 'T-4240: vendor self — lib/init.sh single restart notice'
+  - time: '2026-10-22T09:51:34'
+    action: 'T-4240: integration verified — t4240/t4263/t4259/init_head_bootstrap/focus_drift_gate/upgrade_fresh_machine_simulation all green; T-4266 gate-unchanged AC ticked, fresh-machine suite added to its Verification; T-4259 duplicate Verification lines dropped'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 7050 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7050
+  commits: 4
+  files_changed: 11
+  lines_added: 261
+  lines_removed: 150
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4240-fw-init---provider-claude-prints-no-rest.md
+generated_by: context-agent-hybrid

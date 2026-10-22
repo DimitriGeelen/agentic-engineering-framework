@@ -7,12 +7,12 @@ description: >
   B2 + proposal 3. Fix: init/installer end with 'Restart Claude Code in <dir> with
   claude-fw — governance is not active in this session'.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/init.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:43:20Z
-last_update: 2026-10-21T22:25:15Z
-date_finished:
+last_update: 2026-10-22T11:13:31Z
+date_finished: 2026-10-22T11:13:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -113,7 +113,7 @@ bvp_scores_proposed:
 - [x] `fw init --provider cursor` does NOT print the Claude Code restart notice (negative control)
 - [x] `install.sh` closing block for a project install prints the same restart notice when the provider is claude/generic
 - [x] Regression bats `tests/unit/t4240_init_restart_notice.bats` fails before the fix and passes after; vendored copy in sync
-- [ ] Integration with T-4263 (2026-10-22): a project install prints the restart notice ONCE in its whole output — install.sh runs `fw init` with `FW_INIT_NO_RESTART_NOTICE=1` and its banner carries the single notice, which absorbs T-4263's CLAUDECODE wording (`CLAUDECODE is set`, `<dir>/.claude/settings.json`, `exit this session, then: cd "<dir>" && claude-fw`); t4240 test 4 counts exactly one `Restart Claude Code` line
+- [x] Integration with T-4263 (2026-10-22): a project install prints the restart notice ONCE in its whole output — install.sh runs `fw init` with `FW_INIT_NO_RESTART_NOTICE=1` and its banner carries the single notice, which absorbs T-4263's CLAUDECODE wording (`CLAUDECODE is set`, `<dir>/.claude/settings.json`, `exit this session, then: cd "<dir>" && claude-fw`); t4240 test 4 counts exactly one `Restart Claude Code` line
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -409,3 +409,27 @@ bin/fw vendor self --check --task T-4240
 - **Found:** a project install printed the restart notice up to three times: `fw init`'s closing block (T-4240), install.sh's banner (T-4240), and T-4263's separate CLAUDECODE warning right after it.
 - **Changed:** `lib/init.sh` closing block skips its notice under `FW_INIT_NO_RESTART_NOTICE=1` (install.sh sets it on its `fw init` call) and, when CLAUDECODE is set, folds T-4263's wording into the same notice. `install.sh` `print_completion_banner` prints one notice: optional `CLAUDECODE is set` warn line, `Restart Claude Code in <dir> with claude-fw`, the `<dir>/.claude/settings.json` path, and `cd "<dir>" && claude-fw` (prefixed `exit this session, then:` under CLAUDECODE).
 - **Tests:** t4240 test 2 also pins the settings.json path; test 4 counts exactly one `Restart Claude Code` line in the full install output. t4263 tests updated to the single wording, plus a one-notice count leg and a suppression-wiring leg.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-895ea73e
+- **Timestamp:** 2026-10-22T11:19:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Integration with T-4263 (2026-10-22): a project install prints the restart notice ONCE in its whole output — install.sh runs `fw init` with `FW_INIT_NO_RESTART_NOTICE=1` and its banner carries the sin
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: Integration with T-4263 (2026-10-22): a project install prints the restart notice ONCE in its whole output — install.sh runs `fw init` with `FW_INIT_N`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `timeout 900 bats tests/unit/t4240_init_restart_notice.bats > /tmp/.t4240.out 2>&1 && ! grep -q "^not ok" /tmp/.t4240.out`
+
+### 2026-10-22T11:13:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
