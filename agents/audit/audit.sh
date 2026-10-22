@@ -8234,7 +8234,11 @@ esac
 
 # D12: Bypass Log Growth (Score 12, T-248)
 # Track --no-verify usage and bypass log entries
-BYPASS_LOG="$PROJECT_ROOT/.context/project/bypass-log.yaml"
+# T-4656: the path every writer uses (agents/git/lib/common.sh, check-tier0.sh,
+# lib/tier0_action.py) and CTL-010 reads. It used to read
+# .context/project/bypass-log.yaml, which nothing writes, so D12 reported
+# "no log file" forever.
+BYPASS_LOG="$CONTEXT_DIR/bypass-log.yaml"
 if [ -f "$BYPASS_LOG" ]; then
     d12_result=$(python3 << D12EOF
 import yaml
@@ -8250,6 +8254,12 @@ try:
     entries = data.get("bypasses", []) if data else []
 except Exception:
     entries = []
+
+# T-4656: the Tier-0 gate logs each human-approved fw inception decide with
+# risk "INCEPTION DECISION: ..." (check-tier0.sh). That is the sanctioned way to
+# record a GO/NO-GO, not a bypass. A forced decide ("FW FORCE: ...") still counts.
+entries = [e for e in (entries or []) if isinstance(e, dict)
+           and not str(e.get("risk", "")).startswith("INCEPTION DECISION")]
 
 recent = 0
 for e in entries:

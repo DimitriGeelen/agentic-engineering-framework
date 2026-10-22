@@ -1,13 +1,16 @@
 ---
 id: T-4656
-name: "audit D12 reads .context/project/bypass-log.yaml while writers use $CONTEXT_DIR/bypass-log.yaml, and counts approved inception decisions as bypasses"
+name: "audit D12 reads .context/project/bypass-log.yaml while writers use $CONTEXT_DIR/bypass-log.yaml,
+  and counts approved inception decisions as bypasses"
 description: >
-  Reports PASS with no log; counts inception decisions as bypasses. Source: ring20 per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category 5), ring20 patch #35,#36. Verify against our code before fixing.
+  Reports PASS with no log; counts inception decisions as bypasses. Source: ring20
+  per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category 5),
+  ring20 patch #35,#36. Verify against our code before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T19:32:32Z
-last_update: 2026-10-22T19:32:32Z
-date_finished: null
+last_update: 2026-10-22T22:05:42Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T19:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T19:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4656: audit D12 reads .context/project/bypass-log.yaml while writers use $CONTEXT_DIR/bypass-log.yaml, and counts approved inception decisions as bypasses
@@ -62,8 +92,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Claim reproduced on our code: every bypass-log writer and reader listed (grep of lib agents bin web) in ## Updates, with the path each uses; D12 shown to read a path no writer writes (or recorded as not-reproduced)
+- [x] D12 reads the same path the writers write (`$CONTEXT_DIR/bypass-log.yaml`)
+- [x] D12 excludes inception decisions (decide-recorded GO/NO-GO entries) from the bypass count
+- [x] Regression bats test: a fixture log at the writer path is read (D12 not "no log"); an inception-decision entry is not counted; a real bypass entry is counted — fails without the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +280,20 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4656_audit_d12_bypass_log.bats > /tmp/.t4656-a.out 2>&1 && grep -q "^ok 4 " /tmp/.t4656-a.out && ! grep -q "^not ok" /tmp/.t4656-a.out
+timeout 300 bats tests/unit/t4656_audit_d12_bypass_log.bats > /tmp/.t4656-b.out 2>&1; test "$(grep -c '# skip' /tmp/.t4656-b.out)" -eq 0
+! grep -q '^BYPASS_LOG=.*context/project/' agents/audit/audit.sh
+bin/fw vendor self --check --task T-4656
 
 ## RCA
+
+**Symptom:** audit D12 (bypass-log growth) always reported `PASS — no log file`, even with 110 entries in the bypass log; had it read the log, it would have counted every human-approved `fw inception decide` as a bypass (ring20 patches #35/#36).
+
+**Root cause:** `agents/audit/audit.sh:8237` (pre-fix) set `BYPASS_LOG="$PROJECT_ROOT/.context/project/bypass-log.yaml"`, a path no writer uses; all writers and the CTL-010 reader use `$CONTEXT_DIR/bypass-log.yaml`. The counting python counted every entry, including the Tier-0 records `check-tier0.sh:361` writes with risk `INCEPTION DECISION: …` when the human approves a decide.
+
+**Why structurally allowed:** the missing-file branch is a PASS, so a wrong path is indistinguishable from a clean project — a false green that nothing prompts anyone to look at. The path was spelled out per check instead of shared, and D12 had no test.
+
+**Prevention:** D12 now uses `$CONTEXT_DIR/bypass-log.yaml` like the other readers; `tests/unit/t4656_audit_d12_bypass_log.bats` runs the real D12 block (cut from audit.sh) against fixtures: writer-path log read, dead path not read, inception decision not counted, real bypasses counted and WARN at 5.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +389,13 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4656-audit-d12-reads-contextprojectbypass-log.md
 - **Context:** Initial task creation
+
+### 2026-10-22T21:59:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-23 — reproduced and fixed [w4654]
+- **Writers, all `.context/bypass-log.yaml`:** `agents/git/lib/common.sh:7` (`$CONTEXT_DIR`), `agents/context/check-tier0.sh:683,791`, `lib/tier0_action.py:651`, `bin/fw:9907` (onboarding skip), `lib/init.sh:382` (creates it).
+- **Readers:** `agents/audit/audit.sh:5664,5782,6759,6799` (`$CONTEXT_DIR`), `agents/context/lib/status.sh:109`, `bin/fw:8725`, `web/blueprints/enforcement.py:66` — all `.context/bypass-log.yaml`. Only D12 (`audit.sh:8237`) read `.context/project/bypass-log.yaml`, which does not exist here.
+- **Reproduced:** both claims hold. t4656 R1–R4 all failed before the fix. The live log holds 110 entries, 10 of them Tier-0 `INCEPTION DECISION` approvals of `fw inception decide`.
+- **Fix:** D12 reads `$CONTEXT_DIR/bypass-log.yaml`; entries whose `risk` starts with `INCEPTION DECISION` are dropped before counting (`FW FORCE` decide bypasses still count). Live D12 now: `PASS total=100` (was "no log file").
