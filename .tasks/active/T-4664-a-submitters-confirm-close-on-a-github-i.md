@@ -1,10 +1,16 @@
 ---
 id: T-4664
-name: "A submitter's confirm-close on a GitHub issue is not yet counted as release field evidence (WORKS row for the linked task)"
+name: "A submitter's confirm-close on a GitHub issue is not yet counted as release
+  field evidence (WORKS row for the linked task)"
 description: >
-  T-4660 closes an issue when its submitter confirms the fix. That confirmation is a positive field test for the linked task(s), which the T-4146 release rule needs before a master release, but nothing records it in the release field-evidence report. Make confirm-close append a WORKS row (source: GitHub #N, reply link, version tested) where the release tooling reads field evidence (_field_verdicts in lib/issues.py and the release report).
+  T-4660 closes an issue when its submitter confirms the fix. That confirmation is
+  a positive field test for the linked task(s), which the T-4146 release rule needs
+  before a master release, but nothing records it in the release field-evidence report.
+  Make confirm-close append a WORKS row (source: GitHub #N, reply link, version tested)
+  where the release tooling reads field evidence (_field_verdicts in lib/issues.py
+  and the release report).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T20:38:18Z
-last_update: 2026-10-22T20:38:18Z
-date_finished: null
+last_update: 2026-10-22T21:04:10Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +56,54 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T20:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T20:45:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4664: A submitter's confirm-close on a GitHub issue is not yet counted as release field evidence (WORKS row for the linked task)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+A submitter's confirmed fix (T-4660 confirm-close, class `confirmed`) is a positive field test under the
+T-4146 release rule. It is recorded in a version-independent table, `docs/reports/field-test-submitter-confirmations.md`,
+which `fw issues release` reads alongside the per-release `field-test-<version>-results.md` (the next release's version is
+not known when the submitter confirms).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `confirm_close` on a `confirmed` reply appends one `| T-NNNN | **WORKS** — GitHub #N (submitter) | <version or "not stated"> | <reply link> | <date> |` row to `docs/reports/field-test-submitter-confirmations.md`, for the issue's linked task(s) from the ledger; the version is taken from the reply text when it names one (e.g. "on 1.8.13")
+- [x] A `close-ok` reply records no row; an issue with no linked task records no row; re-recording the same reply adds no second row (idempotent)
+- [x] `fw issues release` merges the submitter table with the release's own field report, so a task with only a submitter WORKS row gets verdict `works` and its evidence names "GitHub #N (submitter)"; a FAILS row in either report still holds the issue
+- [x] `fw issues field-evidence [N ...] [--dry-run]` backfills from the ledger's confirm-close `closed` rows without calling GitHub; dry-run writes nothing
+- [x] Backfill run for real for #86 #87 #88 #89 #90 #91 #93 #94 (rows only for those whose reply classifies `confirmed`), and the result committed
+- [x] `tests/unit/test_t4664_confirm_close_field_evidence.py` passes, with gh stubbed (no real GitHub call); existing T-4660/T-4668 issues tests still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +288,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_t4664_confirm_close_field_evidence.py -q > /tmp/.t4664.out 2>&1 && grep -q passed /tmp/.t4664.out
+grep -q "GitHub #86 (submitter)" docs/reports/field-test-submitter-confirmations.md
+bin/fw vendor self --check --task T-4664
 
 ## RCA
 
@@ -264,6 +307,20 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** eight issues (#86–#94) were closed today on their submitter's "Confirmed fixed", yet the next release would
+still have shown "Field evidence: none recorded" for T-4040, T-3886, T-4041 and the others, and asked those submitters to
+confirm again.
+
+**Root cause:** `confirm_close` (lib/issues.py, T-4660) wrote only the intake ledger; `cmd_release` read field evidence
+solely from `docs/reports/field-test-<version>-results.md` (`_field_verdicts`, called at the old lib/issues.py:1488). The
+two halves of T-4146 evidence were never joined, and the per-version file cannot be targeted at confirm time because
+the next release's version is not yet known.
+
+**Why structurally allowed:** T-4660 was scoped to the GitHub side (thank and close). Nothing tested that a closed-on-
+confirmation issue reads as WORKS at release time.
+
+**Prevention:** confirm-close now writes the version-independent table, `cmd_release` reads it through
+`_release_field_verdicts`, and `test_t4664_confirm_close_field_evidence.py` pins both ends (record and merge).
 
 ## Evolution
 
@@ -345,3 +402,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4664-a-submitters-confirm-close-on-a-github-i.md
 - **Context:** Initial task creation
+
+### 2026-10-22T21:03:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -1060,6 +1060,99 @@ def _fix_facts(rows: list, n: int) -> dict | None:
     return {"tasks": tasks, "release": release, "commit": commit} if found else None
 
 
+# ── submitter confirmations as release field evidence (T-4664) ──────────────
+# A submitter who confirms a fix has field-tested it: under T-4146 that is a positive field test for the
+# linked tasks. The next release's version is not known when they reply, so the rows go into one
+# version-independent table that `release` merges with field-test-<version>-results.md. Only a
+# `confirmed` reply counts: an OK to close (close-ok) says nothing about whether the fix works.
+
+SUBMITTER_REPORT = "field-test-submitter-confirmations.md"
+_REPLY_VERSION_RE = re.compile(r"(?<![\w.])v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?)(?![\w])")
+_SUBMITTER_HEAD = (
+    "# Field-test results — submitter confirmations\n\n"
+    "A GitHub issue's submitter confirming the fix is a positive field test of the linked task under T-4146.\n"
+    "`fw issues confirm-close` (and the sync that runs it) appends a row here; `fw issues release` reads this\n"
+    "table together with the release's own `field-test-<version>-results.md`. Written by lib/issues.py (T-4664);\n"
+    "keep the table last in the file, a line after it ends the table.\n\n"
+    "| Fix | Verdict | Version named in reply | Reply | Date |\n"
+    "|---|---|---|---|---|\n")
+
+
+def _submitter_report_path() -> Path:
+    """Where confirm-close writes. A sandboxed ledger (FW_ISSUES_DIR) keeps its report beside it, so a
+    test never writes the project's docs/reports."""
+    if os.environ.get("FW_ISSUES_FIELD_REPORT"):
+        return Path(os.environ["FW_ISSUES_FIELD_REPORT"])
+    if os.environ.get("FW_ISSUES_DIR"):
+        return Path(os.environ["FW_ISSUES_DIR"]) / SUBMITTER_REPORT
+    return _project_root() / "docs" / "reports" / SUBMITTER_REPORT
+
+
+def _reply_version(text: str) -> str:
+    m = _REPLY_VERSION_RE.search(text or "")
+    return m.group(1) if m else ""
+
+
+def _cell(s: str) -> str:
+    return re.sub(r"\s+", " ", str(s)).replace("|", "/").strip()
+
+
+def record_field_evidence(n: int, reply_id: str, tasks: list, text: str, url: str, date: str,
+                          dry_run: bool = False, path: Path | None = None) -> str:
+    """Append the WORKS row for a confirmed reply. Returns recorded | already | no-tasks | would-record.
+    The reply id is the idempotence key."""
+    if not tasks:
+        return "no-tasks"
+    path = path or _submitter_report_path()
+    if path.exists() and f"`{reply_id}`" in path.read_text(errors="replace"):
+        return "already"
+    reply = f"[`{reply_id}`]({url})" if url else f"`{reply_id}`"
+    row = (f"| {', '.join(tasks)} | **WORKS** — GitHub #{n} (submitter) "
+           f"| {_cell(_reply_version(text)) or 'not stated'} | {reply} | {date} |\n")
+    if dry_run:
+        print(f"would record: {row}", end="")
+        return "would-record"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd = os.open(path, os.O_RDWR | os.O_APPEND | os.O_CREAT, 0o644)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        if os.fstat(fd).st_size == 0:
+            os.write(fd, _SUBMITTER_HEAD.encode())
+        os.write(fd, row.encode())
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    return "recorded"
+
+
+def cmd_field_evidence(a) -> int:
+    """Backfill: a WORKS row for every confirm-close `closed` row whose reply classifies confirmed.
+    Reads only the ledger (the excerpt keeps head and tail), never GitHub."""
+    rows = _read_rows(_issues_dir() / "intake.jsonl")
+    replies = {(r.get("issue"), str(r.get("reply_id"))): r for r in rows if r.get("stage") == "reply"}
+    want = set(a.issue or [])
+    counts: dict = {}
+    for r in rows:
+        n = r.get("issue")
+        if r.get("stage") != "closed" or r.get("by") != "confirm-close" or (want and n not in want):
+            continue
+        rid = str(r.get("reply_id") or "")
+        reply = replies.get((n, rid)) or {}
+        text = reply.get("excerpt") or ""
+        cls = r.get("class") or classify_reply(text, reply.get("author") or "", reply.get("author") or "")
+        if cls != "confirmed":
+            out = f"skip-{cls}"
+        else:
+            tasks = r.get("tasks") or (_fix_facts(rows, n) or {}).get("tasks") or []
+            url = reply.get("url") or f"https://github.com/{_repo()}/issues/{n}"
+            out = record_field_evidence(n, rid, tasks, text, url, str(r.get("ts") or "")[:10], dry_run=a.dry_run)
+        counts[out] = counts.get(out, 0) + 1
+        print(f"{out:12} #{n} reply {rid}")
+    print("field-evidence: " + (", ".join(f"{v} {k}" for k, v in sorted(counts.items())) or "nothing to do")
+          + (" (dry-run: nothing written)" if a.dry_run else ""))
+    return 0
+
+
 def confirm_close(n: int, reply_id: str, dry_run: bool = False, note: str = "", auto: bool = False) -> str:
     """Thank the submitter and close #n on their confirmation or their OK to close (T-4668). `note` is
     appended to the comment (e.g. the follow-up task for a suggestion). `auto` is sync's call: a
@@ -1123,6 +1216,14 @@ def confirm_close(n: int, reply_id: str, dry_run: bool = False, note: str = "", 
     if fixed["tasks"]:
         row["tasks"] = fixed["tasks"]
     _append_row(ledger, row)
+    if cls == "confirmed":  # T-4664: a confirmed fix is a positive field test; an OK to close is not
+        try:
+            record_field_evidence(n, reply_id, fixed["tasks"], text,
+                                  (live or {}).get("url") or reply.get("url") or
+                                  f"https://github.com/{_repo()}/issues/{n}", _now()[:10])
+        except OSError as e:
+            print(f"WARN #{n}: closed, but the field-evidence row was not written ({e}); "
+                  f"run `fw issues field-evidence {n}`", file=sys.stderr)
     return "closed"
 
 
@@ -1273,6 +1374,22 @@ def _field_verdicts(path: Path) -> dict:
     return out
 
 
+def _release_field_verdicts(root: Path, version: str) -> dict:
+    """The release's own field report merged with the submitter-confirmation table (T-4664). A FAILS
+    in either wins; otherwise any WORKS row makes the task works."""
+    out: dict = {}
+    reports = root / "docs" / "reports"
+    for path in (reports / f"field-test-{version}-results.md", reports / SUBMITTER_REPORT):
+        for tid, rec in _field_verdicts(path).items():
+            m = out.setdefault(tid, {"verdict": None, "evidence": []})
+            m["evidence"] += rec["evidence"]
+            if rec["verdict"] == "fails" or m["verdict"] == "fails":
+                m["verdict"] = "fails"
+            elif m["evidence"]:
+                m["verdict"] = "works"
+    return out
+
+
 _LOCAL_HOST_RE = re.compile(
     r"\b[\w-]+(?:\.[\w-]+)*\.(?:local|lan|internal|localdomain|corp)\b"  # local-only names
     r"|\b(?:\d{1,3}\.){3}\d{1,3}\b"                                     # IPv4
@@ -1354,6 +1471,8 @@ def _evidence_block(version: str, g: dict, root: Path) -> str:
     links = [f"release notes https://github.com/{repo}/releases/tag/{version}"]
     if report.exists():
         links.append(f"field-evidence report {tag}/docs/reports/field-test-{version}-results.md")
+    if any("submitter" in e for e in g["evidence"]) and (root / "docs" / "reports" / SUBMITTER_REPORT).exists():
+        links.append(f"submitter confirmations {tag}/docs/reports/{SUBMITTER_REPORT}")
     if comparison:
         links.append(f"full-suite comparison {tag}/docs/reports/{comparison}")
     lines.append("**Links:** " + " · ".join(links))
@@ -1485,7 +1604,7 @@ def cmd_release(a) -> int:
     if not re.match(r"^\S+\.\.\S+$", a.rng or ""):
         raise IssuesError(f"--range must be A..B, got {a.rng!r}", 2)
     root = Path(a.root) if a.root else _project_root()
-    field = _field_verdicts(root / "docs" / "reports" / f"field-test-{a.version}-results.md")
+    field = _release_field_verdicts(root, a.version)
     groups: dict = {}
     for tid in _range_task_ids(root, a.rng):
         t = _task_facts(root, tid)
@@ -1802,6 +1921,11 @@ def main(argv=None) -> int:
     cc.add_argument("--note", help="appended to the comment, e.g. 'Your suggestion is tracked as T-XXXX.' (T-4668)")
     cc.add_argument("--dry-run", action="store_true", help="print the comment, post and close nothing")
     cc.set_defaults(fn=cmd_confirm_close)
+    fe = sub.add_parser("field-evidence", help="record confirm-closed issues' confirmed replies as WORKS rows in "
+                                               "the submitter field-evidence table; ledger only, no GitHub (T-4664)")
+    fe.add_argument("issue", type=int, nargs="*", help="issue numbers (default: every confirm-close)")
+    fe.add_argument("--dry-run", action="store_true", help="print the rows, write nothing")
+    fe.set_defaults(fn=cmd_field_evidence)
     s = sub.add_parser("sync", help="ingest new/changed issues and submitter replies (cron)")
     s.add_argument("--dry-run", action="store_true", help="list what would change; post and write nothing")
     s.set_defaults(fn=cmd_sync)
