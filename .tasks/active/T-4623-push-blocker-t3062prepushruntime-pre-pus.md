@@ -2,9 +2,13 @@
 id: T-4623
 name: "Push blocker: t3062_prepush_runtime pre-push structure audit exceeds its budget"
 description: >
-  New red 2026-10-22 (.context/audits/unit-suite/failures/2026-10-22T08:47:18Z/bats/t3062_prepush_runtime.bats.out): the pre-push structure audit did not complete inside its budget. Determine whether this is host load (re-run alone at low load) or a slower check added today (time each structure check, e.g. new checks from T-4590/T-4591/T-4581); fix the real cause, do not raise the budget without evidence.
+  New red 2026-10-22 (.context/audits/unit-suite/failures/2026-10-22T08:47:18Z/bats/t3062_prepush_runtime.bats.out):
+  the pre-push structure audit did not complete inside its budget. Determine whether
+  this is host load (re-run alone at low load) or a slower check added today (time
+  each structure check, e.g. new checks from T-4590/T-4591/T-4581); fix the real cause,
+  do not raise the budget without evidence.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T09:34:32Z
-last_update: 2026-10-22T09:34:32Z
-date_finished: null
+last_update: '2026-10-22T09:45:45Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T09:36:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T09:45:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4623: Push blocker: t3062_prepush_runtime pre-push structure audit exceeds its budget
@@ -62,8 +93,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Per-check timing of `audit.sh --section structure` recorded; the dominant cost named with file:line in ## RCA
+- [x] The cause of the overrun is fixed (not by raising BUDGET_S without evidence)
+- [x] `tests/unit/t3062_prepush_runtime.bats` passes run alone in the foreground
+- [x] A regression test pins the fix and fails without it
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +281,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n agents/audit/audit.sh
+timeout 300 bats tests/unit/t4623_structure_audit_cost.bats > /tmp/.t4623.out 2>&1 && ! grep -q "^not ok" /tmp/.t4623.out
+test "$(grep -c '# skip' /tmp/.t4623.out)" -eq 0
+timeout 900 bats tests/unit/t3062_prepush_runtime.bats > /tmp/.t4623b.out 2>&1 && grep -q '^ok 1 ' /tmp/.t4623b.out && ! grep -q '^ok 1 .*# skip' /tmp/.t4623b.out && ! grep -q "^not ok" /tmp/.t4623b.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4623_structure_audit_cost.bats 2>&1 | grep -q clean
+bin/fw vendor self --check --task T-4623
 
 ## RCA
 
@@ -264,6 +303,55 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `t3062_prepush_runtime.bats` test 1 hit its 450s hard cap (rc=124) in the
+2026-10-22T08:47Z unit-suite run. Run alone it measured 348s (load ~35) and 262s (load ~25)
+against a 150s budget. This is not new today: T-3844 recorded 226-330s from about 2026-09-25.
+Earlier daily runs hid it because the test skips when another audit holds the lock.
+
+**Root cause:** I traced the body child with xtrace and timestamps (BASH_ENV hook) and
+bucketed the gaps by line. Of the 262s run, three costs were repeated or serial work, not new
+checks:
+1. Arc staleness, `agents/audit/audit.sh` HEAD:~1823. It ran one `git log --since=30.days.ago
+   --format=%H -- <arc's tasks>` per in-progress arc, so 17 arcs each walked the ~3,000-commit
+   window: **~50s**. One pass over the window costs 1.25s.
+2. `lib/verdict_ledger.py audit` replays git history and ran **three times** (HEAD:3128 for the
+   ledger check, 3233 for step-downs, 3247 for green-degraded), ~9s each: **~28s**. T-4490
+   (2026-10-20) added the third run.
+3. Serial, independent, read-only work: the tests/lint invariant suite (HEAD:3719, 149 tests,
+   **~59s** serial, ~21-31s with `--jobs 8`), plus four history detectors (verdict ledger,
+   human_ac_ticks, watchtower_decision_revert, index_reconcile) at ~9-13s each, **~42s** in a row.
+index_reconcile's cost grows with whatever other workers have staged in the shared index, so
+part of the cost depends on that state.
+
+**Fix (agents/audit/audit.sh):**
+- :1788: one `git log --name-only --no-renames --relative -- .tasks` over the window, and a
+  set-membership test for each arc. `--no-renames` lists both sides of an active->completed move,
+  which is what the pathspec form matched.
+- :3147: `_audit_prefetch` / `_audit_collect` start the four detectors together. Each check block
+  collects its own `$(cmd 2>&1)`-equivalent output and rc. A killed run reads rc 1, so it takes the
+  "could not run" branch, never PASS. Step-downs and green-degraded (:3285, :3299) read the single
+  ledger output.
+- :3777: `bats --jobs 8 --no-parallelize-within-files` when GNU parallel exists. Without it, the
+  suite runs serially as before.
+After the fix: 149-158s at load 15-50 (was 262s at load ~25). t3062 passed alone in ~133s at
+load 20-30. It **failed at 170s** in a second solo run while load climbed 27→54. The fix
+removes ~110s of repeated work, but it does not make the 150s budget hold on this host under
+heavy load. Findings were identical before and after, apart from the expected vendor-drift line.
+
+**Why structurally allowed:** t3062 is the only thing that measures this, and it skips whenever
+another audit holds the lock (the cron runs every 30 min and takes 3-10 min). So it was green or
+skipped for weeks while the section grew one reasonable check at a time. Each repeated call was
+correct by itself; nothing counts how often the same history replay runs per audit.
+
+**Prevention:** `tests/unit/t4623_structure_audit_cost.bats` pins each fix: ledger audit invoked
+once, no git command inside the per-arc loop, the window pass agrees with the per-arc pathspec
+query on a fixture with a rename and an old-only task, the prefetch helpers report rc/output and
+read a killed job as not-run, and the lint suite gets `--jobs` behind a `parallel` guard. 4 of 5
+legs are red against HEAD's audit.sh; the equivalence leg is green on both by design. The
+margin is still thin under full-suite load (40-70 on 24 cores): the remaining cost is many small
+corpus-proportional checks (e.g. the fabric drift scan parses 1,640 cards, ~11s). That is T-3844's
+open scope, not closed here.
 
 ## Evolution
 
@@ -345,3 +433,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4623-push-blocker-t3062prepushruntime-pre-pus.md
 - **Context:** Initial task creation
+
+### 2026-10-22T09:36:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

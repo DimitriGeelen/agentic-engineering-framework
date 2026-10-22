@@ -1780,6 +1780,15 @@ for d in ('active', 'completed'):
             print(f'{path}\t{tag}')
 " 2>/dev/null)
 
+    # T-4623: ONE history walk for every arc. The per-arc `git log --since -- <tasks>` below
+    # walked the whole window once per in-progress arc (17 arcs x ~3,000 commits = ~50s of
+    # the pre-push budget on a loaded host). The set of task paths any commit in the window
+    # touched answers the same question for every arc. --no-renames lists both sides of an
+    # active->completed move, as the pathspec form matched either side.
+    recent_task_paths=$'\n'$(git -C "$PROJECT_ROOT" log --since="${stale_arc_threshold}.days.ago" \
+                                  --format= --name-only --no-renames --relative -- .tasks 2>/dev/null \
+                              | sort -u)$'\n'
+
     for af in "$PROJECT_ROOT/.context/arcs"/*.yaml; do
         [ -f "$af" ] || continue
 
@@ -1822,8 +1831,10 @@ for d in ('active', 'completed'):
         arcs_checked_for_staleness=$((arcs_checked_for_staleness + 1))
 
         # Any commit since the threshold touching any matching task → fresh.
-        recent=$(git -C "$PROJECT_ROOT" log --since="${stale_arc_threshold}.days.ago" \
-                     --format=%H -- "${matching_tasks[@]}" 2>/dev/null | head -1)
+        recent=""
+        for tp in "${matching_tasks[@]}"; do
+            case "$recent_task_paths" in *$'\n'"${tp#"$PROJECT_ROOT"/}"$'\n'*) recent=1; break;; esac
+        done
 
         if [ -z "$recent" ]; then
             warn "Arc '$arc_slug' has no task commits in the last ${stale_arc_threshold} days (${#matching_tasks[@]} task(s) in arc)" \
@@ -3124,9 +3135,44 @@ fi
 # evidence paths inside the repo, and an introducing commit that exists and is not a
 # producer's. A torn line is a failure. FAIL, not WARN: an unverifiable row is exactly what
 # a forged close looks like, and it is a property of committed content.
+#
+# T-4623: this and the three detectors after it (Human-AC ticks, Watchtower decisions, index
+# reconcile) are independent, read-only, and each replays git history — ~9-12s apiece on a
+# loaded host, ~42s of the pre-push budget run one after another. They are started together
+# here and each block collects its own result. The ledger audit used to run three times
+# (twice more for step-downs and green-degraded below); those now read $_VL_AUDIT_OUT.
+_AUDIT_PF_DIR=$(mktemp -d)
+declare -A _AUDIT_PF_PID=()
+# _audit_prefetch NAME CMD... — run CMD in the background, output captured as $(CMD 2>&1) would.
+_audit_prefetch() {
+    local _n="$1"; shift
+    ( _pf_rc=0; "$@" >"$_AUDIT_PF_DIR/$_n.out" 2>&1 || _pf_rc=$?; echo "$_pf_rc" >"$_AUDIT_PF_DIR/$_n.rc" ) &
+    _AUDIT_PF_PID[$_n]=$!
+}
+# _audit_collect NAME — wait for NAME, set _PF_OUT and _PF_RC. A run that left no exit code
+# (killed) reads rc 1, so every caller takes its "could not run" branch, never its PASS.
+_audit_collect() {
+    local _n="$1"
+    wait "${_AUDIT_PF_PID[$_n]}" 2>/dev/null || true
+    _PF_OUT=$(cat "$_AUDIT_PF_DIR/$_n.out" 2>/dev/null || true)
+    _PF_RC=$(cat "$_AUDIT_PF_DIR/$_n.rc" 2>/dev/null || true)
+    _PF_RC=${_PF_RC:-1}
+}
+[ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] && \
+    _audit_prefetch vl env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" audit
+[ -f "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" ] && \
+    _audit_prefetch hat env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" audit
+[ -f "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" ] && \
+    _audit_prefetch wdr python3 -I "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" --repo "$PROJECT_ROOT"
+[ -f "$FRAMEWORK_ROOT/lib/index_reconcile.py" ] && \
+    _audit_prefetch ir python3 -I "$FRAMEWORK_ROOT/lib/index_reconcile.py" --repo "$PROJECT_ROOT"
+
+_VL_AUDIT_OUT=""
 if [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]; then
-    _vl_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" audit 2>&1)
-    _vl_rc=$?
+    _audit_collect vl
+    _vl_out=$_PF_OUT
+    _vl_rc=$_PF_RC
+    _VL_AUDIT_OUT=$_vl_out
     if [ "$_vl_rc" -eq 0 ]; then
         pass "Reviewer-verdict ledger: $(echo "$_vl_out" | tail -1)"
     elif [ "$_vl_rc" -eq 2 ]; then
@@ -3163,8 +3209,9 @@ fi
 # verify-acs auto-check, or a reviewer-verdict annotation) FAILs, and names an agent
 # identity when the committer is one.
 if [ -f "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" ]; then
-    _hat_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" audit 2>&1)
-    _hat_rc=$?
+    _audit_collect hat
+    _hat_out=$_PF_OUT
+    _hat_rc=$_PF_RC
     if [ "$_hat_rc" -eq 0 ]; then
         pass "Human-AC ticks: $(echo "$_hat_out" | tail -1)"
     elif [ "$_hat_rc" -eq 2 ]; then
@@ -3193,8 +3240,9 @@ fi
 # commit left the real index on the old blobs). WARN, not FAIL: recovery is operator-gated
 # (restored ticks need operator provenance), and a FAIL would jam every push until then.
 if [ -f "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" ]; then
-    _wdr_out=$(python3 -I "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" --repo "$PROJECT_ROOT" 2>&1)
-    _wdr_rc=$?
+    _audit_collect wdr
+    _wdr_out=$_PF_OUT
+    _wdr_rc=$_PF_RC
     if [ "$_wdr_rc" -eq 0 ]; then
         pass "Watchtower decisions: $(echo "$_wdr_out" | tail -1)"
     elif [ "$_wdr_rc" -eq 2 ]; then
@@ -3210,8 +3258,9 @@ fi
 
 # T-4166 / G-114: staged index entries that would revert committed decisions on the next commit.
 if [ -f "$FRAMEWORK_ROOT/lib/index_reconcile.py" ]; then
-    _ir_out=$(python3 -I "$FRAMEWORK_ROOT/lib/index_reconcile.py" --repo "$PROJECT_ROOT" 2>&1)
-    _ir_rc=$?
+    _audit_collect ir
+    _ir_out=$_PF_OUT
+    _ir_rc=$_PF_RC
     if [ "$_ir_rc" -eq 0 ]; then
         pass "Index reconcile: no armed stale index entries"
     elif [ "$_ir_rc" -eq 2 ]; then
@@ -3224,13 +3273,16 @@ if [ -f "$FRAMEWORK_ROOT/lib/index_reconcile.py" ]; then
              "Run: bin/fw git reconcile-index"
     fi
 fi
+rm -rf "$_AUDIT_PF_DIR"
 
 # T-3580 round 7: every spend-ceiling step-down (a review run registered one rung below what IW-7
 # requires) is a WARN — the lever must be visible even when it was exercised legitimately.
+# T-4623: this and the green-degraded check read the ledger audit collected above
+# ($_VL_AUDIT_OUT) rather than replaying the ledger twice more.
 _audit_review_step_downs() {
     [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] || return 0
     local _sd
-    _sd=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" audit 2>/dev/null | grep '^WARN step-down' || true)
+    _sd=$(printf '%s\n' "$_VL_AUDIT_OUT" | grep '^WARN step-down' || true)
     [ -z "$_sd" ] && return 0
     warn "Reviewer spend-ceiling step-downs: $(echo "$_sd" | wc -l | tr -d ' ') review run(s) granted a lower rung than IW-7 requires" \
          "$(echo "$_sd" | head -3 | tr '\n' ';')" \
@@ -3244,7 +3296,7 @@ _audit_review_step_downs
 _audit_review_green_degraded() {
     [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] || return 0
     local _gd _wk
-    _gd=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" audit 2>/dev/null | grep '^WARN green-degraded' || true)
+    _gd=$(printf '%s\n' "$_VL_AUDIT_OUT" | grep '^WARN green-degraded' || true)
     [ -z "$_gd" ] && return 0
     _wk=$(echo "$_gd" | grep '^WARN green-degraded weekly:' | sed 's/^WARN green-degraded weekly: //' | tr '\n' ';')
     warn "Reviewer green-degraded closes: $(echo "$_gd" | grep -vc '^WARN green-degraded weekly:') criterion close(s) on a panel with unavailable seats (per ISO week: ${_wk})" \
@@ -3716,7 +3768,15 @@ check_invariant_suite() {
     fi
 
     local _out _red _total
-    _out=$(cd "$FRAMEWORK_ROOT" && _audit_bounded -t 0 timeout 300 bats tests/lint/ 2>&1) || true
+    # T-4623: file-parallel when GNU parallel is present (bats --jobs needs it). Serial, this
+    # suite was ~50-60s of the pre-push budget on a loaded host; 8 jobs ran it in ~21s with the
+    # same 149 results. Tests inside one file stay serial (--no-parallelize-within-files):
+    # several share a file-level fixture. Without parallel it runs serially, as before.
+    local -a _jobs_args=()
+    if command -v parallel >/dev/null 2>&1; then
+        _jobs_args=(--jobs 8 --no-parallelize-within-files)
+    fi
+    _out=$(cd "$FRAMEWORK_ROOT" && _audit_bounded -t 0 timeout 300 bats "${_jobs_args[@]}" tests/lint/ 2>&1) || true
     _red=$(printf '%s\n' "$_out" | grep -c '^not ok' || true)
     _total=$(printf '%s\n' "$_out" | grep -cE '^(not ok|ok) ' || true)
 
