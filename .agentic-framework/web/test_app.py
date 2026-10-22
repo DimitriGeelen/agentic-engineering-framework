@@ -384,9 +384,24 @@ class TestSessionCockpit:
         assert "Branch" in html or "branch" in html
 
     def test_session_status_shows_git_info(self, client):
+        # T-4617: expect the checkout's actual branch, not a hard-coded
+        # master/main — this repo develops on bleeding-edge, and CI/cloud
+        # clones are detached (no branch, rendered as "unknown").
+        from web.shared import PROJECT_ROOT
+        branch = subprocess.run(
+            ["git", "-C", str(PROJECT_ROOT), "branch", "--show-current"],
+            capture_output=True, text=True,
+        ).stdout.strip() or "unknown"
         resp = client.get("/api/session/status")
         html = resp.data.decode()
-        assert "master" in html or "main" in html
+        assert '<span class="ss-value">{}</span>'.format(branch) in html
+
+    def test_session_status_detached_head_shows_unknown(self, client):
+        """T-4617: a detached HEAD has no branch; the strip says so."""
+        with patch("web.blueprints.session._git", return_value=("", True)):
+            resp = client.get("/api/session/status")
+        assert resp.status_code == 200
+        assert '<span class="ss-value">unknown</span>' in resp.data.decode()
 
     def test_decision_api_csrf_required(self, client):
         """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""

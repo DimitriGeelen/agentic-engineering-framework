@@ -289,6 +289,7 @@ test "$(grep -c '# skip' /tmp/.t4617-bats)" -eq 0
 timeout 600 python3 -m pytest web/test_app.py -q -k TestSessionCockpit > /tmp/.t4617-py 2>&1 && grep -q passed /tmp/.t4617-py
 ! grep -q '"master" in html or "main" in html' web/test_app.py
 python3 tools/bats-dead-negation-lint.py tests/unit/t3698_mcp_termlink_runtime_pin.bats > /tmp/.t4617-lint 2>&1 && grep -q clean /tmp/.t4617-lint
+bin/fw vendor self --check --task T-4617
 
 ## RCA
 
