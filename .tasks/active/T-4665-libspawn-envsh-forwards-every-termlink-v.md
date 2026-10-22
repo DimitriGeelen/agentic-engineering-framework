@@ -1,16 +1,14 @@
 ---
-id: T-4660
-name: "Issue intake: act on submitter replies — close an issue when its submitter
-  confirms the fix, surface every other reply for a decision"
+id: T-4665
+name: "lib/spawn-env.sh forwards every TERMLINK_* variable: a dispatched worker inherits
+  the spawning agent's TERMLINK_SIDECAR_SOCKET and TERMLINK_AGENT_ID (can read its
+  mail, sign as it)"
 description: >
-  Operator 2026-10-22: the submitter confirmed fixes on #86, #87, #90, #93, #94 after
-  testing 1.8.13, and nothing acted on it. fw issues sync (T-4078, cron every 2 h)
-  records submitter replies but never answers or classifies them; sweep (T-4340) keeps
-  an issue open 'for the operator' once the submitter replied, and nothing reads that
-  reply. Extend the release workflow: scan replies on every sync, close confirmed-fixed
-  issues with a thank-you and the Closed stage in the ledger, and surface the rest
-  (not fixed, partial, feature feedback like #92) where the agent and operator see
-  them.
+  T-4647 allow-lists the TERMLINK_[A-Z0-9_]+ prefix. TermLink's T-3463 removed exactly
+  this from termlink spawn. Replace the prefix with exact names (TERMLINK_RUNTIME_DIR
+  plus hub connection settings); agent-scoped identity/socket variables never forwarded.
+  Extend the T-4647/T-4651 tests with canaries. Source: 010-termlink be.3 field report
+  (sidecar 6829fbaa, 2026-10-22).
 
 status: started-work
 workflow_type: build
@@ -45,8 +43,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T20:26:30Z
-last_update: '2026-10-22T20:30:38Z'
+created: 2026-10-22T20:41:22Z
+last_update: 2026-10-22T20:42:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -59,7 +57,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-22T20:27:22Z'
+  - ts: '2026-10-22T20:42:20Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
@@ -75,19 +73,9 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-22T20:30:38Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=311,acs=8)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4660: Issue intake: act on submitter replies — close an issue when its submitter confirms the fix, surface every other reply for a decision
+# T-4665: lib/spawn-env.sh forwards every TERMLINK_* variable: a dispatched worker inherits the spawning agent's TERMLINK_SIDECAR_SOCKET and TERMLINK_AGENT_ID (can read its mail, sign as it)
 
 ## Context
 
@@ -97,12 +85,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] lib/issues.py has a pure reply classifier (confirmed / not-fixed / other) that returns confirmed only for the issue author's affirming opening sentence with no counter-signal
-- [x] `fw issues replies [--json] [--all]` lists undecided submitter replies (issue, stage, class, reply_id, created, excerpt)
-- [x] `fw issues confirm-close <N> --reply-id ID [--dry-run]` refuses on missing reply, non-author, closed issue, or no fixed/released ledger stage; posts one thank-you comment (aef-intake stage=closed marker, footer), closes as completed, appends a stage=closed row; second run is a no-op
-- [x] sync auto-closes confirmed replies on eligible issues, writes needs-decision rows for not-fixed/other, leaves the ledger untouched on gh failure; sweep points at `fw issues replies` instead of "left open for the operator"
-- [x] undecided replies show as one line per issue in `fw operator pending` and in session-start alerts
-- [x] tests/unit/test_t4660_issue_replies.py passes (classifier table with the five real excerpts, refusals, idempotence, ledger rows, sync auto-close with gh stubbed)
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,11 +272,6 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
-python3 -m pytest tests/unit/test_t4660_issue_replies.py -q > /tmp/.t4660.out 2>&1 && grep -q passed /tmp/.t4660.out
-python3 lib/issues.py replies --help > /tmp/.t4660h.out 2>&1 && grep -q "all" /tmp/.t4660h.out
-python3 lib/issues.py confirm-close --help > /tmp/.t4660c.out 2>&1 && grep -q "reply-id" /tmp/.t4660c.out
-bin/fw vendor self --check --task T-4660
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -308,11 +287,6 @@ bin/fw vendor self --check --task T-4660
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** the submitter confirmed fixes on #86, #87, #90, #94 (and #93 partially); nothing acted, the issues stayed open.
-**Root cause:** lib/issues.py cmd_sync (reply ingestion, ~line 762) only writes a `stage=reply, answered=False` ledger row and prints "recorded, NOT answered"; _sweep (~line 1168) prints "left open for the operator". No code reads the reply text.
-**Why structurally allowed:** replies were a write-only ledger; no consumer, no surfacing in operator pending or session alerts, so a recorded reply looked like a handled one.
-**Prevention:** a conservative classifier plus confirm-close act on confirmations; every other reply gets a needs-decision row listed by `fw issues replies` and surfaced in operator pending and session-start alerts; tests pin all of it.
 
 ## Evolution
 
@@ -369,12 +343,14 @@ bin/fw vendor self --check --task T-4660
 
 ## Decisions
 
-### 2026-10-22 — reply classifier edge cases
-- **Chose:** `not-fixed` on strong negatives anywhere in the reply (not fixed, still broken/fails, regression, reopen, is broken); weak counter-signals (still, however, except, "but ... not") veto `confirmed` only in the reply's FIRST PARAGRAPH, giving `other`. Affirmation must be in the opening sentence.
-- **Why:** real #86 says "the gate still bites" in paragraph 2 and #88 says "Separate, still open" in paragraph 2; a whole-text veto would block both genuine confirmations. A negative like "Still broken" in any paragraph still blocks.
-- **Rejected:** whole-text veto on every counter-signal (blocks #86/#88); ignoring counter-signals (closes issues on mixed replies).
-- **Partial checks (#93):** classify `confirmed`; the close comment quotes the opening sentence and any later sentence naming what was not checked ("only", "have not ...").
-- **Settled replies:** a reply is settled by a `closed` row naming it, a closed ledger stage on the issue, or sync seeing the issue no longer open (`reply-settled` row). `needs-decision` rows keep it listed.
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
 
 ## Decision
 
@@ -388,10 +364,10 @@ bin/fw vendor self --check --task T-4660
 
 ## Updates
 
-### 2026-10-22T20:26:30Z — task-created [task-create-agent]
+### 2026-10-22T20:41:22Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4660-issue-intake-act-on-submitter-replies--c.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4665-libspawn-envsh-forwards-every-termlink-v.md
 - **Context:** Initial task creation
 
-### 2026-10-22T20:27:19Z — status-update [task-update-agent]
+### 2026-10-22T20:42:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work

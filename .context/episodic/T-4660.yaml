@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4660: Issue intake: act on submitter replies — close an issue when its submitter confirms the fix, surface every other reply for a decision
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T20:39:28Z
+# ============================================================================
+
+task_id: T-4660
+task_name: "Issue intake: act on submitter replies — close an issue when its submitter confirms the fix, surface every other reply for a decision"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T20:26:30Z
+completed: 2026-10-22T20:38:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-22T22:35:06+02:00
+last_commit: 2026-10-22T22:37:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  act on submitter replies — classifier, fw issues replies/confirm-close, sync auto-close, operator-pending + session alerts. ACs, RCA, decisions, verification. closed #86 #87 #88 #89 #90 #91 #93 #94 on the submitter's confirmation (ledger)
+
+# Key outcomes
+outcomes:
+  - 'lib/issues.py has a pure reply classifier (confirmed / not-fixed / other) that returns confirmed only for the issue author''s affirming opening sentence with no counter-signal'
+  - '`fw issues replies [--json] [--all]` lists undecided submitter replies (issue, stage, class, reply_id, created, excerpt)'
+  - '`fw issues confirm-close <N> --reply-id ID [--dry-run]` refuses on missing reply, non-author, closed issue, or no fixed/released ledger stage; posts one thank-you comment (aef-intake stage=closed marker, footer), closes as completed, appends a stage=closed row; second run is a no-op'
+  - 'sync auto-closes confirmed replies on eligible issues, writes needs-decision rows for not-fixed/other, leaves the ledger untouched on gh failure; sweep points at `fw issues replies` instead of "left open for the operator"'
+  - 'undecided replies show as one line per issue in `fw operator pending` and in session-start alerts'
+  - 'tests/unit/test_t4660_issue_replies.py passes (classifier table with the five real excerpts, refusals, idempotence, ledger rows, sync auto-close with gh stubbed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'act on submitter replies — classifier, fw issues replies/confirm-close, sync auto-close, operator-pending + session alerts'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — reply classifier edge cases'
+    chose: '`not-fixed` on strong negatives anywhere in the reply (not fixed, still broken/fails, regression, reopen, is broken); weak counter-signals (still, however, except, "but ... not") veto `confirmed` only in the reply''s FIRST PARAGRAPH, giving `other`. Affirmation must be in the opening sentence.'
+    rationale: 'real #86 says "the gate still bites" in paragraph 2 and #88 says "Separate, still open" in paragraph 2; a whole-text veto would block both genuine confirmations. A negative like "Still broken" in any paragraph still blocks.'
+    alternatives_rejected: ['whole-text veto on every counter-signal (blocks #86/#88); ignoring counter-signals (closes issues on mixed replies). - **Partial checks (#93):** classify `confirmed`; the close comment quotes the opening sentence and any later sentence naming what was not checked ("only", "have not ..."). - **Settled replies:** a reply is settled by a `closed` row naming it, a closed ledger stage on the issue, or sync seeing the issue no longer open (`reply-settled` row). `needs-decision` rows keep it listed.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - '.agentic-framework/lib/operator_pending.py'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.context/issues/intake.jsonl'
+  - 'lib/issues.py'
+  - 'lib/operator_pending.py'
+  - 'lib/sidecar_cli.py'
+  - '.tasks/active/T-4660-issue-intake-act-on-submitter-replies--c.md'
+  - 'tests/unit/t4078_issues_sync_test.py'
+  - 'tests/unit/test_t4660_issue_replies.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T22:35:06'
+    action: 'T-4660: act on submitter replies — classifier, fw issues replies/confirm-close, sync auto-close, operator-pending + session alerts'
+  - time: '2026-10-22T22:35:15'
+    action: 'T-4660: ACs, RCA, decisions, verification'
+  - time: '2026-10-22T22:37:29'
+    action: 'T-4660: closed #86 #87 #88 #89 #90 #91 #93 #94 on the submitter''s confirmation (ledger)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 3
+  files_changed: 10
+  lines_added: 1256
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4660-issue-intake-act-on-submitter-replies--c.md
+generated_by: context-agent-hybrid
