@@ -9,12 +9,12 @@ description: >
   through render_markdown_safe; test with a criterion whose Steps contain a script
   tag. Render surface: [REVIEW] Human AC.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/tasks.py, web/shared.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T08:37:29Z
-last_update: 2026-10-21T21:45:38Z
-date_finished:
+last_update: 2026-10-22T11:30:16Z
+date_finished: 2026-10-22T09:35:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -65,6 +65,15 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-22T09:45:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=354,acs=6)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-10-18T08:46:03Z'
     estimator: bvp-estimator-v1-heuristic
@@ -82,6 +91,22 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-22T07:46:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -102,7 +127,7 @@ bvp_scores_proposed:
 ### Human
 - [ ] [REVIEW] Backticked URLs in Human-criterion Steps are still clickable on a real page
   **Steps:**
-  1. Open the URL printed by `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` followed by `/inception/T-4046` (or any task whose Human Steps contain a backticked `http://` URL)
+  1. Open http://192.168.10.107:3000/inception/T-4046 (or any task whose Human Steps contain a backticked `http://` URL)
   2. Expand a Human criterion card and click a backticked URL in its Steps
   **Expected:** the URL renders as a code-styled link and opens; Steps/Expected/If-not look as before
   **If not:** note the task id and the criterion; the regex change is in web/blueprints/tasks.py `_CODE_URL_HTML_RE`
@@ -382,7 +407,7 @@ pins `render_markdown_safe` against the same payload.
 -->
 
 **Recommendation:** GO
-**Rationale:** The parser sanitises Steps/Expected/If-not (markdown2 safe_mode='escape') except for one post-processor: the backticked-URL linkifier put unescaped quotes into `href`, giving a live `onmouseover` on /inception, /tasks and /review (and its twin in `render_markdown_safe`). Both regexes now exclude quotes; benign backticked URLs still link.
+**Rationale:** The parser sanitises Steps/Expected/If-not (markdown2 safe_mode='escape') except for one post-processor: the backticked-URL linkifier put unescaped quotes into `href`, giving a live `onmouseover` on the inception, task and review pages (and its twin in `render_markdown_safe`). Both regexes now exclude quotes; benign backticked URLs still link.
 **Evidence:**
 - tests/unit/test_t4290_ac_fields_escaped.py: 17 passed after; 2 failed before (both surfaces, quote payload)
 - 296 neighbouring render/AC/recommendation tests pass; the 1 failure (test_operator_facing_stderr, approvals.py:931) is untouched code
@@ -419,3 +444,22 @@ pins `render_markdown_safe` against the same payload.
 ### 2026-10-21T21:45:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-536ae026
+- **Timestamp:** 2026-10-22T09:35:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — If any field reaches the page as live markup/attribute injection, the producer (`web/blueprints/tasks.py`) is fixed so the `|safe` fields carry only escaped/sanitised HTML
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/tasks.py in: If any field reaches the page as live markup/attribute injection, the producer (`web/blueprints/tasks.py`) is fixed so the `|safe` fields carry only e`
+- **AC#3 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-22T09:35:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
