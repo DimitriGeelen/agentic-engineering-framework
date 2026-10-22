@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4175: fw pickup send without --remote/--session exits 0, delivers nothing, and writes the outgoing envelope into the sender's own inbound inbox (dimitri-mint-dev P-013, their T-113)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:40:23Z
+# ============================================================================
+
+task_id: T-4175
+task_name: "fw pickup send without --remote/--session exits 0, delivers nothing, and writes the outgoing envelope into the sender's own inbound inbox (dimitri-mint-dev P-013, their T-113)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T18:18:05Z
+completed: 2026-10-22T10:39:11Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-10-13T20:18:28+02:00
+last_commit: 2026-10-22T00:23:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — fw pickup send without a target exits 0 and writes into the sender's own inbox (dimitri-mint-dev P-013). fw pickup send requires a target — no --remote/--local exits non-zero; --local saves to undelivered/; outgoing envelopes are written to undelivered/ (then sent/), never the sender's inbox; regression bats t4175 (5/6 red before), pickup fixtures moved to --local / explicit inbox seeding, stale quoted-scalar assert in fw_pickup.bats fixed; vendor synced
+
+# Key outcomes
+outcomes:
+  - '`fw pickup send` with neither `--remote` nor `--local` exits non-zero, names both options, and writes no envelope anywhere'
+  - '`--local` is the explicit local-only path: exits 0, says NOT delivered, saves the envelope in `.context/pickup/undelivered/` (outbound, still counted by `pickup_next_id`)'
+  - 'No send path writes the outgoing envelope into `.context/pickup/inbox/` (written to `undelivered/` first; a successful push moves it to `sent/`)'
+  - 'Regression bats `tests/unit/t4175_pickup_send_requires_target.bats` fails on the pre-fix lib and passes after; neighbouring pickup suites green after their fixtures move to `--local`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw pickup send requires a target — no --remote/--local exits non-zero; --local saves to undelivered/; outgoing envelopes are written to undelivered/ (then sent/), never the sender''s inbox; regression bats t4175 (5/6 red before), pickup fixtures moved to --local / explicit inbox seeding, stale quoted-scalar assert in fw_pickup.bats fixed; vendor synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — where a --local envelope lives'
+    chose: '`.context/pickup/undelivered/` (the existing T-3763 dir for outbound envelopes awaiting a resend), written there directly from the start.'
+    rationale: 'already counted by `pickup_next_id`, already outside what `fw pickup process` reads; no new directory or allocator change needed.'
+    alternatives_rejected: ['a new `outbox/` dir (a second spelling of "outbound, not delivered"); keeping the inbox write for `--local` (violates want 3).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/pickup.sh'
+  - 'lib/pickup.sh'
+  - '.tasks/active/T-4153-t-4142-leg-1-capability-card-schema-on-f.md'
+  - '.tasks/active/T-4162-t-4091-slice-1-fw-estate-push--diff-the-.md'
+  - '.tasks/active/T-4175-fw-pickup-send-without---remote--session.md'
+  - 'tests/integration/fw_pickup.bats'
+  - 'tests/unit/lib_pickup.bats'
+  - 'tests/unit/pickup_send_remote_session.bats'
+  - 'tests/unit/pickup_send_yaml_safety.bats'
+  - 'tests/unit/t3059_pickup_send_concurrent_ids.bats'
+  - 'tests/unit/t3628_pickup_send_delivery.bats'
+  - 'tests/unit/t4175_pickup_send_requires_target.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T20:18:28'
+    action: 'T-4175: file — fw pickup send without a target exits 0 and writes into the sender''s own inbox (dimitri-mint-dev P-013)'
+  - time: '2026-10-22T00:23:27'
+    action: 'T-4175: fw pickup send requires a target — no --remote/--local exits non-zero; --local saves to undelivered/; outgoing envelopes are written to undelivered/ (then sent/), never the sender''s inbox; regression bats t4175 (5/6 red before), pickup fixtures moved to --local / explicit inbox seeding, stale quoted-scalar assert in fw_pickup.bats fixed; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12501 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12501
+  commits: 2
+  files_changed: 12
+  lines_added: 550
+  lines_removed: 63
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4175-fw-pickup-send-without---remote--session.md
+generated_by: context-agent-hybrid
