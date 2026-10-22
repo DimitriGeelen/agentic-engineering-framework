@@ -47,7 +47,7 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "a061bcad"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T11:06:41Z
-last_update: '2026-10-22T11:09:08Z'
+last_update: '2026-10-22T11:15:39Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,25 +76,43 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T11:15:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=309,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4633: Re-pin designer 0.24.0 -> 0.25.0 (v1.1 io read-only, lossless save of v1.1 maps, lens switch, label/zoom layout)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Routine re-pin by the pin protocol (pull-at-tag, sha256 against the tag's MANIFEST and the pin, install read-only, vendor, serve), same shape as T-4448 (commit 87323c27a). 832 announce a061bcad.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `bin/fw designer sync --from-tag designer-v0.25.0 --dry-run` verifies the tag's MANIFEST: sha256 2cbcca06…ee and 1226527 bytes match
-- [ ] `policy/designer-pin.yaml` pins 0.25.0 (version, sha256, bytes, source_artifact, source_tag, vendored_path, notes), mirrored into `.agentic-framework/policy/designer-pin.yaml`
-- [ ] `vendor/designer/aef-workflow-designer-0.25.0.html` is committed and its sha256 equals the pin; `bin/fw designer` reports the pin present
-- [ ] After `bin/fw watchtower restart`, /designer/app serves the 0.25.0 build and /api/thumb for aef-task-lifecycle returns 200
-- [ ] Designer tests nearest the pin (standard_pin, pin drift, T-4549 round-trip) pass in the foreground
+- [x] `bin/fw designer sync --from-tag designer-v0.25.0 --dry-run` verifies the tag's MANIFEST: sha256 2cbcca06…ee and 1226527 bytes match
+- [x] `policy/designer-pin.yaml` pins 0.25.0 (version, sha256, bytes, source_artifact, source_tag, vendored_path, notes), mirrored into `.agentic-framework/policy/designer-pin.yaml`
+- [x] `vendor/designer/aef-workflow-designer-0.25.0.html` is committed and its sha256 equals the pin; `bin/fw designer` reports the pin present
+- [x] After `bin/fw watchtower restart`, /designer/app serves the 0.25.0 build and /api/thumb for aef-task-lifecycle returns 200
+- [x] Designer tests nearest the pin (standard_pin, pin drift, T-4549 round-trip) pass in the foreground
 
 ### Human
+- [ ] [REVIEW] On a large map, labels sit off the flows in 0.25.0
+  **Steps:**
+  1. Open http://192.168.10.107:3000/designer
+  2. Open a large map, e.g. aef-task-lifecycle (or any map with many flows and lanes)
+  3. Zoom out to fit, then zoom in to 100%; look at node and flow labels
+  **Expected:** Labels do not sit on top of sequence-flow lines and stay readable at both zoom levels; the editor header shows 0.25.0
+  **If not:** Note the map name and zoom level, take a screenshot, and it goes upstream to 832 (the vendored file is never edited here)
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -303,6 +321,8 @@ bin/fw vendor self --check --task T-4633
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+Not bug-class: this is a planned upstream re-pin, not a defect fix. No root cause to record. One test-ordering note: `doctor_designer_pin_drift.bats` t5 asserts the live pin equals HEAD, so it goes red while the pin edit is uncommitted. That is by design (the T-2547 hermetic guard). It passed 14/14 once the pin was committed.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -356,6 +376,15 @@ bin/fw vendor self --check --task T-4633
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** 0.25.0 was pulled by tag from 832's LAN origin, and its sha256 and size match both the tag's MANIFEST and the pin. Watchtower serves exactly those bytes after a restart, thumbnails still render, and the pin, drift, sha256 and v1.1 round-trip tests are green. The only open check is visual: whether labels sit off the flows on a large map, at http://192.168.10.107:3000/designer.
+**Evidence:**
+- `bin/fw designer sync --from-tag designer-v0.25.0` reported MANIFEST anchor ✓ and pin anchor ✓, then installed read-only
+- The body of http://192.168.10.107:3000/designer/app is byte-identical (cmp) to vendor/designer/aef-workflow-designer-0.25.0.html
+- http://192.168.10.107:3000/api/thumb?id=aef-task-lifecycle returns 200
+- bats standard_pin + doctor_designer_pin_drift + designer_sync_sha256: 14/14 ok, 0 skips; pytest test_t4549_aef_io_v11_roundtrip + test_pins: 23 passed
+- `bin/fw vendor self --check --task T-4633` clean
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -366,6 +395,11 @@ bin/fw vendor self --check --task T-4633
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-22 — lens switch ships with only 'All'
+- **Chose:** Pin 0.25.0 now, without serving GET /api/lens-definition.
+- **Why:** That endpoint (T-4402) does not exist in Watchtower yet. Without it the 0.25.0 lens switch shows only 'All', which is the same view as 0.24.0, so nothing regresses. `grep -rn lens-definition web/` finds no route.
+- **Rejected:** Holding the re-pin until T-4402 lands. That would also hold back the v1.1 lossless-save and label-layout fixes.
 
 ## Decision
 
