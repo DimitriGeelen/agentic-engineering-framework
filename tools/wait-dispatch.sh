@@ -77,7 +77,10 @@ _task_closed() {
 
 # The dispatch dir run.sh writes its post-step markers into. Overridable because
 # the base path is a TermLink convention, not a framework guarantee.
-DISPATCH_DIR="${FW_DISPATCH_DIR:-/tmp/tl-dispatch/$SESSION}"
+# T-4675: workers live under the project now; /tmp/tl-dispatch is the legacy fallback.
+DISPATCH_DIR="${FW_DISPATCH_DIR:-${PROJECT_ROOT:-$ROOT}/.context/dispatch/$SESSION}"
+[ -n "${FW_DISPATCH_DIR:-}" ] || [ -d "$DISPATCH_DIR" ] || [ ! -d "/tmp/tl-dispatch/$SESSION" ] \
+    || DISPATCH_DIR="/tmp/tl-dispatch/$SESSION"
 
 _worker_exit_code() {
     [ -f "$DISPATCH_DIR/exit_code" ] || return 1

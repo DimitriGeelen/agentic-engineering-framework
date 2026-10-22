@@ -32,7 +32,43 @@ NC='\033[0m'
 
 # T-3595: FW_DISPATCH_DIR overrides the worker root (same name lib/dispatch_tokens.py reads),
 # so tests can point cleanup at a sandbox instead of the dir live workers keep state in.
-DISPATCH_DIR="${FW_DISPATCH_DIR:-/tmp/tl-dispatch}"
+# T-4675: a tmpfs mounted over /tmp hid every /tmp/tl-dispatch/<worker> dir from the by-path
+# lookups below. Workers now live under the dispatching project (.context/dispatch, gitignored);
+# the old /tmp root stays a READ fallback for workers already running there. A pinned
+# FW_DISPATCH_DIR is the single root, as before.
+LEGACY_DISPATCH_DIR="${FW_DISPATCH_LEGACY_DIR:-/tmp/tl-dispatch}"
+if [ -n "${FW_DISPATCH_DIR:-}" ]; then
+    DISPATCH_DIR="$FW_DISPATCH_DIR"
+    DISPATCH_ROOTS=("$DISPATCH_DIR")
+else
+    DISPATCH_DIR="${PROJECT_ROOT:-$(pwd)}/.context/dispatch"
+    DISPATCH_ROOTS=("$DISPATCH_DIR")
+    [ "$LEGACY_DISPATCH_DIR" = "$DISPATCH_DIR" ] || DISPATCH_ROOTS+=("$LEGACY_DISPATCH_DIR")
+fi
+
+# T-4675: the worker dir for <name> — the first root that holds it, else where a new one goes.
+_wdir_of() {
+    local r
+    for r in "${DISPATCH_ROOTS[@]}"; do
+        [ -d "$r/$1" ] && { printf '%s\n' "$r/$1"; return 0; }
+    done
+    printf '%s\n' "$DISPATCH_DIR/$1"
+}
+
+# T-4675: every worker dir across the roots (trailing slash, as the old globs gave), one per
+# line; a name in an earlier root shadows the same name in a later one.
+_all_wdirs() {
+    local r w seen=" "
+    for r in "${DISPATCH_ROOTS[@]}"; do
+        [ -d "$r" ] || continue
+        for w in "$r"/*/; do
+            [ -d "$w" ] || continue
+            case "$seen" in *" $(basename "$w") "*) continue ;; esac
+            seen="$seen$(basename "$w") "
+            printf '%s\n' "$w"
+        done
+    done
+}
 TERMLINK_WORKER_TIMEOUT=$(fw_config_int "TERMLINK_WORKER_TIMEOUT" 600)
 
 die() { echo -e "${RED}ERROR:${NC} $1" >&2; exit 1; }
@@ -376,7 +412,8 @@ cmd_spawn() {
         task_type=$(_derive_task_type)
     fi
 
-    local wdir="$DISPATCH_DIR/$name"
+    local wdir
+    wdir=$(_wdir_of "$name")   # T-4675: the dir cmd_dispatch made, in whichever root
     mkdir -p "$wdir"
     [ -n "$task" ] && echo "$task" > "$wdir/task"
 
@@ -444,10 +481,10 @@ cmd_exec() {
 # meta.json names this project (DISPATCH_DIR is shared by every project here).
 _running_workers() {
     local project_dir="$1" listed wdir n proj real
-    [ -d "$DISPATCH_DIR" ] || return 0
     listed=$(termlink list 2>/dev/null || true)
     real=$(readlink -f "$project_dir" 2>/dev/null || echo "$project_dir")
-    for wdir in "$DISPATCH_DIR"/*/; do
+    local _wds; mapfile -t _wds < <(_all_wdirs)   # T-4675: project root, then legacy /tmp
+    for wdir in ${_wds[@]+"${_wds[@]}"}; do
         [ -d "$wdir" ] || continue
         [ -f "$wdir/exit_code" ] && continue
         n=$(basename "$wdir")
@@ -461,6 +498,9 @@ _running_workers() {
 # A dir with no meta.json, or naming another project, is not this project's worker.
 _worker_in_project() {
     local wdir="$1" real="$2" proj
+    # T-4675: a dir under this project's own root was dispatched from here (--project may
+    # have pointed the worker elsewhere), so it is this project's to count and clean.
+    case "$(readlink -f "$wdir" 2>/dev/null)/" in "$real/.context/dispatch/"*) return 0 ;; esac
     proj=$(sed -n 's/^  "project": "\(.*\)",$/\1/p' "$wdir/meta.json" 2>/dev/null | head -1)
     [ -n "$proj" ] || return 1
     [ "$(readlink -f "$proj" 2>/dev/null || echo "$proj")" = "$real" ]
@@ -535,9 +575,9 @@ USAGE
         esac
     done
     [[ "$minutes" =~ ^[0-9]+$ ]] || die "--minutes must be a non-negative integer"
-    [ -d "$DISPATCH_DIR" ] || return 0
     $json && echo "["
-    for wdir in "$DISPATCH_DIR"/*/; do
+    local _wds; mapfile -t _wds < <(_all_wdirs)   # T-4675: project root, then legacy /tmp
+    for wdir in ${_wds[@]+"${_wds[@]}"}; do
         [ -d "$wdir" ] || continue
         _worker_vanished "$wdir" "$minutes" || continue
         n=$(basename "$wdir")
@@ -564,10 +604,11 @@ cmd_status() {
     echo -e "${BOLD}=== TermLink Sessions ===${NC}"
 
     # Show dispatch workers with status (adapted from tl-dispatch.sh cmd_status)
-    if [ -d "$DISPATCH_DIR" ]; then
+    if [ -n "$(_all_wdirs)" ]; then
         local vanished_min
         vanished_min=$(fw_config_int "TERMLINK_VANISHED_MINUTES" 10)
-        for wdir in "$DISPATCH_DIR"/*/; do
+        local _wds; mapfile -t _wds < <(_all_wdirs)   # T-4675: project root, then legacy /tmp
+        for wdir in ${_wds[@]+"${_wds[@]}"}; do
             [ -d "$wdir" ] || continue
             local name
             name=$(basename "$wdir")
@@ -638,7 +679,7 @@ USAGE
         shift
     done
 
-    [ -d "$DISPATCH_DIR" ] || {
+    [ -n "$(_all_wdirs)" ] || {   # T-4675: across every root
         echo "No dispatch workers to clean up."
         [ "$dry_run" = true ] || { command -v termlink >/dev/null 2>&1 && termlink clean 2>/dev/null || true; }
         return 0
@@ -658,7 +699,8 @@ USAGE
     real_project=$(readlink -f "$project_dir" 2>/dev/null || echo "$project_dir")
     local active_re
     active_re=$(_active_worker_re)
-    for wdir in "$DISPATCH_DIR"/*/; do
+    local _wds; mapfile -t _wds < <(_all_wdirs)   # T-4675: project root, then legacy /tmp
+    for wdir in ${_wds[@]+"${_wds[@]}"}; do
         [ -d "$wdir" ] || continue
         local wname
         wname=$(basename "$wdir")
@@ -864,7 +906,8 @@ USAGE
         rm -rf "$wdir" && removed_count=$((removed_count + 1))
     done
     # The top-level dir goes only when nothing is left in it.
-    rmdir "$DISPATCH_DIR" 2>/dev/null || true
+    local _root
+    for _root in "${DISPATCH_ROOTS[@]}"; do rmdir "$_root" 2>/dev/null || true; done
 
     local summary="Cleaned up $removed_count worker(s)"
     [ "$orphan_count" -gt 0 ] && summary="$summary ($orphan_count orphan(s) terminated)"
@@ -1166,7 +1209,21 @@ cmd_dispatch() {
 
     project_dir="${project_dir:-$(pwd)}"
     _enforce_worker_cap "$project_dir" "$name"
-    local wdir="$DISPATCH_DIR/$name"
+    # T-4675: the worker dir lives under the project. Exception: a harness review seat runs as
+    # another user, who must read its export and cannot traverse the root-owned project, so it
+    # keeps the /tmp root (scratch for a run the ledger re-verifies, not a result store).
+    local wdir="$DISPATCH_DIR/$name" prev_wdir
+    case "$worker_kind" in
+        codex|opencode|antigravity)
+            [ "${#DISPATCH_ROOTS[@]}" -gt 1 ] && wdir="$LEGACY_DISPATCH_DIR/$name" ;;
+    esac
+    prev_wdir=$(_wdir_of "$name")
+    if [ "$prev_wdir" != "$wdir" ]; then
+        _clear_reused_wdir "$prev_wdir" "$name"
+        # A /tmp seat dir would be shadowed by the project dir of the same name in every lookup.
+        [ "$wdir" = "$DISPATCH_DIR/$name" ] || \
+            die "dispatch '$name': $prev_wdir already holds a run of that name and would shadow the new one. Pick another --name."
+    fi
     _clear_reused_wdir "$wdir" "$name"
     mkdir -p "$wdir"
 
@@ -1940,11 +1997,12 @@ cmd_wait() {
 
     if [ "$wait_all" = true ]; then
         # Wait for all workers (from tl-dispatch.sh)
-        [ -d "$DISPATCH_DIR" ] || die "No workers dispatched"
+        [ -n "$(_all_wdirs)" ] || die "No workers dispatched"
         local deadline=$(($(date +%s) + timeout))
         while [ "$(date +%s)" -lt "$deadline" ]; do
             local all_done=true
-            for wdir in "$DISPATCH_DIR"/*/; do
+            local _wds; mapfile -t _wds < <(_all_wdirs)   # T-4675: project root, then legacy /tmp
+            for wdir in ${_wds[@]+"${_wds[@]}"}; do
                 [ -d "$wdir" ] || continue
                 _worker_done "$wdir" || { all_done=false; break; }
             done
@@ -1954,7 +2012,8 @@ cmd_wait() {
         echo "Timeout waiting for workers."; return 1
     else
         [ -z "$name" ] && die "Missing --name (or use --all)"
-        local wdir="$DISPATCH_DIR/$name"
+        local wdir
+        wdir=$(_wdir_of "$name")   # T-4675: project root, then legacy /tmp
         [ -d "$wdir" ] || die "No worker named '$name'"
 
         # T-4582: the file is the truth, the event only a speed-up. `event wait` misses a
@@ -1986,7 +2045,8 @@ cmd_result() {
     local name="${1:-}"
     [ -z "$name" ] && die "Usage: fw termlink result <worker-name>"
 
-    local wdir="$DISPATCH_DIR/$name"
+    local wdir
+    wdir=$(_wdir_of "$name")   # T-4675: project root, then legacy /tmp
     if [ ! -d "$wdir" ]; then
         # T-3580 round 4: run.sh keeps a durable copy in the project; use it once /tmp is gone.
         local kept="${PROJECT_ROOT:-$(pwd)}/.context/dispatch-results/$name.md"
@@ -2014,7 +2074,8 @@ cmd_result() {
     # worker is still running: see lib/dispatch_tokens.py for why a per-turn sum of
     # `usage` is the wrong measurement and what it gets wrong.
     if [ -f "$FRAMEWORK_ROOT/lib/dispatch_tokens.py" ]; then
-        python3 "$FRAMEWORK_ROOT/lib/dispatch_tokens.py" "$name" 2>/dev/null || true
+        PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}" FW_DISPATCH_LEGACY_DIR="$LEGACY_DISPATCH_DIR" \
+            python3 "$FRAMEWORK_ROOT/lib/dispatch_tokens.py" "$name" 2>/dev/null || true
     fi
 
     if [ -f "$wdir/result.md" ]; then

@@ -99,12 +99,12 @@ Worker dirs lived only in the host-shared /tmp/tl-dispatch; a tmpfs mounted over
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw termlink dispatch` (no FW_DISPATCH_DIR) creates the worker dir under `<project>/.context/dispatch/<name>`, not under /tmp/tl-dispatch; harness review seats (codex/opencode/antigravity) stay in /tmp (another user must read their export)
-- [ ] `fw termlink wait/result/status/vanished/cleanup` resolve a worker by name through the project root first and the legacy /tmp root second, so workers already running in /tmp stay readable
-- [ ] With the legacy /tmp root removed mid-run (the remount case), a project-root worker still yields its result and exit_code via `fw termlink result`/`status`/`wait` (regression test)
-- [ ] `lib/dispatch_tokens.py`, `lib/termlink_worker.py` and `tools/wait-dispatch.sh` resolve the same roots (project first, legacy fallback). `web/blueprints/orchestrator.py` (reads /tmp only) is left for a follow-up: it is a render surface with its own review gate
-- [ ] `.context/dispatch/` is gitignored
-- [ ] Existing termlink dispatch/cleanup/wait bats suites stay green
+- [x] `fw termlink dispatch` (no FW_DISPATCH_DIR) creates the worker dir under `<project>/.context/dispatch/<name>`, not under /tmp/tl-dispatch; harness review seats (codex/opencode/antigravity) stay in /tmp (another user must read their export)
+- [x] `fw termlink wait/result/status/vanished/cleanup` resolve a worker by name through the project root first and the legacy /tmp root second, so workers already running in /tmp stay readable
+- [x] With the legacy /tmp root removed mid-run (the remount case), a project-root worker still yields its result and exit_code via `fw termlink result`/`status`/`wait` (regression test)
+- [x] `lib/dispatch_tokens.py`, `lib/termlink_worker.py` and `tools/wait-dispatch.sh` resolve the same roots (project first, legacy fallback). `web/blueprints/orchestrator.py` (reads /tmp only) is left for a follow-up: it is a render surface with its own review gate
+- [x] `.context/dispatch/` is gitignored
+- [x] Existing termlink dispatch/cleanup/wait bats suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,7 +291,7 @@ Worker dirs lived only in the host-shared /tmp/tl-dispatch; a tmpfs mounted over
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 timeout 600 bats tests/unit/t4675_dispatch_wdir_durable.bats > /tmp/.t4675.out 2>&1 && ! grep -q "^not ok" /tmp/.t4675.out
 test "$(grep -c '# skip' /tmp/.t4675.out)" -eq 0
-timeout 900 bats tests/unit/t4561_dispatch_reused_dir.bats tests/unit/t4582_termlink_wait_missed_event.bats tests/unit/t4558_cleanup_project_scope.bats tests/unit/t4637_vanished_workers.bats tests/unit/t3910_dispatch_limits.bats tests/unit/t3651_termlink_cleanup_guards.bats > /tmp/.t4675b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4675b.out
+timeout 900 bats tests/unit/t4561_dispatch_reused_dir.bats tests/unit/t4582_termlink_wait_missed_event.bats tests/unit/t4558_cleanup_project_scope.bats tests/unit/t4637_vanished_workers.bats tests/unit/t3910_dispatch_limits.bats tests/unit/t3651_termlink_cleanup_guards.bats tests/unit/t3595_cleanup_scope.bats > /tmp/.t4675b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4675b.out
 git check-ignore -q .context/dispatch/x/result.jsonl
 bash -n agents/termlink/termlink.sh && bash -n tools/wait-dispatch.sh
 python3 -m py_compile lib/dispatch_tokens.py lib/termlink_worker.py

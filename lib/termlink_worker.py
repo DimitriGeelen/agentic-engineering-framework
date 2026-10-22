@@ -44,7 +44,20 @@ from typing import Iterator, List, Optional
 
 
 # T-3595: same override agents/termlink/termlink.sh and lib/dispatch_tokens.py honour.
+# T-4675: unset, workers live under the project (.context/dispatch); /tmp is the legacy root.
 DISPATCH_DIR = Path(os.environ.get("FW_DISPATCH_DIR") or "/tmp/tl-dispatch")
+
+
+def _dispatch_roots(cwd: str) -> List[Path]:
+    """Lookup order, as termlink.sh: pinned root only, else the project(s) then legacy /tmp."""
+    if os.environ.get("FW_DISPATCH_DIR"):
+        return [DISPATCH_DIR]
+    roots: List[Path] = []
+    for proj in (os.environ.get("PROJECT_ROOT"), cwd, os.getcwd()):
+        if proj and Path(proj) / ".context" / "dispatch" not in roots:
+            roots.append(Path(proj) / ".context" / "dispatch")
+    roots.append(Path(os.environ.get("FW_DISPATCH_LEGACY_DIR") or "/tmp/tl-dispatch"))
+    return roots
 
 
 class TermLinkWorker:
@@ -106,9 +119,24 @@ class TermLinkWorker:
         self.timeout = timeout
         self.fw_bin = fw_bin or os.environ.get("FW_BIN") or self._default_fw_bin()
         self.name = name or f"tl-{uuid.uuid4().hex[:8]}"
-        self.wdir = DISPATCH_DIR / self.name
+        self._wdir: Optional[Path] = None
         self.proc: Optional[subprocess.Popen] = None
         self._launched = False
+
+    @property
+    def wdir(self) -> Path:
+        """T-4675: resolved on each read — the dir only exists once dispatch has made it."""
+        if self._wdir is not None:
+            return self._wdir
+        roots = _dispatch_roots(self.cwd)
+        for root in roots:
+            if (root / self.name).is_dir():
+                return root / self.name
+        return roots[0] / self.name
+
+    @wdir.setter
+    def wdir(self, value: Path) -> None:
+        self._wdir = Path(value)
 
     def _default_fw_bin(self) -> str:
         root = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))

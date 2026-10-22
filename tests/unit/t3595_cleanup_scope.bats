@@ -64,10 +64,12 @@ run_cleanup() {
     run env FW_DISPATCH_DIR="$DD" bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; [ \"\$DISPATCH_DIR\" = '$DD' ] || exit 99; cmd_cleanup --yes"  # T-3716: consent required since T-3651
 }
 
-@test "DISPATCH_DIR honours FW_DISPATCH_DIR; default unchanged" {
-    run env -u FW_DISPATCH_DIR bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; echo \"\$DISPATCH_DIR\""
+@test "DISPATCH_DIR honours FW_DISPATCH_DIR; default is the project root (T-4675)" {
+    # T-4675: the default moved from /tmp/tl-dispatch (hidden by a /tmp remount) to the
+    # project; /tmp/tl-dispatch stays a read-only fallback root.
+    run env -u FW_DISPATCH_DIR -u FW_DISPATCH_LEGACY_DIR PROJECT_ROOT=/p bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; echo \"\$DISPATCH_DIR|\${DISPATCH_ROOTS[*]}\""
     [ "$status" -eq 0 ]
-    [ "$output" = "/tmp/tl-dispatch" ]
+    [ "$output" = "/p/.context/dispatch|/p/.context/dispatch /tmp/tl-dispatch" ]
     run env FW_DISPATCH_DIR="$DD" bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; echo \"\$DISPATCH_DIR\""
     [ "$output" = "$DD" ]
 }

@@ -58,8 +58,30 @@ _FIELDS = {
 }
 
 
+def dispatch_roots() -> list[Path]:
+    """T-4675: worker roots, in lookup order — the same as agents/termlink/termlink.sh.
+
+    A pinned FW_DISPATCH_DIR is the only root. Otherwise the project's .context/dispatch
+    (where workers now live), then the legacy /tmp root for workers already running there.
+    """
+    pinned = os.environ.get("FW_DISPATCH_DIR")
+    if pinned:
+        return [Path(pinned)]
+    project = Path(os.environ.get("PROJECT_ROOT") or os.getcwd())
+    legacy = Path(os.environ.get("FW_DISPATCH_LEGACY_DIR") or "/tmp/tl-dispatch")
+    return [project / ".context" / "dispatch", legacy]
+
+
 def dispatch_dir() -> Path:
-    return Path(os.environ.get("FW_DISPATCH_DIR") or "/tmp/tl-dispatch")
+    return dispatch_roots()[0]
+
+
+def worker_dir(name: str) -> Path:
+    """The first root holding <name>, else where a new worker of that name would go."""
+    for root in dispatch_roots():
+        if (root / name).is_dir():
+            return root / name
+    return dispatch_dir() / name
 
 
 def _result_line(stream_path: Path) -> dict | None:
@@ -137,7 +159,7 @@ def tokens_for_stream(stream_path) -> dict:
 
 
 def tokens_for_worker(name: str) -> dict:
-    return tokens_for_stream(dispatch_dir() / name / "result.jsonl")
+    return tokens_for_stream(worker_dir(name) / "result.jsonl")
 
 
 def format_rollup(roll: dict, name: str = "") -> str:
