@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4159: Human-AC tick guard false positive: lib/shell_write_scan.py MENTION_RE treats any T-NNNN-*.md as a task file, so shell writes to docs/reports/T-XXX-*.md (the C-001 artefact convention) are refused (832 field finding; seen here 3x on 2026-10-13)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:31:59Z
+# ============================================================================
+
+task_id: T-4159
+task_name: "Human-AC tick guard false positive: lib/shell_write_scan.py MENTION_RE treats any T-NNNN-*.md as a task file, so shell writes to docs/reports/T-XXX-*.md (the C-001 artefact convention) are refused (832 field finding; seen here 3x on 2026-10-13)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T15:20:46Z
+completed: 2026-10-22T10:31:08Z
+duration_days: 9
+updates_count: 3
+first_commit: 2026-10-13T17:21:03+02:00
+last_commit: 2026-10-22T00:31:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — tick guard treats any T-NNNN-*.md as a task file (832; seen here 3x). record further false-positive instances (AEF session, 1023 item 7). shell_write_scan: a T-NNNN-*.md name is a guarded mention only when bare or ./.. anchored, not under docs/reports/ or embedded (dispatch-T-N-prompt.md); regression bats t4159 (4 allowed cases red before, 5 refusals kept); RCA + ACs; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Shell writes to a task-named file outside `.tasks/` (`docs/reports/T-NNNN-*.md`, `.context/working/dispatch-T-NNNN-prompt.md`), via redirect, `sed -i`, and inline python, are no longer refused by `lib/shell_write_scan.py scan()`'
+  - 'Still refused: a write to `.tasks/active/T-1.md`, `cd .tasks/active && sed -i … T-1.md`, a write to the tick ledger, and inline code naming a `.tasks/` path'
+  - 'Regression test in tests/unit fails before the fix and passes after; neighbouring shell_write_scan tests stay green'
+  - '`bin/fw vendor self --check --task T-4159` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4159-human-ac-tick-guard-false-positive-libsh.md'
+  - 'tests/unit/t4159_task_name_mention_anchor.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T17:21:03'
+    action: 'T-4159: file — tick guard treats any T-NNNN-*.md as a task file (832; seen here 3x)'
+  - time: '2026-10-17T15:11:19'
+    action: 'T-4159: record further false-positive instances (AEF session, 1023 item 7)'
+  - time: '2026-10-22T00:31:50'
+    action: 'T-4159: shell_write_scan: a T-NNNN-*.md name is a guarded mention only when bare or ./.. anchored, not under docs/reports/ or embedded (dispatch-T-N-prompt.md); regression bats t4159 (4 allowed cases red before, 5 refusals kept); RCA + ACs; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 12670 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12670
+  commits: 3
+  files_changed: 4
+  lines_added: 512
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4159-human-ac-tick-guard-false-positive-libsh.md
+generated_by: context-agent-hybrid
