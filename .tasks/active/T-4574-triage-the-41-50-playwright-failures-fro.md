@@ -2,12 +2,18 @@
 id: T-4574
 name: "Triage the 41-50 Playwright failures from the clean-room cloud runs"
 description: >
-  Cloud runs (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md sections 1 and 4): Playwright 41 failed / 889 passed (6f60b69) and 50 failed / 880 passed (cc094b509). Named: / scrollHeight 55135px > 8000px cap, /inception/T-2715 10404px, approvals verdict badge 'BLOCKED' not canonical, arc-detail .badge-ok contrast, review page with an editable text input, inception detail missing 'Acceptance Criteria'. Run the suite here, separate env-only failures from real ones, file one task per real defect.
+  Cloud runs (docs/reports/T-4508-cloud-prompts/reports-2026-10-21-relayed-by-ring20.md
+  sections 1 and 4): Playwright 41 failed / 889 passed (6f60b69) and 50 failed / 880
+  passed (cc094b509). Named: / scrollHeight 55135px > 8000px cap, /inception/T-2715
+  10404px, approvals verdict badge 'BLOCKED' not canonical, arc-detail .badge-ok contrast,
+  review page with an editable text input, inception detail missing 'Acceptance Criteria'.
+  Run the suite here, separate env-only failures from real ones, file one task per
+  real defect.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, playwright]
 components: []
 related_tasks: [T-4508]
@@ -39,8 +45,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "c9df35a6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-21T21:49:06Z
-last_update: 2026-10-21T21:49:06Z
-date_finished: null
+last_update: 2026-10-22T08:36:14Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T07:36:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T07:45:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=304,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4574: Triage the 41-50 Playwright failures from the clean-room cloud runs
@@ -63,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Playwright suite run once here, pass/fail counts recorded in `docs/reports/T-4574-playwright-triage.md`
+- [ ] Every failing test is classified in that report as env-only or real defect, with the assertion that failed
+- [ ] One task filed per real defect via `bin/fw task create`, naming the test and the assertion; task ids listed in the report
+- [ ] No source fixes made under this task (triage only)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +284,9 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+test -f docs/reports/T-4574-playwright-triage.md
+grep -q "^## Classification" docs/reports/T-4574-playwright-triage.md
+grep -q "^## Filed tasks" docs/reports/T-4574-playwright-triage.md
 
 ## RCA
 
@@ -257,14 +295,15 @@ date_finished: null
      Non-bug-class tasks may leave this section empty or remove it.
 
      For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** clean-room cloud runs reported 41 (6f60b69) and 50 (cc094b509) Playwright failures.
+
+**Root cause:** triage task — per-defect root causes belong to the tasks filed from `docs/reports/T-4574-playwright-triage.md`; this task separates env-only failures from real defects.
+
+**Why structurally allowed:** the Playwright suite is not part of any gate (pre-push, audit, close), so reds accumulate unseen until someone runs it.
+
+**Prevention:** each real defect gets its own task (one bug = one task); gating the suite is out of scope here.
 
 ## Evolution
 
@@ -346,3 +385,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4574-triage-the-41-50-playwright-failures-fro.md
 - **Context:** Initial task creation
+
+### 2026-10-22T07:36:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

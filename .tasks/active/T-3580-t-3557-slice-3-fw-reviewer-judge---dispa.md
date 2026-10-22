@@ -174,7 +174,8 @@ dispatching: `fw review propose --backend openrouter --task T-XXX --why "..."`.
 - [x] Rung selection follows IW-7: criteria in the hard human classes are never dispatched (reported as operator-only); otherwise `impact = max(cost_if_wrong, value_at_stake)` from existing fields (reversibility/blast_radius/consumer paths, BVP/voi) picks rung 1-2 (same-vendor independent agent) or 5-7 (3-vendor panel via codex/opencode/claude, stdin closed); the chosen rung and its reason are in the record
 - [x] A weekly spend ceiling is a config key in both registries (lib/config.sh and web/blueprints/config.py); when reached, the rung drops one step and the verdict says so; nothing is silently skipped
 - [x] `--dry-run` prints criteria, rung and brief without dispatching; tests cover selection, rung choice, the ceiling and output parsing, with a fake dispatcher
-- [ ] Live proof: run it on one real open render criterion, and the resulting record closes it through T-3579 with no bypass flag; `bin/fw vendor self --check` clean
+- [x] Live proof: run it on one real open render criterion, and the resulting record closes it through T-3579 with no bypass flag; `bin/fw vendor self --check` clean
+  **Evidence (2026-10-22):** T-4361 AC1 (render-surface, REVIEWER-JUDGES), judged by `fw reviewer judge` dispatch judge-t-4361-r3-a8b91548f76d at rung 3 (committed green row V-20261020-7fae2184). `bin/fw reviewer verdict apply T-4361` ticked the box and wrote the verdict block; no `--skip-*`/`FW_ALLOW_*` flag, `.gate-bypass-log.yaml` has 0 T-4361 entries; `verdict audit`: 34 rows, 0 failures; `vendor self --check` clean. Closing T-4361 itself was not attempted from this task (focus-drift gate; its other gates are its owner's).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
