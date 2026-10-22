@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T22:05:06Z
-last_update: '2026-10-22T22:15:22Z'
+last_update: 2026-10-22T22:30:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,14 +87,16 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Finding (2026-10-23):** no defect in the worker. `fw_spawn_path` does put the caller's fw bin first, but only in the TermLink session shell, and that shell immediately `exec`s run.sh. run.sh (heredoc in `agents/termlink/termlink.sh`, the `_FWB=` block before `exec env -i`) re-derives the bin from its `$2` = the target `--project`: `<proj>/bin` for a framework repo, `<proj>/.agentic-framework/bin` for a consumer, the dispatcher's own bin only for a bare target. It drops every other `*/.agentic-framework/bin`. So the worker and its hooks run the target's fw. No source change; `tests/unit/t4674_dispatch_target_path.bats` pins this with a two-project fixture (caller is a consumer running its own vendored termlink.sh). A mutant run.sh that keeps the caller's bin fails tests 2 and 3.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Two-project fixture: caller consumer A runs its own vendored `fw termlink dispatch --project B` (B a consumer); the worker's PATH starts with `B/.agentic-framework/bin`, holds no `A/` entry, and `command -v fw` in the worker is B's
+- [x] Same fixture with a framework-repo-shaped target F (FRAMEWORK.md + bin/fw): the worker's `fw` is `F/bin/fw`
+- [x] Bare target (no FRAMEWORK.md, no .agentic-framework): the worker falls back to the dispatching framework's bin, which is the only fw there is
+- [x] Finding recorded: does run.sh already re-derive the bin for the target (then no source change), or was a fix needed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,6 +281,10 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4674_dispatch_target_path.bats > /tmp/.t4674.out 2>&1 && ! grep -q "^not ok" /tmp/.t4674.out
+test "$(grep -c '# skip' /tmp/.t4674.out)" -eq 0
+timeout 600 bats tests/unit/t4647_spawn_env_allowlist.bats > /tmp/.t4674b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4674b.out
+bin/fw vendor self --check --task T-4674
 
 ## RCA
 
@@ -295,6 +301,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** TermLink be.4 field report: the PATH T-4666 constructs begins with the caller's `.agentic-framework/bin`, so a `--project <other>` worker might run the caller's fw.
+
+**Root cause:** none in the worker. The observed PATH is the spawn session's (`lib/spawn-env.sh` `fw_spawn_path`, rooted at the dispatching framework). That session only runs `exec bash run.sh`, and run.sh re-derives `_FWB` from the target `$2` before `exec env -i … PATH=` (`agents/termlink/termlink.sh`, run.sh heredoc, the T-4666 block). The report read the first PATH it could see, not the one the worker gets.
+
+**Why structurally allowed:** the existing T-4666 test dispatches from the framework repo, so caller and target bins never differ in the consumer→consumer shape the report describes. Nothing pinned that shape.
+
+**Prevention:** `tests/unit/t4674_dispatch_target_path.bats`. Caller is a consumer running its own vendored termlink.sh; targets are a consumer, a framework repo and a bare dir. It also asserts the spawn session's caller-first PATH, so the two PATHs are documented side by side.
 
 ## Evolution
 
