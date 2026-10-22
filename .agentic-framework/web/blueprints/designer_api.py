@@ -51,7 +51,7 @@ from web.designer_registry import (
     sync_project_refs,
 )
 from web import designer_thumb
-from web.shared import PROJECT_ROOT
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT
 
 bp = Blueprint("designer_api", __name__)
 
@@ -107,6 +107,54 @@ def health():
     `ok:true`; `store` is diagnostic (T-2530).
     """
     return _ok(store=".context/designer/projects")
+
+
+# T-4402: the one lens definition (tools/corpus_lenses.yaml), read by designer 0.25.0's
+# lens switch (T-1241). FRAMEWORK_ROOT, not PROJECT_ROOT: the file ships with the
+# framework (tools/ is vendored whole), it is not per-project data.
+_LENS_FILE = FRAMEWORK_ROOT / "tools" / "corpus_lenses.yaml"
+_LENS_LISTS = ("fields", "bpmn", "sections", "canvas")
+
+
+def load_lens_definition(path=None):
+    """Return (definition, error). Refuses rather than repairs: a definition the
+    designer would half-read is answered as no definition, and the designer falls
+    back to All."""
+    import yaml
+
+    try:
+        d = yaml.safe_load(Path(path or _LENS_FILE).read_text())
+    except (OSError, yaml.YAMLError) as e:
+        return None, f"lens definition unreadable: {e}"
+    lenses = d.get("lenses") if isinstance(d, dict) else None
+    if not isinstance(lenses, dict) or not lenses:
+        return None, "lens definition has no lenses"
+    order = d.get("order")
+    if not isinstance(order, list) or sorted(order) != sorted(lenses) or "all" in lenses:
+        return None, "lens order must name every lens exactly once (and 'all' is reserved)"
+    for name, lens in lenses.items():
+        if not isinstance(lens, dict):
+            return None, f"lens {name}: not a mapping"
+        for k in _LENS_LISTS:
+            v = lens.get(k, [])
+            if not isinstance(v, list) or not all(isinstance(x, str) for x in v):
+                return None, f"lens {name}: {k} must be a list of names"
+        seen, cur = {name}, lens.get("extends")
+        while cur:
+            if cur not in lenses or cur in seen:
+                return None, f"lens {name}: extends chain broken at {cur}"
+            seen.add(cur)
+            cur = lenses[cur].get("extends")
+    return d, None
+
+
+@bp.route("/api/lens-definition")
+def lens_definition():
+    """GET -> {"ok": true, "definition": {order, lenses}} (designer 0.25.0, T-1241)."""
+    d, err = load_lens_definition()
+    if err:
+        return _err(err, 500)
+    return _ok(definition=d)
 
 
 @bp.route("/api/save", methods=["POST"])

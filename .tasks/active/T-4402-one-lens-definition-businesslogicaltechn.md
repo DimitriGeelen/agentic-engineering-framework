@@ -15,10 +15,10 @@ description: >
   and aef-session-lifecycle (the most-used onboarding routes). Waits for 832's T-281
   inception decision; build after they confirm the shape.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T15:27:58Z
-last_update: '2026-10-19T15:32:01Z'
+last_update: 2026-10-22T11:26:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,6 +89,22 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-22T07:46:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4402: One lens definition (business/logical/technical) for corpus maps, read by fw corpus explain --lens and by 832's designer lens switch
@@ -101,8 +117,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] One lens data file `tools/corpus_lenses.yaml` (next to `tools/corpus_spec.py`) defines `business`, `logical`, `technical` in the shape designer 0.25.0's `_lensResolve` reads (`order`, `lenses.<name>.{label, extends, fields, bpmn, sections, canvas}`)
+- [x] `GET /api/lens-definition` (web/blueprints/designer_api.py) returns `{ok: true, definition: …}` built from that file; a missing/invalid file answers `{ok: false}` (designer falls back to All)
+- [x] Every field / BPMN label / section / canvas decoration a lens names exists in the designer's own vocabulary (pinned by test against the vendored 0.25.0 HTML), and every `extends` resolves without a cycle
+- [x] pytest `tests/web/test_lens_definition.py` passes, including a port of the designer's `loadLensDefinition`/`_lensResolve` acceptance predicate that yields four select options (business, logical, technical, all)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -134,6 +152,13 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] Designer lens switch offers four lenses and each one narrows the view sensibly
+  **Steps:**
+  1. Open http://192.168.10.107:3000/designer and open any map (e.g. aef-task-lifecycle)
+  2. Click the lens select in the toolbar (half-filled circle icon)
+  3. Pick Business, then Logical, then Technical, then All; select a task node each time and read the side panel
+  **Expected:** The select lists Business, Logical, Technical, All. Business shows Name/Lane and owner/decision/trigger/emit fields with no ids on the canvas; Logical adds ids, I/O and constituents; Technical adds fabricRef/endpoint/tier and findings; All shows everything as before
+  **If not:** If only "All" shows, open http://192.168.10.107:3000/api/lens-definition — it should answer `"ok": true`. If a lens shows the wrong fields, say which; the allocation is data in `tools/corpus_lenses.yaml`
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -280,8 +305,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-## RCA
+python3 -c "import yaml; yaml.safe_load(open('tools/corpus_lenses.yaml'))"
+timeout 600 python3 -m pytest tests/web/test_lens_definition.py -q > /tmp/.t4402-pytest 2>&1 && grep -q "6 passed" /tmp/.t4402-pytest
+curl -sf "$(bin/fw watchtower url)/api/lens-definition" -o /tmp/.t4402-lens && python3 -c "import json,sys; d=json.load(open('/tmp/.t4402-lens')); sys.exit(0 if d['ok'] and d['definition']['order']==['business','logical','technical'] else 1)"
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4402
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -321,6 +349,13 @@ bvp_scores_proposed:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## RCA
+
+**Symptom:** Designer 0.25.0 (pinned) offers only "All" in its audience-lens select; Business/Logical/Technical never appear.
+**Root cause:** The designer reads its lenses from `GET /api/lens-definition` (vendor/designer/aef-workflow-designer-0.25.0.html:7076-7085, `loadLensDefinition`); a 404 sets `_lensDef = null` and `renderLensSelect` (:7055) emits only "All". AEF had no lens file and `web/blueprints/designer_api.py` had no such route — the definition 832 pointed at as "AEF's shared lens file, their T-4402" (:7032-7034) did not exist yet.
+**Why structurally allowed:** The designer degrades silently by design (404 = no lens, every field), and the designer pin bump checks file integrity, not that every API the new client calls is served.
+**Prevention:** `tests/web/test_lens_definition.py` pins the route, the designer's acceptance predicate (four options), and every lens name against the vendored designer's own vocabulary, so a future designer bump that renames a field or section fails a test instead of silently narrowing nothing.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -349,8 +384,23 @@ bvp_scores_proposed:
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+**Recommendation:** GO
+**Rationale:** The lens file and `/api/lens-definition` route are live and the designer's own acceptance logic (ported into the test) yields Business/Logical/Technical/All. The only open question is taste: whether each field sits in the right lens. That allocation is one YAML file and costs nothing to move.
+**Evidence:**
+- `tests/web/test_lens_definition.py`: 6 passed (route, designer predicate gives 4 options, lenses nest business ⊂ logical ⊂ technical, every name exists in designer 0.25.0's vocabulary, invalid and missing files are refused)
+- Live: http://192.168.10.107:3000/api/lens-definition answers `ok: true`, order business/logical/technical; `bin/fw watchtower current` exit 0
+- Neighbouring designer API tests: 17 passed
 
 ## Decisions
+
+### 2026-10-22 — Lens vocabulary allocation (data, not code)
+- **Chose:** three nested lenses, each extending the one before. business = who decides what and what comes out (owner, triggeredBy, emits, decision*, note; Name/Lane; authority lanes). logical adds flow structure (workflowType, horizon, determinism, context/artifacts, link/event bindings; Display ID; Constituents and I/O contract; ids/io/constituents decorations). technical adds implementation (authority, tier, agentType, endpoint, sideEffect, fabricRef, links; Slug/UID; Other extensions; findings/ns).
+- **Why:** The designer fixes the shape (`_lensResolve`, `extends` adds parent lists), so the only open choice is which field goes in which lens. That choice is reversible data, so I built a default and left it for [REVIEW] instead of stopping. Nesting keeps every lens a strict widening, so moving to a deeper lens never hides anything.
+- **Rejected:** (a) Disjoint lenses: technical would hide Name/owner, which every reader needs. (b) Waiting for 832's T-281 decision: their 0.25.0 already ships the parser and points at this task as the source.
+
+### 2026-10-22 — Scope cut: `fw corpus explain --lens`
+- **Chose:** this slice serves the lens file to the designer only. `fw corpus explain --lens` is the second reader the description names and is still open. It must read the same `tools/corpus_lenses.yaml` (loader: `web/blueprints/designer_api.py:load_lens_definition`).
+- **Why:** The dispatch scoped this run to the endpoint the pinned designer needs. Adding a CLI reader would touch `tools/corpus_explain.py` and its tests, a separate write-set.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -377,3 +427,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4402-one-lens-definition-businesslogicaltechn.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:26:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
