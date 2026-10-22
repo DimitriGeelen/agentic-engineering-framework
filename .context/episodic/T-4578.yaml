@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4578: Committed policy/sandbox-profile.d artefacts embed the /opt checkout path: test_govd_sandbox (2 tests) and fw sandbox status are red in every other checkout
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:05:20Z
+# ============================================================================
+
+task_id: T-4578
+task_name: "Committed policy/sandbox-profile.d artefacts embed the /opt checkout path: test_govd_sandbox (2 tests) and fw sandbox status are red in every other checkout"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-21T23:04:31Z
+completed: 2026-10-22T10:04:22Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-22T09:36:51+02:00
+last_commit: 2026-10-22T09:36:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sandbox stale check is path-independent — stale_status re-renders at the root recorded in the emitted manifest, so a clone at another path no longer reads as 'edited but not re-emitted'; regression test relocates source+artefacts and pins ok, plus a source-edit control that stays stale
+
+# Key outcomes
+outcomes:
+  - '`gs.stale_status` compares path-independently: artefacts rendered at another checkout root (recorded in the emitted manifest''s `project_root`) are `ok` when the source is unchanged, and still `stale` when the source was edited'
+  - 'Regression test in tests/unit/test_govd_sandbox.py relocates the repo''s source + committed artefacts to a tmp root and asserts `ok`; a source edit in the relocated copy still reports `stale`; test fails before the fix'
+  - 'tests/unit/test_govd_sandbox.py passes in full'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — compare path-independently (not stop committing artefacts)'
+    chose: '`stale_status` re-renders at the root recorded in the emitted manifest.'
+    rationale: 'keeps the committed, reviewable artefacts (the design''s in-repo review step) and the stale rail; it separates "source edited" from "different checkout".'
+    alternatives_rejected: ['un-committing the artefacts loses the in-repo review copy and the test-time stale check. Placeholder-rendering the root would break the install contract, which deploys concrete paths.']
+  - decision: '2026-10-22 — INCIDENT: worker w4578 ran `git stash` on the shared checkout (operator action needed)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/govd_sandbox.py'
+  - 'lib/govd_sandbox.py'
+  - '.tasks/active/T-4578-committed-policysandbox-profiled-artefac.md'
+  - 'tests/unit/test_govd_sandbox.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T09:36:51'
+    action: 'T-4578: sandbox stale check is path-independent — stale_status re-renders at the root recorded in the emitted manifest, so a clone at another path no longer reads as ''edited but not re-emitted''; regression test relocates source+artefacts and pins ok, plus a source-edit control that stays stale'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 659 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, cloud, t4575]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 659
+  commits: 1
+  files_changed: 4
+  lines_added: 483
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4578-committed-policysandbox-profiled-artefac.md
+generated_by: context-agent-hybrid
