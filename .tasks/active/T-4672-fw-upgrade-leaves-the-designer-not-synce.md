@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T21:48:53Z
-last_update: 2026-10-22T22:13:31Z
+last_update: 2026-10-22T22:35:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,14 +90,16 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+After `fw upgrade` bumps the vendored designer pin, a consumer that had the designer installed must end up with the new pinned build installed (or, in --dry-run, be told it would be), with no step for the operator to remember.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/upgrade.sh` step 4b, after the vendor sync, installs the newly pinned Workflow Designer build into the consumer (same sha256-vs-pin verification as `fw designer install`) when the consumer already has a designer build installed and the pinned one is missing or differs
+- [x] `--dry-run` installs nothing and prints a `WOULD INSTALL` line naming the pinned version
+- [x] A consumer with no designer build installed is skipped quietly (no install, no output); an already-current install is a no-op
+- [x] Regression test `tests/unit/t4672_upgrade_syncs_designer.bats` covers all four cases and fails without the fix; `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,6 +284,11 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4672_upgrade_syncs_designer.bats > /tmp/.t4672a 2>&1 && ! grep -q "^not ok" /tmp/.t4672a
+test "$(grep -c '# skip' /tmp/.t4672a)" -eq 0
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4672c 2>&1 && ! grep -q "^not ok" /tmp/.t4672c
+bash -n lib/upgrade.sh
+bin/fw vendor self --check --task T-4672
 
 ## RCA
 
@@ -298,6 +305,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 832 (be.3): after `fw upgrade`, `fw designer status` reported NOT SYNCED for the new pin until `fw designer install` was run by hand.
+
+**Root cause:** The designer has two copies in a consumer: the vendored build in `.agentic-framework/vendor/designer/` (refreshed by `do_vendor` in step 4b, lib/upgrade.sh ~2345) and the installed build at `$PROJECT_ROOT/<vendored_path>`, which `fw designer status` checks (agents/designer/designer.sh `_vendored_abs`). Only `fw init` ever ran the install step (lib/init.sh `fw_init_install_designer`, called at init.sh:694). `fw upgrade` refreshed the pin and the vendored build but never the installed one, so every pin bump left the consumer pointing at a file it did not have.
+
+**Why structurally allowed:** T-3064 wired the install into onboarding only; upgrade was treated as covered because it vendors the build. No test ran upgrade across a pin bump against a consumer that already had a designer installed.
+
+**Prevention:** `tests/unit/t4672_upgrade_syncs_designer.bats` drives the upgrade helper across a pin bump (installed→reinstalled, dry-run→WOULD INSTALL with nothing written, not-installed→silent, current→no-op).
 
 ## Evolution
 
@@ -362,6 +377,11 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-23 — install inside upgrade, only where a designer was installed
+- **Chose:** run the install as part of step 4b (reusing `fw_init_install_designer`, so verification and wording match init), only when the consumer already has a designer build in the install dir; dry-run prints WOULD INSTALL.
+- **Why:** the install is local, offline and sha256-verified (no network, no hang, T-3064 A4), so nothing argues for leaving it to the operator; restricting it to consumers that already had a designer keeps upgrade from onboarding a feature the project never took.
+- **Rejected:** printing `fw designer install` as a required next command — that is the step 832 had to discover by hand, and a printed instruction is the one an operator skips. Superseded installed builds are left in place (not pruned): they may be tracked in the consumer's git, and status/serving read only the pinned path.
 
 ## Decision
 

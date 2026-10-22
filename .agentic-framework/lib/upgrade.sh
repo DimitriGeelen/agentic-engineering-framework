@@ -957,6 +957,49 @@ _self_vendor_designer() {
     return 0
 }
 
+# T-4672: re-install the pinned Workflow Designer into a CONSUMER after step 4b
+# refreshed its vendored copy. A consumer holds two copies: the vendored build in
+# .agentic-framework/vendor/designer/ (do_vendor refreshes it) and the INSTALLED
+# build at <project>/<vendored_path>, which `fw designer status` and /designer
+# read. Only `fw init` ever installed, so every pin bump left an upgraded
+# consumer NOT SYNCED until someone ran `fw designer install` (832, be.3).
+#
+# Only where a designer was already installed (any *.html in the install dir):
+# upgrade keeps what the project has current, it does not onboard new features.
+# The install itself is fw_init_install_designer (lib/init.sh) — same verify-
+# against-pin, same outcome wording — run with FRAMEWORK_ROOT on the vendored
+# copy, which is the pin `fw designer status` reads afterwards.
+#
+# Inputs: $1 — target project dir; $2 — dry_run ("true"/"false")
+# Return: 0 always (advisory, like the init step); prints nothing when there is
+# nothing to do.
+_t4672_sync_designer() {
+    local target_dir="$1" dry_run="${2:-false}"
+    local vendored="$target_dir/.agentic-framework"
+    # Dry run: the vendored pin has not been refreshed yet, so read the incoming one.
+    local src_root="$vendored"
+    [ "$dry_run" = true ] && src_root="$FRAMEWORK_ROOT"
+    local rel
+    rel="$(_designer_pin_vendored_path "$src_root/policy/designer-pin.yaml")"
+    [ -n "$rel" ] || return 0
+
+    local inst_dir="$target_dir/$(dirname "$rel")" _f _installed=0
+    for _f in "$inst_dir"/*.html; do
+        if [ -f "$_f" ]; then _installed=1; break; fi
+    done
+    [ "$_installed" -eq 1 ] || return 0
+    if [ -f "$target_dir/$rel" ] && [ -f "$src_root/$rel" ] && cmp -s "$target_dir/$rel" "$src_root/$rel"; then
+        return 0
+    fi
+
+    if [ "$dry_run" = true ]; then
+        echo -e "  ${CYAN}WOULD INSTALL${NC}  Workflow Designer $(basename "$rel") (the installed build does not match the new pin)"
+        return 0
+    fi
+    FRAMEWORK_ROOT="$vendored" fw_init_install_designer "$target_dir"
+    return 0
+}
+
 # T-2755 — render the "Pinned:" header line from a COMPUTED relation.
 #
 # fw_upgrade_render_pin_line <consumer_version> <framework_version> <relation> <force_downgrade>
@@ -2374,6 +2417,10 @@ CRONREGEOF
             fi
         fi
         changes=$((changes + 1))
+        # T-4672: the vendored pin may have moved; bring the installed designer with it.
+        if [ "$_vendor_rc" -eq 0 ] && declare -F fw_init_install_designer >/dev/null; then
+            _t4672_sync_designer "$target_dir" "$dry_run"
+        fi
         # T-4132: a running Watchtower keeps serving the pre-upgrade web/ bytes
         # (Flask debug=False, no reloader). Notice only, no auto-restart: the
         # operator may be mid-[REVIEW] in that very process, and a restart
