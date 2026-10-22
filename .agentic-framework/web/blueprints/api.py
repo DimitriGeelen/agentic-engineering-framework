@@ -19,11 +19,54 @@ from web.shared import sse_event
 bp = Blueprint("api", __name__, url_prefix="/api/v1")
 
 
+# T-4657: the LLM, embeddings and keyword-search stacks are optional installs
+# (ollama, sqlite_vec, tantivy). Each component names the modules that must
+# import for it to work; a missing one degrades the endpoint, never a 500.
+_COMPONENTS = {
+    "llm": ("web.llm",),
+    "ask": ("web.ask",),
+    "embeddings": ("web.embeddings",),
+    "search": ("web.search",),
+}
+
+
+def _missing(*components):
+    """Names of the given components that cannot be imported (T-4657).
+
+    The llm component also needs a provider manager: get_manager() imports
+    the ollama package lazily, so it is called here rather than at first use.
+    """
+    import importlib
+    missing = []
+    for name in components:
+        try:
+            for mod in _COMPONENTS[name]:
+                importlib.import_module(mod)
+            if name == "llm":
+                from web.llm import get_manager
+                get_manager()
+        except ImportError:
+            missing.append(name)
+    return missing
+
+
+def _unavailable(missing):
+    """503 JSON for an endpoint whose optional stack is not installed."""
+    return jsonify({"error": "optional component not installed: " + ", ".join(missing),
+                    "missing": missing}), 503
+
+
 @bp.errorhandler(Exception)
 def _index_unavailable(exc):
     """T-3786: readers never build the vector index; an unusable index is a 503
     with the remedy, not a 500 and not a silent multi-hour rebuild."""
-    from web.embeddings import IndexUnavailable
+    if isinstance(exc, ImportError):
+        # T-4657: an optional package missing below the import probes.
+        return _unavailable([getattr(exc, "name", None) or str(exc)])
+    try:
+        from web.embeddings import IndexUnavailable
+    except ImportError:
+        raise exc
     if isinstance(exc, IndexUnavailable):
         return jsonify({"error": "vector index unavailable", "detail": str(exc),
                         "remedy": "fw index reindex"}), 503
@@ -111,6 +154,9 @@ def ask():
             "total_time_ms": 0
         }
     """
+    missing = _missing("llm", "ask", "embeddings")
+    if missing:
+        return _unavailable(missing)
     from web.ask import (
         SYSTEM_PROMPT,
         format_rag_context,
@@ -210,6 +256,9 @@ def ask_stream():
     Same parameters as /ask but returns SSE stream instead of JSON.
     Events: model, thinking, thinking_done, token, sources, done, error.
     """
+    missing = _missing("llm", "ask", "embeddings")
+    if missing:
+        return _unavailable(missing)
     from web.ask import stream_answer
     from web.embeddings import rag_retrieve
 
@@ -251,6 +300,9 @@ def search():
             "stats": {...}
         }
     """
+    missing = _missing("search")
+    if missing:
+        return _unavailable(missing)
     from web.search import search as bm25_search, index_stats
 
     query = _request_query()
@@ -268,6 +320,13 @@ def search():
         return jsonify({"error": "Query too short (min 2 characters)"}), 400
 
     results = []
+    degraded = {}
+    if mode in ("semantic", "hybrid"):
+        missing = _missing("embeddings")
+        if missing:
+            # T-4657: no vector stack — answer from the keyword index instead.
+            degraded = {"degraded": True, "missing": missing, "requested_mode": mode}
+            mode = "keyword"
 
     stats = index_stats()
 
@@ -295,19 +354,32 @@ def search():
         "results": results[:limit],
         "total": len(results),
         "stats": stats,
+        **degraded,
     })
 
 
 @bp.route("/health")
 def health():
-    """API health check."""
+    """API health check. T-4657: 200 "degraded" naming what is not installed."""
+    missing = _missing("llm", "embeddings", "search")
+    if "llm" in missing:
+        return jsonify({
+            "status": "degraded",
+            "missing": missing,
+            "active_provider": None,
+            "providers": [],
+        })
+
     from web.llm import get_manager
 
     manager = get_manager()
     providers = manager.list_providers()
 
-    return jsonify({
-        "status": "ok",
+    body = {
+        "status": "degraded" if missing else "ok",
         "active_provider": manager.active_name,
         "providers": providers,
-    })
+    }
+    if missing:
+        body["missing"] = missing
+    return jsonify(body)

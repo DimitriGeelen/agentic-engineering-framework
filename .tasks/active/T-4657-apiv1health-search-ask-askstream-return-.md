@@ -1,13 +1,16 @@
 ---
 id: T-4657
-name: "/api/v1/health, /search, /ask, /ask/stream return 500 HTML when the optional LLM/embeddings/search stack is missing"
+name: "/api/v1/health, /search, /ask, /ask/stream return 500 HTML when the optional
+  LLM/embeddings/search stack is missing"
 description: >
-  Proposed: health 200 degraded; others 503 JSON; search falls back to keyword. Source: ring20 per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category 5), ring20 patch #28,#30. Verify against our code before fixing.
+  Proposed: health 200 degraded; others 503 JSON; search falls back to keyword. Source:
+  ring20 per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category
+  5), ring20 patch #28,#30. Verify against our code before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T19:32:55Z
-last_update: 2026-10-22T19:32:55Z
-date_finished: null
+last_update: 2026-10-22T22:00:36Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T19:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T19:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4657: /api/v1/health, /search, /ask, /ask/stream return 500 HTML when the optional LLM/embeddings/search stack is missing
@@ -62,8 +92,19 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Claim reproduced on our code: with the optional module made unimportable (sys.modules entry set to None), the Flask test client gets a 500 from `/api/v1/health`, `/api/v1/ask`, `/api/v1/ask/stream` and `/api/v1/search` (recorded in ## Updates)
+- [x] `/api/v1/health` returns 200 JSON `{"status": "degraded", "missing": [...]}` naming the missing component when `web.llm` cannot be imported; unchanged `status: ok` when it can
+- [x] `/api/v1/ask` and `/api/v1/ask/stream` return 503 JSON `{"error": ..., "missing": ...}` when `web.llm`, `web.ask` or `web.embeddings` cannot be imported
+- [x] `/api/v1/search` in semantic/hybrid mode falls back to the keyword (BM25) path with `"degraded": true` and `"missing"` when `web.embeddings` cannot be imported; 503 JSON if the keyword stack is missing too
+- [x] Regression tests in `tests/web/test_api_optional_deps.py` fail on the pre-fix code and pass after; existing `tests/web/` API tests still pass
+
+### Human
+- [ ] [REVIEW] Live API health still reports ok on this host after the change
+  **Steps:**
+  1. Open http://192.168.10.107:3000/api/v1/health in a browser
+  2. Open http://192.168.10.107:3000/api/v1/ in a browser
+  **Expected:** the health page is JSON with `"status":"ok"` and the ollama provider listed (the full stack is installed here, so nothing is degraded); the index page is JSON listing the endpoints
+  **If not:** a `"status":"degraded"` names the component in `"missing"` — check that component is installed on this host; an HTML error page means the restart did not pick up the change (`cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower restart`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +289,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 python3 -m pytest tests/web/test_api_optional_deps.py -q -p no:cacheprovider > /tmp/.t4657-a.out 2>&1 && grep -q "13 passed" /tmp/.t4657-a.out && ! grep -qE "failed|skipped" /tmp/.t4657-a.out
+timeout 900 python3 -m pytest tests/unit/t4061_query_text_not_kept_test.py -q -p no:cacheprovider > /tmp/.t4657-b.out 2>&1 && grep -q passed /tmp/.t4657-b.out && ! grep -qE "failed|error" /tmp/.t4657-b.out
+bin/fw vendor self --check --task T-4657
+bin/fw watchtower current
 
 ## RCA
 
@@ -264,6 +309,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on a host without the optional AI stack (ollama, sqlite_vec, tantivy), `/api/v1/health`, `/api/v1/ask`, `/api/v1/ask/stream` and `/api/v1/search` answered 500 HTML (ring20 patches #28, #30). Reproduced with the Flask test client: 13/13 new tests red on the pre-fix code (500 on health/ask/search; ask/stream with `web.llm` hidden gave a 200 SSE stream of errors because `web.ask` was already imported).
+
+**Root cause:** `web/blueprints/api.py` imported the optional modules unguarded inside each route (pre-fix `health()` `from web.llm import get_manager` + `get_manager()`, which imports `ollama` lazily at `web/llm/manager.py:88`; `ask()`/`ask_stream()` `from web.ask …`/`from web.embeddings import rag_retrieve`; `search()` `from web.search …` and, for semantic/hybrid, `from web.embeddings …`). The ImportError reached the blueprint error handler, which itself began with `from web.embeddings import IndexUnavailable` — so with embeddings missing even the handler raised, and Flask produced its HTML 500.
+
+**Why structurally allowed:** every test and the live host have the full stack installed, so the import-failure path never ran; the playwright API tests hit a live server and only ever see `status: ok`. The T-3786 handler covered one failure (unusable index) and assumed its own import would succeed.
+
+**Prevention:** `tests/web/test_api_optional_deps.py` hides each optional module via `sys.modules[...] = None` and pins the degraded contract per endpoint (health 200 degraded + `missing`, ask/ask-stream 503 JSON, search keyword fallback with `degraded: true`, 503 JSON when the keyword stack is also missing). The routes now probe with `_missing()` before importing, and the error handler maps any residual ImportError to 503 JSON and no longer depends on `web.embeddings` importing.
 
 ## Evolution
 
@@ -345,3 +398,13 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4657-apiv1health-search-ask-askstream-return-.md
 - **Context:** Initial task creation
+
+### 2026-10-22T21:59:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-23 — claim verified and fixed [w4657]
+- **Reproduced:** the claim holds on our code. Pre-fix, with `web.llm` / `web.ask` / `web.embeddings` / `web.search` set to None in `sys.modules` (or `get_manager` raising ModuleNotFoundError for `ollama`): health 500, ask 500, search 500 (keyword stack missing and semantic/hybrid with embeddings missing), ask/stream 500 (or a 200 error stream when only `web.llm` was hidden). 13 failed.
+- **Fix:** `web/blueprints/api.py` — `_missing()` import probe + `_unavailable()` 503 JSON; health 200 `degraded` with `missing`; search semantic/hybrid falls back to the existing BM25 path (`web.search.search`) with `degraded`, `missing`, `requested_mode`; error handler maps ImportError to 503 JSON and tolerates a missing `web.embeddings`.
+- **Tests:** 13 passed; `tests/web` + `tests/unit/t4061_query_text_not_kept_test.py` filtered to api/search/ask/health: 91 passed. Live `/api/v1/health` after restart: `status: ok`.
+- Related: T-3258 is the earlier pickup of the same report (proxmox-ring20-management T-1710); this fix covers it.
