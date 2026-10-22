@@ -1,13 +1,16 @@
 ---
 id: T-4658
-name: "_route_to_operator writes multi-line guidance under a criterion; lines after the first change the criterion digest and invalidate the escalated row"
+name: "_route_to_operator writes multi-line guidance under a criterion; lines after
+  the first change the criterion digest and invalidate the escalated row"
 description: >
-  Only the first line matches the generated-annotation regex. Source: ring20 per-patch triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category 5), ring20 patch #31. Verify against our code before fixing.
+  Only the first line matches the generated-annotation regex. Source: ring20 per-patch
+  triage vs be.3 (docs/reports/T-4649-ring20-patch-triage.md, category 5), ring20
+  patch #31. Verify against our code before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T19:33:24Z
-last_update: 2026-10-22T19:33:24Z
-date_finished: null
+last_update: 2026-10-22T21:59:51Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T19:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T19:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4658: _route_to_operator writes multi-line guidance under a criterion; lines after the first change the criterion digest and invalidate the escalated row
@@ -62,8 +92,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Regression test in tests/unit/test_t3579_verdict_ledger.py escalates a fixture criterion with multi-line guidance and asserts `criterion_digest` is identical before and after `_route_to_operator`; it fails on the pre-fix code
+- [x] `_route_to_operator` (lib/verdict_ledger.py) writes the escalation as exactly one line (guidance whitespace collapsed) that names the ledger row holding the full text; the verdicts ledger row keeps the guidance verbatim
+- [x] Guidance containing a checkbox-shaped line (`- [ ] ...`) does not add a criterion to the task after escalation (same test file)
+- [ ] Existing tests/unit/test_t3579_verdict_ledger.py stay green; `bin/fw vendor self --check --task T-4658` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,10 +280,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 python3 -m pytest tests/unit/test_t3579_verdict_ledger.py -q -k "escalat" > /tmp/.t4658-a 2>&1 && grep -q passed /tmp/.t4658-a && ! grep -qE "[0-9]+ (failed|error)" /tmp/.t4658-a
+grep -q "test_escalation_guidance_does_not_change_digest" tests/unit/test_t3579_verdict_ledger.py
+timeout 1800 python3 -m pytest tests/unit/test_t3579_verdict_ledger.py -q > /tmp/.t4658-b 2>&1 && grep -q passed /tmp/.t4658-b
+bin/fw vendor self --check --task T-4658
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+<!-- RCA (filled below, after Evolution). REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
 
@@ -288,6 +322,16 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** an `escalate` verdict whose guidance spans several lines invalidates itself: after routing, the criterion's digest no longer equals the row's `ac_digest`, so the escalated row reads as stale (ring20 patch #31, T-4649 category 5).
+
+**Root cause:** `lib/verdict_ledger.py:_route_to_operator` inserts `**Reviewer escalation (...):** {guidance}` verbatim. `judge_verdict.verdict` only `.strip()`s guidance, so embedded newlines survive. `lib/delegation.py:parse_criteria` folds every line up to the next checkbox/subhead into the criterion, and `criterion_body` (lib/verdict_ledger.py) drops only lines matching `GENERATED_ANNOTATION_RE` (`^\s*\*\*Reviewer (verdict|escalation)`) — i.e. the first note line. Lines 2..n become criterion text and change the digest; a guidance line shaped `- [ ] …` would even create a new criterion.
+
+**Why structurally allowed:** the only escalation test (`test_escalate_reroutes_to_operator_with_reason_visible`) used one-line guidance and never compared digests before/after; the docstring asserted "does not disturb the digest" without a test pinning it.
+
+**Prevention:** the note is written as a single line (whitespace collapsed, ledger row named for the full text), and `test_escalation_guidance_does_not_change_digest` pins digest equality and criterion count with multi-line, checkbox-shaped guidance.
 
 ## Recommendation
 
@@ -345,3 +389,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4658-routetooperator-writes-multi-line-guidan.md
 - **Context:** Initial task creation
+
+### 2026-10-22T21:59:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

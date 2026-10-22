@@ -3433,11 +3433,17 @@ def _route_to_operator(root: Path, path: Path, text: str, crit, rec: dict) -> No
     """Escalate: put the reviewer's reason ON the criterion and make the operator the owner.
 
     /review renders the criterion body, so a line under it is what the operator reads
-    there. The line is generated (see `_GENERATED_RE`), so it does not disturb the digest.
+    there. The line is generated (see `_GENERATED_RE`), so it does not disturb the digest —
+    which holds only for ONE line: the regex sees the first line of a note, and every line
+    after it would be criterion text (T-4658). So the guidance is collapsed onto one line;
+    the ledger row keeps it verbatim.
     """
     lines = text.split("\n")
+    guidance = " ".join(str(rec["guidance"]).split())
+    if guidance != str(rec["guidance"]).strip():
+        guidance += f" (verbatim: {VERDICTS} {rec['id']})"
     note = (f"  **Reviewer escalation ({rec['id']}, {rec['reviewer']}, rung {rec['rung']}):** "
-            f"{rec['guidance']}")
+            f"{guidance}")
     lines.insert(crit.end, note)
     out = "\n".join(lines)
     owner = str(frontmatter(text).get("owner") or "")

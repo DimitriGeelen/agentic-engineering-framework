@@ -263,6 +263,22 @@ def test_escalate_reroutes_to_operator_with_reason_visible(root):
     assert _lines(root, vl.VERDICTS)[-1]["verdict"] == "unknown"   # contract state, not a 5th colour
 
 
+def test_escalation_guidance_does_not_change_digest(root):
+    """T-4658: multi-line guidance must not leak into the criterion. Only the first line of
+    the note matches the generated-annotation regex, so lines 2..n used to become criterion
+    text — a new digest, a stale escalated row, and here even a new checkbox criterion."""
+    f = _task(root, TASTE, owner="agent")
+    before, n_before = _dg(root), len(_humans(f))
+    rec = _rec(root, "escalate",
+               guidance="the layout breaks on mobile\nfix the nav first\n\n- [ ] check the 320px width\nthen escalate")
+    text = f.read_text()
+    assert _dg(root) == before == rec["ac_digest"]
+    assert len(_humans(f)) == n_before
+    notes = [ln for ln in text.split("\n") if "Reviewer escalation" in ln]
+    assert len(notes) == 1 and "320px width then escalate" in notes[0] and rec["id"] in notes[0]
+    assert _lines(root, vl.VERDICTS)[-1]["guidance"].count("\n") == 4   # ledger keeps it verbatim
+
+
 def test_later_red_withdraws_earlier_green(root):
     f = _task(root, TASTE)
     _rec(root)
