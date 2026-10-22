@@ -49,7 +49,7 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "cd7ae2ea"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T07:53:33Z
-last_update: '2026-10-22T07:54:51Z'
+last_update: 2026-10-22T08:31:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -78,6 +78,16 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T08:00:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=307,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4589: Process the complete per-failure cloud report at f028d507 (197 items: 122 defect, 65 env, 9 flaky, 1 hang)
@@ -90,10 +100,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt committed with sha256 a131b3d632ff542dfade8474c9e939aa81e902e92cc1797d526d8a322db07d79
-- [ ] Every defect line grouped by root cause in a `## Triage` cause -> task table in this file; causes owned by open tasks mapped, not re-filed
-- [ ] One new task (owner agent, horizon next, related T-4589) per unowned independent root cause, plus one flaky task and the fw_test_cmd.bats hang
-- [ ] Env lines recorded as env; env gaps that are framework defects (detached-HEAD-unsafe fixtures, ~/.claude/projects dependency) filed
+- [x] docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt committed with sha256 a131b3d632ff542dfade8474c9e939aa81e902e92cc1797d526d8a322db07d79
+- [x] Every defect line grouped by root cause in a `## Triage` cause -> task table in this file; causes owned by open tasks mapped, not re-filed
+- [x] One new task (owner agent, horizon next, related T-4589) per unowned independent root cause, plus one flaky task and the fw_test_cmd.bats hang
+- [x] Env lines recorded as env; env gaps that are framework defects (detached-HEAD-unsafe fixtures, ~/.claude/projects dependency) filed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +291,85 @@ bvp_scores_proposed:
 sha256sum docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt | grep -q '^a131b3d632ff542dfade8474c9e939aa81e902e92cc1797d526d8a322db07d79 '
 git ls-files --error-unmatch docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
 grep -q '^## Triage' .tasks/active/T-4589-process-the-complete-per-failure-cloud-r.md
+
+## Triage
+
+Source: `docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt` (report line numbers). "HEAD" = re-run of
+that file alone on bleeding-edge 2026-10-22 (single files only, no full suite).
+
+### Defects: cause → task
+
+| Report lines | Cause | Disposition |
+|---|---|---|
+| 13-14 | test_pretooluse_gates 6/12 hard-code /opt path | existing T-4579 |
+| 15-17, 19-20 | register/T-3694 gate fixtures use a tautological Verification | existing T-4580 |
+| 21 | inception-decide CLAUDECODE test predates T-2964 ordering; missing-task exit is silent | **filed T-4594** |
+| 22, 26 | restart signal does not fold .next-directive.yaml | existing T-4577 |
+| 23 | Bash redirect to /etc not blocked by check-project-boundary (HEAD: reproduces) | **filed T-4593** |
+| 24-25 | claude_fw_restart_terminator FIX/CONTROL messages missing (HEAD: reproduces) | **filed T-4596** |
+| 103 | t3247 D5 expects bare -c; T-4497 made continue `--resume <id>` (HEAD: reproduces) | **filed T-4595** |
+| 34-36 | fw_inception fixture: template missing Recommendation/Decision | **filed T-4597** |
+| 38 | greenfield control expects `jobs: []`; init now seeds jobs | **filed T-4598** |
+| 39 | pickup local-save envelope lacks summary (no termlink; passes here with termlink) | **filed T-4614** |
+| 41 | fw setup ignores PROJECT_ROOT | **filed T-4599** |
+| 42 | fw_task placeholder test lacks required flags | **filed T-4600** |
+| 44, 47 | fw_update / handover_latest_symlink fixtures not an initialised project | **filed T-4601** |
+| 45-46 | validate-init prints no `dir-` results | **filed T-4602** |
+| 48-49 | t2501 drift tests use doctor --quick (host probe skipped) | **filed T-4603** |
+| 54-58 | approvals_close_ready_arcs policy fixture | baseline, owner T-3611 |
+| 59 | atomic_yaml_write_lint | baseline, owner T-3612 |
+| 60, 70-71, 83 | emit_review inception handoff-ready block vs bypass/pipefail tests | baseline, owner T-3609 |
+| 61 | audit_split_root_asset ratchet | baseline, owner T-3614 |
+| 63-65 | doctor_hook_counters | baseline, owner T-3615 |
+| 94 | t2436 --check vs --dry-run | existing T-4585 |
+| 95 | t2452 doctor --quick | baseline, owner T-3992 |
+| 97, 102 | completed tasks carrying a non-null horizon (t3118, t3235) | existing T-4584 |
+| 98-101 | t3232 extractor legs fail with LANG unset (confirmed `env -u LANG`) | **filed T-4608** |
+| 104 | t3298 source pin on a trap literal audit.sh no longer has | **filed T-4604** |
+| 105-107 | t3379 foreign port | passes on e785e48b9 (T-4575), passes at HEAD |
+| 114-115 | t4226 needs ambient FRAMEWORK_ROOT (confirmed `env -u FRAMEWORK_ROOT`) | **filed T-4606** |
+| 116 | t4259 (c) cron drift on fresh init | fixed after f028d507 (b6e45a8b1, T-4259) |
+| 117-118 | t4263 restart-note banner | fixed after f028d507 (ccfc64f98, c939b2816) |
+| 119 | t4381 fixture flagged by tree guard for its own `__pycache__` | **filed T-4609** |
+| 120 | t4542_prepush_lock_holder runs a live sectioned audit (T-4401 lint) | **filed T-4605** |
+| 121-122 | t4453 upgrade from checkout | existing T-4566 |
+| 126 | bin/fw heredoc-in-cmd-sub | fixed by T-4581 (298c394b2) |
+| 129 | test_index_doctor_rail reads installed .git/hooks/pre-push | env (git hooks), passes at HEAD |
+| 144-183 | Playwright (40) | existing T-4574 |
+| 184-186 | test_audit_frontmatter_variants cloud-only (passes here) | **filed T-4612** |
+| 187 | test_cockpit_activity cloud-only (passes here) | **filed T-4613** |
+| 190 | test_operator_facing_stderr | baseline, owner T-3605 |
+| 194 | test_approvals_blocked_arcs threshold | fixed after f028d507 (112ad8bdb, T-4329) |
+| 195-199 | decided_unclosed_count undefined | existing T-3898 |
+| 200 | /tasks board started-work column uncapped (HEAD: reproduces) | **filed T-4610** |
+| 201-202 | approval summary omits AC-review tasks (HEAD: reproduces) | **filed T-4611** |
+| 203 | t3627 wedge 3.18 s > 2.0 s (passes here; load-bound) | folded into flaky T-4616 |
+| 62, 96, 67-68 | bvp_auto_promote cron sync, t3062 budget, greenfield seed audit: cron not deployed | env (cron), as T-4575 |
+
+### Hang and flaky
+
+| Report lines | Disposition |
+|---|---|
+| 143 | fw_test_cmd.bats runs the full suite recursively → **filed T-4615** |
+| 123, 191-193, 204-208 | 9 flaky (+ t3627 timing) → **filed T-4616** |
+
+### Env (no task, except where the gap is a framework defect)
+
+| Report lines | Env | Disposition |
+|---|---|---|
+| 72-77, 86-93, 130-137 | git hooks not installed | env |
+| 43, 53, 78-82, 108-109, 124-125 | termlink / systemd hub absent | env |
+| 27-31 | lib/ts node_modules | env; esbuild/js-yaml owned by T-4572 |
+| 50-52 | python mcp absent | env |
+| 66, 84-85, 127-128, 153 | vector index / ollama | env |
+| 110-112 | ss absent | env |
+| 37 | cron + termlink missing (greenfield doctor) | env |
+| 18 | .context/approvals absent in fresh clone | existing T-4586 |
+| 188-189 | /opt path in sandbox profile | existing T-4578 |
+| 138-142 | detached HEAD, fresh-machine overlay | existing T-4587 |
+| 113, 209 | detached HEAD: t3698 _overlay, web test_app branch | framework defect → **filed T-4617** |
+| 69 | lib_costs needs ~/.claude/projects | existing T-4583 |
+| 32-33, 40 | fw_costs / plugin_audit read host ~/.claude | framework defect → **filed T-4618** |
 
 ## RCA
 
