@@ -883,6 +883,61 @@ _fw_filter_option_writes() {
     return 1
 }
 
+# T-4628: does this uniq/xxd/gunzip clause write a file with no redirect? uniq and
+# xxd write their SECOND operand (`uniq IN OUT`, `xxd -r -p IN OUT`); gunzip replaces
+# X.gz with X unless it writes to stdout (-c) or only inspects (-t, -l). Operands are
+# counted on _fw_option_words with option values skipped: uniq -f/-s/-w and their long
+# forms (getopt permutes, so options may follow operands); xxd -c/-g/-l/-n/-o/-s/-R and
+# their long spellings, options only before the first operand (xxd stops there, so
+# `xxd IN -r` writes a file named -r); gunzip -S/--suffix. A word that cannot be
+# resolved, or one that begins with an expansion, counts as a write.
+_fw_filter_operand_writes() {
+    local base="$1" i j tok ops=0 out=0 opts=1
+    _fw_option_words "$2" || return 0
+    for (( i=1; i<${#_FW_OW[@]}; i++ )); do
+        tok="${_FW_OW[i]}"
+        [ "${_FW_OWK[i]}" = E ] && return 0
+        if [ "$opts" -eq 0 ] || [ "$tok" = - ] || [[ "$tok" != -* ]]; then
+            ops=$((ops + 1))
+            [ "$base" = xxd ] && opts=0
+            [ "$base" = gunzip ] && [ "$tok" = - ] && ops=$((ops - 1))
+            continue
+        fi
+        [ "$tok" = -- ] && { opts=0; continue; }
+        case "$base:$tok" in
+            uniq:--*=*|gunzip:--*=*) ;;
+            uniq:--*)
+                for j in --skip-fields --skip-chars --check-chars; do
+                    case "$j" in "$tok"*) i=$((i + 1)); break ;; esac
+                done ;;
+            uniq:-*)
+                for (( j=1; j<${#tok}; j++ )); do
+                    case "${tok:j:1}" in
+                        f|s|w) [ $((j + 1)) -eq ${#tok} ] && i=$((i + 1)); break ;;
+                    esac
+                done ;;
+            xxd:-c|xxd:-g|xxd:-l|xxd:-n|xxd:-o|xxd:-s|xxd:-R|xxd:-cols|xxd:-groupsize|\
+            xxd:-len|xxd:-name|xxd:-offset|xxd:-seek) i=$((i + 1)) ;;
+            xxd:-*) ;;
+            gunzip:--stdout|gunzip:--to-stdout|gunzip:--test|gunzip:--list) out=1 ;;
+            gunzip:--suffix) i=$((i + 1)) ;;
+            gunzip:--*) ;;
+            gunzip:-*)
+                for (( j=1; j<${#tok}; j++ )); do
+                    case "${tok:j:1}" in
+                        c|t|l) out=1 ;;
+                        S) [ $((j + 1)) -eq ${#tok} ] && i=$((i + 1)); break ;;
+                    esac
+                done ;;
+        esac
+    done
+    case "$base" in
+        uniq|xxd) [ "$ops" -ge 2 ] ;;
+        gunzip) [ "$ops" -ge 1 ] && [ "$out" -eq 0 ] ;;
+        *) return 1 ;;
+    esac
+}
+
 # T-4626: does this sort/rg clause name an option that STARTS a program? sort
 # --compress-program=CMD runs CMD when it spills to temp files (getopt accepts any
 # unambiguous prefix; `--c` alone is ambiguous with --check, so `--co…` is it). rg
@@ -1310,6 +1365,8 @@ _fw_single_command_is_safe() {
             # T-4512: the outer sed -i / sort -o rules read raw text; a quoted or
             # brace-built option is judged here on the dequoted words.
             case "$base" in sed|sort) _fw_filter_option_writes "$base" "$cmd" && return 1 ;; esac
+            # T-4628: uniq/xxd write a second operand; gunzip writes in place.
+            case "$base" in uniq|xxd|gunzip) _fw_filter_operand_writes "$base" "$cmd" && return 1 ;; esac
             # T-4626: sort --compress-program runs a program.
             [ "$base" = sort ] && _fw_option_runs_program sort "$cmd" && return 1
             # T-4509: awk runs commands with system(), | getline, print | and |&.

@@ -1,10 +1,16 @@
 ---
 id: T-4628
-name: "Read-only allowlist: uniq and xxd write their second operand; gunzip deletes the archive"
+name: "Read-only allowlist: uniq and xxd write their second operand; gunzip deletes
+  the archive"
 description: >
-  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh in their repo): the command passes has_bash_write_pattern and is_bash_safe_command (agents/context/lib/safe-commands.sh) yet writes or deletes: uniq IN OUT and uniq -c IN OUT write OUT; xxd IN OUT and xxd -r -p IN OUT write OUT; gunzip X.gz (also -k, -f) decompresses in place and deletes X.gz. Treat a second operand as output for uniq/xxd; allow gunzip only with -c/-t/-l (zcat stays safe). Tests plus controls.
+  ring20-dashboard round-2 hunt on v1.8.15-be.2 (msg 9e201103, probe tmp/aef_round2_probe.sh
+  in their repo): the command passes has_bash_write_pattern and is_bash_safe_command
+  (agents/context/lib/safe-commands.sh) yet writes or deletes: uniq IN OUT and uniq
+  -c IN OUT write OUT; xxd IN OUT and xxd -r -p IN OUT write OUT; gunzip X.gz (also
+  -k, -f) decompresses in place and deletes X.gz. Treat a second operand as output
+  for uniq/xxd; allow gunzip only with -c/-t/-l (zcat stays safe). Tests plus controls.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +45,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "9e201103"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T10:36:28Z
-last_update: 2026-10-22T10:36:28Z
-date_finished: null
+last_update: 2026-10-22T11:03:19Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +57,50 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T10:45:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T10:45:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4628: Read-only allowlist: uniq and xxd write their second operand; gunzip deletes the archive
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+ring20-dashboard round-2 probe (msg 9e201103): `uniq IN OUT`, `xxd IN OUT` and `gunzip X.gz`
+classify SAFE in `agents/context/lib/safe-commands.sh` although the first two write OUT and the
+third decompresses in place and deletes X.gz.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `is_bash_safe_command` refuses uniq and xxd with a second file operand (options and their values skipped, `--` honoured, quoted/expanded words fail closed), e.g. `uniq IN OUT`, `uniq -c IN OUT`, `uniq -f 1 IN OUT`, `xxd IN OUT`, `xxd -r -p IN OUT`, `xxd -s 16 IN OUT`
+- [x] `is_bash_safe_command` refuses gunzip on a file operand unless it writes to stdout or only inspects (`-c`/`--stdout`/`--to-stdout`, `-t`/`--test`, `-l`/`--list`, also inside a short bundle that does not hand the letter to `-S`): `gunzip X.gz`, `gunzip -k X.gz`, `gunzip -f X.gz`, `gunzip -Sc file.c` refused
+- [x] Controls stay SAFE: `uniq F`, `uniq -c F`, `sort F | uniq -c`, `xxd F`, `xxd -l 64 F`, `xxd -r -p F`, `gunzip -c X.gz`, `gunzip -t X.gz`, `gunzip -l X.gz`, `cat X.gz | gunzip`, `zcat X.gz`
+- [x] Regression test `tests/unit/t4628_operand_writes.bats` fails on the pre-fix code and passes after; existing safe-commands suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,8 +285,28 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4628_operand_writes.bats > /tmp/.t4628.out 2>&1 && ! grep -q "^not ok" /tmp/.t4628.out
+test "$(grep -c '# skip' /tmp/.t4628.out)" -eq 0
+timeout 900 bats tests/unit/t4512_option_check_dequote.bats tests/unit/context_safe_commands.bats tests/unit/t3096_safe_commands_wrappers.bats > /tmp/.t4628b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4628b.out
+bin/fw vendor self --check --task T-4628
 
 ## RCA
+
+**Symptom:** `uniq IN OUT`, `xxd IN OUT` and `gunzip X.gz` classified SAFE and ran with no active
+task, although uniq/xxd write their second operand and gunzip replaces X.gz with X.
+
+**Root cause:** `agents/context/lib/safe-commands.sh` `_fw_single_command_is_safe`, Category 2b
+arm (`sed|awk|sort|uniq|…|xxd|tput|zcat|gunzip`): its admission argument (T-3096 comment) is
+"none of these can write except through a redirect", which is false for uniq and xxd (positional
+output file) and for gunzip (in-place by default). Only sed/sort options and awk/sed programs were
+judged.
+
+**Why structurally allowed:** the arm's safety claim was argued for the set as a whole and never
+checked per tool against its synopsis; no test asserted a positional-output or in-place form.
+
+**Prevention:** `_fw_filter_operand_writes` judges uniq/xxd on their operand count and gunzip on
+its stdout/inspect flags, on the dequoted words (T-4512 tokenizer, fail closed on expansions);
+`tests/unit/t4628_operand_writes.bats` pins each form plus SAFE controls.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -346,3 +402,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4628-read-only-allowlist-uniq-and-xxd-write-t.md
 - **Context:** Initial task creation
+
+### 2026-10-22T11:03:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
