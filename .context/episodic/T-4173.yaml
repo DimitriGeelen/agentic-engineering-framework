@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4173: claude-fw docs say a budget restart continues with 'claude -c', but the restart starts a FRESH session (new id, only hook context): reconcile code and docs (CLAUDE.md §Auto-Restart, claude-fw header) (dimitri-mint-dev P-011, their T-108)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-22T10:37:52Z
+# ============================================================================
+
+task_id: T-4173
+task_name: "claude-fw docs say a budget restart continues with 'claude -c', but the restart starts a FRESH session (new id, only hook context): reconcile code and docs (CLAUDE.md §Auto-Restart, claude-fw header) (dimitri-mint-dev P-011, their T-108)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T16:39:23Z
+completed: 2026-10-22T10:37:07Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-10-22T00:19:28+02:00
+last_commit: 2026-10-22T00:22:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  docs/context-compaction.md auto-restart row says fresh session (T-3166), not claude -c; regression bats pins it and the post-compact-resume.sh header against the code's default; RCA + ACs. post-compact-resume.sh header no longer says the budget auto-restart is claude -c — fresh session by default (T-3166), --resume under FW_RESTART_MODE=continue; vendor synced (comment hunks only, T-4172's in-flight edits to the same file left uncommitted). tick Agent ACs (verification 5/5 green)
+
+# Key outcomes
+outcomes:
+  - 'Reproduction checked on bleeding-edge: CLAUDE.md §Auto-Restart, bin/claude-fw header and the T-4170 banner already say "fresh session" (fixed by T-4352/T-3166); remaining stale claims located (docs/context-compaction.md:88, agents/context/post-compact-resume.sh header comments)'
+  - 'docs/context-compaction.md no longer says an auto-restart re-injects via `claude -c`; it says the restart is a fresh session that reads the handover (FW_RESTART_MODE=continue = `--resume`)'
+  - 'post-compact-resume.sh header comments attribute auto-restart to SessionStart `startup` of a fresh session, not `claude -c`'
+  - 'Regression bats tests/unit/t4173_restart_fresh_docs.bats fails before the fix and passes after (2/2 not ok before, 2/2 ok after; t4352 4/4, t4353 4/4)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - 'agents/context/post-compact-resume.sh'
+  - 'docs/context-compaction.md'
+  - '.tasks/active/T-4173-claude-fw-docs-say-a-budget-restart-cont.md'
+  - 'tests/unit/t4173_restart_fresh_docs.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T00:19:28'
+    action: 'T-4173: docs/context-compaction.md auto-restart row says fresh session (T-3166), not claude -c; regression bats pins it and the post-compact-resume.sh header against the code''s default; RCA + ACs'
+  - time: '2026-10-22T00:20:59'
+    action: 'T-4173: post-compact-resume.sh header no longer says the budget auto-restart is claude -c — fresh session by default (T-3166), --resume under FW_RESTART_MODE=continue; vendor synced (comment hunks only, T-4172''s in-flight edits to the same file left uncommitted)'
+  - time: '2026-10-22T00:22:55'
+    action: 'T-4173: tick Agent ACs (verification 5/5 green)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 12597 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12597
+  commits: 3
+  files_changed: 5
+  lines_added: 85
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4173-claude-fw-docs-say-a-budget-restart-cont.md
+generated_by: context-agent-hybrid
