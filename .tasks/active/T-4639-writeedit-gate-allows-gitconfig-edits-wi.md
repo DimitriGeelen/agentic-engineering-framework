@@ -1,10 +1,17 @@
 ---
 id: T-4639
-name: "Write/Edit gate allows .git/config edits with no task; a configured diff driver/textconv/fsmonitor then runs on a 'read-only' git diff/status"
+name: "Write/Edit gate allows .git/config edits with no task; a configured diff driver/textconv/fsmonitor
+  then runs on a 'read-only' git diff/status"
 description: >
-  Found by the T-4631 worker: agents/context/check-active-task.sh:572 lets Write/Edit touch .git/* with no active task. An edit to .git/config (or .git/info/attributes) can set diff.<x>.command, textconv, core.fsmonitor, core.pager, core.hooksPath; a later allowlisted git diff/status/log then runs that program. Close it: refuse Write/Edit of .git/config, .git/info/attributes and .git/hooks/* without a task (and flag those keys even with one), keep the .git paths the framework itself must write; tests for each key.
+  Found by the T-4631 worker: agents/context/check-active-task.sh:572 lets Write/Edit
+  touch .git/* with no active task. An edit to .git/config (or .git/info/attributes)
+  can set diff.<x>.command, textconv, core.fsmonitor, core.pager, core.hooksPath;
+  a later allowlisted git diff/status/log then runs that program. Close it: refuse
+  Write/Edit of .git/config, .git/info/attributes and .git/hooks/* without a task
+  (and flag those keys even with one), keep the .git paths the framework itself must
+  write; tests for each key.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: [T-4631, T-4509]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T13:00:17Z
-last_update: 2026-10-22T13:00:17Z
-date_finished: null
+last_update: '2026-10-22T13:15:53Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-22T13:03:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-22T13:15:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=313,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4639: Write/Edit gate allows .git/config edits with no task; a configured diff driver/textconv/fsmonitor then runs on a 'read-only' git diff/status
@@ -62,8 +96,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Write/Edit of `.git/config`, `.git/config.worktree`, `.git/worktrees/*/config(.worktree)`, `.git/info/attributes` and `.git/hooks/*` is no longer exempt in `agents/context/check-active-task.sh`: with no focused task it is BLOCKED (exit 2)
+- [x] With a focused task, a write that sets an exec-capable key is FLAGGED (stderr WARNING + row in `.context/working/.gate-bypass-log.yaml`), one test per key: `diff.<x>.command`, `diff.<x>.textconv`, `core.fsmonitor`, `core.pager`, `core.hooksPath` (plus `include.path`); an `info/attributes` driver selection (`diff=`/`filter=`/`merge=`) and any `.git/hooks/*` write are flagged too
+- [x] A benign `.git/config` edit with a task passes without a flag; other `.git/*` paths (e.g. `.git/COMMIT_EDITMSG`, `.git/info/exclude`) stay exempt with no task
+- [x] The WM-task fence (`lib/wm_tasks.sh` `fw_wm_write_allowed`) no longer admits the sensitive `.git` paths
+- [x] Regression bats `tests/unit/t4639_git_config_write_gate.bats` fails on the pre-fix hook and passes after; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +285,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4639_git_config_write_gate.bats > /tmp/.t4639.out 2>&1 && ! grep -q "^not ok" /tmp/.t4639.out
+test "$(grep -c '# skip' /tmp/.t4639.out)" -eq 0
+bash -n agents/context/check-active-task.sh && bash -n lib/wm_tasks.sh
+python3 tools/bats-dead-negation-lint.py tests/unit/t4639_git_config_write_gate.bats > /tmp/.t4639.lint 2>&1 && grep -q clean /tmp/.t4639.lint
+bin/fw vendor self --check --task T-4639
 
 ## RCA
 
@@ -264,6 +306,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** A Write/Edit to `.git/config` (or `.git/info/attributes`, `.git/hooks/*`) passed the task gate with no focused task. Such a write can set `diff.<x>.command`, `diff.<x>.textconv`, `core.fsmonitor`, `core.pager`, `core.hooksPath`, so a later allowlisted "read-only" `git diff`/`status`/`log` runs an arbitrary program (found by the T-4631 worker).
+
+**Root cause:** `agents/context/check-active-task.sh:572` exempted the whole `"$PROJECT_ROOT"/.git/*` tree alongside `.context/`, `.tasks/`, `.claude/`, and `lib/wm_tasks.sh:138` mirrored the same exemption into the WM fence. It treated `.git/` as bookkeeping, but `config`, `info/attributes` and `hooks/` are executable configuration.
+
+**Why structurally allowed:** The read-only allowlist (`safe-commands.sh`) and the Write/Edit gate were reasoned about separately; T-4631 noted the residual in a comment (`safe-commands.sh:1332`) but no test pinned the join. The framework itself never writes `.git/*` through the Write/Edit tools (hook install, commits and config are shell/git writes), so nothing broke when the exemption was too wide.
+
+**Prevention:** `tests/unit/t4639_git_config_write_gate.bats` pins the refusal (no task) and the flag (with task) per key and per path, and pins that the remaining `.git/*` paths stay exempt, so re-widening the exemption goes red.
 
 ## Evolution
 
@@ -345,3 +395,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4639-writeedit-gate-allows-gitconfig-edits-wi.md
 - **Context:** Initial task creation
+
+### 2026-10-22T13:03:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

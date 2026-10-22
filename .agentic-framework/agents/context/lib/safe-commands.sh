@@ -1329,9 +1329,10 @@ _fw_single_command_is_safe() {
             # only configuration the command line cannot choose: the repository is held
             # to PROJECT_ROOT (T-4343, T-4408), and -c, GIT_CONFIG_*, GIT_EXTERNAL_DIFF
             # and the other injection channels are refused above. `git config` is gated.
-            # Residual, not closed here: the Write/Edit gate exempts PROJECT_ROOT/.git/*
-            # (check-active-task.sh), so a tool write to .git/config can name a driver
-            # (or core.fsmonitor, which plain `git status` runs) with no task.
+            # T-4639 closed the residual on the write side: the Write/Edit gate no longer
+            # exempts .git/config, info/attributes or hooks/ (check-active-task.sh), so
+            # naming a driver (or core.fsmonitor, which plain `git status` runs) needs a
+            # task, and a newly set exec-capable key is flagged and logged.
             case "$git_sub" in
                 # T-2888 added the second line. The first had grown one verb per
                 # incident — T-2052, T-2054, T-2462 and T-2878 each patched this

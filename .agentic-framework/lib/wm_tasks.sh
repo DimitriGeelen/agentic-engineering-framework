@@ -134,6 +134,13 @@ fw_wm_write_allowed() {
     case "$file_path" in
         */../*|*/..) return 1 ;;
     esac
+    # T-4639: executable git configuration is not workflow management — mirror
+    # the gate, which withholds the .git/* exemption from these paths.
+    case "$file_path" in
+        "$root"/.git/config|"$root"/.git/config.worktree|"$root"/.git/worktrees/*|\
+        "$root"/.git/modules/*|"$root"/.git/info/attributes|"$root"/.git/hooks/*|\
+        "$root"/.git/*//*|"$root"/.git//*) return 1 ;;
+    esac
     case "$file_path" in
         "$root"/.context/*|"$root"/.tasks/*|"$root"/.claude/*|"$root"/.git/*) return 0 ;;
         */.claude/projects/*/memory/*|*/.gemini/antigravity-cli/brain/*) return 0 ;;

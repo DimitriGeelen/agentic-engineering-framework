@@ -566,11 +566,112 @@ sys.exit(0)
         ;;
 esac
 
+# T-4639: .git/config, info/attributes and hooks/ are executable configuration,
+# not bookkeeping. A tool write there can name a diff driver, textconv,
+# core.fsmonitor, core.pager or core.hooksPath that a later allowlisted
+# "read-only" git diff/status/log then runs. So these paths are NOT exempt: they
+# need a task like source does, and when the gate allows one, a newly set
+# exec-capable key is flagged and logged. The framework itself never writes them
+# through Write/Edit (hook install and git config are shell writes). Matched on
+# the normalised path so .git//config or .git/hooks/../config cannot slip into
+# the exempt .git/* arm below.
+_git_exec_path=""
+if [ -n "$FILE_PATH" ]; then
+    _fp_norm=$(python3 -c 'import os,sys; print(os.path.normpath(sys.argv[1]))' "$FILE_PATH" 2>/dev/null || printf '%s' "$FILE_PATH")
+    case "$_fp_norm" in
+        "$PROJECT_ROOT"/.git/config|"$PROJECT_ROOT"/.git/config.worktree|\
+        "$PROJECT_ROOT"/.git/worktrees/*/config|"$PROJECT_ROOT"/.git/worktrees/*/config.worktree|\
+        "$PROJECT_ROOT"/.git/modules/*/config|"$PROJECT_ROOT"/.git/modules/*/hooks/*|\
+        "$PROJECT_ROOT"/.git/info/attributes|"$PROJECT_ROOT"/.git/hooks/*)
+            _git_exec_path="$_fp_norm" ;;
+    esac
+fi
+if [ -n "$_git_exec_path" ] && [ "${_FW_GIT_EXEC_INNER:-0}" != 1 ]; then
+    # Let the whole task gate below decide (re-run with the exemption withheld),
+    # then flag only a write it allowed — a blocked write is not logged as done.
+    echo "$INPUT" | _FW_GIT_EXEC_INNER=1 bash "${BASH_SOURCE[0]}"
+    _gx_rc=$?
+    if [ "$_gx_rc" -eq 0 ]; then
+        _gx_flags=$(echo "$INPUT" | python3 -c '
+import json, os, re, subprocess, sys, tempfile
+path = sys.argv[1]
+try:
+    ti = json.load(sys.stdin).get("tool_input", {})
+except Exception:
+    ti = {}
+try:
+    before = open(path, encoding="utf-8", errors="replace").read()
+except OSError:
+    before = ""
+after = before
+if isinstance(ti.get("content"), str):
+    after = ti["content"]
+else:
+    edits = ti.get("edits") if isinstance(ti.get("edits"), list) else [ti]
+    for e in edits:
+        old, new = e.get("old_string") or "", e.get("new_string") or ""
+        if old:
+            after = after.replace(old, new) if e.get("replace_all") else after.replace(old, new, 1)
+        else:
+            after = after + new
+flags = []
+if "/hooks/" in path:
+    flags.append("hook script " + os.path.basename(path) + " (runs on git operations)")
+elif path.endswith("/info/attributes"):
+    old = set(before.splitlines())
+    for line in after.splitlines():
+        if line not in old and re.search(r"(^|\s)(diff|filter|merge)=\S", line):
+            flags.append("attribute selects a driver: " + line.strip())
+else:
+    EXEC = re.compile(r"^(diff\..+\.(command|textconv)|diff\.external|core\.(fsmonitor|pager|hookspath|editor|sshcommand|askpass|gitproxy|alternaterefscommand)"
+                      r"|pager\..+|filter\..+\.(clean|smudge|process)|merge\..+\.driver|gpg\.(.+\.)?program|credential\.(.+\.)?helper"
+                      r"|include\.path|includeif\..+\.path|sequence\.editor|uploadpack\.packobjectshook|alias\..+)$")
+    def entries(text):
+        with tempfile.NamedTemporaryFile("w", suffix=".gitconfig", delete=False) as f:
+            f.write(text)
+        try:
+            r = subprocess.run(["git", "config", "--no-includes", "-f", f.name, "--list"],
+                               capture_output=True, text=True, timeout=10)
+            return set(r.stdout.splitlines()) if r.returncode == 0 else None
+        except Exception:
+            return None
+        finally:
+            os.unlink(f.name)
+    old, new = entries(before) or set(), entries(after)
+    if new is None:
+        flags.append("config not parseable by git config; exec-capable keys cannot be ruled out")
+    else:
+        for kv in sorted(new - old):
+            key, _, val = kv.partition("=")
+            if EXEC.match(key) and not (key.startswith("alias.") and not val.lstrip().startswith("!")):
+                flags.append(kv)
+print("\n".join(flags))
+' "$_git_exec_path" 2>/dev/null || echo "inspection failed; exec-capable keys cannot be ruled out")
+        if [ -n "$_gx_flags" ]; then
+            echo "" >&2
+            echo "WARNING (T-4639): this write to $_git_exec_path sets exec-capable git configuration:" >&2
+            printf '%s\n' "$_gx_flags" | sed 's/^/  - /' >&2
+            echo "A later git diff/status/log (allowlisted as read-only) can run it. Logged." >&2
+            _gx_task=$({ grep -E '^current_task:' "$PROJECT_ROOT/.context/working/focus.yaml" 2>/dev/null || true; } | head -1 | awk '{print $2}')
+            mkdir -p "$PROJECT_ROOT/.context/working" 2>/dev/null || true
+            {
+                echo "- timestamp: '$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+                echo "  task: '${_gx_task}'"
+                echo "  flag: 'git-exec-config'"
+                echo "  caller: 'check-active-task:git-exec-config'"
+                echo "  file: '$(printf '%s' "$_git_exec_path" | tr -d "'")'"
+                echo "  keys: '$(printf '%s' "$_gx_flags" | tr '\n' ';' | tr -d "'")'"
+            } >> "$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml" 2>/dev/null || true
+        fi
+    fi
+    exit "$_gx_rc"
+fi
+
 # Exempt paths — framework operations that are part of task management itself
 # Anchored to PROJECT_ROOT to prevent matching arbitrary paths (e.g., /root/.claude/)
 case "$FILE_PATH" in
     "$PROJECT_ROOT"/.context/*|"$PROJECT_ROOT"/.tasks/*|"$PROJECT_ROOT"/.claude/*|"$PROJECT_ROOT"/.git/*)
-        exit 0
+        [ -n "$_git_exec_path" ] || exit 0   # T-4639: executable git config is judged below
         ;;
 esac
 
@@ -718,7 +819,8 @@ if [ -n "$CURRENT_TASK" ]; then
                 echo "  $(_fw_cmd) work-on T-XXX     (resume an existing task)" >&2
                 echo "" >&2
                 echo "Writes to .context/, .tasks/, .claude/ and .git/ are permitted here —" >&2
-                echo "that is what workflow management legitimately records." >&2
+                echo "that is what workflow management legitimately records — except .git/config," >&2
+                echo ".git/info/attributes and .git/hooks/, which are executable config (T-4639)." >&2
                 echo "Policy: T-3537 (WM scope fence — enforced, not advisory)" >&2
                 exit 2
             fi
