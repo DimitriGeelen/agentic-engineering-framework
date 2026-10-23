@@ -47757,3 +47757,21 @@ scan_id: R-aeb75b26
 task_id: T-4704
 payload:
   task_file: .tasks/active/T-4704-fw-upgrade-next-steps-suggests-a-hard-co.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T16:05:37Z'
+scan_id: R-75f6f969
+task_id: T-4707
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T16:05:37Z'
+scan_id: R-75f6f969
+task_id: T-4707
+payload:
+  task_file: .tasks/active/T-4707-after-fw-task-update---status-work-compl.md

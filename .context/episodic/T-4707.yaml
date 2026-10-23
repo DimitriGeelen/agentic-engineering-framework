@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4707: After fw task update --status work-completed clears focus, the printed next step (git commit ... -- <paths>) is blocked by check-active-task ('No active task')
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T16:05:56Z
+# ============================================================================
+
+task_id: T-4707
+task_name: "After fw task update --status work-completed clears focus, the printed next step (git commit ... -- <paths>) is blocked by check-active-task ('No active task')"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T15:41:36Z
+completed: 2026-10-23T16:04:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T17:54:40+02:00
+last_commit: 2026-10-23T17:54:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  null-focus block names what voided a close commit; printed close hint pinned end to end
+
+# Key outcomes
+outcomes:
+  - 'With focus cleared by a real close (update-task.sh in a throwaway git project), the printed `next: git commit -m ''<id>: close ...'' -- <paths> && git push` line, taken verbatim, passes `check-active-task` (T-2054 NOTE, exit 0) and then runs: the commit lands and is pushed (pinned end to end; measured already true at HEAD, see RCA)'
+  - 'A close commit that carries another clause that voids the T-2054 allowance (a non-read-only clause such as `bin/fw sidecar send`, or a write pattern such as `> log`) is still refused with ''No active task''. The block now says the commit alone would be allowed and names the clause that voided it. This changes the message only; permissions are unchanged'
+  - 'Control: a blocked no-focus line with no `git commit` in it gets no commit hint'
+  - 'Regression bats `tests/unit/t4707_close_hint_commit_passes_gate.bats` (4 tests): the two hint legs fail against the HEAD hook (git-archive scratch tree) and pass after; neighbouring suites (capture_verbs_nulltask, t4182, t3179, t4204, t4094) stay green'
+  - '`bin/fw vendor self --check --task T-4707` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — message, not permission'
+    chose: 'keep the T-2054 allowance as it is and make the null-focus block explain a refused close commit (`_commit_shape_hint`).'
+    rationale: 'the printed next step already passes verbatim (measured end to end). The observed refusals were caused by clauses agents appended, which correctly void the allowance.'
+    alternatives_rejected: ['(a) narrowing T-2054 to the closed task''s own artifacts. That is a governance change to an existing deliberate allowance, and it is the operator''s call. (b) Setting focus to WM-002 at close. That would widen what runs after close to every WM-fenced write, and nothing showed it was needed once the printed line is known to pass.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - 'agents/context/check-active-task.sh'
+  - '.tasks/active/T-4707-after-fw-task-update---status-work-compl.md'
+  - 'tests/unit/t4707_close_hint_commit_passes_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T17:54:40'
+    action: 'T-4707: null-focus block names what voided a close commit; printed close hint pinned end to end'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23
+  commits: 2
+  files_changed: 7
+  lines_added: 420
+  lines_removed: 24
+  footprint_refreshed_at: '2026-10-23T16:06:08Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4707-after-fw-task-update---status-work-compl.md
+generated_by: context-agent-hybrid
