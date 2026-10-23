@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T09:33:19Z
-last_update: 2026-10-23T09:33:19Z
+last_update: 2026-10-23T09:40:37Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -62,9 +62,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The shadow guard in agents/termlink/termlink.sh (dispatch) fires only when a run of that name actually exists in another root (`[ -d "$prev_wdir" ]`); a first dispatch of a codex/opencode/antigravity seat with two DISPATCH_ROOTS no longer dies
-- [ ] Regression bats: harness worker_kind + both roots present + new name dispatches; an existing project dir of the same name still dies with the shadow message
-- [ ] Vendored copy in sync
+- [x] The shadow guard in agents/termlink/termlink.sh (dispatch) fires only when a run of that name actually exists in another root (`[ -d "$prev_wdir" ]`); a first dispatch of a codex/opencode/antigravity seat with two DISPATCH_ROOTS no longer dies
+- [x] Regression bats: harness worker_kind + both roots present + new name dispatches; an existing project dir of the same name still dies with the shadow message
+- [x] Vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +249,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4683_harness_seat_first_dispatch.bats tests/unit/t4675_dispatch_wdir_durable.bats > /tmp/.t4683.out 2>&1 && grep -q '^ok 8 ' /tmp/.t4683.out && ! grep -q "^not ok" /tmp/.t4683.out
+test "$(grep -c '# skip' /tmp/.t4683.out)" -eq 0
+grep -q '\[ "$prev_wdir" != "$wdir" \] && \[ -d "$prev_wdir" \]' agents/termlink/termlink.sh
+bin/fw vendor self --check --task T-4683
 
 ## RCA
 
@@ -265,6 +269,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the first dispatch of any codex/opencode/antigravity review seat died with `dispatch '<name>': <project>/.context/dispatch/<name> already holds a run of that name and would shadow the new one` — for a dir that did not exist. No rung-5 multi-vendor panel could complete (found by ring20's panel run).
+
+**Root cause:** T-4675 placed harness seats in the legacy /tmp root when two DISPATCH_ROOTS exist (agents/termlink/termlink.sh:1221-1223), then compared that wdir with `_wdir_of "$name"` (:1225). `_wdir_of` (:50-56) falls back to `$DISPATCH_DIR/$name` — the project root — for a name no root holds, so for every *new* harness name `prev_wdir != wdir` was true and the "would shadow" die fired (:1226-1230). The guard tested path inequality, not existence.
+
+**Why structurally allowed:** the T-4675 bats suite (tests/unit/t4675_dispatch_wdir_durable.bats) only dispatched a default (claude) worker, whose wdir equals the fallback, so the harness-seat branch of the guard was never executed in a test. The harness path also requires a review dispatch with a committed registry, which made it look untestable without real binaries.
+
+**Prevention:** fix 3d25b2cf9 adds `[ -d "$prev_wdir" ]` to the guard. tests/unit/t4683_harness_seat_first_dispatch.bats exercises the harness branch end to end in a sandbox (sandbox git project with its own committed registry pinning a stub codex, stub termlink via PATH and TERMLINK_BIN, private TMUX_TMPDIR/TERMLINK_RUNTIME_DIR, stubbed `od` to fix the review-name suffix): a first codex seat gets past the guard into the legacy root, and a same-named run already in the project root still dies with the shadow message.
 
 ## Evolution
 
@@ -346,3 +358,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4683-regression-from-t-4675-first-dispatch-of.md
 - **Context:** Initial task creation
+
+### 2026-10-23 — regression test added, red on pre-fix code proven [w4683]
+- **Added:** tests/unit/t4683_harness_seat_first_dispatch.bats (2 cases; `T4683_SCRIPT` env selects the script under test, default the tracked one).
+- **Pre-fix (red):** `git show 3d25b2cf9^:agents/termlink/termlink.sh` saved to a scratch dir laid out as `<tmp>/agents/termlink/termlink.sh` with `lib/`, `policy/`, `tools/`, `bin/` symlinked to the repo (the script resolves FRAMEWORK_ROOT from its own path). Result: `not ok 1` — `ERROR: dispatch 't4683-seat-…-4b6830000001': <sandbox>/proj/.context/dispatch/… already holds a run of that name and would shadow the new one` (the production symptom); `ok 2`. The tracked file was not touched.
+- **Fixed copy, same scratch layout:** `ok 1`, `ok 2`. Tracked file: 8/8 with t4675_dispatch_wdir_durable.bats, 0 skips. Real `termlink list` line count 47 before and after the run; nothing reached the real hub.
+- **Lint:** `python3 tools/bats-dead-negation-lint.py tests/` clean.
