@@ -996,6 +996,7 @@ _t4672_sync_designer() {
         echo -e "  ${CYAN}WOULD INSTALL${NC}  Workflow Designer $(basename "$rel") (the installed build does not match the new pin)"
         return 0
     fi
+    _t4697_wrote "$(dirname "$rel")/"
     FRAMEWORK_ROOT="$vendored" fw_init_install_designer "$target_dir"
     return 0
 }
@@ -1750,11 +1751,14 @@ do_upgrade() {
     # T-4692: snapshot the target's dirty paths BEFORE any mutation, so the
     # summary can name exactly what this upgrade left for the consumer to commit.
     # Dry run collects the governance files a live run would create instead.
-    local _t4692_before="" _t4692_would=()
+    # T-4697: and journal every path this run writes (_t4697_wrote) — a busy
+    # checkout has other writers, and the list must name only this run's files.
+    local _t4692_before="" _t4692_would=() _t4697_log=""
     if [ "$dry_run" != true ] && [ -f "$FRAMEWORK_ROOT/lib/upgrade_commit_list.py" ]; then
         _t4692_before=$(mktemp "${TMPDIR:-/tmp}/fw-upgrade-dirty.XXXXXX") || _t4692_before=""
         [ -z "$_t4692_before" ] || python3 "$FRAMEWORK_ROOT/lib/upgrade_commit_list.py" \
             snapshot "$target_dir" > "$_t4692_before" 2>/dev/null || true
+        _t4697_log=$(mktemp "${TMPDIR:-/tmp}/fw-upgrade-wrote.XXXXXX") || _t4697_log=""
     fi
 
     # T-1912: pre-step-1 version-ahead precheck.
@@ -2012,6 +2016,7 @@ $project_owned"
                 # Write combined file, fix any leftover placeholders
                 project_header="${project_header//__PROJECT_NAME__/$project_name}"
                 printf '%s\n%s\n' "$project_header" "$governance_tail" > "$project_claude"
+                _t4697_wrote "$project_claude" "${project_claude}.bak"
                 echo -e "  ${GREEN}UPDATED${NC}  Governance sections refreshed from framework template. Backup: CLAUDE.md.bak"
                 if [ -n "$project_owned" ]; then
                     local _po_kept
@@ -2051,6 +2056,7 @@ $project_owned"
             _t4692_would+=("CLAUDE.md")
         else
             sed "s|__PROJECT_NAME__|$project_name|g" "$template_file" > "$project_claude"
+            _t4697_wrote "$project_claude"
             echo -e "  ${GREEN}CREATED${NC}  CLAUDE.md from template"
         fi
     else
@@ -2097,9 +2103,13 @@ $project_owned"
     local _t1867_changes=0
     [ "$dry_run" = true ] && _uts_dry="--dry-run"
     _uts_report() {   # one helper line -> colour + change count
-        local line="$1" st="${1%% *}"
+        local line="$1" st="${1%% *}" _rel
         case "$st" in
             OK) return 0 ;;
+            ERROR|WOULD-*) ;;
+            *) _rel="${line#* }"; _rel="${_rel%% *}"; _t4697_wrote "$_rel" "$_rel.upstream" .context/upgrade-template-stamp.json ;;
+        esac
+        case "$st" in
             KEPT|WOULD-KEPT|PRESERVED|WOULD-PRESERVED) echo -e "  ${YELLOW}${st}${NC}  ${line#* }" ;;
             ERROR) echo -e "  ${YELLOW}WARN${NC}  template sync skipped — ${line#* } (file left untouched)"; return 0 ;;
             WOULD-*) echo -e "  ${CYAN}${st}${NC}  ${line#* }" ;;
@@ -2146,6 +2156,10 @@ $project_owned"
             _isb_out=$(python3 "$FRAMEWORK_ROOT/lib/inception_schema_backfill.py" "$target_dir/.tasks" 2>&1 || true)
         fi
         _isb_n=$(printf '%s\n' "$_isb_out" | grep -cE '^(WOULD BACKFILL|BACKFILLED) ' || true)
+        local _isb_line
+        while IFS= read -r _isb_line; do
+            case "$_isb_line" in BACKFILLED\ *) _isb_line="${_isb_line#BACKFILLED }"; _t4697_wrote "${_isb_line%: *}" ;; esac
+        done <<< "$_isb_out"
         if [ "${_isb_n:-0}" -gt 0 ]; then
             changes=$((changes + 1))
             if [ "$dry_run" = true ]; then
@@ -2172,6 +2186,7 @@ $project_owned"
             seed_updated=$((seed_updated + 1))
             if [ "$dry_run" != true ]; then
                 cp "$seed_file" "$project_file"
+                _t4697_wrote "$project_file"
             fi
         elif ! diff -q "$seed_file" "$project_file" > /dev/null 2>&1; then
             # File differs — check if project has added project-specific items
@@ -2190,6 +2205,7 @@ $project_owned"
                 seed_updated=$((seed_updated + 1))
                 if [ "$dry_run" != true ]; then
                     cp "$seed_file" "$project_file"
+                    _t4697_wrote "$project_file"
                 fi
             fi
         fi
@@ -2217,6 +2233,7 @@ $project_owned"
     if [ ! -f "$target_dir/.context/cron-registry.yaml" ]; then
         cron_seeded=$((cron_seeded + 1))
         if [ "$dry_run" != true ]; then
+            _t4697_wrote .context/cron-registry.yaml
             cat > "$target_dir/.context/cron-registry.yaml" << 'CRONREGEOF'
 # Cron Registry — Structured source of truth for scheduled jobs (T-448)
 # Read by web/blueprints/cron.py and fw cron generate.
@@ -2264,6 +2281,7 @@ CRONREGEOF
                     else
                         echo -e "  ${GREEN}ADDED${NC}  cron job ${_cs_line#ADDED }"
                         _cron_added_ids="${_cron_added_ids:+$_cron_added_ids }${_cs_line#ADDED }"   # T-3882
+                        _t4697_wrote .context/cron-registry.yaml
                     fi ;;
                 PRESENT\ *) echo -e "  ${GREEN}OK${NC}  cron job ${_cs_line#PRESENT } already present" ;;
             esac
@@ -2280,6 +2298,7 @@ CRONREGEOF
             # resolves the consumer's durable fw itself and refuses a temp one.
             # Its refusal is shown, not swallowed.
             local _cg_out
+            _t4697_wrote "$_cg_src"
             if _cg_out=$(cd "$target_dir" && PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" cron generate 2>&1); then
                 if [ "$_cs_added" -gt 0 ]; then
                     echo -e "  ${GREEN}OK${NC}  Cron source regenerated — run 'fw cron install' to deploy"
@@ -2303,6 +2322,7 @@ CRONREGEOF
         if [ "$dry_run" != true ]; then
             mkdir -p "$target_dir/policy"
             cp "$FRAMEWORK_ROOT/policy/value-drivers.yaml" "$target_dir/policy/value-drivers.yaml"
+            _t4697_wrote policy/value-drivers.yaml
         fi
     fi
     if [ ! -f "$target_dir/policy/bvp-scoring-rubric.md" ] && [ -f "$FRAMEWORK_ROOT/policy/bvp-scoring-rubric.md" ]; then
@@ -2310,6 +2330,7 @@ CRONREGEOF
         if [ "$dry_run" != true ]; then
             mkdir -p "$target_dir/policy"
             cp "$FRAMEWORK_ROOT/policy/bvp-scoring-rubric.md" "$target_dir/policy/bvp-scoring-rubric.md"
+            _t4697_wrote policy/bvp-scoring-rubric.md
         fi
     fi
     if [ "$bvp_seeded" -gt 0 ]; then
@@ -2337,6 +2358,7 @@ CRONREGEOF
             else
                 local _obj_task
                 if _obj_task=$(fw_objectives_seed_task "$target_dir" "$FRAMEWORK_ROOT" "$project_name"); then
+                    _t4697_wrote "$_obj_task"
                     echo -e "  ${GREEN}SEEDED${NC}  task $(basename "$_obj_task" .md): write down this project's objectives (one time)"
                 else
                     echo -e "  ${YELLOW}WARN${NC}  could not seed the objectives task — see message above"
@@ -2386,6 +2408,7 @@ CRONREGEOF
             do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" --dry-run ${_vendor_extra[@]+"${_vendor_extra[@]}"} 2>&1 | sed 's/^/  /'
             _vendor_rc=${PIPESTATUS[0]}
         else
+            _t4697_wrote .agentic-framework/
             do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" ${_vendor_extra[@]+"${_vendor_extra[@]}"} 2>&1 | sed 's/^/  /'
             _vendor_rc=${PIPESTATUS[0]}
         fi
@@ -2647,6 +2670,9 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
                 local _t2912_pre
                 _t2912_pre=$(mktemp)
                 cp "$settings_file" "$_t2912_pre"
+                # T-4697: generate_claude_code_config (lib/init.sh) writes all of these (T-3836: .mcp.json too)
+                _t4697_wrote .claude/settings.json .claude/settings.json.bak .mcp.json \
+                    .claude/settings.json.pre-fw .claude/commands/resume.md
 
                 # T-2093 F6 (T-2078 V1-B): subshell-scope the force=true override.
                 # The old save_force / restore-on-exit pattern leaked force=true into
@@ -2734,6 +2760,7 @@ with os.fdopen(fd, 'w') as f:
     f.write('\n')
 os.replace(tmp, p)
 " "$settings_file" 2>/dev/null; then
+                _t4697_wrote .claude/settings.json
                 echo -e "  ${GREEN}SET${NC}  worktree.bgIsolation=none (governance state is tracked; a background worktree forks it)"
                 changes=$((changes + 1))
             else
@@ -2816,6 +2843,7 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
         else
             # T-2093 F6 (T-2078 V1-B): subshell-scope force=true (see sibling
             # site ~line 916). Same mutation-leak risk; same fix.
+            _t4697_wrote .claude/settings.json .claude/settings.json.pre-fw .mcp.json .claude/commands/resume.md
             ( force=true; generate_claude_code_config "$target_dir" )
             echo -e "  ${GREEN}CREATED${NC}  .claude/settings.json ($fw_hook_count hooks)"
         fi
@@ -2834,6 +2862,7 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
         # dropped by the upgrade itself — restore it and name it. "OK" below is
         # only printed when nothing had to be restored.
         local _mcp_restored
+        _t4697_wrote "$mcp_file"
         _mcp_restored=$(MCP_FILE="$mcp_file" MCP_SNAPSHOT="$_mcp_snapshot" \
             MCP_DRY="$([ "$dry_run" = true ] && echo 1)" python3 -c "
 import json, os
@@ -2948,6 +2977,7 @@ with open(mcp_file, 'w') as f:
             echo -e "  ${CYAN}WOULD CREATE${NC}  .mcp.json (context7, playwright, termlink, fw)"
             _t4692_would+=(".mcp.json")
         else
+            _t4697_wrote "$mcp_file"
             cat > "$mcp_file" << 'MCPJSON'
 {
   "mcpServers": {
@@ -2988,6 +3018,7 @@ MCPJSON
                 if [ "$dry_run" = true ]; then
                     echo -e "  ${CYAN}WOULD APPROVE${NC}  MCP servers in .claude/settings.local.json: ${_mcp_part#APPROVED }"
                 else
+                    _t4697_wrote .claude/settings.local.json
                     echo -e "  ${GREEN}APPROVED${NC}  MCP servers in .claude/settings.local.json (enabledMcpjsonServers): ${_mcp_part#APPROVED }"
                 fi ;;
             DISABLED\ *)
@@ -3006,7 +3037,7 @@ MCPJSON
         case "$_tl_pin" in
             would-pin\ *) changes=$((changes + 1))
                 echo -e "  ${CYAN}WOULD PIN${NC}  termlink TERMLINK_RUNTIME_DIR=${_tl_pin#would-pin } (T-3698)" ;;
-            pinned\ *) changes=$((changes + 1))
+            pinned\ *) changes=$((changes + 1)); _t4697_wrote "$mcp_file"
                 echo -e "  ${GREEN}UPDATED${NC}  termlink TERMLINK_RUNTIME_DIR=${_tl_pin#pinned } (T-3698)" ;;
         esac
     fi
@@ -3066,6 +3097,7 @@ MCPJSON
         if [ "$dry_run" = true ]; then
             echo -e "  ${CYAN}WOULD SET${NC}  MESSAGING_TOOLKIT: $_t4042_new ($_t4042_why)"
         else
+            _t4697_wrote "$_t4042_yaml"
             if grep -q "^MESSAGING_TOOLKIT:" "$_t4042_yaml" 2>/dev/null; then
                 _sed_i "s/^MESSAGING_TOOLKIT:.*/MESSAGING_TOOLKIT: $_t4042_new/" "$_t4042_yaml"
             else
@@ -3141,6 +3173,7 @@ MCPJSON
             echo -e "  ${CYAN}WOULD ADD${NC}  $_vec_added vector-index ignore rule(s) to .context/working/.gitignore"
             [ -e "$target_dir/.context/working/.gitignore" ] || _t4692_would+=(".context/working/.gitignore")
         else
+            _t4697_wrote .context/working/.gitignore
             echo -e "  ${GREEN}ADDED${NC}  $_vec_added vector-index ignore rule(s) to .context/working/.gitignore"
         fi
     else
@@ -3163,6 +3196,7 @@ MCPJSON
             echo -e "  ${CYAN}WOULD ADD${NC}  $_wk_added runtime-state ignore rule(s) to .context/working/.gitignore"
             [ -e "$target_dir/.context/working/.gitignore" ] || _t4692_would+=(".context/working/.gitignore")
         else
+            _t4697_wrote .context/working/.gitignore
             echo -e "  ${GREEN}ADDED${NC}  $_wk_added runtime-state ignore rule(s) to .context/working/.gitignore"
         fi
     else
@@ -3190,6 +3224,7 @@ MCPJSON
             echo -e "  ${CYAN}WOULD ADD${NC}  dispatch worker-dir ignore rule to .context/.gitignore"
             [ -e "$target_dir/.context/.gitignore" ] || _t4692_would+=(".context/.gitignore")
         else
+            _t4697_wrote .context/.gitignore
             echo -e "  ${GREEN}ADDED${NC}  dispatch worker-dir ignore rule to .context/.gitignore"
         fi
     else
@@ -3213,6 +3248,7 @@ MCPJSON
     local yaml_file="$target_dir/.framework.yaml"
 
     if [ -f "$yaml_file" ]; then
+        [ "$dry_run" = true ] || _t4697_wrote "$yaml_file"
         local current_pinned
         current_pinned=$(grep "^version:" "$yaml_file" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
 
@@ -3304,6 +3340,7 @@ MCPJSON
     # ── 8b. Upgrade audit trail (.context/audits/upgrades.yaml) ──
     if [ "$dry_run" != true ] && [ -n "${current_pinned:-}" ] && [ "${current_pinned:-}" != "$fw_version" ]; then
         local audit_file="$target_dir/.context/audits/upgrades.yaml"
+        _t4697_wrote "$audit_file"
         mkdir -p "$(dirname "$audit_file")"
         if [ ! -f "$audit_file" ]; then
             echo "# Upgrade audit trail (T-617)" > "$audit_file"
@@ -3334,7 +3371,8 @@ EOF
             if [ "$dry_run" = true ]; then
                 echo -e "  ${CYAN}WOULD ${_ef_would}${NC}  Enforcement baseline${_ef_why}"
                 changes=$((changes + 1))
-            elif PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" enforcement baseline >/dev/null 2>&1; then
+            elif _t4697_wrote .context/project/enforcement-baseline.sha256 \
+                && PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" enforcement baseline >/dev/null 2>&1; then
                 echo -e "  ${GREEN}${_ef_verb}${NC}  Enforcement baseline${_ef_why}"
                 changes=$((changes + 1))
             else
@@ -3459,19 +3497,34 @@ EOF
         fi
         _t3862_recall_prereqs "$target_dir"
         _t4069_stale_wrapper_notice "$target_dir"
-        _t4692_emit_commit_list "$target_dir" "$_t4692_before"
+        _t4692_emit_commit_list "$target_dir" "$_t4692_before" "$_t4697_log"
     fi
 }
 
 # T-4692: end-of-summary list of the files this upgrade created or changed that
 # git shows untracked/modified, with one `git add` line. Silent when there are
 # none or the target is not a git repo. Advisory only: always returns 0.
-# $1 = target_dir, $2 = snapshot file written before the first mutation.
+# $1 = target_dir, $2 = snapshot file written before the first mutation,
+# $3 = the T-4697 write journal. Only journalled paths are listed: no journal,
+# no list (another process's file must never reach the git add line).
 _t4692_emit_commit_list() {
-    local root="${1:-}" before="${2:-}"
-    [ -n "$root" ] && [ -n "$before" ] && [ -f "$before" ] || return 0
-    python3 "$FRAMEWORK_ROOT/lib/upgrade_commit_list.py" report "$root" "$before" 2>/dev/null || true
-    rm -f "$before"
+    local root="${1:-}" before="${2:-}" wrote="${3:-}"
+    if [ -n "$root" ] && [ -n "$before" ] && [ -f "$before" ] && [ -n "$wrote" ] && [ -f "$wrote" ]; then
+        python3 "$FRAMEWORK_ROOT/lib/upgrade_commit_list.py" report "$root" "$before" "$wrote" 2>/dev/null || true
+    fi
+    rm -f "$before" "$wrote"
+    return 0
+}
+
+# T-4697: record paths this upgrade writes (relative to the target, or absolute;
+# a trailing / covers a directory), for _t4692_emit_commit_list. Call it at each
+# write site. No-op outside a live do_upgrade (the journal is unset). Returns 0.
+_t4697_wrote() {
+    [ -n "${_t4697_log:-}" ] || return 0
+    local _p
+    for _p in "$@"; do
+        [ -z "$_p" ] || printf '%s\n' "$_p" >> "$_t4697_log"
+    done
     return 0
 }
 

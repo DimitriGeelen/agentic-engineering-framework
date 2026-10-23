@@ -4,7 +4,8 @@
 # said it needed committing (TermLink field report).
 #
 # Surfaces under test:
-#   lib/upgrade_commit_list.py snapshot|report  (before/after dirty-path diff)
+#   lib/upgrade_commit_list.py snapshot|report  (before/after dirty-path diff,
+#                               filtered to the T-4697 write journal)
 #   _t4692_emit_commit_list / _t4692_emit_would_create  (lib/upgrade.sh)
 #   do_upgrade wiring: snapshot taken before the first mutation; report last.
 
@@ -89,18 +90,99 @@ setup() {
     [ "$status" -eq 0 ] && [ -z "$output" ]
 }
 
-@test "_t4692_emit_commit_list reports and removes the snapshot; silent with no snapshot" {
+@test "_t4692_emit_commit_list reports journalled paths and removes snapshot + journal; silent without them" {
     export FRAMEWORK_ROOT="$FW_ROOT"
     BOLD=""; NC=""; YELLOW=""; GREEN=""; CYAN=""
     source "$FW_ROOT/lib/upgrade.sh"
+    local wrote="$BATS_TEST_TMPDIR/wrote.log"
     python3 "$HELPER" snapshot "$REPO" > "$BEFORE"
     echo new > "$REPO/created.txt"
-    run _t4692_emit_commit_list "$REPO" "$BEFORE"
+    echo created.txt > "$wrote"
+    run _t4692_emit_commit_list "$REPO" "$BEFORE" "$wrote"
     [ "$status" -eq 0 ]
     [[ "$output" == *"new       created.txt"* ]]
-    [ ! -e "$BEFORE" ]
+    [ ! -e "$BEFORE" ] && [ ! -e "$wrote" ]
     run _t4692_emit_commit_list "$REPO" ""
     [ "$status" -eq 0 ] && [ -z "$output" ]
+    # no journal: nothing is listed (T-4697 — never offer an unrecorded path)
+    python3 "$HELPER" snapshot "$REPO" > "$BEFORE"
+    echo more > "$REPO/created2.txt"
+    run _t4692_emit_commit_list "$REPO" "$BEFORE" ""
+    [ "$status" -eq 0 ] && [ -z "$output" ]
+    [ ! -e "$BEFORE" ]
+}
+
+# ── T-4697: only paths the upgrade journalled are listed ─────────────────────
+# ring20 be.9: a busy checkout's other writers (cron, hooks, live agents) changed
+# files during the upgrade window and the before/after diff listed them as the
+# upgrade's own, inside the git add line.
+
+@test "T-4697 report: a changed path the journal does not name is not listed" {
+    python3 "$HELPER" snapshot "$REPO" > "$BEFORE"
+    echo "dispatch/" > "$REPO/.context/.gitignore"
+    echo foreign >> "$REPO/tracked.txt"
+    mkdir -p "$REPO/.context/infra" && echo x > "$REPO/.context/infra/pg-ha-health.yaml"
+    printf '%s\n' .context/.gitignore > "$BATS_TEST_TMPDIR/wrote"
+    run python3 "$HELPER" report "$REPO" "$BEFORE" "$BATS_TEST_TMPDIR/wrote"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"new       .context/.gitignore"* ]]
+    [[ "$output" != *"tracked.txt"* ]]
+    [[ "$output" != *"pg-ha-health"* ]]
+}
+
+@test "T-4697 report: directory entries cover their files; absolute entries resolve; journalled but unchanged is not listed" {
+    mkdir -p "$REPO/.agentic-framework/lib"
+    echo old > "$REPO/.agentic-framework/lib/keep.sh"
+    python3 "$HELPER" snapshot "$REPO" > "$BEFORE"
+    echo a > "$REPO/.agentic-framework/lib/a.sh"
+    echo b > "$REPO/abs.txt"
+    printf '%s\n' .agentic-framework/ "$REPO/abs.txt" predirty.txt > "$BATS_TEST_TMPDIR/wrote"
+    run python3 "$HELPER" report "$REPO" "$BEFORE" "$BATS_TEST_TMPDIR/wrote"
+    [[ "$output" == *"vendored  .agentic-framework/ (1 file(s))"* ]]
+    [[ "$output" == *"new       abs.txt"* ]]
+    [[ "$output" != *"predirty.txt"* ]]
+}
+
+@test "T-4697 report: an empty journal lists nothing" {
+    python3 "$HELPER" snapshot "$REPO" > "$BEFORE"
+    echo x > "$REPO/created.txt"
+    : > "$BATS_TEST_TMPDIR/wrote"
+    run python3 "$HELPER" report "$REPO" "$BEFORE" "$BATS_TEST_TMPDIR/wrote"
+    [ "$status" -eq 0 ] && [ -z "$output" ]
+}
+
+@test "T-4697 live fw upgrade with a background writer: the writer's files are not listed, the upgrade's are" {
+    local home="$BATS_TEST_TMPDIR/home" stop="$BATS_TEST_TMPDIR/stop" ran="$BATS_TEST_TMPDIR/ran"
+    mkdir -p "$home" "$REPO/.context/infra"
+    printf 'project_name: consumer\nprovider: claude\n' > "$REPO/.framework.yaml"
+    git -C "$REPO" add .framework.yaml
+    git -C "$REPO" -c user.email=t@t -c user.name=t commit -qm pin
+    # Another process on the same checkout: rewrites a clean tracked file and an
+    # untracked state file for as long as the upgrade runs.
+    ( i=0; while [ ! -e "$stop" ]; do
+        i=$((i + 1)); echo "tick $i" > "$REPO/tracked.txt"
+        echo "tick $i" > "$REPO/.context/infra/pg-ha-health.yaml"; : > "$ran"; sleep 0.05
+      done ) &
+    local writer=$!
+    run env -u PROJECT_ROOT -u FRAMEWORK_ROOT HOME="$home" FW_VERB_TELEMETRY=0 \
+        bash -c "cd '$REPO' && '$FW_ROOT/bin/fw' upgrade '$REPO'"
+    touch "$stop"; wait "$writer" || true
+    [ "$status" -eq 0 ]
+    [ -e "$ran" ]
+    # the writer really changed both files inside the window
+    git -C "$REPO" status --porcelain -uall > "$BATS_TEST_TMPDIR/st"
+    grep -q ' tracked.txt$' "$BATS_TEST_TMPDIR/st"
+    grep -q 'pg-ha-health.yaml$' "$BATS_TEST_TMPDIR/st"
+    # ...and the summary names the upgrade's own files, not the writer's
+    [[ "$output" == *"Files this upgrade created or changed"* ]]
+    [[ "$output" == *"new       CLAUDE.md"* ]]
+    [[ "$output" == *"new       .claude/settings.json"* ]]
+    [[ "$output" == *"modified  .framework.yaml"* ]]
+    printf '%s\n' "$output" | grep -F 'git add -- ' > "$BATS_TEST_TMPDIR/add"
+    [ "$(wc -l < "$BATS_TEST_TMPDIR/add")" -eq 1 ]
+    ! grep -qE 'tracked\.txt|pg-ha-health' "$BATS_TEST_TMPDIR/add" || false
+    [[ "$output" != *"pg-ha-health"* ]]
+    [[ "$output" != *"modified  tracked.txt"* ]]
 }
 
 @test "_t4692_emit_would_create lists each path once; silent when empty" {

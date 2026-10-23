@@ -1,10 +1,19 @@
 ---
 id: T-4697
-name: "T-4692 partial: the upgrade summary's 'files to commit' list includes files other processes wrote during the upgrade window, so its git add line would commit unrelated state"
+name: "T-4692 partial: the upgrade summary's 'files to commit' list includes files
+  other processes wrote during the upgrade window, so its git add line would commit
+  unrelated state"
 description: >
-  ring20 be.9 report (sidecar ff56edf4): in a busy shared checkout the list had 13 extra entries (.context/infra/pg-ha-health.yaml, publisher-login-alerts.yaml, .context/working/.hook-counter, .live-agent-injector-state.json). Fix: snapshot git status (paths + blob hashes) at upgrade start and list only paths whose content changed between the snapshot and the end AND that the upgrade wrote (or record every path upgrade writes and list exactly those). Never offer a git add for a path the upgrade did not write. Test: a background writer touching a file during the upgrade does not appear in the list; the upgrade's own files do. Keep upgrade_fresh_machine_simulation green.
+  ring20 be.9 report (sidecar ff56edf4): in a busy shared checkout the list had 13
+  extra entries (.context/infra/pg-ha-health.yaml, publisher-login-alerts.yaml, .context/working/.hook-counter,
+  .live-agent-injector-state.json). Fix: snapshot git status (paths + blob hashes)
+  at upgrade start and list only paths whose content changed between the snapshot
+  and the end AND that the upgrade wrote (or record every path upgrade writes and
+  list exactly those). Never offer a git add for a path the upgrade did not write.
+  Test: a background writer touching a file during the upgrade does not appear in
+  the list; the upgrade's own files do. Keep upgrade_fresh_machine_simulation green.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T13:59:59Z
-last_update: 2026-10-23T13:59:59Z
-date_finished: null
+last_update: 2026-10-23T14:01:46Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T14:01:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4697: T-4692 partial: the upgrade summary's 'files to commit' list includes files other processes wrote during the upgrade window, so its git add line would commit unrelated state
@@ -62,8 +88,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A file another process writes in the target during the upgrade window (a clean tracked file it modifies, and an untracked file it creates) appears neither in the "files to commit" list nor in its `git add` line
+- [x] Files the upgrade itself writes (vendored `.agentic-framework/`, `.context/.gitignore`, a modified tracked governance file) are still listed
+- [x] A path dirty before the upgrade and not rewritten by it is still not listed (T-4692 behaviour kept)
+- [x] Regression test with a background writer running during a real `do_upgrade` in `tests/unit/t4692_upgrade_commit_list.bats` passes; all T-4692 tests pass
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
+- [x] `bin/fw vendor self --check --task T-4697` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +278,22 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t4692_upgrade_commit_list.bats > /tmp/.t4697-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4697-bats.out && grep -q "background writer" /tmp/.t4697-bats.out
+test "$(grep -c '# skip' /tmp/.t4697-bats.out)" -eq 0
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4697-sim.out 2>&1 && ! grep -q "^not ok" /tmp/.t4697-sim.out
+test "$(grep -c '# skip' /tmp/.t4697-sim.out)" -eq 0
+bash -n lib/upgrade.sh
+bin/fw vendor self --check --task T-4697
 
 ## RCA
+
+**Symptom:** in a busy shared checkout (ring20 be.9, sidecar ff56edf4) the T-4692 "Files this upgrade created or changed" list carried 13 extra entries — `.context/infra/pg-ha-health.yaml`, `publisher-login-alerts.yaml`, `.context/working/.hook-counter`, `.live-agent-injector-state.json` — and its `git add` line would have committed them.
+
+**Root cause:** `lib/upgrade_commit_list.py:report` (T-4692) listed every path dirty at the end whose content differed from the start snapshot. That snapshot held only paths that were *dirty* at the start, so any clean tracked file or new untracked file that another process (cron, a hook, a live agent) wrote during the upgrade window looked exactly like an upgrade write. A before/after diff can only show *that* a file changed, not *who* changed it. Nothing recorded what the upgrade itself wrote (`lib/upgrade.sh` do_upgrade, `_t4692_emit_commit_list`).
+
+**Why structurally allowed:** the T-4692 tests ran the helper against a quiet temp repo, where "changed during the window" and "written by the upgrade" are the same set. Nothing tested a concurrent writer, and every consumer the framework is developed against is busy.
+
+**Prevention:** do_upgrade now records each path it writes (`_t4697_wrote`, a journal kept for the run), and the report lists only paths that are both in that record and changed in content. A path nobody recorded is never offered for `git add`. Regression test: `tests/unit/t4692_upgrade_commit_list.bats` runs a real `do_upgrade` while a background writer modifies a clean tracked file and creates an untracked one, and asserts that neither is listed while the upgrade's own files are. A future write site that is not journalled fails safe: the file is left out of the list, and no foreign path is added to it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -320,6 +364,12 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-23 — how to know which paths the upgrade wrote
+- **Chose:** a write journal. `_t4697_wrote` is called at every do_upgrade write site and records paths relative to the target, or a directory such as `.agentic-framework/` for do_vendor and the designer install. The report lists a path only if the journal names it AND its content changed since the start snapshot. A run with no journal lists nothing.
+- **Why:** content hashes cannot tell who wrote a file. A file another process rewrites during the window is just as "changed" as one the upgrade rewrote. Only a record kept at the write site separates the two. Where a step writes through a helper that returns no paths (generate_claude_code_config, mcp_approve, enforcement baseline), the journal names the files that helper can write. The content check then drops any it did not actually change.
+- **Rejected:** a before/after diff of git status alone, even with blob hashes (that is the T-4692 design and the bug). An allowlist of framework-owned path prefixes (it still admits concurrent writes inside `.tasks/` or `.context/project/`).
+- **Observed while testing:** `.context/sidecar/.gitignore` is created during an upgrade run by the sidecar lifecycle (lib/sidecar/lifecycle.py), not by an upgrade step, so it is no longer listed. That is fail-safe and intended: any fw command creates that file.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -345,3 +395,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4697-t-4692-partial-the-upgrade-summarys-file.md
 - **Context:** Initial task creation
+
+### 2026-10-23T14:01:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
