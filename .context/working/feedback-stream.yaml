@@ -47937,3 +47937,57 @@ scan_id: R-9b90bbe7
 task_id: T-4711
 payload:
   task_file: .tasks/active/T-4711-watchtower-keep-alive-and-own-scope-star.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T20:09:28Z'
+scan_id: R-b5060e1c
+task_id: T-4715
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T20:09:28Z'
+scan_id: R-b5060e1c
+task_id: T-4715
+payload:
+  task_file: .tasks/active/T-4715-designer-gallery-designer-shows-no-diagr.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T20:35:26Z'
+scan_id: R-3162055a
+task_id: T-4716
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T20:35:26Z'
+scan_id: R-3162055a
+task_id: T-4716
+payload:
+  task_file: .tasks/active/T-4716-watchtower-designer-gallery-should-be-th.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T20:39:58Z'
+scan_id: R-96c49f2e
+task_id: T-4718
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T20:39:58Z'
+scan_id: R-96c49f2e
+task_id: T-4718
+payload:
+  task_file: .tasks/active/T-4718-remove-the-designer-corpus-nav-entry-t-4.md

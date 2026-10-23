@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4718: Remove the 'Designer corpus' nav entry (T-4716 follow-up): the base designer already has Pending refs and new-map; Designer is the single entry
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T20:40:18Z
+# ============================================================================
+
+task_id: T-4718
+task_name: "Remove the 'Designer corpus' nav entry (T-4716 follow-up): the base designer already has Pending refs and new-map; Designer is the single entry"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T20:37:43Z
+completed: 2026-10-23T20:39:47Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-23T22:39:45+02:00
+last_commit: 2026-10-23T22:39:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  one Designer nav entry (the base designer); drop the 'Designer corpus' entry
+
+# Key outcomes
+outcomes:
+  - 'The Watchtower nav shows a single "Designer" entry (to the base designer); no "Designer corpus" entry; the unlisted page stays reachable by URL'
+  - 'tests/web/test_designer_landing.py green with the nav test updated; Watchtower restarted and current'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/shared.py'
+  - '.tasks/active/T-4718-remove-the-designer-corpus-nav-entry-t-4.md'
+  - 'tests/web/test_designer_landing.py'
+  - 'web/shared.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T22:39:45'
+    action: 'T-4718: one Designer nav entry (the base designer); drop the ''Designer corpus'' entry'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 7
+  lines_added: 515
+  lines_removed: 11
+  footprint_refreshed_at: '2026-10-23T20:40:35Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4718-remove-the-designer-corpus-nav-entry-t-4.md
+generated_by: context-agent-hybrid
