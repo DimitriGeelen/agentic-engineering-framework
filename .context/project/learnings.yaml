@@ -5152,3 +5152,9 @@ X'` returning empty group."
   task: T-4034
   date: 2026-10-10
   context: Added via context agent
+- id: L-703
+  learning: "Dispatched workers verify only their own task's tests, so a worker that adds a bats file or a config key can leave a structural invariant red (git-discovery fence: T-4709; config registry parity: T-4713) that is only caught at pre-push and blocks every push. Workers should run 'bin/fw test invariants' (tests/lint) before committing when they add tests, config keys, hooks or CLI verbs."
+  source: P-001
+  task: T-4713
+  date: 2026-10-23
+  context: Added via context agent
