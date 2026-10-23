@@ -47811,3 +47811,39 @@ scan_id: R-b459fefe
 task_id: T-4709
 payload:
   task_file: .tasks/active/T-4709-fence-git-discovery-in-testsunitt4705upg.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T16:39:20Z'
+scan_id: R-1daa4dcb
+task_id: T-4706
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T16:39:20Z'
+scan_id: R-1daa4dcb
+task_id: T-4706
+payload:
+  task_file: .tasks/active/T-4706-watchtower-was-killed-at-152736-on-2026-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T16:52:01Z'
+scan_id: R-79d10d2d
+task_id: T-4710
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T16:52:01Z'
+scan_id: R-79d10d2d
+task_id: T-4710
+payload:
+  task_file: .tasks/active/T-4710-the-printed-close-commit-names-the-tasks.md

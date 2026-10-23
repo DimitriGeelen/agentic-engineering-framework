@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4710: The printed close commit names the task's .tasks/active/ path even when that file was never committed (task created and closed in one session), so git commit -- <paths> fails 'pathspec did not match
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T16:52:20Z
+# ============================================================================
+
+task_id: T-4710
+task_name: "The printed close commit names the task's .tasks/active/ path even when that file was never committed (task created and closed in one session), so git commit -- <paths> fails 'pathspec did not match"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T16:40:41Z
+completed: 2026-10-23T16:51:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T18:41:28+02:00
+last_commit: 2026-10-23T18:46:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture close hint naming an untracked active path (1023). pin the close hint for never-committed active files — end-to-end bats runs the printed line verbatim (untracked, staged, committed, symlinked root); bug already fixed by T-4094, report was 1.8.12
+
+# Key outcomes
+outcomes:
+  - 'Closing a task whose `.tasks/active/` file was never committed prints a `next: git commit ...` hint that does NOT name the active path, and that hint run verbatim succeeds (bats case in a temp git repo)'
+  - 'Closing a task whose active file was committed prints a hint that names the active path (rename source) and run verbatim succeeds'
+  - 'T-4707''s close-hint bats stays green'
+  - '`bin/fw vendor self --check --task T-4710` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'pin the close hint for never-committed active files — end-to-end bats runs the printed line verbatim (untracked, staged, committed, symlinked root); bug already fixed by T-4094, report was 1.8.12'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4710-the-printed-close-commit-names-the-tasks.md'
+  - 'tests/unit/t4710_close_hint_untracked_active.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T18:41:28'
+    action: 'T-4710: capture close hint naming an untracked active path (1023)'
+  - time: '2026-10-23T18:46:38'
+    action: 'T-4710: pin the close hint for never-committed active files — end-to-end bats runs the printed line verbatim (untracked, staged, committed, symlinked root); bug already fixed by T-4094, report was 1.8.12'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 3
+  files_changed: 5
+  lines_added: 681
+  lines_removed: 13
+  footprint_refreshed_at: '2026-10-23T16:52:38Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4710-the-printed-close-commit-names-the-tasks.md
+generated_by: context-agent-hybrid
