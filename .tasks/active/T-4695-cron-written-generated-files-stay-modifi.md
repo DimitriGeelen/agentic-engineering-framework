@@ -1,10 +1,22 @@
 ---
 id: T-4695
-name: "Cron-written generated files stay modified and uncommitted (docs/generated/components x35, .context/working x22, monitors, audit LATEST snapshots): commit them from their writers or stop tracking them"
+name: "Cron-written generated files stay modified and uncommitted (docs/generated/components
+  x35, .context/working x22, monitors, audit LATEST snapshots): commit them from their
+  writers or stop tracking them"
 description: >
-  Operator 2026-10-23: file it. After the T-4676 (estimator sweeps commit their own writes) and T-4694 (episodic) fixes, ~87 tracked files are still modified in a live session, all written by scheduled jobs: docs/generated/components (35), .context/working (22), .context/monitors (4), .context/audits/{unit-suite,integration-suite,...} LATEST/timing snapshots, .context/project (2), .context/sidecar (1). For each writer decide (record in ## Decisions per class): (a) the job commits its own output like T-4676 (one commit per run, own task id, only its files, skip files with foreign edits), or (b) the file is derived state that should not be tracked (gitignore + git rm --cached, keeping anything audits read from git history). Add a rail: after a cron job runs, the files it wrote are either committed or ignored. Do not touch .tasks/.
+  Operator 2026-10-23: file it. After the T-4676 (estimator sweeps commit their own
+  writes) and T-4694 (episodic) fixes, ~87 tracked files are still modified in a live
+  session, all written by scheduled jobs: docs/generated/components (35), .context/working
+  (22), .context/monitors (4), .context/audits/{unit-suite,integration-suite,...}
+  LATEST/timing snapshots, .context/project (2), .context/sidecar (1). For each writer
+  decide (record in ## Decisions per class): (a) the job commits its own output like
+  T-4676 (one commit per run, own task id, only its files, skip files with foreign
+  edits), or (b) the file is derived state that should not be tracked (gitignore +
+  git rm --cached, keeping anything audits read from git history). Add a rail: after
+  a cron job runs, the files it wrote are either committed or ignored. Do not touch
+  .tasks/.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T13:57:26Z
-last_update: 2026-10-23T13:57:26Z
-date_finished: null
+last_update: 2026-10-23T13:58:31Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,11 +62,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T13:58:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4695: Cron-written generated files stay modified and uncommitted (docs/generated/components x35, .context/working x22, monitors, audit LATEST snapshots): commit them from their writers or stop tracking them
 
 ## Context
+
+050 be.9 field report (sidecar ac57ecb6): in a framework clone used as an upgrade SOURCE, even the dry run modifies the TRACKED `.context/working/.verb-counter` (tracked at v1.8.15-be.9 together with `.verb-counter.lock`), so T-4688's byte-identical promise fails on `git status`. Any runtime counter/lock that `fw` writes on every invocation must not be tracked in the framework repo either.
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
@@ -62,8 +93,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every class of cron-written tracked file named in the description (docs/generated/components, .context/working, .context/monitors, .context/audits LATEST/timing/runs snapshots, .context/project, .context/sidecar) has its writer identified and a per-class decision (a) commit-from-writer or (b) untrack+gitignore recorded in ## Decisions with the reason
+- [x] Class decisions are applied: (a) classes commit through the T-4676 committing helper; (b) classes are gitignored and removed from the index with `git rm --cached` (files stay on disk)
+- [x] A rail exists that reports a tracked, cron-written file left modified-and-uncommitted (neither committed nor ignored), with a regression test that fails when such a file exists and passes when it is committed or ignored
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +280,15 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 lib/cron_commit.py selftest > /tmp/.t4695-selftest.out 2>&1 && grep -q "PASS rail clean once committed and untracked" /tmp/.t4695-selftest.out && ! grep -q "^FAIL" /tmp/.t4695-selftest.out
+python3 lib/cron_commit.py check > /tmp/.t4695-check.out 2>&1
+test -z "$(git ls-files .context/monitors .context/project/metrics-history.yaml .context/audits/unit-suite/LATEST.yaml .context/working/.hook-counter .context/working/watchtower.pid)"
+git ls-files --error-unmatch .context/audits/unit-suite/baseline.yaml .context/working/focus.yaml .context/working/.gate-bypass-log.yaml >/dev/null
+python3 -c "import yaml; d={j['id']:j for j in yaml.safe_load(open('.context/cron-registry.yaml'))['jobs']}; assert d['docs-daily']['commit_paths'] and 'cron_commit.py run --job docs-daily' in d['docs-daily']['command']"
+grep -q "cron_commit.py run --job docs-daily" .context/cron/agentic-audit.crontab
+bash -n agents/audit/audit.sh
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+bin/fw vendor self --check --task T-4695
 
 ## RCA
 
@@ -264,6 +305,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** ~87 tracked files modified and uncommitted in a live session, all written by scheduled jobs or hooks: docs/generated/components (35), .context/working (22), .context/monitors (4), audit LATEST/timing/runs snapshots, .context/project (2). Broad commits by unrelated tasks later swept them in (e.g. T-3514 committing unit-suite LATEST and the T-1549 report).
+
+**Root cause:** two independent gaps. (1) Jobs that produce reviewed, repo-worthy output never commit it: `docs-daily` runs `fw docs --all` (agents/docgen/generate-component.sh:21 writes docs/generated/components) and `escalation-drift-daily` runs tools/escalation-scan-v0.py (writes docs/reports/T-1549-escalation-scan-v0.md); the registry entry is just the command (.context/cron-registry.yaml docs-daily / escalation-drift-daily) and nothing after it stages or commits. (2) Per-host runtime output was committed once and stayed tracked: an ignore rule does not untrack a file. The framework repo's own .context/working/.gitignore never received the T-4231 ruleset (lib/working-gitignore.sh:25 `fw_working_ignore_rules`) because that list is only applied to consumers by `fw init`/`fw upgrade` (lib/init.sh:414, lib/upgrade.sh:3158), and the monitors, suite reports, audit snapshots and metrics-history had no ignore rule at all.
+
+**Why structurally allowed:** no rail tied a cron job to what it writes. T-4676 fixed the estimator sweeps inside estimator.py only; T-4689's working-ignore-rail checks the consumer ignore list against writers, not the framework repo's tracked set; the uncommitted-changes audit rail cannot tell a job's output from a session's edit.
+
+**Prevention:** jobs declare their outputs in the registry (`commit_task`+`commit_paths` → wrapped in `lib/cron_commit.py run`, which commits them; `ignore_paths` → must be untracked). `python3 lib/cron_commit.py check`, run by `fw audit` as `check_cron_output_hygiene` (WARN), flags a declared commit output still modified 26h after it was written and any tracked file matching a job's ignore_paths. `python3 lib/cron_commit.py selftest` pins both directions in a temp repo.
 
 ## Evolution
 
@@ -329,6 +378,22 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-23 — per-class decision (a) commit-from-writer vs (b) untrack + gitignore
+Readers checked first: no code reads any of these files from git history (grep of lib/ agents/ bin/ web/ tools/ for git log/show/diff on these paths: none). Audit, Watchtower and the suite grader read them from disk; the only git-HEAD read is unit_suite_baseline.py on baseline.yaml, which stays tracked.
+- **docs/generated/components** — writer `docs-daily` (`fw docs --all`, agents/docgen/generate-component.sh). **(a)**: reviewed documentation whose diffs are real content changes. Command wrapped in `lib/cron_commit.py run --job docs-daily`, `commit_task: T-387`. The 35 files dirty now are committed once under T-4695 (the wrapper skips pre-dirty files by design).
+- **docs/reports/T-1549-escalation-scan-v0.md** — writer `escalation-drift-daily` (tools/escalation-scan-v0.py). **(a)**: a human-readable report historically committed (38 commits). Wrapped, `commit_task: T-1555`. Its machine summary `.context/working/escalation-drift-LATEST.yaml` is **(b)**.
+- **.context/working runtime files** (counters, locks, pids/url/port, logs, cursors, `.mirror-sync.log`, `.fabric-describe.last`, `continuous-run.jsonl`, ...) — writers: mirror-sync-15m, fabric-describe-daily, hooks, Watchtower. **(b)**: per-host runtime state. Applied the existing consumer ruleset to the framework repo itself (`fw_working_ensure_ignored`, same list `fw upgrade` writes) and `git rm --cached` the 61 matched files (98 untracked in total across classes). Kept tracked: `focus.yaml`, `session.yaml` (deliberately tracked per .gitignore T-3038 note), `qa_feedback.db`, `.gate-bypass-log.yaml`, `happiness.jsonl` (on `fw_working_keep_tracked`: records a project keeps). Those are session/hook-written, not cron output, and out of this rail's scope.
+- **.context/monitors/** — writers liveness-1m, watchtower-rss-5m. **(b)**: per-host samples (liveness.jsonl grew 1680 lines in a day).
+- **.context/audits snapshots** (full-audit-timing, orchestrator-LATEST, discoveries/LATEST, cron/LATEST-CRON, go-scope-unpropagated/LATEST.md, unclosed-satisfied/LATEST.md) — writer `fw audit --cron` (attributed to full-daily; every audit cron rewrites some of them). **(b)**: regenerated each run, read from disk.
+- **.context/audits/{unit,integration}-suite** LATEST, LAST-COMPLETE, runs.log, dated `2*.yaml` — writers unit-suite-nightly / integration-suite-nightly. **(b)**: the grader reads them from disk; a missing report is a WARN, not a failure (audit.sh check_unit_suite_report). `baseline.yaml` stays tracked (operator-owned, append-checked against git HEAD).
+- **.context/project/metrics-history.yaml** — writer agents/audit/audit.sh; Watchtower reads it from disk (web/metrics_history.py). **(b)**: a per-host time series.
+- **.context/project/decisions.yaml** — not cron output: written by decision capture at task completion (agents/context/lib/decision.sh / extract_decisions.py). **(a)**, but the writer runs inside the closing session, so the fix belongs in the close path, not the cron wrapper. Catch-up committed here (406 lines of auto-captured decisions since 2026-10-11 were in no commit); the writer-side fix is left open (reported to parent).
+- **.context/sidecar/.gitignore** — writer lib/sidecar/lifecycle.py:100 `_ensure_runtime_ignored`, which appends missing T-4231 rules (idempotent, append-missing). **(a)** one catch-up commit: the rules are legitimate and once committed the writer finds nothing missing and stops touching the file. Its new `hub-id` rule matched a tracked file, so `.context/sidecar/hub-id` (per-host hub cache) is **(b)**, untracked.
+- **Helper reuse:** T-4676's `_commit_sweep_writes` is private to estimator.py and scoped to `.tasks/`. `lib/cron_commit.py` generalises it with the same semantics (snapshot pre-dirty, commit only what the run wrote with `git commit -- <paths>`, index.lock retry, exit 1 on commit failure). estimator.py left unchanged so its tests (tests/unit/test_t4676_sweep_self_commit.py) are untouched.
+- **Rejected:** wrapping every job in the generator (`fw cron generate` in bin/fw) — would change all 34 lines and route read-only jobs through a commit step; per-job opt-in through the registry command is narrower. Rejected a global "tracked ∩ ignored" rail: 66 intentionally force-added review evidence files would fire it.
+- **Regression test location:** the parent reserved tests/ for T-4696, so the check is `lib/cron_commit.py selftest` (temp git repo, 7 cases). A tests/unit wrapper calling it can be added once T-4696 lands.
+- **Crontab install:** `bin/fw cron generate` was run; the installed /etc/cron.d copy differs until the operator runs `bin/fw cron install` (doctor: "Cron registry drift"). The doctor verification line stays red until then.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -345,3 +410,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4695-cron-written-generated-files-stay-modifi.md
 - **Context:** Initial task creation
+
+### 2026-10-23T13:58:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -158,3 +158,6 @@
 {"ts": "2026-09-28T10:47:00Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 718570, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=1"}
 {"ts": "2026-09-28T17:04:00Z", "event": "exit", "reason": "no-signal", "restart_count": 0, "wrapper_pid": 718570, "detail": "claude exited without a restart signal", "exit_code": 1}
 {"ts": "2026-09-28T17:04:05Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 718568, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=1"}
+{"ts": "2026-10-22T11:55:50Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 2352177, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=1"}
+{"ts": "2026-10-22T18:44:57Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 4272, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=1"}
+{"ts": "2026-10-22T18:47:09Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 3982, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=1"}

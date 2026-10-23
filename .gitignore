@@ -173,3 +173,24 @@ docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
 # T-4189: task-id high-water mark — per-checkout allocator state, like
 # .context/working/.obs-highwater. Every worktree's mark is read at allocation.
 .tasks/.id-highwater
+
+# T-4695: per-host output of scheduled jobs (declared as ignore_paths on each job
+# in .context/cron-registry.yaml; `python3 lib/cron_commit.py check` fails when
+# one is tracked again). Read from disk by audit/Watchtower, never from git.
+# The suite baselines (.context/audits/*-suite/baseline.yaml) stay tracked.
+.context/monitors/
+.context/project/metrics-history.yaml
+.context/audits/full-audit-timing.yaml
+.context/audits/orchestrator-LATEST.yaml
+.context/audits/discoveries/LATEST.yaml
+.context/audits/cron/LATEST-CRON.yaml
+.context/audits/go-scope-unpropagated/LATEST.md
+.context/audits/unclosed-satisfied/LATEST.md
+.context/audits/unit-suite/LATEST.yaml
+.context/audits/unit-suite/LAST-COMPLETE.yaml
+.context/audits/unit-suite/runs.log
+.context/audits/unit-suite/2*.yaml
+.context/audits/integration-suite/LATEST.yaml
+.context/audits/integration-suite/LAST-COMPLETE.yaml
+.context/audits/integration-suite/runs.log
+.context/audits/integration-suite/2*.yaml

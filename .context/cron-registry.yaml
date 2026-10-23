@@ -179,6 +179,14 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-184
   status: active
+  ignore_paths:
+  - .context/audits/full-audit-timing.yaml
+  - .context/audits/orchestrator-LATEST.yaml
+  - .context/audits/discoveries/LATEST.yaml
+  - .context/audits/cron/LATEST-CRON.yaml
+  - .context/audits/go-scope-unpropagated/LATEST.md
+  - .context/audits/unclosed-satisfied/LATEST.md
+  - .context/project/metrics-history.yaml
   description: "Complete audit of all sections, runs daily at 8:02am. Offset from\
     \ :00 (T-3070) \u2014 the prior 0 8 * * * schedule exactly collided with traceability-hourly\
     \ (0 * * * *) on the SAME shared audit.sh flock (.context/locks/audit.lock, not\
@@ -190,10 +198,13 @@ jobs:
 - id: docs-daily
   name: Component docs regeneration (daily)
   schedule: 15 8 * * *
-  command: fw docs --all
+  command: python3 lib/cron_commit.py run --job docs-daily -- fw docs --all
   source_file: agentic-audit.crontab
   origin_task: T-387
   status: active
+  commit_task: T-387
+  commit_paths:
+  - docs/generated/components
   description: Regenerates component reference documentation daily at 8:15am.
 - id: retention-daily
   name: Cron audit file retention (daily)
@@ -238,6 +249,9 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-1269
   status: active
+  ignore_paths:
+  - .context/monitors/liveness-latest.yaml
+  - .context/monitors/liveness.jsonl
   description: Pings TermLink hub, counts Claude Code processes, and checks Watchtower
     every minute. Appends to .context/monitors/liveness.jsonl + writes latest snapshot
     YAML.
@@ -269,6 +283,8 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-1594
   status: active
+  ignore_paths:
+  - .context/working/.mirror-sync.log
   description: "T-1591 Prevention #3 \u2014 every 15 min, push lagging mirror remotes\
     \ (e.g. github) up to origin's HEAD when fast-forward safe. Diverged state is\
     \ logged but never auto-recovered. Closes the gap exposed by T-1591 (OneDev mirror\
@@ -276,10 +292,16 @@ jobs:
 - id: escalation-drift-daily
   name: Escalation drift scan (G-019 Layer B v1)
   schedule: 23 5 * * *
-  command: python3 tools/escalation-scan-v0.py
+  command: python3 lib/cron_commit.py run --job escalation-drift-daily -- python3
+    tools/escalation-scan-v0.py
   source_file: agentic-audit.crontab
   origin_task: T-1555
   status: active
+  commit_task: T-1555
+  commit_paths:
+  - docs/reports/T-1549-escalation-scan-v0.md
+  ignore_paths:
+  - .context/working/escalation-drift-LATEST.yaml
   description: 'Daily scan of completed tasks for symptom-fix candidates: bug-class
     without ## RCA (H1), repeated learning-IDs across 3+ tasks in 30 days (H2), bug-class
     without RCA AND no learning capture (H3). Writes machine-readable summary to .context/working/escalation-drift-LATEST.yaml
@@ -321,6 +343,9 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-1615
   status: active
+  ignore_paths:
+  - .context/monitors/watchtower-rss-latest.yaml
+  - .context/monitors/watchtower-rss.jsonl
   description: "T-1611-B passive observation. Samples Watchtower PID's RSS/VSZ/CPU/etime\
     \ every 5 min. Distinguishes memory-leak re-saturation from request-rate queueing\
     \ \u2014 if RSS climbs monotonically over many hours, T-1612's threaded=True fix\
@@ -403,6 +428,11 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-3302
   status: active
+  ignore_paths:
+  - .context/audits/unit-suite/LATEST.yaml
+  - .context/audits/unit-suite/LAST-COMPLETE.yaml
+  - .context/audits/unit-suite/runs.log
+  - '.context/audits/unit-suite/2*.yaml'
   description: "T-3302 (OBS-361) \u2014 runs the full tests/unit corpus (615 bats\
     \ + 191 pytest files) once nightly via agents/audit/unit-suite.sh and writes a\
     \ machine-readable report to .context/audits/unit-suite/LATEST.yaml (+ dated sibling)\
@@ -421,6 +451,11 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-4634
   status: active
+  ignore_paths:
+  - .context/audits/integration-suite/LATEST.yaml
+  - .context/audits/integration-suite/LAST-COMPLETE.yaml
+  - .context/audits/integration-suite/runs.log
+  - '.context/audits/integration-suite/2*.yaml'
   description: "T-4634 — runs tests/integration (94 bats + 5 pytest files) nightly\
     \ through the unit-suite runner (per-file cap 900s, -j4) into its OWN report\
     \ .context/audits/integration-suite/LATEST.yaml and its own lock, which fw audit\
@@ -437,6 +472,8 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-3430
   status: active
+  ignore_paths:
+  - .context/working/.fabric-describe.last
   description: "T-3430 (OBS-464) \u2014 fills `purpose` and `subsystem` on component\
     \ cards that still carry the register-time placeholders, deriving each sentence\
     \ from the file's own docstring/header or its created_by task and recording the\

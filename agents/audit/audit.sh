@@ -4533,6 +4533,25 @@ check_gitignore_register() {
 }
 check_gitignore_register
 
+# T-4695: a cron job's output is either committed by the job (commit_paths,
+# wrapped in lib/cron_commit.py run) or untracked runtime state (ignore_paths).
+# 87 tracked files sat modified in one session because neither held. WARN.
+check_cron_output_hygiene() {
+    [ -f "$FRAMEWORK_ROOT/lib/cron_commit.py" ] || return 0
+    [ -f "$PROJECT_ROOT/.context/cron-registry.yaml" ] || return 0
+    local _out _rc=0 _n
+    _out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/cron_commit.py" check 2>&1) || _rc=$?
+    if [ "$_rc" -eq 0 ]; then
+        pass "Cron outputs: every declared output is committed by its job or untracked"
+        return 0
+    fi
+    _n=$(echo "$_out" | grep -c .)
+    warn "Cron outputs: $_n declared output file(s) neither committed by their job nor untracked" \
+         "First: $(echo "$_out" | head -1 | tr '\t' ' ' | cut -c1-140)" \
+         "commit_paths: check the job's own commit (lib/cron_commit.py run) in cron logs; ignore_paths: git rm --cached the file. List: python3 lib/cron_commit.py check"
+}
+check_cron_output_hygiene
+
 # T-3861: the vector index is GiB-sized and lives in .context/working/, the
 # directory handovers commit from. A consumer whose ignore rules predate T-3861
 # commits it (ring20-dashboard: 1.2 GB blob in .git). WARN, never FAIL.

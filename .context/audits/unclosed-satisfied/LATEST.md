@@ -26,7 +26,7 @@ alone (CLAUDE.md Human Task Completion Rule).
 Rows with an empty `## Verification` block need that scrutiny most —
 nothing mechanical would gate their close.
 
-## Qualifying tasks (23)
+## Qualifying tasks (64)
 
 | Task | Status | Workflow | Name | Agent ACs | Verification cmds? |
 |------|--------|----------|------|----------:|--------------------|
@@ -36,9 +36,11 @@ nothing mechanical would gate their close.
 | T-2200 | started-work | build | dispatch AEF setup worker on /opt/fan-dashboard | 4 | **no** |
 | T-2202 | started-work | build | dispatch AEF setup worker on /opt/832-Workflow-designer | 4 | **no** |
 | T-2410 | started-work | build | check-active-task hook: false positives block legiti... | 4 | yes |
-| T-2770 | started-work | inception | should a read-only fw query auto-init and vendor int... | 3 | **no** |
+| T-2657 | started-work | build | fw update chicken-and-egg: old do_vendor misses newl... | 5 | yes |
+| T-2698 | started-work | build | config registry drift: 2 keys missing from Watchtowe... | 5 | yes |
 | T-2801 | started-work | build | fw init is not atomic and its debris is not fw-recov... | 5 | yes |
 | T-2802 | started-work | build | fw watchtower url returns http://localhost:3000 from... | 6 | yes |
+| T-2892 | started-work | build | corpus all-versions census pinned at 32 while the li... | 3 | yes |
 | T-3297 | started-work | build | PRE-PUSH AUDIT GATE CAN DEADLOCK AGAINST CRON AUDIT ... | 4 | yes |
 | T-3298 | started-work | build | audit.sh unlinks the flock'd lock file in its exit t... | 5 | yes |
 | T-3299 | started-work | build | G-020 scope gate blocks BOTH escape routes its own b... | 5 | yes |
@@ -50,6 +52,45 @@ nothing mechanical would gate their close.
 | T-3317 | started-work | build | A worker's rewrite of agents/audit/audit.sh dropped ... | 4 | yes |
 | T-3324 | started-work | build | fw doctor spends ~79s of every run on 'bats --count ... | 4 | yes |
 | T-3326 | started-work | build | Stale-verification class: P-011 lines and unit tests... | 4 | yes |
+| T-3580 | started-work | build | T-3557 slice 3: fw reviewer judge - dispatch an inde... | 7 | yes |
+| T-3582 | started-work | build | Rung-5 review panel is three Claude workers with ven... | 7 | yes |
+| T-3602 | started-work | build | Nightly unit suite blind since 2026-09-08: every run... | 4 | yes |
+| T-3603 | started-work | test | OBS-587 triage A: red unit suites approvals..lib_rev... | 4 | **no** |
+| T-3621 | started-work | build | Pre-push unit-suite gate as a ratchet: block NEW red... | 5 | yes |
+| T-3651 | started-work | build | fw termlink cleanup: --help still executes it, no --... | 7 | yes |
+| T-3678 | started-work | build | Triage AEF's own sidecar consult backlog: ~40 peer p... | 2 | **no** |
+| T-3797 | started-work | build | t3662 'allocation skips a foreign holder' flakes und... | 2 | yes |
+| T-3811 | started-work | build | t3459_metrics_quality_cache 'an expired timestamp fo... | 4 | yes |
+| T-3842 | started-work | build | 'fw context focus WM-001\|WM-002' prints nothing and... | 2 | yes |
+| T-3862 | started-work | build | fw upgrade completes without checking the vector ind... | 9 | yes |
+| T-3894 | started-work | build | Arc close form pre-fills the ANCHOR task's recommend... | 3 | **no** |
+| T-3922 | started-work | build | Triage the 127 waiting sidecar messages: classify ea... | 5 | **no** |
+| T-4078 | started-work | build | fw issues sync + 2-hourly cron: ingest new/changed G... | 6 | yes |
+| T-4095 | started-work | build | The agent re-asks the operator for decisions already... | 4 | yes |
+| T-4108 | started-work | build | SECURITY (release-blocking for v1.8.11, ring20-dashb... | 4 | yes |
+| T-4113 | started-work | build | watchtower_decision_revert detector: any decision at... | 6 | yes |
+| T-4125 | started-work | build | SECURITY: budget-gate command classifier (lib/cmd_cl... | 4 | yes |
+| T-4126 | started-work | build | SECURITY: project-boundary Pattern 3 has no cp/mv/dd... | 5 | yes |
+| T-4127 | started-work | build | Watchtower decision commit races ordinary commits (c... | 4 | yes |
+| T-4148 | started-work | inception | Context-window budget derived from the selected mode... | 3 | **no** |
+| T-4162 | started-work | build | T-4091 slice 1: fw estate push — diff the local vect... | 5 | yes |
+| T-4258 | started-work | build | init/install neither start nor mention the sidecar w... | 4 | yes |
+| T-4292 | started-work | build | fw sidecar receiver stop (cmd_receiver_stop) does no... | 4 | yes |
+| T-4361 | started-work | build | GH #104: Project-boundary gate hard-codes /root/.loc... | 4 | yes |
+| T-4439 | started-work | specification | Shared worker contract slice 1: draft the transition... | 21 | yes |
+| T-4463 | started-work | build | Answer termlink: which of their 19 local AEF patches... | 3 | yes |
+| T-4526 | started-work | build | Tests and tools leave about 406 /tmp/aef-* and /tmp/... | 6 | yes |
+| T-4612 | started-work | build | test_audit_frontmatter_variants.py fails determinist... | 5 | yes |
+| T-4613 | started-work | build | test_cockpit_activity: cloud render of /cockpit lack... | 4 | yes |
+| T-4614 | started-work | build | fw pickup send without termlink saves locally with a... | 2 | yes |
+| T-4623 | started-work | build | Push blocker: t3062_prepush_runtime pre-push structu... | 4 | yes |
+| T-4626 | started-work | build | Read-only allowlist: sort --compress-program and rg ... | 4 | yes |
+| T-4627 | started-work | build | Read-only allowlist: git ls-remote/fetch --upload-pa... | 4 | yes |
+| T-4628 | started-work | build | Read-only allowlist: uniq and xxd write their second... | 4 | yes |
+| T-4629 | started-work | build | Read-only allowlist: git remote add/remove/set-url a... | 4 | yes |
+| T-4630 | started-work | build | Read-only allowlist: journalctl --vacuum-*/--rotate/... | 5 | yes |
+| T-4689 | started-work | build | Consumer .context/working ignore set still misses ru... | 5 | yes |
+| T-4691 | started-work | build | fw upgrade's advisory fw doctor step exits 141 (SIGP... | 5 | yes |
 | T-801 | started-work | build | fw costs CLI — token usage tracking from JSONL trans... | 9 | yes |
 | T-802 | started-work | build | Watchtower token dashboard — /costs page with sessio... | 7 | yes |
 | T-803 | started-work | build | Landing page token widget — show current session tok... | 5 | yes |

@@ -923,6 +923,24 @@
   "total": 7,
   "ts": 1790572797
  },
+ "T-2306": {
+  "failed": 1,
+  "status": "fail",
+  "total": 4,
+  "ts": 1792732725
+ },
+ "T-2369": {
+  "failed": 0,
+  "status": "pass",
+  "total": 4,
+  "ts": 1792732726
+ },
+ "T-2373": {
+  "failed": 0,
+  "status": "timeout",
+  "total": 3,
+  "ts": 1792732816
+ },
  "T-2634": {
   "failed": 0,
   "status": "pass",
