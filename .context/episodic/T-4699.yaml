@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4699: session-silent-scanner.sh scans EVERY project's transcripts under ~/.claude/projects (rglob), not just this project's; a non-dry run could write recovered handovers for other projects' sessions into this project
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T14:43:04Z
+# ============================================================================
+
+task_id: T-4699
+task_name: "session-silent-scanner.sh scans EVERY project's transcripts under ~/.claude/projects (rglob), not just this project's; a non-dry run could write recovered handovers for other projects' sessions into this project"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T14:27:26Z
+completed: 2026-10-23T14:42:49Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T16:34:53+02:00
+last_commit: 2026-10-23T16:34:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  session-silent-scanner scans only this project's transcript dirs and skips foreign-cwd sessions
+
+# Key outcomes
+outcomes:
+  - 'Scanner only walks the transcript dir named by Claude Code''s slug of PROJECT_ROOT (non-alphanumerics → `-`), plus `<slug>--claude-worktrees-*` dirs of the same repo; a sibling project''s dir (incl. a name that merely shares the slug as a prefix) is never read'
+  - 'A candidate whose transcript `cwd` is not PROJECT_ROOT or below it (or has no `cwd`) is skipped with one `skip-foreign-cwd` log line and never reaches `fw handover`'
+  - 'Regression test `tests/unit/t4699_session_silent_scanner_scope.bats` uses a fake CLAUDE_PROJECTS_DIR with two project dirs and a stub fw; it fails against the pre-fix script and passes after'
+  - 'Existing `agents/context/tests/session-silent-scanner-stub-test.sh` still passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/session-silent-scanner.sh'
+  - '.agentic-framework/agents/context/tests/session-silent-scanner-stub-test.sh'
+  - 'agents/context/session-silent-scanner.sh'
+  - 'agents/context/tests/session-silent-scanner-stub-test.sh'
+  - '.tasks/active/T-4699-session-silent-scannersh-scans-every-pro.md'
+  - 'tests/unit/t4699_session_silent_scanner_scope.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T16:34:53'
+    action: 'T-4699: session-silent-scanner scans only this project''s transcript dirs and skips foreign-cwd sessions'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 15
+  commits: 2
+  files_changed: 11
+  lines_added: 487
+  lines_removed: 37
+  footprint_refreshed_at: '2026-10-23T14:43:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4699-session-silent-scannersh-scans-every-pro.md
+generated_by: context-agent-hybrid
