@@ -51,7 +51,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T15:16:04Z
-last_update: '2026-10-23T15:45:35Z'
+last_update: 2026-10-23T15:47:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,9 +102,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The caller that killed the live Watchtower at 13:27:36Z is named in ## RCA with file:line and evidence, OR (if unattributable) the placement mechanism below is recorded as the most likely class with the evidence for it
+- [x] The caller that killed the live Watchtower at 13:27:36Z is named in ## RCA with file:line and evidence, OR (if unattributable) the placement mechanism below is recorded as the most likely class with the evidence for it
 - [ ] The caller can no longer signal the live project's Watchtower from a test (fixed at the source; regression test fails without the fix)
-- [ ] `bin/watchtower.sh start` (and restart) runs the server in its OWN systemd scope (reuse lib/agent-scope.sh `fw_agent_scope_prefix`, slice aef.slice, unit aef-watchtower-*), falling back cleanly where systemd is absent; a test proves the started server's /proc/<pid>/cgroup is its own scope, not the caller's unit. Evidence 2026-10-23 17:2x: a `fw watchtower start` from the parent session put the server in `/system.slice/agentic-fleet-cockpit.service` (055's cockpit unit, which hosts this session), so a cockpit restart would kill it; the 15:27 victim had been started by a worker (w4663) and lived in whatever unit that was. Parent moved the live server by hand: `systemd-run --scope --slice=aef.slice --unit=aef-watchtower-<ts> bin/fw watchtower restart` -> cgroup /aef.slice/aef-watchtower-1792770391.scope.
+- [x] `bin/watchtower.sh start` (and restart) runs the server in its OWN systemd scope (reuse lib/agent-scope.sh `fw_agent_scope_prefix`, slice aef.slice, unit aef-watchtower-*), falling back cleanly where systemd is absent; a test proves the started server's /proc/<pid>/cgroup is its own scope, not the caller's unit. Evidence 2026-10-23 17:2x: a `fw watchtower start` from the parent session put the server in `/system.slice/agentic-fleet-cockpit.service` (055's cockpit unit, which hosts this session), so a cockpit restart would kill it; the 15:27 victim had been started by a worker (w4663) and lived in whatever unit that was. Parent moved the live server by hand: `systemd-run --scope --slice=aef.slice --unit=aef-watchtower-<ts> bin/fw watchtower restart` -> cgroup /aef.slice/aef-watchtower-1792770391.scope.
 - [x] T-4671 live_repo_guard also fails a test that changes or kills the live Watchtower pid (bats test covers it)
 - [x] Supervision: a cron registry entry runs an ensure path that restarts a dead Watchtower and appends the outage to a log; `fw cron generate` run (crontab install is the operator's)
 - [x] `fw doctor` WARNs when a Watchtower outage was recorded recently (bats test covers it)
@@ -303,7 +303,10 @@ timeout 300 env -u FW_DISPATCHED_WORKER bats tests/unit/t4706_watchtower_live_gu
 test "$(grep -c '# skip' /tmp/.t4706-a.out)" -eq 0
 timeout 600 bats tests/unit/t3877_watchtower_ensure.bats tests/unit/t4671_live_repo_guard.bats tests/unit/t3661_watchtower_status_exit.bats tests/unit/t4306_watchtower_zombie_pid.bats > /tmp/.t4706-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4706-b.out
 test "$(grep -c '# skip' /tmp/.t4706-b.out)" -eq 0
-bash -n bin/fw && bash -n bin/watchtower.sh && bash -n lib/watchtower-ensure.sh
+timeout 300 bats tests/unit/t4706_watchtower_own_scope.bats > /tmp/.t4706-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4706-c.out && grep -q "^ok 5 " /tmp/.t4706-c.out
+test "$(grep -c '# skip' /tmp/.t4706-c.out)" -eq 0
+timeout 300 bats tests/unit/t4636_agent_scope.bats tests/unit/t3660_watchtower_detach.bats > /tmp/.t4706-d.out 2>&1 && ! grep -q "^not ok" /tmp/.t4706-d.out
+bash -n bin/fw && bash -n bin/watchtower.sh && bash -n lib/watchtower-ensure.sh && bash -n lib/agent-scope.sh
 out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
 bin/fw vendor self --check --task T-4706
 
@@ -319,7 +322,11 @@ bin/fw vendor self --check --task T-4706
 - **OOM, segfault, a systemd unit stop:** kernel and system journals for 15:27:20-15:27:50 show none. `pen-tmux-server.service` stopped at 15:27:48, 12 s later. The w4663 worker scope `run-r06fff2e8…scope` (the worker that started pid 1697481 at 22:35Z) was deactivated at 00:17:01 on 2026-10-23.
 - **Other agent transcripts at 13:26:30-13:27:40Z** (AEF, 055, 832, termlink): no kill, stop or restart of this Watchtower.
 
-What remains: a userspace signal by pid or port from a process with no transcript record. Plausible sources are a test or script whose PROJECT_ROOT resolved to the live checkout. lib/paths.sh:38-45 falls back to the live repo when PROJECT_ROOT is unset, and every session and worker here exports `PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework`, so a test that forgets to override it targets the live server.
+**Verdict: the killer is unattributed.** No log, journal or transcript names a process that signalled pid 1697481, and the evidence above rules out every candidate that left a record.
+
+**Most likely class: placement (the server lived in its launcher's systemd unit).** `bin/watchtower.sh start` detached with `setsid` only, which leaves the server in the cgroup of whoever started it; any stop of that unit (scope teardown, service restart, KillMode=control-group) SIGKILLs it with no userspace record. Evidence: (1) pid 1697481 was started by worker w4663, whose own worker scope was deactivated at 00:17 on 2026-10-23, so by 15:27 the server sat in whatever unit had absorbed it; (2) at 17:2x a `fw watchtower start` from the parent session put the new server in `/system.slice/agentic-fleet-cockpit.service` (055's cockpit unit, which hosts the session), where a cockpit restart would kill it; (3) a cgroup kill is silent, which matches a log that ends mid-traffic with no error, and `pen-tmux-server.service` stopped 12 s later in the same window. Fixed at the source: `start`/`restart` now launch the server in its own transient scope (`aef.slice/aef-watchtower-<epoch>-<pid>.scope`, via `fw_agent_scope_prefix` with an explicit unit, bin/watchtower.sh do_start), so no caller's unit owns it. Pinned by tests/unit/t4706_watchtower_own_scope.bats.
+
+The remaining non-placement class: a userspace signal by pid or port from a process with no transcript record. Plausible sources are a test or script whose PROJECT_ROOT resolved to the live checkout. lib/paths.sh:38-45 falls back to the live repo when PROJECT_ROOT is unset, and every session and worker here exports `PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework`, so a test that forgets to override it targets the live server.
 
 **Root cause (unnoticed outage, the part that is fixed):** the only ensure path was session-start (agents/context/post-compact-resume.sh → lib/watchtower-ensure.sh); `watchtower-ensure.log` last ran 2026-10-22T18:47:43Z. `liveness-1m` and the RSS monitor *record* down states; nothing restarted the server and nothing surfaced the outage.
 

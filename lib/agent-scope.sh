@@ -17,16 +17,20 @@
 #   - systemd-run is missing, systemd is not the init system, or systemd-run refuses a probe
 #     scope (a non-root user without polkit, a container). That fallback is logged ONCE per
 #     reason: a stderr warning plus a line in .context/working/agent-scope.log.
+# fw_agent_scope_prefix <label> <unit> (T-4706) names the scope (--unit=<unit>) and always gives
+# the command a scope of its OWN, even when the caller already lives under $FW_AGENT_SLICE: a
+# daemon that outlives its launcher (Watchtower) must not share the launcher's unit, whose stop
+# would SIGKILL it with no userspace record. Pick the slice with FW_AGENT_SLICE=<slice> on the call.
 # Test seams: FW_AGENT_SCOPE_CGROUP_FILE (default /proc/self/cgroup) and
 # FW_AGENT_SCOPE_SYSTEMD_DIR (default /run/systemd/system).
 
 FW_AGENT_SLICE="${FW_AGENT_SLICE:-agentic.slice}"
 
 fw_agent_scope_prefix() {
-    local label="${1:-agent}" reason="" probe=()
+    local label="${1:-agent}" unit="${2:-}" reason="" probe=()
     FW_AGENT_SCOPE_CMD=()
     [ "${FW_AGENT_SCOPE:-1}" = 0 ] && return 0
-    if grep -q "/${FW_AGENT_SLICE}/" "${FW_AGENT_SCOPE_CGROUP_FILE:-/proc/self/cgroup}" 2>/dev/null; then
+    if [ -z "$unit" ] && grep -q "/${FW_AGENT_SLICE}/" "${FW_AGENT_SCOPE_CGROUP_FILE:-/proc/self/cgroup}" 2>/dev/null; then
         return 0
     fi
     command -v timeout >/dev/null 2>&1 && probe=(timeout 10)
@@ -43,7 +47,7 @@ fw_agent_scope_prefix() {
         return 0
     fi
     FW_AGENT_SCOPE_CMD=(systemd-run --scope --quiet --collect --no-ask-password
-        --slice="$FW_AGENT_SLICE" --description="AEF ${label} (T-4636)" --)
+        --slice="$FW_AGENT_SLICE" ${unit:+--unit="$unit"} --description="AEF ${label} (T-4636)" --)
 }
 
 # _fw_agent_scope_fallback <label> <reason> — warn once per reason, log every first sighting.

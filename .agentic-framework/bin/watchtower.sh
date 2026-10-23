@@ -420,10 +420,22 @@ do_start() {
     # that group) killed the server. setsid gives it its own session — it is
     # not a group leader here (no job control), so setsid execs in place and
     # $! is the server's pid. nohup is the fallback where setsid is absent.
+    # T-4706: setsid leaves the server in the LAUNCHER's systemd unit (a worker
+    # scope, the cockpit service), and stopping that unit SIGKILLs it with no
+    # record. Give it a scope of its own under FW_WATCHTOWER_SLICE (aef.slice).
+    # systemd-run --scope execs in place, so $! stays the server's pid. Empty
+    # prefix where systemd cannot, or FW_AGENT_SCOPE=0 (lib/agent-scope.sh).
+    FW_AGENT_SCOPE_CMD=()
+    if [ -f "$FRAMEWORK_ROOT/lib/agent-scope.sh" ]; then
+        # shellcheck source=/dev/null
+        source "$FRAMEWORK_ROOT/lib/agent-scope.sh"
+        FW_AGENT_SLICE="${FW_WATCHTOWER_SLICE:-aef.slice}" \
+            fw_agent_scope_prefix "watchtower" "aef-watchtower-$(date +%s)-$$"
+    fi
     if command -v setsid >/dev/null 2>&1; then
-        setsid python3 -m web.app --port "$port" < /dev/null > "$LOG_FILE" 2>&1 &
+        ${FW_AGENT_SCOPE_CMD[@]+"${FW_AGENT_SCOPE_CMD[@]}"} setsid python3 -m web.app --port "$port" < /dev/null > "$LOG_FILE" 2>&1 &
     else
-        nohup python3 -m web.app --port "$port" < /dev/null > "$LOG_FILE" 2>&1 &
+        ${FW_AGENT_SCOPE_CMD[@]+"${FW_AGENT_SCOPE_CMD[@]}"} nohup python3 -m web.app --port "$port" < /dev/null > "$LOG_FILE" 2>&1 &
     fi
     local new_pid=$!
     echo "$new_pid" > "$PID_FILE"
