@@ -1,13 +1,19 @@
 ---
 id: T-4708
-name: "fw doctor 'Hook config: script not found: [' for hook commands that start with a shell test (bin/fw ~3616 takes the first token as a script path)"
+name: "fw doctor 'Hook config: script not found: [' for hook commands that start with
+  a shell test (bin/fw ~3616 takes the first token as a script path)"
 description: >
-  TermLink be.10 report (sidecar c896df19), since 1.8.13: e.g. a hook command '[ -z "${TERMLINK_SIDECAR_SOCKET:-}" ] || exec termlink sidecar hook stop'. Parse the command with shlex and check the first token that is a path-like executable after skipping shell builtins/keywords and test brackets ([, [[, test, exec, env, command, VAR=val assignments); only report a missing script for an actual path. Test with that command and with a genuinely missing script.
+  TermLink be.10 report (sidecar c896df19), since 1.8.13: e.g. a hook command '[ -z
+  "${TERMLINK_SIDECAR_SOCKET:-}" ] || exec termlink sidecar hook stop'. Parse the
+  command with shlex and check the first token that is a path-like executable after
+  skipping shell builtins/keywords and test brackets ([, [[, test, exec, env, command,
+  VAR=val assignments); only report a missing script for an actual path. Test with
+  that command and with a genuinely missing script.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T15:41:56Z
-last_update: 2026-10-23T15:41:56Z
-date_finished: null
+last_update: 2026-10-23T15:54:47Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T15:42:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4708: fw doctor 'Hook config: script not found: [' for hook commands that start with a shell test (bin/fw ~3616 takes the first token as a script path)
@@ -62,8 +85,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw doctor`'s hook-config check no longer reports `script not found: [` (or any builtin/keyword/assignment/operator token) for a hook command such as `[ -z "${TERMLINK_SIDECAR_SOCKET:-}" ] || exec termlink sidecar hook stop`
+- [x] The check still reports `script not found` for a hook whose command names a genuinely missing path-like script (e.g. `$CLAUDE_PROJECT_DIR/scripts/missing.sh` or `./missing.sh`)
+- [x] Regression test (in the style of the existing doctor hook-config tests) covers both cases and fails against the pre-fix bin/fw
+- [x] `bin/fw vendor self --check --task T-4708` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,22 +273,24 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t4708_doctor_hook_shell_test_command.bats tests/unit/t4056_doctor_interpreter_hooks.bats > /tmp/.t4708.out 2>&1 && grep -q '^ok 8 ' /tmp/.t4708.out && ! grep -q '^not ok' /tmp/.t4708.out
+test "$(grep -c '# skip' /tmp/.t4708.out)" -eq 0
+bash -n bin/fw
+bin/fw vendor self --check --task T-4708
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** on TermLink (be.10, and since 1.8.13), `fw doctor` printed `FAIL Hook config: Stop: script not found: [` for a correctly working Stop hook whose command is `[ -z "${TERMLINK_SIDECAR_SOCKET:-}" ] || exec termlink sidecar hook stop`.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** the hook-config check in `bin/fw` (the `python3 -c` block under "Check: Claude Code hook configuration", formerly ~line 3536) split the command on whitespace and took the first token without `=` as the script path. T-4056 later added a skip for interpreter words. A command that is shell (a test bracket, an operator chain, `exec`) rather than `<script> args` had its first token, `[`, resolved against PROJECT_ROOT and reported missing.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the check's model of a hook command was "a script path, optionally after assignments or an interpreter". Every fixture (t4056, doctor_hook_counters) and this repo's own settings.json fit that model, so nothing exercised a hook written as shell. Consumer projects write their own hooks (TermLink's sidecar Stop hook), and the framework never sees those until a consumer reports a false FAIL.
+
+**Fix:** tokenise with `shlex` (posix, punctuation_chars) so quotes are removed as the shell removes them, and split at `;`, `&&`, `||`, `|`, parentheses (a redirect consumes its target). Then take the first simple command whose program is checkable. Skipped: assignments, `[`/`[[`/`test` (the whole simple command), `!`, `exec`, `command`, `builtin`, `nohup`, `time`, compound keywords, and interpreters with their flags (`-c`/`-m` mean no script). Only a path-like program (contains `/`), bare `fw`, or an interpreter's script argument is checked. Bare programs found on PATH (`termlink`) are not script paths. A command with nothing checkable is skipped.
+
+**Prevention:** `tests/unit/t4708_doctor_hook_shell_test_command.bats` runs the real `fw doctor` against TermLink's exact command, a mixed-leader command (`FOO=1 [[ … ]] && test …; ! command -v … || true`), a missing script after a shell test (still FAILs, and names it), a plain missing relative script, and a present script after a shell test. Four of the five fail on the pre-fix bin/fw. t4056 stays green.
+
+**Noted, not in scope:** `tests/unit/doctor_hook_counters.bats` tests 10–12 fail before and after this change. Its fixture copies the live settings.json but symlinks only `bin/`, so the Stop hook `${CLAUDE_PROJECT_DIR}/agents/context/stop-driver.sh` is missing in the fixture and doctor FAILs instead of printing the OK line. HEAD's bin/fw gives the same output on the same fixture.
 
 ## Evolution
 
@@ -345,3 +372,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4708-fw-doctor-hook-config-script-not-found--.md
 - **Context:** Initial task creation
+
+### 2026-10-23T15:42:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
