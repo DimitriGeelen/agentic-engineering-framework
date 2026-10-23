@@ -1,8 +1,10 @@
 ---
 id: T-4723
-name: "Upgrade file-list snapshot hits MemoryError on a home-directory consumer (~700k untracked files)"
+name: "Upgrade file-list snapshot hits MemoryError on a home-directory consumer (~700k
+  untracked files)"
 description: >
-  Upgrade file-list snapshot hits MemoryError on a home-directory consumer (~700k untracked files)
+  Upgrade file-list snapshot hits MemoryError on a home-directory consumer (~700k
+  untracked files)
 
 status: started-work
 workflow_type: build
@@ -38,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T21:35:53Z
-last_update: 2026-10-23T21:38:30Z
-date_finished: null
+last_update: '2026-10-23T22:45:33Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +52,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-23T22:45:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=316,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4723: Upgrade file-list snapshot hits MemoryError on a home-directory consumer (~700k untracked files)
