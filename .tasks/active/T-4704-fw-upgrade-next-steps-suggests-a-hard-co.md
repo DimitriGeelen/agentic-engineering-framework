@@ -87,7 +87,7 @@ bvp_scores_proposed:
 - [x] When the consumer's `.context/working/focus.yaml` has `current_task: T-NNNN`, the commit step names that id (`fw git commit -m 'T-NNNN: fw upgrade — sync framework improvements'`)
 - [x] When no task is focused (focus.yaml missing, or `current_task:` empty/null), the commit step uses the placeholder `T-XXXX` and is preceded (same step 2, line before the commit) by `fw work-on "framework upgrade" --type build`; step numbering 1-4 is unchanged so the T-3882 cron step stays "4."
 - [x] A bats test covers both cases (focused id; no focus) and passes; tests/unit/t4692_upgrade_commit_list.bats and tests/unit/upgrade_fresh_machine_simulation.bats stay green
-- [ ] `bin/fw vendor self` run and `bin/fw vendor self --check --task T-4704` is clean
+- [x] `bin/fw vendor self` run and `bin/fw vendor self --check --task T-4704` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
