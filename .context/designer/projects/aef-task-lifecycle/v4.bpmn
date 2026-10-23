@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_aef-task-lifecycle"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- designer-corpus D1 (arc-014, T-2555): the AEF task lifecycle as actually operated.
+       Sources of truth this diagram documents: agents/task-create/update-task.sh (status
+       machine, P-010/P-011 gates, T-193 partial-complete), agents/healing (issues loop),
+       CLAUDE.md §Task Lifecycle. Pair-draft v1: agent-drafted, operator corrects in UI.
+       v4 (T-2618): + completion-gate refusal loop (gates pass? -> blocked back to work),
+       + horizon backlog (ready now? -> parked next/later -> promoted),
+       + escalation-ladder / gate-variant / review-URL meta notes.
+       store v4 (T-4677): plain-language names and notes so the business lens reads as a
+       business flow; task/policy ids, fw commands and headings moved to aef:endpoint
+       (technical lens). Ids, uids, state carriers, flows and layout unchanged. -->
+
+  <bpmn:collaboration id="Collaboration_aef-task-lifecycle">
+    <bpmn:participant id="Pool_task_lifecycle" name="AEF task lifecycle" processRef="Process_aef-task-lifecycle"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_aef-task-lifecycle" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="aef-task-lifecycle" version="1" schemaVersion="2" title="AEF task lifecycle (captured → started-work ↔ issues → work-completed)" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_tl">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="324.4744827586207"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_start_work</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_task</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_create</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_parked</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_do</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_healing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_6_completion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_7_archive</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_ready</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_issues</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_gates</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_unchecked</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_link_handoff</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="88"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_partial</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_start_work" name="work identified">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_capture"/>
+        <aef:position x="102.0" y="128.5"/>
+        <aef:meta triggeredBy="operator request, pickup message, audit emit, or agent discovery"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:endEvent id="agt_end_task" name="task archived">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_done"/>
+        <aef:position x="1682.0" y="128.5"/>
+        <aef:meta terminalKind="success"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_17</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:serviceTask id="agt_1_create" name="create the task">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_create"/>
+        <aef:position x="185.0" y="114.5"/>
+        <aef:meta state="captured" note="nothing gets done without a task; building waits until the task states real acceptance criteria"/>
+        <aef:endpoint>fw work-on "name" --type build (or fw task create) → status: captured. Core Principle; G-020 build-readiness gate blocks source edits until real ACs exist.</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_2_parked" name="parked in the backlog">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_parked"/>
+        <aef:position x="420.0" y="268.0"/>
+        <aef:meta state="captured" note="parked work waits until it is picked up; it is listed after active work and is not suggested as the next thing to do; work that was started and then set aside comes back here"/>
+        <aef:endpoint>status: captured, horizon: next|later. Handover sorts them last and excludes later from Suggested First Action. fw task update T-XXX --horizon next|later on a started-work task auto-demotes status to captured (T-1068 invariant).</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:incoming>flow_19</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_3_start" name="start work">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_start"/>
+        <aef:position x="420.0" y="114.5"/>
+        <aef:meta state="started-work" note="the task becomes the agent's current focus and is marked as being worked on now"/>
+        <aef:endpoint>fw work-on T-XXX → status: started-work, focus set in .context/working/focus.yaml, horizon: now auto-set (T-1068 invariant). Promotion from the backlog uses the same verb.</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_4_do" name="do the work; mark each criterion met as it is reached">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_work"/>
+        <aef:position x="600.0" y="114.5"/>
+        <aef:meta state="started-work" note="progress is saved often; each acceptance criterion is marked met as soon as its work is in place, not at the end"/>
+        <aef:endpoint>commit cadence P-009; tick each ### Agent AC when its content lands (T-1831 C-4), not at the gate. Heavy/parallel sub-work: fw resolver dispatch | fw termlink dispatch → continues in aef-dispatch-loop (T-2586, T-2571 seam).</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:incoming>flow_13</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+      <bpmn:outgoing>flow_18</bpmn:outgoing>
+      <bpmn:outgoing>flow_19</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_5_healing" name="fix the problem (diagnose → resolve)">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_heal"/>
+        <aef:position x="805.0" y="268.0"/>
+        <aef:meta state="issues" note="when something goes wrong the problem is diagnosed and resolved, and the fix is recorded so the system learns from it. A problem that keeps coming back escalates step by step: don't repeat it, improve the technique, improve the tooling, change the way of working; a problem that cannot be resolved goes to the operator"/>
+        <aef:endpoint>fw task update T-XXX --status issues auto-triggers fw healing diagnose; fw healing resolve T-XXX --mitigation logs the pattern (antifragility D1). Error Escalation Ladder A→B→C→D.</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+      <bpmn:outgoing>flow_20</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_6_completion" name="completion checks: criteria met and checks pass">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_verify"/>
+        <aef:position x="965.0" y="114.5"/>
+        <aef:meta note="completing the task runs its checks automatically, and any failing check blocks completion. Some work needs more: a bug fix must record its root cause, a change to what the operator sees needs a human review, and criteria given to the automated reviewer are marked met when it approves"/>
+        <aef:endpoint>fw task update T-XXX --status work-completed: P-010 (every ### Agent AC ticked) + P-011 (each ## Verification line exits 0). Variants: bug-class needs a substantive ## RCA (T-1550); render-surface needs a [REVIEW] Human AC (P-013); [REVIEWER] ACs auto-tick on reviewer PASS (T-1985).</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_10</bpmn:incoming>
+      <bpmn:incoming>flow_20</bpmn:incoming>
+      <bpmn:outgoing>flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_7_archive" name="archive the task and record what was learned">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_archive"/>
+        <aef:position x="1520.0" y="114.5"/>
+        <aef:meta state="work-completed" note="the finish date is recorded, decisions are kept for future reference and the work history is summarised"/>
+        <aef:endpoint>moves the task file from active to completed, stamps date_finished, generates .context/episodic/T-XXX.yaml, captures ## Decisions to the context fabric; git mining populates ## Updates.</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_15</bpmn:incoming>
+      <bpmn:incoming>flow_16</bpmn:incoming>
+      <bpmn:outgoing>flow_17</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="hum_1_partial" name="operator reviews the remaining checks and completes the task">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_human_review"/>
+        <aef:position x="1340.0" y="398.5"/>
+        <aef:meta state="started-work" note="the task waits with the operator as its owner; only the operator may mark these checks met, and the operator completes the task. The agent hands it over with a direct link to the review page"/>
+        <aef:endpoint>T-193 partial-complete: task stays in active with owner: human; the agent never ticks a ### Human AC; the human runs fw task update T-XXX --status work-completed. Handoff: fw task review T-XXX → Watchtower /review/T-XXX (class-correct URL, T-2125/T-2129).</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_14</bpmn:incoming>
+      <bpmn:outgoing>flow_16</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="agt_gw_ready" name="ready to start now?">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_gw_ready"/>
+        <aef:position x="330.0" y="122.5"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:exclusiveGateway id="agt_gw_issues" name="issues encountered?">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_gw_issues"/>
+        <aef:position x="836.0" y="122.5"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:exclusiveGateway id="agt_gw_gates" name="completion checks pass?">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_gw_gates"/>
+        <aef:position x="1176.0" y="122.5"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_11</bpmn:incoming>
+      <bpmn:outgoing>flow_12</bpmn:outgoing>
+      <bpmn:outgoing>flow_13</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:exclusiveGateway id="agt_gw_unchecked" name="checks left for the operator?">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_gw_human"/>
+        <aef:position x="1336.0" y="116.5"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_12</bpmn:incoming>
+      <bpmn:outgoing>flow_14</bpmn:outgoing>
+      <bpmn:outgoing>flow_15</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:intermediateThrowEvent id="agt_link_handoff" name="Handoff → dispatch loop">
+      <bpmn:extensionElements>
+        <aef:uid value="tl_handoff_dispatch"/>
+        <aef:position x="637.0" y="282.0"/>
+        <aef:link workflowRef="e32a518c-01de-4243-aafc-691cc99caf0d" name="aef-dispatch-loop" linkId=""/>
+        <aef:meta note="large or parallel pieces of work are handed to separate workers and continue on the dispatch loop page"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_18</bpmn:incoming>
+    </bpmn:intermediateThrowEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_start_work" targetRef="agt_1_create">
+      <bpmn:extensionElements><aef:uid value="tl_e1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_1_create" targetRef="agt_gw_ready">
+      <bpmn:extensionElements><aef:uid value="tl_e2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_3" name="now" sourceRef="agt_gw_ready" targetRef="agt_3_start">
+      <bpmn:extensionElements><aef:uid value="tl_e14"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_4" name="later — to the backlog" sourceRef="agt_gw_ready" targetRef="agt_2_parked">
+      <bpmn:extensionElements><aef:uid value="tl_e15"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_5" name="promoted — picked up from the backlog" sourceRef="agt_2_parked" targetRef="agt_3_start">
+      <bpmn:extensionElements><aef:uid value="tl_e16"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_6" sourceRef="agt_3_start" targetRef="agt_4_do">
+      <bpmn:extensionElements><aef:uid value="tl_e3"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_7" sourceRef="agt_4_do" targetRef="agt_gw_issues">
+      <bpmn:extensionElements><aef:uid value="tl_e4"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_8" name="yes — problem raised" sourceRef="agt_gw_issues" targetRef="agt_5_healing">
+      <bpmn:extensionElements><aef:uid value="tl_e5"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_9" name="resolved — back to work" sourceRef="agt_5_healing" targetRef="agt_4_do">
+      <bpmn:extensionElements><aef:uid value="tl_e6"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_10" name="no" sourceRef="agt_gw_issues" targetRef="agt_6_completion">
+      <bpmn:extensionElements><aef:uid value="tl_e7"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_11" sourceRef="agt_6_completion" targetRef="agt_gw_gates">
+      <bpmn:extensionElements><aef:uid value="tl_e8"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_12" name="pass" sourceRef="agt_gw_gates" targetRef="agt_gw_unchecked">
+      <bpmn:extensionElements><aef:uid value="tl_e17"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_13" name="blocked — a criterion or check is not met; fix and retry" sourceRef="agt_gw_gates" targetRef="agt_4_do">
+      <bpmn:extensionElements><aef:uid value="tl_e18"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_14" name="yes — handed to the operator" sourceRef="agt_gw_unchecked" targetRef="hum_1_partial">
+      <bpmn:extensionElements><aef:uid value="tl_e9"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_15" name="no — every check was automatic" sourceRef="agt_gw_unchecked" targetRef="agt_7_archive">
+      <bpmn:extensionElements><aef:uid value="tl_e10"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_16" sourceRef="hum_1_partial" targetRef="agt_7_archive">
+      <bpmn:extensionElements><aef:uid value="tl_e11"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_17" sourceRef="agt_7_archive" targetRef="agt_end_task">
+      <bpmn:extensionElements><aef:uid value="tl_e12"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_18" name="large sub-work → hand off" sourceRef="agt_4_do" targetRef="agt_link_handoff">
+      <bpmn:extensionElements><aef:uid value="tl_e13"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_19" name="shelved — set aside for later" sourceRef="agt_4_do" targetRef="agt_2_parked">
+      <bpmn:extensionElements><aef:uid value="tl_e19"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_20" name="resolved at the checks — complete directly" sourceRef="agt_5_healing" targetRef="agt_6_completion">
+      <bpmn:extensionElements><aef:uid value="tl_e20"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>

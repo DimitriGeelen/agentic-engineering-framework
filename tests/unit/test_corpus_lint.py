@@ -456,12 +456,17 @@ def test_live_corpus_all_versions_census():
     by construction: `git diff --name-status 4e2ddff11 HEAD` over the store is
     six ADDs and nothing else, `tools/corpus_lint.py` has no commits since the
     pin, and none of the five new versions is in the flagged set. The 14
-    flagged names are the 14 the T-2989 paragraph describes."""
+    flagged names are the 14 the T-2989 paragraph describes.
+
+    T-4677 baseline move (47 -> 48 versions, flagged held at 14), 2026-10-23.
+    One ADD: `aef-task-lifecycle@v4` (plain-language names for the business
+    lens; ids moved to aef:endpoint). It lints clean, so the flagged set is the
+    same 14 names."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)
     targets = corpus_lint.collect_all_versions(store)
-    assert len(targets) == 47, [n for n, _ in targets]
+    assert len(targets) == 48, [n for n, _ in targets]
 
     findings, typed = [], []
     for name, xml_text in targets:

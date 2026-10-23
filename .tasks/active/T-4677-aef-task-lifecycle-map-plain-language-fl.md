@@ -11,10 +11,10 @@ description: >
   in the BUSINESS view. Rename to plain language, keep ids in Notes or hostRef/workflowRef;
   map conformance (T-2621) and corpus lint must stay green.
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T22:23:02Z
-last_update: '2026-10-22T22:28:51Z'
+last_update: 2026-10-23T08:58:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A regression test reads the latest aef-task-lifecycle version and fails when any business-lens-visible text (node/flow/lane names and the `note` field) contains a task/policy/gap id (T-/P-/G-/L-NNN), an `fw` CLI command, a markdown heading (`##`) or a `### Human`-style token; it fails on the pre-fix v3 and passes on the new version
+- [x] Every flagged name/note is reworded to plain language in a new map version; the technical detail moves to a technical-lens field, not deleted
+- [x] Node ids, `aef:uid` values, `aef:meta state=` carriers, flows' source/target and the topology are unchanged versus v3 (test asserts it)
+- [x] `tools/corpus_conformance.py` passes for aef-task-lifecycle, corpus lint passes, and `bin/fw corpus explain aef-task-lifecycle` renders
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,8 +284,22 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 python3 -m pytest tests/unit/test_t4677_task_lifecycle_business_names.py -q > /tmp/.t4677-names.out 2>&1 && grep -q "4 passed" /tmp/.t4677-names.out
+timeout 300 python3 tools/corpus_conformance.py --map aef-task-lifecycle > /tmp/.t4677-conf.out 2>&1 && grep -q "conformance: PASS" /tmp/.t4677-conf.out
+bin/fw corpus lint aef-task-lifecycle > /tmp/.t4677-lint.out 2>&1 && grep -q "CLEAN" /tmp/.t4677-lint.out
+bin/fw corpus explain aef-task-lifecycle > /tmp/.t4677-explain.out 2>&1 && grep -q "shelved — set aside for later" /tmp/.t4677-explain.out
+timeout 900 python3 -m pytest tests/unit/test_corpus_lint.py tests/unit/test_corpus_explain.py tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_conformance_registry.py tests/unit/test_aef_meta_census.py tests/web/test_lens_definition.py -q > /tmp/.t4677-nb.out 2>&1 && grep -q passed /tmp/.t4677-nb.out
+bin/fw vendor self --check --task T-4677
 
 ## RCA
+
+**Symptom:** under the designer's business lens, aef-task-lifecycle still showed task ids (T-1068), policy ids (P-010/P-011, G-020), `fw work-on T-XXX` and `## Verification` — in flow names, task names and notes (832 screenshot review, sidecar 97db861b).
+
+**Root cause:** the lens is a field filter (`tools/corpus_lenses.yaml:30-35`: business shows `Name`, `Lane` and `note`). It hides fields, not words, and the map (`.context/designer/projects/aef-task-lifecycle/v3.bpmn` lines 72-155, 220-266) put the technical detail inside exactly those three business-visible strings — v3 had no technical-lens field (`aef:endpoint`) on any node, so there was nowhere else for it.
+
+**Why structurally allowed:** the lens was pinned against the designer's field vocabulary (`tests/web/test_lens_definition.py`), and corpus lint judges structure, not register. Nothing read the text a lens shows and asked whether it suits that audience.
+
+**Prevention:** `tests/unit/test_t4677_task_lifecycle_business_names.py` scans every business-visible string of the latest version for ids, `fw` commands, flags, headings, AC prefixes, frontmatter fields and paths. It keeps a control leg that must still catch v3, an invariance leg (ids/uids/carriers/positions/flows equal to v3), and a moved-not-deleted leg (every id v3 showed is now in `aef:endpoint`). Scope is this one map; other maps were not scanned in this task.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -363,6 +379,12 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-23 — where the technical detail goes
+- **Chose:** `aef:endpoint` (text child; technical lens, "fw … | agent prompt | watchtower view") on the eight task-like nodes; saved as store v4 through `/api/save`.
+- **Why:** it is the one technical-only field the designer offers on serviceTask/userTask and reads as text (corpus_lint `_TEXT_BEARING_EXT`). Flow-name detail went to the node the flow enters or leaves (shelved → tl_parked, promoted → tl_start, dispatch → tl_work), since flows and link events have no technical field.
+- **Rejected:** keeping ids in `note` — the business lens shows `note`, which is how G-020 leaked in the first place.
+- **Side effect:** `tests/unit/test_corpus_lint.py::test_live_corpus_all_versions_census` pin re-derived 47 → 48 versions (one ADD, v4 lints clean, flagged set held at 14).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -379,3 +401,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4677-aef-task-lifecycle-map-plain-language-fl.md
 - **Context:** Initial task creation
+
+### 2026-10-23T08:57:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

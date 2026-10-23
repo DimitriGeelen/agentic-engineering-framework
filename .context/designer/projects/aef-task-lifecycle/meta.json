@@ -16,9 +16,14 @@
       "v": 3,
       "note": "T-2863: restore doc comment lost on the v1->v2 UI save (T-2682 / G-071 class); v2 topology + layout unchanged",
       "ts": 1786170216
+    },
+    {
+      "v": 4,
+      "note": "T-4677: plain-language names and notes for the business lens; ids, fw commands and headings moved to aef:endpoint (technical lens); ids, uids, state carriers, flows and layout unchanged",
+      "ts": 1792746243
     }
   ],
-  "latest": 3,
-  "updated": 1786170216,
+  "latest": 4,
+  "updated": 1792746243,
   "uuid": "1f9b5f0c-0be4-4cfe-9158-d9e6f0c1d4c7"
 }
