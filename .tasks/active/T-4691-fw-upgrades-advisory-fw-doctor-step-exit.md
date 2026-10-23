@@ -8,10 +8,10 @@ description: >
   to a file then grep, or tolerate 141 explicitly; test that the advisory step reports
   doctor's own exit code.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T10:41:14Z
-last_update: '2026-10-23T10:45:39Z'
+last_update: 2026-10-23T13:05:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of the 141 localised with file:line and recorded in ## RCA
+- [x] do_doctor (bin/fw) display pipelines `printf … | head -N | sed …` replaced with awk 'NR<=N' (reads all input, cannot SIGPIPE its producer); no such bare pipeline left in do_doctor
+- [x] `_t2094_emit_doctor_advisory` (lib/upgrade.sh) captures doctor's output to a file and reports doctor's OWN exit code, naming 141 as a SIGPIPE inside doctor
+- [x] Regression bats test: advisory reports `doctor PASS (exit 0)` for a clean doctor stub writing > 64 KiB, `doctor exited 3` for a stub exiting 3; static check that do_doctor has no `| head -N | sed` statement
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green; `bin/fw vendor self --check --task T-4691` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,7 +283,24 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 300 bats tests/unit/t4691_upgrade_doctor_advisory_sigpipe.bats > /tmp/.t4691-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4691-a.out && grep -q "^ok 5 " /tmp/.t4691-a.out
+test "$(grep -c '# skip' /tmp/.t4691-a.out)" -eq 0
+timeout 300 bats tests/unit/t2845_upgrade_doctor_advisory_target.bats tests/unit/t2094_upgrade_preflight_doctor_advisory.bats > /tmp/.t4691-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4691-b.out
+test "$(grep -c '# skip' /tmp/.t4691-b.out)" -eq 0
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4691-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4691-c.out
+test "$(grep -c '# skip' /tmp/.t4691-c.out)" -eq 0
+bash -n bin/fw && bash -n lib/upgrade.sh
+bin/fw vendor self --check --task T-4691
+
 ## RCA
+
+**Symptom:** on 050 (be.7) the `fw upgrade` post-upgrade health check printed "doctor exited 141" while a standalone `fw doctor` exited 0.
+
+**Root cause:** not in the upgrade helper — `_t2094_emit_doctor_advisory` already recorded doctor's own rc (lib/upgrade.sh, `|| _doctor_rc=$?`). Doctor itself exited 141. `do_doctor` runs under `set -euo pipefail` (bin/fw:12) and printed bounded previews as bare statements of the form `printf '%s\n' "$list" | head -N | sed …` (bin/fw:2153 exec-bit drift, :2791 design register, :3050 Watchtower-stale sources, :3662 armed index entries). head exits after N lines; if printf is still writing it takes SIGPIPE, pipefail makes the pipeline 141 and errexit ends doctor. Racy, not size-gated: measured 69/200 runs at a 26 KB list. Right after an upgrade the Watchtower process predates every rewritten web/ file, so the stale list (:3050) names ~340 absolute paths — exactly the state the advisory runs in; a later standalone run (smaller list, or lucky timing) passes.
+
+**Why structurally allowed:** T-3875 fixed the same class at the phase-log summary (`sort | head` → awk) but only at that site; nothing scanned do_doctor for the remaining `| head -N | sed` statements, and the advisory's "exited 141" read as a health finding rather than a crash.
+
+**Prevention:** all four sites use `awk 'NR<=N'` (reads all input). tests/unit/t4691_upgrade_doctor_advisory_sigpipe.bats statically refuses any `| head -N | sed` statement inside do_doctor (fails on HEAD^: 3 hits), and the advisory now captures doctor to a file and names 141 as "SIGPIPE inside doctor, not a health finding".
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -376,3 +396,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4691-fw-upgrades-advisory-fw-doctor-step-exit.md
 - **Context:** Initial task creation
+
+### 2026-10-23T13:04:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now

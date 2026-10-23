@@ -2150,7 +2150,7 @@ do_doctor() {
         _xbit_n=$(printf '%s\n' "$_xbit_list" | grep -c .)
         _xbit_join=$(printf '%s\n' "$_xbit_list" | tr '\n' ' ')
         echo -e "  ${YELLOW}WARN${NC}  Exec-bit drift: $_xbit_n tracked file(s) indexed 100755 but not executable on disk"
-        printf '%s\n' "$_xbit_list" | head -5 | sed 's|^|         - |'
+        printf '%s\n' "$_xbit_list" | awk 'NR<=5 {print "         - " $0}'  # T-4691: awk reads all, head SIGPIPEd
         echo -e "         A drifted script dies exit 126 at exec time; a drifted audit.sh kills the audit rail (OBS-336)."
         echo -e "         Fix: cd $_xbit_repo && chmod +x $_xbit_join"
         warnings=$((warnings + 1))
@@ -2788,7 +2788,7 @@ PY
                 echo -e "  ${GREEN}OK${NC}  Design-conformance register: every row has a valid owner"
         else
             echo -e "  ${YELLOW}WARN${NC}  Design-conformance register: row(s) without a valid owner"
-            printf '%s\n' "$_reg_out" | head -5 | sed 's/^/         /'
+            printf '%s\n' "$_reg_out" | awk 'NR<=5 {print "         " $0}'  # T-4691
             echo -e "         Point owner_task at the ACTIVE task that will build each row (fw audit FAILs on this)"
             warnings=$((warnings + 1))
         fi
@@ -3047,7 +3047,10 @@ PY
                     if [ "$_wt_rc" -eq 0 ]; then
                         _wt_stale_n=$(printf '%s\n' "$_wt_stale" | grep -c .)
                         echo -e "  ${YELLOW}WARN${NC}  Watchtower process predates its own source ($_wt_stale_n file(s) newer than pid $_wt_pid)"
-                        printf '%s\n' "$_wt_stale" | head -3 | sed 's|^|         - |'
+                        # T-4691: awk, not head — right after `fw upgrade` this lists every
+                        # rewritten web/ file, and head closing early SIGPIPEd printf; under
+                        # errexit+pipefail doctor then exited 141 (050 field report).
+                        printf '%s\n' "$_wt_stale" | awk 'NR<=3 {print "         - " $0}'
                         echo -e "         Every web/ change since it started is inert, including any awaiting [REVIEW]."
                         echo -e "         Run: bin/fw watchtower restart"
                         warnings=$((warnings + 1))
@@ -3659,7 +3662,7 @@ else:
         _ir_out=$(python3 -I "$FRAMEWORK_ROOT/lib/index_reconcile.py" --repo "$PROJECT_ROOT" 2>&1) && _ir_rc=0 || _ir_rc=$?  # T-4200: set -e
         if [ "$_ir_rc" -eq 2 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Armed stale index entries (G-114): $(echo "$_ir_out" | tail -1)"
-            echo "$_ir_out" | grep '^ARMED' | head -10 | sed 's/^/         /'
+            echo "$_ir_out" | awk '/^ARMED/ && ++n<=10 {print "         " $0}'  # T-4691
             echo -e "         Fix (index only, worktree untouched): bin/fw git reconcile-index --apply"
             warnings=$((warnings + 1))
         elif [ "$_ir_rc" -eq 0 ]; then

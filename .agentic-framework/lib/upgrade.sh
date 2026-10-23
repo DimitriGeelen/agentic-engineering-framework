@@ -3533,11 +3533,17 @@ _t2094_emit_doctor_advisory() {
         _doctor_fw="$target_dir/.agentic-framework/bin/fw"
         _doctor_fw_root="$target_dir/.agentic-framework"
     fi
-    _doctor_out=$(PROJECT_ROOT="$target_dir" FRAMEWORK_ROOT="$_doctor_fw_root" \
-                  "$_doctor_fw" doctor 2>&1) || _doctor_rc=$?
-    echo "$_doctor_out" | awk 'NR<=20 {print "    " $0}'
+    # T-4691: capture to a FILE, not a pipe — the rc below is doctor's own exit
+    # code and nothing else; no stage of ours can SIGPIPE and stand in for it.
+    _doctor_out=$(mktemp "${TMPDIR:-/tmp}/fw-upgrade-doctor.XXXXXX")
+    PROJECT_ROOT="$target_dir" FRAMEWORK_ROOT="$_doctor_fw_root" \
+        "$_doctor_fw" doctor > "$_doctor_out" 2>&1 || _doctor_rc=$?
+    awk 'NR<=20 {print "    " $0}' "$_doctor_out"
+    rm -f "$_doctor_out"
     echo ""
-    if [ "$_doctor_rc" -ne 0 ]; then
+    if [ "$_doctor_rc" -eq 141 ]; then
+        echo -e "  ${YELLOW}Advisory:${NC} doctor exited 141 (SIGPIPE inside doctor, not a health finding) — doctor exit code does not affect upgrade success."
+    elif [ "$_doctor_rc" -ne 0 ]; then
         echo -e "  ${YELLOW}Advisory:${NC} doctor exited $_doctor_rc — doctor exit code does not affect upgrade success."
     else
         echo -e "  ${GREEN}Advisory:${NC} doctor PASS (exit 0)."
