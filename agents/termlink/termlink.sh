@@ -452,8 +452,13 @@ cmd_spawn() {
     # shellcheck source=/dev/null
     source "$FRAMEWORK_ROOT/lib/spawn-env.sh"
     fw_spawn_env
+    # T-4682: run the termlink the CALLER resolved (TERMLINK_BIN, allow-listed by T-4665, wins),
+    # by absolute path. The constructed PATH (T-4666) puts claude's dir — which usually holds a
+    # termlink too — ahead of the caller's, so a bare `termlink` here ran a different binary than
+    # ensure_termlink checked: test stubs on PATH were bypassed and real sessions leaked.
+    local tl_bin="${TERMLINK_BIN:-$(command -v termlink)}"
     env -i "${FW_SPAWN_ENV[@]}" \
-        ${FW_AGENT_SCOPE_CMD[@]+"${FW_AGENT_SCOPE_CMD[@]}"} termlink spawn "${spawn_args[@]}"
+        ${FW_AGENT_SCOPE_CMD[@]+"${FW_AGENT_SCOPE_CMD[@]}"} "$tl_bin" spawn "${spawn_args[@]}"
     echo -e "${GREEN}OK${NC}  Session '$name' registered"
     # T-4067: `if`, not `[ ] && echo` — as the function's last statement a false
     # test became its return status and aborted `fw termlink dispatch` under set -e.

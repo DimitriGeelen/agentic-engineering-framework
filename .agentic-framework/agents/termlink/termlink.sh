@@ -452,8 +452,13 @@ cmd_spawn() {
     # shellcheck source=/dev/null
     source "$FRAMEWORK_ROOT/lib/spawn-env.sh"
     fw_spawn_env
+    # T-4682: run the termlink the CALLER resolved (TERMLINK_BIN, allow-listed by T-4665, wins),
+    # by absolute path. The constructed PATH (T-4666) puts claude's dir — which usually holds a
+    # termlink too — ahead of the caller's, so a bare `termlink` here ran a different binary than
+    # ensure_termlink checked: test stubs on PATH were bypassed and real sessions leaked.
+    local tl_bin="${TERMLINK_BIN:-$(command -v termlink)}"
     env -i "${FW_SPAWN_ENV[@]}" \
-        ${FW_AGENT_SCOPE_CMD[@]+"${FW_AGENT_SCOPE_CMD[@]}"} termlink spawn "${spawn_args[@]}"
+        ${FW_AGENT_SCOPE_CMD[@]+"${FW_AGENT_SCOPE_CMD[@]}"} "$tl_bin" spawn "${spawn_args[@]}"
     echo -e "${GREEN}OK${NC}  Session '$name' registered"
     # T-4067: `if`, not `[ ] && echo` — as the function's last statement a false
     # test became its return status and aborted `fw termlink dispatch` under set -e.
@@ -1218,7 +1223,9 @@ cmd_dispatch() {
             [ "${#DISPATCH_ROOTS[@]}" -gt 1 ] && wdir="$LEGACY_DISPATCH_DIR/$name" ;;
     esac
     prev_wdir=$(_wdir_of "$name")
-    if [ "$prev_wdir" != "$wdir" ]; then
+    # T-4683: _wdir_of falls back to the default root for a name no root holds, so only an
+    # existing dir of that name elsewhere is a shadow; a first harness-seat dispatch is not.
+    if [ "$prev_wdir" != "$wdir" ] && [ -d "$prev_wdir" ]; then
         _clear_reused_wdir "$prev_wdir" "$name"
         # A /tmp seat dir would be shadowed by the project dir of the same name in every lookup.
         [ "$wdir" = "$DISPATCH_DIR/$name" ] || \

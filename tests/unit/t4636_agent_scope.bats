@@ -134,19 +134,21 @@ _prefix() {   # run fw_agent_scope_prefix in a subshell; print the array, one wo
     _stub_sdr exec
     printf '#!/bin/bash\necho "termlink $*" >> %q\nexit 0\n' "$T/termlink.log" > "$T/bin/termlink"
     chmod +x "$T/bin/termlink"
-    run env PATH="$T/bin:$PATH" PROJECT_ROOT="$T/proj" FW_DISPATCH_DIR="$T/dispatch" \
+    # T-4682: TERMLINK_BIN, not PATH — the spawn PATH is constructed (T-4666) and a PATH-only
+    # stub was bypassed: the real termlink ran and left a session on the default tmux server.
+    run env PATH="$T/bin:$PATH" TERMLINK_BIN="$T/bin/termlink" PROJECT_ROOT="$T/proj" FW_DISPATCH_DIR="$T/dispatch" \
         FW_AGENT_SCOPE_SYSTEMD_DIR="$T/systemd" \
         bash "$ROOT/agents/termlink/termlink.sh" spawn --name t4636-w --task T-4636
     echo "$output"
     [ "$status" -eq 0 ]
-    grep -q -- "--slice=agentic.slice .*-- termlink spawn --name t4636-w" "$T/sdr.log"
+    grep -q -- "--slice=agentic.slice .*-- $T/bin/termlink spawn --name t4636-w" "$T/sdr.log"
     grep -q "^termlink spawn --name t4636-w" "$T/termlink.log"
 }
 
 @test "T-4636: fw termlink spawn without systemd still spawns (fallback)" {
     printf '#!/bin/bash\necho "termlink $*" >> %q\nexit 0\n' "$T/termlink.log" > "$T/bin/termlink"
     chmod +x "$T/bin/termlink"
-    run env PATH="$T/bin:$PATH" PROJECT_ROOT="$T/proj" FW_DISPATCH_DIR="$T/dispatch" \
+    run env PATH="$T/bin:$PATH" TERMLINK_BIN="$T/bin/termlink" PROJECT_ROOT="$T/proj" FW_DISPATCH_DIR="$T/dispatch" \
         FW_AGENT_SCOPE_SYSTEMD_DIR="$T/nonexistent" \
         bash "$ROOT/agents/termlink/termlink.sh" spawn --name t4636-f --task T-4636
     echo "$output"

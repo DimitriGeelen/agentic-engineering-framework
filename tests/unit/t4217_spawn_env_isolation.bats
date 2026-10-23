@@ -13,27 +13,46 @@ setup() {
     # Short path: a unix socket path is capped at ~108 bytes.
     D="$(mktemp -d /tmp/t4217.XXXXXX)"
     SOCK="$D/sock"
-    mkdir -p "$D/bin" "$D/dispatch"
+    # T-4682: unique per run, so a leaked session can never make the next run fail 'duplicate'.
+    N="t4217-w-${D##*.}"
+    mkdir -p "$D/bin" "$D/dispatch" "$D/tmx" "$D/rt"
     # T-4647: the socket is baked into the stub — spawn now runs under an allow-listed env, so an
-    # exported test variable would not reach it.
-    printf '#!/bin/bash\nexec tmux -S %q new-session -d -s w "sleep 60"\n' "$SOCK" > "$D/bin/termlink"
+    # exported test variable would not reach it. T-4682: the stub is injected via TERMLINK_BIN, not
+    # PATH (T-4666 builds the spawn PATH by construction, and claude's dir — which holds the real
+    # termlink — comes before a caller-prepended dir), and it leaves a marker so the test can prove
+    # the stub, not the real binary, was the one that ran.
+    printf '#!/bin/bash\necho "$*" > %q\nexec tmux -S %q new-session -d -s w "sleep 60"\n' \
+        "$D/stub.ran" "$SOCK" > "$D/bin/termlink"
     chmod +x "$D/bin/termlink"
 }
 
 teardown() {
     # The server on $SOCK goes first; the directory only after it is gone.
     [ -n "${D:-}" ] && [ -S "$SOCK" ] && tmux -S "$SOCK" kill-server 2>/dev/null
+    # Belt and braces (T-4682): should a real termlink ever run, TMUX_TMPDIR kept its server under
+    # $D — kill it there — and if the session still reached the real hub, remove it by name.
+    local s
+    for s in "${D:-/nonexistent}"/tmx/tmux-*/*; do [ -S "$s" ] && tmux -S "$s" kill-server 2>/dev/null; done
+    if [ -n "${N:-}" ] && command -v termlink >/dev/null 2>&1 && termlink list 2>/dev/null | grep -qw -- "$N"; then
+        echo "T-4682: session $N reached the real TermLink hub; removing it" >&2
+        termlink signal "$N" SIGTERM 2>/dev/null; termlink clean 2>/dev/null
+    fi
     [ -n "${D:-}" ] && rm -rf "$D"
+    return 0
 }
 
 @test "T-4217: a spawn's private tmux server gets none of the six fw path variables (T-4222: + TASKS_DIR, CONTEXT_DIR) in its global env" {
-    run env PATH="$D/bin:$PATH" \
+    run env -u TMUX -u TMUX_PANE PATH="$D/bin:$PATH" TERMLINK_BIN="$D/bin/termlink" \
+        TMUX_TMPDIR="$D/tmx" TERMLINK_RUNTIME_DIR="$D/rt" \
         PROJECT_ROOT=/some/other/project FRAMEWORK_ROOT=/some/other/project/.agentic-framework \
         _FW_PATHS_DERIVED_BY=test FW_ROUTED_FROM=/some/other/project \
         TASKS_DIR=/some/other/project/.tasks CONTEXT_DIR=/some/other/project/.context \
         FW_DISPATCH_DIR="$D/dispatch" \
-        bash "$ROOT/agents/termlink/termlink.sh" spawn --name t4217-w --task T-4217
+        bash "$ROOT/agents/termlink/termlink.sh" spawn --name "$N" --task T-4217
     [ "$status" -eq 0 ]
+    # Loud, not silent: a spawn that ran some other termlink must fail here, by name.
+    [ -s "$D/stub.ran" ] || { echo "T-4682: the stub termlink did not run — spawn used another binary"; false; }
+    grep -q -- "^spawn --name $N " "$D/stub.ran"
     [ -S "$SOCK" ]
     run tmux -S "$SOCK" show-environment -g
     [ "$status" -eq 0 ]
@@ -61,4 +80,25 @@ teardown() {
         rm -rf "$W"; false
     fi
     rm -rf "$W"
+}
+
+# T-4682: the binary the spawn runs is the one the caller resolved. Since T-4666 the spawn PATH is
+# constructed with claude's dir (which holds the real termlink) ahead of a caller-prepended dir, so
+# a bare `termlink` there bypassed PATH stubs and spawned REAL sessions on the default tmux server.
+@test "T-4682: cmd_spawn runs the caller's resolved termlink by absolute path (TERMLINK_BIN wins)" {
+    grep -qF 'local tl_bin="${TERMLINK_BIN:-$(command -v termlink)}"' "$ROOT/agents/termlink/termlink.sh"
+    grep -qF '"$tl_bin" spawn "${spawn_args[@]}"' "$ROOT/agents/termlink/termlink.sh"
+    run env -i PATH=/usr/bin:/bin HOME=/root TERMLINK_BIN=/b/termlink \
+        bash -c '. "$1"; fw_spawn_env; printf "%s\n" "${FW_SPAWN_ENV[@]}"' _ "$ROOT/lib/spawn-env.sh"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -qx 'TERMLINK_BIN=/b/termlink'
+}
+
+@test "T-4682: a stub termlink first on the caller's PATH (no TERMLINK_BIN) is the one spawn runs" {
+    run env -u TMUX -u TMUX_PANE -u TERMLINK_BIN PATH="$D/bin:$PATH" \
+        TMUX_TMPDIR="$D/tmx" TERMLINK_RUNTIME_DIR="$D/rt" FW_DISPATCH_DIR="$D/dispatch" \
+        bash "$ROOT/agents/termlink/termlink.sh" spawn --name "$N" --task T-4217
+    [ "$status" -eq 0 ]
+    [ -s "$D/stub.ran" ] || { echo "T-4682: the PATH stub did not run — spawn used another binary"; false; }
+    grep -q -- "^spawn --name $N " "$D/stub.ran"
 }
