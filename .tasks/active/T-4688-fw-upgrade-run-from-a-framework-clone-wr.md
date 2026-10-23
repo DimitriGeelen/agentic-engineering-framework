@@ -100,7 +100,7 @@ bvp_scores_proposed:
 - [x] `do_upgrade` runs the self-vendor step only when the target directory is FRAMEWORK_ROOT itself; for any other target it says self-vendor is skipped and writes nothing under FRAMEWORK_ROOT (do_upgrade refuses target == FRAMEWORK_ROOT, so the step is removed outright)
 - [x] New `tests/unit/t4688_upgrade_source_untouched.bats`: a temp clone with tools/ drift upgrades a temp consumer; `git -C <clone> status --porcelain` is empty after `--dry-run` and after the real run (fails on the pre-fix lib/upgrade.sh)
 - [x] Framework-repo self-vendoring still works via `fw vendor self` (control test in the same file); `t2095_upgrade_self_vendor_extraction.bats`, `t4498_refused_upgrade_no_self_vendor.bats` and `upgrade_fresh_machine_simulation.bats` stay green
-- [ ] `bin/fw vendor self --check --task T-4688` is clean
+- [x] `bin/fw vendor self --check --task T-4688` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
