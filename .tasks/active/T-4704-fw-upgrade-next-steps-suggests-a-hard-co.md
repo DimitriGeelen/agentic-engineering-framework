@@ -1,10 +1,14 @@
 ---
 id: T-4704
-name: "fw upgrade 'Next steps' suggests a hard-coded commit id (fw git commit -m 'T-012: fw upgrade — sync framework improvements'), a task that does not exist in the consumer"
+name: "fw upgrade 'Next steps' suggests a hard-coded commit id (fw git commit -m 'T-012:
+  fw upgrade — sync framework improvements'), a task that does not exist in the consumer"
 description: >
-  dimitri-mint-dev be.9 report (sidecar 3294edcf): lib/upgrade.sh:3486. Quoting it also tripped the focus-drift gate. Suggest the consumer's own focused task if one is set, else a placeholder the consumer must fill (T-XXXX) with a one-line hint to create a task (fw work-on 'framework upgrade' --type build), never a fixed id.
+  dimitri-mint-dev be.9 report (sidecar 3294edcf): lib/upgrade.sh:3486. Quoting it
+  also tripped the focus-drift gate. Suggest the consumer's own focused task if one
+  is set, else a placeholder the consumer must fill (T-XXXX) with a one-line hint
+  to create a task (fw work-on 'framework upgrade' --type build), never a fixed id.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T14:50:26Z
-last_update: 2026-10-23T14:50:26Z
-date_finished: null
+last_update: 2026-10-23T15:03:18Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T14:51:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4704: fw upgrade 'Next steps' suggests a hard-coded commit id (fw git commit -m 'T-012: fw upgrade — sync framework improvements'), a task that does not exist in the consumer
@@ -62,8 +83,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] lib/upgrade.sh no longer contains the literal `T-012` in the "Next steps" commit suggestion; no fixed task id is printed there
+- [x] When the consumer's `.context/working/focus.yaml` has `current_task: T-NNNN`, the commit step names that id (`fw git commit -m 'T-NNNN: fw upgrade — sync framework improvements'`)
+- [x] When no task is focused (focus.yaml missing, or `current_task:` empty/null), the commit step uses the placeholder `T-XXXX` and is preceded (same step 2, line before the commit) by `fw work-on "framework upgrade" --type build`; step numbering 1-4 is unchanged so the T-3882 cron step stays "4."
+- [x] A bats test covers both cases (focused id; no focus) and passes; tests/unit/t4692_upgrade_commit_list.bats and tests/unit/upgrade_fresh_machine_simulation.bats stay green
+- [ ] `bin/fw vendor self` run and `bin/fw vendor self --check --task T-4704` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +272,36 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4704_upgrade_commit_next_step.bats tests/unit/t3882_upgrade_cron_next_step.bats > /tmp/.t4704-bats.out 2>&1 && grep -q '^ok 5 ' /tmp/.t4704-bats.out && ! grep -q '^not ok' /tmp/.t4704-bats.out
+test "$(grep -c '# skip' /tmp/.t4704-bats.out)" -eq 0
+! grep -E "^[[:space:]]*echo .*T-012" lib/upgrade.sh
+timeout 900 bats tests/unit/t4692_upgrade_commit_list.bats > /tmp/.t4704-4692.out 2>&1 && grep -q '^ok 1 ' /tmp/.t4704-4692.out && ! grep -q '^not ok' /tmp/.t4704-4692.out
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4704-fresh.out 2>&1 && grep -q '^ok 1 ' /tmp/.t4704-fresh.out && ! grep -q '^not ok' /tmp/.t4704-fresh.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4704_upgrade_commit_next_step.bats > /tmp/.t4704-lint.out 2>&1 && grep -q clean /tmp/.t4704-lint.out
+bin/fw vendor self --check --task T-4704
 
 ## RCA
+
+**Symptom:** after a successful `fw upgrade`, "Next steps" item 2 told every consumer to run
+`fw git commit -m 'T-012: fw upgrade — sync framework improvements'`. T-012 is the
+framework repo's own task; it does not exist in a consumer, and dimitri-mint-dev's agent
+quoting it tripped the consumer's focus-drift gate (be.9, sidecar 3294edcf).
+
+**Root cause:** lib/upgrade.sh:3486 (pre-fix) was a literal echo with a hard-coded task id,
+written when the framework upgraded itself; it never read the target's focus.
+`lib/update.sh:332` has the same hard-coded `T-012` in `fw update`'s hint (not changed
+here — outside this task's scope; same fix applies).
+
+**Why structurally allowed:** advisory output text is not exercised by any test that runs
+in a consumer, and the id is valid in the framework repo where the line was authored, so
+it looked correct to everyone who ever read it there.
+
+**Prevention:** `_t4704_commit_next_step` (lib/upgrade.sh) reads the target's
+`.context/working/focus.yaml` (`current_task: T-NNNN`, same pattern as lib/init.sh:67);
+no focused T-id prints a `T-XXXX` placeholder preceded by `fw work-on "framework upgrade"
+--type build`. tests/unit/t4704_upgrade_commit_next_step.bats covers focused, quoted,
+missing, empty, null and non-task (WM-001) focus, and pins that do_upgrade calls the
+helper and no `echo` in lib/upgrade.sh prints T-012.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +397,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4704-fw-upgrade-next-steps-suggests-a-hard-co.md
 - **Context:** Initial task creation
+
+### 2026-10-23T14:51:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

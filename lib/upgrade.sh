@@ -1203,6 +1203,21 @@ print(hashlib.sha256(json.dumps(data.get("hooks", {}), sort_keys=True).encode())
 # T-3882: step 3b's "run 'fw cron install' to deploy" is one mid-run line; 832
 # counted a dry run as the install. The closing next steps say it again, with
 # the job ids. Prints nothing when no job was added.
+# T-4704: "Next steps" item 2 names the consumer's focused task, never a fixed id
+# (it used to print T-012, the framework's own task, absent in every consumer, and
+# quoting it tripped the consumer's focus-drift gate). No focused T-NNNN: a T-XXXX
+# placeholder, preceded by the command that creates a task. $1 = target_dir.
+_t4704_commit_next_step() {
+    local focus="$1/.context/working/focus.yaml" id=""
+    [ -f "$focus" ] && id=$(sed -n 's/^current_task:[[:space:]]*["'\'']*\(T-[0-9][0-9]*\).*/\1/p' "$focus" 2>/dev/null | head -1)
+    if [ -n "$id" ]; then
+        echo "  2. Commit: cd $1 && fw git commit -m '$id: fw upgrade — sync framework improvements'"
+    else
+        echo "  2. Commit: cd $1 && fw work-on \"framework upgrade\" --type build   # no task is focused: create one"
+        echo "             cd $1 && fw git commit -m 'T-XXXX: fw upgrade — sync framework improvements'   # T-XXXX = that task's id"
+    fi
+}
+
 _t3882_cron_next_step() {   # _t3882_cron_next_step <target> "<id id ...>"
     local ids="$2" n
     [ -n "$ids" ] || return 0
@@ -3483,7 +3498,7 @@ EOF
             echo ""
             echo -e "${BOLD}Next steps:${NC}"
             echo "  1. Review changes: cd $target_dir && git diff"
-            echo "  2. Commit: fw git commit -m 'T-012: fw upgrade — sync framework improvements'"
+            _t4704_commit_next_step "$target_dir"
             echo "  3. Run: fw doctor  # Verify health"
             _t3882_cron_next_step "$target_dir" "$_cron_added_ids"
 
