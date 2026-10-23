@@ -407,6 +407,17 @@ The remaining non-placement class: a userspace signal by pid or port from a proc
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The only open criterion is the crontab install, and the operator ran it: the keep-alive (`watchtower-ensure-5m`) is installed and doctor reports the registry in sync. Watchtower now starts in its own systemd scope, so a teardown or restart of whatever unit launched it can no longer kill it, and an outage is restarted within 5 minutes and recorded. The original 15:27 killer stays unattributed; the RCA records placement as the most likely class, with the evidence.
+
+**Evidence:**
+- `.context/runme/cron-install-t4706/run.log`: "Installed: /etc/cron.d/agentic-audit-999-agentic-engineering-framework" at 18:24:59, then "Cron registry in sync" at 18:26:51, RUNME EXIT 0
+- `grep watchtower-ensure /etc/cron.d/agentic-audit-999-agentic-engineering-framework` finds the keep-alive line
+- live server cgroup: `/aef.slice/aef-watchtower-1792770391.scope` (its own scope, not the caller's unit)
+- tests/unit/t4706_watchtower_live_guard.bats 11/11 green (guard, outage recording, doctor WARN, cron entry)
+- shipped in v1.8.15-be.11 (42086fee3)
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
