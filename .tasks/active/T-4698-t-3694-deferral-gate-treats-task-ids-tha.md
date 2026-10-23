@@ -1,8 +1,16 @@
 ---
 id: T-4698
-name: "T-3694 deferral gate treats task ids that belong to another project (e.g. 'AEF T-4690' in a consumer's AC text) as local deferral targets and refuses the close"
+name: "T-3694 deferral gate treats task ids that belong to another project (e.g. 'AEF
+  T-4690' in a consumer's AC text) as local deferral targets and refuses the close"
 description: >
-  ring20 be.9 report (sidecar 714c296e): closing ring20 T-2494 was refused because its AC text named AEF's T-4690/T-4694 next to 'follow-up message'; the gate looked for local ring20 tasks that do not exist. Consumers that discuss upstream ids will hit this. Fix: treat an id as a local deferral target only when it is not qualified by a project/vendor prefix (AEF T-XXXX, TermLink T-XXXX, <project>#T-XXXX) — define the qualifier forms — and say in the refusal how to qualify a foreign id. Do not weaken the gate for genuinely local unowned deferrals. Tests: qualified foreign id passes; bare unknown id still refused with the new hint.
+  ring20 be.9 report (sidecar 714c296e): closing ring20 T-2494 was refused because
+  its AC text named AEF's T-4690/T-4694 next to 'follow-up message'; the gate looked
+  for local ring20 tasks that do not exist. Consumers that discuss upstream ids will
+  hit this. Fix: treat an id as a local deferral target only when it is not qualified
+  by a project/vendor prefix (AEF T-XXXX, TermLink T-XXXX, <project>#T-XXXX) — define
+  the qualifier forms — and say in the refusal how to qualify a foreign id. Do not
+  weaken the gate for genuinely local unowned deferrals. Tests: qualified foreign
+  id passes; bare unknown id still refused with the new hint.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T14:04:52Z
-last_update: 2026-10-23T14:04:52Z
-date_finished: null
+last_update: '2026-10-23T14:15:26Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-23T14:15:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4698: T-3694 deferral gate treats task ids that belong to another project (e.g. 'AEF T-4690' in a consumer's AC text) as local deferral targets and refuses the close
