@@ -5,6 +5,8 @@
 # Origin: dimitri-mint-dev be.9 report (sidecar 3294edcf) — no list, no git add line.
 # t4692_upgrade_commit_list.bats covers an unvendored consumer upgraded from inside it.
 
+load ../git_fence   # T-3610: hook installs must not walk up into a repo above the temp dir
+
 setup() {
     FW_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
     S="$BATS_TEST_TMPDIR"
