@@ -10,17 +10,17 @@ description: >
   via ANTHROPIC_BASE_URL), and how the node registers with the fleet (TermLink hub;
   055 cockpit). ring20-mgmt (T-2477) feeds the concrete steps from their node.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: null
 tags: [remote-node, onboarding, fleet]
 components: []
 related_tasks: []
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "cf4e415f"}
 created: 2026-10-21T20:30:58Z
-last_update: '2026-10-22T07:46:13Z'
-date_finished:
+last_update: 2026-10-23T21:30:27Z
+date_finished: 2026-10-23T21:30:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -106,15 +106,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -163,9 +163,48 @@ bvp_scores_proposed:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: ring20 is standing up the first remote agent node (unprivileged container on an external VPS, WireGuard allow-list) and asked for a recipe; AEF has none. Our source shows what a node needs (git, bash, python3, termlink, agent CLI; per-project fw init/upgrade; per-project Watchtower; per-project secrets and NTFY_URL; mirror sync and consumer-recover off). Their node supplies the concrete first case, so the exploration has a real subject.
+
+**Date**: 2026-10-23T21:30:21Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-23T21:30:21Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: ring20 is standing up the first remote agent node (unprivileged container on an external VPS, WireGuard allow-list) and asked for a recipe; AEF has none. Our source shows what a node needs (git, bash, python3, termlink, agent CLI; per-project fw init/upgrade; per-project Watchtower; per-project secrets and NTFY_URL; mirror sync and consumer-recover off). Their node supplies the concrete first case, so the exploration has a real subject.
+
+### 2026-10-23T21:30:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ace09567
+- **Timestamp:** 2026-10-23T21:30:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-f0a35f6a
+- **Timestamp:** 2026-10-23T21:30:29Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-10-23T21:30:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
