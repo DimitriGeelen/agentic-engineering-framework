@@ -287,8 +287,16 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+grep -q '^NO WORKING-TREE COPIES (T-4702)' .context/working/worker-common.md
+grep -q 'git archive HEAD' .context/working/worker-common.md
+test -f .tasks/active/T-4703-*.md || ls .tasks/completed/T-4703-*.md
 
 ## RCA
+
+**Symptom:** a 13 GB partial copy of AEF's working tree (.agentic-framework, .claude, .context) sat in /tmp/tmp.AoFZgARUBp, pushing the RAM-backed /tmp toward full on a shared host (reported by dimitri-mint-dev).
+**Root cause:** dispatched worker w4694 ran an ad-hoc `cp -a . "$S/fw"` to test its change against a copy of the repo; the copy includes ~28 GB of untracked .context/scratch, so its tool timeout killed cp midway and the command's later steps (and any cleanup) never ran.
+**Why structurally allowed:** nothing told workers how to build a test tree, the worker rules covered stash/reset but not copies, and .context/scratch grows without retention (T-4703).
+**Prevention:** worker-common.md, prepended to every dispatched worker prompt, forbids working-tree copies and prescribes `git archive HEAD <paths> | tar -x` plus an EXIT trap; T-4703 bounds .context/scratch.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
