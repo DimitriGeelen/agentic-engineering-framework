@@ -348,6 +348,46 @@ release_issue_leg() {
 }
 
 # ---------------------------------------------------------------------------
+# release_scratch_prune <root> <next> <dry_run: true|false>  — T-4703
+#   Retention for release work dirs. Full-suite comparisons and hotfix lanes clone
+#   base/hf/tip trees into .context/scratch/v<digits>/ and hf<digits>/ (v1813 =
+#   the v1.8.13 lane; docs/reports/T-4246, T-4420), 1-10 GB each, and nothing
+#   removed them: 28 GB by 2026-10-23. After a published release this removes the
+#   dirs of releases that already shipped: name exactly v<digits> or hf<digits>,
+#   a real directory (not a symlink), digits equal to a final vX.Y.Z tag that is
+#   OLDER than <next>. The current release's dirs, future lanes, -be-only
+#   versions and any other name are kept; fw doctor's size WARN covers those.
+#   Never fails the release.
+# ---------------------------------------------------------------------------
+release_scratch_prune() {
+    local root="$1" next="$2" dry="$3"
+    local scratch="$root/.context/scratch"
+    [ -d "$scratch" ] || return 0
+    local shipped="" tag
+    while IFS= read -r tag; do
+        [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
+        release_version_lt "${tag#v}" "${next#v}" || continue
+        shipped+=" $(echo "${tag#v}" | tr -d .) "
+    done < <(git -C "$root" tag -l 'v*' 2>/dev/null)
+    local d name digits
+    for d in "$scratch"/*; do
+        name="${d##*/}"
+        [[ "$name" =~ ^(v|hf)([0-9]+)$ ]] || continue
+        digits="${BASH_REMATCH[2]}"
+        [ -d "$d" ] && [ ! -L "$d" ] || continue
+        case "$shipped" in *" $digits "*) ;; *) continue ;; esac
+        if [ "$dry" = true ]; then
+            echo -e "${CYAN}would prune release work dir${NC} .context/scratch/$name (release already shipped)"
+        elif rm -rf -- "$d"; then
+            echo -e "  ${GREEN}✓ pruned .context/scratch/$name${NC} (release already shipped)"
+        else
+            echo -e "  ${YELLOW}WARN: could not remove .context/scratch/$name (non-fatal)${NC}" >&2
+        fi
+    done
+    return 0
+}
+
+# ---------------------------------------------------------------------------
 # Release decision record (T-4364) — .context/releases/decisions.jsonl, append-only.
 #   Row: {version, decided_by: operator|field-evidence, ref, ts}
 #   An unattended run (no TTY on stdin, FW_UNATTENDED=1, or cron) refuses without
@@ -594,6 +634,7 @@ release_tag_and_release() {
         esac
         [ -n "$dev_branch" ] && echo -e "${CYAN}would push $dev_branch${NC} in the same atomic push (T-3848)"
         release_issue_leg "$root" "$latest" "$next" "$gh_repo" true
+        release_scratch_prune "$root" "$next" true
         return 0
     fi
 
@@ -754,6 +795,9 @@ release_tag_and_release() {
 
     # T-4340: after publish, so the field report and release notes it links to exist on master
     release_issue_leg "$root" "$latest" "$next" "$gh_repo" false
+
+    # T-4703: the shipped lanes' work dirs go once the release is published
+    release_scratch_prune "$root" "$next" false
 
     return $failed
 }

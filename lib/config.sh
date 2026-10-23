@@ -364,6 +364,7 @@ FW_CONFIG_REGISTRY=(
     # card stays offerable: web/blueprints/approvals.py EXPIRY_SECONDS, T-3079).
     "TIER0_APPROVAL_TTL|300|Seconds a granted Tier 0 approval admits the command, for BOTH the 'fw tier0 approve' and Watchtower legs (agents/context/check-tier0.sh). Legacy TIER0_WATCHTOWER_TTL still wins when explicitly set. NOT the pending-request staleness window. T-3080."
     "APPROVAL_PENDING_WARN_HOURS|24|Hours a pending Tier 0 approval card (.context/approvals/pending-*.yaml) may sit unanswered before fw doctor and fw audit WARN (lib/approval_queue_age.py). The request-staleness alarm, not the grant clock (TIER0_APPROVAL_TTL). Origin T-3079: three cards sat unseen for up to 3.5 months because only pull surfaces read them."
+    "SCRATCH_WARN_GB|10|Size of .context/scratch (git-ignored scratch clones and work dirs) in GB above which fw doctor WARNs and names the largest subdirs (lib/scratch-size.sh). Release lanes are pruned after each release (lib/release.sh:release_scratch_prune); this catches the rest. Origin T-4703: 28 GB of old release clones sat there unmeasured."
     # T-3127. AUDIT_TIMEOUT (section-scoped default 600, full-run default 3000
     # via FW_AUDIT_FULL_TIMEOUT, T-3070) is a pinned constant; the corpus a
     # full 'fw audit' scans grows with every task/learning/episodic/fabric

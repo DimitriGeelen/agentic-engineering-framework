@@ -1,0 +1,21 @@
+id: lib/scratch-size.sh
+name: scratch-size
+type: script
+subsystem: framework-core
+location: lib/scratch-size.sh
+tags: []
+
+purpose: "lib/scratch-size.sh - size verdict for .context/scratch (T-4703)"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-23
+created_by: unknown

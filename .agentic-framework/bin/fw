@@ -3751,6 +3751,27 @@ else:
         fi
     fi
 
+    # T-4703: .context/scratch is git-ignored, so nothing saw old release clones
+    # pile up to 28 GB. du on a big tree costs seconds, so --quick skips it.
+    if _doctor_quick_skip ".context/scratch size"; then :
+    elif [ -f "$FRAMEWORK_ROOT/lib/scratch-size.sh" ]; then
+        source "$FRAMEWORK_ROOT/lib/scratch-size.sh"
+        _sc_gb="$(fw_config SCRATCH_WARN_GB)"
+        case "${_sc_gb:-}" in ''|*[!0-9]*) _sc_gb=10 ;; esac
+        _sc_out=$(fw_scratch_size_verdict "${FW_DOCTOR_SCRATCH_DIR:-$PROJECT_ROOT/.context/scratch}" "$((_sc_gb * 1048576))") && _sc_rc=0 || _sc_rc=$?  # set -e; dir override is a test seam
+        IFS=$'\t' read -r _sc_v _sc_kb _sc_top <<< "$_sc_out"
+        if [ "$_sc_rc" -eq 1 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  .context/scratch is $(awk -v k="$_sc_kb" 'BEGIN{printf "%.1f", k/1048576}') GB (over SCRATCH_WARN_GB=$_sc_gb) — largest: $_sc_top"
+            echo "         Remove finished work dirs (they are git-ignored scratch); release lanes v<NNNN>/hf<NNNN> are pruned by fw release"
+            warnings=$((warnings + 1))
+        elif [ "$_sc_rc" -eq 2 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  .context/scratch size check could not run (${_sc_kb})"
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  .context/scratch is $((_sc_kb / 1024)) MB (under SCRATCH_WARN_GB=$_sc_gb)"
+        fi
+    fi
+
     _doctor_phase "Watchtower smoke test"  # T-3452
     # Check: Watchtower smoke test (T-486) — run if server is reachable
     # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)

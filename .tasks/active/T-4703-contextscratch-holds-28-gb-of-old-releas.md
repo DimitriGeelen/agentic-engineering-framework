@@ -11,10 +11,10 @@ description: >
   nothing references them. .context/working/fw-vec-index.db (4.5 GB) is the semantic
   index and stays.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T14:46:22Z
-last_update: '2026-10-23T15:00:34Z'
+last_update: 2026-10-23T16:41:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/release.sh` has `release_scratch_prune <root> <next> <dry>`: removes only `.context/scratch/v<digits>` and `hf<digits>` directories (no symlinks) whose digits match an existing release tag other than `<next>`; unknown names, the current release's dirs and non-matching names are kept. `tag-and-release` runs it after a published release and previews it under `--dry-run`; it never fails the release
+- [x] `fw doctor` WARNs when `.context/scratch` exceeds `SCRATCH_WARN_GB` (default 10, registered in `lib/config.sh` FW_CONFIG_REGISTRY), naming the largest subdirs; OK line otherwise
+- [x] Regression bats `tests/unit/t4703_scratch_retention.bats` covers prune (old release dirs gone, current/unknown/symlink kept, dry-run deletes nothing) and the size verdict with a KB-scale fixture threshold; green with no skips
+- [x] Existing dirs NOT deleted by the agent: references checked, `lsof +D` checked, a `fw runme` for the operator listing only the safe dirs, its `bash …/runme.sh` line recorded in ## Updates
+- [x] `bin/fw vendor self` run; `bin/fw vendor self --check --task T-4703` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,10 +285,13 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4703_scratch_retention.bats > /tmp/.t4703.out 2>&1 && grep -q "^ok 1 " /tmp/.t4703.out && ! grep -q "^not ok" /tmp/.t4703.out
+test "$(grep -c '# skip' /tmp/.t4703.out)" -eq 0
+grep -q '"SCRATCH_WARN_GB|10|' lib/config.sh
+bash -n bin/fw && bash -n lib/release.sh && bash -n lib/scratch-size.sh
+bin/fw vendor self --check --task T-4703
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+<!-- RCA guidance (section below Evolution). REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
 
@@ -322,6 +328,16 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** `.context/scratch` reached 28 GB (measured 2026-10-23 under T-4702). Most of it was old release work dirs: v1813 9.7 GB, hotfix 7.4 GB, v1811 4.5 GB, v1812 3.9 GB.
+
+**Root cause:** these dirs are written by no script. The release and hotfix procedure is agent-run: full-suite comparisons and hotfix lanes clone `base`/`hf`/`tip` trees into `.context/scratch/v18NN/` and `hotfix/` by hand (docs/reports/T-4246-full-suite-comparison.md:4, T-4345-hotfix-v1812.md, T-4420-hotfix-v1813.md:8). The release step that ends a lane, `release_tag_and_release` (lib/release.sh:432), had no retention leg, so every lane's clones (each 1-5 GB) stayed after the tag shipped.
+
+**Why structurally allowed:** `.context/scratch` is git-ignored, so neither git status nor audit sees it, and no check measured its size. `fw doctor` reported nothing while it grew to 28 GB. The only earlier signal was indirect: scans slowed (tools/port3000_hygiene.py:138, 7.5 GB / 140k files) and got a prune exclusion rather than a cleanup.
+
+**Prevention:** (1) `release_scratch_prune` runs as the last leg of a published release and removes the version-named work dirs of releases that already shipped (fail-safe: only `v<digits>`/`hf<digits>` names that match an existing tag). (2) `fw doctor` WARNs above `SCRATCH_WARN_GB` (default 10), which catches unversioned leftovers such as `hotfix/` and `t4489/`. Both are pinned by tests/unit/t4703_scratch_retention.bats.
 
 ## Recommendation
 
@@ -379,3 +395,12 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4703-contextscratch-holds-28-gb-of-old-releas.md
 - **Context:** Initial task creation
+
+### 2026-10-23T16:41:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
+
+### 2026-10-23 — operator cleanup runme (agent did not delete)
+- **Safe dirs:** `.context/scratch/{v1811,v1812,v1813,hotfix,hf1814,t4489}` (~33 GB of lanes for v1.8.11–v1.8.14, all released; T-4489 completed). References checked: only completed reports and one historical task note (T-4112, "deleted after"), nothing in lib/bin/agents/tools/web/policy. `lsof +D` showed 0 open files in each dir, and none is a git worktree.
+- **Run:** `bash /opt/999-Agentic-Engineering-Framework/.context/runme/scratch-retention/runme.sh`
+- **Live doctor before cleanup:** `WARN .context/scratch is 27 GB (over SCRATCH_WARN_GB=10) — largest: v1813 9.7G, hotfix 7.3G, v1811 4.5G`
