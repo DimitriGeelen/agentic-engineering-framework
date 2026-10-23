@@ -39,10 +39,11 @@
 # can set directly (bats overwrites BATS_TMPDIR at startup, libexec/bats-core/bats:
 # `export BATS_TMPDIR="${TMPDIR:-/tmp}"`). TMPDIR is the lever:
 #
-#   mkdir -p .context/working/.proof
-#   TMPDIR=$PWD/.context/working/.proof bats tests/lint/no-project-markers-above-bats-tmpdir.bats
+#   d=$(mktemp -d) && mkdir "$d/.tasks" && TMPDIR=$d bats tests/lint/no-project-markers-above-bats-tmpdir.bats
 #
-# which puts the repo's own .framework.yaml above the base and reddens leg 1.
+# which puts a .tasks marker above the base and reddens leg 1. Never point
+# TMPDIR inside the checkout to do this: that is how fixtures got committed
+# (T-4696), and tests/lint/setup_suite.bash now refuses such a run outright.
 
 RESOLVER="$BATS_TEST_DIRNAME/../../lib/paths.sh"
 

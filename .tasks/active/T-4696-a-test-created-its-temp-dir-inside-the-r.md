@@ -1,10 +1,15 @@
 ---
 id: T-4696
-name: "A test created its temp dir inside the repo (.context/working/t4662tmp/bats-run-*/...) and a handover commit (0b514d2c4, 00:41) committed two of its files"
+name: "A test created its temp dir inside the repo (.context/working/t4662tmp/bats-run-*/...)
+  and a handover commit (0b514d2c4, 00:41) committed two of its files"
 description: >
-  Same leak class as T-4671. Find the test that used .context/working as TMPDIR/BATS_TMPDIR (grep tests/ for t4662tmp, TMPDIR=.context, BATS_TMPDIR), move it to a mktemp dir outside the repo, and extend T-4671's live_repo_guard (or add a lint) so any test that writes under the real repo fails. The two committed files were removed from the index in this task.
+  Same leak class as T-4671. Find the test that used .context/working as TMPDIR/BATS_TMPDIR
+  (grep tests/ for t4662tmp, TMPDIR=.context, BATS_TMPDIR), move it to a mktemp dir
+  outside the repo, and extend T-4671's live_repo_guard (or add a lint) so any test
+  that writes under the real repo fails. The two committed files were removed from
+  the index in this task.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T13:57:37Z
-last_update: 2026-10-23T13:57:37Z
-date_finished: null
+last_update: 2026-10-23T13:58:31Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T13:58:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4696: A test created its temp dir inside the repo (.context/working/t4662tmp/bats-run-*/...) and a handover commit (0b514d2c4, 00:41) committed two of its files
@@ -62,8 +84,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The source of the in-repo temp dir (`.context/working/t4662tmp`) is identified and recorded in ## RCA with file:line or command evidence
+- [x] No test under tests/ sets TMPDIR / BATS_TMPDIR / BATS_RUN_TMPDIR / `mktemp -p` to a path inside the framework repo (a lint over tests/ enforces it)
+- [x] The test suite refuses to run when its temp root (BATS_RUN_TMPDIR / TMPDIR) lies inside the real repo, so a `TMPDIR=<repo path> bats ...` invocation fails loudly instead of leaking files
+- [x] Regression test(s) added and pass in the foreground; `git status --porcelain` of the real repo unchanged before/after (recorded in ## Updates)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +272,10 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+d=$(mktemp -d); TMPDIR=$d timeout 300 bats tests/lint/t4696_no_tmpdir_in_repo.bats > /tmp/.t4696-v.out 2>&1; r=$?; rm -rf "$d"; [ $r -eq 0 ] && grep -q '^ok 5 ' /tmp/.t4696-v.out && ! grep -q '^not ok' /tmp/.t4696-v.out
+test "$(grep -c '# skip' /tmp/.t4696-v.out)" -eq 0
+mkdir -p .context/working/.t4696-proof; TMPDIR=$PWD/.context/working/.t4696-proof timeout 60 bats tests/unit/t4662_safe_commands_no_cwd_contract.bats > /tmp/.t4696-r.out 2>&1; r=$?; rm -rf .context/working/.t4696-proof; [ $r -ne 0 ] && grep -q 'TMPDIR INSIDE THE REPO (T-4696)' /tmp/.t4696-r.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4696-l.out 2>&1 && grep -q 'clean' /tmp/.t4696-l.out
 
 ## RCA
 
@@ -265,7 +293,6 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -288,6 +315,16 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+**Symptom:** handover commit 0b514d2c4 (T-4681, 00:41) committed `.context/working/t4662tmp/bats-run-aOWVHW/test/598/proj/.context/handovers/{LATEST.md,S-2026-1023-0041.md}` — bats fixture files.
+
+**Root cause:** no test file put its temp dir in the repo (grep of tests/ for t4662tmp, in-repo TMPDIR/BATS_TMPDIR/`mktemp -p`: zero hits). The T-4662 worker (session cd165ddb, 2026-10-22T22:32Z and 22:44Z) ran `mkdir -p .context/working/t4662tmp && TMPDIR=$PWD/.context/working/t4662tmp timeout 590 bats -j 6 <files>`. bats derives BATS_RUN_TMPDIR from TMPDIR, so every BATS_TEST_TMPDIR — and test 598's fixture project `proj` — lived inside the checkout, visible to the real repo's git status and picked up by the next handover's add. That recipe is the one the T-3234 lint documents for itself: tests/lint/no-project-markers-above-bats-tmpdir.bats:42-43 (`TMPDIR=$PWD/.context/working/.proof bats ...`).
+
+**Why structurally allowed:** tests/git_fence.bash and tests/live_repo_guard.bash (T-4671) both assume the temp root is outside the checkout; nothing asserted it. live_repo_guard is per-file opt-in and watches status changes during a test, so it cannot see a run-level temp root choice; .context/working is not gitignored for these paths.
+
+**Prevention:** tests/{unit,lint,integration,governance}/setup_suite.bash (bats runs it once per invocation) call tests/tmpdir_outside_repo.bash:refuse_tmpdir_inside_repo and fail the whole run (`not ok 1 setup_suite`, message names T-4696) when BATS_RUN_TMPDIR/TMPDIR is inside the repo. tests/lint/t4696_no_tmpdir_in_repo.bats statically refuses any tests/ source pointing TMPDIR/BATS_TMPDIR/BATS_RUN_TMPDIR/`mktemp -p`/`bats --tempdir` at $PWD/$FRAMEWORK_ROOT/$PROJECT_ROOT/$REPO_ROOT/$BATS_TEST_DIRNAME/.context, checks every bats dir has the refusal, and runs a nested end-to-end red/green. The T-3234 comment now shows an out-of-repo proof recipe.
+
+## Evolution
 
 ## Recommendation
 
@@ -345,3 +382,13 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4696-a-test-created-its-temp-dir-inside-the-r.md
 - **Context:** Initial task creation
+
+### 2026-10-23T13:58:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-23 — guard + lint, foreground runs [w4696]
+- Run 1 (TMPDIR=$(mktemp -d), foreground): t4696_no_tmpdir_in_repo, no-project-markers-above-bats-tmpdir, t4671_live_repo_guard, t4662_safe_commands_no_cwd_contract — 21/21 ok, 0 skip. Real-repo `git status --porcelain | sort` before vs after: `diff` empty.
+- Run 2 (same form, -j 4): t4215_unit_suite_file_tmpdir, t4526_tmp_leftovers, handover, bats-git-discovery-fence — 22/22 ok, 0 skip. `diff` of porcelain before/after: empty.
+- Red proof: `TMPDIR=$PWD/.context/working/t4696proof bats tests/unit/t4662_safe_commands_no_cwd_contract.bats` → rc=1, `not ok 1 setup_suite`, "TMPDIR INSIDE THE REPO (T-4696)"; the proof dir was empty afterwards.
+- tests/lint/ whole dir: 153 ok, 1 not ok = "every collectable test file under tests/ is tracked by git" (the new lint file was still untracked; rechecked after commit).
+- bats-dead-negation-lint: clean.
