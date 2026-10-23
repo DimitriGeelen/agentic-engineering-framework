@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4414: Adopt dimitri-mint-dev's Perplexity browser seat as a standing framework capability (one question -> answer + sources, through the operator's own logged-in Chrome)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T21:30:40Z
+# ============================================================================
+
+task_id: T-4414
+task_name: "Adopt dimitri-mint-dev's Perplexity browser seat as a standing framework capability (one question -> answer + sources, through the operator's own logged-in Chrome)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-19T17:16:37Z
+completed: 2026-10-23T21:30:11Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-19T19:17:54+02:00
+last_commit: 2026-10-23T23:30:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — adopt dimitri-mint-dev's Perplexity seat (their T-151 proposal). research artefact + verbatim inputs (recorded transfer, sha256 verified); IW-1..IW-4; recommendation GO with conditions, IW-1 (web UI vs paid API) is the operator's. record sender's screening fixes (fail-closed deny file, more token formats) and the Xvfb/off-desktop condition. Xvfb/off-desktop condition in the recommendation. record their operator's web-not-API choice (their project), the silent truncated-answer defect and its fix, Xvfb default live. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'record their operator''s web-not-API choice (their project), the silent truncated-answer defect and its fix, Xvfb default live'
+    source: git-mined
+  - description: 'record sender''s screening fixes (fail-closed deny file, more token formats) and the Xvfb/off-desktop condition'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - 'docs/reports/T-4414-inputs/seat_ask.py.txt'
+  - 'docs/reports/T-4414-inputs/seat-chrome.sh.txt'
+  - 'docs/reports/T-4414-inputs/T-151-perplexity-seat-for-aef.md'
+  - 'docs/reports/T-4414-perplexity-seat.md'
+  - '.tasks/active/T-4414-adopt-dimitri-mint-devs-perplexity-brows.md'
+  - '.tasks/completed/T-4414-adopt-dimitri-mint-devs-perplexity-brows.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-19T19:17:54'
+    action: 'T-4414: file inception — adopt dimitri-mint-dev''s Perplexity seat (their T-151 proposal)'
+  - time: '2026-10-19T19:20:52'
+    action: 'T-4414: research artefact + verbatim inputs (recorded transfer, sha256 verified); IW-1..IW-4; recommendation GO with conditions, IW-1 (web UI vs paid API) is the operator''s'
+  - time: '2026-10-19T19:25:41'
+    action: 'T-4414: record sender''s screening fixes (fail-closed deny file, more token formats) and the Xvfb/off-desktop condition'
+  - time: '2026-10-19T19:25:51'
+    action: 'T-4414: Xvfb/off-desktop condition in the recommendation'
+  - time: '2026-10-19T19:54:55'
+    action: 'T-4414: record their operator''s web-not-API choice (their project), the silent truncated-answer defect and its fix, Xvfb default live'
+  - time: '2026-10-23T23:30:14'
+    action: 'T-4414: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 6013 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6013
+  commits: 7
+  files_changed: 8
+  lines_added: 873
+  lines_removed: 17
+  footprint_refreshed_at: '2026-10-23T21:30:52Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4414-adopt-dimitri-mint-devs-perplexity-brows.md
+generated_by: context-agent-hybrid
