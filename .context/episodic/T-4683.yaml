@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4683: Regression from T-4675: first dispatch of every codex/opencode/antigravity seat dies with 'would shadow' (no multi-vendor review panel can complete)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T09:44:56Z
+# ============================================================================
+
+task_id: T-4683
+task_name: "Regression from T-4675: first dispatch of every codex/opencode/antigravity seat dies with 'would shadow' (no multi-vendor review panel can complete)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T09:33:19Z
+completed: 2026-10-23T09:44:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T11:35:02+02:00
+last_commit: 2026-10-23T11:43:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  dispatch shadow guard fires only when a run of that name exists in another root; first codex/opencode/antigravity seat dispatch no longer dies (regression from T-4675, found by ring20's rung-5 panel). regression bats for first harness-seat dispatch with two dispatch roots (red on pre-fix termlink.sh, green after); RCA, Verification, ACs ticked
+
+# Key outcomes
+outcomes:
+  - 'The shadow guard in agents/termlink/termlink.sh (dispatch) fires only when a run of that name actually exists in another root (`[ -d "$prev_wdir" ]`); a first dispatch of a codex/opencode/antigravity seat with two DISPATCH_ROOTS no longer dies'
+  - 'Regression bats: harness worker_kind + both roots present + new name dispatches; an existing project dir of the same name still dies with the shadow message'
+  - 'Vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'regression bats for first harness-seat dispatch with two dispatch roots (red on pre-fix termlink.sh, green after); RCA, Verification, ACs ticked'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/termlink/termlink.sh'
+  - '.tasks/active/T-4683-regression-from-t-4675-first-dispatch-of.md'
+  - 'tests/unit/t4683_harness_seat_first_dispatch.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T11:35:02'
+    action: 'T-4683: dispatch shadow guard fires only when a run of that name exists in another root; first codex/opencode/antigravity seat dispatch no longer dies (regression from T-4675, found by ring20''s rung-5 panel)'
+  - time: '2026-10-23T11:43:28'
+    action: 'T-4683: regression bats for first harness-seat dispatch with two dispatch roots (red on pre-fix termlink.sh, green after); RCA, Verification, ACs ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 2
+  files_changed: 3
+  lines_added: 481
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4683-regression-from-t-4675-first-dispatch-of.md
+generated_by: context-agent-hybrid

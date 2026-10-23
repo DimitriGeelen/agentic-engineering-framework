@@ -1,23 +1,15 @@
 ---
-id: T-4681
-name: "Regression from T-4653: finalizing a partial-complete task re-applies the empty-Verification
-  authoring gate (T-4024), so 21 of 333 partial-completes can never be finalized"
+id: T-4683
+name: "Regression from T-4675: first dispatch of every codex/opencode/antigravity seat dies with 'would shadow' (no multi-vendor review panel can complete)"
 description: >
-  Nightly 2026-10-23T01:03Z: tests/unit/skip_ac_partial_complete.bats 2-4 red, blocking
-  every push. T-4653's re-run branch calls the full verification path, which refuses
-  a task whose ## Verification yields 0 commands. That gate is for the first transition;
-  at finalization the operator has just ticked the last Human AC on a task that already
-  passed (or was grandfathered). Fix: the re-run branch runs the commands that exist
-  and refuses on a red one (T-4653 intent), but an empty section passes with a one-line
-  note. Tests: skip_ac_partial_complete.bats green unchanged, t4653 bats green, plus
-  a new case: partial-complete with empty Verification finalizes.
+  Regression from T-4675: first dispatch of every codex/opencode/antigravity seat dies with 'would shadow' (no multi-vendor review panel can complete)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/termlink.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-23T09:31:34Z
-last_update: 2026-10-23T09:32:31Z
-date_finished:
+created: 2026-10-23T09:33:19Z
+last_update: 2026-10-23T09:44:36Z
+date_finished: 2026-10-23T09:44:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,26 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-23T09:32:17Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 0
-      D2: 0
-      D3: 0
-      D4: 0
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4681: Regression from T-4653: finalizing a partial-complete task re-applies the empty-Verification authoring gate (T-4024), so 21 of 333 partial-completes can never be finalized
+# T-4683: Regression from T-4675: first dispatch of every codex/opencode/antigravity seat dies with 'would shadow' (no multi-vendor review panel can complete)
 
 ## Context
 
@@ -87,10 +62,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Finalizing a partial-complete task (OLD == NEW == work-completed) with an empty `## Verification` archives the task and prints a one-line note instead of the T-4024 refusal
-- [x] The finalization re-run still refuses when a Verification command is red (T-4653 intent kept); the first work-completed transition still applies the T-4024 empty-block refusal
-- [x] `tests/unit/skip_ac_partial_complete.bats` green unchanged; `tests/unit/t4653_partial_complete_reverify.bats` green with a new case (empty Verification finalizes) that fails without the fix
-- [x] `bin/fw vendor self --check --task T-4681` clean
+- [x] The shadow guard in agents/termlink/termlink.sh (dispatch) fires only when a run of that name actually exists in another root (`[ -d "$prev_wdir" ]`); a first dispatch of a codex/opencode/antigravity seat with two DISPATCH_ROOTS no longer dies
+- [x] Regression bats: harness worker_kind + both roots present + new name dispatches; an existing project dir of the same name still dies with the shadow message
+- [x] Vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -275,12 +249,10 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 900 bats tests/unit/skip_ac_partial_complete.bats > /tmp/.t4681a 2>&1 && ! grep -q "^not ok" /tmp/.t4681a
-test "$(grep -c '# skip' /tmp/.t4681a)" -eq 0
-timeout 900 bats tests/unit/t4653_partial_complete_reverify.bats > /tmp/.t4681b 2>&1 && ! grep -q "^not ok" /tmp/.t4681b
-test "$(grep -c '# skip' /tmp/.t4681b)" -eq 0
-bash -n agents/task-create/update-task.sh
-bin/fw vendor self --check --task T-4681
+timeout 600 bats tests/unit/t4683_harness_seat_first_dispatch.bats tests/unit/t4675_dispatch_wdir_durable.bats > /tmp/.t4683.out 2>&1 && grep -q '^ok 8 ' /tmp/.t4683.out && ! grep -q "^not ok" /tmp/.t4683.out
+test "$(grep -c '# skip' /tmp/.t4683.out)" -eq 0
+grep -q '\[ "$prev_wdir" != "$wdir" \] && \[ -d "$prev_wdir" \]' agents/termlink/termlink.sh
+bin/fw vendor self --check --task T-4683
 
 ## RCA
 
@@ -298,13 +270,13 @@ bin/fw vendor self --check --task T-4681
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** Nightly 2026-10-23: `tests/unit/skip_ac_partial_complete.bats` 2-4 red (blocking every push); in the corpus, 21 of 333 partial-complete tasks with an empty `## Verification` could never be finalized — `fw task update --status work-completed` refused with "BLOCKED: ## Verification yields 0 commands (T-4024)".
+**Symptom:** the first dispatch of any codex/opencode/antigravity review seat died with `dispatch '<name>': <project>/.context/dispatch/<name> already holds a run of that name and would shadow the new one` — for a dir that did not exist. No rung-5 multi-vendor panel could complete (found by ring20's panel run).
 
-**Root cause:** T-4653 added `run_verification_commands` to the finalization branch (`agents/task-create/update-task.sh`, the OLD == NEW == work-completed re-run, ~line 2136). That function's empty-block branch calls `_t4024_enforce_empty_verification` (~line 1630), an *authoring* gate meant for the first close. At finalization the task already passed (or was grandfathered past) that gate, and the operator has only ticked the last Human AC — so re-applying the authoring gate made those tasks un-archivable.
+**Root cause:** T-4675 placed harness seats in the legacy /tmp root when two DISPATCH_ROOTS exist (agents/termlink/termlink.sh:1221-1223), then compared that wdir with `_wdir_of "$name"` (:1225). `_wdir_of` (:50-56) falls back to `$DISPATCH_DIR/$name` — the project root — for a name no root holds, so for every *new* harness name `prev_wdir != wdir` was true and the "would shadow" die fired (:1226-1230). The guard tested path inequality, not existence.
 
-**Why structurally allowed:** T-4653's tests covered a red command and a green command at finalization, not an empty block; the T-4024 tests covered only the first transition. The interaction of the two gates on one path had no test, and the existing partial-complete bats (empty Verification fixtures) run nightly, not at T-4653's close.
+**Why structurally allowed:** the T-4675 bats suite (tests/unit/t4675_dispatch_wdir_durable.bats) only dispatched a default (claude) worker, whose wdir equals the fallback, so the harness-seat branch of the guard was never executed in a test. The harness path also requires a review dispatch with a committed registry, which made it look untestable without real binaries.
 
-**Prevention:** new bats case in `t4653_partial_complete_reverify.bats` (partial-complete with empty Verification finalizes) pins the interaction; the re-run branch passes a finalizing flag that makes the empty case report-only while red commands still refuse.
+**Prevention:** fix 3d25b2cf9 adds `[ -d "$prev_wdir" ]` to the guard. tests/unit/t4683_harness_seat_first_dispatch.bats exercises the harness branch end to end in a sandbox (sandbox git project with its own committed registry pinning a stub codex, stub termlink via PATH and TERMLINK_BIN, private TMUX_TMPDIR/TERMLINK_RUNTIME_DIR, stubbed `od` to fix the review-name suffix): a first codex seat gets past the guard into the legacy root, and a same-named run already in the project root still dies with the shadow message.
 
 ## Evolution
 
@@ -382,10 +354,30 @@ bin/fw vendor self --check --task T-4681
 
 ## Updates
 
-### 2026-10-23T09:31:34Z — task-created [task-create-agent]
+### 2026-10-23T09:33:19Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4681-regression-from-t-4653-finalizing-a-part.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4683-regression-from-t-4675-first-dispatch-of.md
 - **Context:** Initial task creation
 
-### 2026-10-23T09:32:16Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
+### 2026-10-23 — regression test added, red on pre-fix code proven [w4683]
+- **Added:** tests/unit/t4683_harness_seat_first_dispatch.bats (2 cases; `T4683_SCRIPT` env selects the script under test, default the tracked one).
+- **Pre-fix (red):** `git show 3d25b2cf9^:agents/termlink/termlink.sh` saved to a scratch dir laid out as `<tmp>/agents/termlink/termlink.sh` with `lib/`, `policy/`, `tools/`, `bin/` symlinked to the repo (the script resolves FRAMEWORK_ROOT from its own path). Result: `not ok 1` — `ERROR: dispatch 't4683-seat-…-4b6830000001': <sandbox>/proj/.context/dispatch/… already holds a run of that name and would shadow the new one` (the production symptom); `ok 2`. The tracked file was not touched.
+- **Fixed copy, same scratch layout:** `ok 1`, `ok 2`. Tracked file: 8/8 with t4675_dispatch_wdir_durable.bats, 0 skips. Real `termlink list` line count 47 before and after the run; nothing reached the real hub.
+- **Lint:** `python3 tools/bats-dead-negation-lint.py tests/` clean.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ac8cd7af
+- **Timestamp:** 2026-10-23T09:44:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-23T09:44:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

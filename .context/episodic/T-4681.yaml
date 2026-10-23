@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4681: Regression from T-4653: finalizing a partial-complete task re-applies the empty-Verification authoring gate (T-4024), so 21 of 333 partial-completes can never be finalized
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T09:43:16Z
+# ============================================================================
+
+task_id: T-4681
+task_name: "Regression from T-4653: finalizing a partial-complete task re-applies the empty-Verification authoring gate (T-4024), so 21 of 333 partial-completes can never be finalized"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T09:31:34Z
+completed: 2026-10-23T09:42:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T00:41:59+02:00
+last_commit: 2026-10-23T11:34:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Session handover S-2026-1023-0041. finalizing a partial-complete task no longer re-applies the T-4024 empty-Verification authoring gate — empty block notes and archives, red commands still refuse; bats case for empty Verification at finalization. tick Agent ACs
+
+# Key outcomes
+outcomes:
+  - 'Finalizing a partial-complete task (OLD == NEW == work-completed) with an empty `## Verification` archives the task and prints a one-line note instead of the T-4024 refusal'
+  - 'The finalization re-run still refuses when a Verification command is red (T-4653 intent kept); the first work-completed transition still applies the T-4024 empty-block refusal'
+  - '`tests/unit/skip_ac_partial_complete.bats` green unchanged; `tests/unit/t4653_partial_complete_reverify.bats` green with a new case (empty Verification finalizes) that fails without the fix'
+  - '`bin/fw vendor self --check --task T-4681` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.context/working/t4662tmp/bats-run-aOWVHW/test/598/proj/.context/handovers/LATEST.md'
+  - '.context/working/t4662tmp/bats-run-aOWVHW/test/598/proj/.context/handovers/S-2026-1023-0041.md'
+  - '.tasks/active/T-4681-regression-from-t-4653-finalizing-a-part.md'
+  - 'tests/unit/t4653_partial_complete_reverify.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T00:41:59'
+    action: 'T-4681: Session handover S-2026-1023-0041'
+  - time: '2026-10-23T11:34:20'
+    action: 'T-4681: finalizing a partial-complete task no longer re-applies the T-4024 empty-Verification authoring gate — empty block notes and archives, red commands still refuse; bats case for empty Verification at finalization'
+  - time: '2026-10-23T11:34:50'
+    action: 'T-4681: tick Agent ACs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 3
+  files_changed: 6
+  lines_added: 534
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4681-regression-from-t-4653-finalizing-a-part.md
+generated_by: context-agent-hybrid

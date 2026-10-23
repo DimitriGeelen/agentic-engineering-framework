@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4682: Regression from T-4666: tests/unit/t4217_spawn_env_isolation.bats' stub termlink is bypassed by the constructed PATH, so the test spawns a REAL TermLink session on the shared default tmux server
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T09:43:35Z
+# ============================================================================
+
+task_id: T-4682
+task_name: "Regression from T-4666: tests/unit/t4217_spawn_env_isolation.bats' stub termlink is bypassed by the constructed PATH, so the test spawns a REAL TermLink session on the shared default tmux server"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T09:31:48Z
+completed: 2026-10-23T09:43:18Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T11:38:07+02:00
+last_commit: 2026-10-23T11:38:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw termlink spawn runs the caller-resolved termlink (TERMLINK_BIN wins) by absolute path — T-4666's constructed PATH put claude's dir (holding the real termlink) ahead of PATH stubs, so t4217/t4636/t3720/t4561/t3910/t4675 spawned REAL sessions; t4217 now proves its stub ran (marker), unique name, private TMUX_TMPDIR/TERMLINK_RUNTIME_DIR, hub-session teardown; regression tests
+
+# Key outcomes
+outcomes:
+  - '`fw termlink spawn` runs `${TERMLINK_BIN:-$(command -v termlink)}` by absolute path — the binary the caller resolved (and ensure_termlink checked), with TERMLINK_BIN (on the T-4665 allow-list as "which binary to call") as the explicit seam — so the T-4666 constructed PATH can no longer substitute a different termlink'
+  - 't4217 bats injects its stub via TERMLINK_BIN, asserts the stub actually ran (marker file), uses a unique session name per run, isolates TMUX_TMPDIR/TERMLINK_RUNTIME_DIR to its temp dir (so even a real binary could not reach the default tmux server or the real hub), and its teardown removes any session it registered'
+  - 'Regression tests: a PATH-only stub (no TERMLINK_BIN) is the binary spawn runs (marker), and a static pin on the `tl_bin` line; both fail on the pre-fix code'
+  - 'Other tests/ files that PATH-stub termlink through spawn were checked: t4636 (leaked t4636-w/-f), t3720 (w-empty), t4561 (w-reuse), t3910 (new-one), t4675 (w-new) had the same leak and are fixed by the source change (t4636 also sets TERMLINK_BIN); t4647/t4674/t4152 stub claude in the same dir and were unaffected — all 8 suites green, zero new sessions on the hub'
+  - 'After every run, `termlink list` shows no t4217 session'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - 'agents/termlink/termlink.sh'
+  - '.tasks/active/T-4682-regression-from-t-4666-testsunitt4217spa.md'
+  - 'tests/unit/t4217_spawn_env_isolation.bats'
+  - 'tests/unit/t4636_agent_scope.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T11:38:07'
+    action: 'T-4682: fw termlink spawn runs the caller-resolved termlink (TERMLINK_BIN wins) by absolute path — T-4666''s constructed PATH put claude''s dir (holding the real termlink) ahead of PATH stubs, so t4217/t4636/t3720/t4561/t3910/t4675 spawned REAL sessions; t4217 now proves its stub ran (marker), unique name, private TMUX_TMPDIR/TERMLINK_RUNTIME_DIR, hub-session teardown; regression tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 5
+  lines_added: 462
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4682-regression-from-t-4666-testsunitt4217spa.md
+generated_by: context-agent-hybrid
