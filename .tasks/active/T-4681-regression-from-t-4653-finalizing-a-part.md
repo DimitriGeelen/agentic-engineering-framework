@@ -87,10 +87,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Finalizing a partial-complete task (OLD == NEW == work-completed) with an empty `## Verification` archives the task and prints a one-line note instead of the T-4024 refusal
-- [ ] The finalization re-run still refuses when a Verification command is red (T-4653 intent kept); the first work-completed transition still applies the T-4024 empty-block refusal
-- [ ] `tests/unit/skip_ac_partial_complete.bats` green unchanged; `tests/unit/t4653_partial_complete_reverify.bats` green with a new case (empty Verification finalizes) that fails without the fix
-- [ ] `bin/fw vendor self --check --task T-4681` clean
+- [x] Finalizing a partial-complete task (OLD == NEW == work-completed) with an empty `## Verification` archives the task and prints a one-line note instead of the T-4024 refusal
+- [x] The finalization re-run still refuses when a Verification command is red (T-4653 intent kept); the first work-completed transition still applies the T-4024 empty-block refusal
+- [x] `tests/unit/skip_ac_partial_complete.bats` green unchanged; `tests/unit/t4653_partial_complete_reverify.bats` green with a new case (empty Verification finalizes) that fails without the fix
+- [x] `bin/fw vendor self --check --task T-4681` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
