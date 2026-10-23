@@ -1,10 +1,23 @@
 ---
 id: T-4717
-name: "dimitri-mint-dev: upgrade files-to-commit list still missing on a plain one-step upgrade from an external clone (be.14, clean tree), though it works on ring20 and in the t4705 bats"
+name: "dimitri-mint-dev: upgrade files-to-commit list still missing on a plain one-step
+  upgrade from an external clone (be.14, clean tree), though it works on ring20 and
+  in the t4705 bats"
 description: >
-  dimitri-mint-dev be.14 report (sidecar 6a934c08): be.11 -> be.14 from a fresh full clone, consumer committed clean at be.11, '3 change(s) applied, 1 item(s) skipped' + Next steps with its task id, 12 files under .agentic-framework/ + .framework.yaml changed, NO 'Files this upgrade created or changed' list and no git add line. ring20 (own upgrade script) sees the list; tests/unit/t4705_upgrade_commit_list_vendored_external.bats passes. So the difference is in the invocation or environment: exact command and cwd, whether the consumer's vendored fw re-execs into the clone (journal _t4697_log/_t4692_before created in one process, summary in another), TMPDIR differences across the re-exec, or a python3 failure in lib/upgrade_commit_list.py swallowed by 2>/dev/null || true. Get the exact command and full output from dimitri-mint-dev, reproduce, fix, pin the shape in bats. Never print a silent nothing: if the list cannot be computed, say so in the summary.
+  dimitri-mint-dev be.14 report (sidecar 6a934c08): be.11 -> be.14 from a fresh full
+  clone, consumer committed clean at be.11, '3 change(s) applied, 1 item(s) skipped'
+  + Next steps with its task id, 12 files under .agentic-framework/ + .framework.yaml
+  changed, NO 'Files this upgrade created or changed' list and no git add line. ring20
+  (own upgrade script) sees the list; tests/unit/t4705_upgrade_commit_list_vendored_external.bats
+  passes. So the difference is in the invocation or environment: exact command and
+  cwd, whether the consumer's vendored fw re-execs into the clone (journal _t4697_log/_t4692_before
+  created in one process, summary in another), TMPDIR differences across the re-exec,
+  or a python3 failure in lib/upgrade_commit_list.py swallowed by 2>/dev/null || true.
+  Get the exact command and full output from dimitri-mint-dev, reproduce, fix, pin
+  the shape in bats. Never print a silent nothing: if the list cannot be computed,
+  say so in the summary.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T20:27:22Z
-last_update: 2026-10-23T20:27:22Z
-date_finished: null
+last_update: 2026-10-23T20:30:08Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +63,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T20:29:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4717: dimitri-mint-dev: upgrade files-to-commit list still missing on a plain one-step upgrade from an external clone (be.14, clean tree), though it works on ring20 and in the t4705 bats
@@ -62,8 +92,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Field shape (consumer = HOME, inherited FRAMEWORK_ROOT = be.11 vendored copy, PROJECT_ROOT inherited, output redirected to a file) reproduced in bats and hypotheses (a)/(b)/(c) tested; outcome recorded in ## RCA
+- [x] Fix: the commit-list snapshot/journal/report always run the RUNNING (clone's) code, never the inherited FRAMEWORK_ROOT
+- [x] When the list cannot be computed, the upgrade summary prints one reason line instead of nothing
+- [x] tests/unit/t4705_upgrade_commit_list_vendored_external.bats extended with this shape (inherited old FRAMEWORK_ROOT + redirected output) and the reason-line path; fails without the fix, passes with it
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green; `bin/fw test invariants` green; vendor self in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +282,13 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 1200 bats tests/unit/t4705_upgrade_commit_list_vendored_external.bats > .context/working/.t4717-t4705.out 2>&1 && ! grep -q "^not ok" .context/working/.t4717-t4705.out
+test "$(grep -c '# skip' .context/working/.t4717-t4705.out)" -eq 0
+timeout 900 bats tests/unit/t4692_upgrade_commit_list.bats > .context/working/.t4717-t4692.out 2>&1 && ! grep -q "^not ok" .context/working/.t4717-t4692.out
+test "$(grep -c '# skip' .context/working/.t4717-t4692.out)" -eq 0
+grep -q '_t4717_commit_list_helper' lib/upgrade.sh && ! grep -q 'python3 "\$FRAMEWORK_ROOT/lib/upgrade_commit_list.py"' lib/upgrade.sh
+bin/fw vendor self --check --task T-4717
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -264,6 +304,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** dimitri-mint-dev be.11 → be.14 (`<clone>/bin/fw upgrade ~` from a Claude Code Bash tool, consumer = HOME, inherited FRAMEWORK_ROOT = the be.11 vendored copy, output to a file): "3 change(s) applied", Next steps, doctor PASS — and no "Files this upgrade created or changed" list, no reason, though 12 vendored paths + `.framework.yaml` were modified.
+
+**Root cause:** not pinned to a single line — the field shape could not be reproduced. The same shape in bats (HOME = consumer, be.11 vendored, inherited FRAMEWORK_ROOT/PROJECT_ROOT, clone inside HOME, CLAUDECODE=1, redirected stdout, exactly the 12-path vendored diff) prints the list on be.14 and HEAD. Hypotheses (b) not-a-tty and (c) PROJECT_ROOT=$HOME were tested and ruled out (also a dotfiles-style repo with `status.showUntrackedFiles=no`, a non-UTF-8 name, a FIFO and an unreadable file: helper still prints). What made the miss *invisible* is certain: `lib/upgrade.sh` (pre-fix lines 1772-1775 and 3528) ran `python3 "$FRAMEWORK_ROOT/lib/upgrade_commit_list.py" … 2>/dev/null || true`, gated the snapshot on `[ -f "$FRAMEWORK_ROOT/lib/…" ]`, and `_t4692_emit_commit_list` returned silently whenever the snapshot/journal was missing. Any failure on the host — helper not found under whatever FRAMEWORK_ROOT named, python3 erroring, mktemp failing — produced exactly the reported output: the summary with nothing where the list belongs.
+
+**Why structurally allowed:** the list was advisory and "silent when none" was by design (T-4692), so "could not compute" and "nothing to commit" printed the same nothing; and the helper was located through `$FRAMEWORK_ROOT`, a variable this upgrade path rewrites in four places (T-4248/T-4369/T-4362/T-4453), rather than from the code actually running.
+
+**Prevention:** the helper is resolved beside the running `lib/upgrade.sh` (`_t4717_commit_list_helper`, BASH_SOURCE), never through FRAMEWORK_ROOT; snapshot and report failures are captured (exit code + last stderr line) and printed as one "Upgrade file list unavailable — <reason>" line; and a computed-but-empty list with journalled paths still dirty prints one line too. Pinned by five T-4717 tests in `tests/unit/t4705_upgrade_commit_list_vendored_external.bats` (field shape end to end; FRAMEWORK_ROOT naming a tree without the helper; failing report; failing snapshot; dirty-unchanged). If dimitri-mint-dev hits it again, the summary now names the cause instead of nothing.
 
 ## Evolution
 
@@ -345,3 +393,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4717-dimitri-mint-dev-upgrade-files-to-commit.md
 - **Context:** Initial task creation
+
+### 2026-10-23T20:29:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

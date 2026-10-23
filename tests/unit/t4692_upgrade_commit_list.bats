@@ -200,7 +200,7 @@ setup() {
 @test "do_upgrade wiring: snapshot before the first step, would-create at every create site, report at the end" {
     local src="$FW_ROOT/lib/upgrade.sh"
     local snap step1 report recall
-    snap=$(grep -n 'upgrade_commit_list.py" *\\$' "$src" | head -1 | cut -d: -f1)
+    snap=$(grep -n '^ *_t4717_commit_list_snapshot "\$target_dir"' "$src" | head -1 | cut -d: -f1)
     step1=$(grep -n 'T-1912: pre-step-1 version-ahead precheck' "$src" | head -1 | cut -d: -f1)
     [ -n "$snap" ] && [ -n "$step1" ] && [ "$snap" -lt "$step1" ]
     report=$(grep -n '_t4692_emit_commit_list "\$target_dir"' "$src" | cut -d: -f1)

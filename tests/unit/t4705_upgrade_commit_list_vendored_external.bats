@@ -84,3 +84,96 @@ _vendored_count() {
     grep -qF '.agentic-framework/' "$S/add"
     ! grep -qF 'notes-t4712.txt' "$S/add" || false
 }
+
+# T-4717: dimitri-mint-dev be.14 — the consumer is the user's HOME, the upgrade is
+# run from a Claude Code Bash tool inside it (FRAMEWORK_ROOT and PROJECT_ROOT
+# inherited, FRAMEWORK_ROOT = the consumer's OLDER vendored copy), with the
+# framework clone inside HOME and output going to a file, not a tty. The summary
+# printed "N change(s) applied" and Next steps, then nothing where the list belongs.
+@test "T-4717 consumer is HOME, inherited old vendored FRAMEWORK_ROOT, output redirected: list prints" {
+    mkdir -p "$S/old"
+    git -C "$FW_ROOT" archive v1.8.15-be.11 | tar -x -C "$S/old"
+    run env -u PROJECT_ROOT -u FRAMEWORK_ROOT HOME="$S/home" FW_VERB_TELEMETRY=0 \
+        bash -c "cd '$S' && '$S/old/bin/fw' vendor --target '$PROJ' --source '$S/old'"
+    [ "$status" -eq 0 ]
+    git -C "$PROJ" add -A
+    git -C "$PROJ" -c user.email=t@t -c user.name=t commit -qm "T-000: vendored from be.11"
+    [ -z "$(git -C "$PROJ" status --porcelain)" ]
+
+    env CLAUDECODE=1 HOME="$PROJ" FRAMEWORK_ROOT="$PROJ/.agentic-framework" PROJECT_ROOT="$PROJ" \
+        FW_VERB_TELEMETRY=0 \
+        bash -c "cd '$PROJ' && '$FW_ROOT/bin/fw' upgrade '$PROJ'" > "$S/upgrade.log" 2>&1 </dev/null
+    grep -q "is the project's vendored copy; upgrading from" "$S/upgrade.log"
+    grep -q "change(s) applied" "$S/upgrade.log"
+    grep -q "Files this upgrade created or changed" "$S/upgrade.log"
+    grep -q "vendored  .agentic-framework/" "$S/upgrade.log"
+    ! grep -q "Upgrade file list unavailable" "$S/upgrade.log" || false
+    grep -F 'git add -- ' "$S/upgrade.log" > "$S/add"
+    [ "$(wc -l < "$S/add")" -eq 1 ]
+}
+
+# Unit legs: the list comes from the helper beside the running lib/upgrade.sh, and
+# a helper that cannot run leaves one reason line, never nothing.
+_t4717_source_upgrade_lib() {
+    BOLD=""; NC=""; YELLOW=""; GREEN=""; CYAN=""; RED=""
+    source "$FW_ROOT/lib/upgrade.sh"
+}
+
+@test "T-4717 FRAMEWORK_ROOT naming a tree without the helper: the running lib's helper still lists" {
+    mkdir -p "$S/elsewhere/lib"          # an inherited FRAMEWORK_ROOT the run does not use
+    export FRAMEWORK_ROOT="$S/elsewhere"
+    _t4717_source_upgrade_lib
+    _t4692_before="" _t4717_why=""
+    _t4717_commit_list_snapshot "$PROJ"
+    [ -z "$_t4717_why" ] && [ -f "$_t4692_before" ]
+    echo new > "$PROJ/created-t4717.txt"
+    echo created-t4717.txt > "$S/wrote"
+    run _t4692_emit_commit_list "$PROJ" "$_t4692_before" "$S/wrote" "$_t4717_why"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"new       created-t4717.txt"* ]]
+    [[ "$output" != *"unavailable"* ]]
+}
+
+@test "T-4717 a failing report prints one reason line instead of nothing" {
+    mkdir -p "$S/bin"
+    real=$(command -v python3)
+    printf '#!/bin/sh\ncase "$1 $2" in *upgrade_commit_list.py\\ report) echo "boom: cannot read index" >&2; exit 3;; esac\nexec %s "$@"\n' "$real" > "$S/bin/python3"
+    chmod +x "$S/bin/python3"
+    export FRAMEWORK_ROOT="$FW_ROOT"
+    _t4717_source_upgrade_lib
+    _t4692_before="" _t4717_why=""
+    _t4717_commit_list_snapshot "$PROJ"
+    echo new > "$PROJ/created-t4717.txt"
+    echo created-t4717.txt > "$S/wrote"
+    PATH="$S/bin:$PATH" run _t4692_emit_commit_list "$PROJ" "$_t4692_before" "$S/wrote" "$_t4717_why"
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s\n' "$output" | grep -c 'Upgrade file list unavailable')" -eq 1 ]
+    [[ "$output" == *"exit 3"* && "$output" == *"boom: cannot read index"* ]]
+    [[ "$output" != *"Files this upgrade created or changed"* ]]
+}
+
+@test "T-4717 a failing snapshot is carried to the summary as the reason" {
+    mkdir -p "$S/bin"
+    real=$(command -v python3)
+    printf '#!/bin/sh\ncase "$1 $2" in *upgrade_commit_list.py\\ snapshot) echo "snap broke" >&2; exit 4;; esac\nexec %s "$@"\n' "$real" > "$S/bin/python3"
+    chmod +x "$S/bin/python3"
+    export FRAMEWORK_ROOT="$FW_ROOT"
+    _t4717_source_upgrade_lib
+    _t4692_before="" _t4717_why=""
+    PATH="$S/bin:$PATH" _t4717_commit_list_snapshot "$PROJ"
+    [ -z "$_t4692_before" ]
+    [[ "$_t4717_why" == *"exit 4"*"snap broke"* ]]
+    : > "$S/wrote"
+    run _t4692_emit_commit_list "$PROJ" "$_t4692_before" "$S/wrote" "$_t4717_why"
+    [ "$(printf '%s\n' "$output" | grep -c 'Upgrade file list unavailable')" -eq 1 ]
+}
+
+@test "T-4717 journalled paths still dirty but unchanged since before: one line, not silence" {
+    echo pre > "$PROJ/predirty-t4717.txt"
+    python3 "$FW_ROOT/lib/upgrade_commit_list.py" snapshot "$PROJ" > "$S/before"
+    echo predirty-t4717.txt > "$S/wrote"
+    run python3 "$FW_ROOT/lib/upgrade_commit_list.py" report "$PROJ" "$S/before" "$S/wrote"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"1 path(s) this upgrade wrote are still uncommitted"* ]]
+    [[ "$output" != *"git add"* ]]
+}

@@ -1768,12 +1768,14 @@ do_upgrade() {
     # Dry run collects the governance files a live run would create instead.
     # T-4697: and journal every path this run writes (_t4697_wrote) — a busy
     # checkout has other writers, and the list must name only this run's files.
-    local _t4692_before="" _t4692_would=() _t4697_log=""
-    if [ "$dry_run" != true ] && [ -f "$FRAMEWORK_ROOT/lib/upgrade_commit_list.py" ]; then
-        _t4692_before=$(mktemp "${TMPDIR:-/tmp}/fw-upgrade-dirty.XXXXXX") || _t4692_before=""
-        [ -z "$_t4692_before" ] || python3 "$FRAMEWORK_ROOT/lib/upgrade_commit_list.py" \
-            snapshot "$target_dir" > "$_t4692_before" 2>/dev/null || true
+    # T-4717: the helper is the one beside THIS lib/upgrade.sh (the running code),
+    # never "$FRAMEWORK_ROOT/lib/…", and a failure is kept as a reason for the
+    # summary instead of being dropped by 2>/dev/null.
+    local _t4692_before="" _t4692_would=() _t4697_log="" _t4717_why=""
+    if [ "$dry_run" != true ]; then
+        _t4717_commit_list_snapshot "$target_dir"   # sets _t4692_before / _t4717_why
         _t4697_log=$(mktemp "${TMPDIR:-/tmp}/fw-upgrade-wrote.XXXXXX") || _t4697_log=""
+        [ -n "$_t4697_log" ] || [ -n "$_t4717_why" ] || _t4717_why="could not create the write journal in ${TMPDIR:-/tmp}"
     fi
 
     # T-1912: pre-step-1 version-ahead precheck.
@@ -3512,8 +3514,40 @@ EOF
         fi
         _t3862_recall_prereqs "$target_dir"
         _t4069_stale_wrapper_notice "$target_dir"
-        _t4692_emit_commit_list "$target_dir" "$_t4692_before" "$_t4697_log"
+        _t4692_emit_commit_list "$target_dir" "$_t4692_before" "$_t4697_log" "$_t4717_why"
     fi
+}
+
+# T-4717: lib/upgrade_commit_list.py beside the lib/upgrade.sh that is running.
+# $FRAMEWORK_ROOT can name another tree (an inherited vendored copy, a scoped
+# override), and the list must come from the code doing this upgrade.
+_t4717_commit_list_helper() {
+    printf '%s/upgrade_commit_list.py\n' "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+}
+
+# T-4717: take the T-4692 before-snapshot. Sets the caller's _t4692_before (the
+# snapshot file, empty on failure) and _t4717_why (why the list cannot be
+# computed, empty when it can). $1 = target_dir. Returns 0.
+_t4717_commit_list_snapshot() {
+    local target="$1" helper err rc=0
+    _t4692_before="" _t4717_why=""
+    helper=$(_t4717_commit_list_helper)
+    if [ ! -f "$helper" ]; then
+        _t4717_why="$helper is missing"; return 0
+    fi
+    if ! command -v python3 >/dev/null 2>&1; then
+        _t4717_why="python3 is not on PATH"; return 0
+    fi
+    _t4692_before=$(mktemp "${TMPDIR:-/tmp}/fw-upgrade-dirty.XXXXXX") || _t4692_before=""
+    if [ -z "$_t4692_before" ]; then
+        _t4717_why="could not create a snapshot file in ${TMPDIR:-/tmp}"; return 0
+    fi
+    err=$(python3 "$helper" snapshot "$target" 2>&1 > "$_t4692_before") || rc=$?
+    if [ "$rc" -ne 0 ]; then
+        _t4717_why="the before-snapshot failed (exit $rc): $(printf '%s\n' "$err" | tail -1)"
+        rm -f "$_t4692_before"; _t4692_before=""
+    fi
+    return 0
 }
 
 # T-4692: end-of-summary list of the files this upgrade created or changed that
@@ -3522,10 +3556,18 @@ EOF
 # $1 = target_dir, $2 = snapshot file written before the first mutation,
 # $3 = the T-4697 write journal. Only journalled paths are listed: no journal,
 # no list (another process's file must never reach the git add line).
+# T-4717: $4 = why the snapshot could not be taken (from
+# _t4717_commit_list_snapshot). A known reason, or a report that fails, prints
+# one reason line: an upgrade summary never goes silent where the list belongs.
 _t4692_emit_commit_list() {
-    local root="${1:-}" before="${2:-}" wrote="${3:-}"
-    if [ -n "$root" ] && [ -n "$before" ] && [ -f "$before" ] && [ -n "$wrote" ] && [ -f "$wrote" ]; then
-        python3 "$FRAMEWORK_ROOT/lib/upgrade_commit_list.py" report "$root" "$before" "$wrote" 2>/dev/null || true
+    local root="${1:-}" before="${2:-}" wrote="${3:-}" why="${4:-}" err rc=0
+    if [ -z "$why" ] && [ -n "$root" ] && [ -n "$before" ] && [ -f "$before" ] && [ -n "$wrote" ] && [ -f "$wrote" ]; then
+        { err=$(python3 "$(_t4717_commit_list_helper)" report "$root" "$before" "$wrote" 2>&1 >&3); } 3>&1 || rc=$?
+        [ "$rc" -eq 0 ] || why="the report failed (exit $rc): $(printf '%s\n' "$err" | tail -1)"
+    fi
+    if [ -n "$why" ]; then
+        echo ""
+        echo "  Upgrade file list unavailable — $why. Check by hand: cd $root && git status"
     fi
     rm -f "$before" "$wrote"
     return 0

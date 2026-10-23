@@ -166,6 +166,13 @@ def report(target, before_file, wrote_file=None):
     changed = sorted(n for n, (st, d) in found.items()
                      if before.get(n) != d or vendor_wrote(n, st))
     if not changed:
+        if wrote_file is not None:
+            # T-4717: paths this run wrote are uncommitted, but each was already
+            # dirty with the same bytes before it. Say so rather than print nothing.
+            print("")
+            print(f"  Upgrade file list: {len(found)} path(s) this upgrade wrote are still"
+                  " uncommitted but were already dirty, unchanged, before it ran."
+                  f" Check: cd {shlex.quote(top)} && git status")
         return 0
     plain = [n for n in changed if not n.startswith(VENDORED)]
     vendored = [n for n in changed if n.startswith(VENDORED)]
