@@ -151,8 +151,18 @@ fw_conversation_holder() {
     [ -f "$rec" ] || return 0
     pid=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("claude_pid") or "")' "$rec" 2>/dev/null)
     case "$pid" in ''|*[!0-9]*) return 0 ;; esac
-    kill -0 "$pid" 2>/dev/null || return 0
-    tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -q 'claude' || return 0
+    # T-4714: FW_PROC_ROOT is a test seam (a fake /proc tree); liveness is then
+    # the pid's directory, since kill -0 would probe a real process.
+    local proc="${FW_PROC_ROOT:-/proc}" cmd
+    if [ "$proc" = /proc ]; then
+        kill -0 "$pid" 2>/dev/null || return 0
+    fi
+    [ -d "$proc/$pid" ] || return 0
+    cmd=$(tr '\0' ' ' < "$proc/$pid/cmdline" 2>/dev/null)
+    printf '%s\n' "$cmd" | grep -q 'claude' || return 0
+    # T-4714 (055 T-582): the claude daemon / pty host never exits and is no
+    # conversation; a session record naming it would refuse every resume.
+    printf '%s\n' "$cmd" | grep -Eq '^[^ ]*claude (daemon|bg-pty-host)( |$)' && return 0
     echo "$pid"
     return 0
 }

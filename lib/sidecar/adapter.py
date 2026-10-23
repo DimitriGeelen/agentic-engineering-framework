@@ -168,20 +168,49 @@ def _session_path(session_id: str) -> Path:
     return _sessions_dir() / f"{_safe_sid(session_id)}.json"
 
 
+# T-4714: the /proc root, a seam so tests can walk a fake process tree.
+_PROC_ROOT = "/proc"
+
+# T-4714 (055 T-582): Claude Code infrastructure, never a conversation. A
+# background session runs as comm '2.1.304' with argv[0] rewritten to
+# 'claude bg-spare', under a pty host 'claude bg-pty-host' and the never-exiting
+# 'claude daemon run'.
+_CLAUDE_INFRA = ("daemon", "bg-pty-host")
+
+
+def _claude_process(pid: int, comm: str) -> str | None:
+    """Classify pid: "session" for a claude conversation process, "infra" for
+    the claude daemon or pty host, None when it is not claude at all. claude =
+    comm 'claude' OR the basename of argv[0]'s first word is 'claude'."""
+    try:
+        raw = Path(f"{_PROC_ROOT}/{pid}/cmdline").read_bytes()
+    except OSError:
+        raw = b""
+    argv = [a.decode(errors="replace") for a in raw.split(b"\0") if a]
+    words = (argv[0].split(" ") if argv else []) + argv[1:]
+    if comm != "claude" and not (words and os.path.basename(words[0]) == "claude"):
+        return None
+    return "infra" if len(words) > 1 and words[1] in _CLAUDE_INFRA else "session"
+
+
 def _claude_ancestor_pid(start: int | None = None, depth: int = 16) -> int | None:
     """The pid of the `claude` process this hook runs under, found by walking
     /proc parents. Recorded so a session whose claude has exited (its TermLink
     shell lives on under claude-fw) never reads as ready: typing into that
-    shell would hand the line to bash, not to an agent."""
+    shell would hand the line to bash, not to an agent. The walk stops at the
+    claude daemon / pty host (T-4714): it outlives every session it hosts."""
     pid = start or os.getpid()
     for _ in range(depth):
         try:
-            stat = Path(f"/proc/{pid}/stat").read_text()
+            stat = Path(f"{_PROC_ROOT}/{pid}/stat").read_text()
         except OSError:
             return None
         # comm is in parentheses and may hold spaces; fields after the LAST ')'.
         comm = stat[stat.find("(") + 1:stat.rfind(")")]
-        if comm == "claude":
+        kind = _claude_process(pid, comm)
+        if kind == "infra":
+            return None
+        if kind == "session":
             return pid
         try:
             pid = int(stat[stat.rfind(")") + 2:].split()[1])

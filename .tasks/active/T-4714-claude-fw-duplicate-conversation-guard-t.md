@@ -1,10 +1,23 @@
 ---
 id: T-4714
-name: "claude-fw duplicate-conversation guard (T-3890) treats a Claude Code background session as live forever: it records the never-exiting 'claude daemon run' as the holder, so resume is refused after claude stop"
+name: "claude-fw duplicate-conversation guard (T-3890) treats a Claude Code background
+  session as live forever: it records the never-exiting 'claude daemon run' as the
+  holder, so resume is refused after claude stop"
 description: >
-  055 finding (sent 2026-10-20 to the host DM rail, relayed by TermLink sidecar 697df617). (a) lib/sidecar/adapter.py _claude_ancestor_pid matches comm=='claude' only; a bg session has comm '2.1.304' with argv[0] rewritten to 'claude bg-spare' (pty host 'claude bg-pty-host'), so the walk stops at 'claude daemon run' and records the daemon pid. (b) lib/conversation-holder.sh accepts any live pid whose cmdline contains 'claude', so after 'claude stop <id>' a resume is refused ('already live in pid <daemon>'). 055's vendored fix (055 commit 92187663): a process is claude if comm=='claude' OR basename of argv[0]'s first word is 'claude', and the walk stops at the daemon/bg-pty-host subcommands; the holder ignores cmdlines matching ^[^ ]*claude (daemon|bg-pty-host)( |$). Regression test model: 055 tests/test_t582_daemon_not_conversation_holder.py. Implement upstream with our own tests (fake /proc trees), then tell 055 and TermLink the task id/commit so 055 can drop its patch.
+  055 finding (sent 2026-10-20 to the host DM rail, relayed by TermLink sidecar 697df617).
+  (a) lib/sidecar/adapter.py _claude_ancestor_pid matches comm=='claude' only; a bg
+  session has comm '2.1.304' with argv[0] rewritten to 'claude bg-spare' (pty host
+  'claude bg-pty-host'), so the walk stops at 'claude daemon run' and records the
+  daemon pid. (b) lib/conversation-holder.sh accepts any live pid whose cmdline contains
+  'claude', so after 'claude stop <id>' a resume is refused ('already live in pid
+  <daemon>'). 055's vendored fix (055 commit 92187663): a process is claude if comm=='claude'
+  OR basename of argv[0]'s first word is 'claude', and the walk stops at the daemon/bg-pty-host
+  subcommands; the holder ignores cmdlines matching ^[^ ]*claude (daemon|bg-pty-host)(
+  |$). Regression test model: 055 tests/test_t582_daemon_not_conversation_holder.py.
+  Implement upstream with our own tests (fake /proc trees), then tell 055 and TermLink
+  the task id/commit so 055 can drop its patch.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T18:01:45Z
-last_update: 2026-10-23T18:01:45Z
-date_finished: null
+last_update: 2026-10-23T18:02:52Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +63,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T18:02:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4714: claude-fw duplicate-conversation guard (T-3890) treats a Claude Code background session as live forever: it records the never-exiting 'claude daemon run' as the holder, so resume is refused after claude stop
@@ -62,8 +92,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_claude_ancestor_pid` recognises a process as claude when comm=='claude' OR basename of argv[0]'s first word is 'claude', and never returns (stops at) a `claude daemon …` / `claude bg-pty-host` process; /proc root is injectable for tests
+- [ ] `fw_conversation_holder` ignores a holder pid whose cmdline matches `^[^ ]*claude (daemon|bg-pty-host)( |$)`; /proc root injectable for tests
+- [ ] Regression tests with fake /proc trees: bg session (comm '2.1.304', argv 'claude bg-spare') under 'claude daemon run' returns the bg pid; daemon-only chain returns None; plain interactive claude still recognised; holder pointing at daemon pid is not live, at an interactive claude is live
+- [ ] Existing conversation-holder / claude-fw tests stay green; `bin/fw test invariants` green; vendor synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +280,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 python3 -m pytest tests/unit/test_t4714_daemon_not_conversation_holder.py -q > /tmp/.t4714p 2>&1 && grep -q "8 passed" /tmp/.t4714p && ! grep -qE "failed|error" /tmp/.t4714p
+timeout 600 bats tests/unit/t3890_conversation_holder.bats > /tmp/.t4714b 2>&1 && ! grep -q "^not ok" /tmp/.t4714b
+test "$(grep -c '# skip' /tmp/.t4714b)" -eq 0
+grep -q "_CLAUDE_INFRA" lib/sidecar/adapter.py && grep -q "daemon|bg-pty-host" lib/conversation-holder.sh
+bin/fw vendor self --check --task T-4714
 
 ## RCA
 
@@ -264,6 +301,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after `claude stop <id>` of a Claude Code background session, `claude-fw --resume <id>` is refused: "conversation <id> is already live in pid <N>", where N is the `claude daemon run` process, which never exits.
+
+**Root cause:** `lib/sidecar/adapter.py:_claude_ancestor_pid` (pre-fix line 184) counted a process as claude only when `comm == "claude"`. A bg session has comm `2.1.304` with argv[0] rewritten to `claude bg-spare`, so the walk passed it and stopped at the daemon (comm `claude`), recording the daemon's pid as `claude_pid`. `lib/conversation-holder.sh:fw_conversation_holder` (pre-fix line 177) then accepted any live pid whose cmdline contained `claude`, so the daemon looked like a live holder forever.
+
+**Why structurally allowed:** both checks were written and tested against interactive claude only (tests faked a holder with `exec -a claude sleep`). Claude Code's daemon/bg-session process layout (comm ≠ claude, rewritten argv, long-lived parent) was not modelled anywhere, and no seam existed to test a /proc tree other than the real one.
+
+**Prevention:** `_PROC_ROOT` (adapter) / `FW_PROC_ROOT` (holder) seams, and `tests/unit/test_t4714_daemon_not_conversation_holder.py` pins the bg-session tree: the session is returned, the daemon/pty host is never returned or treated as live, and interactive claude is still recognised.
 
 ## Evolution
 
@@ -345,3 +390,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4714-claude-fw-duplicate-conversation-guard-t.md
 - **Context:** Initial task creation
+
+### 2026-10-23T18:02:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
