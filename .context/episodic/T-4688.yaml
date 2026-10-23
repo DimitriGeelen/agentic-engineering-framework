@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4688: fw upgrade run FROM a framework clone writes into that clone (self-vendor syncs .agentic-framework/tools/ in the source), so a rehearse-then-real-run from one clone upgrades from a mutated source
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T10:42:00Z
+# ============================================================================
+
+task_id: T-4688
+task_name: "fw upgrade run FROM a framework clone writes into that clone (self-vendor syncs .agentic-framework/tools/ in the source), so a rehearse-then-real-run from one clone upgrades from a mutated source"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T10:07:40Z
+completed: 2026-10-23T10:40:46Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T12:37:51+02:00
+last_commit: 2026-10-23T12:39:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade no longer self-vendors its source — a clone used as upgrade source stays byte-identical. tick vendor-check AC
+
+# Key outcomes
+outcomes:
+  - '`do_upgrade` runs the self-vendor step only when the target directory is FRAMEWORK_ROOT itself; for any other target it says self-vendor is skipped and writes nothing under FRAMEWORK_ROOT (do_upgrade refuses target == FRAMEWORK_ROOT, so the step is removed outright)'
+  - 'New `tests/unit/t4688_upgrade_source_untouched.bats`: a temp clone with tools/ drift upgrades a temp consumer; `git -C <clone> status --porcelain` is empty after `--dry-run` and after the real run (fails on the pre-fix lib/upgrade.sh)'
+  - 'Framework-repo self-vendoring still works via `fw vendor self` (control test in the same file); `t2095_upgrade_self_vendor_extraction.bats`, `t4498_refused_upgrade_no_self_vendor.bats` and `upgrade_fresh_machine_simulation.bats` stay green'
+  - '`bin/fw vendor self --check --task T-4688` is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — remove vs. gate the inline self-vendor'
+    chose: 'remove the call from `do_upgrade`; keep `--no-self-vendor` as an accepted no-op.'
+    rationale: '`do_upgrade` refuses target == FRAMEWORK_ROOT (lib/upgrade.sh:1453), so a "run only when the target is the framework repo" gate would be dead code; every reachable run wrote into the source. `fw vendor self` plus the pre-push gate and audit drift scan already own that sync.'
+    alternatives_rejected: ['a target==FRAMEWORK_ROOT gate (unreachable); dropping `--no-self-vendor` (breaks forwarded args, t4405, and scripts).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4688-fw-upgrade-run-from-a-framework-clone-wr.md'
+  - 'tests/unit/t2095_upgrade_self_vendor_extraction.bats'
+  - 'tests/unit/t2241_upgrade_self_vendor_templates.bats'
+  - 'tests/unit/t4498_refused_upgrade_no_self_vendor.bats'
+  - 'tests/unit/t4688_upgrade_source_untouched.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T12:37:51'
+    action: 'T-4688: fw upgrade no longer self-vendors its source — a clone used as upgrade source stays byte-identical'
+  - time: '2026-10-23T12:39:04'
+    action: 'T-4688: tick vendor-check AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 33 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 33
+  commits: 3
+  files_changed: 8
+  lines_added: 858
+  lines_removed: 107
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4688-fw-upgrade-run-from-a-framework-clone-wr.md
+generated_by: context-agent-hybrid
