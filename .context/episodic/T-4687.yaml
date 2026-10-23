@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4687: T-4662 contract gap: _FW_PAYLOAD_CWD alone (PROJECT_ROOT unset) still refuses a git read, silently, though the refusal message tells callers to export exactly that
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T10:18:55Z
+# ============================================================================
+
+task_id: T-4687
+task_name: "T-4662 contract gap: _FW_PAYLOAD_CWD alone (PROJECT_ROOT unset) still refuses a git read, silently, though the refusal message tells callers to export exactly that"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T10:06:43Z
+completed: 2026-10-23T10:18:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T12:14:54+02:00
+last_commit: 2026-10-23T12:14:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  _FW_PAYLOAD_CWD alone derives PROJECT_ROOT (nearest .framework.yaml); no-project git refusal now names both variables on stderr
+
+# Key outcomes
+outcomes:
+  - '050''s shape — cwd /tmp, PROJECT_ROOT unset, _FW_PAYLOAD_CWD=<temp framework project (.framework.yaml)> — `is_bash_safe_command ''git status''` returns 0 (project derived from the payload cwd)'
+  - '_FW_PAYLOAD_CWD in a git repo that is not a framework project (no .framework.yaml above it), PROJECT_ROOT unset: refused, with ONE stderr line naming the reason and both PROJECT_ROOT and _FW_PAYLOAD_CWD'
+  - 'Derivation does not widen the foreign-repo rule: a derived project still refuses `cd <foreign> && git status`, and an explicit PROJECT_ROOT is never overridden by the derivation'
+  - 'Existing T-4409 and T-4662 bats suites stay green; new regression bats `tests/unit/t4687_payload_cwd_derives_project.bats` fails on the pre-fix library and passes after'
+  - '`bin/fw vendor self` run; `bin/fw vendor self --check --task T-4687` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4687-t-4662-contract-gap-fwpayloadcwd-alone-p.md'
+  - 'tests/unit/t4687_payload_cwd_derives_project.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T12:14:54'
+    action: 'T-4687: _FW_PAYLOAD_CWD alone derives PROJECT_ROOT (nearest .framework.yaml); no-project git refusal now names both variables on stderr'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 4
+  lines_added: 210
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4687-t-4662-contract-gap-fwpayloadcwd-alone-p.md
+generated_by: context-agent-hybrid

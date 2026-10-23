@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4686: t4217 test 2 (claude-fw tmux wrap hands no caller path variables to the server) fails on ring20: the fake tmux never runs (no tmux.env) when claude-fw starts from a /tmp dir outside any project
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T10:18:05Z
+# ============================================================================
+
+task_id: T-4686
+task_name: "t4217 test 2 (claude-fw tmux wrap hands no caller path variables to the server) fails on ring20: the fake tmux never runs (no tmux.env) when claude-fw starts from a /tmp dir outside any project"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T10:02:42Z
+completed: 2026-10-23T10:17:38Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T12:03:29+02:00
+last_commit: 2026-10-23T12:12:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture t4217 test 2 host-dependent on ring20 (be.6 field report). t4217 test 2 pins every claude-fw tmux-wrap gate (env -i, built PATH, FW_AGENT_SCOPE=0, stub claude) and fails loudly when the wrap never ran
+
+# Key outcomes
+outcomes:
+  - 'Every host fact that decides `_cfw_should_wrap_tmux` (bin/claude-fw) is named in ## RCA with its line, and test 2 of tests/unit/t4217_spawn_env_isolation.bats sets each one explicitly instead of inheriting it'
+  - 'Test 2 proves the fake tmux ran (marker) and fails with "fake tmux never ran" otherwise'
+  - 'Simulated ring20 condition: the old test fails under it, the new test passes under it (evidence in ## RCA)'
+  - 'tests/unit/t4217_spawn_env_isolation.bats is green (0 failures, 0 skips on this host); bats dead-negation lint clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — claude-fw behaviour'
+    chose: 'test-only change; no claude-fw edit.'
+    rationale: 'every gate in `_cfw_should_wrap_tmux` is intended behaviour. The scope probe''s `timeout 10` can delay startup, but it is bounded and falls back, so it is not a bug.'
+    alternatives_rejected: ['dropping the outer `timeout 10` in the test. It would have hidden a hang instead of pinning the fact that causes it.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-4685.yaml'
+  - '.tasks/active/T-4686-t4217-test-2-claude-fw-tmux-wrap-hands-n.md'
+  - '.tasks/completed/T-4685-fwtasksdiroverride1-inherited-without-th.md'
+  - 'tests/unit/t4217_spawn_env_isolation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T12:03:29'
+    action: 'T-4686: capture t4217 test 2 host-dependent on ring20 (be.6 field report)'
+  - time: '2026-10-23T12:12:59'
+    action: 'T-4686: t4217 test 2 pins every claude-fw tmux-wrap gate (env -i, built PATH, FW_AGENT_SCOPE=0, stub claude) and fails loudly when the wrap never ran'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 2
+  files_changed: 4
+  lines_added: 545
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4686-t4217-test-2-claude-fw-tmux-wrap-hands-n.md
+generated_by: context-agent-hybrid
