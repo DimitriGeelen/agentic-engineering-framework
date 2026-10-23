@@ -264,6 +264,18 @@ jobs:
   status: active
   description: Runs liveness-check once at boot with boot_marker=1 so the log records
     a service-start datapoint.
+- id: watchtower-ensure-5m
+  name: Watchtower keep-alive (5 min)
+  schedule: '*/5 * * * *'
+  command: flock -n /var/lock/agentic-cron-watchtower-ensure.lock -c 'fw watchtower
+    ensure'
+  source_file: agentic-audit.crontab
+  origin_task: T-4706
+  status: active
+  description: "T-4706: Watchtower was killed on 2026-10-23 and stayed down ~1h47m;\
+    \ the only ensure ran at session start. This starts it when dead (no-op while\
+    \ running) and appends the outage to .context/working/watchtower-outages.jsonl,\
+    \ which fw doctor WARNs on for 7 days. Disable with FW_WATCHTOWER_ENSURE=0."
 - id: pending-remind-daily
   name: Pending-updates reminder (daily)
   schedule: 0 10 * * *

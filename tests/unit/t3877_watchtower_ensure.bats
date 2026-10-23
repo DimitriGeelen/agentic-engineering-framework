@@ -15,7 +15,9 @@ setup() {
     mkdir -p "$PROJECT_ROOT/.context/working"
     STUB="$TEST_TEMP_DIR/watchtower.sh"
     export FW_WATCHTOWER_SH="$STUB" CALLS="$TEST_TEMP_DIR/calls"
-    unset FW_WATCHTOWER_ENSURE FW_REVIEW_WORKER
+    # T-4706: FW_DISPATCHED_WORKER too — ensure skips inside a worker, so run from one
+    # every case read as "never started" (4 of 6 red).
+    unset FW_WATCHTOWER_ENSURE FW_REVIEW_WORKER FW_DISPATCHED_WORKER
     source "$FWROOT/lib/watchtower-ensure.sh"
 }
 

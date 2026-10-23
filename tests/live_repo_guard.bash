@@ -27,24 +27,43 @@ _live_repo_guard_snapshot() {
     git --no-optional-locks -C "$repo" ls-files -s -z -- "$@" 2>&1 | sha256sum
 }
 
+# _live_watchtower_pid REPO — T-4706: the pid of REPO's Watchtower when it is
+# alive, else empty. Read-only: the pid file and kill -0, never a signal.
+_live_watchtower_pid() {
+    local p
+    p=$(tr -cd '0-9' < "$1/.context/working/watchtower.pid" 2>/dev/null) || true
+    [ -n "$p" ] && kill -0 "$p" 2>/dev/null && echo "$p"
+    return 0
+}
+
 # live_repo_guard_begin [REPO [PATHSPEC...]] — default REPO is $FRAMEWORK_ROOT,
-# default scope the whole repo
+# default scope the whole repo. Also notes REPO's live Watchtower pid (T-4706).
 live_repo_guard_begin() {
     LIVE_REPO_GUARD_REPO="${1:-$FRAMEWORK_ROOT}"
     shift || true
     LIVE_REPO_GUARD_PATHSPEC=("$@")
     LIVE_REPO_GUARD_BEFORE="$(_live_repo_guard_snapshot "$LIVE_REPO_GUARD_REPO" "${LIVE_REPO_GUARD_PATHSPEC[@]}")"
+    LIVE_REPO_GUARD_WT_PID="$(_live_watchtower_pid "$LIVE_REPO_GUARD_REPO")"
 }
 
-# live_repo_guard_end — returns 1 (with a diff on stderr) if the repo changed
+# live_repo_guard_end — returns 1 (with a diff on stderr) if the repo changed, or
+# if a Watchtower that was alive at begin is now dead or replaced (T-4706: a test
+# that stops or restarts the operator's live server is a leak like any other).
 live_repo_guard_end() {
     [ -n "${LIVE_REPO_GUARD_REPO:-}" ] || return 0
-    local after
+    local after rc=0 wt_after
     after="$(_live_repo_guard_snapshot "$LIVE_REPO_GUARD_REPO" "${LIVE_REPO_GUARD_PATHSPEC[@]}")"
     if [ "$after" != "$LIVE_REPO_GUARD_BEFORE" ]; then
         echo "LIVE REPO GUARD (T-4671): ${BATS_TEST_NAME:-test} changed $LIVE_REPO_GUARD_REPO (status or index):" >&2
         diff <(printf '%s\n' "$LIVE_REPO_GUARD_BEFORE") <(printf '%s\n' "$after") | head -20 >&2
-        return 1
+        rc=1
     fi
-    return 0
+    if [ -n "${LIVE_REPO_GUARD_WT_PID:-}" ]; then
+        wt_after="$(_live_watchtower_pid "$LIVE_REPO_GUARD_REPO")"
+        if [ "$wt_after" != "$LIVE_REPO_GUARD_WT_PID" ]; then
+            echo "LIVE REPO GUARD (T-4706): ${BATS_TEST_NAME:-test} changed the live Watchtower of $LIVE_REPO_GUARD_REPO: pid $LIVE_REPO_GUARD_WT_PID -> ${wt_after:-dead}" >&2
+            rc=1
+        fi
+    fi
+    return "$rc"
 }

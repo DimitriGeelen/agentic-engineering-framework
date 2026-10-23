@@ -65,6 +65,9 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Liveness check on startup
 @reboot root cd "/opt/999-Agentic-Engineering-Framework" && LIVENESS_BOOT_MARKER=1 /opt/999-Agentic-Engineering-Framework/agents/monitor/liveness-check.sh 2>&1 | logger -t agentic-cron; exit ${PIPESTATUS[0]}
 
+# Watchtower keep-alive (5 min)
+*/5 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-watchtower-ensure.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" watchtower ensure' 2>&1 | logger -t agentic-cron; exit ${PIPESTATUS[0]}
+
 # Pending-updates reminder (daily)
 # PAUSED: 0 10 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" NTFY_ENABLED=true /opt/999-Agentic-Engineering-Framework/bin/"/opt/999-Agentic-Engineering-Framework/bin/fw" pending remind 2>&1 | logger -t agentic-cron; exit ${PIPESTATUS[0]}
 

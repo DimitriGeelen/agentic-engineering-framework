@@ -725,7 +725,37 @@ do_url() {
 cmd="${1:-}"
 shift || true
 
+# T-4706: a test must never start, stop or restart the Watchtower of the checkout
+# it runs from — that is the operator's live server (2026-10-23: down ~1h47m,
+# nothing noticed). Under bats or pytest the "live checkout" is the git toplevel
+# of the test file (bats) or of the cwd (pytest); a test points PROJECT_ROOT at a
+# temp project instead. FW_WATCHTOWER_ALLOW_LIVE_IN_TEST=1 overrides.
+_watchtower_live_test_refusal() {
+    [ -n "${BATS_TEST_FILENAME:-}${PYTEST_CURRENT_TEST:-}" ] || return 0
+    [ "${FW_WATCHTOWER_ALLOW_LIVE_IN_TEST:-0}" = 1 ] && return 0
+    local from live ours
+    if [ -n "${BATS_TEST_FILENAME:-}" ]; then from=$(dirname "$BATS_TEST_FILENAME"); else from=$PWD; fi
+    live=$(git -C "$from" rev-parse --show-toplevel 2>/dev/null) || return 0
+    live=$(readlink -f "$live" 2>/dev/null || echo "$live")
+    ours=$(readlink -f "$PROJECT_ROOT" 2>/dev/null || echo "$PROJECT_ROOT")
+    [ "$ours" = "$live" ] || return 0
+    log_error "Refusing '$1' from a test: PROJECT_ROOT is the live checkout ($live) — its Watchtower is the operator's (T-4706)."
+    log_error "  Point PROJECT_ROOT at a temp project, or set FW_WATCHTOWER_ALLOW_LIVE_IN_TEST=1."
+    exit 4
+}
 case "$cmd" in
+    start|stop|restart|ensure) _watchtower_live_test_refusal "$cmd" ;;
+esac
+
+case "$cmd" in
+    # T-4706: the cron keep-alive. Starts a dead Watchtower and records the outage
+    # (lib/watchtower-ensure.sh); `fw doctor` WARNs on a recent one.
+    ensure)
+        # shellcheck source=/dev/null
+        . "$FRAMEWORK_ROOT/lib/watchtower-ensure.sh"
+        export PROJECT_ROOT FRAMEWORK_ROOT
+        FW_WATCHTOWER_ENSURE_BY="${FW_WATCHTOWER_ENSURE_BY:-cron}" fw_watchtower_ensure
+        ;;
     start)   do_start "$@" ;;
     stop)    do_stop ;;
     restart) do_restart "$@" ;;
@@ -746,6 +776,7 @@ case "$cmd" in
         echo "  port                           Print current port (triple-file source of truth; T-1376 B5)"
         echo "  url                            Print current URL (triple-file source of truth; T-1376 B5)"
         echo "  current                        Exit 1 if the running process predates web/ source (T-3282)"
+        echo "  ensure                         Start it if dead and record the outage (cron keep-alive; T-4706)"
         echo ""
         echo "Environment:"
         echo "  FW_PORT  Default port (default: 3000)"

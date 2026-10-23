@@ -1,10 +1,23 @@
 ---
 id: T-4706
-name: "Watchtower was killed at 15:27:36 on 2026-10-23 and stayed down ~1h47m unnoticed; nothing restarts it (watchtower-ensure last ran 2026-10-22 18:47)"
+name: "Watchtower was killed at 15:27:36 on 2026-10-23 and stayed down ~1h47m unnoticed;
+  nothing restarts it (watchtower-ensure last ran 2026-10-22 18:47)"
 description: >
-  Evidence: watchtower.log ends at 15:27:36 with two /api/_identity probes (127.0.0.1 and 192.168.10.107) and no error, the pattern of bin/watchtower.sh start's port-holder identity check before it frees the port; /api/_identity includes project_root, so the caller ran a Watchtower start/restart FOR THIS PROJECT (or with PROJECT_ROOT pointing here). No OOM, no worker typed a stop/kill (transcripts searched). At 15:27:29 the parent's close batch for T-4693 and T-4690 started (their tests: t4693_watchtower_start_time, t4690_clean_tree_after_close, episodic_footprint_refresh, t4403_hook_block_preserve). Also running then: workers for T-4691/T-4692 (upgrade tests) and T-4694. Find the caller (a test that runs watchtower.sh start/restart with the real PROJECT_ROOT, or an upgrade/restart path), fix it so tests never touch the live Watchtower (extend T-4671's live_repo_guard to the live Watchtower pid), and add supervision: a cron/systemd ensure that restarts a dead Watchtower and an alert when it was down (watchtower-ensure.log last entry 2026-10-22T18:47:43Z). Restarted by the parent at 17:14 (pid 79042).
+  Evidence: watchtower.log ends at 15:27:36 with two /api/_identity probes (127.0.0.1
+  and 192.168.10.107) and no error, the pattern of bin/watchtower.sh start's port-holder
+  identity check before it frees the port; /api/_identity includes project_root, so
+  the caller ran a Watchtower start/restart FOR THIS PROJECT (or with PROJECT_ROOT
+  pointing here). No OOM, no worker typed a stop/kill (transcripts searched). At 15:27:29
+  the parent's close batch for T-4693 and T-4690 started (their tests: t4693_watchtower_start_time,
+  t4690_clean_tree_after_close, episodic_footprint_refresh, t4403_hook_block_preserve).
+  Also running then: workers for T-4691/T-4692 (upgrade tests) and T-4694. Find the
+  caller (a test that runs watchtower.sh start/restart with the real PROJECT_ROOT,
+  or an upgrade/restart path), fix it so tests never touch the live Watchtower (extend
+  T-4671's live_repo_guard to the live Watchtower pid), and add supervision: a cron/systemd
+  ensure that restarts a dead Watchtower and an alert when it was down (watchtower-ensure.log
+  last entry 2026-10-22T18:47:43Z). Restarted by the parent at 17:14 (pid 79042).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T15:16:04Z
-last_update: 2026-10-23T15:16:04Z
-date_finished: null
+last_update: 2026-10-23T15:17:10Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +63,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T15:16:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4706: Watchtower was killed at 15:27:36 on 2026-10-23 and stayed down ~1h47m unnoticed; nothing restarts it (watchtower-ensure last ran 2026-10-22 18:47)
@@ -62,10 +92,20 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The caller that killed the live Watchtower at 13:27:36Z is named in ## RCA with file:line and evidence
+- [ ] The caller can no longer signal the live project's Watchtower from a test (fixed at the source; regression test fails without the fix)
+- [x] T-4671 live_repo_guard also fails a test that changes or kills the live Watchtower pid (bats test covers it)
+- [x] Supervision: a cron registry entry runs an ensure path that restarts a dead Watchtower and appends the outage to a log; `fw cron generate` run (crontab install is the operator's)
+- [x] `fw doctor` WARNs when a Watchtower outage was recorded recently (bats test covers it)
+- [x] `bin/fw vendor self --check --task T-4706` clean
 
 ### Human
+- [ ] [RUBBER-STAMP] Install the regenerated crontab so the Watchtower keep-alive (`watchtower-ensure-5m`) runs
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw cron install && grep -c "watchtower ensure" /etc/cron.d/agentic-audit-999-agentic-engineering-framework`
+  **Expected:** prints `1`; `bin/fw doctor` then shows `Cron registry in sync` (the Verification line that checks it turns green).
+  **If not:** run `bin/fw cron status` and note the error.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -248,8 +288,39 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 env -u FW_DISPATCHED_WORKER bats tests/unit/t4706_watchtower_live_guard.bats > /tmp/.t4706-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4706-a.out && grep -q "^ok 11 " /tmp/.t4706-a.out
+test "$(grep -c '# skip' /tmp/.t4706-a.out)" -eq 0
+timeout 600 bats tests/unit/t3877_watchtower_ensure.bats tests/unit/t4671_live_repo_guard.bats tests/unit/t3661_watchtower_status_exit.bats tests/unit/t4306_watchtower_zombie_pid.bats > /tmp/.t4706-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4706-b.out
+test "$(grep -c '# skip' /tmp/.t4706-b.out)" -eq 0
+bash -n bin/fw && bash -n bin/watchtower.sh && bash -n lib/watchtower-ensure.sh
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+bin/fw vendor self --check --task T-4706
 
 ## RCA
+
+**Symptom:** The live Watchtower (pid 1697481) died at 15:27:36 local (13:27:36Z) on 2026-10-23. Its log ends with two `/api/_identity` 200s (127.0.0.1, then 192.168.10.107) and no error. It stayed down about 1h47m until the parent restarted it at 17:14 (pid 79042). The 5-minute RSS monitor (`.context/monitors/watchtower-rss.jsonl`) logged `down` from 15:30 to 17:10, and nothing acted on it.
+
+**Root cause (killer): not attributed. These causes were ruled out by evidence:**
+- **`bin/watchtower.sh stop`/`restart`:** `do_stop` (bin/watchtower.sh:159-206) deletes the pid file, but at 15:12Z the pid file still named 1697481 (mtime 00:35:35, `fw watchtower status` → "Stale PID file exists").
+- **`bin/watchtower.sh start`'s fuser path (:339-366):** with a live pid file, start takes the `is_running` reuse branch (:286-300) and never reaches fuser. That also makes the "port-holder check before freeing the port" reading of the two probes impossible: that path probes 127.0.0.1 twice, and the log shows one.
+- **The parent's close batch for T-4693/T-4690:** it started at 13:27:39Z (transcript 087d333f), 3 s after the death, and none of the 4 tests it ran touches Watchtower (grepped).
+- **The T-4692 worker's `bin/fw upgrade` of a temp consumer (13:27:17Z, still running at the kill):** step 4b only prints a restart NOTE (lib/upgrade.sh:2449-2462), and the consumer had no Watchtower state.
+- **OOM, segfault, a systemd unit stop:** kernel and system journals for 15:27:20-15:27:50 show none. `pen-tmux-server.service` stopped at 15:27:48, 12 s later. The w4663 worker scope `run-r06fff2e8…scope` (the worker that started pid 1697481 at 22:35Z) was deactivated at 00:17:01 on 2026-10-23.
+- **Other agent transcripts at 13:26:30-13:27:40Z** (AEF, 055, 832, termlink): no kill, stop or restart of this Watchtower.
+
+What remains: a userspace signal by pid or port from a process with no transcript record. Plausible sources are a test or script whose PROJECT_ROOT resolved to the live checkout. lib/paths.sh:38-45 falls back to the live repo when PROJECT_ROOT is unset, and every session and worker here exports `PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework`, so a test that forgets to override it targets the live server.
+
+**Root cause (unnoticed outage, the part that is fixed):** the only ensure path was session-start (agents/context/post-compact-resume.sh → lib/watchtower-ensure.sh); `watchtower-ensure.log` last ran 2026-10-22T18:47:43Z. `liveness-1m` and the RSS monitor *record* down states; nothing restarted the server and nothing surfaced the outage.
+
+**Why structurally allowed:** bin/watchtower.sh had no notion of "called from a test"; the T-4671 live_repo_guard watched git status/index only, not live processes; no cron restarted a dead Watchtower; doctor reported only the current state (and only on demand).
+
+**Prevention:**
+- `bin/watchtower.sh` `_watchtower_live_test_refusal` refuses start/stop/restart/ensure (exit 4) under bats or pytest when PROJECT_ROOT is the checkout the test runs from. Override: `FW_WATCHTOWER_ALLOW_LIVE_IN_TEST=1`.
+- `tests/live_repo_guard.bash` fails a test when a Watchtower that was alive at begin is dead or replaced at end.
+- `watchtower-ensure-5m` cron runs `fw watchtower ensure`, which starts a dead Watchtower and appends the outage to `.context/working/watchtower-outages.jsonl`.
+- `fw doctor` WARNs on any outage in the last 7 days (`FW_WATCHTOWER_OUTAGE_DAYS`), so the next kill is both repaired within 5 min and visible, with its pid and last-seen time for attribution.
+- Pinned by tests/unit/t4706_watchtower_live_guard.bats (9 of 11 fail on HEAD; the 2 passing are control legs).
+- Side fix: t3877 setup now unsets FW_DISPATCHED_WORKER (4 of 6 cases were red when run from a dispatched worker).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +416,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4706-watchtower-was-killed-at-152736-on-2026-.md
 - **Context:** Initial task creation
+
+### 2026-10-23T15:16:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

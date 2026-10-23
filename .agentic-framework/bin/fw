@@ -3092,6 +3092,19 @@ PY
     else
         echo -e "  ${CYAN}SKIP${NC}  Watchtower not running (no triple) — start with: fw serve"
     fi
+    # T-4706: Watchtower was killed and stayed down ~1h47m with nothing saying so.
+    # The ensure keep-alive records every outage it repairs; a recent one is a finding.
+    if [ -f "$FRAMEWORK_ROOT/lib/watchtower-ensure.sh" ]; then
+        local _wt_out _wt_out_n
+        # shellcheck source=/dev/null
+        if _wt_out=$(. "$FRAMEWORK_ROOT/lib/watchtower-ensure.sh" && fw_watchtower_recent_outages); then
+            _wt_out_n=$(printf '%s\n' "$_wt_out" | grep -c .)
+            echo -e "  ${YELLOW}WARN${NC}  Watchtower was down: $_wt_out_n outage(s) in the last ${FW_WATCHTOWER_OUTAGE_DAYS:-7} day(s), restarted by the ensure keep-alive"
+            printf '%s\n' "$_wt_out" | awk '{l=$0} END {print "         last: " l}'
+            echo -e "         Log: .context/working/watchtower-outages.jsonl — find what killed it (T-4706)"
+            warnings=$((warnings + 1))
+        fi
+    fi
 
     # Check: framework-labelled UFW rules for ports nothing listens on (T-4323).
     # Watchtower start used to add a rule per port and stop never removed it
