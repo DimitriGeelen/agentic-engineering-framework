@@ -47721,3 +47721,39 @@ scan_id: R-4defc85b
 task_id: T-4702
 payload:
   task_file: .tasks/active/T-4702-something-copied-aefs-working-tree-agent.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T15:57:16Z'
+scan_id: R-62f52529
+task_id: T-4705
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T15:57:16Z'
+scan_id: R-62f52529
+task_id: T-4705
+payload:
+  task_file: .tasks/active/T-4705-fw-upgrades-files-to-commit-list-t-4692t.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T16:03:28Z'
+scan_id: R-aeb75b26
+task_id: T-4704
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T16:03:28Z'
+scan_id: R-aeb75b26
+task_id: T-4704
+payload:
+  task_file: .tasks/active/T-4704-fw-upgrade-next-steps-suggests-a-hard-co.md

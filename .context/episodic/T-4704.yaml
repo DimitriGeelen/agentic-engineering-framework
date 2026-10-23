@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4704: fw upgrade 'Next steps' suggests a hard-coded commit id (fw git commit -m 'T-012: fw upgrade — sync framework improvements'), a task that does not exist in the consumer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T16:03:47Z
+# ============================================================================
+
+task_id: T-4704
+task_name: "fw upgrade 'Next steps' suggests a hard-coded commit id (fw git commit -m 'T-012: fw upgrade — sync framework improvements'), a task that does not exist in the consumer"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T14:50:26Z
+completed: 2026-10-23T15:57:38Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T17:13:08+02:00
+last_commit: 2026-10-23T17:13:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade Next steps names the consumer's focused task (or T-XXXX + fw work-on), never the fixed T-012. vendor check clean, AC ticked
+
+# Key outcomes
+outcomes:
+  - 'lib/upgrade.sh no longer contains the literal `T-012` in the "Next steps" commit suggestion; no fixed task id is printed there'
+  - 'When the consumer''s `.context/working/focus.yaml` has `current_task: T-NNNN`, the commit step names that id (`fw git commit -m ''T-NNNN: fw upgrade — sync framework improvements''`)'
+  - 'When no task is focused (focus.yaml missing, or `current_task:` empty/null), the commit step uses the placeholder `T-XXXX` and is preceded (same step 2, line before the commit) by `fw work-on "framework upgrade" --type build`; step numbering 1-4 is unchanged so the T-3882 cron step stays "4."'
+  - 'A bats test covers both cases (focused id; no focus) and passes; tests/unit/t4692_upgrade_commit_list.bats and tests/unit/upgrade_fresh_machine_simulation.bats stay green'
+  - '`bin/fw vendor self` run and `bin/fw vendor self --check --task T-4704` is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw upgrade Next steps names the consumer''s focused task (or T-XXXX + fw work-on), never the fixed T-012'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4704-fw-upgrade-next-steps-suggests-a-hard-co.md'
+  - 'tests/unit/t4704_upgrade_commit_next_step.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T17:13:08'
+    action: 'T-4704: fw upgrade Next steps names the consumer''s focused task (or T-XXXX + fw work-on), never the fixed T-012'
+  - time: '2026-10-23T17:13:23'
+    action: 'T-4704: vendor check clean, AC ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 67 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 67
+  commits: 3
+  files_changed: 9
+  lines_added: 389
+  lines_removed: 19
+  footprint_refreshed_at: '2026-10-23T16:04:08Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4704-fw-upgrade-next-steps-suggests-a-hard-co.md
+generated_by: context-agent-hybrid
