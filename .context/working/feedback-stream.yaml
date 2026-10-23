@@ -47793,3 +47793,21 @@ scan_id: R-8d195260
 task_id: T-4708
 payload:
   task_file: .tasks/active/T-4708-fw-doctor-hook-config-script-not-found--.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T16:22:10Z'
+scan_id: R-b459fefe
+task_id: T-4709
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T16:22:10Z'
+scan_id: R-b459fefe
+task_id: T-4709
+payload:
+  task_file: .tasks/active/T-4709-fence-git-discovery-in-testsunitt4705upg.md
