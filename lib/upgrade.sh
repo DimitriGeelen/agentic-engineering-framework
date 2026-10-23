@@ -1747,6 +1747,16 @@ do_upgrade() {
     fi
     echo ""
 
+    # T-4692: snapshot the target's dirty paths BEFORE any mutation, so the
+    # summary can name exactly what this upgrade left for the consumer to commit.
+    # Dry run collects the governance files a live run would create instead.
+    local _t4692_before="" _t4692_would=()
+    if [ "$dry_run" != true ] && [ -f "$FRAMEWORK_ROOT/lib/upgrade_commit_list.py" ]; then
+        _t4692_before=$(mktemp "${TMPDIR:-/tmp}/fw-upgrade-dirty.XXXXXX") || _t4692_before=""
+        [ -z "$_t4692_before" ] || python3 "$FRAMEWORK_ROOT/lib/upgrade_commit_list.py" \
+            snapshot "$target_dir" > "$_t4692_before" 2>/dev/null || true
+    fi
+
     # T-1912: pre-step-1 version-ahead precheck.
     # Mirrors the step-9 T-1839 guard (lib/upgrade.sh:1100-1112) but fires
     # BEFORE any mutation. The step-9 guard correctly protects the pinned
@@ -2038,6 +2048,7 @@ $project_owned"
         changes=$((changes + 1))
         if [ "$dry_run" = true ]; then
             echo -e "  ${CYAN}WOULD CREATE${NC}  CLAUDE.md from template"
+            _t4692_would+=("CLAUDE.md")
         else
             sed "s|__PROJECT_NAME__|$project_name|g" "$template_file" > "$project_claude"
             echo -e "  ${GREEN}CREATED${NC}  CLAUDE.md from template"
@@ -2801,6 +2812,7 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
         changes=$((changes + 1))
         if [ "$dry_run" = true ]; then
             echo -e "  ${CYAN}WOULD CREATE${NC}  .claude/settings.json ($fw_hook_count hooks)"
+            _t4692_would+=(".claude/settings.json")
         else
             # T-2093 F6 (T-2078 V1-B): subshell-scope force=true (see sibling
             # site ~line 916). Same mutation-leak risk; same fix.
@@ -2934,6 +2946,7 @@ with open(mcp_file, 'w') as f:
         changes=$((changes + 1))
         if [ "$dry_run" = true ]; then
             echo -e "  ${CYAN}WOULD CREATE${NC}  .mcp.json (context7, playwright, termlink, fw)"
+            _t4692_would+=(".mcp.json")
         else
             cat > "$mcp_file" << 'MCPJSON'
 {
@@ -3126,6 +3139,7 @@ MCPJSON
         changes=$((changes + 1))
         if [ "$dry_run" = true ]; then
             echo -e "  ${CYAN}WOULD ADD${NC}  $_vec_added vector-index ignore rule(s) to .context/working/.gitignore"
+            [ -e "$target_dir/.context/working/.gitignore" ] || _t4692_would+=(".context/working/.gitignore")
         else
             echo -e "  ${GREEN}ADDED${NC}  $_vec_added vector-index ignore rule(s) to .context/working/.gitignore"
         fi
@@ -3147,6 +3161,7 @@ MCPJSON
         changes=$((changes + 1))
         if [ "$dry_run" = true ]; then
             echo -e "  ${CYAN}WOULD ADD${NC}  $_wk_added runtime-state ignore rule(s) to .context/working/.gitignore"
+            [ -e "$target_dir/.context/working/.gitignore" ] || _t4692_would+=(".context/working/.gitignore")
         else
             echo -e "  ${GREEN}ADDED${NC}  $_wk_added runtime-state ignore rule(s) to .context/working/.gitignore"
         fi
@@ -3173,6 +3188,7 @@ MCPJSON
         changes=$((changes + 1))
         if [ "$dry_run" = true ]; then
             echo -e "  ${CYAN}WOULD ADD${NC}  dispatch worker-dir ignore rule to .context/.gitignore"
+            [ -e "$target_dir/.context/.gitignore" ] || _t4692_would+=(".context/.gitignore")
         else
             echo -e "  ${GREEN}ADDED${NC}  dispatch worker-dir ignore rule to .context/.gitignore"
         fi
@@ -3401,6 +3417,7 @@ EOF
         if [ "$failed_steps" -gt 0 ]; then
             echo "  $failed_steps step(s) reported failure"
         fi
+        _t4692_emit_would_create ${_t4692_would[@]+"${_t4692_would[@]}"}
         echo ""
         echo "Run without --dry-run to apply changes."
     else
@@ -3442,7 +3459,30 @@ EOF
         fi
         _t3862_recall_prereqs "$target_dir"
         _t4069_stale_wrapper_notice "$target_dir"
+        _t4692_emit_commit_list "$target_dir" "$_t4692_before"
     fi
+}
+
+# T-4692: end-of-summary list of the files this upgrade created or changed that
+# git shows untracked/modified, with one `git add` line. Silent when there are
+# none or the target is not a git repo. Advisory only: always returns 0.
+# $1 = target_dir, $2 = snapshot file written before the first mutation.
+_t4692_emit_commit_list() {
+    local root="${1:-}" before="${2:-}"
+    [ -n "$root" ] && [ -n "$before" ] && [ -f "$before" ] || return 0
+    python3 "$FRAMEWORK_ROOT/lib/upgrade_commit_list.py" report "$root" "$before" 2>/dev/null || true
+    rm -f "$before"
+    return 0
+}
+
+# T-4692: dry-run counterpart — the governance files a live run would create.
+# $@ = root-relative paths (duplicates collapse). Silent when empty.
+_t4692_emit_would_create() {
+    [ "$#" -gt 0 ] || return 0
+    echo ""
+    echo "  Files a live run would create (commit them after upgrading):"
+    printf '%s\n' "$@" | awk '!seen[$0]++ {print "    new       " $0}'
+    return 0
 }
 
 # T-3862: semantic-recall prerequisites (sqlite-vec, a reachable embed host), checked

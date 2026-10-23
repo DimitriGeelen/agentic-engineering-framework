@@ -8,10 +8,10 @@ description: >
   governance files the consumer must commit in the upgrade's final summary (with the
   git add line), for every file upgrade creates, not only this one.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T10:41:32Z
-last_update: '2026-10-23T10:45:39Z'
+last_update: 2026-10-23T13:24:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Live `fw upgrade` snapshots the consumer's dirty paths (+ content hash) before any mutation and, at the end of the summary, lists every path the upgrade created or changed that git shows untracked/modified, with ONE `git add -- …` line (vendored `.agentic-framework/` collapsed to one entry); prints nothing when the upgrade left nothing to commit
+- [x] Paths already dirty before the upgrade and left untouched are NOT listed; already-dirty paths the upgrade changed ARE listed
+- [x] Dry run lists the governance files a live run WOULD create (.context/.gitignore, .context/working/.gitignore, CLAUDE.md, .claude/settings.json, .mcp.json — whichever are absent and would be written)
+- [x] Regression bats test covers new file, untouched pre-dirty file, changed pre-dirty file, clean tree, non-git target, and dry-run listing; tests/unit/upgrade_fresh_machine_simulation.bats green; `bin/fw vendor self --check --task T-4692` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,7 +282,24 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 300 bats tests/unit/t4692_upgrade_commit_list.bats > /tmp/.t4692-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4692-a.out && grep -q "^ok 11 " /tmp/.t4692-a.out
+test "$(grep -c '# skip' /tmp/.t4692-a.out)" -eq 0
+timeout 300 bats tests/unit/t2094_upgrade_preflight_doctor_advisory.bats tests/unit/t4234_upgrade_dryrun_preview.bats > /tmp/.t4692-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4692-b.out
+test "$(grep -c '# skip' /tmp/.t4692-b.out)" -eq 0
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4692-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4692-c.out
+test "$(grep -c '# skip' /tmp/.t4692-c.out)" -eq 0
+bash -n lib/upgrade.sh && python3 -m py_compile lib/upgrade_commit_list.py
+bin/fw vendor self --check --task T-4692
+
 ## RCA
+
+**Symptom:** after `fw upgrade`, a consumer (TermLink) had `.context/.gitignore` (created by the T-4684 step) sitting untracked; the summary never said any file needed committing.
+
+**Root cause:** do_upgrade (lib/upgrade.sh, summary block after `# ── Summary ──`) reported only a change COUNT and a generic "Review changes: git diff" next step. `git diff` does not show untracked files, and no step kept a record of which paths it wrote, so new governance files were invisible in the one place the operator looks.
+
+**Why structurally allowed:** every step reports its own CREATED/ADDED line, but nothing aggregated them into "what is left to commit"; each new file-creating step (T-3861, T-4231, T-4684) added one more silent untracked file.
+
+**Prevention:** the summary is now computed from git itself (before/after dirty-path diff in lib/upgrade_commit_list.py), so any future step that creates or changes a file is listed without that step having to register anything. tests/unit/t4692_upgrade_commit_list.bats pins the cases and the wiring (snapshot precedes the first step; report is last).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -376,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4692-fw-upgrade-creates-contextgitignore-t-46.md
 - **Context:** Initial task creation
+
+### 2026-10-23T13:04:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
