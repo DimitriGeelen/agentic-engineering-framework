@@ -331,10 +331,10 @@ bin/fw vendor self --check --task T-4715
 
 **Recommendation:** GO
 
-**Rationale:** The operator reported the gallery showed no screenshots. Cause: web/templates/designer_landing.html never rendered the per-version picture that /api/thumb serves (the pictures existed for all 16 maps since T-4607; earlier checks tested the API, not the page). Each card now shows its latest diagram; verified on the live page with a browser screenshot.
+**Rationale:** The operator reported the gallery showed no screenshots. Cause: web/templates/designer_landing.html never rendered the per-version picture that the thumbnail API serves (the pictures existed for all 16 maps since T-4607; earlier checks tested the API, not the page). Each card now shows its latest diagram; verified on the live page with a browser screenshot.
 
 **Evidence:**
-- live /designer: 16 cards, 16 `corpus-thumb` images; full-page browser screenshot shows a diagram on every card (draft-t2584-scratch is a near-empty scratch map, so its picture is near-empty)
+- live gallery http://192.168.10.107:3000/designer : 16 cards, 16 `corpus-thumb` images; full-page browser screenshot shows a diagram on every card (draft-t2584-scratch is a near-empty scratch map, so its picture is near-empty)
 - first attempt used loading="lazy", which left below-the-fold cards dark in a full-page capture; removed (16 images of ~15 KB)
 - tests/web/test_designer_landing.py 7/7, including the new test_every_card_shows_its_latest_thumbnail
 
