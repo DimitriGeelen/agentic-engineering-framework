@@ -95,7 +95,7 @@ bvp_scores_proposed:
 - [x] The post-commit footprint refresh never modifies an episodic that is tracked and clean after the commit, unless pre-commit predicted it for this commit (lib/episodic_footprint.py `--leave-committed`, used by the post-commit loop in agents/git/lib/hooks.sh)
 - [x] Regression test in tests/unit/t4690_clean_tree_after_close.bats: close a fixture task, commit, then make a second commit naming the closed task; `git status --porcelain` is empty after both and the committed footprint is unchanged by the second commit
 - [x] The existing t4690 and T-3130 suites stay green (no skips)
-- [ ] `bin/fw git install-hooks` reinstalls this repo's post-commit with the change, and a live commit naming a closed task leaves the tree clean
+- [x] `bin/fw git install-hooks` reinstalls this repo's post-commit with the change, and a live commit naming a closed task leaves the tree clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
