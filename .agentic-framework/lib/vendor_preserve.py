@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Consumer-local protection for `fw vendor` (T-3850).
+r"""Consumer-local protection for `fw vendor` (T-3850).
 
 do_vendor mirrors every include dir with `rsync --delete --delete-excluded`
 (or rm -rf + cp). Anything a consumer put under .agentic-framework/ that the
@@ -40,6 +40,16 @@ Manifest shape (paths relative to .agentic-framework/; a leading
         marker: "ring20-local: register approvals blueprint"
       - file: lib/notify.sh
         markers: ["ring20-local: ntfy topic", "ring20-local: retry"]
+      - file: web/blueprints/core.py
+        marker: 're:register_blueprint\(approvals_bp\)'
+
+Marker semantics (T-4679): a marker is a LITERAL substring by default -- no
+escaping, `(` and `.` mean themselves. Prefix it with `re:` to make it a Python
+regular expression (re.search, MULTILINE, so ^/$ anchor lines). Write a regex
+marker in single quotes or unquoted: YAML double quotes reject `\(`. A missing
+marker is reported with the semantics used, a literal one that looks like a
+regex gets a `did you mean "re:..."?` hint, and an invalid regex is reported as
+MARKER INVALID (and counted missing) rather than crashing the vendor.
 """
 
 import argparse
@@ -48,6 +58,7 @@ import fnmatch
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -431,6 +442,23 @@ def cmd_pre(a):
 
 # ---------------------------------------------------------------- post
 
+REGEX_PREFIX = "re:"
+_REGEX_ESCAPE = re.compile(r"\\[.()\[\]{}*+?|^$dswbDSWB]")
+
+
+def marker_check(marker, body):
+    """(found, semantics, error) for one in_file marker against a file body.
+
+    Literal substring by default; `re:` prefix = regex (T-4679)."""
+    if marker.startswith(REGEX_PREFIX):
+        try:
+            rx = re.compile(marker[len(REGEX_PREFIX):], re.MULTILINE)
+        except re.error as exc:
+            return False, "regex", str(exc)
+        return body is not None and rx.search(body) is not None, "regex", None
+    return body is not None and marker in body, "literal", None
+
+
 def cmd_post(a):
     includes = read_lines(a.includes)
     excludes = read_lines(a.excludes)
@@ -459,12 +487,21 @@ def cmd_post(a):
             body = open(path, encoding="utf-8", errors="replace").read()
         except OSError:
             body = None
+        copy = os.path.relpath(os.path.join(backup, rel), a.target)
         for m in marks:
-            if body is None or m not in body:
-                missing += 1
-                print(f"  MARKER MISSING  {rel}: \"{m}\"  — local patch not in the new upstream "
-                      f"file; pre-vendor copy: "
-                      f"{os.path.relpath(os.path.join(backup, rel), a.target)}")
+            found, how, err = marker_check(m, body)
+            if found:
+                continue
+            missing += 1
+            if err:
+                print(f"  MARKER INVALID  {rel}: \"{m}\" — invalid regex: {err}; fix the "
+                      f"pattern in {MANIFEST}; pre-vendor copy: {copy}")
+                continue
+            print(f"  MARKER MISSING  {rel}: \"{m}\" ({how})  — local patch not in the new "
+                  f"upstream file; pre-vendor copy: {copy}")
+            if how == "literal" and _REGEX_ESCAPE.search(m):
+                print(f"                  hint: matched as literal text, but it contains regex "
+                      f"escapes -- did you mean \"{REGEX_PREFIX}{m}\"?")
     if plan.get("in_file"):
         total = sum(len(v) for v in plan["in_file"].values())
         print(f"  IN-FILE   {total - missing}/{total} marker(s) present after vendor")

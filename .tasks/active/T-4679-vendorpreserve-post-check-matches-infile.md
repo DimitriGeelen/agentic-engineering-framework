@@ -4,10 +4,10 @@ name: "vendor_preserve post-check matches in_file markers as plain substrings, s
 description: >
   Decide literal vs regex (or a prefix such as re: for regex), document it in the manifest schema, make the check consistent, test both forms; tell ring20 which to use. Source: proxmox-ring20-management be.4 field report (sidecar 4aade009, 2026-10-23).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T22:25:45Z
-last_update: 2026-10-22T22:25:45Z
+last_update: 2026-10-23T08:58:05Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -56,14 +56,18 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+ring20 (proxmox-ring20-management be.4, sidecar 4aade009) wrote `in_file:` markers with regex escapes (`\(`, `\.`); the post-vendor check in `lib/vendor_preserve.py` matches markers as plain substrings, so those markers always print MARKER MISSING even when the patch is present. Semantics chosen: literal substring by default (unchanged); a `re:` prefix on a marker opts into Python regex (`re.search`, MULTILINE).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Literal markers keep today's semantics: a plain marker present in the vendored file is reported present (existing t3850 tests stay green)
+- [x] A marker prefixed `re:` is matched with `re.search` (MULTILINE) and reported present when the pattern matches
+- [x] MARKER MISSING names the semantics used (`literal` or `regex`), and a literal marker containing regex escapes (`\(`, `\.` …) adds a hint `did you mean "re:…"?`
+- [x] An invalid `re:` pattern is reported cleanly as `MARKER INVALID` with the `re.error` message (no traceback), counted as missing (IN-FILE 0/1 + WARN)
+- [x] The marker semantics are documented in the manifest schema (module docstring of lib/vendor_preserve.py and `fw vendor --help`)
+- [x] Regression tests in tests/unit/t3850_vendor_preserve_locals.bats cover: literal found, literal-with-escapes missing + hint, re: found, invalid regex
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +252,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t3850_vendor_preserve_locals.bats > /tmp/.t4679.out 2>&1 && ! grep -q "^not ok" /tmp/.t4679.out && grep -q "T-4679" /tmp/.t4679.out
+# at most 1 skip: the PyYAML-parity test skips only on a host without PyYAML (0 here)
+test "$(grep -c '# skip' /tmp/.t4679.out)" -le 1
+grep -q '"re:"' lib/vendor_preserve.py && grep -q 'MARKER INVALID' lib/vendor_preserve.py
+python3 tools/bats-dead-negation-lint.py tests/unit/t3850_vendor_preserve_locals.bats > /tmp/.t4679.lint 2>&1 && grep -q clean /tmp/.t4679.lint
+bin/fw vendor self --check --task T-4679
 
 ## RCA
 
@@ -264,6 +274,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** ring20's `fw vendor` printed MARKER MISSING for every `in_file:` marker written with regex escapes (e.g. `register_blueprint\(approvals_bp\)`), although the patch was present in the vendored file — real misses were buried among false ones.
+
+**Root cause:** the post-check in `lib/vendor_preserve.py` (`post()`, in_file loop: `if body is None or m not in body`, ~line 463) compares markers as plain substrings, and the manifest schema (module docstring, `fw vendor --help`) never said whether a marker is literal text or a pattern. ring20 reasonably assumed grep-style regex; `\(` never occurs literally in the file.
+
+**Why structurally allowed:** the schema was documented only by example (plain-text markers), the MARKER MISSING line did not say how it matched, and tests covered only plain markers — nothing distinguished "patch gone" from "marker written in the wrong dialect".
+
+**Prevention:** semantics are explicit (literal default, `re:` opt-in) in the schema docstring and `fw vendor --help`; MARKER MISSING prints `(literal)`/`(regex)`; a literal marker that looks like a regex gets a `did you mean "re:…"?` hint; an invalid pattern prints `MARKER INVALID` instead of a traceback; four bats tests pin each form.
 
 ## Evolution
 
@@ -329,6 +347,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-23 — regex opt-in shape
+- **Chose:** a `re:` prefix on the marker string, valid in both `marker:` and `markers:`.
+- **Why:** one key; per-marker choice inside a `markers:` list; no parser change (the PyYAML-less `_mini_yaml` needs no new key); existing literal markers untouched. A literal code-comment marker starting with `re:` is implausible.
+- **Rejected:** sibling `in_file_re:`/`marker_re:` key — doubles schema surface and fallback-parser cases, cannot mix literal and regex in one `markers:` list. Flipping the default to regex — would silently change every existing literal marker containing `.` or `(`.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -345,3 +368,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4679-vendorpreserve-post-check-matches-infile.md
 - **Context:** Initial task creation
+
+### 2026-10-23T08:57:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

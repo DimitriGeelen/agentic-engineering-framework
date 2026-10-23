@@ -653,6 +653,7 @@ do_vendor() {
                 echo ""
                 echo "Local files (T-3850): list them in .fwvendor-preserve.yaml at the project"
                 echo "root — files: (kept as-is) and in_file: + marker (checked after the copy)."
+                echo "A marker is literal text; prefix it with re: for a regex (T-4679)."
                 echo "Anything else that would be lost is named and the vendor refuses."
                 echo ""
                 echo "Copies the complete framework (~7MB) into PROJECT/.agentic-framework/"

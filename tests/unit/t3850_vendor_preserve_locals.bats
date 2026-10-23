@@ -209,3 +209,51 @@ PY
     [ -f "$AF/web/blueprints/approvals.py" ]
     [[ "$output" != *'invisible to git'* ]]
 }
+
+# T-4679 — marker semantics: literal substring by default, `re:` prefix opts into
+# regex. ring20 wrote markers with regex escapes and got MARKER MISSING forever.
+_marker_manifest() {
+    printf '%s\n' 'files:' '  - web/blueprints/approvals.py' \
+        '  - web/templates/ring20_*.html' '  - lib/a.sh' 'in_file:' \
+        '  - file: web/app.py' "    markers: [$1]" > "$PROJ/.fwvendor-preserve.yaml"
+    printf 'app v2\nregister_blueprint(approvals_bp)  # ring20-local\n' > "$SRC/web/app.py"
+    git -C "$SRC" -c user.email=t@example.invalid -c user.name=t commit -qam v2c
+}
+
+@test "T-4679: literal marker present in the file is reported present" {
+    _marker_manifest "'register_blueprint(approvals_bp)'"
+    run _vendor
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+    echo "$output" | grep -q "IN-FILE   1/1 marker(s) present after vendor"
+}
+
+@test "T-4679: literal marker with regex escapes is missing, says literal, hints re:" {
+    _marker_manifest "'register_blueprint\\(approvals_bp\\)'"
+    run _vendor
+    echo "$output" | grep -qF 'MARKER MISSING  web/app.py: "register_blueprint\(approvals_bp\)" (literal)'
+    echo "$output" | grep -qF 'did you mean "re:register_blueprint\(approvals_bp\)"?'
+    echo "$output" | grep -q "IN-FILE   0/1 marker(s) present after vendor"
+}
+
+@test "T-4679: re: marker is matched as a regex" {
+    _marker_manifest "'re:register_blueprint\\(approvals_bp\\)\\s+# ring20-local$'"
+    run _vendor
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+    echo "$output" | grep -q "IN-FILE   1/1 marker(s) present after vendor"
+    [[ "$output" != *'MARKER MISSING'* ]]
+}
+
+@test "T-4679: re: marker not matching says regex and gives no re: hint" {
+    _marker_manifest "'re:never_there\\(\\)'"
+    run _vendor
+    echo "$output" | grep -qF 'MARKER MISSING  web/app.py: "re:never_there\(\)" (regex)'
+    [[ "$output" != *'did you mean'* ]]
+}
+
+@test "T-4679: invalid re: marker is reported cleanly, counted missing" {
+    _marker_manifest "'re:register_blueprint(approvals_bp'"
+    run _vendor
+    echo "$output" | grep -qF 'MARKER INVALID  web/app.py: "re:register_blueprint(approvals_bp" — invalid regex:'
+    echo "$output" | grep -q "IN-FILE   0/1 marker(s) present after vendor"
+    [[ "$output" != *'Traceback'* ]]
+}
