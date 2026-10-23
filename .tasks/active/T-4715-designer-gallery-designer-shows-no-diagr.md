@@ -1,15 +1,18 @@
 ---
 id: T-4715
-name: "Designer gallery (/designer) shows no diagram thumbnails: designer_landing.html cards have no image although /api/thumb serves one per map"
+name: "Designer gallery (/designer) shows no diagram thumbnails: designer_landing.html
+  cards have no image although /api/thumb serves one per map"
 description: >
-  Designer gallery (/designer) shows no diagram thumbnails: designer_landing.html cards have no image although /api/thumb serves one per map
+  Designer gallery (/designer) shows no diagram thumbnails: designer_landing.html
+  cards have no image although /api/thumb serves one per map
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [tests/web/test_designer_landing.py, web/templates/designer_landing.html]
+components: [tests/web/test_designer_landing.py, 
+      web/templates/designer_landing.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T20:04:44Z
-last_update: 2026-10-23T20:09:15Z
+last_update: '2026-10-23T20:15:34Z'
 date_finished: 2026-10-23T20:09:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -50,6 +53,16 @@ date_finished: 2026-10-23T20:09:15Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-23T20:15:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=331,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4715: Designer gallery (/designer) shows no diagram thumbnails: designer_landing.html cards have no image although /api/thumb serves one per map
