@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4685: FW_TASKS_DIR_OVERRIDE=1 inherited WITHOUT the _FW_PATHS_DERIVED_BY sentinel is still honoured, so foreign TASKS_DIR/CONTEXT_DIR are followed (T-4670 residual)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T09:59:31Z
+# ============================================================================
+
+task_id: T-4685
+task_name: "FW_TASKS_DIR_OVERRIDE=1 inherited WITHOUT the _FW_PATHS_DERIVED_BY sentinel is still honoured, so foreign TASKS_DIR/CONTEXT_DIR are followed (T-4670 residual)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T09:53:53Z
+completed: 2026-10-23T09:59:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T11:54:21+02:00
+last_commit: 2026-10-23T11:58:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture inherited FW_TASKS_DIR_OVERRIDE without sentinel still honoured (TermLink be.5). FW_TASKS_DIR_OVERRIDE names its project root; bare =1 no longer keeps a value inside another project
+
+# Key outcomes
+outcomes:
+  - 'lib/paths.sh honours FW_TASKS_DIR_OVERRIDE for a value inside another project only when the override names this PROJECT_ROOT (literal or canonical); a bare `=1` or a foreign-root value is ignored there with a stderr note naming the `=<project root>` form; a bare `=1` with a fixture value (no project ancestor) stays honoured'
+  - 'The T-4670 sentinel-crossing block also drops a named override that does not name this PROJECT_ROOT'
+  - 'Every caller/test that set `FW_TASKS_DIR_OVERRIDE=1` for a project-owned value is migrated to `=<project root>` (git grep: only tests/unit/t4222_inherited_env_dirs.bats; no lib/agents/bin caller)'
+  - 'Regression tests in tests/unit/t4222_inherited_env_dirs.bats (sentinel absent): bare =1 + foreign value ignored; =<this root> honoured; =<other root> ignored; =1 + fixture dir honoured; red on pre-fix lib/paths.sh, green after'
+  - 'T-4670/T-4222/T-4651 bats stay green; no new fork on the hot path (value == $PROJECT_ROOT/.tasks)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/paths.sh'
+  - 'lib/paths.sh'
+  - '.tasks/active/T-4685-fwtasksdiroverride1-inherited-without-th.md'
+  - 'tests/unit/t4222_inherited_env_dirs.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T11:54:21'
+    action: 'T-4685: capture inherited FW_TASKS_DIR_OVERRIDE without sentinel still honoured (TermLink be.5)'
+  - time: '2026-10-23T11:58:01'
+    action: 'T-4685: FW_TASKS_DIR_OVERRIDE names its project root; bare =1 no longer keeps a value inside another project'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 4
+  lines_added: 519
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4685-fwtasksdiroverride1-inherited-without-th.md
+generated_by: context-agent-hybrid
