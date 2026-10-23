@@ -1,0 +1,106 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4694: T-4690 residual: any commit that names an already-closed task still re-dirties its episodic (post-commit footprint refresh counts the new commit); only the closing commit is predicted
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T13:50:54Z
+# ============================================================================
+
+task_id: T-4694
+task_name: "T-4690 residual: any commit that names an already-closed task still re-dirties its episodic (post-commit footprint refresh counts the new commit); only the closing commit is predicted"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T13:32:08Z
+completed: 2026-10-23T13:50:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T15:32:46+02:00
+last_commit: 2026-10-23T15:50:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture T-4690 residual (commits naming a closed task still re-dirty its episodic). post-commit leaves a committed, clean episodic alone unless pre-commit predicted it, so a later commit naming a closed task leaves the tree clean. live check after install-hooks; this message also names T-4690: (closed). commit episodic footprint refreshes left dirty by post-commit before the T-4694 fix
+
+# Key outcomes
+outcomes:
+  - 'The post-commit footprint refresh never modifies an episodic that is tracked and clean after the commit, unless pre-commit predicted it for this commit (lib/episodic_footprint.py `--leave-committed`, used by the post-commit loop in agents/git/lib/hooks.sh)'
+  - 'Regression test in tests/unit/t4690_clean_tree_after_close.bats: close a fixture task, commit, then make a second commit naming the closed task; `git status --porcelain` is empty after both and the committed footprint is unchanged by the second commit'
+  - 'The existing t4690 and T-3130 suites stay green (no skips)'
+  - '`bin/fw git install-hooks` reinstalls this repo''s post-commit with the change, and a live commit naming a closed task leaves the tree clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'commit episodic footprint refreshes left dirty by post-commit before the T-4694 fix'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — where a later commit naming a closed task gets counted'
+    chose: 'option (b) without the backfill job. Post-commit does not rewrite an episodic that is tracked and identical to HEAD unless pre-commit predicted it for this commit. The footprint is frozen as committed at close. Later commits naming the task (bookkeeping, residual fixes) are not counted.'
+    rationale: 'after a commit exists, rewriting a tracked clean file can only leave the tree dirty. Avoiding that would mean amending, which is ruled out. The close commit is still counted, because pre-commit predicts it. An untracked or already-modified episodic is still refreshed, since writing it does not change whether the tree is clean.'
+    alternatives_rejected: ['(a)/(c), predicting from the message in pre-commit. Measured on this host: while pre-commit runs, `.git/COMMIT_EDITMSG` still holds the previous commit''s message, and git builds the tree before prepare-commit-msg/commit-msg run, so changes staged from commit-msg never reach the commit. The only other source is the parent process''s command line (`/proc/$PPID/cmdline`). That works only for `-m`, misses `-F` and editor commits, and is not portable. A committing backfill job was not built: it would add commits whose only purpose is counting post-close commits. Each of those would name the task again. It can be filed separately if anyone needs that count.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/lib/episodic_footprint.py'
+  - 'agents/git/lib/hooks.sh'
+  - '.context/episodic/T-4662.yaml'
+  - '.context/episodic/T-4670.yaml'
+  - '.context/episodic/T-4671.yaml'
+  - '.context/episodic/T-4678.yaml'
+  - '.context/episodic/T-4680.yaml'
+  - '.context/episodic/T-4683.yaml'
+  - '.context/episodic/T-4685.yaml'
+  - '.context/episodic/T-4687.yaml'
+  - '.context/episodic/T-4688.yaml'
+  - '.context/episodic/T-4689.yaml'
+  - '.context/episodic/T-4691.yaml'
+  - '.context/episodic/T-4693.yaml'
+  - 'lib/episodic_footprint.py'
+  - '.tasks/active/T-4694-t-4690-residual-any-commit-that-names-an.md'
+  - 'tests/unit/t4690_clean_tree_after_close.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T15:32:46'
+    action: 'T-4694: capture T-4690 residual (commits naming a closed task still re-dirty its episodic)'
+  - time: '2026-10-23T15:44:28'
+    action: 'T-4694: post-commit leaves a committed, clean episodic alone unless pre-commit predicted it, so a later commit naming a closed task leaves the tree clean'
+  - time: '2026-10-23T15:44:53'
+    action: 'T-4694: live check after install-hooks; this message also names T-4690: (closed)'
+  - time: '2026-10-23T15:50:20'
+    action: 'T-4694: commit episodic footprint refreshes left dirty by post-commit before the T-4694 fix'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 18
+  commits: 5
+  files_changed: 21
+  lines_added: 735
+  lines_removed: 71
+  footprint_refreshed_at: '2026-10-23T13:50:57Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4694-t-4690-residual-any-commit-that-names-an.md
+generated_by: context-agent-hybrid

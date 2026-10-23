@@ -47595,3 +47595,21 @@ scan_id: R-3427234c
 task_id: T-4689
 payload:
   task_file: .tasks/active/T-4689-consumer-contextworking-ignore-set-still.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T13:50:44Z'
+scan_id: R-9a498295
+task_id: T-4694
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T13:50:44Z'
+scan_id: R-9a498295
+task_id: T-4694
+payload:
+  task_file: .tasks/active/T-4694-t-4690-residual-any-commit-that-names-an.md
