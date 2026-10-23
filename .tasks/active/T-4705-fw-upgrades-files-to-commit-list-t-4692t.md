@@ -1,10 +1,17 @@
 ---
 id: T-4705
-name: "fw upgrade's files-to-commit list (T-4692/T-4697) did not appear for a vendored consumer upgraded from an external clone (dimitri-mint-dev, be.9)"
+name: "fw upgrade's files-to-commit list (T-4692/T-4697) did not appear for a vendored
+  consumer upgraded from an external clone (dimitri-mint-dev, be.9)"
 description: >
-  dimitri-mint-dev be.9 report (sidecar 3294edcf): summary had no list and no git add line; ring20 on be.10 (T-4697) did see it. Reproduce the dimitri-mint-dev shape on be.10 (consumer with .agentic-framework vendored, upgrade run as <clone>/bin/fw upgrade <consumer> from outside the consumer, changes > 0) and confirm the list prints; if not, find which path skips it (e.g. the summary is printed by a different branch for vendored consumers, or the journal stays empty when FRAMEWORK_ROOT is the external clone) and fix. Test that shape in bats.
+  dimitri-mint-dev be.9 report (sidecar 3294edcf): summary had no list and no git
+  add line; ring20 on be.10 (T-4697) did see it. Reproduce the dimitri-mint-dev shape
+  on be.10 (consumer with .agentic-framework vendored, upgrade run as <clone>/bin/fw
+  upgrade <consumer> from outside the consumer, changes > 0) and confirm the list
+  prints; if not, find which path skips it (e.g. the summary is printed by a different
+  branch for vendored consumers, or the journal stays empty when FRAMEWORK_ROOT is
+  the external clone) and fix. Test that shape in bats.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T14:51:01Z
-last_update: 2026-10-23T14:51:01Z
-date_finished: null
+last_update: 2026-10-23T14:52:12Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T14:51:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4705: fw upgrade's files-to-commit list (T-4692/T-4697) did not appear for a vendored consumer upgraded from an external clone (dimitri-mint-dev, be.9)
@@ -58,12 +82,16 @@ date_finished: null
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+dimitri-mint-dev be.10 report (sidecar 6b2373ac): still no list on be.10 (T-4697) for its shape, with 345 changed paths, AND the hard-coded "Next steps" commit line (T-4704) did not appear either. So the whole `[ "$changes" -gt 0 ]` summary block was skipped: likely the run finishes through another path (e.g. the external clone re-exec/replay `"$_tmpd/fw/bin/fw" "${_replay_args[@]}"` around lib/upgrade.sh:1668, or `changes` not propagated across it).
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The dimitri-mint-dev shape is reproduced on current bleeding-edge in a mktemp dir (consumer git repo with `.agentic-framework/` vendored from an older commit, upgrade run as `<external clone>/bin/fw upgrade <consumer>` from a cwd outside the consumer, changes > 0) and the outcome is recorded in ## RCA: whether "Files this upgrade created or changed" and the single `git add` line print
+- [x] If they do not print, the branch that skips them is named with file:line in ## RCA and fixed in lib/upgrade.sh (or lib/upgrade_commit_list.py) — N/A: they print on be.10 AND on be.9 in this shape; no skipping branch exists for it (see ## RCA)
+- [x] A bats test under tests/unit/ pins that shape: it asserts the list header and exactly one `git add` line in the upgrade output, and passes
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green and `bin/fw vendor self --check --task T-4705` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +276,51 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t4705_upgrade_commit_list_vendored_external.bats > /tmp/.t4705-bats.out 2>&1 && grep -q '^ok 1 ' /tmp/.t4705-bats.out && ! grep -q '^not ok' /tmp/.t4705-bats.out
+test "$(grep -c '# skip' /tmp/.t4705-bats.out)" -eq 0
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4705-fresh.out 2>&1 && grep -q '^ok 1 ' /tmp/.t4705-fresh.out && ! grep -q '^not ok' /tmp/.t4705-fresh.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4705_upgrade_commit_list_vendored_external.bats > /tmp/.t4705-lint.out 2>&1 && grep -q clean /tmp/.t4705-lint.out
+bin/fw vendor self --check --task T-4705
 
 ## RCA
+
+**Symptom:** dimitri-mint-dev (be.9, sidecar 3294edcf) reported that `fw upgrade` ended
+without the T-4692 "Files this upgrade created or changed" list and without the `git add` line.
+
+**Reproduction (2026-10-23, mktemp dirs):** consumer made by `fw init` (vendored
+`.agentic-framework/`), one vendored runtime file rewritten and its `.fw-vendor-stamp.json`
+hash updated so it reads as an older framework revision, committed clean; then
+`<framework>/bin/fw upgrade <consumer>` run from a cwd outside the consumer.
+- current bleeding-edge (cfa9e045e, be.10 + T-4697): list prints, `vendored .agentic-framework/`
+  entry, exactly one `git add -- …` line.
+- a `git clone --shared` of tag v1.8.15-be.9 run the same way: list prints too (5 entries,
+  one `git add` line).
+
+**Root cause:** not reproduced. The reported shape (vendored consumer + external clone +
+cwd outside + changes > 0) does not skip the list on be.9 or be.10, so be.10 (T-4697) did
+not "fix" it; the trigger in dimitri-mint-dev's run was something else. External-clone runs
+never take the bare-from-consumer auto-clone handoff (lib/upgrade.sh:1465 requires
+FRAMEWORK_ROOT == the consumer's `.agentic-framework`), so the old-GitHub-master hypothesis
+does not apply either. The branches that can still silence the list entirely are:
+`_t4692_emit_commit_list` (lib/upgrade.sh:3512) skips when the snapshot or journal mktemp
+failed (lib/upgrade.sh:1758-1760, e.g. unwritable TMPDIR) and discards the helper's stderr
+(`2>/dev/null || true`); `upgrade_commit_list.py` prints nothing when the target is not a
+git work tree. Which one fired needs dimitri-mint-dev's own output or environment.
+
+**Adjacent gap found (separate bug, not fixed here — one bug, one task):** when the
+consumer's `.agentic-framework/` is an embedded git repo (gitlink, as legacy pre-T-2232
+consumers had), `git status` reports a single ` M .agentic-framework` entry with no
+trailing slash; the journal prefix `.agentic-framework/` does not match it
+(lib/upgrade_commit_list.py:113), so the vendored change is silently left out of the
+list (`.framework.yaml` still lists). Verified against the helper directly.
+
+**Why structurally allowed:** the only live end-to-end test (t4692 "live fw upgrade")
+covered an unvendored consumer upgraded from inside it; nothing exercised the
+vendored + external-clone shape, so the field report could not be checked against a test.
+
+**Prevention:** tests/unit/t4705_upgrade_commit_list_vendored_external.bats pins the shape
+end-to-end (real `fw init`, real `bin/fw upgrade` subprocess from outside the consumer):
+header present, `vendored .agentic-framework/` entry, exactly one `git add` line.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +416,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4705-fw-upgrades-files-to-commit-list-t-4692t.md
 - **Context:** Initial task creation
+
+### 2026-10-23T14:51:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
