@@ -6,16 +6,16 @@ description: >
   Inception: fw keep-busy: run N workers for a duration over a scoped backlog, refill
   on completion, and cool down to a target count
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-21T10:53:39Z
-last_update: '2026-10-22T07:45:35Z'
-date_finished:
+last_update: 2026-10-23T21:30:17Z
+date_finished: 2026-10-23T21:30:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -126,15 +126,15 @@ The duration ends in an automatic `cooldown --to 0`. Every dispatch, refill, bra
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -191,7 +191,17 @@ Operator idea 2026-10-21 after a day of manually keeping 10 TermLink workers bus
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Operator idea 2026-10-21 after a day of manually keeping 10 TermLink workers busy. The manual loop worked (about 100 tasks closed) but needed the parent agent to notice completions, pick tasks, refill slots and brake on host load; it repeatedly ran under capacity (missed completions), lost work (workers ending while waiting for background tests, session limits, restarts) and overloaded the shared host (I/O pressure 88%). A verb makes that loop explicit, bounded and observable, and puts today's guards in one place.
+
+Evidence:
+
+**Date**: 2026-10-23T21:30:16Z
 
 ## Updates
 
@@ -200,3 +210,35 @@ Operator idea 2026-10-21 after a day of manually keeping 10 TermLink workers bus
 
 ### 2026-10-21T10:54:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-23T21:30:16Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Operator idea 2026-10-21 after a day of manually keeping 10 TermLink workers busy. The manual loop worked (about 100 tasks closed) but needed the parent agent to notice completions, pick tasks, refill slots and brake on host load; it repeatedly ran under capacity (missed completions), lost work (workers ending while waiting for background tests, session limits, restarts) and overloaded the shared host (I/O pressure 88%). A verb makes that loop explicit, bounded and observable, and puts today's guards in one place.
+
+Evidence:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f513829b
+- **Timestamp:** 2026-10-23T21:30:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-760bb85b
+- **Timestamp:** 2026-10-23T21:30:19Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-10-23T21:30:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
