@@ -1218,7 +1218,9 @@ cmd_dispatch() {
             [ "${#DISPATCH_ROOTS[@]}" -gt 1 ] && wdir="$LEGACY_DISPATCH_DIR/$name" ;;
     esac
     prev_wdir=$(_wdir_of "$name")
-    if [ "$prev_wdir" != "$wdir" ]; then
+    # T-4683: _wdir_of falls back to the default root for a name no root holds, so only an
+    # existing dir of that name elsewhere is a shadow; a first harness-seat dispatch is not.
+    if [ "$prev_wdir" != "$wdir" ] && [ -d "$prev_wdir" ]; then
         _clear_reused_wdir "$prev_wdir" "$name"
         # A /tmp seat dir would be shadowed by the project dir of the same name in every lookup.
         [ "$wdir" = "$DISPATCH_DIR/$name" ] || \
