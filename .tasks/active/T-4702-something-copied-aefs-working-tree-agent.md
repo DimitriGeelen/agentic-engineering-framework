@@ -1,10 +1,21 @@
 ---
 id: T-4702
-name: "Something copied AEF's working tree (.agentic-framework, .claude and a 13 GB .context incl. 7.6 GB scratch) into /tmp/tmp.AoFZgARUBp/fw at 15:38 and never cleaned up; /tmp is a RAM tmpfs"
+name: "Something copied AEF's working tree (.agentic-framework, .claude and a 13 GB
+  .context incl. 7.6 GB scratch) into /tmp/tmp.AoFZgARUBp/fw at 15:38 and never cleaned
+  up; /tmp is a RAM tmpfs"
 description: >
-  Reported by dimitri-mint-dev (sidecar 03cd24a3, 2026-10-23): /tmp/tmp.AoFZgARUBp/fw holds .agentic-framework (Oct 21), .claude and .context (mtime 15:39), no process cwd there; looks like a whole-repo cp -a killed mid-copy (dotdirs first). Created while T-4692's worker and the T-4691/T-4692 closes ran (fresh-machine simulation, upgrade tests). Find the copier (grep tests/ lib/ agents/ for cp -a/rsync/cp -r of FRAMEWORK_ROOT/PROJECT_ROOT or git worktree-less clones of the live tree; mktemp -d default prefix tmp.XXXXXXXXXX), make it copy only what it needs (git archive or ls-files, never .context/scratch), and register a trap cleanup that also runs on timeout. Separately measure why .context is 13 GB (scratch 7.6 GB, working 4.6 GB) and file the retention fix if warranted.
+  Reported by dimitri-mint-dev (sidecar 03cd24a3, 2026-10-23): /tmp/tmp.AoFZgARUBp/fw
+  holds .agentic-framework (Oct 21), .claude and .context (mtime 15:39), no process
+  cwd there; looks like a whole-repo cp -a killed mid-copy (dotdirs first). Created
+  while T-4692's worker and the T-4691/T-4692 closes ran (fresh-machine simulation,
+  upgrade tests). Find the copier (grep tests/ lib/ agents/ for cp -a/rsync/cp -r
+  of FRAMEWORK_ROOT/PROJECT_ROOT or git worktree-less clones of the live tree; mktemp
+  -d default prefix tmp.XXXXXXXXXX), make it copy only what it needs (git archive
+  or ls-files, never .context/scratch), and register a trap cleanup that also runs
+  on timeout. Separately measure why .context is 13 GB (scratch 7.6 GB, working 4.6
+  GB) and file the retention fix if warranted.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T14:34:49Z
-last_update: 2026-10-23T14:34:49Z
-date_finished: null
+last_update: '2026-10-23T14:36:33Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T14:36:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4702: Something copied AEF's working tree (.agentic-framework, .claude and a 13 GB .context incl. 7.6 GB scratch) into /tmp/tmp.AoFZgARUBp/fw at 15:38 and never cleaned up; /tmp is a RAM tmpfs
@@ -62,8 +90,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The code that copied the working tree into /tmp/tmp.*/fw is identified (file:line) with evidence (timing, content shape)
+- [ ] It copies only what it needs (git archive / ls-files, never .context/scratch or the live .context) and cleans up via trap, also on timeout; regression test proves no copy survives a killed run
+- [ ] Why .context is ~13 GB (scratch 7.6 GB, working 4.6 GB) is measured and a retention task filed if warranted
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -345,3 +374,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4702-something-copied-aefs-working-tree-agent.md
 - **Context:** Initial task creation
+
+### 2026-10-23T14:36:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
