@@ -1,8 +1,16 @@
 ---
 id: T-4688
-name: "fw upgrade run FROM a framework clone writes into that clone (self-vendor syncs .agentic-framework/tools/ in the source), so a rehearse-then-real-run from one clone upgrades from a mutated source"
+name: "fw upgrade run FROM a framework clone writes into that clone (self-vendor syncs
+  .agentic-framework/tools/ in the source), so a rehearse-then-real-run from one clone
+  upgrades from a mutated source"
 description: >
-  TermLink be.6 report (sidecar 150d6e99): corpus_lenses.yaml modified and gen-framework-hook-lines.sh added inside the source clone. The self-vendor step must run only when the TARGET is the framework repo itself (fw vendor self in the framework repo), never against the clone that is serving as an upgrade source for another project; a dry run must write nothing anywhere. Test: upgrade a temp consumer from a temp clone (dry run, then real), assert the clone's git status is clean after both. Keep upgrade_fresh_machine_simulation green.
+  TermLink be.6 report (sidecar 150d6e99): corpus_lenses.yaml modified and gen-framework-hook-lines.sh
+  added inside the source clone. The self-vendor step must run only when the TARGET
+  is the framework repo itself (fw vendor self in the framework repo), never against
+  the clone that is serving as an upgrade source for another project; a dry run must
+  write nothing anywhere. Test: upgrade a temp consumer from a temp clone (dry run,
+  then real), assert the clone's git status is clean after both. Keep upgrade_fresh_machine_simulation
+  green.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T10:07:40Z
-last_update: 2026-10-23T10:07:40Z
-date_finished: null
+last_update: '2026-10-23T10:15:26Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-23T10:15:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4688: fw upgrade run FROM a framework clone writes into that clone (self-vendor syncs .agentic-framework/tools/ in the source), so a rehearse-then-real-run from one clone upgrades from a mutated source
