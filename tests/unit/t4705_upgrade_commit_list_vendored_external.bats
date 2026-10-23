@@ -48,3 +48,39 @@ _upgrade_from_outside() {
     [ "$(wc -l < "$S/add")" -eq 1 ]
     grep -qF '.agentic-framework/' "$S/add"
 }
+
+# T-4712: dimitri-mint-dev be.11 — hundreds of vendored files behind, and an earlier
+# upgrade left them uncommitted. The re-run re-vendors the same bytes, so "content
+# changed since the snapshot" dropped every vendored file and the list came out empty.
+_vendored_count() {
+    printf '%s\n' "$1" | sed -n 's/.*vendored  \.agentic-framework\/ (\([0-9]*\) file(s)).*/\1/p'
+}
+
+@test "T-4712 large vendored diff left uncommitted by an earlier upgrade: the re-run still lists it" {
+    # Vendor the consumer from an older framework commit (git archive, never the working tree).
+    mkdir -p "$S/old"
+    git -C "$FW_ROOT" archive HEAD~300 | tar -x -C "$S/old"
+    run env -u PROJECT_ROOT -u FRAMEWORK_ROOT HOME="$S/home" FW_VERB_TELEMETRY=0 \
+        bash -c "cd '$S' && '$S/old/bin/fw' vendor --target '$PROJ' --source '$S/old'"
+    [ "$status" -eq 0 ]
+    git -C "$PROJ" add -A
+    git -C "$PROJ" -c user.email=t@t -c user.name=t commit -qm "T-000: vendored from HEAD~300"
+    echo "user notes" > "$PROJ/notes-t4712.txt"   # dirty before, not the upgrade's
+
+    _upgrade_from_outside
+    [ "$status" -eq 0 ]
+    first=$(_vendored_count "$output")
+    [ "${first:-0}" -ge 100 ]
+
+    # No commit in between: the second upgrade writes identical vendored bytes.
+    [ "$(git -C "$PROJ" status --porcelain -uall -- .agentic-framework | wc -l)" -ge 100 ]
+    _upgrade_from_outside
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Files this upgrade created or changed"* ]]
+    second=$(_vendored_count "$output")
+    [ "${second:-0}" -ge "$first" ]
+    printf '%s\n' "$output" | grep -F 'git add -- ' > "$S/add"
+    [ "$(wc -l < "$S/add")" -eq 1 ]
+    grep -qF '.agentic-framework/' "$S/add"
+    ! grep -qF 'notes-t4712.txt' "$S/add" || false
+}

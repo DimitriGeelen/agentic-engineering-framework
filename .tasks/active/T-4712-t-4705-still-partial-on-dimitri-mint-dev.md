@@ -1,10 +1,22 @@
 ---
 id: T-4712
-name: "T-4705 still partial on dimitri-mint-dev (be.11): the upgrade summary prints but its files-to-commit list is empty although 345 paths changed (mostly .agentic-framework/)"
+name: "T-4705 still partial on dimitri-mint-dev (be.11): the upgrade summary prints
+  but its files-to-commit list is empty although 345 paths changed (mostly .agentic-framework/)"
 description: >
-  dimitri-mint-dev be.11 report (sidecar b410de74): vendored consumer, external full clone, '3 changes applied, 1 skipped', Next steps printed (T-4704 works), but no 'Files this upgrade created or changed' list and no git add line. The T-4705 bats fixture prints it, so the journal (_t4697_wrote) misses the real run's writes: likely the .agentic-framework/ vendor sync is done by a code path that does not journal (re-exec/replay through the external clone, a python/rsync step, or a different vendor function), or the list is filtered to empty by the T-4697 'only paths the upgrade wrote' rule because the journal holds a directory prefix the filter does not match. Reproduce with a consumer whose .agentic-framework is many files behind (hundreds changed), compare the journal to git status, fix the journaling or the matching, and extend t4705 with the large-diff shape. Keep upgrade_fresh_machine_simulation green.
+  dimitri-mint-dev be.11 report (sidecar b410de74): vendored consumer, external full
+  clone, '3 changes applied, 1 skipped', Next steps printed (T-4704 works), but no
+  'Files this upgrade created or changed' list and no git add line. The T-4705 bats
+  fixture prints it, so the journal (_t4697_wrote) misses the real run's writes: likely
+  the .agentic-framework/ vendor sync is done by a code path that does not journal
+  (re-exec/replay through the external clone, a python/rsync step, or a different
+  vendor function), or the list is filtered to empty by the T-4697 'only paths the
+  upgrade wrote' rule because the journal holds a directory prefix the filter does
+  not match. Reproduce with a consumer whose .agentic-framework is many files behind
+  (hundreds changed), compare the journal to git status, fix the journaling or the
+  matching, and extend t4705 with the large-diff shape. Keep upgrade_fresh_machine_simulation
+  green.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T16:53:33Z
-last_update: 2026-10-23T16:53:33Z
-date_finished: null
+last_update: 2026-10-23T16:54:37Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T16:54:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4712: T-4705 still partial on dimitri-mint-dev (be.11): the upgrade summary prints but its files-to-commit list is empty although 345 paths changed (mostly .agentic-framework/)
@@ -62,8 +91,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause reproduced: a consumer vendored from an older framework commit (hundreds of vendored files behind), upgraded from an external HEAD clone with cwd outside the consumer, lists the vendored files on a clean consumer, but drops them (1 of 424 listed) on a re-run over a consumer an earlier upgrade left uncommitted; cause named with file:line in ## RCA
+- [x] Fixed: that re-run prints the list with `vendored  .agentic-framework/ (N file(s))`, N no smaller than the first run, and exactly one `git add -- ` line naming `.agentic-framework/`
+- [x] T-4697 holds: a path the upgrade did not write is still never listed (t4692 bats, which carries the T-4697 tests, green; the new test asserts a pre-existing user file stays out of the git add line)
+- [x] tests/unit/t4705_upgrade_commit_list_vendored_external.bats extended with the large-diff shape; it fails without the fix (line 81, second-run count) and passes with it
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green; vendor synced (`bin/fw vendor self --check --task T-4712` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +280,13 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 1800 bats tests/unit/t4705_upgrade_commit_list_vendored_external.bats > /tmp/.t4712-4705.out 2>&1 && ! grep -q "^not ok" /tmp/.t4712-4705.out && grep -q "^ok 2 " /tmp/.t4712-4705.out
+test "$(grep -c '# skip' /tmp/.t4712-4705.out)" -eq 0
+timeout 900 bats tests/unit/t4692_upgrade_commit_list.bats > /tmp/.t4712-4692.out 2>&1 && ! grep -q "^not ok" /tmp/.t4712-4692.out && grep -q "^ok 1 " /tmp/.t4712-4692.out
+test "$(grep -c '# skip' /tmp/.t4712-4692.out)" -eq 0
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4712-fresh.out 2>&1 && ! grep -q "^not ok" /tmp/.t4712-fresh.out && grep -q "^ok 1 " /tmp/.t4712-fresh.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4705_upgrade_commit_list_vendored_external.bats > /tmp/.t4712-lint.out 2>&1 && grep -q clean /tmp/.t4712-lint.out
+bin/fw vendor self --check --task T-4712
 
 ## RCA
 
@@ -264,6 +303,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** dimitri-mint-dev be.11: a vendored consumer upgrade printed "3 change(s) applied" and Next steps, but no "Files this upgrade created or changed" list and no `git add` line, although `git status` showed 345 changed paths, mostly under `.agentic-framework/`.
+
+**Root cause:** `lib/upgrade_commit_list.py` `report()` (the `changed = sorted(n for n, (_, d) in found.items() if before.get(n) != d)` line) lists a path that was already dirty before the upgrade only if the upgrade changed its content. A consumer left uncommitted by an earlier upgrade (be.9/be.10 never printed the list, so nothing told the operator to commit) already carries the whole vendored diff; re-running the upgrade re-vendors the same bytes, so every vendored file is "dirty before, unchanged" and is dropped. The journal (`_t4697_wrote .agentic-framework/`, lib/upgrade.sh:2426) did name the directory; the filter after it removed the files. Reproduced (consumer `fw init` from HEAD~300, upgraded from a HEAD clone, cwd outside): the first run lists 424 vendored files; the second run, same 431 dirty paths, lists 1 (the re-written stamp). The direct external-clone run and the auto-clone handoff from the consumer's own vendored fw both list correctly, so neither the re-exec nor the journal is the gap.
+
+**Why structurally allowed:** every T-4692/T-4697/T-4705 fixture started from a clean consumer (`git status` empty before the upgrade). No test ran an upgrade on a consumer a previous upgrade had left dirty, which is the normal state after any upgrade that did not print the list.
+
+**Prevention:** a vendored path that was dirty before now counts when its content is what the vendor wrote this run: its sha256 equals its entry in `.agentic-framework/.fw-vendor-stamp.json` (the T-3850 digest of every file the vendor wrote), it is a deletion of a path the stamp no longer lists, or it is the stamp itself. A KEPT-LOCAL or locally edited vendored file does not match the stamp and stays out (T-4697 rule intact). t4705 gains the re-run shape on a consumer vendored from an older commit, with hundreds of vendored files behind.
 
 ## Evolution
 
@@ -345,3 +392,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4712-t-4705-still-partial-on-dimitri-mint-dev.md
 - **Context:** Initial task creation
+
+### 2026-10-23T16:54:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

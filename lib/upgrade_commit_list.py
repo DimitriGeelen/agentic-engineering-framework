@@ -14,17 +14,20 @@ T-4697: <wrote> is the journal do_upgrade keeps of every path it writes (one per
 line, relative to <target> or absolute; a trailing "/" covers a directory). When
 given, a path is listed only if the journal names it: a file another process
 wrote during the upgrade window changed too, and must never be offered for
-`git add`. A path dirty before the upgrade is listed only if its content changed. Paths
+`git add`. A path dirty before the upgrade is listed only if its content changed,
+or (T-4712) it is a vendored file holding what this run's vendor wrote. Paths
 are root-relative, restricted to the target directory. Non-git targets print
 nothing. Vendored `.agentic-framework/` files collapse to one entry.
 """
 import hashlib
+import json
 import os
 import shlex
 import subprocess
 import sys
 
 VENDORED = ".agentic-framework/"
+STAMP = ".fw-vendor-stamp.json"
 
 
 def _git(root, *args):
@@ -105,6 +108,41 @@ def _journal(target, top, wrote_file):
     return exact, prefixes
 
 
+def _vendor_wrote(top):
+    """T-4712: predicate for dirty vendored paths that hold what the vendor wrote.
+
+    A consumer an earlier upgrade left uncommitted already carries the vendored
+    diff, and a re-run writes the same bytes, so "content changed" drops it. The
+    vendor stamp (T-3850) holds the sha256 of every file the vendor wrote: a file
+    matching it, a deletion of a path it no longer lists, or the stamp itself is
+    the vendor's work. A kept-local or locally edited file does not match."""
+    try:
+        with open(os.path.join(top, VENDORED, STAMP), encoding="utf-8") as f:
+            files = json.load(f).get("files") or {}
+    except (OSError, ValueError, AttributeError):
+        return lambda name, status: False
+
+    def wrote(name, status):
+        rel = name[len(VENDORED):]
+        if not name.startswith(VENDORED) or not rel:
+            return False
+        if rel == STAMP:
+            return True
+        path = os.path.join(top, name)
+        if "D" in status and not os.path.lexists(path):
+            return rel not in files
+        try:
+            if os.path.islink(path):
+                digest = "link:" + os.readlink(path)
+            else:
+                with open(path, "rb") as f:
+                    digest = hashlib.sha256(f.read()).hexdigest()
+        except OSError:
+            return False
+        return files.get(rel) == digest
+    return wrote
+
+
 def report(target, before_file, wrote_file=None):
     top, found = _dirty(target)
     if not found:
@@ -124,7 +162,9 @@ def report(target, before_file, wrote_file=None):
                     before[name] = digest
     except OSError:
         pass
-    changed = sorted(n for n, (_, d) in found.items() if before.get(n) != d)
+    vendor_wrote = _vendor_wrote(top)
+    changed = sorted(n for n, (st, d) in found.items()
+                     if before.get(n) != d or vendor_wrote(n, st))
     if not changed:
         return 0
     plain = [n for n in changed if not n.startswith(VENDORED)]
