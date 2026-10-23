@@ -2,7 +2,8 @@
 # REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
 # Silent-session scanner — S3 antifragility fallback for SessionEnd (T-1212)
 #
-# Invoked via cron every 15 min. Walks $HOME/.claude/projects/*/<session>.jsonl,
+# Invoked via cron every 15 min. Walks $HOME/.claude/projects/<slug>/<session>.jsonl
+# for THIS project's slug (and its worktree slugs) only (T-4699),
 # finds session transcripts whose mtime is older than SESSION_SILENT_THRESHOLD_MIN
 # (default 30 min) AND whose session_id does NOT appear in any file under
 # .context/handovers/. For matches, runs `fw handover` with RECOVERED=1 so the
@@ -81,10 +82,46 @@ for md in handovers_dir.glob("*.md"):
 
 log(f"scan-start known-handovers={len(known_sessions)} threshold-min={threshold_s}")
 
+# T-4699: scan only THIS project's transcripts. Claude Code names a project's
+# transcript dir by replacing every non-alphanumeric char of the absolute path
+# with '-'; worktrees under <root>/.claude/worktrees/<name> slug to
+# <slug>--claude-worktrees-<name>. Every other dir is another project's.
+project_real = os.path.realpath(project_root)
+project_slug = re.sub(r'[^A-Za-z0-9]', '-', project_real)
+project_dirs = []
+for d in sorted(claude_projects.iterdir()):
+    if d.is_dir() and (d.name == project_slug or d.name.startswith(project_slug + "--claude-worktrees-")):
+        project_dirs.append(d)
+
+def transcript_cwd(path, max_lines=200):
+    """First cwd recorded in a transcript, or None."""
+    try:
+        with open(path, errors="ignore") as f:
+            for i, line in enumerate(f):
+                if i >= max_lines:
+                    break
+                try:
+                    cwd = json.loads(line).get("cwd")
+                except Exception:
+                    continue
+                if isinstance(cwd, str) and cwd:
+                    return cwd
+    except Exception:
+        pass
+    return None
+
+def cwd_in_project(cwd):
+    if not cwd:
+        return False
+    real = os.path.realpath(cwd)
+    return real == project_real or real.startswith(project_real.rstrip("/") + "/")
+
+log(f"scan-scope slug={project_slug} dirs={len(project_dirs)}")
+
 now = time.time()
 candidates = []
 skipped_too_old = 0
-for jsonl in claude_projects.rglob("*.jsonl"):
+for jsonl in (p for d in project_dirs for p in d.rglob("*.jsonl")):
     try:
         mtime = jsonl.stat().st_mtime
     except Exception:
@@ -99,6 +136,11 @@ for jsonl in claude_projects.rglob("*.jsonl"):
     if age > max_age_secs:
         skipped_too_old += 1
         log(f"skip-too-old session={session_id} age-min={int(age/60)} transcript={jsonl}")
+        continue
+    # T-4699: never recover a session that did not run in this project.
+    cwd = transcript_cwd(jsonl)
+    if not cwd_in_project(cwd):
+        log(f"skip-foreign-cwd session={session_id} cwd={cwd} transcript={jsonl}")
         continue
     candidates.append((jsonl, session_id, age))
 

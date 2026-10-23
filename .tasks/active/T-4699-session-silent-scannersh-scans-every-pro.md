@@ -1,10 +1,16 @@
 ---
 id: T-4699
-name: "session-silent-scanner.sh scans EVERY project's transcripts under ~/.claude/projects (rglob), not just this project's; a non-dry run could write recovered handovers for other projects' sessions into this project"
+name: "session-silent-scanner.sh scans EVERY project's transcripts under ~/.claude/projects
+  (rglob), not just this project's; a non-dry run could write recovered handovers
+  for other projects' sessions into this project"
 description: >
-  agents/context/session-silent-scanner.sh line ~87: claude_projects.rglob('*.jsonl'). Restrict to the transcript dir(s) that belong to PROJECT_ROOT (Claude Code's slug of the project path, plus worktree slugs of the same repo), and refuse to write a handover for a session whose cwd/project is not this one. Test with two fake project dirs. Source: TermLink field report (sidecar 5267b1f7, their T-3566).
+  agents/context/session-silent-scanner.sh line ~87: claude_projects.rglob('*.jsonl').
+  Restrict to the transcript dir(s) that belong to PROJECT_ROOT (Claude Code's slug
+  of the project path, plus worktree slugs of the same repo), and refuse to write
+  a handover for a session whose cwd/project is not this one. Test with two fake project
+  dirs. Source: TermLink field report (sidecar 5267b1f7, their T-3566).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T14:27:26Z
-last_update: 2026-10-23T14:27:26Z
-date_finished: null
+last_update: 2026-10-23T14:30:19Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +56,40 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T14:29:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4699: session-silent-scanner.sh scans EVERY project's transcripts under ~/.claude/projects (rglob), not just this project's; a non-dry run could write recovered handovers for other projects' sessions into this project
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+TermLink field report (sidecar 5267b1f7, their T-3566): the scanner walked every
+project's transcripts under `~/.claude/projects` and would recover handovers for
+foreign sessions into this project.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Scanner only walks the transcript dir named by Claude Code's slug of PROJECT_ROOT (non-alphanumerics → `-`), plus `<slug>--claude-worktrees-*` dirs of the same repo; a sibling project's dir (incl. a name that merely shares the slug as a prefix) is never read
+- [x] A candidate whose transcript `cwd` is not PROJECT_ROOT or below it (or has no `cwd`) is skipped with one `skip-foreign-cwd` log line and never reaches `fw handover`
+- [x] Regression test `tests/unit/t4699_session_silent_scanner_scope.bats` uses a fake CLAUDE_PROJECTS_DIR with two project dirs and a stub fw; it fails against the pre-fix script and passes after
+- [x] Existing `agents/context/tests/session-silent-scanner-stub-test.sh` still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +274,34 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4699_session_silent_scanner_scope.bats > .context/working/.t4699-bats.out 2>&1 && ! grep -q "^not ok" .context/working/.t4699-bats.out && grep -q "^ok 4 " .context/working/.t4699-bats.out
+test "$(grep -c '# skip' .context/working/.t4699-bats.out)" -eq 0
+bash agents/context/tests/session-silent-scanner-stub-test.sh > .context/working/.t4699-stub.out 2>&1 && grep -q "All session-silent-scanner stub tests PASS" .context/working/.t4699-stub.out
+grep -q "skip-foreign-cwd" agents/context/session-silent-scanner.sh && ! grep -q "claude_projects.rglob" agents/context/session-silent-scanner.sh
+bin/fw vendor self --check --task T-4699
 
 ## RCA
+
+**Symptom:** TermLink field report (their T-3566): the cron scanner here walked
+every project's transcripts under `~/.claude/projects`; with `DRY_RUN=0` it would
+run `fw handover` in this project for sessions belonging to other projects.
+
+**Root cause:** `agents/context/session-silent-scanner.sh:87` (pre-fix) iterated
+`claude_projects.rglob("*.jsonl")` — the whole host-wide transcript root — and
+the only filter was "session_id not in this project's handovers", which every
+foreign session trivially satisfies. Nothing tied a transcript to PROJECT_ROOT.
+
+**Why structurally allowed:** the only test (`agents/context/tests/session-silent-scanner-stub-test.sh`)
+used a single fake project dir named `foo`, so "which dir belongs to us" was
+never a question the test could ask; and the cron stanza runs dry by default,
+so no foreign handover was ever produced to be noticed.
+
+**Prevention:** the scanner now reads only the dir named by Claude Code's slug of
+PROJECT_ROOT (plus `<slug>--claude-worktrees-*`) and re-checks each candidate's
+transcript `cwd` is inside PROJECT_ROOT before recovery (`skip-foreign-cwd`).
+`tests/unit/t4699_session_silent_scanner_scope.bats` pins it with two fake project
+dirs, a prefix-sharing sibling, a worktree dir and a foreign-cwd transcript; it
+fails 2/4 against the pre-fix script.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +397,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4699-session-silent-scannersh-scans-every-pro.md
 - **Context:** Initial task creation
+
+### 2026-10-23T14:29:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

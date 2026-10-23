@@ -8,11 +8,13 @@ SCANNER="$SCRIPT_DIR/../session-silent-scanner.sh"
 
 test -x "$SCANNER" || { echo "FAIL: scanner not executable: $SCANNER"; exit 1; }
 
-SANDBOX=$(mktemp -d)
+SANDBOX=$(cd "$(mktemp -d)" && pwd -P)
+# T-4699: the scanner only reads the dir Claude Code slugs from PROJECT_ROOT.
+SLUG=$(printf '%s' "$SANDBOX" | sed 's/[^A-Za-z0-9]/-/g')
 trap 'rm -rf "$SANDBOX"' EXIT
 
 mkdir -p "$SANDBOX/.context/working" "$SANDBOX/.context/handovers" \
-         "$SANDBOX/.agentic-framework/bin" "$SANDBOX/claude-projects/foo"
+         "$SANDBOX/.agentic-framework/bin" "$SANDBOX/claude-projects/$SLUG"
 
 # Mock fw handover that records RECOVERED_SESSION_ID env var
 cat > "$SANDBOX/.agentic-framework/bin/fw" <<'MOCK'
@@ -27,15 +29,15 @@ export RECOVERY_LOG="$SANDBOX/recoveries.log"
 touch "$RECOVERY_LOG"
 
 # Case A: recent session (mtime now) → skipped
-echo '{"type":"assistant"}' > "$SANDBOX/claude-projects/foo/S-RECENT.jsonl"
+echo "{\"type\":\"assistant\",\"cwd\":\"$SANDBOX\"}" > "$SANDBOX/claude-projects/$SLUG/S-RECENT.jsonl"
 
 # Case B: old session with NO matching handover → should recover
-echo '{"type":"assistant"}' > "$SANDBOX/claude-projects/foo/S-STALE.jsonl"
-touch -d "2 hours ago" "$SANDBOX/claude-projects/foo/S-STALE.jsonl"
+echo "{\"type\":\"assistant\",\"cwd\":\"$SANDBOX\"}" > "$SANDBOX/claude-projects/$SLUG/S-STALE.jsonl"
+touch -d "2 hours ago" "$SANDBOX/claude-projects/$SLUG/S-STALE.jsonl"
 
 # Case C: old session WITH matching handover → skipped
-echo '{"type":"assistant"}' > "$SANDBOX/claude-projects/foo/S-COVERED.jsonl"
-touch -d "2 hours ago" "$SANDBOX/claude-projects/foo/S-COVERED.jsonl"
+echo "{\"type\":\"assistant\",\"cwd\":\"$SANDBOX\"}" > "$SANDBOX/claude-projects/$SLUG/S-COVERED.jsonl"
+touch -d "2 hours ago" "$SANDBOX/claude-projects/$SLUG/S-COVERED.jsonl"
 cat > "$SANDBOX/.context/handovers/S-COVERED.md" <<EOF
 ---
 session_id: S-COVERED
