@@ -11,11 +11,11 @@ WARN-only branch hygiene scan. Prints one finding per line to stdout and
 prints NOTHING when the repo is tidy — callers (fw doctor) wrap findings in
 their own WARN formatting and count lines. Always exits 0: this is an
 advisory rail, never a gate.
-Judged against TARGET = origin/master when present, else master. Repos with
-no master lineage produce no findings (nothing to judge against).
-Finding classes (one token-prefixed line each):
-merged-undeleted <branch>                    local branch tip contained in TARGET
-behind-threshold <branch> behind=<n> days=<d> (threshold <t>)
+Judged against TARGET = the DEV branch — `origin/$FW_DEV_BRANCH` (default
+`bleeding-edge`) when present, then its local ref, and only then origin/master
+or master. T-3188. Under the release train (CLAUDE.md §Release-Train Branch
+Model) master lags deliberately, so judging landings against it would report
+every branch already landed on bleeding-edge as unlanded; the master legs
 
 ## Used By (7)
 

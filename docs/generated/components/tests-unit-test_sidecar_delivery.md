@@ -6,6 +6,10 @@
 
 ## What It Does
 
+T-3887: since T-3855 a row with a remote hub always carries a full
+circuit (addressing.resolve). A bare name + remote hub is the legacy
+pre-1.8.2 shape, refused by deliver — tests that want it ask explicitly.
+
 ## Dependencies (2)
 
 | Component | Relationship | Description |

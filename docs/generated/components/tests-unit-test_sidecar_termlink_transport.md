@@ -6,6 +6,8 @@
 
 ## What It Does
 
+T-3806: the remote probe reads ~/.termlink/hubs.toml — never the real one here.
+
 ## Dependencies (3)
 
 | Component | Relationship | Description |

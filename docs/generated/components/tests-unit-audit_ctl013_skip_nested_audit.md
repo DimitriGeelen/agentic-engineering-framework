@@ -12,6 +12,10 @@ always fails (lock held by the outer audit) and produces false-positive
 WARN. The skip-and-continue path treats those lines as if they passed
 (with a transparency note in the PASS line: "(N skipped — nested-audit
 invocation)").
+T-4380: these tests run the SHIPPED CTL-013 block, extracted from
+agents/audit/audit.sh between its own delimiters, against a fixture
+completed task. They used to grep a copy of the regex written out in the
+test, which stayed green when the skip branch in audit.sh was disabled.
 
 ## Dependencies (3)
 

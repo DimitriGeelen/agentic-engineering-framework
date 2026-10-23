@@ -9,13 +9,13 @@
 claude-fw — Claude Code wrapper with auto-restart support
 Runs claude normally, then checks for a restart signal file
 written by checkpoint.sh when auto-handover fires at critical budget.
-If found (and fresh), auto-restarts with `claude -c` to continue.
+If found (and fresh), auto-restarts (fresh by default, T-3166). Any -c / --continue
+is resolved to `--resume <this session's conversation>`, never a worker's (T-4497).
 Usage:
 claude-fw [claude-args...]          # Run with auto-restart enabled
 claude-fw --no-restart [args...]    # Run without auto-restart
 claude-fw --termlink [args...]      # Register as TermLink session for remote access
 TL_CLAUDE_ENABLED=1 claude-fw      # Same via env var
-The restart signal file is .context/working/.restart-requested
 
 ## Dependencies (1)
 

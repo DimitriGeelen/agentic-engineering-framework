@@ -12,8 +12,8 @@ Verifies that:
 2. A synthetic violation under web/blueprints/ → FAIL line emitted
 3. Matches under tests/ and lib/arc.sh / lib/arc_membership.sh / lib/migrations/
 are exempt (allowlist works)
-Strategy: exercise only the check block — extract the AWK-pattern logic
-directly. Running the full audit.sh per-test would be slow + flaky.
+Strategy: exercise only the check block, extracted from audit.sh (T-4380).
+Running the full audit.sh per-test would be slow + flaky.
 
 ## Dependencies (7)
 

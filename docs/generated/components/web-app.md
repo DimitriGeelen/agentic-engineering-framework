@@ -8,7 +8,10 @@
 
 ## What It Does
 
-Application factory
+T-4061 (arc-001 F-9): werkzeug writes one access-log line per request with the
+full request target, query string included, so a GET ?q=<query> put the query
+text in the log. The filter rewrites q= / query= values before any handler
+formats the record. POST bodies never reach the log line.
 
 ### Framework Reference
 

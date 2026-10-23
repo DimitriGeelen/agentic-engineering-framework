@@ -8,7 +8,10 @@
 
 ## What It Does
 
-Index lives in /tmp — ephemeral, rebuilt as needed
+Index lives in /tmp — ephemeral, rebuilt as needed. T-4458: each build gets its
+own directory (<INDEX_PARENT>/<INDEX_PREFIX><pid>-*). The old single fixed
+directory was shared by every thread and every Watchtower on the host, and two
+rebuilds deleted each other's segment files mid-commit -> HTTP 500 on /search.
 
 ## Dependencies (6)
 

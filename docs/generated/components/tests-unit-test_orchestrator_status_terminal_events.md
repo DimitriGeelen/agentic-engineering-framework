@@ -6,6 +6,8 @@
 
 ## What It Does
 
+T-4313: a project marker; fw no longer auto-inits a non-project dir (T-2746).
+
 ## Dependencies (1)
 
 | Component | Relationship | Description |

@@ -6,6 +6,9 @@
 
 ## What It Does
 
+Pin the hub anchor: without it circuit.hub_id() shells out to the live
+`termlink hub fingerprint`, which a cron/env -i run cannot reach (T-3727).
+
 ## Dependencies (5)
 
 | Component | Relationship | Description |

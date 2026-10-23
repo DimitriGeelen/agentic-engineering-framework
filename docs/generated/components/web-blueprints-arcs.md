@@ -8,6 +8,9 @@
 
 ## What It Does
 
+T-3952: fw from the FRAMEWORK root, never cwd-relative "bin/fw" — these calls run with
+cwd=PROJECT_ROOT, and a consumer project has no bin/fw at its root (.agentic-framework/bin/fw).
+
 ## Dependencies (15)
 
 | Component | Relationship | Description |

@@ -15,7 +15,7 @@ emit-manifest can't run there (no tool-set.yaml).
 Fix: asset paths use ${FRAMEWORK_ROOT:-$PROJECT_ROOT}; the runtime pid file
 stays on $PROJECT_ROOT. In the framework repo FRAMEWORK_ROOT==PROJECT_ROOT so
 this is a no-op (no regression); in a consumer it resolves the vendored path.
-These are fast checks: a source-pin on bin/fw + a behavioral replay of the
+These are fast checks: a source-pin on the check + a behavioral replay of the
 
 ## Dependencies (3)
 

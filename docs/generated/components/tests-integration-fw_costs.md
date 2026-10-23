@@ -10,6 +10,10 @@
 
 Integration tests for fw costs
 Origin: T-947
+T-4618: every test owns its HOME and PROJECT_ROOT. fw costs reads
+$HOME/.claude/projects/<encoded PROJECT_ROOT>/*.jsonl (lib/paths.sh
+fw_claude_project_dirs), so without a fixture the tests measured the
+operator's live transcripts and failed on any host without them.
 
 ## Dependencies (2)
 

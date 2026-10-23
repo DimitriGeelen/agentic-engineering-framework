@@ -6,6 +6,9 @@
 
 ## What It Does
 
+T-4386: libyaml when present — the pure-Python loader cost ~5 s of every
+`fw doctor` over ~1.5k cards. Same loader choice as lib/design_register.py.
+
 ## Dependencies (1)
 
 | Component | Relationship | Description |

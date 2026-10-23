@@ -8,12 +8,13 @@
 
 T-2332 (T-2330 S2): Flask helpers + template render for the driver
 propose-queue. Endpoints that shell out to `bin/fw` (propose / approve)
-are integration-tested via live curl against the running Watchtower in
-the live smoke section at the bottom of S2 — see task closure notes.
+are not covered here.
 This bats covers pure Python paths that can be exercised in isolation:
-_load_proposals state-machine, _append_proposal_state_change, the
-template render (GET /bvp via Flask test client with PROJECT_ROOT
-pointing at framework root so bin/fw resolves correctly).
+_load_proposals state-machine, _append_proposal_state_change, and the
+template render (GET /bvp via the Flask test client).
+T-4384: hermetic. Every python process runs with PROJECT_ROOT pointing at
+a temp project root, so nothing reads or writes the live .context/ and no
+running Watchtower (ours or another project's) is contacted.
 
 ## Dependencies (1)
 

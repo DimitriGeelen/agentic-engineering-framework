@@ -10,6 +10,12 @@
 
 Unit tests for agents/handover/handover.sh
 Origin: T-923, T-944 (isolation fix)
+T-4522: every test runs handover.sh against a throwaway fixture project, not
+the framework repo. Against the live repo each run walks ~3,600 task files
+with a fork per file (~75 s on a many-core host); eight runs hung the file to
+the 900 s cap on a clean 4-vCPU machine, and each one also rewrote the shared
+checkout's .context/handovers/LATEST.md under any session using it. Each call
+is bounded by `timeout` so a regression reads as a failure, not a hang.
 
 ### Framework Reference
 

@@ -11,7 +11,9 @@ Fires on SessionStart with matchers "compact" and "resume" (T-188).
 Outputs additionalContext JSON so Claude has framework state immediately.
 Triggers:
 - After /compact (manual compaction recovery)
-- After claude -c (session continuation, including auto-restart via T-179)
+- After claude -c / --resume (session continuation)
+- On "startup" of a claude-fw budget auto-restart (T-179) — a fresh session by
+default (T-3166); FW_RESTART_MODE=continue relaunches with --resume instead
 Part of: T-111 (compact-resume), T-179/T-188 (auto-restart)
 
 ## Dependencies (5)

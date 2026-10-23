@@ -10,7 +10,8 @@
 
 lib/release.sh - Release tagging + GitHub Release automation (T-1256)
 Cuts a new annotated tag based on the latest v* tag (bumping patch by default),
-pushes to all remotes with --follow-tags, and creates a GitHub Release if gh
+fast-forwards the release branch, pushes branch + tag to every remote in ONE
+atomic push per remote (T-3822), and creates a GitHub Release if gh
 is available. Idempotent: exits cleanly when there are no commits since the
 latest tag.
 Designed to be run from cron on a weekly schedule and manually via `fw release`.

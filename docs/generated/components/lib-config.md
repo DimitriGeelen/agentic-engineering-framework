@@ -10,8 +10,8 @@ lib/config.sh — 3-tier configuration resolution
 Pattern: explicit arg > FW_* env var > hardcoded default
 Usage:
 source "$FRAMEWORK_ROOT/lib/config.sh"
-CONTEXT_WINDOW=$(fw_config "CONTEXT_WINDOW" 300000)
-DISPATCH_LIMIT=$(fw_config_int "DISPATCH_LIMIT" 2)
+CONTEXT_WINDOW=$(fw_config "CONTEXT_WINDOW" 800000)
+DISPATCH_LIMIT=$(fw_config_int "DISPATCH_LIMIT" 0)
 Origin: T-817 inception (traceAI pattern adoption), T-819 build
 
 ### Framework Reference
@@ -19,11 +19,10 @@ Origin: T-817 inception (traceAI pattern adoption), T-819 build
 4-tier resolution: explicit CLI flag > `FW_*` env var > `.framework.yaml` > hardcoded default. Persistent per-project config: `fw config set KEY VALUE` writes to `.framework.yaml`.
 
 Agent-relevant settings:
-- `FW_CONTEXT_WINDOW` (300000) — budget enforcement ceiling
+- `FW_CONTEXT_WINDOW` (registry default 800000; **this project: 975000**) — budget enforcement ceiling. Every band in §Context Budget Management is a percentage of it.
 - `FW_PORT` (3000) — Watchtower listen port (also resolved via triple-file; see Watchtower Port section)
 - `FW_SAFE_MODE` (0) — bypass task gate (escape hatch). **Must be set on the Claude
-  process itself, not as a command prefix (T-3179).** `check-active-task.sh` reads the
-  hook process's environment, never the command string, s
+  process itself, not as a command p
 
 *(truncated — see CLAUDE.md for full section)*
 

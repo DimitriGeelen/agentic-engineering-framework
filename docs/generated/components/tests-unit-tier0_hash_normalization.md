@@ -6,15 +6,14 @@
 
 ## What It Does
 
-T-1500: Tier 0 hash drift on retry-after-approval.
-Root cause: check-tier0.sh hashed $COMMAND raw. When an agent regenerated
-a blocked command for retry (extra whitespace, trailing newline, reflowed
-args), the SHA-256 digest drifted from the stored approval and the hook
-re-blocked. Approval was effectively single-use only for byte-identical
-retries.
-Fix: normalize whitespace before hashing — collapse runs of [:space:] to a
-single space, trim leading/trailing. Same human-readable command yields
-same hash regardless of incidental whitespace.
+Exact-text Tier 0 approvals hash the ORIGINAL command bytes (T-3593 round 7).
+History: T-1500 collapsed whitespace before hashing so a reflowed retry still
+matched its approval. That also merged different commands: quoted whitespace
+is part of an argument, so `rm -rf ./ "a  b"` and `rm -rf ./ "a b"` (two
+different paths) shared one approval (codex round 6 HIGH). Round 7 removes all
+normalisation. Retries no longer need it: duplicate fires of ONE tool call are
+recognised by tool_use_id (round 4), and mapped commands match by action.
+(File name kept for history; the suite now pins the opposite rule.)
 
 ## Dependencies (2)
 

@@ -5168,3 +5168,409 @@ decisions:
     date: 2026-10-11
     task: T-4042
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-739
+    decision: "init's recovery advice names the session's focused task (read from `$CLAUDE_PROJECT_DIR/.context/working/focus.yaml`), falling back to `T-000` when nothing is focused."
+    scope: project
+    date: 2026-10-22
+    task: T-4266
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-740
+    decision: "Yes, `FW_CHECKPOINT_SH=/bin/true` in `run_gate`."
+    scope: project
+    date: 2026-10-22
+    task: T-4577
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-741
+    decision: "`stale_status` re-renders at the root recorded in the emitted manifest."
+    scope: project
+    date: 2026-10-22
+    task: T-4578
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-742
+    decision: "refuse at pre-commit (stale-index guard), on the staged blob, keyed on location + frontmatter horizon."
+    scope: project
+    date: 2026-10-22
+    task: T-4584
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-743
+    decision: "fix only the fresh-clone abort; do not change A1's sighting semantics."
+    scope: project
+    date: 2026-10-22
+    task: T-4586
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-744
+    decision: "grants/revokes via `python3 lib/human_ac_ticks.py delegation grant|revoke`, run by the operator in their own terminal (refused under CLAUDECODE/AI_AGENT unless `--i-am-human`; the Bash text gate and the Write/Edit guard refuse the verbs and `standing-delegations.jsonl` under agent control, like `ack`)."
+    scope: project
+    date: 2026-10-22
+    task: T-4165
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-745
+    decision: "grant/revoke/expiry are judged against the tick commit's committer date (`%cI`), and a tick committed before the grant does not count."
+    scope: project
+    date: 2026-10-22
+    task: T-4165
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-746
+    decision: "`estate` = the whole estate store, own items included and labelled `[own: …]`, ranked by R-14 over one comparable score; `both` = local index (own, fresher) plus the estate's OTHER projects only (`must_not project == own`), shown as a separate \"Estate knowledge\" section after the local one (default) or before it (`--mode solution-finder`)."
+    scope: project
+    date: 2026-10-22
+    task: T-4164
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-747
+    decision: "read token name `qdrant_estate_read_aef` (env `FW_QDRANT_ESTATE_READ_AEF_API_KEY`), Infisical `QDRANT_ESTATE_TOKEN_READ_AEF`, same convention as the staging/ingest tokens. Until ring20 issues it, every estate query answers locally with `estate unavailable: … no token …` (R-16), exit 0."
+    scope: project
+    date: 2026-10-22
+    task: T-4164
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-748
+    decision: "Verification: drop full-line `#` comments and HTML comments only. AC: drop HTML comments, backticked and double-quoted spans. Unquoted AC prose (\"force-push the branch\") still escalates."
+    scope: project
+    date: 2026-10-22
+    task: T-4195
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-749
+    decision: "report it (ok + real tokens + `\"provisional\": true`) only below the warn line; at/above warn stay `unknown`. Revised the T-3241 \"single usage entry → unknown\" test to a lone HIGH reading, which is the case it still protects."
+    scope: project
+    date: 2026-10-22
+    task: T-4174
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-750
+    decision: "`.context/pickup/undelivered/` (the existing T-3763 dir for outbound envelopes awaiting a resend), written there directly from the start."
+    scope: project
+    date: 2026-10-22
+    task: T-4175
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-751
+    decision: "`date_finished` within 60 minutes (constant in the hook, -5 min clock-skew tolerance), plain commit checkpoint only."
+    scope: project
+    date: 2026-10-22
+    task: T-4182
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-752
+    decision: "re-pin `policy/review-backends.yaml` opencode from `zai-coding-plan/glm-5.2` to `zai-coding-plan/glm-5.3`."
+    scope: project
+    date: 2026-10-22
+    task: T-4506
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-753
+    decision: "commit the registry (and its vendored copy) — nothing else. The ledger reads `policy/review-backends.yaml` only AS COMMITTED (`lib/verdict_ledger.py:_registry_blob`) and each review run pins that blob's sha256 at registration; there is no stored registry hash to re-sign. Runs registered before the commit keep their glm-5.2 blob; new runs pin the glm-5.3 blob."
+    scope: project
+    date: 2026-10-22
+    task: T-4506
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-754
+    decision: "restore the registry, runs, completions and cost rows byte-for-byte from stash@{0}"
+    scope: project
+    date: 2026-10-22
+    task: T-4591
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-755
+    decision: "retarget the test to a non-exempt `/etc` path and pin the `/etc/cron.d` exemption."
+    scope: project
+    date: 2026-10-22
+    task: T-4593
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-756
+    decision: "stale test; corrected the test, left `fw setup` / `fw init` unchanged."
+    scope: project
+    date: 2026-10-22
+    task: T-4599
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-757
+    decision: "Pin 0.25.0 now, without serving GET /api/lens-definition."
+    scope: project
+    date: 2026-10-22
+    task: T-4633
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-758
+    decision: "ship `agents/context/check-review-links.{sh,py}` and leave `.claude/settings.json` untouched (`check-active-task.sh:436` refuses agent edits to it). Operator one-liner: `cd /opt/999-Agentic-Engineering-Framework && bin/fw hook-enable --name check-review-links --matcher \"Write|Edit\" --event PreToolUse && bin/fw enforcement baseline`. Exact entry it adds to the PreToolUse `Write|Edit` block (verified with `--dry-run`): `{\"type\": \"command\", \"command\": \"${CLAUDE_PROJECT_DIR}/bin/fw hook check-review-links\"}`."
+    scope: project
+    date: 2026-10-22
+    task: T-4624
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-759
+    decision: "flag a substitution when it names `watchtower` or is directly followed by a `/path`; flag any other `fw watchtower url` mention; flag a bare `/token` only when its first segment is a Watchtower route (static scan of `route(`/`url_prefix=` in `web/**/*.py`, no Flask import)."
+    scope: project
+    date: 2026-10-22
+    task: T-4624
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-760
+    decision: "compare findings before vs after the write; block only new ones."
+    scope: project
+    date: 2026-10-22
+    task: T-4624
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-761
+    decision: "shelve in place — `horizon: later`, `started-work` → `captured`; tasks stay in `active/`."
+    scope: project
+    date: 2026-10-22
+    task: T-4333
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-762
+    decision: "hermetic stubs (rag_retrieve, estate_context, get_model, ollama.chat) in a throwaway PROJECT_ROOT, and the tests renamed from \"a live ask\" to \"an ask\"."
+    scope: project
+    date: 2026-10-22
+    task: T-4325
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-763
+    decision: "no code change. The flake appeared once (2026-10-18T18:13Z), did not reproduce in 96 runs under 2x-oversubscribed CPU, and the saved TAP has no stderr to localise it. That evening also had host-wide process exhaustion (T-4338)."
+    scope: project
+    date: 2026-10-22
+    task: T-4325
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-764
+    decision: "record the evidence and stop. No new code or test."
+    scope: project
+    date: 2026-10-22
+    task: T-4243
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-765
+    decision: "opt-in `option_words(globs=True)` returning kind `G` only for a glob word whose first character is a literal other than `-` (so no expansion can be an option). sed refuses a G as the script or as an -e/--expression value, and admits G FILE operands only when every script line is print-only (`ADDR[,ADDR]p`, ADDR = N, `$` or `/re/`) and no operand is a bare sed command letter (w W e r R), so `sed -n 1p d/*.md w out` stays refused."
+    scope: project
+    date: 2026-10-22
+    task: T-4650
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-766
+    decision: "no change. Measured before the fix: `cat docs/*.md`, `head -5 docs/*.md`, `tail -3 docs/T-?.md`, `grep -n foo docs/*.md`, `wc -l docs/*.md` already return safe — those arms never call option_words. sort/uniq stay refused with globs (sort -o and uniq's second operand are output positions; out of this task's scope)."
+    scope: project
+    date: 2026-10-22
+    task: T-4650
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-767
+    decision: "do NOT allowlist adb (`adb devices -l`, `adb shell pm list packages` suggested by the reporter)."
+    scope: project
+    date: 2026-10-22
+    task: T-4650
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-768
+    decision: "ignore host/process state only (counters, locks, pid/url/port, cursors, logs, telemetry jsonl, tier0 pending approvals; sidecar receiver.pid/port/url, inbox-state.json, hub-id, peers.json, waiting/). Keep tracked: `.gate-bypass-log.yaml`, `feedback-stream.yaml`, `reviewer-overrides.yaml`, `delegations.jsonl`, `tier0-action-events.jsonl`, `happiness.jsonl`, `pending-updates.yaml`, `arc-focus.yaml`, and the sidecar ledgers `awaiting-ack.jsonl`, `direct-ack.jsonl`, `receipts.jsonl`, `receipts-sent.jsonl`, `refusals.jsonl`."
+    scope: project
+    date: 2026-10-22
+    task: T-4231
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-769
+    decision: "`git rm` `.agentic-framework/install.sh` (plus the six other tracked files in the same class, see below). Nothing that `fw vendor` / `fw vendor self` ships was changed."
+    scope: project
+    date: 2026-10-22
+    task: T-4567
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-770
+    decision: "dispatch = `fw_spawn_env` (lib/spawn-env.sh) builds the launcher env exactly as cmd_spawn does, and the session runs run.sh taken verbatim from termlink.sh's RUNEOF heredoc, cut before the review-ledger/worker launch, plus a probe; claude-fw = the injected PTY line rendered from bin/claude-fw (same technique as t4638) run as a session on the server, with a stand-in `claude`."
+    scope: project
+    date: 2026-10-22
+    task: T-4651
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-771
+    decision: "the claude-fw leg asserts no B value in any non-`FW_*` variable; FW_* lines are excluded."
+    scope: project
+    date: 2026-10-22
+    task: T-4651
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-772
+    decision: "the injected PTY line first unsets every FW_* the PTY shell inherited from the tmux server, then re-exports exactly the FW_* present in claude-fw's own environment (values %q-quoted), minus FW_ROUTED_FROM (path-derived)."
+    scope: project
+    date: 2026-10-22
+    task: T-4659
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-773
+    decision: "while python is unusable, grep the raw (still JSON-escaped) payload and block on any Tier 0 keyword (rm -r*, git push with --force/-f/+ref, reset --hard, branch -D, git clean -f, DROP/TRUNCATE, mkfs, dd if=, the word tier0) or, for the boundary hook, any /opt, /home, /root (not .claude/.local), /srv, /mnt path that remains after removing PROJECT_ROOT. No hit: allow with a one-line stderr warning."
+    scope: project
+    date: 2026-10-22
+    task: T-4652
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-774
+    decision: "two layers: `cmd_spawn` runs `termlink spawn` under `env -i` + `lib/spawn-env.sh` allow-list, and run.sh re-execs itself (`exec env -i … \"$BASH\" \"$0\" \"$@\"`, guarded by `_FW_RUNTIME_ENV_CLEAN`) with an inlined copy of the same list (pinned equal by t4647 test 2). The re-exec keeps argv, so the review ledger's parent check (`bash <wdir>/run.sh`) still holds."
+    scope: project
+    date: 2026-10-22
+    task: T-4647
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-775
+    decision: "a separate nightly job (`integration-suite-nightly`, 01:33) using the unit-suite runner with its own report dir and lock, graded by the same reader in `fw audit` under its own name. No integration baseline; not graded at pre-push."
+    scope: project
+    date: 2026-10-22
+    task: T-4634
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-776
+    decision: "`io:` list in the skeleton frontmatter, one JSON object per item (JSON is YAML), attributes"
+    scope: project
+    date: 2026-10-22
+    task: T-4551
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-777
+    decision: "scope the launcher (claude-fw re-execs itself; `termlink spawn` runs under the prefix), so a tmux server they START is born in agentic.slice and every claude/worker under it follows."
+    scope: project
+    date: 2026-10-22
+    task: T-4636
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-778
+    decision: "`fw_config_int TERMLINK_VANISHED_MINUTES 10` with an explicit default and `--minutes N`, no registry entry."
+    scope: project
+    date: 2026-10-22
+    task: T-4637
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-779
+    decision: "linger is checked for the uid in `user-<uid>.slice`, not the process owner."
+    scope: project
+    date: 2026-10-22
+    task: T-4637
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-780
+    decision: "`not-fixed` on strong negatives anywhere in the reply (not fixed, still broken/fails, regression, reopen, is broken); weak counter-signals (still, however, except, \"but ... not\") veto `confirmed` only in the reply's FIRST PARAGRAPH, giving `other`. Affirmation must be in the opening sentence."
+    scope: project
+    date: 2026-10-22
+    task: T-4660
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-781
+    decision: "Closing a GitHub issue is a standing agent routine, not an operator question, once the fix is built, tested, deployed and the submitter's reply confirms it works or says it is fine to close; the agent closes it with a note (naming any follow-up task) and reports afterwards. Ambiguous or negative replies are still surfaced. Operator ruling 2026-10-22."
+    scope: project
+    date: 2026-10-22
+    task: T-4668
+    rationale: "Not specified"
+
+  - id: D-782
+    decision: "exactly three, from a grep of every `TERMLINK_*` the framework reads (lib/ agents/ bin/) and the names the termlink binary reads:"
+    scope: project
+    date: 2026-10-22
+    task: T-4665
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-783
+    decision: "in order, each only if it exists and only once: this framework's bin (run.sh: the worker project's own — `$PROJECT_DIR/bin` for the framework repo, `$PROJECT_DIR/.agentic-framework/bin` for a consumer, else the dispatcher's fw dir); the directories of the resolved `claude`, `termlink`, `node` and, for a review, the pinned worker binary; `~/.local/bin`, `~/.cargo/bin`; `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`. A resolved binary that sits in some *other* `.agentic-framework/bin` does not add that dir."
+    scope: project
+    date: 2026-10-22
+    task: T-4666
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-784
+    decision: "whole-repo snapshot by default, with an optional pathspec; the register-gate test passes its fixture namespace (`.tasks/**/T-99xx-*`, `.context/episodic/T-99xx.yaml`, the redteam arc and design doc)."
+    scope: project
+    date: 2026-10-22
+    task: T-4671
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-785
+    decision: "keep `--ext-diff` and `--textconv` admitted on diff/log/show/cat-file; refuse `git help -w` / `--web`."
+    scope: project
+    date: 2026-10-22
+    task: T-4631
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-786
+    decision: "keep T-4409's refusal for callers with no known cwd. Make `_FW_PAYLOAD_CWD=<absolute cwd>` the documented opt-in for harness callers (it is the variable the hook already sets, so the harness and the hook take one code path). Print a one-time stderr reason when a git clause is refused only because the cwd is unknown and no payload cwd was given."
+    scope: project
+    date: 2026-10-22
+    task: T-4662
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-787
+    decision: "(a) the cron sweeps commit their own writes: one commit per sweep, subject `T-1923:` (bvp sweep) / `T-1935:` (cost sweep), only the files that sweep wrote, via `git commit -- <paths>` so other workers' staged files stay out. Files that were dirty when the sweep started are skipped (not written). Manual (non-`--cron`) runs are unchanged: they write and leave committing to the operator."
+    scope: project
+    date: 2026-10-22
+    task: T-4676
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-788
+    decision: "the arc page uses the board's `board_awaiting_reason` instead of `status == work-completed`."
+    scope: project
+    date: 2026-10-22
+    task: T-4663
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-789
+    decision: "run the install as part of step 4b (reusing `fw_init_install_designer`, so verification and wording match init), only when the consumer already has a designer build in the install dir; dry-run prints WOULD INSTALL."
+    scope: project
+    date: 2026-10-22
+    task: T-4672
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-790
+    decision: "`aef:endpoint` (text child; technical lens, \"fw … | agent prompt | watchtower view\") on the eight task-like nodes; saved as store v4 through `/api/save`."
+    scope: project
+    date: 2026-10-23
+    task: T-4677
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-791
+    decision: "a `re:` prefix on the marker string, valid in both `marker:` and `markers:`."
+    scope: project
+    date: 2026-10-23
+    task: T-4679
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-792
+    decision: "test-only change; no claude-fw edit."
+    scope: project
+    date: 2026-10-23
+    task: T-4686
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-793
+    decision: "remove the call from `do_upgrade`; keep `--no-self-vendor` as an accepted no-op."
+    scope: project
+    date: 2026-10-23
+    task: T-4688
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-794
+    decision: "predict in pre-commit and write into the staged episodic. Post-commit stays as the fallback, for the predicted ids plus the ids in the message."
+    scope: project
+    date: 2026-10-23
+    task: T-4690
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-795
+    decision: "keep it tracked (T-4231's call) and carry it in the close commit. When pre-commit predicts a close, it stages the stream before computing the footprint."
+    scope: project
+    date: 2026-10-23
+    task: T-4690
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-796
+    decision: "option (b) without the backfill job. Post-commit does not rewrite an episodic that is tracked and identical to HEAD unless pre-commit predicted it for this commit. The footprint is frozen as committed at close. Later commits naming the task (bookkeeping, residual fixes) are not counted."
+    scope: project
+    date: 2026-10-23
+    task: T-4694
+    rationale: "Auto-captured from task file on completion"

@@ -13,8 +13,8 @@ Verifies:
 3. Seeded "ship in T-NNNN" where T-NNNN is ACTIVE → does NOT WARN
 4. Allowlisted paths (tests/, docs/, audit.sh self) → exempt
 5. "once that slice ships" phrasing → WARN regardless of T-NNNN
-Strategy: isolated synthetic PROJECT_ROOT + check-block logic extracted
-inline (same pattern as audit_ctl_arc_tag_only_pattern.bats).
+Strategy: isolated synthetic PROJECT_ROOT + the check block extracted from
+agents/audit/audit.sh (same pattern as audit_ctl_arc_tag_only_pattern.bats).
 
 ## Dependencies (2)
 

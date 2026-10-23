@@ -6,9 +6,8 @@
 
 ## What It Does
 
-PROJECT_ROOT deliberate (T-2648/OBS-097 allowlist): value-drivers.yaml is a
-per-project policy INSTANCE seeded from the framework template by
-`fw bvp driver --init` (T-2229) — not a framework-owned asset.
+T-3952: fw from the FRAMEWORK root, never cwd-relative "bin/fw" — these calls run with
+cwd=PROJECT_ROOT, and a consumer project has no bin/fw at its root (.agentic-framework/bin/fw).
 
 ## Dependencies (5)
 

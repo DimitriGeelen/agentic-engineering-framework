@@ -13,9 +13,9 @@ emitted a single direction-blind remediation ("Run: fw upgrade $consumer_dir")
 for any version mismatch. In the consumer-ahead case that command would
 silently downgrade the consumer's pinned version.
 These tests pin the asymmetric remediation surface in bin/fw:
-- version_relation (match | behind | ahead) is computed via sort -V
-- behind branch preserves the "Run: fw upgrade" suggestion
-- ahead branch emits a distinct "is AHEAD of framework" reason and the
+- the version relation (same | behind | ahead | ...) is computed by the shared
+comparator lib/version-relation.sh (git ancestry, T-2713; it replaced the
+original sort -V string comparison, which cannot order a resetting counter)
 
 ## Dependencies (1)
 

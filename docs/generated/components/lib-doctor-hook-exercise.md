@@ -6,6 +6,9 @@
 
 ## What It Does
 
+T-4461: per-hook budget. A probe that exceeds it proves nothing about path
+resolution (the hook was found and started), so it is reported as undetermined.
+
 ## Dependencies (1)
 
 | Component | Relationship | Description |

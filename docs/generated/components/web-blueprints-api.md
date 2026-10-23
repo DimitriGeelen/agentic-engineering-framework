@@ -6,6 +6,10 @@
 
 ## What It Does
 
+T-4657: the LLM, embeddings and keyword-search stacks are optional installs
+(ollama, sqlite_vec, tantivy). Each component names the modules that must
+import for it to work; a missing one degrades the endpoint, never a 500.
+
 ## Dependencies (9)
 
 | Component | Relationship | Description |

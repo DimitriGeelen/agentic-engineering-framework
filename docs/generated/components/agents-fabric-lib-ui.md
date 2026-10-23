@@ -14,7 +14,7 @@ Implements: fw fabric ui
 | Factor | Rule |
 |--------|------|
 | Max parallel agents | **5** (T-073 used 9 → context explosion; T-061 used 4, T-086 used 5 → fine) |
-| Token headroom | Leave **40K tokens** free for result ingestion before dispatching |
+| Token headroom | Keep the **spawn reserve** free before dispatching: 20K at a 200K window, rising 5% of the window above 200K, capped at 50K (§Parallelism limits, T-4225) |
 | When parallel | Tasks are independent, no shared files, no sequential dependency |
 | When sequential | Tasks depend on prior results, or editing same files |
 | Background agents | Use `run_in_background: true` for agents >2K tokens expected output |

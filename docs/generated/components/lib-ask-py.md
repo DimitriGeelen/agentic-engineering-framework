@@ -8,7 +8,9 @@
 
 ## What It Does
 
-Add project root to path so web modules are importable
+web/ is FRAMEWORK-owned: in a vendored consumer it lives under .agentic-framework/,
+not PROJECT_ROOT, so FRAMEWORK_ROOT goes first on the path (T-3783, 010 T-3336:
+`fw ask` died with "No module named web" in every vendored consumer).
 
 ## Dependencies (7)
 

@@ -6,3 +6,12 @@ receiver/
 sessions/
 watcher/
 liveness.yaml
+receiver.pid
+receiver.port
+receiver.url
+inbox-state.json
+hub-id
+peers.json
+waiting/
+*.lock
+*.tmp

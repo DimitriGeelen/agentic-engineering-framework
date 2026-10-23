@@ -6,6 +6,12 @@
 
 ## What It Does
 
+T-3717: the alias above renames the Python NAME only. Ledger rows written
+before T-3561 still carry the literal string "INJECTED_NOW" on disk, and the
+ledger is append-only, so they never go away. `_read_ledger` maps this value
+to HUB_ACCEPTED so every reader (status counts, retry eligibility) still sees
+those rows as delivered rather than as an unknown, retryable state.
+
 ## Used By (8)
 
 | Component | Relationship | Description |

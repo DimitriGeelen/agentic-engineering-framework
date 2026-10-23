@@ -9,7 +9,7 @@
 ## What It Does
 
 Unit tests for agents/git/lib/common.sh
-Tests pure functions: extract_task_id, task_exists, get_task_name
+Tests pure functions: extract_task_id, task_exists
 
 ## Dependencies (7)
 
