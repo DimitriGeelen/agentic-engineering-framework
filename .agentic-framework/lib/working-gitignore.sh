@@ -13,7 +13,8 @@
 # .gate-bypass-log.yaml, feedback-stream.yaml, reviewer-overrides.yaml,
 # delegations.jsonl, tier0-action-events.jsonl, happiness.jsonl,
 # pending-updates.yaml, arc-focus.yaml, .next-directive.yaml,
-# .continuous-mode.yaml, .onboarding-complete.
+# .continuous-mode.yaml, .onboarding-complete, consolidation-report.yaml,
+# qa_feedback.db, observations/ (fw_working_keep_tracked below; T-4689).
 #
 # One list, two writers: init (fresh write) and upgrade (append-missing). The
 # rules live in the nested .context/working/.gitignore, so they are relative to
@@ -78,7 +79,43 @@ fw_working_ignore_rules() {
         'decide/' \
         'episodic-gen/' \
         'litellm/' \
-        'ollama-pulls/'
+        'ollama-pulls/' \
+        '.fleet-failure-state.json' \
+        'vector-index-health.json' \
+        '.checkpoint.handover.stderr' \
+        '.terminator.handover.out' \
+        '.handover-cooldown' \
+        '.inception-research-warnings' \
+        '.inception-checkpoint-log' \
+        'watchtower.firewall' \
+        'escalation-drift-LATEST*.yaml' \
+        'estate-ingest-audit.jsonl' \
+        'estate-push-refused.jsonl' \
+        'judge-evidence/' \
+        'vendor-backup/'
+}
+
+# fw_working_keep_tracked
+# The records named in the header comment, as data: a project keeps these in
+# git, so they must NOT match any rule above. tools/working-ignore-rail.py
+# (T-4689) fails when a name the framework writes under .context/working/ is on
+# neither list, so a new writer cannot leave a consumer file unclassified.
+fw_working_keep_tracked() {
+    printf '%s\n' \
+        '.gate-bypass-log.yaml' \
+        'feedback-stream.yaml' \
+        'reviewer-overrides.yaml' \
+        'delegations.jsonl' \
+        'tier0-action-events.jsonl' \
+        'happiness.jsonl' \
+        'pending-updates.yaml' \
+        'arc-focus.yaml' \
+        '.next-directive.yaml' \
+        '.continuous-mode.yaml' \
+        '.onboarding-complete' \
+        'consolidation-report.yaml' \
+        'qa_feedback.db' \
+        'observations'
 }
 
 # fw_working_ensure_ignored <project_root> [--dry-run]

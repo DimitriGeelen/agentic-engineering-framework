@@ -12,10 +12,10 @@ description: >
   when one is neither ignored nor on an explicit keep-tracked list (T-4231 keeps some
   tracked on purpose). fw upgrade must add new entries to existing consumers.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T10:39:27Z
-last_update: '2026-10-23T10:45:39Z'
+last_update: 2026-10-23T13:05:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/working-gitignore.sh` rules ignore `.fleet-failure-state.json` and `vector-index-health.json` (git check-ignore in a synthetic consumer)
+- [x] Rail test collects every `.context/working/<name>` the framework writes (lib/ agents/ bin/ web/) and fails when a name is neither matched by the consumer rule set nor on an explicit keep-tracked list; it passes on the current tree
+- [x] Rail has a biting control: a synthetic unignored writer name is reported (test proves the rail is not vacuous)
+- [x] `fw_working_ensure_ignored` on an existing consumer `.gitignore` that predates the new rules appends exactly the new ones, a second run appends 0 (idempotent, append-only)
+- [x] `bin/fw vendor self --check --task T-4689` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,6 +286,12 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4689_working_ignore_rail.bats > /tmp/.t4689-v1.out 2>&1 && grep -q '^ok 1 ' /tmp/.t4689-v1.out && ! grep -q '^not ok' /tmp/.t4689-v1.out
+test "$(grep -c '# skip' /tmp/.t4689-v1.out)" -eq 0
+timeout 600 bats tests/unit/t4231_working_runtime_gitignore.bats > /tmp/.t4689-v2.out 2>&1 && ! grep -q '^not ok' /tmp/.t4689-v2.out
+test "$(grep -c '# skip' /tmp/.t4689-v2.out)" -eq 0
+python3 tools/working-ignore-rail.py > /tmp/.t4689-v3.out 2>&1 && grep -q 'working-ignore-rail: clean' /tmp/.t4689-v3.out
+bin/fw vendor self --check --task T-4689
 
 ## RCA
 
@@ -299,6 +308,35 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** consumer 1023 kept finding new untracked files under `.context/working/`
+(`.fleet-failure-state.json`, `vector-index-health.json`) after framework releases
+and patched their ignore by hand (their T-104/T-110/T-127/T-175).
+
+**Root cause:** the consumer ignore list is a hand-maintained snapshot
+(`lib/working-gitignore.sh:fw_working_ignore_rules`, T-4231) with no link to the
+code that writes there. `lib/vector-index-health.sh:95` (and
+`lib/vector_index_health.py:62`) added `vector-index-health.json` after the list
+was written; `.fleet-failure-state.json` is written by TermLink fleet tooling,
+not by any framework file, so no grep of our code surfaces it. The rail built
+here found 15 more unclassified names (e.g. `watchtower.firewall`,
+`bin/watchtower.sh:28`; `judge-evidence/`, `lib/reviewer/judge_cli.py:80`;
+`.handover-cooldown`, `agents/context/checkpoint.sh:238`).
+
+**Why structurally allowed:** nothing compared writers against the list; the
+T-4231 bats test pinned a fixed sample of names, so it stayed green as new
+writers landed. The keep-tracked set existed only as a comment.
+
+**Prevention:** `tools/working-ignore-rail.py` collects every name the code
+spells under `.context/working/` (shell and python forms), builds the consumer
+ignore exactly as `fw init` does (WGIT heredoc + the shared ensure functions),
+and fails on any name neither ignored nor on `fw_working_keep_tracked` (now data,
+not a comment), or on a keep-tracked name a rule ignores.
+`tests/unit/t4689_working_ignore_rail.bats` runs it in the unit suite with a
+biting control. `fw upgrade` already appends missing rules through
+`fw_working_ensure_ignored` (lib/upgrade.sh:3139), so new entries reach existing
+consumers append-only. Limit: a name assembled from constants far from any
+literal path is not seen; external writers go in the rail's EXTERNAL_NAMES.
 
 ## Evolution
 
@@ -380,3 +418,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4689-consumer-contextworking-ignore-set-still.md
 - **Context:** Initial task creation
+
+### 2026-10-23T13:04:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
