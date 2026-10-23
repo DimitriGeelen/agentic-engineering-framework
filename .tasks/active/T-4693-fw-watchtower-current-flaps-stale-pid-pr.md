@@ -94,6 +94,8 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+ring20 data point (sidecar 3d9180b2): the STALE line already named pid 2792422, the NEW MainPID (systemctl ActiveEnterTimestamp 11:10:37 UTC); .context/working/watchtower.pid = 2792422, and the same pid read current a minute later. So the triple file was NOT stale; the check ran ~25 s after `systemctl restart`. Prime suspect: the process start-time read (or the comparison against file mtimes) shortly after start.
+
 ## Acceptance Criteria
 
 ### Agent
