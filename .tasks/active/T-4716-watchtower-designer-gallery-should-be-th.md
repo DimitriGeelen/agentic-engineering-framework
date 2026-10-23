@@ -148,7 +148,7 @@ until 832 ships it the redirect lands in the editor without the modal open.
 - [ ] [REVIEW] The Designer entry behaves like the designer's own project browser, and the AEF card list is still reachable
   **Steps:**
   1. Open http://192.168.10.107:3000/designer in a browser (or click Architecture → Designer in the Watchtower nav)
-  2. Confirm you land in the designer app (address ends in /designer/app?browse=1); once 832 ships the `browse=1` entry, its "📂 Open project…" card browser opens on load
+  2. Confirm you land in the designer app (the address becomes http://192.168.10.107:3000/designer/app?browse=1); once 832 ships the `browse=1` entry, its "📂 Open project…" card browser opens on load
   3. Open http://192.168.10.107:3000/designer/corpus (or Architecture → Designer corpus) and click a card
   **Expected:** step 1 shows the designer app, not AEF's card grid; step 3 shows the AEF card list with thumbnails, the new-draft form and live-overlay links, and the card opens that map in the editor
   **If not:** note which address you ended on and what rendered. With the 0.25.0 pin the browser modal does not auto-open yet (needs 832's browse=1); that alone is expected, not a defect
@@ -386,7 +386,7 @@ extras lives at http://192.168.10.107:3000/designer/corpus. The one open piece i
 the pinned designer 0.25.0 ignores `browse=1`, so the "📂 Open project…" browser opens on
 load only once 832 ships that param and the pin is bumped.
 **Evidence:**
-- Live, restarted Watchtower: /designer answers 302 with Location /designer/app?browse=1; an htmx nav click gets HX-Redirect to the same address; /designer/corpus answers 200
+- Live, restarted Watchtower: http://192.168.10.107:3000/designer answers 302 with Location http://192.168.10.107:3000/designer/app?browse=1; an htmx nav click gets HX-Redirect to the same address; http://192.168.10.107:3000/designer/corpus answers 200
 - 3 designer web test files: all passed, 0 skipped, including new redirect, HX-Redirect and nav-entry tests
 - `bin/fw test invariants`: 0 not ok
 
