@@ -1,24 +1,20 @@
 ---
-id: T-4697
-name: "T-4692 partial: the upgrade summary's 'files to commit' list includes files
-  other processes wrote during the upgrade window, so its git add line would commit
-  unrelated state"
+id: T-4696
+name: "A test created its temp dir inside the repo (.context/working/t4662tmp/bats-run-*/...)
+  and a handover commit (0b514d2c4, 00:41) committed two of its files"
 description: >
-  ring20 be.9 report (sidecar ff56edf4): in a busy shared checkout the list had 13
-  extra entries (.context/infra/pg-ha-health.yaml, publisher-login-alerts.yaml, .context/working/.hook-counter,
-  .live-agent-injector-state.json). Fix: snapshot git status (paths + blob hashes)
-  at upgrade start and list only paths whose content changed between the snapshot
-  and the end AND that the upgrade wrote (or record every path upgrade writes and
-  list exactly those). Never offer a git add for a path the upgrade did not write.
-  Test: a background writer touching a file during the upgrade does not appear in
-  the list; the upgrade's own files do. Keep upgrade_fresh_machine_simulation green.
+  Same leak class as T-4671. Find the test that used .context/working as TMPDIR/BATS_TMPDIR
+  (grep tests/ for t4662tmp, TMPDIR=.context, BATS_TMPDIR), move it to a mktemp dir
+  outside the repo, and extend T-4671's live_repo_guard (or add a lint) so any test
+  that writes under the real repo fails. The two committed files were removed from
+  the index in this task.
 
-status: started-work
-workflow_type: build
+status: work-completed
+workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/lint/no-project-markers-above-bats-tmpdir.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,9 +42,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-23T13:59:59Z
-last_update: '2026-10-23T14:30:28Z'
-date_finished:
+created: 2026-10-23T13:57:37Z
+last_update: 2026-10-23T14:12:53Z
+date_finished: 2026-10-23T14:12:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,35 +56,25 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-23T14:01:25Z'
+  - ts: '2026-10-23T13:58:21Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
       D2: 0
       D3: 0
       D4: 0
-      F-RECALL: 0
+      F-RECALL: 1
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-23T14:30:28Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=321,acs=8)
+      (no-signal); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4697: T-4692 partial: the upgrade summary's 'files to commit' list includes files other processes wrote during the upgrade window, so its git add line would commit unrelated state
+# T-4696: A test created its temp dir inside the repo (.context/working/t4662tmp/bats-run-*/...) and a handover commit (0b514d2c4, 00:41) committed two of its files
 
 ## Context
 
@@ -98,12 +84,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] A file another process writes in the target during the upgrade window (a clean tracked file it modifies, and an untracked file it creates) appears neither in the "files to commit" list nor in its `git add` line
-- [x] Files the upgrade itself writes (vendored `.agentic-framework/`, `.context/.gitignore`, a modified tracked governance file) are still listed
-- [x] A path dirty before the upgrade and not rewritten by it is still not listed (T-4692 behaviour kept)
-- [x] Regression test with a background writer running during a real `do_upgrade` in `tests/unit/t4692_upgrade_commit_list.bats` passes; all T-4692 tests pass
-- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
-- [x] `bin/fw vendor self --check --task T-4697` is clean
+- [x] The source of the in-repo temp dir (`.context/working/t4662tmp`) is identified and recorded in ## RCA with file:line or command evidence
+- [x] No test under tests/ sets TMPDIR / BATS_TMPDIR / BATS_RUN_TMPDIR / `mktemp -p` to a path inside the framework repo (a lint over tests/ enforces it)
+- [x] The test suite refuses to run when its temp root (BATS_RUN_TMPDIR / TMPDIR) lies inside the real repo, so a `TMPDIR=<repo path> bats ...` invocation fails loudly instead of leaking files
+- [x] Regression test(s) added and pass in the foreground; `git status --porcelain` of the real repo unchanged before/after (recorded in ## Updates)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,22 +272,12 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 900 bats tests/unit/t4692_upgrade_commit_list.bats > /tmp/.t4697-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4697-bats.out && grep -q "background writer" /tmp/.t4697-bats.out
-test "$(grep -c '# skip' /tmp/.t4697-bats.out)" -eq 0
-timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4697-sim.out 2>&1 && ! grep -q "^not ok" /tmp/.t4697-sim.out
-test "$(grep -c '# skip' /tmp/.t4697-sim.out)" -eq 0
-bash -n lib/upgrade.sh
-bin/fw vendor self --check --task T-4697
+d=$(mktemp -d); TMPDIR=$d timeout 300 bats tests/lint/t4696_no_tmpdir_in_repo.bats > /tmp/.t4696-v.out 2>&1; r=$?; rm -rf "$d"; [ $r -eq 0 ] && grep -q '^ok 5 ' /tmp/.t4696-v.out && ! grep -q '^not ok' /tmp/.t4696-v.out
+test "$(grep -c '# skip' /tmp/.t4696-v.out)" -eq 0
+mkdir -p .context/working/.t4696-proof; TMPDIR=$PWD/.context/working/.t4696-proof timeout 60 bats tests/unit/t4662_safe_commands_no_cwd_contract.bats > /tmp/.t4696-r.out 2>&1; r=$?; rm -rf .context/working/.t4696-proof; [ $r -ne 0 ] && grep -q 'TMPDIR INSIDE THE REPO (T-4696)' /tmp/.t4696-r.out
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4696-l.out 2>&1 && grep -q 'clean' /tmp/.t4696-l.out
 
 ## RCA
-
-**Symptom:** in a busy shared checkout (ring20 be.9, sidecar ff56edf4) the T-4692 "Files this upgrade created or changed" list carried 13 extra entries — `.context/infra/pg-ha-health.yaml`, `publisher-login-alerts.yaml`, `.context/working/.hook-counter`, `.live-agent-injector-state.json` — and its `git add` line would have committed them.
-
-**Root cause:** `lib/upgrade_commit_list.py:report` (T-4692) listed every path dirty at the end whose content differed from the start snapshot. That snapshot held only paths that were *dirty* at the start, so any clean tracked file or new untracked file that another process (cron, a hook, a live agent) wrote during the upgrade window looked exactly like an upgrade write. A before/after diff can only show *that* a file changed, not *who* changed it. Nothing recorded what the upgrade itself wrote (`lib/upgrade.sh` do_upgrade, `_t4692_emit_commit_list`).
-
-**Why structurally allowed:** the T-4692 tests ran the helper against a quiet temp repo, where "changed during the window" and "written by the upgrade" are the same set. Nothing tested a concurrent writer, and every consumer the framework is developed against is busy.
-
-**Prevention:** do_upgrade now records each path it writes (`_t4697_wrote`, a journal kept for the run), and the report lists only paths that are both in that record and changed in content. A path nobody recorded is never offered for `git add`. Regression test: `tests/unit/t4692_upgrade_commit_list.bats` runs a real `do_upgrade` while a background writer modifies a clean tracked file and creates an untracked one, and asserts that neither is listed while the upgrade's own files are. A future write site that is not journalled fails safe: the file is left out of the list, and no foreign path is added to it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -319,7 +293,6 @@ bin/fw vendor self --check --task T-4697
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -342,6 +315,16 @@ bin/fw vendor self --check --task T-4697
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+**Symptom:** handover commit 0b514d2c4 (T-4681, 00:41) committed `.context/working/t4662tmp/bats-run-aOWVHW/test/598/proj/.context/handovers/{LATEST.md,S-2026-1023-0041.md}` — bats fixture files.
+
+**Root cause:** no test file put its temp dir in the repo (grep of tests/ for t4662tmp, in-repo TMPDIR/BATS_TMPDIR/`mktemp -p`: zero hits). The T-4662 worker (session cd165ddb, 2026-10-22T22:32Z and 22:44Z) ran `mkdir -p .context/working/t4662tmp && TMPDIR=$PWD/.context/working/t4662tmp timeout 590 bats -j 6 <files>`. bats derives BATS_RUN_TMPDIR from TMPDIR, so every BATS_TEST_TMPDIR — and test 598's fixture project `proj` — lived inside the checkout, visible to the real repo's git status and picked up by the next handover's add. That recipe is the one the T-3234 lint documents for itself: tests/lint/no-project-markers-above-bats-tmpdir.bats:42-43 (`TMPDIR=$PWD/.context/working/.proof bats ...`).
+
+**Why structurally allowed:** tests/git_fence.bash and tests/live_repo_guard.bash (T-4671) both assume the temp root is outside the checkout; nothing asserted it. live_repo_guard is per-file opt-in and watches status changes during a test, so it cannot see a run-level temp root choice; .context/working is not gitignored for these paths.
+
+**Prevention:** tests/{unit,lint,integration,governance}/setup_suite.bash (bats runs it once per invocation) call tests/tmpdir_outside_repo.bash:refuse_tmpdir_inside_repo and fail the whole run (`not ok 1 setup_suite`, message names T-4696) when BATS_RUN_TMPDIR/TMPDIR is inside the repo. tests/lint/t4696_no_tmpdir_in_repo.bats statically refuses any tests/ source pointing TMPDIR/BATS_TMPDIR/BATS_RUN_TMPDIR/`mktemp -p`/`bats --tempdir` at $PWD/$FRAMEWORK_ROOT/$PROJECT_ROOT/$REPO_ROOT/$BATS_TEST_DIRNAME/.context, checks every bats dir has the refusal, and runs a nested end-to-end red/green. The T-3234 comment now shows an out-of-repo proof recipe.
+
+## Evolution
 
 ## Recommendation
 
@@ -374,12 +357,6 @@ bin/fw vendor self --check --task T-4697
 
 ## Decisions
 
-### 2026-10-23 — how to know which paths the upgrade wrote
-- **Chose:** a write journal. `_t4697_wrote` is called at every do_upgrade write site and records paths relative to the target, or a directory such as `.agentic-framework/` for do_vendor and the designer install. The report lists a path only if the journal names it AND its content changed since the start snapshot. A run with no journal lists nothing.
-- **Why:** content hashes cannot tell who wrote a file. A file another process rewrites during the window is just as "changed" as one the upgrade rewrote. Only a record kept at the write site separates the two. Where a step writes through a helper that returns no paths (generate_claude_code_config, mcp_approve, enforcement baseline), the journal names the files that helper can write. The content check then drops any it did not actually change.
-- **Rejected:** a before/after diff of git status alone, even with blob hashes (that is the T-4692 design and the bug). An allowlist of framework-owned path prefixes (it still admits concurrent writes inside `.tasks/` or `.context/project/`).
-- **Observed while testing:** `.context/sidecar/.gitignore` is created during an upgrade run by the sidecar lifecycle (lib/sidecar/lifecycle.py), not by an upgrade step, so it is no longer listed. That is fail-safe and intended: any fw command creates that file.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -401,10 +378,38 @@ bin/fw vendor self --check --task T-4697
 
 ## Updates
 
-### 2026-10-23T13:59:59Z — task-created [task-create-agent]
+### 2026-10-23T13:57:37Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4697-t-4692-partial-the-upgrade-summarys-file.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4696-a-test-created-its-temp-dir-inside-the-r.md
 - **Context:** Initial task creation
 
-### 2026-10-23T14:01:23Z — status-update [task-update-agent]
+### 2026-10-23T13:58:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-23 — guard + lint, foreground runs [w4696]
+- Run 1 (TMPDIR=$(mktemp -d), foreground): t4696_no_tmpdir_in_repo, no-project-markers-above-bats-tmpdir, t4671_live_repo_guard, t4662_safe_commands_no_cwd_contract — 21/21 ok, 0 skip. Real-repo `git status --porcelain | sort` before vs after: `diff` empty.
+- Run 2 (same form, -j 4): t4215_unit_suite_file_tmpdir, t4526_tmp_leftovers, handover, bats-git-discovery-fence — 22/22 ok, 0 skip. `diff` of porcelain before/after: empty.
+- Red proof: `TMPDIR=$PWD/.context/working/t4696proof bats tests/unit/t4662_safe_commands_no_cwd_contract.bats` → rc=1, `not ok 1 setup_suite`, "TMPDIR INSIDE THE REPO (T-4696)"; the proof dir was empty afterwards.
+- tests/lint/ whole dir: 153 ok, 1 not ok = "every collectable test file under tests/ is tracked by git" (the new lint file was still untracked; rechecked after commit).
+- bats-dead-negation-lint: clean.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6a7e3417
+- **Timestamp:** 2026-10-23T14:12:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-10-23T14:12:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

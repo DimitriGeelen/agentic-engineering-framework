@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4697: T-4692 partial: the upgrade summary's 'files to commit' list includes files other processes wrote during the upgrade window, so its git add line would commit unrelated state
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T14:34:17Z
+# ============================================================================
+
+task_id: T-4697
+task_name: "T-4692 partial: the upgrade summary's 'files to commit' list includes files other processes wrote during the upgrade window, so its git add line would commit unrelated state"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T13:59:59Z
+completed: 2026-10-23T14:26:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T16:01:21+02:00
+last_commit: 2026-10-23T16:25:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture upgrade summary listing other processes' files (ring20 be.9). upgrade commit list names only paths the upgrade journalled
+
+# Key outcomes
+outcomes:
+  - 'A file another process writes in the target during the upgrade window (a clean tracked file it modifies, and an untracked file it creates) appears neither in the "files to commit" list nor in its `git add` line'
+  - 'Files the upgrade itself writes (vendored `.agentic-framework/`, `.context/.gitignore`, a modified tracked governance file) are still listed'
+  - 'A path dirty before the upgrade and not rewritten by it is still not listed (T-4692 behaviour kept)'
+  - 'Regression test with a background writer running during a real `do_upgrade` in `tests/unit/t4692_upgrade_commit_list.bats` passes; all T-4692 tests pass'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` stays green'
+  - '`bin/fw vendor self --check --task T-4697` is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — how to know which paths the upgrade wrote'
+    chose: 'a write journal. `_t4697_wrote` is called at every do_upgrade write site and records paths relative to the target, or a directory such as `.agentic-framework/` for do_vendor and the designer install. The report lists a path only if the journal names it AND its content changed since the start snapshot. A run with no journal lists nothing.'
+    rationale: 'content hashes cannot tell who wrote a file. A file another process rewrites during the window is just as "changed" as one the upgrade rewrote. Only a record kept at the write site separates the two. Where a step writes through a helper that returns no paths (generate_claude_code_config, mcp_approve, enforcement baseline), the journal names the files that helper can write. The content check then drops any it did not actually change.'
+    alternatives_rejected: ['a before/after diff of git status alone, even with blob hashes (that is the T-4692 design and the bug). An allowlist of framework-owned path prefixes (it still admits concurrent writes inside `.tasks/` or `.context/project/`). - **Observed while testing:** `.context/sidecar/.gitignore` is created during an upgrade run by the sidecar lifecycle (lib/sidecar/lifecycle.py), not by an upgrade step, so it is no longer listed. That is fail-safe and intended: any fw command creates that file.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade_commit_list.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade_commit_list.py'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4697-t-4692-partial-the-upgrade-summarys-file.md'
+  - 'tests/unit/t4692_upgrade_commit_list.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T16:01:21'
+    action: 'T-4697: capture upgrade summary listing other processes'' files (ring20 be.9)'
+  - time: '2026-10-23T16:25:37'
+    action: 'T-4697: upgrade commit list names only paths the upgrade journalled'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 3
+  files_changed: 13
+  lines_added: 1555
+  lines_removed: 67
+  footprint_refreshed_at: '2026-10-23T14:34:30Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4697-t-4692-partial-the-upgrade-summarys-file.md
+generated_by: context-agent-hybrid

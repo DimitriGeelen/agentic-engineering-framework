@@ -47613,3 +47613,57 @@ scan_id: R-9a498295
 task_id: T-4694
 payload:
   task_file: .tasks/active/T-4694-t-4690-residual-any-commit-that-names-an.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T14:12:55Z'
+scan_id: R-6a7e3417
+task_id: T-4696
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T14:12:55Z'
+scan_id: R-6a7e3417
+task_id: T-4696
+payload:
+  task_file: .tasks/active/T-4696-a-test-created-its-temp-dir-inside-the-r.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T14:20:04Z'
+scan_id: R-0f8907b6
+task_id: T-4695
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T14:20:04Z'
+scan_id: R-0f8907b6
+task_id: T-4695
+payload:
+  task_file: .tasks/active/T-4695-cron-written-generated-files-stay-modifi.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T14:33:38Z'
+scan_id: R-26f2ca18
+task_id: T-4697
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T14:33:38Z'
+scan_id: R-26f2ca18
+task_id: T-4697
+payload:
+  task_file: .tasks/active/T-4697-t-4692-partial-the-upgrade-summarys-file.md

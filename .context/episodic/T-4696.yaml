@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4696: A test created its temp dir inside the repo (.context/working/t4662tmp/bats-run-*/...) and a handover commit (0b514d2c4, 00:41) committed two of its files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T14:13:06Z
+# ============================================================================
+
+task_id: T-4696
+task_name: "A test created its temp dir inside the repo (.context/working/t4662tmp/bats-run-*/...) and a handover commit (0b514d2c4, 00:41) committed two of its files"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T13:57:37Z
+completed: 2026-10-23T14:12:53Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-23T15:57:58+02:00
+last_commit: 2026-10-23T16:06:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  untrack two test temp files that a T-4681 handover commit picked up from .context/working/t4662tmp; T-4695, T-4696 captured. refuse bats runs whose TMPDIR is inside the repo (setup_suite in each test dir) + lint against in-repo temp roots in tests/
+
+# Key outcomes
+outcomes:
+  - 'The source of the in-repo temp dir (`.context/working/t4662tmp`) is identified and recorded in ## RCA with file:line or command evidence'
+  - 'No test under tests/ sets TMPDIR / BATS_TMPDIR / BATS_RUN_TMPDIR / `mktemp -p` to a path inside the framework repo (a lint over tests/ enforces it)'
+  - 'The test suite refuses to run when its temp root (BATS_RUN_TMPDIR / TMPDIR) lies inside the real repo, so a `TMPDIR=<repo path> bats ...` invocation fails loudly instead of leaking files'
+  - 'Regression test(s) added and pass in the foreground; `git status --porcelain` of the real repo unchanged before/after (recorded in ## Updates)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/t4662tmp/bats-run-aOWVHW/test/598/proj/.context/handovers/LATEST.md'
+  - '.context/working/t4662tmp/bats-run-aOWVHW/test/598/proj/.context/handovers/S-2026-1023-0041.md'
+  - '.tasks/active/T-4695-cron-written-generated-files-stay-modifi.md'
+  - '.tasks/active/T-4696-a-test-created-its-temp-dir-inside-the-r.md'
+  - 'tests/governance/setup_suite.bash'
+  - 'tests/integration/setup_suite.bash'
+  - 'tests/lint/no-project-markers-above-bats-tmpdir.bats'
+  - 'tests/lint/setup_suite.bash'
+  - 'tests/lint/t4696_no_tmpdir_in_repo.bats'
+  - 'tests/tmpdir_outside_repo.bash'
+  - 'tests/unit/setup_suite.bash'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T15:57:58'
+    action: 'T-4696: untrack two test temp files that a T-4681 handover commit picked up from .context/working/t4662tmp; T-4695, T-4696 captured'
+  - time: '2026-10-23T16:06:07'
+    action: 'T-4696: refuse bats runs whose TMPDIR is inside the repo (setup_suite in each test dir) + lint against in-repo temp roots in tests/'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 15
+  commits: 3
+  files_changed: 18
+  lines_added: 1758
+  lines_removed: 130
+  footprint_refreshed_at: '2026-10-23T14:34:30Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4696-a-test-created-its-temp-dir-inside-the-r.md
+generated_by: context-agent-hybrid
