@@ -68,6 +68,6 @@ def test_wrapper_unknown_and_traversal_ids_404(client):
 
 
 def test_landing_links_overlay_only_for_profiled_maps(client):
-    body = client.get("/designer").get_data(as_text=True)
+    body = client.get("/designer/corpus").get_data(as_text=True)
     assert "/designer/overlay?id=aef-task-lifecycle" in body
     assert "/designer/overlay?id=aef-dispatch-loop" not in body

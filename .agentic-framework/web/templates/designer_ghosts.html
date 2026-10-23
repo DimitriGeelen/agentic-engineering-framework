@@ -102,7 +102,7 @@
         <ul class="ghost-refs">
             {% for r in g.referenced_by %}
             <li>
-                <a href="/designer" title="open the designer">{{ r.id }}</a>
+                <a href="/designer/corpus" title="open the corpus card list">{{ r.id }}</a>
                 — <span class="node-id">{{ r.node }}</span>
                 {% if r.nodeName %}({{ r.nodeName }}){% endif %}
             </li>
@@ -139,7 +139,7 @@
     <tbody>
         {% for rid, count in referrers %}
         <tr>
-            <td><a href="/designer">{{ rid }}</a></td>
+            <td><a href="/designer/corpus">{{ rid }}</a></td>
             <td><span class="unmapped-count">{{ count }} unmapped reference{{ 's' if count != 1 }}</span></td>
         </tr>
         {% endfor %}

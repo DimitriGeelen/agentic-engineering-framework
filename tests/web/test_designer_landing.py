@@ -8,6 +8,7 @@ autosave restore (differing src → deep-link wins, bundle B1 contract).
 """
 
 import json
+import re
 
 import pytest
 
@@ -43,7 +44,7 @@ def test_landing_lists_projects_with_deep_links(client):
     _seed_project(store, "aef-task-lifecycle", "AEF task lifecycle", latest=2)
     _seed_project(store, "aef-dispatch-loop", "AEF dispatch loop", latest=1)
 
-    resp = c.get("/designer")
+    resp = c.get("/designer/corpus")
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
     assert "Workflow Designer — Corpus" in html
@@ -61,7 +62,7 @@ def test_every_card_shows_its_latest_thumbnail(client):
     _seed_project(store, "aef-task-lifecycle", "AEF task lifecycle", latest=2)
     _seed_project(store, "aef-dispatch-loop", "AEF dispatch loop", latest=1)
 
-    html = c.get("/designer").get_data(as_text=True)
+    html = c.get("/designer/corpus").get_data(as_text=True)
     assert html.count('class="corpus-card') == html.count('class="corpus-thumb"') == 2
     assert 'src="/api/thumb?id=aef-task-lifecycle&amp;v=2"' in html
     assert 'src="/api/thumb?id=aef-dispatch-loop&amp;v=1"' in html
@@ -69,21 +70,48 @@ def test_every_card_shows_its_latest_thumbnail(client):
     assert 'onerror="this.remove()"' in html
 
 
-def test_landing_falls_back_to_bundle_when_store_empty(client):
+def test_landing_falls_back_to_editor_when_store_empty(client):
     c, store = client
+    resp = c.get("/designer/corpus")
+    # Fresh install: nothing to land on — go to the editor, never an empty landing page.
+    assert resp.status_code == 302
+    assert resp.headers["Location"].endswith("/designer/app")
+
+
+def test_designer_entry_redirects_to_the_base_project_browser(client):
+    """T-4716: /designer IS the designer's own project browser, not AEF's card list."""
+    c, store = client
+    _seed_project(store, "aef-task-lifecycle", "AEF task lifecycle")
     resp = c.get("/designer")
+    assert resp.status_code == 302
+    assert resp.headers["Location"].endswith("/designer/app?browse=1")
+    followed = c.get("/designer", follow_redirects=True).get_data(as_text=True)
+    assert "Workflow Designer — Corpus" not in followed
+
+
+def test_boosted_nav_click_gets_full_page_redirect(client):
+    """T-4716: an htmx-boosted nav click must not swap the bundle into #content."""
+    c, store = client
+    resp = c.get("/designer", headers={"HX-Request": "true"})
     assert resp.status_code == 200
-    html = resp.get_data(as_text=True)
-    # Fresh install: nothing to land on — serve the editor (or the not-yet-synced
-    # placeholder when the vendored bundle is absent), never an empty landing page.
-    assert "Workflow Designer — Corpus" not in html
+    assert resp.headers["HX-Redirect"] == "/designer/app?browse=1"
+    assert resp.get_data(as_text=True) == ""
+
+
+def test_nav_designer_opens_base_and_corpus_has_its_own_entry(client):
+    """T-4716: nav "Designer" → base designer; "Designer corpus" → AEF card list."""
+    c, store = client
+    _seed_project(store, "aef-task-lifecycle", "AEF task lifecycle")
+    html = c.get("/designer/corpus").get_data(as_text=True)
+    assert re.search(r'href="/designer"[^>]*>\s*Designer\s*<', html)
+    assert re.search(r'href="/designer/corpus"[^>]*>\s*Designer corpus\s*<', html)
 
 
 def test_designer_app_serves_bundle(client):
     c, store = client
     _seed_project(store, "aef-task-lifecycle", "AEF task lifecycle")
 
-    landing = c.get("/designer").get_data(as_text=True)
+    landing = c.get("/designer/corpus").get_data(as_text=True)
     app_page = c.get("/designer/app")
     assert app_page.status_code == 200
     app_html = app_page.get_data(as_text=True)
@@ -111,7 +139,7 @@ def test_card_links_mint_clicktime_nonce(client):
     c, store = client
     _seed_project(store, "aef-task-lifecycle", "AEF task lifecycle", latest=2)
 
-    html = c.get("/designer").get_data(as_text=True)
+    html = c.get("/designer/corpus").get_data(as_text=True)
     # One onclick nonce-minter per corpus card link, targeting the encoded load value.
     n_cards = html.count('class="corpus-open"')
     assert n_cards == 1  # one seeded project → one card link

@@ -1,10 +1,22 @@
 ---
 id: T-4716
-name: "Watchtower /designer gallery should BE the designer's own project browser (832 card browser: hover-zoom preview, click to open) instead of a separate AEF card list; needs a designer URL entry that opens openProjectModal()"
+name: "Watchtower /designer gallery should BE the designer's own project browser (832
+  card browser: hover-zoom preview, click to open) instead of a separate AEF card
+  list; needs a designer URL entry that opens openProjectModal()"
 description: >
-  Operator 2026-10-23: the gallery must behave one-to-one like the designer's card browser he uses (hover/click zoom). AEF's web/templates/designer_landing.html (T-2589) is a separate implementation that never shared code with 832's browser (openProjectModal, T-156/T-164 hover-zoom preview); T-4715 added static thumbnails only. Plan (operator chose option 1): 832 adds a URL entry to the designer app that opens its project browser on load (e.g. /designer/app?browse=1 → openProjectModal()); AEF then serves /designer as that entry (keeping the landing's extra actions: pending references, new draft, live overlay, reachable from the browser or a small header), pins the new designer version, and retires the duplicate card grid. Interim (this task): clicking a gallery thumbnail opens that map in the editor, where canvas zoom works. Request sent to 832 on conversation aef-designer-version-2026-10-23.
+  Operator 2026-10-23: the gallery must behave one-to-one like the designer's card
+  browser he uses (hover/click zoom). AEF's web/templates/designer_landing.html (T-2589)
+  is a separate implementation that never shared code with 832's browser (openProjectModal,
+  T-156/T-164 hover-zoom preview); T-4715 added static thumbnails only. Plan (operator
+  chose option 1): 832 adds a URL entry to the designer app that opens its project
+  browser on load (e.g. /designer/app?browse=1 → openProjectModal()); AEF then serves
+  /designer as that entry (keeping the landing's extra actions: pending references,
+  new draft, live overlay, reachable from the browser or a small header), pins the
+  new designer version, and retires the duplicate card grid. Interim (this task):
+  clicking a gallery thumbnail opens that map in the editor, where canvas zoom works.
+  Request sent to 832 on conversation aef-designer-version-2026-10-23.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T20:24:01Z
-last_update: 2026-10-23T20:24:01Z
-date_finished: null
+last_update: 2026-10-23T20:25:36Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +62,43 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T20:25:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4716: Watchtower /designer gallery should BE the designer's own project browser (832 card browser: hover-zoom preview, click to open) instead of a separate AEF card list; needs a designer URL entry that opens openProjectModal()
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Operator option 1: /designer becomes the designer's own project browser (832 bundle,
+`/designer/app?browse=1`); AEF's card list (T-2589/T-4715) moves to /designer/corpus.
+The pinned 0.25.0 bundle has no `browse` URL param yet (grep: no `get('browse')`), so
+until 832 ships it the redirect lands in the editor without the modal open.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] GET /designer redirects (302) to /designer/app?browse=1; an htmx-boosted request (HX-Request) gets an HX-Redirect header to the same URL instead of the bundle swapped into #content
+- [x] GET /designer/corpus renders AEF's card list (thumbnails, pending references, new-draft form, live-overlay links, click-time nonce deep links); an empty store redirects to /designer/app
+- [x] Nav "Designer" opens the base designer and a nav entry "Designer corpus" opens /designer/corpus; overlay/ghosts pages link the card list at /designer/corpus
+- [x] tests/web/test_designer_landing.py, test_designer_overlay.py, test_onboarding_maps_reachable.py updated to the new routes and green, incl. new redirect + HX-Redirect tests
+- [x] Watchtower restarted and live: /designer answers 302 to /designer/app?browse=1, /designer/corpus answers 200
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -110,6 +145,13 @@ date_finished: null
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+- [ ] [REVIEW] The Designer entry behaves like the designer's own project browser, and the AEF card list is still reachable
+  **Steps:**
+  1. Open http://192.168.10.107:3000/designer in a browser (or click Architecture → Designer in the Watchtower nav)
+  2. Confirm you land in the designer app (address ends in /designer/app?browse=1); once 832 ships the `browse=1` entry, its "📂 Open project…" card browser opens on load
+  3. Open http://192.168.10.107:3000/designer/corpus (or Architecture → Designer corpus) and click a card
+  **Expected:** step 1 shows the designer app, not AEF's card grid; step 3 shows the AEF card list with thumbnails, the new-draft form and live-overlay links, and the card opens that map in the editor
+  **If not:** note which address you ended on and what rendered. With the 0.25.0 pin the browser modal does not auto-open yet (needs 832's browse=1); that alone is expected, not a defect
 
 ## Verification
 
@@ -248,6 +290,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/web/test_designer_landing.py tests/web/test_designer_overlay.py tests/web/test_onboarding_maps_reachable.py -q > /tmp/.t4716.out 2>&1 && grep -q passed /tmp/.t4716.out && ! grep -qE "[0-9]+ (failed|error)" /tmp/.t4716.out
+test "$(grep -oE '[0-9]+ skipped' /tmp/.t4716.out | grep -oE '[0-9]+' || echo 0)" -eq 0
+curl -sI "$(bin/fw watchtower url)/designer" -o /tmp/.t4716.h && grep -qi "^location: .*/designer/app?browse=1" /tmp/.t4716.h
+curl -sf "$(bin/fw watchtower url)/designer/corpus" -o /tmp/.t4716.c && grep -q "Workflow Designer — Corpus" /tmp/.t4716.c
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4716
 
 ## RCA
 
@@ -264,6 +312,19 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Watchtower /designer showed AEF's own card grid, which behaves differently from
+the designer's project browser the operator uses in 832 (no hover-zoom; separate code).
+**Root cause:** `web/blueprints/designer.py:159` (T-2589) made /designer render a separate
+AEF template (`web/templates/designer_landing.html`) and moved the designer itself to
+/designer/app; the nav (`web/shared.py:156`) pointed "Designer" at that landing, so the
+entry point was a re-implementation rather than the base designer.
+**Why structurally allowed:** the landing fixed a real defect (B1 autosave restoring a stale
+draft) and nothing required AEF's designer surfaces to stay one-to-one with the vendored
+base; the tests pinned the landing's content at /designer, which locked the duplicate in.
+**Prevention:** tests now pin that /designer redirects to the base designer entry
+(`/designer/app?browse=1`, including htmx-boosted nav clicks via HX-Redirect) and that the AEF
+list lives only at /designer/corpus, so re-pointing /designer at an AEF template fails the suite.
 
 ## Evolution
 
@@ -318,6 +379,17 @@ date_finished: null
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** http://192.168.10.107:3000/designer now hands you to the designer's own app
+(302 to http://192.168.10.107:3000/designer/app?browse=1), and AEF's card list with its
+extras lives at http://192.168.10.107:3000/designer/corpus. The one open piece is upstream:
+the pinned designer 0.25.0 ignores `browse=1`, so the "📂 Open project…" browser opens on
+load only once 832 ships that param and the pin is bumped.
+**Evidence:**
+- Live, restarted Watchtower: /designer answers 302 with Location /designer/app?browse=1; an htmx nav click gets HX-Redirect to the same address; /designer/corpus answers 200
+- 3 designer web test files: all passed, 0 skipped, including new redirect, HX-Redirect and nav-entry tests
+- `bin/fw test invariants`: 0 not ok
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -345,3 +417,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4716-watchtower-designer-gallery-should-be-th.md
 - **Context:** Initial task creation
+
+### 2026-10-23T20:25:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

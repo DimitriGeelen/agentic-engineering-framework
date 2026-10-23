@@ -33,8 +33,8 @@ def client():
 
 
 def _landing(client):
-    resp = client.get("/designer")
-    assert resp.status_code == 200, f"/designer returned {resp.status_code}"
+    resp = client.get("/designer/corpus")
+    assert resp.status_code == 200, f"/designer/corpus returned {resp.status_code}"
     return resp.get_data(as_text=True)
 
 

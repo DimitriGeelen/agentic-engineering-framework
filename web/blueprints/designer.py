@@ -156,15 +156,33 @@ def designer_app():
     return _serve_bundle()
 
 
+# T-4716: the designer's own project browser ("📂 Open project…", openProjectModal).
+# 832 adds `browse=1` to open it on load; pins before that ignore the param.
+_BROWSE_ENTRY = "/designer/app?browse=1"
+
+
 @bp.route("/designer")
 def designer():
+    """T-4716: /designer IS the base designer's project browser, not an AEF copy.
+
+    Operator option 1 (2026-10-23): one-to-one with 832's card browser. AEF's own
+    card list moved to /designer/corpus. An htmx-boosted nav click gets
+    HX-Redirect so the full bundle loads as a page, never swapped into #content.
+    """
+    if request.headers.get("HX-Request"):
+        return Response("", status=200, headers={"HX-Redirect": _BROWSE_ENTRY})
+    return redirect(_BROWSE_ENTRY, code=302)
+
+
+@bp.route("/designer/corpus")
+def designer_corpus():
     """T-2589: corpus landing page — server truth first, editor one click away.
 
     Lists every saved project from the same store /api/list reads, each card
     deep-linking /designer/app?load=/api/version?id=<id>&v=<latest> so the editor
     opens the SERVER-LATEST version instead of whatever the browser last had.
-    Falls back to the bundle directly when the store has no projects yet (fresh
-    install — nothing to land on).
+    Redirects to the editor when the store has no projects yet (fresh install —
+    nothing to land on). Moved here from /designer by T-4716.
     """
     from urllib.parse import quote
 
@@ -207,7 +225,9 @@ def designer():
                 "has_overlay": m["id"] in overlay_ids,
             })
     if not projects:
-        return _serve_bundle()
+        if request.headers.get("HX-Request"):
+            return Response("", status=200, headers={"HX-Redirect": "/designer/app"})
+        return redirect("/designer/app", code=302)
     ghost_count = 0
     try:
         from web.designer_registry import load_registry
