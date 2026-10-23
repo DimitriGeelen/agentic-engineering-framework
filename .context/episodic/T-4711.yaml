@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4711: Watchtower keep-alive and own-scope start (T-4706) must defer to a systemd-managed Watchtower, and the opt-out must be a project config key
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T18:33:31Z
+# ============================================================================
+
+task_id: T-4711
+task_name: "Watchtower keep-alive and own-scope start (T-4706) must defer to a systemd-managed Watchtower, and the opt-out must be a project config key"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T16:42:52Z
+completed: 2026-10-23T18:31:38Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T18:43:27+02:00
+last_commit: 2026-10-23T20:30:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture keep-alive must defer to a systemd-managed Watchtower (ring20). Watchtower keep-alive and start defer to a systemd-managed Watchtower; WATCHTOWER_ENSURE config key
+
+# Key outcomes
+outcomes:
+  - '`fw_watchtower_systemd_unit` (lib/watchtower-ensure.sh) names the systemd .service unit managing this project''s Watchtower: from the triple-file pid''s cgroup (a `*.service` that is not the caller''s own unit) or from a unit file whose ExecStart runs this project''s Watchtower'
+  - '`fw_watchtower_ensure` with a systemd-managed Watchtower prints one line naming the unit and never runs `watchtower.sh start` (even when the managed process is down — systemd''s restart window)'
+  - '`watchtower.sh start` and `restart` refuse (exit 5, no stop, no launch) with a hint `systemctl restart <unit>` when the Watchtower is systemd-managed; an own-scope (aef-watchtower-*.scope) pid behaves as before'
+  - '`WATCHTOWER_ENSURE` is a config key (default 1) in lib/config.sh and web/blueprints/config.py; `WATCHTOWER_ENSURE: 0` in .framework.yaml disables ensure'
+  - 'Regression bats tests/unit/t4711_watchtower_systemd_defer.bats green with zero skips; existing t3877/t4706 watchtower tests still green; `bin/fw test invariants` green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — what counts as "managed by systemd"'
+    chose: 'managed when EITHER (1) the triple-file pid''s cgroup ends in a `*.service` that is not the caller''s own unit AND that unit is a Watchtower unit (name contains `watchtower`, or its unit file''s ExecStart runs watchtower.sh / `fw serve` / web.app), OR (2) a unit file in the unit dirs (/etc, /run, /usr/lib, /lib systemd/system and ~/.config/systemd/user) has an ExecStart running a Watchtower and names this project''s root as a whole path in ExecStart or WorkingDirectory. Start/restart refuse with exit 5 and `systemctl <verb> <unit>`; ensure prints one line and logs it.'
+    rationale: 'rule (2) is the one that covers the restart window: the managed process is dead, so there is no cgroup to read. The "Watchtower unit" clause in (1) is needed because a pre-T-4706 server (or one started with FW_AGENT_SCOPE=0 / no systemd) still sits in its launcher''s unit: cron.service, agentic-fleet-cockpit.service. Without it, such a server would read as systemd-managed forever and every restart would be refused. "Not the caller''s own unit" lets a unit whose own ExecStart runs `watchtower.sh start` start it.'
+    alternatives_rejected: ['a bare "any *.service cgroup that is not ours" (the false positive above); `systemctl show -p MainPID` (wrong with ring20''s access-log wrapper, where MainPID is the wrapper, and it needs a live systemctl in tests); checking `systemctl is-enabled` for rule (2) (a disabled leftover unit file also suppresses ensure. The cost is visible: ensure logs `skip: managed by systemd unit X` every run). - **Not changed:** `stop` still stops a managed pid. systemd then leaves it down (a clean SIGTERM exit is not on-failure). Out of scope here.']
+  - decision: '2026-10-23 — WATCHTOWER_ENSURE as a config key, and seeding'
+    chose: 'registry key `WATCHTOWER_ENSURE` (default 1) in lib/config.sh and web/blueprints/config.py. ensure reads env `FW_WATCHTOWER_ENSURE` first, then `.framework.yaml` directly, because post-compact-resume.sh sources the lib without lib/config.sh. - **Seeding to consumers:** CAN now be seeded, and that is a separate decision. The two blockers ring20 raised are closed: a systemd-managed Watchtower is detected and left alone, and a project can opt out persistently with `fw config set WATCHTOWER_ENSURE 0`. One residual: a project whose Watchtower is run by a supervisor other than systemd (supervisord, docker restart policy, a tmux loop) is not detected and must opt out with the key. Nothing filed here, per scope.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/watchtower-ensure.sh'
+  - '.agentic-framework/web/blueprints/config.py'
+  - 'bin/watchtower.sh'
+  - 'lib/config.sh'
+  - 'lib/watchtower-ensure.sh'
+  - '.tasks/active/T-4711-watchtower-keep-alive-and-own-scope-star.md'
+  - 'tests/unit/t4711_watchtower_systemd_defer.bats'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T18:43:27'
+    action: 'T-4711: capture keep-alive must defer to a systemd-managed Watchtower (ring20)'
+  - time: '2026-10-23T20:30:48'
+    action: 'T-4711: Watchtower keep-alive and start defer to a systemd-managed Watchtower; WATCHTOWER_ENSURE config key'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 108 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 108
+  commits: 3
+  files_changed: 13
+  lines_added: 924
+  lines_removed: 16
+  footprint_refreshed_at: '2026-10-23T18:33:42Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4711-watchtower-keep-alive-and-own-scope-star.md
+generated_by: context-agent-hybrid

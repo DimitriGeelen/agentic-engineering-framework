@@ -47919,3 +47919,21 @@ scan_id: R-57fa10e0
 task_id: T-4714
 payload:
   task_file: .tasks/active/T-4714-claude-fw-duplicate-conversation-guard-t.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T18:33:13Z'
+scan_id: R-9b90bbe7
+task_id: T-4711
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T18:33:13Z'
+scan_id: R-9b90bbe7
+task_id: T-4711
+payload:
+  task_file: .tasks/active/T-4711-watchtower-keep-alive-and-own-scope-star.md
