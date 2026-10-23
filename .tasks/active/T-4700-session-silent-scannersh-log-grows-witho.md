@@ -1,10 +1,14 @@
 ---
 id: T-4700
-name: "session-silent-scanner.sh log grows without bound (~30 MB/day, 551 MB seen): one skip-too-old line per old transcript every 15 min, no rotation"
+name: "session-silent-scanner.sh log grows without bound (~30 MB/day, 551 MB seen):
+  one skip-too-old line per old transcript every 15 min, no rotation"
 description: >
-  Log only the skip-too-old-total count per run (keep per-session lines for sessions actually considered), and cap/rotate the log (size limit with one rotated copy). Test that a run over many old transcripts adds a bounded number of lines. Source: TermLink field report (sidecar 5267b1f7, their T-3566).
+  Log only the skip-too-old-total count per run (keep per-session lines for sessions
+  actually considered), and cap/rotate the log (size limit with one rotated copy).
+  Test that a run over many old transcripts adds a bounded number of lines. Source:
+  TermLink field report (sidecar 5267b1f7, their T-3566).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T14:28:05Z
-last_update: 2026-10-23T14:28:05Z
-date_finished: null
+last_update: 2026-10-23T14:35:11Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +54,39 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T14:29:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4700: session-silent-scanner.sh log grows without bound (~30 MB/day, 551 MB seen): one skip-too-old line per old transcript every 15 min, no rotation
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+TermLink field report (sidecar 5267b1f7, their T-3566): `.session-silent-scanner.log`
+reached 551 MB (~30 MB/day) because every 15-min run logged one line per old transcript.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Old (past MAX_AGE_DAYS) transcripts produce no per-session `skip-too-old session=` line; the run logs one `skip-too-old-total count=N` line instead
+- [x] Before writing, the scanner rotates the log to `<log>.1` once it exceeds `SESSION_SILENT_LOG_MAX_BYTES` (default 1 MiB), keeping one rotated copy
+- [x] Regression test `tests/unit/t4700_session_silent_scanner_log_bound.bats`: a run over 50 old transcripts appends a bounded number of lines (≤ 5); a log over the limit is rotated to `.1`; fails against the pre-fix script
+- [x] T-4699 test and stub test still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +271,32 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4700_session_silent_scanner_log_bound.bats tests/unit/t4699_session_silent_scanner_scope.bats > .context/working/.t4700-bats.out 2>&1 && ! grep -q "^not ok" .context/working/.t4700-bats.out && grep -q "^ok 7 " .context/working/.t4700-bats.out
+test "$(grep -c '# skip' .context/working/.t4700-bats.out)" -eq 0
+bash agents/context/tests/session-silent-scanner-stub-test.sh > .context/working/.t4700-stub.out 2>&1 && grep -q "All session-silent-scanner stub tests PASS" .context/working/.t4700-stub.out
+grep -q "SESSION_SILENT_LOG_MAX_BYTES" agents/context/session-silent-scanner.sh && ! grep -q 'log(f"skip-too-old session=' agents/context/session-silent-scanner.sh
+bin/fw vendor self --check --task T-4700
 
 ## RCA
+
+**Symptom:** TermLink field report (their T-3566): `.context/working/.session-silent-scanner.log`
+reached 551 MB, growing ~30 MB/day.
+
+**Root cause:** `agents/context/session-silent-scanner.sh:101` (pre-fix) wrote one
+`skip-too-old session=… transcript=…` line for every transcript past
+MAX_AGE_DAYS, on every 15-minute cron run — the same old transcripts re-logged
+96×/day, forever — and `log()` appended with no size bound or rotation. The
+per-run `skip-too-old-total` line already carried the information.
+
+**Why structurally allowed:** the stub test only checked that lines *appear*,
+never how many; and the file lives in gitignored `.context/working/`, so its
+growth was invisible to git, audit and doctor.
+
+**Prevention:** old transcripts are now counted only (one total line per run),
+and the log is rotated to `.1` past `SESSION_SILENT_LOG_MAX_BYTES` (1 MiB default),
+so disk use is capped at ~2 MiB. `tests/unit/t4700_session_silent_scanner_log_bound.bats`
+pins the line bound (50 old transcripts → ≤5 lines) and rotation; it fails 2/3
+against the pre-fix script.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +392,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4700-session-silent-scannersh-log-grows-witho.md
 - **Context:** Initial task creation
+
+### 2026-10-23T14:29:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
