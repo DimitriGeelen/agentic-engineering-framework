@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4702: Something copied AEF's working tree (.agentic-framework, .claude and a 13 GB .context incl. 7.6 GB scratch) into /tmp/tmp.AoFZgARUBp/fw at 15:38 and never cleaned up; /tmp is a RAM tmpfs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T14:47:40Z
+# ============================================================================
+
+task_id: T-4702
+task_name: "Something copied AEF's working tree (.agentic-framework, .claude and a 13 GB .context incl. 7.6 GB scratch) into /tmp/tmp.AoFZgARUBp/fw at 15:38 and never cleaned up; /tmp is a RAM tmpfs"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T14:34:49Z
+completed: 2026-10-23T14:47:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T16:35:46+02:00
+last_commit: 2026-10-23T16:47:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture 13 GB working-tree copy left in /tmp (dimitri-mint-dev report). ACs. copier found (worker ad-hoc cp -a . of the 13 GB working tree, killed by its timeout); worker rule forbids working-tree copies, git archive + EXIT trap instead. .context size measured (scratch 28 GB of old release dirs); T-4703 retention captured. Verification + RCA
+
+# Key outcomes
+outcomes:
+  - 'The copier is identified with evidence: worker w4694 (T-4694) ran `S=$(mktemp -d) && cp -a . "$S/fw"` at 2026-10-23T13:38:40Z (transcript .context/dispatch/w4694/result.jsonl); its tool timeout killed the cp mid-copy (dot-dirs first, 13 GB .context), no cleanup; the worker then switched to `git archive`. Not a test.'
+  - 'Prevention: .context/working/worker-common.md (prepended to every dispatched worker prompt) now forbids working-tree copies and prescribes `git archive HEAD <paths> | tar -x` with an EXIT trap'
+  - 'Why .context is large is measured (2026-10-23: .context/scratch 28 GB, of which release work dirs v1813 9.7 GB, hotfix 7.4 GB, v1811 4.5 GB, v1812 3.9 GB; .context/working 4.6 GB, almost all fw-vec-index.db, legitimate) and the retention task is filed: T-4703'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/worker-common.md'
+  - '.tasks/active/T-4702-something-copied-aefs-working-tree-agent.md'
+  - '.tasks/active/T-4703-contextscratch-holds-28-gb-of-old-releas.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T16:35:46'
+    action: 'T-4702: capture 13 GB working-tree copy left in /tmp (dimitri-mint-dev report)'
+  - time: '2026-10-23T16:37:42'
+    action: 'T-4702: ACs'
+  - time: '2026-10-23T16:44:51'
+    action: 'T-4702: copier found (worker ad-hoc cp -a . of the 13 GB working tree, killed by its timeout); worker rule forbids working-tree copies, git archive + EXIT trap instead'
+  - time: '2026-10-23T16:46:42'
+    action: 'T-4702: .context size measured (scratch 28 GB of old release dirs); T-4703 retention captured'
+  - time: '2026-10-23T16:47:01'
+    action: 'T-4702: Verification + RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 6
+  files_changed: 6
+  lines_added: 875
+  lines_removed: 15
+  footprint_refreshed_at: '2026-10-23T14:49:04Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4702-something-copied-aefs-working-tree-agent.md
+generated_by: context-agent-hybrid

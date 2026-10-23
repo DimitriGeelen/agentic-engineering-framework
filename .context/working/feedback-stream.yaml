@@ -47703,3 +47703,21 @@ scan_id: R-08a92a9e
 task_id: T-4700
 payload:
   task_file: .tasks/active/T-4700-session-silent-scannersh-log-grows-witho.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T14:47:05Z'
+scan_id: R-4defc85b
+task_id: T-4702
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T14:47:05Z'
+scan_id: R-4defc85b
+task_id: T-4702
+payload:
+  task_file: .tasks/active/T-4702-something-copied-aefs-working-tree-agent.md

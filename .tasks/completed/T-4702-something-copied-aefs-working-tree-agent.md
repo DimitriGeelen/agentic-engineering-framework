@@ -15,10 +15,10 @@ description: >
   on timeout. Separately measure why .context is 13 GB (scratch 7.6 GB, working 4.6
   GB) and file the retention fix if warranted.
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -49,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T14:34:49Z
-last_update: '2026-10-23T14:45:19Z'
-date_finished:
+last_update: 2026-10-23T14:47:04Z
+date_finished: 2026-10-23T14:47:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -395,3 +395,22 @@ test -f .tasks/active/T-4703-*.md || ls .tasks/completed/T-4703-*.md
 
 ### 2026-10-23T14:36:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4defc85b
+- **Timestamp:** 2026-10-23T14:47:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — The copier is identified with evidence: worker w4694 (T-4694) ran `S=$(mktemp -d) && cp -a . "$S/fw"` at 2026-10-23T13:38:40Z (transcript .context/dispatch/w4694/result.jsonl); its tool timeout killed
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatch/w4694/result.jsonl in: The copier is identified with evidence: worker w4694 (T-4694) ran `S=$(mktemp -d) && cp -a . "$S/fw"` at 2026-10-23T13:38:40Z (transcript .context/dis`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-23T14:47:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
