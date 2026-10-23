@@ -48009,3 +48009,133 @@ scan_id: R-43270c87
 task_id: T-4717
 payload:
   task_file: .tasks/active/T-4717-dimitri-mint-dev-upgrade-files-to-commit.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T21:30:08Z'
+scan_id: R-fdaceb09
+task_id: T-4277
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T21:30:08Z'
+scan_id: R-fdaceb09
+task_id: T-4277
+payload:
+  task_file: .tasks/active/T-4277-consumer-messaging-helpers-land-in-the-p.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-10-23T21:30:08Z'
+scan_id: RC-d80c111c
+task_id: T-4277
+payload:
+  overall: CONFIRMED
+  claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-10-23T21:30:13Z'
+scan_id: R-d2898114
+task_id: T-4414
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T21:30:13Z'
+scan_id: R-d2898114
+task_id: T-4414
+payload:
+  task_file: .tasks/active/T-4414-adopt-dimitri-mint-devs-perplexity-brows.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-10-23T21:30:13Z'
+scan_id: RC-90aef234
+task_id: T-4414
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-10-23T21:30:19Z'
+scan_id: R-f513829b
+task_id: T-4532
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T21:30:19Z'
+scan_id: R-f513829b
+task_id: T-4532
+payload:
+  task_file: .tasks/active/T-4532-fw-keep-busy-run-n-workers-for-a-duratio.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-10-23T21:30:19Z'
+scan_id: RC-760bb85b
+task_id: T-4532
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-10-23T21:30:29Z'
+scan_id: R-ace09567
+task_id: T-4564
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T21:30:29Z'
+scan_id: R-ace09567
+task_id: T-4564
+payload:
+  task_file: .tasks/active/T-4564-remote-agent-node-bootstrap-recipe-first.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-10-23T21:30:29Z'
+scan_id: RC-f0a35f6a
+task_id: T-4564
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-10-23T21:30:32Z'
+scan_id: R-70426196
+task_id: T-4625
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T21:30:32Z'
+scan_id: R-70426196
+task_id: T-4625
+payload:
+  task_file: .tasks/active/T-4625-fw-reviewer-judge-allow-more-seats-than-.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-10-23T21:30:32Z'
+scan_id: RC-8cfa8fcd
+task_id: T-4625
+payload:
+  overall: UNVERIFIED
+  claim_count: 0

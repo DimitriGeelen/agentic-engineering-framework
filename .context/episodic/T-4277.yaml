@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4277: Consumer messaging helpers land in the product's scripts/ (12 files, 1023 T-132): move them under a framework-owned path
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T21:30:34Z
+# ============================================================================
+
+task_id: T-4277
+task_name: "Consumer messaging helpers land in the product's scripts/ (12 files, 1023 T-132): move them under a framework-owned path"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T18:06:38Z
+completed: 2026-10-23T21:30:07Z
+duration_days: 6
+updates_count: 2
+first_commit: 2026-10-17T20:07:40+02:00
+last_commit: 2026-10-23T23:30:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — consumer messaging helpers land in the product scripts/ (1023 T-132). inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/active/T-4277-consumer-messaging-helpers-land-in-the-p.md'
+  - '.tasks/completed/T-4277-consumer-messaging-helpers-land-in-the-p.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T20:07:40'
+    action: 'T-4277: file inception — consumer messaging helpers land in the product scripts/ (1023 T-132)'
+  - time: '2026-10-23T23:30:10'
+    action: 'T-4277: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 8843 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8843
+  commits: 3
+  files_changed: 5
+  lines_added: 417
+  lines_removed: 9
+  footprint_refreshed_at: '2026-10-23T21:30:45Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4277-consumer-messaging-helpers-land-in-the-p.md
+generated_by: context-agent-hybrid
