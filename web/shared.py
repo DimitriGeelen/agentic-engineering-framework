@@ -154,7 +154,6 @@ NAV_GROUPS = [
         ("Fabric",      "fabric.fabric_overview",   None),
         ("Explorer",    "fabric.fabric_graph",      None),
         ("Designer",    "designer.designer",         None),
-        ("Designer corpus", "designer.designer_corpus", None),
         ("Terminal",    "terminal.terminal_page",    None),
         ("Sessions",    "sessions_page.sessions_page", None),
     ]),

@@ -98,13 +98,16 @@ def test_boosted_nav_click_gets_full_page_redirect(client):
     assert resp.get_data(as_text=True) == ""
 
 
-def test_nav_designer_opens_base_and_corpus_has_its_own_entry(client):
-    """T-4716: nav "Designer" → base designer; "Designer corpus" → AEF card list."""
+def test_nav_has_one_designer_entry_to_the_base(client):
+    """T-4716/T-4718: the nav has ONE "Designer" entry, to the base designer; the
+    AEF card list stays reachable by URL but is not a second nav entry (operator)."""
     c, store = client
     _seed_project(store, "aef-task-lifecycle", "AEF task lifecycle")
-    html = c.get("/designer/corpus").get_data(as_text=True)
+    resp = c.get("/designer/corpus")
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
     assert re.search(r'href="/designer"[^>]*>\s*Designer\s*<', html)
-    assert re.search(r'href="/designer/corpus"[^>]*>\s*Designer corpus\s*<', html)
+    assert "Designer corpus" not in html
 
 
 def test_designer_app_serves_bundle(client):
