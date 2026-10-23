@@ -759,6 +759,23 @@ case "$cmd" in
     start|stop|restart|ensure) _watchtower_live_test_refusal "$cmd" ;;
 esac
 
+# T-4711: a Watchtower run by a systemd .service unit is systemd's. start would put a
+# second, unmanaged server in its own scope; restart would stop systemd's and do the
+# same. Refuse both and name the unit (rule: fw_watchtower_systemd_unit).
+_watchtower_systemd_refusal() {
+    local unit
+    # shellcheck source=/dev/null
+    . "$FRAMEWORK_ROOT/lib/watchtower-ensure.sh"
+    unit=$(PROJECT_ROOT="$PROJECT_ROOT" fw_watchtower_systemd_unit) || return 0
+    log_error "Refusing '$1': this project's Watchtower is managed by systemd unit $unit (T-4711)."
+    log_error "  Use: systemctl $1 $unit"
+    exit 5
+}
+case "$cmd" in
+    start|restart)
+        case " $* " in *" -h "*|*" --help "*) ;; *) _watchtower_systemd_refusal "$cmd" ;; esac ;;
+esac
+
 case "$cmd" in
     # T-4706: the cron keep-alive. Starts a dead Watchtower and records the outage
     # (lib/watchtower-ensure.sh); `fw doctor` WARNs on a recent one.

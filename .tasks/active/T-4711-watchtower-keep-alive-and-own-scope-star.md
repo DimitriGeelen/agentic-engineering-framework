@@ -15,10 +15,10 @@ description: >
   registry, settable via fw config set) so a project can opt out persistently. Tests:
   a fake systemd-managed pid -> ensure skips; opt-out via .framework.yaml honoured.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T16:42:52Z
-last_update: '2026-10-23T16:46:01Z'
+last_update: 2026-10-23T18:19:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw_watchtower_systemd_unit` (lib/watchtower-ensure.sh) names the systemd .service unit managing this project's Watchtower: from the triple-file pid's cgroup (a `*.service` that is not the caller's own unit) or from a unit file whose ExecStart runs this project's Watchtower
+- [x] `fw_watchtower_ensure` with a systemd-managed Watchtower prints one line naming the unit and never runs `watchtower.sh start` (even when the managed process is down — systemd's restart window)
+- [x] `watchtower.sh start` and `restart` refuse (exit 5, no stop, no launch) with a hint `systemctl restart <unit>` when the Watchtower is systemd-managed; an own-scope (aef-watchtower-*.scope) pid behaves as before
+- [x] `WATCHTOWER_ENSURE` is a config key (default 1) in lib/config.sh and web/blueprints/config.py; `WATCHTOWER_ENSURE: 0` in .framework.yaml disables ensure
+- [x] Regression bats tests/unit/t4711_watchtower_systemd_defer.bats green with zero skips; existing t3877/t4706 watchtower tests still green; `bin/fw test invariants` green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,8 +289,23 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4711_watchtower_systemd_defer.bats > /tmp/.t4711-v1.out 2>&1 && ! grep -q "^not ok" /tmp/.t4711-v1.out && grep -q "^ok 10 " /tmp/.t4711-v1.out
+test "$(grep -c '# skip' /tmp/.t4711-v1.out)" -eq 0
+timeout 900 bats tests/unit/t3877_watchtower_ensure.bats tests/unit/t4706_watchtower_live_guard.bats tests/unit/t4706_watchtower_own_scope.bats tests/lint/config-registry-parity.bats > /tmp/.t4711-v2.out 2>&1 && ! grep -q "^not ok" /tmp/.t4711-v2.out
+test "$(grep -c '# skip' /tmp/.t4711-v2.out)" -eq 0
+bash -n lib/watchtower-ensure.sh && bash -n bin/watchtower.sh
+bin/fw vendor self --check --task T-4711
+bin/fw watchtower current
 
 ## RCA
+
+**Symptom:** ring20 (sidecar 2ce6a48a) runs Watchtower under its own systemd unit (Restart=on-failure). The T-4706 keep-alive, firing inside systemd's restart window, would run `watchtower.sh start`, launching a second, unmanaged server in aef.slice; systemd's own restart then fails on the busy port.
+
+**Root cause:** `fw_watchtower_ensure` (lib/watchtower-ensure.sh, the `status` probe then `start` at the old lines 33-49) and `do_start`/`do_restart` (bin/watchtower.sh:252, :526) only knew two owners of a Watchtower: "our pid file" or "nobody". A process manager outside the framework was not a case. Also the opt-out was env-only (`FW_WATCHTOWER_ENSURE`, line 19), so a project could not turn it off persistently: cron and SessionStart do not inherit an operator's shell env.
+
+**Why structurally allowed:** T-4706 was built and tested on this host, where Watchtower is started by the framework itself. Every test stubbed or launched our own server; no fixture had a foreign manager. The keep-alive is not yet seeded to consumers, which is why ring20 is not already hit.
+
+**Prevention:** `fw_watchtower_systemd_unit` is the one detection rule, used by both ensure and start/restart. tests/unit/t4711_watchtower_systemd_defer.bats pins it with fake cgroup and unit-dir fixtures: systemd-managed → ensure skips and start/restart refuse, restart window (unit file only, no live pid) → skip, own-scope/launcher-unit/own-unit → normal, opt-out via .framework.yaml.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -367,6 +385,16 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-23 — what counts as "managed by systemd"
+- **Chose:** managed when EITHER (1) the triple-file pid's cgroup ends in a `*.service` that is not the caller's own unit AND that unit is a Watchtower unit (name contains `watchtower`, or its unit file's ExecStart runs watchtower.sh / `fw serve` / web.app), OR (2) a unit file in the unit dirs (/etc, /run, /usr/lib, /lib systemd/system and ~/.config/systemd/user) has an ExecStart running a Watchtower and names this project's root as a whole path in ExecStart or WorkingDirectory. Start/restart refuse with exit 5 and `systemctl <verb> <unit>`; ensure prints one line and logs it.
+- **Why:** rule (2) is the one that covers the restart window: the managed process is dead, so there is no cgroup to read. The "Watchtower unit" clause in (1) is needed because a pre-T-4706 server (or one started with FW_AGENT_SCOPE=0 / no systemd) still sits in its launcher's unit: cron.service, agentic-fleet-cockpit.service. Without it, such a server would read as systemd-managed forever and every restart would be refused. "Not the caller's own unit" lets a unit whose own ExecStart runs `watchtower.sh start` start it.
+- **Rejected:** a bare "any *.service cgroup that is not ours" (the false positive above); `systemctl show -p MainPID` (wrong with ring20's access-log wrapper, where MainPID is the wrapper, and it needs a live systemctl in tests); checking `systemctl is-enabled` for rule (2) (a disabled leftover unit file also suppresses ensure. The cost is visible: ensure logs `skip: managed by systemd unit X` every run).
+- **Not changed:** `stop` still stops a managed pid. systemd then leaves it down (a clean SIGTERM exit is not on-failure). Out of scope here.
+
+### 2026-10-23 — WATCHTOWER_ENSURE as a config key, and seeding
+- **Chose:** registry key `WATCHTOWER_ENSURE` (default 1) in lib/config.sh and web/blueprints/config.py. ensure reads env `FW_WATCHTOWER_ENSURE` first, then `.framework.yaml` directly, because post-compact-resume.sh sources the lib without lib/config.sh.
+- **Seeding to consumers:** CAN now be seeded, and that is a separate decision. The two blockers ring20 raised are closed: a systemd-managed Watchtower is detected and left alone, and a project can opt out persistently with `fw config set WATCHTOWER_ENSURE 0`. One residual: a project whose Watchtower is run by a supervisor other than systemd (supervisord, docker restart policy, a tmux loop) is not detected and must opt out with the key. Nothing filed here, per scope.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -383,3 +411,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4711-watchtower-keep-alive-and-own-scope-star.md
 - **Context:** Initial task creation
+
+### 2026-10-23T18:19:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
