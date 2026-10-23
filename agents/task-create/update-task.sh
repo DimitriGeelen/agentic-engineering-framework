@@ -1627,7 +1627,15 @@ run_verification_commands() {
         if grep -q '^## Verification' "$TASK_FILE" 2>/dev/null; then
             echo -e "  ${YELLOW}Verification: 0 commands — the section is present but yielded none.${NC}"
             echo "  Nothing was verified. Most likely the block holds only comments."
-            _t4024_enforce_empty_verification
+            # T-4681: T-4024 is an authoring gate for the first close. At
+            # finalization (partial-complete re-run, T-4653) the task already
+            # passed or was grandfathered past it; refusing here leaves the task
+            # un-archivable. Red commands still refuse below; empty only notes.
+            if [ "${_T4681_FINALIZING:-0}" = "1" ]; then
+                echo "  Finalization: empty block not refused (T-4024 applies at the first close, T-4681)."
+            else
+                _t4024_enforce_empty_verification
+            fi
         elif grep -q '## Verification' "$TASK_FILE" 2>/dev/null; then
             # T-3545's exact shape, and the reason this branch exists: the file
             # visibly contains '## Verification', so telling the reader there is
@@ -2133,7 +2141,9 @@ if [ -n "$NEW_STATUS" ]; then
                 # T-4653: finalizing is a close — re-run P-011 before archiving. The
                 # first transition's pass says nothing about the state at finalization.
                 export FW_TASK_UPDATE_IN_CLOSE="$TASK_ID"
+                _T4681_FINALIZING=1
                 run_verification_commands
+                _T4681_FINALIZING=0
                 unset FW_TASK_UPDATE_IN_CLOSE
                 DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
                 # T-1523: use `git mv` when tracked so both rename sides land

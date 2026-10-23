@@ -64,3 +64,16 @@ _finalize() {
     echo "$output" | grep -q "skip-verification bypass"
     [ -f "$P/.tasks/completed/T-9999-fixture.md" ]
 }
+
+# T-4681: an empty ## Verification at finalization must not hit the T-4024
+# authoring refusal — that gate applies at the first close, not when the operator
+# ticks the last Human AC. 21 of 333 partial-completes were un-archivable.
+@test "T-4681: empty Verification at finalization archives with a note, not the T-4024 refusal" {
+    _make_project
+    sed -i "s|^test -f $P/marker\$|# only a comment|" "$P/.tasks/active/T-9999-fixture.md"
+    ! grep -q "^test -f" "$P/.tasks/active/T-9999-fixture.md" || false
+    run _finalize
+    ! echo "$output" | grep -q "BLOCKED: ## Verification yields 0 commands" || false
+    echo "$output" | grep -q "Finalization: empty block not refused"
+    [ -f "$P/.tasks/completed/T-9999-fixture.md" ]
+}
