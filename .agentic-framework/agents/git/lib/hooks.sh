@@ -24,7 +24,7 @@
 # PL-078 still applies: when you change the CONTENT of any hook template below,
 # bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
 # together, so consumers' next install-hooks redeploys all four.
-COMMIT_MSG_HOOK_VERSION="1.22"
+COMMIT_MSG_HOOK_VERSION="1.23"
 
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
@@ -305,7 +305,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.22
+# VERSION=1.23
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -946,7 +946,7 @@ HOOK_EOF
 # post-commit hook - Bypass Detection + Context Checkpoint
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.7
+# VERSION=1.8
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -1100,13 +1100,20 @@ if [ -f "$FOOTPRINT_LIB" ] && command -v python3 >/dev/null 2>&1; then
     # refreshes to `unchanged` and writes nothing.
     _fp_pred=$(git rev-parse --git-path fw-footprint-predicted 2>/dev/null)
     _fp_list=$( { echo "$COMMIT_MSG" | grep -oE 'T-[0-9]+'; [ -f "$_fp_pred" ] && cat "$_fp_pred"; } | sort -u)
+    # T-4694: an id pre-commit did NOT predict (a later commit naming an
+    # already-closed task) gets --leave-committed: its episodic is tracked and
+    # clean, and rewriting it now could only leave the tree dirty, so its
+    # footprint stays as committed. Predicted ids are re-checked as before.
+    _fp_predicted=$( [ -f "$_fp_pred" ] && cat "$_fp_pred")
     rm -f "$_fp_pred" 2>/dev/null
     for _fp_task in $_fp_list; do
         [ -f "$PROJECT_ROOT/.context/episodic/$_fp_task.yaml" ] || continue
-        python3 "$FOOTPRINT_LIB" "$_fp_task" \
+        _fp_leave="--leave-committed"
+        echo "$_fp_predicted" | grep -qx "$_fp_task" && _fp_leave=""
+        python3 "$FOOTPRINT_LIB" "$_fp_task" $_fp_leave \
             --project-root "$PROJECT_ROOT" --commit "$_fp_sha" 2>/dev/null || true
     done
-    unset _fp_sha _fp_task _fp_pred _fp_list
+    unset _fp_sha _fp_task _fp_pred _fp_list _fp_predicted _fp_leave
 fi
 HOOK_EOF
 

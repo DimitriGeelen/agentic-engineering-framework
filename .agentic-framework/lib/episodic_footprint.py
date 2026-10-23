@@ -324,6 +324,23 @@ def predict_staged(project_root: Path) -> list[str]:
 FEEDBACK_STREAM = ".context/working/feedback-stream.yaml"
 
 
+def committed_and_clean(project_root: Path, rel: str) -> bool:
+    """True when `rel` is tracked and its worktree content equals HEAD's (T-4694).
+
+    Post-commit runs after the commit exists. Rewriting such a file there can
+    only leave it modified, so a commit that merely names an already-closed task
+    must not re-mine it; the footprint stays as it was committed. An untracked
+    or already-modified episodic is not covered: writing it changes nothing
+    about whether the tree is clean.
+    """
+    if not _git(project_root, "ls-files", "--", rel).strip():
+        return False
+    return subprocess.run(
+        ["git", "-C", str(project_root), "diff", "--quiet", "HEAD", "--", rel],
+        capture_output=True,
+    ).returncode == 0
+
+
 def _stage_real_index(project_root: Path, gitdir: Path, env_index: str, rel: str) -> None:
     """`git commit -- <paths>` commits from a temporary index (next-index-*) and
     writes the real index from index.lock afterwards; stage there too, or the
@@ -349,6 +366,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="pre-commit: write the footprint of tasks this commit closes (T-4690)",
     )
+    ap.add_argument(
+        "--leave-committed",
+        action="store_true",
+        help="post-commit: do not rewrite an episodic that is tracked and clean (T-4694)",
+    )
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
 
@@ -359,6 +381,13 @@ def main(argv: list[str] | None = None) -> int:
     if not a.task_id:
         ap.error("task_id is required unless --predict-staged")
     episodic = root / ".context" / "episodic" / f"{a.task_id}.yaml"
+
+    if a.leave_committed and committed_and_clean(
+        root, f".context/episodic/{a.task_id}.yaml"
+    ):
+        # T-4694: the commit exists, so rewriting a clean tracked episodic can
+        # only leave the tree dirty. Its footprint stays as committed.
+        return 0
 
     outcome, detail = refresh(episodic, root, a.task_id, a.commit)
 

@@ -167,6 +167,37 @@ print(" ".join(f"{k}={m[k]}" for k in ef.COUNTER_FIELDS))' "$FRAMEWORK_ROOT/lib"
     [ ! -f "$REPO/.git/fw-footprint-predicted" ]
 }
 
+@test "t4694: a later commit naming the closed task leaves the tree clean" {
+    _close
+    git -C "$REPO" add -A >/dev/null
+    run git -C "$REPO" commit -m "$TID: close"
+    [ "$status" -eq 0 ]
+    run git -C "$REPO" status --porcelain
+    [ -z "$output" ]
+    before=$(git -C "$REPO" rev-parse "HEAD:.context/episodic/$TID.yaml")
+    # A follow-up commit that names the closed task but does not close it.
+    echo more > "$REPO/src/more.txt"
+    git -C "$REPO" add src/more.txt
+    run git -C "$REPO" commit -m "$TID: follow-up after close"
+    [ "$status" -eq 0 ]
+    run git -C "$REPO" status --porcelain
+    echo "$output"
+    [ -z "$output" ]
+    # The footprint stays as committed at close.
+    [ "$(git -C "$REPO" rev-parse "HEAD:.context/episodic/$TID.yaml")" = "$before" ]
+    [ "$(_field commits)" = "2" ]
+}
+
+@test "t4694: --leave-committed still refreshes an episodic that is not committed" {
+    _close
+    # The episodic is untracked here: refreshing it changes nothing about cleanliness.
+    run python3 "$LIB" "$TID" --leave-committed --project-root "$REPO" --commit x
+    [ "$status" -eq 0 ]
+    echo "$output"
+    echo "$output" | grep -q "footprint refreshed" || [ "$(_field commits)" = "1" ]
+    _counters_match_history
+}
+
 @test "t4690: a modified episodic without a task move is not predicted" {
     run python3 -c '
 import sys; sys.path.insert(0, sys.argv[1])

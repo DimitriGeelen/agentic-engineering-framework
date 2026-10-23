@@ -1,10 +1,23 @@
 ---
 id: T-4694
-name: "T-4690 residual: any commit that names an already-closed task still re-dirties its episodic (post-commit footprint refresh counts the new commit); only the closing commit is predicted"
+name: "T-4690 residual: any commit that names an already-closed task still re-dirties
+  its episodic (post-commit footprint refresh counts the new commit); only the closing
+  commit is predicted"
 description: >
-  Observed live 2026-10-23 after T-4690 landed and hooks were reinstalled (pre-commit 1.7, commit-msg 1.22): commit 80a054690 'T-4693: episodic footprint' staged T-4693.yaml, then post-commit printed 'episodic T-4693: footprint refreshed (commits 4->5 ...)' and left it modified again. The pre-commit t4690-footprint-predict block predicts only for a task the commit CLOSES. Fix options (record the choice): (a) pre-commit predicts for every task id in the commit message whose episodic exists and git_mining is ok, staging that episodic into the commit (it already does this for closes); (b) freeze the footprint at close and stop post-commit refreshes for completed tasks, with a separate committing backfill job for later commits; (c) the commit-message ids are read in commit-msg, which runs after pre-commit — check the hook order and whether the message is available where the prediction runs. Test: close a fixture task, then make a second commit naming it, assert git status is clean after both.
+  Observed live 2026-10-23 after T-4690 landed and hooks were reinstalled (pre-commit
+  1.7, commit-msg 1.22): commit 80a054690 'T-4693: episodic footprint' staged T-4693.yaml,
+  then post-commit printed 'episodic T-4693: footprint refreshed (commits 4->5 ...)'
+  and left it modified again. The pre-commit t4690-footprint-predict block predicts
+  only for a task the commit CLOSES. Fix options (record the choice): (a) pre-commit
+  predicts for every task id in the commit message whose episodic exists and git_mining
+  is ok, staging that episodic into the commit (it already does this for closes);
+  (b) freeze the footprint at close and stop post-commit refreshes for completed tasks,
+  with a separate committing backfill job for later commits; (c) the commit-message
+  ids are read in commit-msg, which runs after pre-commit — check the hook order and
+  whether the message is available where the prediction runs. Test: close a fixture
+  task, then make a second commit naming it, assert git status is clean after both.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T13:32:08Z
-last_update: 2026-10-23T13:32:08Z
-date_finished: null
+last_update: 2026-10-23T13:33:45Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +63,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T13:33:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4694: T-4690 residual: any commit that names an already-closed task still re-dirties its episodic (post-commit footprint refresh counts the new commit); only the closing commit is predicted
@@ -62,8 +92,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The post-commit footprint refresh never modifies an episodic that is tracked and clean after the commit, unless pre-commit predicted it for this commit (lib/episodic_footprint.py `--leave-committed`, used by the post-commit loop in agents/git/lib/hooks.sh)
+- [x] Regression test in tests/unit/t4690_clean_tree_after_close.bats: close a fixture task, commit, then make a second commit naming the closed task; `git status --porcelain` is empty after both and the committed footprint is unchanged by the second commit
+- [x] The existing t4690 and T-3130 suites stay green (no skips)
+- [ ] `bin/fw git install-hooks` reinstalls this repo's post-commit with the change, and a live commit naming a closed task leaves the tree clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +281,13 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 600 bats tests/unit/t4690_clean_tree_after_close.bats > /tmp/.t4694-a.out 2>&1 && grep -q "later commit naming the closed task" /tmp/.t4694-a.out && ! grep -q "^not ok" /tmp/.t4694-a.out
+test "$(grep -c '# skip' /tmp/.t4694-a.out)" -eq 0
+timeout 600 bats tests/unit/episodic_footprint_refresh.bats > /tmp/.t4694-b.out 2>&1 && grep -q "^ok 1 " /tmp/.t4694-b.out && ! grep -q "^not ok" /tmp/.t4694-b.out
+test "$(grep -c '# skip' /tmp/.t4694-b.out)" -eq 0
+grep -q -- "--leave-committed" .git/hooks/post-commit
+bin/fw vendor self --check --task T-4694
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -264,6 +303,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after commit 80a054690 ("T-4693: episodic footprint", staging T-4693.yaml), post-commit printed `episodic T-4693: footprint refreshed (commits 4->5 ...)` and left `.context/episodic/T-4693.yaml` modified again. Any commit naming an already-closed task does the same.
+
+**Root cause:** the post-commit loop (agents/git/lib/hooks.sh, T-3130 block, `for _fp_task in $_fp_list`) re-mines every task id in the commit message and rewrites its episodic. Once the commit exists, writing a tracked file can only dirty the tree. T-4690 moved the write into pre-commit (`--predict-staged`), but only for commits that CLOSE the task (`close_candidates`), because pre-commit cannot read the message: git builds the tree before prepare-commit-msg/commit-msg run, and COMMIT_EDITMSG still holds the previous message while pre-commit runs. Every other commit naming the task still went through the dirtying post-commit write.
+
+**Why structurally allowed:** the T-4690 suite covered close commits only. No test made a second commit naming a closed task.
+
+**Prevention:** post-commit now passes `--leave-committed` for ids it did not predict, and the library leaves alone an episodic that is tracked and identical to HEAD (`committed_and_clean`). Regression test: "a later commit naming the closed task leaves the tree clean" in tests/unit/t4690_clean_tree_after_close.bats.
 
 ## Evolution
 
@@ -329,6 +376,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-23 — where a later commit naming a closed task gets counted
+- **Chose:** option (b) without the backfill job. Post-commit does not rewrite an episodic that is tracked and identical to HEAD unless pre-commit predicted it for this commit. The footprint is frozen as committed at close. Later commits naming the task (bookkeeping, residual fixes) are not counted.
+- **Why:** after a commit exists, rewriting a tracked clean file can only leave the tree dirty. Avoiding that would mean amending, which is ruled out. The close commit is still counted, because pre-commit predicts it. An untracked or already-modified episodic is still refreshed, since writing it does not change whether the tree is clean.
+- **Rejected:** (a)/(c), predicting from the message in pre-commit. Measured on this host: while pre-commit runs, `.git/COMMIT_EDITMSG` still holds the previous commit's message, and git builds the tree before prepare-commit-msg/commit-msg run, so changes staged from commit-msg never reach the commit. The only other source is the parent process's command line (`/proc/$PPID/cmdline`). That works only for `-m`, misses `-F` and editor commits, and is not portable. A committing backfill job was not built: it would add commits whose only purpose is counting post-close commits. Each of those would name the task again. It can be filed separately if anyone needs that count.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -345,3 +397,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4694-t-4690-residual-any-commit-that-names-an.md
 - **Context:** Initial task creation
+
+### 2026-10-23T13:33:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
