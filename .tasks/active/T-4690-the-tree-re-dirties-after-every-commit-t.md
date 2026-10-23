@@ -1,8 +1,17 @@
 ---
 id: T-4690
-name: "The tree re-dirties after every commit: the episodic footprint refresh rewrites .context/episodic/T-XXX.yaml right after the closing commit, and feedback-stream.yaml is appended continuously"
+name: "The tree re-dirties after every commit: the episodic footprint refresh rewrites
+  .context/episodic/T-XXX.yaml right after the closing commit, and feedback-stream.yaml
+  is appended continuously"
 description: >
-  1023 report (sidecar b3fcf74f, same class as their T-105 last_update bump) and seen in AEF on 2026-10-23 ('episodic T-4658: footprint refreshed' during commits, episodic files modified after closes). Either fold the footprint refresh into the commit that triggers it (amend-free: compute before the commit, or stage in pre-commit) or move derived footprint data out of the tracked episodic file; decide whether feedback-stream.yaml should be tracked at all (T-4231 kept it tracked) or written in batches by a committing job. Goal: a clean tree after a close commit, verified by a test that closes a fixture task and asserts git status is clean.
+  1023 report (sidecar b3fcf74f, same class as their T-105 last_update bump) and seen
+  in AEF on 2026-10-23 ('episodic T-4658: footprint refreshed' during commits, episodic
+  files modified after closes). Either fold the footprint refresh into the commit
+  that triggers it (amend-free: compute before the commit, or stage in pre-commit)
+  or move derived footprint data out of the tracked episodic file; decide whether
+  feedback-stream.yaml should be tracked at all (T-4231 kept it tracked) or written
+  in batches by a committing job. Goal: a clean tree after a close commit, verified
+  by a test that closes a fixture task and asserts git status is clean.
 
 status: captured
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T10:39:46Z
-last_update: 2026-10-23T10:39:46Z
-date_finished: null
+last_update: '2026-10-23T10:45:21Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-23T10:45:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4690: The tree re-dirties after every commit: the episodic footprint refresh rewrites .context/episodic/T-XXX.yaml right after the closing commit, and feedback-stream.yaml is appended continuously

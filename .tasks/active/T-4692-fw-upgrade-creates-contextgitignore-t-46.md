@@ -1,8 +1,12 @@
 ---
 id: T-4692
-name: "fw upgrade creates .context/.gitignore (T-4684 dispatch ignore) as a NEW untracked file but its summary does not tell the consumer to commit it"
+name: "fw upgrade creates .context/.gitignore (T-4684 dispatch ignore) as a NEW untracked
+  file but its summary does not tell the consumer to commit it"
 description: >
-  TermLink be.7 field report (sidecar 24f926ce): upgrade printed 'ADDED dispatch worker-dir ignore rule to .context/.gitignore'; the file was new and untracked. List new/changed governance files the consumer must commit in the upgrade's final summary (with the git add line), for every file upgrade creates, not only this one.
+  TermLink be.7 field report (sidecar 24f926ce): upgrade printed 'ADDED dispatch worker-dir
+  ignore rule to .context/.gitignore'; the file was new and untracked. List new/changed
+  governance files the consumer must commit in the upgrade's final summary (with the
+  git add line), for every file upgrade creates, not only this one.
 
 status: captured
 workflow_type: build
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T10:41:32Z
-last_update: 2026-10-23T10:41:32Z
-date_finished: null
+last_update: '2026-10-23T10:45:21Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-23T10:45:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4692: fw upgrade creates .context/.gitignore (T-4684 dispatch ignore) as a NEW untracked file but its summary does not tell the consumer to commit it
