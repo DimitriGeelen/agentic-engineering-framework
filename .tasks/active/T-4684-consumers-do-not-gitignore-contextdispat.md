@@ -98,11 +98,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] New `lib/dispatch-gitignore.sh` holds the one rule list and an idempotent, append-only `fw_dispatch_ensure_ignored <root> [--dry-run]` writing `<root>/.context/.gitignore` (never removes user lines; prints rules added)
-- [ ] `fw init` calls it, so a fresh consumer's `git check-ignore` covers `.context/dispatch/<worker>/env.sh`
-- [ ] `fw upgrade` calls it (WOULD ADD / ADDED / OK lines) and, when files under `.context/dispatch/` are already tracked, prints a NOTE with the `git rm --cached` command instead of untracking them
-- [ ] `tests/unit/t4684_dispatch_gitignore.bats` covers helper, idempotence/dry-run, init end-to-end, upgrade wiring and the already-tracked warning; red on pre-fix code (no helper), green after
-- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green; `bin/fw vendor self --check --task T-4684` clean
+- [x] New `lib/dispatch-gitignore.sh` holds the one rule list and an idempotent, append-only `fw_dispatch_ensure_ignored <root> [--dry-run]` writing `<root>/.context/.gitignore` (never removes user lines; prints rules added)
+- [x] `fw init` calls it, so a fresh consumer's `git check-ignore` covers `.context/dispatch/<worker>/env.sh`
+- [x] `fw upgrade` calls it (WOULD ADD / ADDED / OK lines) and, when files under `.context/dispatch/` are already tracked, prints a NOTE with the `git rm --cached` command instead of untracking them
+- [x] `tests/unit/t4684_dispatch_gitignore.bats` covers helper, idempotence/dry-run, init end-to-end, upgrade wiring and the already-tracked warning; red on pre-fix code (no helper), green after
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green; `bin/fw vendor self --check --task T-4684` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

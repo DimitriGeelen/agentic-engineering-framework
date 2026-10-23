@@ -1,0 +1,21 @@
+id: lib/dispatch-gitignore.sh
+name: dispatch-gitignore
+type: script
+subsystem: framework-core
+location: lib/dispatch-gitignore.sh
+tags: []
+
+purpose: "T-4684 — keep dispatch worker dirs out of a consumer's git."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-23
+created_by: unknown
