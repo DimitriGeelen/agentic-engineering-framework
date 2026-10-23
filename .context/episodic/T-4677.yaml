@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4677: aef-task-lifecycle map: plain-language flow/task names so the business lens reads as a business flow (ids into Notes/technical fields)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T09:13:58Z
+# ============================================================================
+
+task_id: T-4677
+task_name: "aef-task-lifecycle map: plain-language flow/task names so the business lens reads as a business flow (ids into Notes/technical fields)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T22:23:02Z
+completed: 2026-10-23T09:13:10Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-23T00:23:40+02:00
+last_commit: 2026-10-23T11:06:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture business-lens naming on aef-task-lifecycle (832 review). aef-task-lifecycle v4 — plain-language names/notes for the business lens; ids, fw commands and headings moved to aef:endpoint; ids/uids/carriers/flows/layout unchanged; regression test + census pin 47->48
+
+# Key outcomes
+outcomes:
+  - 'A regression test reads the latest aef-task-lifecycle version and fails when any business-lens-visible text (node/flow/lane names and the `note` field) contains a task/policy/gap id (T-/P-/G-/L-NNN), an `fw` CLI command, a markdown heading (`##`) or a `### Human`-style token; it fails on the pre-fix v3 and passes on the new version'
+  - 'Every flagged name/note is reworded to plain language in a new map version; the technical detail moves to a technical-lens field, not deleted'
+  - 'Node ids, `aef:uid` values, `aef:meta state=` carriers, flows'' source/target and the topology are unchanged versus v3 (test asserts it)'
+  - '`tools/corpus_conformance.py` passes for aef-task-lifecycle, corpus lint passes, and `bin/fw corpus explain aef-task-lifecycle` renders'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — where the technical detail goes'
+    chose: '`aef:endpoint` (text child; technical lens, "fw … | agent prompt | watchtower view") on the eight task-like nodes; saved as store v4 through `/api/save`.'
+    rationale: 'it is the one technical-only field the designer offers on serviceTask/userTask and reads as text (corpus_lint `_TEXT_BEARING_EXT`). Flow-name detail went to the node the flow enters or leaves (shelved → tl_parked, promoted → tl_start, dispatch → tl_work), since flows and link events have no technical field.'
+    alternatives_rejected: ['keeping ids in `note` — the business lens shows `note`, which is how G-020 leaked in the first place. - **Side effect:** `tests/unit/test_corpus_lint.py::test_live_corpus_all_versions_census` pin re-derived 47 → 48 versions (one ADD, v4 lints clean, flagged set held at 14).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/designer/projects/aef-task-lifecycle/meta.json'
+  - '.context/designer/projects/aef-task-lifecycle/v4.bpmn'
+  - '.tasks/active/T-4677-aef-task-lifecycle-map-plain-language-fl.md'
+  - 'tests/unit/test_corpus_lint.py'
+  - 'tests/unit/test_t4677_task_lifecycle_business_names.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T00:23:40'
+    action: 'T-4677: capture business-lens naming on aef-task-lifecycle (832 review)'
+  - time: '2026-10-23T11:06:10'
+    action: 'T-4677: aef-task-lifecycle v4 — plain-language names/notes for the business lens; ids, fw commands and headings moved to aef:endpoint; ids/uids/carriers/flows/layout unchanged; regression test + census pin 47->48'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 650 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 650
+  commits: 2
+  files_changed: 5
+  lines_added: 809
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4677-aef-task-lifecycle-map-plain-language-fl.md
+generated_by: context-agent-hybrid

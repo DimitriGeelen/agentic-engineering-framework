@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4679: vendor_preserve post-check matches in_file markers as plain substrings, so markers written with regex escapes (\( \.) always report MARKER MISSING; define and document the marker semantics
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T09:23:11Z
+# ============================================================================
+
+task_id: T-4679
+task_name: "vendor_preserve post-check matches in_file markers as plain substrings, so markers written with regex escapes (\( \.) always report MARKER MISSING; define and document the marker semantics"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T22:25:45Z
+completed: 2026-10-23T09:22:44Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-23T11:03:29+02:00
+last_commit: 2026-10-23T11:03:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  in_file markers are literal by default, re: prefix opts into regex; MARKER MISSING names the semantics and hints re: for literal markers with regex escapes; invalid regex reported as MARKER INVALID; schema + help documented; 5 bats tests
+
+# Key outcomes
+outcomes:
+  - 'Literal markers keep today''s semantics: a plain marker present in the vendored file is reported present (existing t3850 tests stay green)'
+  - 'A marker prefixed `re:` is matched with `re.search` (MULTILINE) and reported present when the pattern matches'
+  - 'MARKER MISSING names the semantics used (`literal` or `regex`), and a literal marker containing regex escapes (`\(`, `\.` …) adds a hint `did you mean "re:…"?`'
+  - 'An invalid `re:` pattern is reported cleanly as `MARKER INVALID` with the `re.error` message (no traceback), counted as missing (IN-FILE 0/1 + WARN)'
+  - 'The marker semantics are documented in the manifest schema (module docstring of lib/vendor_preserve.py and `fw vendor --help`)'
+  - 'Regression tests in tests/unit/t3850_vendor_preserve_locals.bats cover: literal found, literal-with-escapes missing + hint, re: found, invalid regex'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'in_file markers are literal by default, re: prefix opts into regex; MARKER MISSING names the semantics and hints re: for literal markers with regex escapes; invalid regex reported as MARKER INVALID; schema + help documented; 5 bats tests'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — regex opt-in shape'
+    chose: 'a `re:` prefix on the marker string, valid in both `marker:` and `markers:`.'
+    rationale: 'one key; per-marker choice inside a `markers:` list; no parser change (the PyYAML-less `_mini_yaml` needs no new key); existing literal markers untouched. A literal code-comment marker starting with `re:` is implausible.'
+    alternatives_rejected: ['sibling `in_file_re:`/`marker_re:` key — doubles schema surface and fallback-parser cases, cannot mix literal and regex in one `markers:` list. Flipping the default to regex — would silently change every existing literal marker containing `.` or `(`.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/vendor_preserve.py'
+  - 'bin/fw'
+  - 'lib/vendor_preserve.py'
+  - '.tasks/active/T-4679-vendorpreserve-post-check-matches-infile.md'
+  - 'tests/unit/t3850_vendor_preserve_locals.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T11:03:29'
+    action: 'T-4679: in_file markers are literal by default, re: prefix opts into regex; MARKER MISSING names the semantics and hints re: for literal markers with regex escapes; invalid regex reported as MARKER INVALID; schema + help documented; 5 bats tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 656 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 656
+  commits: 1
+  files_changed: 6
+  lines_added: 169
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4679-vendorpreserve-post-check-matches-infile.md
+generated_by: context-agent-hybrid

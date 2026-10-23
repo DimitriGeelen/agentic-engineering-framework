@@ -1,13 +1,20 @@
 ---
-id: T-4679
-name: "vendor_preserve post-check matches in_file markers as plain substrings, so markers written with regex escapes (\( \.) always report MARKER MISSING; define and document the marker semantics"
+id: T-4677
+name: "aef-task-lifecycle map: plain-language flow/task names so the business lens
+  reads as a business flow (ids into Notes/technical fields)"
 description: >
-  Decide literal vs regex (or a prefix such as re: for regex), document it in the manifest schema, make the check consistent, test both forms; tell ring20 which to use. Source: proxmox-ring20-management be.4 field report (sidecar 4aade009, 2026-10-23).
+  832 screenshot review (sidecar 97db861b, 832 T-1241/T-1278): the business lens hides
+  fields/ids/badges but not words inside names, so flow names like 'shelved — horizon
+  next/later auto-demotes to captured (T-1068)', 'promoted — fw work-on T-XXX', task
+  'completion gates: Agent ACs (P-010) + ## Verification commands (P-011)' and the
+  tl_create note 'G-020 blocks source edits until real ACs exist' show technical tokens
+  in the BUSINESS view. Rename to plain language, keep ids in Notes or hostRef/workflowRef;
+  map conformance (T-2621) and corpus lint must stay green.
 
-status: started-work
-workflow_type: build
+status: work-completed
+workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -37,9 +44,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-22T22:25:45Z
-last_update: 2026-10-23T08:58:05Z
-date_finished: null
+created: 2026-10-22T22:23:02Z
+last_update: 2026-10-23T09:13:10Z
+date_finished: 2026-10-23T09:13:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,24 +57,49 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-22T22:27:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:refactor); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-22T22:28:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4679: vendor_preserve post-check matches in_file markers as plain substrings, so markers written with regex escapes (\( \.) always report MARKER MISSING; define and document the marker semantics
+# T-4677: aef-task-lifecycle map: plain-language flow/task names so the business lens reads as a business flow (ids into Notes/technical fields)
 
 ## Context
 
-ring20 (proxmox-ring20-management be.4, sidecar 4aade009) wrote `in_file:` markers with regex escapes (`\(`, `\.`); the post-vendor check in `lib/vendor_preserve.py` matches markers as plain substrings, so those markers always print MARKER MISSING even when the patch is present. Semantics chosen: literal substring by default (unchanged); a `re:` prefix on a marker opts into Python regex (`re.search`, MULTILINE).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Literal markers keep today's semantics: a plain marker present in the vendored file is reported present (existing t3850 tests stay green)
-- [x] A marker prefixed `re:` is matched with `re.search` (MULTILINE) and reported present when the pattern matches
-- [x] MARKER MISSING names the semantics used (`literal` or `regex`), and a literal marker containing regex escapes (`\(`, `\.` …) adds a hint `did you mean "re:…"?`
-- [x] An invalid `re:` pattern is reported cleanly as `MARKER INVALID` with the `re.error` message (no traceback), counted as missing (IN-FILE 0/1 + WARN)
-- [x] The marker semantics are documented in the manifest schema (module docstring of lib/vendor_preserve.py and `fw vendor --help`)
-- [x] Regression tests in tests/unit/t3850_vendor_preserve_locals.bats cover: literal found, literal-with-escapes missing + hint, re: found, invalid regex
+- [x] A regression test reads the latest aef-task-lifecycle version and fails when any business-lens-visible text (node/flow/lane names and the `note` field) contains a task/policy/gap id (T-/P-/G-/L-NNN), an `fw` CLI command, a markdown heading (`##`) or a `### Human`-style token; it fails on the pre-fix v3 and passes on the new version
+- [x] Every flagged name/note is reworded to plain language in a new map version; the technical detail moves to a technical-lens field, not deleted
+- [x] Node ids, `aef:uid` values, `aef:meta state=` carriers, flows' source/target and the topology are unchanged versus v3 (test asserts it)
+- [x] `tools/corpus_conformance.py` passes for aef-task-lifecycle, corpus lint passes, and `bin/fw corpus explain aef-task-lifecycle` renders
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -252,14 +284,22 @@ ring20 (proxmox-ring20-management be.4, sidecar 4aade009) wrote `in_file:` marke
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 600 bats tests/unit/t3850_vendor_preserve_locals.bats > /tmp/.t4679.out 2>&1 && ! grep -q "^not ok" /tmp/.t4679.out && grep -q "T-4679" /tmp/.t4679.out
-# at most 1 skip: the PyYAML-parity test skips only on a host without PyYAML (0 here)
-test "$(grep -c '# skip' /tmp/.t4679.out)" -le 1
-grep -q '"re:"' lib/vendor_preserve.py && grep -q 'MARKER INVALID' lib/vendor_preserve.py
-python3 tools/bats-dead-negation-lint.py tests/unit/t3850_vendor_preserve_locals.bats > /tmp/.t4679.lint 2>&1 && grep -q clean /tmp/.t4679.lint
-bin/fw vendor self --check --task T-4679
+timeout 300 python3 -m pytest tests/unit/test_t4677_task_lifecycle_business_names.py -q > /tmp/.t4677-names.out 2>&1 && grep -q "4 passed" /tmp/.t4677-names.out
+timeout 300 python3 tools/corpus_conformance.py --map aef-task-lifecycle > /tmp/.t4677-conf.out 2>&1 && grep -q "conformance: PASS" /tmp/.t4677-conf.out
+bin/fw corpus lint aef-task-lifecycle > /tmp/.t4677-lint.out 2>&1 && grep -q "CLEAN" /tmp/.t4677-lint.out
+bin/fw corpus explain aef-task-lifecycle > /tmp/.t4677-explain.out 2>&1 && grep -q "shelved — set aside for later" /tmp/.t4677-explain.out
+timeout 900 python3 -m pytest tests/unit/test_corpus_lint.py tests/unit/test_corpus_explain.py tests/unit/test_corpus_spec_roundtrip.py tests/unit/test_corpus_conformance_registry.py tests/unit/test_aef_meta_census.py tests/web/test_lens_definition.py -q > /tmp/.t4677-nb.out 2>&1 && grep -q passed /tmp/.t4677-nb.out
+bin/fw vendor self --check --task T-4677
 
 ## RCA
+
+**Symptom:** under the designer's business lens, aef-task-lifecycle still showed task ids (T-1068), policy ids (P-010/P-011, G-020), `fw work-on T-XXX` and `## Verification` — in flow names, task names and notes (832 screenshot review, sidecar 97db861b).
+
+**Root cause:** the lens is a field filter (`tools/corpus_lenses.yaml:30-35`: business shows `Name`, `Lane` and `note`). It hides fields, not words, and the map (`.context/designer/projects/aef-task-lifecycle/v3.bpmn` lines 72-155, 220-266) put the technical detail inside exactly those three business-visible strings — v3 had no technical-lens field (`aef:endpoint`) on any node, so there was nowhere else for it.
+
+**Why structurally allowed:** the lens was pinned against the designer's field vocabulary (`tests/web/test_lens_definition.py`), and corpus lint judges structure, not register. Nothing read the text a lens shows and asked whether it suits that audience.
+
+**Prevention:** `tests/unit/test_t4677_task_lifecycle_business_names.py` scans every business-visible string of the latest version for ids, `fw` commands, flags, headings, AC prefixes, frontmatter fields and paths. It keeps a control leg that must still catch v3, an invariance leg (ids/uids/carriers/positions/flows equal to v3), and a moved-not-deleted leg (every id v3 showed is now in `aef:endpoint`). Scope is this one map; other maps were not scanned in this task.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -274,14 +314,6 @@ bin/fw vendor self --check --task T-4679
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** ring20's `fw vendor` printed MARKER MISSING for every `in_file:` marker written with regex escapes (e.g. `register_blueprint\(approvals_bp\)`), although the patch was present in the vendored file — real misses were buried among false ones.
-
-**Root cause:** the post-check in `lib/vendor_preserve.py` (`post()`, in_file loop: `if body is None or m not in body`, ~line 463) compares markers as plain substrings, and the manifest schema (module docstring, `fw vendor --help`) never said whether a marker is literal text or a pattern. ring20 reasonably assumed grep-style regex; `\(` never occurs literally in the file.
-
-**Why structurally allowed:** the schema was documented only by example (plain-text markers), the MARKER MISSING line did not say how it matched, and tests covered only plain markers — nothing distinguished "patch gone" from "marker written in the wrong dialect".
-
-**Prevention:** semantics are explicit (literal default, `re:` opt-in) in the schema docstring and `fw vendor --help`; MARKER MISSING prints `(literal)`/`(regex)`; a literal marker that looks like a regex gets a `did you mean "re:…"?` hint; an invalid pattern prints `MARKER INVALID` instead of a traceback; four bats tests pin each form.
 
 ## Evolution
 
@@ -347,10 +379,11 @@ bin/fw vendor self --check --task T-4679
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-23 — regex opt-in shape
-- **Chose:** a `re:` prefix on the marker string, valid in both `marker:` and `markers:`.
-- **Why:** one key; per-marker choice inside a `markers:` list; no parser change (the PyYAML-less `_mini_yaml` needs no new key); existing literal markers untouched. A literal code-comment marker starting with `re:` is implausible.
-- **Rejected:** sibling `in_file_re:`/`marker_re:` key — doubles schema surface and fallback-parser cases, cannot mix literal and regex in one `markers:` list. Flipping the default to regex — would silently change every existing literal marker containing `.` or `(`.
+### 2026-10-23 — where the technical detail goes
+- **Chose:** `aef:endpoint` (text child; technical lens, "fw … | agent prompt | watchtower view") on the eight task-like nodes; saved as store v4 through `/api/save`.
+- **Why:** it is the one technical-only field the designer offers on serviceTask/userTask and reads as text (corpus_lint `_TEXT_BEARING_EXT`). Flow-name detail went to the node the flow enters or leaves (shelved → tl_parked, promoted → tl_start, dispatch → tl_work), since flows and link events have no technical field.
+- **Rejected:** keeping ids in `note` — the business lens shows `note`, which is how G-020 leaked in the first place.
+- **Side effect:** `tests/unit/test_corpus_lint.py::test_live_corpus_all_versions_census` pin re-derived 47 → 48 versions (one ADD, v4 lints clean, flagged set held at 14).
 
 ## Decision
 
@@ -364,11 +397,28 @@ bin/fw vendor self --check --task T-4679
 
 ## Updates
 
-### 2026-10-22T22:25:45Z — task-created [task-create-agent]
+### 2026-10-22T22:23:02Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4679-vendorpreserve-post-check-matches-infile.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4677-aef-task-lifecycle-map-plain-language-fl.md
 - **Context:** Initial task creation
 
-### 2026-10-23T08:57:44Z — status-update [task-update-agent]
+### 2026-10-23T08:57:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d274deea
+- **Timestamp:** 2026-10-23T09:13:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-23T09:13:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

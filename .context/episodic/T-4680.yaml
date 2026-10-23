@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4680: fw upgrade from a tag clone placed INSIDE the consumer tree is detected as bare-from-consumer and auto-clones the default branch instead of using the tag
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T09:22:31Z
+# ============================================================================
+
+task_id: T-4680
+task_name: "fw upgrade from a tag clone placed INSIDE the consumer tree is detected as bare-from-consumer and auto-clones the default branch instead of using the tag"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T22:26:16Z
+completed: 2026-10-23T09:17:30Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-23T11:17:03+02:00
+last_commit: 2026-10-23T11:17:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade through a framework clone inside the consumer tree (e.g. a tag clone) uses that clone and pins its HEAD — T-4362 now drops an inherited vendored FRAMEWORK_ROOT for in-tree checkouts too, T-4453 selects the in-tree checkout with a one-line notice; bats with a real tag clone inside a consumer
+
+# Key outcomes
+outcomes:
+  - 'A full framework checkout (has .git, bin/fw, FRAMEWORK.md) at a tag, placed inside a consumer tree, run as `<clone>/bin/fw upgrade <consumer>` (from the consumer cwd and from inside the clone) uses that clone as the upgrade source and pins its HEAD (the tag commit) — no auto-clone of the default branch'
+  - 'The run prints a one-line notice naming the in-tree checkout as the source'
+  - 'The consumer''s vendored `.agentic-framework/bin/fw upgrade` still takes the bare-from-consumer auto-clone path (unchanged)'
+  - 'Regression test tests/unit/t4680_upgrade_clone_inside_consumer.bats fails before the fix, passes after; t4661 and upgrade_fresh_machine_simulation.bats stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4680-fw-upgrade-from-a-tag-clone-placed-insid.md'
+  - 'tests/unit/t4680_upgrade_clone_inside_consumer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T11:17:03'
+    action: 'T-4680: fw upgrade through a framework clone inside the consumer tree (e.g. a tag clone) uses that clone and pins its HEAD — T-4362 now drops an inherited vendored FRAMEWORK_ROOT for in-tree checkouts too, T-4453 selects the in-tree checkout with a one-line notice; bats with a real tag clone inside a consumer'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 651 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 651
+  commits: 1
+  files_changed: 4
+  lines_added: 155
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4680-fw-upgrade-from-a-tag-clone-placed-insid.md
+generated_by: context-agent-hybrid
