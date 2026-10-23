@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4692: fw upgrade creates .context/.gitignore (T-4684 dispatch ignore) as a NEW untracked file but its summary does not tell the consumer to commit it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T13:48:52Z
+# ============================================================================
+
+task_id: T-4692
+task_name: "fw upgrade creates .context/.gitignore (T-4684 dispatch ignore) as a NEW untracked file but its summary does not tell the consumer to commit it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T10:41:32Z
+completed: 2026-10-23T13:45:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T15:38:00+02:00
+last_commit: 2026-10-23T15:38:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade summary lists the files it left to commit, with one git add line
+
+# Key outcomes
+outcomes:
+  - 'Live `fw upgrade` snapshots the consumer''s dirty paths (+ content hash) before any mutation and, at the end of the summary, lists every path the upgrade created or changed that git shows untracked/modified, with ONE `git add -- …` line (vendored `.agentic-framework/` collapsed to one entry); prints nothing when the upgrade left nothing to commit'
+  - 'Paths already dirty before the upgrade and left untouched are NOT listed; already-dirty paths the upgrade changed ARE listed'
+  - 'Dry run lists the governance files a live run WOULD create (.context/.gitignore, .context/working/.gitignore, CLAUDE.md, .claude/settings.json, .mcp.json — whichever are absent and would be written)'
+  - 'Regression bats test covers new file, untouched pre-dirty file, changed pre-dirty file, clean tree, non-git target, and dry-run listing; tests/unit/upgrade_fresh_machine_simulation.bats green; `bin/fw vendor self --check --task T-4692` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade_commit_list.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade_commit_list.py'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4692-fw-upgrade-creates-contextgitignore-t-46.md'
+  - 'tests/unit/t4692_upgrade_commit_list.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T15:38:00'
+    action: 'T-4692: fw upgrade summary lists the files it left to commit, with one git add line'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 183 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 183
+  commits: 3
+  files_changed: 14
+  lines_added: 4440
+  lines_removed: 20
+  footprint_refreshed_at: '2026-10-23T13:50:18Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4692-fw-upgrade-creates-contextgitignore-t-46.md
+generated_by: context-agent-hybrid

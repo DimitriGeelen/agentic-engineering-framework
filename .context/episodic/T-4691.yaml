@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4691: fw upgrade's advisory fw doctor step exits 141 (SIGPIPE) while a standalone fw doctor exits 0
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T13:44:36Z
+# ============================================================================
+
+task_id: T-4691
+task_name: "fw upgrade's advisory fw doctor step exits 141 (SIGPIPE) while a standalone fw doctor exits 0"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T10:41:14Z
+completed: 2026-10-23T13:38:55Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T15:24:06+02:00
+last_commit: 2026-10-23T15:24:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor preview pipelines use awk, not head (SIGPIPE 141 under errexit); upgrade advisory captures doctor to a file
+
+# Key outcomes
+outcomes:
+  - 'Root cause of the 141 localised with file:line and recorded in ## RCA'
+  - 'do_doctor (bin/fw) display pipelines `printf … | head -N | sed …` replaced with awk ''NR<=N'' (reads all input, cannot SIGPIPE its producer); no such bare pipeline left in do_doctor'
+  - '`_t2094_emit_doctor_advisory` (lib/upgrade.sh) captures doctor''s output to a file and reports doctor''s OWN exit code, naming 141 as a SIGPIPE inside doctor'
+  - 'Regression bats test: advisory reports `doctor PASS (exit 0)` for a clean doctor stub writing > 64 KiB, `doctor exited 3` for a stub exiting 3; static check that do_doctor has no `| head -N | sed` statement'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats stays green; `bin/fw vendor self --check --task T-4691` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'bin/fw'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4691-fw-upgrades-advisory-fw-doctor-step-exit.md'
+  - 'tests/unit/t4691_upgrade_doctor_advisory_sigpipe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T15:24:06'
+    action: 'T-4691: doctor preview pipelines use awk, not head (SIGPIPE 141 under errexit); upgrade advisory captures doctor to a file'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 177 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 177
+  commits: 2
+  files_changed: 13
+  lines_added: 3401
+  lines_removed: 36
+  footprint_refreshed_at: '2026-10-23T13:50:18Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4691-fw-upgrades-advisory-fw-doctor-step-exit.md
+generated_by: context-agent-hybrid
