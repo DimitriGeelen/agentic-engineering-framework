@@ -47991,3 +47991,21 @@ scan_id: R-96c49f2e
 task_id: T-4718
 payload:
   task_file: .tasks/active/T-4718-remove-the-designer-corpus-nav-entry-t-4.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T21:09:01Z'
+scan_id: R-43270c87
+task_id: T-4717
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T21:09:01Z'
+scan_id: R-43270c87
+task_id: T-4717
+payload:
+  task_file: .tasks/active/T-4717-dimitri-mint-dev-upgrade-files-to-commit.md

@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4717: dimitri-mint-dev: upgrade files-to-commit list still missing on a plain one-step upgrade from an external clone (be.14, clean tree), though it works on ring20 and in the t4705 bats
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T21:09:22Z
+# ============================================================================
+
+task_id: T-4717
+task_name: "dimitri-mint-dev: upgrade files-to-commit list still missing on a plain one-step upgrade from an external clone (be.14, clean tree), though it works on ring20 and in the t4705 bats"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T20:27:22Z
+completed: 2026-10-23T21:00:48Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T22:27:57+02:00
+last_commit: 2026-10-23T22:59:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture upgrade file list missing for dimitri-mint-dev plain external-clone upgrade (be.14). upgrade file list runs the helper beside the running lib/upgrade.sh (never via FRAMEWORK_ROOT) and prints one reason line when snapshot/report fail or journalled paths stay dirty-unchanged; t4705 pins the dimitri-mint-dev HOME/inherited-root/redirected shape; ACs, RCA, Verification; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Field shape (consumer = HOME, inherited FRAMEWORK_ROOT = be.11 vendored copy, PROJECT_ROOT inherited, output redirected to a file) reproduced in bats and hypotheses (a)/(b)/(c) tested; outcome recorded in ## RCA'
+  - 'Fix: the commit-list snapshot/journal/report always run the RUNNING (clone''s) code, never the inherited FRAMEWORK_ROOT'
+  - 'When the list cannot be computed, the upgrade summary prints one reason line instead of nothing'
+  - 'tests/unit/t4705_upgrade_commit_list_vendored_external.bats extended with this shape (inherited old FRAMEWORK_ROOT + redirected output) and the reason-line path; fails without the fix, passes with it'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats stays green; `bin/fw test invariants` green; vendor self in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade_commit_list.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade_commit_list.py'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4717-dimitri-mint-dev-upgrade-files-to-commit.md'
+  - 'tests/unit/t4692_upgrade_commit_list.bats'
+  - 'tests/unit/t4705_upgrade_commit_list_vendored_external.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T22:27:57'
+    action: 'T-4717: capture upgrade file list missing for dimitri-mint-dev plain external-clone upgrade (be.14)'
+  - time: '2026-10-23T22:59:52'
+    action: 'T-4717: upgrade file list runs the helper beside the running lib/upgrade.sh (never via FRAMEWORK_ROOT) and prints one reason line when snapshot/report fail or journalled paths stay dirty-unchanged; t4705 pins the dimitri-mint-dev HOME/inherited-root/redirected shape; ACs, RCA, Verification; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 33 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 33
+  commits: 3
+  files_changed: 10
+  lines_added: 744
+  lines_removed: 32
+  footprint_refreshed_at: '2026-10-23T21:09:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4717-dimitri-mint-dev-upgrade-files-to-commit.md
+generated_by: context-agent-hybrid
