@@ -102,8 +102,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The caller that killed the live Watchtower at 13:27:36Z is named in ## RCA with file:line and evidence
+- [ ] The caller that killed the live Watchtower at 13:27:36Z is named in ## RCA with file:line and evidence, OR (if unattributable) the placement mechanism below is recorded as the most likely class with the evidence for it
 - [ ] The caller can no longer signal the live project's Watchtower from a test (fixed at the source; regression test fails without the fix)
+- [ ] `bin/watchtower.sh start` (and restart) runs the server in its OWN systemd scope (reuse lib/agent-scope.sh `fw_agent_scope_prefix`, slice aef.slice, unit aef-watchtower-*), falling back cleanly where systemd is absent; a test proves the started server's /proc/<pid>/cgroup is its own scope, not the caller's unit. Evidence 2026-10-23 17:2x: a `fw watchtower start` from the parent session put the server in `/system.slice/agentic-fleet-cockpit.service` (055's cockpit unit, which hosts this session), so a cockpit restart would kill it; the 15:27 victim had been started by a worker (w4663) and lived in whatever unit that was. Parent moved the live server by hand: `systemd-run --scope --slice=aef.slice --unit=aef-watchtower-<ts> bin/fw watchtower restart` -> cgroup /aef.slice/aef-watchtower-1792770391.scope.
 - [x] T-4671 live_repo_guard also fails a test that changes or kills the live Watchtower pid (bats test covers it)
 - [x] Supervision: a cron registry entry runs an ensure path that restarts a dead Watchtower and appends the outage to a log; `fw cron generate` run (crontab install is the operator's)
 - [x] `fw doctor` WARNs when a Watchtower outage was recorded recently (bats test covers it)
