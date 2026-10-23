@@ -1,8 +1,17 @@
 ---
 id: T-4693
-name: "fw watchtower current flaps STALE ('pid predates 217 files') for about a minute right after a systemctl restart, then reads current for the same pid"
+name: "fw watchtower current flaps STALE ('pid predates 217 files') for about a minute
+  right after a systemctl restart, then reads current for the same pid"
 description: >
-  ring20 be.8 report (sidecar 8ce4401e), doctor shows the same WARN. Not __pycache__: lib/watchtower-staleness.sh already excludes it (line 106-118). Candidates: the process start time read right after restart (ps etimes / /proc stat rounding or clock), the triple-file pid still naming the previous process when systemd (not bin/watchtower.sh) restarted it, or the 217 files' mtimes from an upgrade written in the same second. Reproduce with a systemd-style restart (process started outside watchtower.sh), find which input differs between the stale read and the current read a minute later, fix the comparison (e.g. compare against the live pid's start time, with a small tolerance) and add a test.
+  ring20 be.8 report (sidecar 8ce4401e), doctor shows the same WARN. Not __pycache__:
+  lib/watchtower-staleness.sh already excludes it (line 106-118). Candidates: the
+  process start time read right after restart (ps etimes / /proc stat rounding or
+  clock), the triple-file pid still naming the previous process when systemd (not
+  bin/watchtower.sh) restarted it, or the 217 files' mtimes from an upgrade written
+  in the same second. Reproduce with a systemd-style restart (process started outside
+  watchtower.sh), find which input differs between the stale read and the current
+  read a minute later, fix the comparison (e.g. compare against the live pid's start
+  time, with a small tolerance) and add a test.
 
 status: captured
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T11:13:11Z
-last_update: 2026-10-23T11:13:11Z
-date_finished: null
+last_update: '2026-10-23T11:15:21Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-23T11:15:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4693: fw watchtower current flaps STALE ('pid predates 217 files') for about a minute right after a systemctl restart, then reads current for the same pid
