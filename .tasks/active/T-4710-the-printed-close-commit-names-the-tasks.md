@@ -1,10 +1,18 @@
 ---
 id: T-4710
-name: "The printed close commit names the task's .tasks/active/ path even when that file was never committed (task created and closed in one session), so git commit -- <paths> fails 'pathspec did not match'"
+name: "The printed close commit names the task's .tasks/active/ path even when that
+  file was never committed (task created and closed in one session), so git commit
+  -- <paths> fails 'pathspec did not match'"
 description: >
-  1023 report (sidecar 274b30db, seen on 1.8.12 for their T-170/T-173; same hint shape in be.11 after T-4707): the close hint 'git commit -m ... -- .tasks/completed/X .context/episodic/X .tasks/active/X' includes the active path unconditionally. List the active path only when git tracks it (git ls-files --error-unmatch / it appears in HEAD); keep the hint verbatim-runnable in both cases. Test: create + close a task with no prior commit of its active file, run the printed hint verbatim, it succeeds; the tracked case still includes the rename source.
+  1023 report (sidecar 274b30db, seen on 1.8.12 for their T-170/T-173; same hint shape
+  in be.11 after T-4707): the close hint 'git commit -m ... -- .tasks/completed/X
+  .context/episodic/X .tasks/active/X' includes the active path unconditionally. List
+  the active path only when git tracks it (git ls-files --error-unmatch / it appears
+  in HEAD); keep the hint verbatim-runnable in both cases. Test: create + close a
+  task with no prior commit of its active file, run the printed hint verbatim, it
+  succeeds; the tracked case still includes the rename source.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T16:40:41Z
-last_update: 2026-10-23T16:40:41Z
-date_finished: null
+last_update: 2026-10-23T16:41:54Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +58,39 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T16:41:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4710: The printed close commit names the task's .tasks/active/ path even when that file was never committed (task created and closed in one session), so git commit -- <paths> fails 'pathspec did not match'
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+1023 report against 1.8.12; current code already gates the active path on HEAD (T-4094). This task pins that with an end-to-end regression test.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Closing a task whose `.tasks/active/` file was never committed prints a `next: git commit ...` hint that does NOT name the active path, and that hint run verbatim succeeds (bats case in a temp git repo)
+- [x] Closing a task whose active file was committed prints a hint that names the active path (rename source) and run verbatim succeeds
+- [x] T-4707's close-hint bats stays green
+- [x] `bin/fw vendor self --check --task T-4710` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,8 +275,22 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4710_close_hint_untracked_active.bats > /tmp/.t4710.out 2>&1 && ! grep -q "^not ok" /tmp/.t4710.out && grep -q "^ok 4 " /tmp/.t4710.out
+test "$(grep -c '# skip' /tmp/.t4710.out)" -eq 0
+timeout 600 bats tests/unit/t4707_close_hint_commit_passes_gate.bats > /tmp/.t4707.out 2>&1 && ! grep -q "^not ok" /tmp/.t4707.out && grep -q "^ok 4 " /tmp/.t4707.out
+test "$(grep -c '# skip' /tmp/.t4707.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/t4710_close_hint_untracked_active.bats > /tmp/.t4710.lint 2>&1 && grep -q "clean" /tmp/.t4710.lint
+bin/fw vendor self --check --task T-4710
 
 ## RCA
+
+**Symptom:** 1023 (sidecar 274b30db, on 1.8.12) closed tasks created in the same session (their T-170, T-173), then committed with a pathspec naming `.tasks/active/<file>`; git refused "pathspec did not match any file(s) known to git" because that file was never committed.
+
+**Root cause:** in 1.8.12 the close printed only the T-1032 next-step hint at the move site, which told the agent the rename was staged — false for a never-committed task (plain `mv`, nothing staged) — so the agent built its pathspec from the pre-close path. Fixed already by T-4094 (71ed6c362, first in v1.8.14-be.3): `_t4094_note_move_source` (agents/task-create/update-task.sh:91) records whether the source is at HEAD, and the close-staging postcondition (update-task.sh:3223) adds the active path to the printed pathspec only in that case. Reproduced on be.11 code in a temp repo: never-committed, staged-not-committed, committed, and symlinked-root closes all print a hint that runs verbatim. No source change was needed; the report is from a release that predates T-4094.
+
+**Why structurally allowed:** T-4094 shipped without an end-to-end test that *runs* the printed hint for the never-committed case; T-4707's test only covers a task committed before close, so the HEAD gate could regress unseen.
+
+**Prevention:** `tests/unit/t4710_close_hint_untracked_active.bats` runs the printed line verbatim for all four cases. Mutation-checked from a git-archive copy: forcing the active path in fails cases 1, 2, 4; dropping it fails case 3.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -345,3 +386,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4710-the-printed-close-commit-names-the-tasks.md
 - **Context:** Initial task creation
+
+### 2026-10-23T16:41:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: now → now
