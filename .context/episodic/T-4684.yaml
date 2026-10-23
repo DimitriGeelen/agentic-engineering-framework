@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4684: Consumers do not gitignore .context/dispatch/ (T-4675 moved worker dirs there): a worker's env.sh, prompt.md and results can be committed by accident
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T10:15:22Z
+# ============================================================================
+
+task_id: T-4684
+task_name: "Consumers do not gitignore .context/dispatch/ (T-4675 moved worker dirs there): a worker's env.sh, prompt.md and results can be committed by accident"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T09:50:19Z
+completed: 2026-10-23T10:05:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T11:50:39+02:00
+last_commit: 2026-10-23T12:05:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture consumers missing .context/dispatch/ gitignore (832 be.5 report). fw init and fw upgrade gitignore .context/dispatch/ in consumers (shared lib/dispatch-gitignore.sh); upgrade warns with git rm --cached when worker files are already tracked. tick Agent ACs, register lib/dispatch-gitignore.sh fabric card
+
+# Key outcomes
+outcomes:
+  - 'New `lib/dispatch-gitignore.sh` holds the one rule list and an idempotent, append-only `fw_dispatch_ensure_ignored <root> [--dry-run]` writing `<root>/.context/.gitignore` (never removes user lines; prints rules added)'
+  - '`fw init` calls it, so a fresh consumer''s `git check-ignore` covers `.context/dispatch/<worker>/env.sh`'
+  - '`fw upgrade` calls it (WOULD ADD / ADDED / OK lines) and, when files under `.context/dispatch/` are already tracked, prints a NOTE with the `git rm --cached` command instead of untracking them'
+  - '`tests/unit/t4684_dispatch_gitignore.bats` covers helper, idempotence/dry-run, init end-to-end, upgrade wiring and the already-tracked warning; red on pre-fix code (no helper), green after'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` stays green; `bin/fw vendor self --check --task T-4684` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/dispatch-gitignore.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.fabric/components/lib-dispatch-gitignore.yaml'
+  - 'lib/dispatch-gitignore.sh'
+  - 'lib/init.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4684-consumers-do-not-gitignore-contextdispat.md'
+  - 'tests/unit/t4684_dispatch_gitignore.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T11:50:39'
+    action: 'T-4684: capture consumers missing .context/dispatch/ gitignore (832 be.5 report)'
+  - time: '2026-10-23T11:58:29'
+    action: 'T-4684: fw init and fw upgrade gitignore .context/dispatch/ in consumers (shared lib/dispatch-gitignore.sh); upgrade warns with git rm --cached when worker files are already tracked'
+  - time: '2026-10-23T12:05:11'
+    action: 'T-4684: tick Agent ACs, register lib/dispatch-gitignore.sh fabric card'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 15
+  commits: 3
+  files_changed: 9
+  lines_added: 714
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4684-consumers-do-not-gitignore-contextdispat.md
+generated_by: context-agent-hybrid
