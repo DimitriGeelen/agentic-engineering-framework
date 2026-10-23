@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4693: fw watchtower current flaps STALE ('pid predates 217 files') for about a minute right after a systemctl restart, then reads current for the same pid
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T13:28:34Z
+# ============================================================================
+
+task_id: T-4693
+task_name: "fw watchtower current flaps STALE ('pid predates 217 files') for about a minute right after a systemctl restart, then reads current for the same pid"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T11:13:11Z
+completed: 2026-10-23T13:27:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T13:13:45+02:00
+last_commit: 2026-10-23T15:13:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture watchtower currency flap after systemd restart (ring20 be.8). record ring20 data point (pid was the new MainPID; start-time read is the suspect). watchtower currency reads a fixed /proc start time + 2 s tolerance (no STALE flap after restart)
+
+# Key outcomes
+outcomes:
+  - 'Root cause localised: the input that differs between the STALE read and the later current read is named with file:line in `## RCA`, backed by a reproduction on this host'
+  - '`watchtower_process_start_epoch` (lib/watchtower-staleness.sh) reads the exact start time from `/proc/<pid>/stat` starttime + `/proc/stat` btime where available, falling back to `ps -o etimes=` elsewhere'
+  - '`watchtower_stale_sources` ignores files whose mtime is within a small tolerance (`FW_WATCHTOWER_STALE_TOLERANCE`, default 2 s) of the process start, and still reports a file modified clearly after start'
+  - 'Regression test `tests/unit/t4693_watchtower_start_time.bats` passes with the fix and fails against the pre-fix library'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'watchtower currency reads a fixed /proc start time + 2 s tolerance (no STALE flap after restart)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/watchtower-staleness.sh'
+  - 'lib/watchtower-staleness.sh'
+  - '.tasks/active/T-4693-fw-watchtower-current-flaps-stale-pid-pr.md'
+  - 'tests/unit/t4693_watchtower_start_time.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T13:13:45'
+    action: 'T-4693: capture watchtower currency flap after systemd restart (ring20 be.8)'
+  - time: '2026-10-23T13:19:04'
+    action: 'T-4693: record ring20 data point (pid was the new MainPID; start-time read is the suspect)'
+  - time: '2026-10-23T15:13:47'
+    action: 'T-4693: watchtower currency reads a fixed /proc start time + 2 s tolerance (no STALE flap after restart)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 134 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 134
+  commits: 3
+  files_changed: 4
+  lines_added: 548
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4693-fw-watchtower-current-flaps-stale-pid-pr.md
+generated_by: context-agent-hybrid

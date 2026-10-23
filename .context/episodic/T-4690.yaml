@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4690: The tree re-dirties after every commit: the episodic footprint refresh rewrites .context/episodic/T-XXX.yaml right after the closing commit, and feedback-stream.yaml is appended continuously
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T13:29:46Z
+# ============================================================================
+
+task_id: T-4690
+task_name: "The tree re-dirties after every commit: the episodic footprint refresh rewrites .context/episodic/T-XXX.yaml right after the closing commit, and feedback-stream.yaml is appended continuously"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T10:39:46Z
+completed: 2026-10-23T13:28:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T15:20:41+02:00
+last_commit: 2026-10-23T15:20:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-commit writes the closing commit's episodic footprint and carries feedback-stream, so a close leaves the tree clean
+
+# Key outcomes
+outcomes:
+  - 'The episodic footprint of a task closed by a commit is computed BEFORE that commit (pre-commit stage, counting the commit being made), so the post-commit refresh finds it `unchanged` and writes nothing; no commit is amended or rewritten'
+  - 'Fixture test: a temp repo with the framework hooks installed, a fixture task closed through `update-task.sh --status work-completed`, then committed (both plain `git commit` and `git commit -- <paths>`) leaves `git status --porcelain` empty (feedback-stream.yaml included), and the episodic''s counters equal the mined values'
+  - 'Post-commit refresh stays as the fallback (prediction wrong → counters still corrected); existing `episodic_footprint_refresh.bats` stays green'
+  - 'feedback-stream.yaml tracking decision recorded in `## Decisions`'
+  - '`bin/fw vendor self --check --task T-4690` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — where the footprint is computed'
+    chose: 'predict in pre-commit and write into the staged episodic. Post-commit stays as the fallback, for the predicted ids plus the ids in the message.'
+    rationale: 'pre-commit is the last hook whose index changes land in the commit. Measured: a `git add` in prepare-commit-msg or commit-msg stays staged but is not committed. Pre-commit cannot see the message, so it predicts from the staged set. A close is an *added* episodic, or a modified one together with an added `.tasks/completed/T-XXX-*.md`. A commit that closes a task is expected to say `T-XXX:`. A wrong guess is corrected by post-commit the old way, never kept.'
+    alternatives_rejected: ['amending in post-commit (rewrites commits; forbidden). Moving the counters out of the tracked episodic (every reader of `metrics:` would have to change). Reading the message from the parent''s argv in pre-commit (`/proc`, not portable, misses `-F` and the editor).']
+  - decision: '2026-10-23 — feedback-stream.yaml'
+    chose: 'keep it tracked (T-4231''s call) and carry it in the close commit. When pre-commit predicts a close, it stages the stream before computing the footprint.'
+    rationale: 'it is a record, not runtime state. Its `auto_tick:<task>:<ac>:<digest>` entries are the T-1985 sovereignty rail that stops the reviewer re-ticking a criterion a human unticked; ignoring the file would lose that across clones. It is append-only, so committing other writers'' appended events along with it is harmless (`lib/integrate.py` already merges it as a union of documents).'
+    alternatives_rejected: ['ignoring it with a migration (loses the rail). A batch-committing job like T-4676''s sweeps (still dirty after a close until the job runs, and adds a cron leg). Reviewer writes outside a close (cron audits, ad-hoc `fw reviewer`) still leave the stream modified until the next close or handover commit carries it. - **Observed, not fixed here:** about 51 of about 318 uncommitted stream events in the live repo name synthetic ids T-99xx. Test runs write reviewer events into the live stream, which is a test-isolation bug. It is reported to the parent for registration.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/lib/episodic_footprint.py'
+  - 'agents/git/lib/hooks.sh'
+  - 'lib/episodic_footprint.py'
+  - '.tasks/active/T-4690-the-tree-re-dirties-after-every-commit-t.md'
+  - 'tests/unit/t4690_clean_tree_after_close.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T15:20:41'
+    action: 'T-4690: pre-commit writes the closing commit''s episodic footprint and carries feedback-stream, so a close leaves the tree clean'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 168 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 168
+  commits: 2
+  files_changed: 7
+  lines_added: 1300
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4690-the-tree-re-dirties-after-every-commit-t.md
+generated_by: context-agent-hybrid

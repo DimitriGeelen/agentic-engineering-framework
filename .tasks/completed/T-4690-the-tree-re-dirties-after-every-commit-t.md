@@ -1,24 +1,24 @@
 ---
-id: T-4693
-name: "fw watchtower current flaps STALE ('pid predates 217 files') for about a minute
-  right after a systemctl restart, then reads current for the same pid"
+id: T-4690
+name: "The tree re-dirties after every commit: the episodic footprint refresh rewrites
+  .context/episodic/T-XXX.yaml right after the closing commit, and feedback-stream.yaml
+  is appended continuously"
 description: >
-  ring20 be.8 report (sidecar 8ce4401e), doctor shows the same WARN. Not __pycache__:
-  lib/watchtower-staleness.sh already excludes it (line 106-118). Candidates: the
-  process start time read right after restart (ps etimes / /proc stat rounding or
-  clock), the triple-file pid still naming the previous process when systemd (not
-  bin/watchtower.sh) restarted it, or the 217 files' mtimes from an upgrade written
-  in the same second. Reproduce with a systemd-style restart (process started outside
-  watchtower.sh), find which input differs between the stale read and the current
-  read a minute later, fix the comparison (e.g. compare against the live pid's start
-  time, with a small tolerance) and add a test.
+  1023 report (sidecar b3fcf74f, same class as their T-105 last_update bump) and seen
+  in AEF on 2026-10-23 ('episodic T-4658: footprint refreshed' during commits, episodic
+  files modified after closes). Either fold the footprint refresh into the commit
+  that triggers it (amend-free: compute before the commit, or stage in pre-commit)
+  or move derived footprint data out of the tracked episodic file; decide whether
+  feedback-stream.yaml should be tracked at all (T-4231 kept it tracked) or written
+  in batches by a committing job. Goal: a clean tree after a close commit, verified
+  by a test that closes a fixture task and asserts git status is clean.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh, lib/episodic_footprint.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,9 +46,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-23T11:13:11Z
-last_update: 2026-10-23T13:05:07Z
-date_finished:
+created: 2026-10-23T10:39:46Z
+last_update: 2026-10-23T13:28:39Z
+date_finished: 2026-10-23T13:28:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,7 +60,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-23T11:15:21Z'
+  - ts: '2026-10-23T10:45:21Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -70,40 +70,43 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-23T11:15:39Z'
+  - ts: '2026-10-23T10:45:39Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
       D2: 0
       D3: 0
       D4: 0
-      F-RECALL: 0
+      F-RECALL: 1
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+      (no-signal); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4693: fw watchtower current flaps STALE ('pid predates 217 files') for about a minute right after a systemctl restart, then reads current for the same pid
+# T-4690: The tree re-dirties after every commit: the episodic footprint refresh rewrites .context/episodic/T-XXX.yaml right after the closing commit, and feedback-stream.yaml is appended continuously
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
-
-ring20 data point (sidecar 3d9180b2): the STALE line already named pid 2792422, the NEW MainPID (systemctl ActiveEnterTimestamp 11:10:37 UTC); .context/working/watchtower.pid = 2792422, and the same pid read current a minute later. So the triple file was NOT stale; the check ran ~25 s after `systemctl restart`. Prime suspect: the process start-time read (or the comparison against file mtimes) shortly after start.
+Close commits left `.context/episodic/T-XXX.yaml` modified (the post-commit footprint
+refresh) and `.context/working/feedback-stream.yaml` modified too (reviewer events
+written during the close). Fix: pre-commit writes the footprint into the staged
+episodic, counting the commit being made, and carries the feedback stream into the
+close commit.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause localised: the input that differs between the STALE read and the later current read is named with file:line in `## RCA`, backed by a reproduction on this host
-- [x] `watchtower_process_start_epoch` (lib/watchtower-staleness.sh) reads the exact start time from `/proc/<pid>/stat` starttime + `/proc/stat` btime where available, falling back to `ps -o etimes=` elsewhere
-- [x] `watchtower_stale_sources` ignores files whose mtime is within a small tolerance (`FW_WATCHTOWER_STALE_TOLERANCE`, default 2 s) of the process start, and still reports a file modified clearly after start
-- [x] Regression test `tests/unit/t4693_watchtower_start_time.bats` passes with the fix and fails against the pre-fix library
+- [x] The episodic footprint of a task closed by a commit is computed BEFORE that commit (pre-commit stage, counting the commit being made), so the post-commit refresh finds it `unchanged` and writes nothing; no commit is amended or rewritten
+- [x] Fixture test: a temp repo with the framework hooks installed, a fixture task closed through `update-task.sh --status work-completed`, then committed (both plain `git commit` and `git commit -- <paths>`) leaves `git status --porcelain` empty (feedback-stream.yaml included), and the episodic's counters equal the mined values
+- [x] Post-commit refresh stays as the fallback (prediction wrong → counters still corrected); existing `episodic_footprint_refresh.bats` stays green
+- [x] feedback-stream.yaml tracking decision recorded in `## Decisions`
+- [x] `bin/fw vendor self --check --task T-4690` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,10 +292,15 @@ ring20 data point (sidecar 3d9180b2): the STALE line already named pid 2792422, 
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
-timeout 300 bats tests/unit/t4693_watchtower_start_time.bats > /tmp/.t4693.out 2>&1 && ! grep -q "^not ok" /tmp/.t4693.out
-test "$(grep -c '# skip' /tmp/.t4693.out)" -eq 0
-bash -n lib/watchtower-staleness.sh
-bin/fw vendor self --check --task T-4693
+timeout 900 bats tests/unit/t4690_clean_tree_after_close.bats > /tmp/.t4690-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4690-a.out
+test "$(grep -c '# skip' /tmp/.t4690-a.out)" -eq 0
+timeout 900 bats tests/unit/episodic_footprint_refresh.bats > /tmp/.t4690-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4690-b.out
+test "$(grep -c '# skip' /tmp/.t4690-b.out)" -eq 0
+timeout 900 bats tests/unit/t4403_hook_block_preserve.bats > /tmp/.t4690-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4690-c.out
+test "$(grep -c '# skip' /tmp/.t4690-c.out)" -eq 0
+bash -n agents/git/lib/hooks.sh
+grep -q 'FW-HOOK-BLOCK: t4690-footprint-predict' agents/git/lib/hooks.sh
+bin/fw vendor self --check --task T-4690
 
 ## RCA
 
@@ -310,13 +318,15 @@ bin/fw vendor self --check --task T-4693
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** ring20 be.8, ~25 s after `systemctl restart`: `fw watchtower current` (and doctor) said STALE, "pid 2792422 predates 217 files" — the NEW MainPID, triple file current. The same pid read current a minute later.
+**Symptom:** the tree was dirty again after every task-close commit. `episodic T-XXXX: footprint refreshed` printed during the commit, and both `.context/episodic/T-XXXX.yaml` and `.context/working/feedback-stream.yaml` showed modified (1023 report, sidecar b3fcf74f; AEF 2026-10-23, T-4658).
 
-**Root cause:** the input that differs between the two reads is the process start epoch. `watchtower_process_start_epoch` (lib/watchtower-staleness.sh, pre-fix lines 52-57) re-derived it on every call as `$(date +%s) - $(ps -o etimes=)`: two whole-second floors taken at two moments, so one pid yields S on one read and S+1 on the next depending on the sub-second phase of the check. `watchtower_stale_sources` (pre-fix line 113) then compared it with whole-second file mtimes using a strict `mtime > started` and no tolerance. `fw upgrade` rewrites all of web/ in the seconds around the restart, so those files sat exactly on the boundary and flipped between stale and current. Reproduced on this host: the pre-fix library returned 1792760988 and then 1792760989 for one live pid within a second (tests/unit/t4693_watchtower_start_time.bats test 1 against `git show HEAD:lib/watchtower-staleness.sh`). Not reproduced on ring20 itself: no ring20 access from this worker, so a host-specific clock contribution there (container-virtualised /proc/uptime, for example) is not ruled out. The tolerance covers a 1-2 s error, not a larger one.
+**Root cause:** the episodic is generated by `update-task.sh --status work-completed` before the commit that carries it, so its git counters leave that commit out. T-3130 corrected them from the post-commit hook (`agents/git/lib/hooks.sh`, post-commit T-3130 block → `lib/episodic_footprint.py`). It wrote a tracked file after the commit existed, which by construction dirties the tree. Separately, the close runs the reviewer, which appends to the tracked `feedback-stream.yaml` (`lib/reviewer/static_scan.py:3169`), and nothing put those events in the close commit.
 
-**Why structurally allowed:** the T-2938 tests check that the start epoch is "roughly now" (within -2..30 s) and use files hours away from the start, so a 1 s jitter between reads, and files written within a second of the start, were never exercised. Nothing read the same pid twice.
+**Why structurally allowed:** T-3130's tests asserted the counters, never the tree. No test closed a task, committed through the real hooks, and then looked at `git status`.
 
-**Prevention:** the start epoch now comes from `/proc/<pid>/stat` starttime + `/proc/stat` btime, which is fixed for the pid (falls back to etimes off Linux or when /proc looks wrong). The comparison allows `FW_WATCHTOWER_STALE_TOLERANCE` (default 2 s), which also absorbs btime's whole-second truncation. `tests/unit/t4693_watchtower_start_time.bats` pins both: the same pid gives the same start on six reads across 3 s, files within the tolerance never read stale, and a file 10 s after the start still does. Against the pre-fix library, 4 of its 5 tests fail.
+**Prevention:** `tests/unit/t4690_clean_tree_after_close.bats` installs the real hooks into a fixture repo and closes fixture tasks through `update-task.sh`. It commits three ways (plain, `-- <paths>`, two tasks in one commit), then asserts `git status --porcelain` is clean and the counters equal a fresh mine. With the pre-commit block disabled, tests 1-3 fail with exactly the reported ` M .context/episodic/T-…yaml` / ` M .context/working/feedback-stream.yaml`.
+
+**Fix:** the last pre-commit block (`FW-HOOK-BLOCK: t4690-footprint-predict`) runs `episodic_footprint.py --predict-staged`. It stages the feedback stream, then writes the counters into the staged episodic, counting the commit being made. It iterates to a fixed point, because the episodic is part of its own diff. For `git commit -- <paths>` it also stages into `index.lock`. Post-commit re-checks the predicted ids as a fallback. Nothing is amended.
 
 ## Evolution
 
@@ -382,6 +392,18 @@ bin/fw vendor self --check --task T-4693
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-23 — where the footprint is computed
+- **Chose:** predict in pre-commit and write into the staged episodic. Post-commit stays as the fallback, for the predicted ids plus the ids in the message.
+- **Why:** pre-commit is the last hook whose index changes land in the commit. Measured: a `git add` in prepare-commit-msg or commit-msg stays staged but is not committed. Pre-commit cannot see the message, so it predicts from the staged set. A close is an *added* episodic, or a modified one together with an added `.tasks/completed/T-XXX-*.md`. A commit that closes a task is expected to say `T-XXX:`. A wrong guess is corrected by post-commit the old way, never kept.
+- **Rejected:** amending in post-commit (rewrites commits; forbidden). Moving the counters out of the tracked episodic (every reader of `metrics:` would have to change). Reading the message from the parent's argv in pre-commit (`/proc`, not portable, misses `-F` and the editor).
+- **Residual:** a later commit that names an already-closed task (e.g. a vendor sync after the close) still gets that episodic re-measured by post-commit, which leaves it modified. That commit does not stage the episodic, so there is nothing to predict against. The measurement is correct and waits for the next commit to carry it. It is outside the close-commit goal.
+
+### 2026-10-23 — feedback-stream.yaml
+- **Chose:** keep it tracked (T-4231's call) and carry it in the close commit. When pre-commit predicts a close, it stages the stream before computing the footprint.
+- **Why:** it is a record, not runtime state. Its `auto_tick:<task>:<ac>:<digest>` entries are the T-1985 sovereignty rail that stops the reviewer re-ticking a criterion a human unticked; ignoring the file would lose that across clones. It is append-only, so committing other writers' appended events along with it is harmless (`lib/integrate.py` already merges it as a union of documents).
+- **Rejected:** ignoring it with a migration (loses the rail). A batch-committing job like T-4676's sweeps (still dirty after a close until the job runs, and adds a cron leg). Reviewer writes outside a close (cron audits, ad-hoc `fw reviewer`) still leave the stream modified until the next close or handover commit carries it.
+- **Observed, not fixed here:** about 51 of about 318 uncommitted stream events in the live repo name synthetic ids T-99xx. Test runs write reviewer events into the live stream, which is a test-isolation bug. It is reported to the parent for registration.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -394,11 +416,28 @@ bin/fw vendor self --check --task T-4693
 
 ## Updates
 
-### 2026-10-23T11:13:11Z — task-created [task-create-agent]
+### 2026-10-23T10:39:46Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4693-fw-watchtower-current-flaps-stale-pid-pr.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4690-the-tree-re-dirties-after-every-commit-t.md
 - **Context:** Initial task creation
 
-### 2026-10-23T13:04:41Z — status-update [task-update-agent]
+### 2026-10-23T13:04:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d4b8e919
+- **Timestamp:** 2026-10-23T13:29:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-23T13:28:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
