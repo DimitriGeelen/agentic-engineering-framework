@@ -7,16 +7,16 @@ description: >
   capability (one question -> answer + sources, through the operator's own logged-in
   Chrome)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-19T17:16:37Z
-last_update: '2026-10-19T17:30:31Z'
-date_finished:
+last_update: 2026-10-23T21:30:11Z
+date_finished: 2026-10-23T21:30:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -119,15 +119,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -200,7 +200,33 @@ The AEF version reuses it as is, opt-in, and adds:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+GO, with conditions, after reading all three files (verbatim in docs/reports/T-4414-inputs/, artefact docs/reports/T-4414-perplexity-seat.md).
+
+The seat is carefully built:
+- dedicated profile kept out of git;
+- CDP on loopback only, actively checked;
+- never root;
+- stops at every login, captcha or check, with no retry;
+- one page per question.
+
+The AEF version reuses it as is, opt-in, and adds:
+- a fail-closed brief screen with a seeded estate deny list (hostnames, domains, project names, IPv6, e-mail, more token formats);
+- consent recorded where the operator clicks;
+- a record of which account answered;
+- a drift canary;
+- off the operator's desktop by default: a virtual display (Xvfb) with a localhost-only VNC view for the rare re-login. This is a condition from the sender's operator (focus theft, the dictation incident).
+
+One choice is the operator's: whether driving the consumer web UI under the operator's own account is acceptable. The alternative is the official Perplexity API, registered as a paid backend with per-request approval. If the operator prefers the API, the recommendation becomes NO-GO for the seat and GO for that backend.
+
+Evidence:
+
+**Date**: 2026-10-23T21:30:10Z
 
 ## Updates
 
@@ -209,3 +235,58 @@ The AEF version reuses it as is, opt-in, and adds:
 
 ### 2026-10-19T17:19:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-23T21:30:10Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+GO, with conditions, after reading all three files (verbatim in docs/reports/T-4414-inputs/, artefact docs/reports/T-4414-perplexity-seat.md).
+
+The seat is carefully built:
+- dedicated profile kept out of git;
+- CDP on loopback only, actively checked;
+- never root;
+- stops at every login, captcha or check, with no retry;
+- one page per question.
+
+The AEF version reuses it as is, opt-in, and adds:
+- a fail-closed brief screen with a seeded estate deny list (hostnames, domains, project names, IPv6, e-mail, more token formats);
+- consent recorded where the operator clicks;
+- a record of which account answered;
+- a drift canary;
+- off the operator's desktop by default: a virtual display (Xvfb) with a localhost-only VNC view for the rare re-login. This is a condition from the sender's operator (focus theft, the dictation incident).
+
+One choice is the operator's: whether driving the consumer web UI under the operator's own account is acceptable. The alternative is the official Perplexity API, registered as a paid backend with per-request approval. If the operator prefers the API, the recommendation becomes NO-GO for the seat and GO for that backend.
+
+Evidence:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d2898114
+- **Timestamp:** 2026-10-23T21:30:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-90aef234
+- **Timestamp:** 2026-10-23T21:30:13Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-10-23T21:30:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
