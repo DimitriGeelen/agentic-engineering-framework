@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4713: Add SCRATCH_WARN_GB (T-4703) to web/blueprints/config.py so the config registry parity invariant is green (blocks every push)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T17:48:07Z
+# ============================================================================
+
+task_id: T-4713
+task_name: "Add SCRATCH_WARN_GB (T-4703) to web/blueprints/config.py so the config registry parity invariant is green (blocks every push)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T17:45:56Z
+completed: 2026-10-23T17:47:41Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-23T19:47:38+02:00
+last_commit: 2026-10-23T19:47:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  SCRATCH_WARN_GB in web/blueprints/config.py (config registry parity invariant was red, blocked every push)
+
+# Key outcomes
+outcomes:
+  - 'SCRATCH_WARN_GB is in web/blueprints/config.py with the same default as lib/config.sh; tests/lint/config-registry-parity.bats is green'
+  - 'Watchtower restarted and current'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.tasks/active/T-4713-add-scratchwarngb-t-4703-to-webblueprint.md'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T19:47:38'
+    action: 'T-4713: SCRATCH_WARN_GB in web/blueprints/config.py (config registry parity invariant was red, blocked every push)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 6
+  lines_added: 475
+  lines_removed: 5
+  footprint_refreshed_at: '2026-10-23T17:48:19Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4713-add-scratchwarngb-t-4703-to-webblueprint.md
+generated_by: context-agent-hybrid

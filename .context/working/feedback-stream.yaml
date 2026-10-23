@@ -47883,3 +47883,21 @@ scan_id: R-241edc23
 task_id: T-4712
 payload:
   task_file: .tasks/active/T-4712-t-4705-still-partial-on-dimitri-mint-dev.md
+---
+kind: scan_emitted
+timestamp: '2026-10-23T17:47:50Z'
+scan_id: R-9f3a84be
+task_id: T-4713
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-23T17:47:50Z'
+scan_id: R-9f3a84be
+task_id: T-4713
+payload:
+  task_file: .tasks/active/T-4713-add-scratchwarngb-t-4703-to-webblueprint.md
