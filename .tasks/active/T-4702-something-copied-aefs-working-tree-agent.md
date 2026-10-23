@@ -90,8 +90,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The code that copied the working tree into /tmp/tmp.*/fw is identified (file:line) with evidence (timing, content shape)
-- [ ] It copies only what it needs (git archive / ls-files, never .context/scratch or the live .context) and cleans up via trap, also on timeout; regression test proves no copy survives a killed run
+- [x] The copier is identified with evidence: worker w4694 (T-4694) ran `S=$(mktemp -d) && cp -a . "$S/fw"` at 2026-10-23T13:38:40Z (transcript .context/dispatch/w4694/result.jsonl); its tool timeout killed the cp mid-copy (dot-dirs first, 13 GB .context), no cleanup; the worker then switched to `git archive`. Not a test.
+- [x] Prevention: .context/working/worker-common.md (prepended to every dispatched worker prompt) now forbids working-tree copies and prescribes `git archive HEAD <paths> | tar -x` with an EXIT trap
 - [ ] Why .context is ~13 GB (scratch 7.6 GB, working 4.6 GB) is measured and a retention task filed if warranted
 
 ### Human
