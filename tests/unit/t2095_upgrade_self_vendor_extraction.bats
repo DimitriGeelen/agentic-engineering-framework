@@ -66,8 +66,9 @@ make_synthetic_fw_with_diff() {
 @test "t2095 t1: _self_vendor_libs() helper extracted in lib/upgrade.sh" {
     local fw_src="$FRAMEWORK_ROOT/lib/upgrade.sh"
     grep -qE '^_self_vendor_libs\(\) \{' "$fw_src"
-    # Inline call site uses the helper (not the inlined block)
-    grep -qE '_self_vendor_libs "\$dry_run"' "$fw_src"
+    # T-4688: do_upgrade no longer calls it (it wrote into the upgrade SOURCE);
+    # `fw vendor self` is the only caller.
+    ! grep -qE '^[[:space:]]+_self_vendor_libs "\$dry_run"' "$fw_src" || false
 }
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -149,7 +150,7 @@ make_synthetic_fw_with_diff() {
     run do_upgrade --help
     [ "$status" -eq 0 ]
     [[ "$output" == *"--no-self-vendor"* ]]
-    [[ "$output" == *"T-1217"* ]] || [[ "$output" == *"T-2095"* ]]
+    [[ "$output" == *"T-4688"* ]]
 }
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -175,7 +176,7 @@ make_synthetic_fw_with_diff() {
 # Default behaviour unchanged (no flag → helper called)
 # ─────────────────────────────────────────────────────────────────────────
 
-@test "t2095 t8: default (no flag) calls _self_vendor_libs (inline behavior preserved)" {
+@test "t2095 t8: default (no flag) does NOT call _self_vendor_libs (T-4688)" {
     local proj="$TEST_TEMP_DIR/default-proj"
     make_consumer "$proj"
     do_vendor() { return 0; }
@@ -185,7 +186,6 @@ make_synthetic_fw_with_diff() {
     export -f _self_vendor_libs 2>/dev/null || true
 
     run do_upgrade "$proj" --dry-run
-    [[ "$output" == *"HELPER_CALLED with dry_run=true"* ]]
-    # Skip message must NOT appear under default
-    [[ "$output" != *"Self-vendor skipped"* ]]
+    [[ "$output" != *"HELPER_CALLED"* ]] || false
+    [[ "$output" == *"Self-vendor skipped"*"T-4688"* ]]
 }

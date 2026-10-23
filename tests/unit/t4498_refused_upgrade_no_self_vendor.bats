@@ -90,7 +90,7 @@ _tree_hash() {
     [ "$(cat "$SRC/.agentic-framework/lib/a.sh")" = "v1" ]
 }
 
-@test "T-4498: CONTROL — an upgrade past the refusal checks still self-vendors (T-1217)" {
+@test "T-4498/T-4688: an upgrade past the refusal checks does not self-vendor either" {
     # Unshallow: the same pair resolves to `behind`, so no precheck refuses.
     git -C "$SRC" fetch -q --unshallow
     # Stop the run at step 1 (T-3150 unmatched project-owned marker), after the
@@ -99,6 +99,9 @@ _tree_hash() {
 
     run do_upgrade "$PROJ"
     [[ "$output" != *"REFUSED  Consumer"* ]]
-    [[ "$output" == *"Self-vendor"*"synced "*" file(s) to .agentic-framework/lib/"* ]]
-    [ "$(cat "$SRC/.agentic-framework/lib/a.sh")" = "v2" ]
+    # T-4688: the source is never written by an upgrade it serves; it was T-1217's
+    # inline self-vendor until then. `fw vendor self` owns that sync.
+    [[ "$output" == *"Self-vendor skipped"* ]]
+    [[ "$output" != *"Self-vendor:"*"synced"* ]] || false
+    [ "$(cat "$SRC/.agentic-framework/lib/a.sh")" = "v1" ]
 }

@@ -65,8 +65,8 @@ YAML
 @test "t2241 t1: _self_vendor_templates() helper extracted in lib/upgrade.sh" {
     local fw_src="$FRAMEWORK_ROOT/lib/upgrade.sh"
     grep -qE '^_self_vendor_templates\(\) \{' "$fw_src"
-    # Inline call site: do_upgrade invokes _self_vendor_templates alongside _self_vendor_libs
-    grep -qE '_self_vendor_templates "\$dry_run"' "$fw_src"
+    # T-4688: do_upgrade no longer calls it; `fw vendor self` is the only caller.
+    ! grep -qE '^[[:space:]]+_self_vendor_templates "\$dry_run"' "$fw_src" || false
 }
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -127,7 +127,7 @@ YAML
 # do_upgrade calls both helpers (Slice 2)
 # ─────────────────────────────────────────────────────────────────────────
 
-@test "t2241 t5: do_upgrade --dry-run invokes BOTH _self_vendor_libs AND _self_vendor_templates" {
+@test "t2241 t5: do_upgrade invokes NEITHER _self_vendor_libs NOR _self_vendor_templates (T-4688)" {
     local proj="$TEST_TEMP_DIR/both-helpers-proj"
     make_consumer "$proj"
     do_vendor() { return 0; }
@@ -138,9 +138,9 @@ YAML
     export -f _self_vendor_libs _self_vendor_templates 2>/dev/null || true
 
     run do_upgrade "$proj" --dry-run
-    [[ "$output" == *"LIBS_CALLED with dry_run=true"* ]]
-    [[ "$output" == *"TEMPLATES_CALLED with dry_run=true"* ]]
-    # --no-self-vendor flag must still skip BOTH (Slice 2 spec)
+    [[ "$output" != *"LIBS_CALLED"* ]] || false
+    [[ "$output" != *"TEMPLATES_CALLED"* ]] || false
+    # --no-self-vendor is still accepted and still skips BOTH
     run do_upgrade "$proj" --dry-run --no-self-vendor
     [[ "$output" == *"Self-vendor skipped"* ]]
     [[ "$output" != *"LIBS_CALLED"* ]]

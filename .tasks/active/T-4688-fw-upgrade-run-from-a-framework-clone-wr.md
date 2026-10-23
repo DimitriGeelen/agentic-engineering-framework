@@ -12,7 +12,7 @@ description: >
   then real), assert the clone's git status is clean after both. Keep upgrade_fresh_machine_simulation
   green.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T10:07:40Z
-last_update: '2026-10-23T10:15:46Z'
+last_update: 2026-10-23T10:24:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `do_upgrade` runs the self-vendor step only when the target directory is FRAMEWORK_ROOT itself; for any other target it says self-vendor is skipped and writes nothing under FRAMEWORK_ROOT (do_upgrade refuses target == FRAMEWORK_ROOT, so the step is removed outright)
+- [x] New `tests/unit/t4688_upgrade_source_untouched.bats`: a temp clone with tools/ drift upgrades a temp consumer; `git -C <clone> status --porcelain` is empty after `--dry-run` and after the real run (fails on the pre-fix lib/upgrade.sh)
+- [x] Framework-repo self-vendoring still works via `fw vendor self` (control test in the same file); `t2095_upgrade_self_vendor_extraction.bats`, `t4498_refused_upgrade_no_self_vendor.bats` and `upgrade_fresh_machine_simulation.bats` stay green
+- [ ] `bin/fw vendor self --check --task T-4688` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,6 +285,12 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t4688_upgrade_source_untouched.bats > /tmp/.t4688-out 2>&1 && ! grep -q "^not ok" /tmp/.t4688-out
+test "$(grep -c '# skip' /tmp/.t4688-out)" -eq 0
+timeout 900 bats tests/unit/t2095_upgrade_self_vendor_extraction.bats tests/unit/t4498_refused_upgrade_no_self_vendor.bats > /tmp/.t4688-sib 2>&1 && ! grep -q "^not ok" /tmp/.t4688-sib
+test "$(grep -c '# skip' /tmp/.t4688-sib)" -eq 0
+bash -n lib/upgrade.sh
+bin/fw vendor self --check --task T-4688
 
 ## RCA
 
@@ -299,6 +307,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** After `<clone>/bin/fw upgrade <consumer>` (TermLink be.6), the source clone had `.agentic-framework/tools/corpus_lenses.yaml` modified and `gen-framework-hook-lines.sh` added, so a rehearse-then-real-run from one clone upgraded from a mutated source.
+
+**Root cause:** `do_upgrade` (lib/upgrade.sh, the T-1217/T-2095 block after the T-4278 vendor precheck, formerly ~1845-1873) called every `_self_vendor_*` helper unconditionally. Those helpers write into `$FRAMEWORK_ROOT/.agentic-framework/` — the SOURCE — while `do_upgrade` already refuses target == FRAMEWORK_ROOT (lib/upgrade.sh:1453). So the step could only ever write into a repo other than the one being upgraded. The real run synced; the dry run only reported ("would sync") and wrote nothing.
+
+**Why structurally allowed:** T-1217 framed the inline sync as a convenience for the developer's own checkout (upgrading consumers from /opt/999 kept /opt/999's vendored copy fresh). Every test asserted that the sync happened (t2095 t8, t2241 t5, t4498 CONTROL); none asserted the source stayed clean, and the "source" was always the dev checkout, where a dirty vendored copy looks like routine drift. A clone used as an upgrade source was never a test fixture.
+
+**Prevention:** The inline call is gone; self-vendoring lives only in `fw vendor self` (pre-push gate T-2240 and the audit drift scan still catch a stale framework repo). `tests/unit/t4688_upgrade_source_untouched.bats` upgrades a temp consumer from a temp clone that carries real tools/ drift and asserts `git -C <clone> status --porcelain` is empty after the dry run and after the real run, plus that a dry run leaves the consumer byte-identical; a control leg proves the drift is real. The three sibling tests now assert the inverse contract.
 
 ## Evolution
 
@@ -364,6 +380,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-23 — remove vs. gate the inline self-vendor
+- **Chose:** remove the call from `do_upgrade`; keep `--no-self-vendor` as an accepted no-op.
+- **Why:** `do_upgrade` refuses target == FRAMEWORK_ROOT (lib/upgrade.sh:1453), so a "run only when the target is the framework repo" gate would be dead code; every reachable run wrote into the source. `fw vendor self` plus the pre-push gate and audit drift scan already own that sync.
+- **Rejected:** a target==FRAMEWORK_ROOT gate (unreachable); dropping `--no-self-vendor` (breaks forwarded args, t4405, and scripts).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -380,3 +401,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4688-fw-upgrade-run-from-a-framework-clone-wr.md
 - **Context:** Initial task creation
+
+### 2026-10-23T10:24:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

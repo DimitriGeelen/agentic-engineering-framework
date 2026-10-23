@@ -1309,11 +1309,9 @@ do_upgrade() {
     local strict=false
     local failed_steps=0
     local _strict_abort_step=""
-    # T-2095 (T-2078 V1-D, F2): opt-out of the inline self-vendor call. Off by
-    # default — preserves T-1217's invariant (framework's .agentic-framework/lib/
-    # stays in sync with FRAMEWORK_ROOT/lib/) on every developer machine that
-    # hasn't yet wired `fw vendor self` into pre-push. Operators who have wired
-    # pre-push (no inline redundancy needed) opt out via --no-self-vendor.
+    # T-2095: --no-self-vendor once skipped the inline self-vendor call. T-4688
+    # removed that call (it wrote into the upgrade SOURCE); the flag stays
+    # accepted so forwarded/scripted invocations keep parsing.
     local no_self_vendor=false
     local messaging_flag=""   # T-4042: "" | 1 (--with-messaging) | 0 (--without-messaging)
     # T-3850: passed through to do_vendor, which otherwise refuses when local
@@ -1364,11 +1362,9 @@ do_upgrade() {
                 echo "                          (T-3850; logged Tier-2, copies kept). Default: refuse."
                 echo "  --with-messaging        Install/update the cross-host messaging toolkit (sets MESSAGING_TOOLKIT=1)"
                 echo "  --without-messaging     Skip the toolkit (sets MESSAGING_TOOLKIT=0); existing files are listed, never deleted"
-                echo "  --no-self-vendor        Skip the inline framework self-vendor refresh"
-                echo "                          (T-2095 V1-D, F2). Default: keep inline (T-1217"
-                echo "                          invariant). Opt-out for operators who fire"
-                echo "                          'fw vendor self' from pre-push and don't want the"
-                echo "                          per-upgrade redundancy."
+                echo "  --no-self-vendor        Accepted, no effect: upgrade never self-vendors its"
+                echo "                          source (T-4688); run 'fw vendor self' in the"
+                echo "                          framework repo instead."
                 echo "  --force-downgrade       Allow upgrade to rewrite the consumer's pinned version"
                 echo "                          to a LOWER framework version (T-1839 guard bypass)."
                 echo "                          Default: refuse with diagnostic referencing T-1828."
@@ -1834,42 +1830,17 @@ do_upgrade() {
         fi
     fi
 
-    # T-1217 / T-2095 (T-2078 V1-D, F2): self-vendor refresh.
-    # T-4498: it WRITES (into $FRAMEWORK_ROOT/.agentic-framework/), so it runs only
-    # after every refusal above. It used to run before the T-1912 precheck: a shallow
-    # source refused as foreign-source had already synced 3 files (dimitri-mint-dev).
-    # Inline call preserved by default for backward compat (T-1217 invariant).
-    # Operators who have wired `fw vendor self` into pre-push can opt out with
-    # --no-self-vendor to eliminate the per-upgrade redundancy. The helper
-    # itself is structurally consumer-safe: it early-returns when the framework
-    # vendored copy doesn't exist (consumer scenario).
+    # T-4688: no self-vendor here. The _self_vendor_* helpers write into
+    # $FRAMEWORK_ROOT/.agentic-framework/, and do_upgrade refuses target ==
+    # FRAMEWORK_ROOT above, so the step (T-1217 / T-2095) only ever mutated the
+    # SOURCE serving this upgrade: a clone used to rehearse then upgrade came out
+    # dirty (TermLink be.6: tools/corpus_lenses.yaml modified, a file added).
+    # Self-vendoring belongs to the framework repo's own `fw vendor self` (pre-push
+    # gate T-2240, audit drift scan). --no-self-vendor is still accepted (no-op).
     if [ "$no_self_vendor" = true ]; then
         echo -e "  ${YELLOW}Self-vendor skipped${NC} (--no-self-vendor)"
     else
-        _self_vendor_libs "$dry_run"
-        # T-2241: sibling sync — templates drift class, same flag gates both
-        _self_vendor_templates "$dry_run"
-        # T-2263: sibling sync — BVP-policy drift class (arc-006 Slice 2C),
-        # same flag, same prefix → caught by T-2240 pre-push gate regex
-        _self_vendor_policy "$dry_run"
-        # T-2264: sibling sync — bin/fw shim drift class, same flag, same prefix
-        _self_vendor_shim "$dry_run"
-        # T-2266: sibling sync — agents/ drift class (5th class). Recursive over
-        # subdirs (audit/, context/, git/, ...) filtered to *.sh + *.py to mirror
-        # the audit drift scan's exact filter at agents/audit/audit.sh:1534.
-        _self_vendor_agents "$dry_run"
-        # T-2267: sibling sync — web/ drift class (6th and current-final class
-        # under the audit drift-scan shape). Same *.sh + *.py filter; templates
-        # and static assets stay untouched (out-of-scope per audit's filter).
-        _self_vendor_web "$dry_run"
-        # T-4392: sibling sync — tools/ (the tree do_vendor ships whole).
-        _self_vendor_tools "$dry_run"
-        # T-2661: sibling sync — root single-file payload (secret-scan data, …).
-        _self_vendor_root_data "$dry_run"
-        # T-3064: sibling sync — pinned Workflow Designer build. Outside the
-        # audit drift-scan shape (that scans {bin,lib,agents,web} only), so this
-        # class is carried by `fw vendor self --check` and its own bats file.
-        _self_vendor_designer "$dry_run"
+        echo -e "  ${YELLOW}Self-vendor skipped${NC} (upgrade never writes its source; run \`fw vendor self\` in the framework repo — T-4688)"
     fi
 
     # ── 1. CLAUDE.md — preserve project sections, update governance ──
