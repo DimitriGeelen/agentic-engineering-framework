@@ -1,10 +1,21 @@
 ---
 id: T-4685
-name: "FW_TASKS_DIR_OVERRIDE=1 inherited WITHOUT the _FW_PATHS_DERIVED_BY sentinel is still honoured, so foreign TASKS_DIR/CONTEXT_DIR are followed (T-4670 residual)"
+name: "FW_TASKS_DIR_OVERRIDE=1 inherited WITHOUT the _FW_PATHS_DERIVED_BY sentinel
+  is still honoured, so foreign TASKS_DIR/CONTEXT_DIR are followed (T-4670 residual)"
 description: >
-  TermLink be.5 field report (sidecar 4d03fd26): T-4670 ignores the override only when _FW_PATHS_DERIVED_BY names another root; with the sentinel stripped (what TermLink T-3445's deny-list did on 2026-10-22) a bare FW_TASKS_DIR_OVERRIDE=1 cannot tell 'set on this call' from 'inherited'. Fix (TermLink's suggestion): the override names its target, FW_TASKS_DIR_OVERRIDE=<project root>, honoured only when it equals the canonical PROJECT_ROOT; a bare =1 is honoured only when the overridden value lies in no framework project (fixtures), else ignored with a stderr note. Find every caller and test that sets FW_TASKS_DIR_OVERRIDE=1 (grep lib agents bin tests) and migrate those that point at a project. Tests: bare =1 + foreign value without sentinel ignored; =<this root> honoured; =1 + fixture dir honoured; T-4670/T-4222/T-4651 tests stay green.
+  TermLink be.5 field report (sidecar 4d03fd26): T-4670 ignores the override only
+  when _FW_PATHS_DERIVED_BY names another root; with the sentinel stripped (what TermLink
+  T-3445's deny-list did on 2026-10-22) a bare FW_TASKS_DIR_OVERRIDE=1 cannot tell
+  'set on this call' from 'inherited'. Fix (TermLink's suggestion): the override names
+  its target, FW_TASKS_DIR_OVERRIDE=<project root>, honoured only when it equals the
+  canonical PROJECT_ROOT; a bare =1 is honoured only when the overridden value lies
+  in no framework project (fixtures), else ignored with a stderr note. Find every
+  caller and test that sets FW_TASKS_DIR_OVERRIDE=1 (grep lib agents bin tests) and
+  migrate those that point at a project. Tests: bare =1 + foreign value without sentinel
+  ignored; =<this root> honoured; =1 + fixture dir honoured; T-4670/T-4222/T-4651
+  tests stay green.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T09:53:53Z
-last_update: 2026-10-23T09:53:53Z
-date_finished: null
+last_update: 2026-10-23T09:54:39Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T09:54:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4685: FW_TASKS_DIR_OVERRIDE=1 inherited WITHOUT the _FW_PATHS_DERIVED_BY sentinel is still honoured, so foreign TASKS_DIR/CONTEXT_DIR are followed (T-4670 residual)
@@ -62,8 +90,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] lib/paths.sh honours FW_TASKS_DIR_OVERRIDE for a value inside another project only when the override names this PROJECT_ROOT (literal or canonical); a bare `=1` or a foreign-root value is ignored there with a stderr note naming the `=<project root>` form; a bare `=1` with a fixture value (no project ancestor) stays honoured
+- [x] The T-4670 sentinel-crossing block also drops a named override that does not name this PROJECT_ROOT
+- [x] Every caller/test that set `FW_TASKS_DIR_OVERRIDE=1` for a project-owned value is migrated to `=<project root>` (git grep: only tests/unit/t4222_inherited_env_dirs.bats; no lib/agents/bin caller)
+- [x] Regression tests in tests/unit/t4222_inherited_env_dirs.bats (sentinel absent): bare =1 + foreign value ignored; =<this root> honoured; =<other root> ignored; =1 + fixture dir honoured; red on pre-fix lib/paths.sh, green after
+- [x] T-4670/T-4222/T-4651 bats stay green; no new fork on the hot path (value == $PROJECT_ROOT/.tasks)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +279,13 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n lib/paths.sh
+timeout 600 bats tests/unit/t4222_inherited_env_dirs.bats > /tmp/.t4685-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4685-a.out && grep -q "T-4685" /tmp/.t4685-a.out
+test "$(grep -c '# skip' /tmp/.t4685-a.out)" -eq 0
+timeout 600 bats tests/unit/t4651_polluted_tmux_server.bats > /tmp/.t4685-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4685-b.out
+test "$(grep -c '# skip' /tmp/.t4685-b.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests/unit/t4222_inherited_env_dirs.bats > /tmp/.t4685-c.out 2>&1 && grep -q clean /tmp/.t4685-c.out
+bin/fw vendor self --check --task T-4685
 
 ## RCA
 
@@ -264,6 +302,25 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** TermLink be.5 (sidecar 4d03fd26): with `_FW_PATHS_DERIVED_BY` stripped from the
+environment (TermLink T-3445's deny-list, 2026-10-22), an inherited `FW_TASKS_DIR_OVERRIDE=1`
+plus an inherited foreign `TASKS_DIR`/`CONTEXT_DIR` was still honoured, so writes went into the
+other project.
+
+**Root cause:** `lib/paths.sh:83` (pre-fix) skipped the whole T-4222 foreign-dir check whenever
+`FW_TASKS_DIR_OVERRIDE == 1`. A bare boolean carries no origin; the only way to tell "set on this
+call" from "inherited" was the sentinel test at `lib/paths.sh:64-70`, which reads exactly the
+variable that had been stripped.
+
+**Why structurally allowed:** T-4670's inherited-override test always supplied the sentinel
+(`_FW_PATHS_DERIVED_BY="$A"`); no test covered override-without-sentinel, the shape an env
+scrubber produces.
+
+**Prevention:** the override now names its target (`FW_TASKS_DIR_OVERRIDE=<project root>`) and
+exempts a project-owned value only when it names this PROJECT_ROOT, so one inherited from another
+project self-invalidates with or without the sentinel. Pinned by the T-4685 cases in
+`tests/unit/t4222_inherited_env_dirs.bats` (sentinel absent).
 
 ## Evolution
 
@@ -345,3 +402,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4685-fwtasksdiroverride1-inherited-without-th.md
 - **Context:** Initial task creation
+
+### 2026-10-23T09:54:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

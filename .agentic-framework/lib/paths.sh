@@ -62,10 +62,12 @@ fi
 # the unset block is skipped, and the explicit `TASKS_DIR` survives intact
 # (this is what tests/unit/create_task.bats:18 relies on).
 if [[ -n "${_FW_PATHS_DERIVED_BY:-}" ]] && [[ "$_FW_PATHS_DERIVED_BY" != "$PROJECT_ROOT" ]]; then
-    # T-4670: an FW_TASKS_DIR_OVERRIDE=1 that crossed a project boundary is not this call's
+    # T-4670: an FW_TASKS_DIR_OVERRIDE that crossed a project boundary is not this call's
     # decision — drop it so the T-4222 rule below (and this process's children) still apply.
-    if [[ "${FW_TASKS_DIR_OVERRIDE:-0}" == "1" ]]; then
-        echo "fw: ignoring FW_TASKS_DIR_OVERRIDE=1 inherited from project $_FW_PATHS_DERIVED_BY (this project is $PROJECT_ROOT)" >&2
+    # T-4685: one that names this PROJECT_ROOT was set for this project and is kept.
+    if [[ -n "${FW_TASKS_DIR_OVERRIDE:-}" && "$FW_TASKS_DIR_OVERRIDE" != "0" \
+          && "$FW_TASKS_DIR_OVERRIDE" != "$PROJECT_ROOT" ]]; then
+        echo "fw: ignoring FW_TASKS_DIR_OVERRIDE=$FW_TASKS_DIR_OVERRIDE inherited from project $_FW_PATHS_DERIVED_BY (this project is $PROJECT_ROOT)" >&2
         unset FW_TASKS_DIR_OVERRIDE
     fi
     unset TASKS_DIR CONTEXT_DIR
@@ -77,11 +79,15 @@ fi
 # warning) when its canonical path (realpath -m, symlinks resolved) lies inside ANOTHER framework
 # project — the nearest ancestor holding .framework.yaml, or a linked worktree whose main checkout
 # does, is not PROJECT_ROOT. That covers <other>/.tasks, <other>/.context/working and symlinks into
-# <other>. Plain test fixtures (no such ancestor) and FW_TASKS_DIR_OVERRIDE=1 set on this call are
-# honoured unchanged. Hot path (value == $PROJECT_ROOT/.tasks) costs no fork; otherwise at most one
-# realpath per variable plus one for PROJECT_ROOT, and the walk is pure string ops ending at /.
-if [[ "${FW_TASKS_DIR_OVERRIDE:-0}" != "1" ]]; then
-    _fw_preal=""
+# <other>. Plain test fixtures (no such ancestor) are honoured unchanged.
+# T-4685: the override names its target. FW_TASKS_DIR_OVERRIDE=<this PROJECT_ROOT> (literal or
+# canonical) keeps a value inside another project; a bare =1, or a root naming another project,
+# does not — a bare boolean cannot tell "set on this call" from "inherited" once the sentinel has
+# been stripped (TermLink T-3445), so it is ignored there with a stderr note.
+# Hot path (value == $PROJECT_ROOT/.tasks) costs no fork; otherwise at most one realpath per
+# variable plus one each for PROJECT_ROOT and a non-literal override; the walk is string ops.
+if [[ "${FW_TASKS_DIR_OVERRIDE:-}" != "$PROJECT_ROOT" ]]; then
+    _fw_preal=""; _fw_ovr="${FW_TASKS_DIR_OVERRIDE:-}"; [[ "$_fw_ovr" == "0" ]] && _fw_ovr=""
     for _fw_dv in TASKS_DIR:.tasks CONTEXT_DIR:.context; do
         _fw_dn="${_fw_dv%%:*}"; _fw_db="${_fw_dv##*:}"; _fw_dval="${!_fw_dn:-}"
         [[ -z "$_fw_dval" || "$_fw_dval" == "$PROJECT_ROOT/$_fw_db" ]] && continue
@@ -101,12 +107,25 @@ if [[ "${FW_TASKS_DIR_OVERRIDE:-0}" != "1" ]]; then
             fi
             _fw_d="${_fw_d%/*}"
         done
+        if [[ -n "$_fw_owner" && "$_fw_ovr" == "=" ]]; then
+            continue    # override already confirmed to name this root
+        elif [[ -n "$_fw_owner" && -n "$_fw_ovr" && "$_fw_ovr" != "1" ]]; then
+            # A non-literal spelling of this root (trailing slash, symlink) still names it.
+            if [[ "$(realpath -m -- "$_fw_ovr" 2>/dev/null)" == "$_fw_preal" ]]; then
+                _fw_ovr="="; continue
+            fi
+            echo "fw: ignoring FW_TASKS_DIR_OVERRIDE=$_fw_ovr: it does not name this project ($PROJECT_ROOT)" >&2
+            _fw_ovr=""
+        elif [[ -n "$_fw_owner" && "$_fw_ovr" == "1" ]]; then
+            echo "fw: ignoring bare FW_TASKS_DIR_OVERRIDE=1 for a value inside another project (it may be inherited); name the project root instead" >&2
+            _fw_ovr=""
+        fi
         if [[ -n "$_fw_owner" ]]; then
-            echo "fw: inherited $_fw_dn=$_fw_dval lies inside another project ($_fw_owner), not $PROJECT_ROOT; using $PROJECT_ROOT/$_fw_db (set FW_TASKS_DIR_OVERRIDE=1 on this call to keep it)" >&2
+            echo "fw: inherited $_fw_dn=$_fw_dval lies inside another project ($_fw_owner), not $PROJECT_ROOT; using $PROJECT_ROOT/$_fw_db (set FW_TASKS_DIR_OVERRIDE=$PROJECT_ROOT on this call to keep it)" >&2
             unset "$_fw_dn"
         fi
     done
-    unset _fw_dv _fw_dn _fw_db _fw_dval _fw_d _fw_owner _fw_gl _fw_preal
+    unset _fw_dv _fw_dn _fw_db _fw_dval _fw_d _fw_owner _fw_gl _fw_preal _fw_ovr
 fi
 
 # Common directories

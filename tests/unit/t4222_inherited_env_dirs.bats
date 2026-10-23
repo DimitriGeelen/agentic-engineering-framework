@@ -4,7 +4,8 @@
 # lib/paths.sh's `${TASKS_DIR:-…}` honoured the inherited value. Rule (task Decisions): an
 # inherited TASKS_DIR/CONTEXT_DIR that lies outside the resolved PROJECT_ROOT AND is itself a
 # project's own dir (its parent carries .framework.yaml) is re-derived, with a stderr warning.
-# FW_TASKS_DIR_OVERRIDE=1 keeps a deliberate outside value. Test fixtures (plain tmp dirs
+# FW_TASKS_DIR_OVERRIDE=<this project root> keeps a deliberate outside value (T-4685: a bare =1
+# no longer does — it cannot be told apart from an inherited one). Test fixtures (plain tmp dirs
 # without .framework.yaml) are untouched.
 
 setup() {
@@ -32,8 +33,8 @@ _run_in_b() {
     echo "$output" | grep -q "inherited TASKS_DIR=$A/.tasks"
 }
 
-@test "T-4222: FW_TASKS_DIR_OVERRIDE=1 keeps a deliberate outside TASKS_DIR" {
-    _run_in_b FW_TASKS_DIR_OVERRIDE=1
+@test "T-4222: FW_TASKS_DIR_OVERRIDE=<this root> keeps a deliberate outside TASKS_DIR" {
+    _run_in_b FW_TASKS_DIR_OVERRIDE="$B"
     ls "$A/.tasks/active"/T-*.md >/dev/null 2>&1 || { echo "$output"; false; }
 }
 
@@ -85,10 +86,50 @@ _paths_in_b() {   # _paths_in_b <NAME=VALUE>... — env passed to the sourcing s
     ! echo "$output" | grep -q "inherited" || false
 }
 
-@test "T-4670: FW_TASKS_DIR_OVERRIDE=1 set on this invocation keeps a value inside another project" {
-    _paths_in_b TASKS_DIR="$A/.tasks/active" FW_TASKS_DIR_OVERRIDE=1
+@test "T-4670: FW_TASKS_DIR_OVERRIDE=<this root> set on this invocation keeps a value inside another project" {
+    _paths_in_b TASKS_DIR="$A/.tasks/active" FW_TASKS_DIR_OVERRIDE="$B"
     echo "$output"
     echo "$output" | grep -qx "TD=$A/.tasks/active"
+}
+
+# T-4685: the sentinel stripped (TermLink T-3445's deny-list) — _paths_in_b already unsets it.
+@test "T-4685: bare FW_TASKS_DIR_OVERRIDE=1 with a foreign value and no sentinel is ignored, with a stderr line" {
+    _paths_in_b TASKS_DIR="$A/.tasks" CONTEXT_DIR="$A/.context" FW_TASKS_DIR_OVERRIDE=1
+    echo "$output"
+    echo "$output" | grep -qx "TD=$B/.tasks"
+    echo "$output" | grep -qx "CD=$B/.context"
+    echo "$output" | grep -q "ignoring bare FW_TASKS_DIR_OVERRIDE=1"
+}
+
+@test "T-4685: FW_TASKS_DIR_OVERRIDE naming another project's root is ignored" {
+    _paths_in_b TASKS_DIR="$A/.tasks" FW_TASKS_DIR_OVERRIDE="$A"
+    echo "$output"
+    echo "$output" | grep -qx "TD=$B/.tasks"
+    echo "$output" | grep -q "ignoring FW_TASKS_DIR_OVERRIDE=$A: it does not name this project"
+}
+
+@test "T-4685: FW_TASKS_DIR_OVERRIDE naming this root via a non-literal spelling keeps both values" {
+    _paths_in_b TASKS_DIR="$A/.tasks" CONTEXT_DIR="$A/.context" FW_TASKS_DIR_OVERRIDE="$B/"
+    echo "$output"
+    echo "$output" | grep -qx "TD=$A/.tasks"
+    echo "$output" | grep -qx "CD=$A/.context"
+    ! echo "$output" | grep -q "ignoring" || false
+}
+
+@test "T-4685: bare FW_TASKS_DIR_OVERRIDE=1 with a fixture dir (no project ancestor) is honoured" {
+    F="$(mktemp -d -t fw-t4685-fx-XXXXXX)"; mkdir -p "$F/.tasks"
+    _paths_in_b TASKS_DIR="$F/.tasks" FW_TASKS_DIR_OVERRIDE=1
+    rm -rf "$F"
+    echo "$output"
+    echo "$output" | grep -qx "TD=$F/.tasks"
+    ! echo "$output" | grep -q "ignoring" || false
+}
+
+@test "T-4685: an override naming this root survives a sentinel from another project's derivation" {
+    _paths_in_b TASKS_DIR="$A/.tasks" FW_TASKS_DIR_OVERRIDE="$B" _FW_PATHS_DERIVED_BY="$A"
+    echo "$output"
+    echo "$output" | grep -qx "TD=$B/.tasks"
+    ! echo "$output" | grep -q "ignoring" || false
 }
 
 @test "T-4670: FW_TASKS_DIR_OVERRIDE=1 inherited across a project boundary is ignored, with a stderr line" {
