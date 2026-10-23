@@ -11,12 +11,12 @@ description: >
   nothing references them. .context/working/fw-vec-index.db (4.5 GB) is the semantic
   index and stays.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/config.sh, lib/release.sh, lib/scratch-size.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T14:46:22Z
-last_update: 2026-10-23T16:41:54Z
-date_finished:
+last_update: 2026-10-23T16:56:16Z
+date_finished: 2026-10-23T16:56:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -404,3 +404,20 @@ bin/fw vendor self --check --task T-4703
 - **Safe dirs:** `.context/scratch/{v1811,v1812,v1813,hotfix,hf1814,t4489}` (~33 GB of lanes for v1.8.11–v1.8.14, all released; T-4489 completed). References checked: only completed reports and one historical task note (T-4112, "deleted after"), nothing in lib/bin/agents/tools/web/policy. `lsof +D` showed 0 open files in each dir, and none is a git worktree.
 - **Run:** `bash /opt/999-Agentic-Engineering-Framework/.context/runme/scratch-retention/runme.sh`
 - **Live doctor before cleanup:** `WARN .context/scratch is 27 GB (over SCRATCH_WARN_GB=10) — largest: v1813 9.7G, hotfix 7.3G, v1811 4.5G`
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d3726782
+- **Timestamp:** 2026-10-23T16:56:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-23T16:56:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
