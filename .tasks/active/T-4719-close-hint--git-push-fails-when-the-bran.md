@@ -1,8 +1,13 @@
 ---
 id: T-4719
-name: "Close hint '&& git push' fails when the branch has no upstream tracking branch; print a push the project can run (configured remote + HEAD)"
+name: "Close hint '&& git push' fails when the branch has no upstream tracking branch;
+  print a push the project can run (configured remote + HEAD)"
 description: >
-  TermLink be.14 report (sidecar 9c448cb6): the printed 'git commit ... -- <paths> && git push' committed, then 'git push' failed with 'no upstream branch' (TermLink always pushes with git push origin main). Print 'git push <remote> HEAD' where <remote> is the branch's upstream remote if set, else the only/first remote, else omit the push clause; keep the hint runnable verbatim (T-4707/T-4710 tests stay green).
+  TermLink be.14 report (sidecar 9c448cb6): the printed 'git commit ... -- <paths>
+  && git push' committed, then 'git push' failed with 'no upstream branch' (TermLink
+  always pushes with git push origin main). Print 'git push <remote> HEAD' where <remote>
+  is the branch's upstream remote if set, else the only/first remote, else omit the
+  push clause; keep the hint runnable verbatim (T-4707/T-4710 tests stay green).
 
 status: captured
 workflow_type: build
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T20:56:30Z
-last_update: 2026-10-23T20:56:30Z
-date_finished: null
+last_update: '2026-10-23T21:00:57Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-23T21:00:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4719: Close hint '&& git push' fails when the branch has no upstream tracking branch; print a push the project can run (configured remote + HEAD)
