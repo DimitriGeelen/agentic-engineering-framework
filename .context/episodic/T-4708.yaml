@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4708: fw doctor 'Hook config: script not found: [' for hook commands that start with a shell test (bin/fw ~3616 takes the first token as a script path)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-23T16:08:18Z
+# ============================================================================
+
+task_id: T-4708
+task_name: "fw doctor 'Hook config: script not found: [' for hook commands that start with a shell test (bin/fw ~3616 takes the first token as a script path)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T15:41:56Z
+completed: 2026-10-23T16:06:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-23T18:04:15+02:00
+last_commit: 2026-10-23T18:04:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor hook-config check parses hook commands with shlex; shell tests, builtins and assignments are no longer reported as missing scripts
+
+# Key outcomes
+outcomes:
+  - '`fw doctor`''s hook-config check no longer reports `script not found: [` (or any builtin/keyword/assignment/operator token) for a hook command such as `[ -z "${TERMLINK_SIDECAR_SOCKET:-}" ] || exec termlink sidecar hook stop`'
+  - 'The check still reports `script not found` for a hook whose command names a genuinely missing path-like script (e.g. `$CLAUDE_PROJECT_DIR/scripts/missing.sh` or `./missing.sh`)'
+  - 'Regression test (in the style of the existing doctor hook-config tests) covers both cases and fails against the pre-fix bin/fw'
+  - '`bin/fw vendor self --check --task T-4708` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4708-fw-doctor-hook-config-script-not-found--.md'
+  - 'tests/unit/t4708_doctor_hook_shell_test_command.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T18:04:15'
+    action: 'T-4708: doctor hook-config check parses hook commands with shlex; shell tests, builtins and assignments are no longer reported as missing scripts'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24
+  commits: 3
+  files_changed: 8
+  lines_added: 1068
+  lines_removed: 63
+  footprint_refreshed_at: '2026-10-23T16:08:29Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4708-fw-doctor-hook-config-script-not-found--.md
+generated_by: context-agent-hybrid
