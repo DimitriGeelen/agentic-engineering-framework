@@ -177,3 +177,39 @@ _t4717_source_upgrade_lib() {
     [[ "$output" == *"1 path(s) this upgrade wrote are still uncommitted"* ]]
     [[ "$output" != *"git add"* ]]
 }
+
+# T-4723: dimitri-mint-dev be.15 — a consumer whose root is a home directory
+# (~697 k untracked files, multi-GB caches). The snapshot listed every untracked
+# file and read each one whole to hash it: MemoryError, no file list.
+@test "T-4723 huge untracked tree: snapshot and report stay bounded, list only the journalled paths" {
+    local big="$S/big" helper="$FW_ROOT/lib/upgrade_commit_list.py"
+    git init -q "$big"
+    echo tracked > "$big/tracked.txt"
+    git -C "$big" add tracked.txt
+    git -C "$big" -c user.email=t@t -c user.name=t commit -qm base
+    truncate -s 3G "$big/disk.img"           # sparse: cheap to make, 3 GB to read
+    python3 - "$big/cache" <<'PY'
+import os, sys
+for a in range(60):
+    for b in range(10):
+        d = os.path.join(sys.argv[1], f"a{a}", f"b{b}")
+        os.makedirs(d)
+        for f in range(10):
+            open(os.path.join(d, f"f{f}"), "w").write(f"{a}{b}{f}\n")
+PY
+    run bash -c "ulimit -v 1000000; python3 '$helper' snapshot '$big' > '$S/big.before'"
+    [ "$status" -eq 0 ]
+    # untracked directories collapse: a handful of entries, not 6,000
+    [ "$(wc -l < "$S/big.before")" -lt 10 ]
+    echo new > "$big/cache/a1/new.txt"
+    echo upgrade-edit >> "$big/tracked.txt"
+    echo foreign >> "$big/cache/a2/b0/f0"       # changed, not journalled
+    printf '%s\n' cache/a1/new.txt tracked.txt > "$S/big.wrote"
+    run bash -c "ulimit -v 1000000; python3 '$helper' report '$big' '$S/big.before' '$S/big.wrote'"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"new       cache/a1/new.txt"* ]]
+    [[ "$output" == *"modified  tracked.txt"* ]]
+    [ "$(printf '%s\n' "$output" | grep -cE '^    (new|modified|vendored) ')" -eq 2 ]
+    [[ "$output" != *"disk.img"* ]]
+    [[ "$output" != *"f0"* ]]
+}

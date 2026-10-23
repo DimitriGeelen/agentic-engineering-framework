@@ -18,6 +18,15 @@ wrote during the upgrade window changed too, and must never be offered for
 or (T-4712) it is a vendored file holding what this run's vendor wrote. Paths
 are root-relative, restricted to the target directory. Non-git targets print
 nothing. Vendored `.agentic-framework/` files collapse to one entry.
+
+T-4723: the snapshot uses normal untracked mode (a wholly untracked directory is
+one entry, never read) and the report expands only the journal's paths, so the
+work scales with what the upgrade wrote, not with the tree (a home-directory
+consumer has ~700 k untracked files). A collapsed directory holding at most
+DIR_CAP files is expanded (EXPAND_BUDGET in total), so a small untracked tree
+such as a fresh .agentic-framework/ still compares file by file; a bigger one
+stays one entry and a journalled file inside it counts as new. Files are hashed
+in chunks; one above BIG is recorded by size and mtime instead of read.
 """
 import hashlib
 import json
@@ -28,6 +37,10 @@ import sys
 
 VENDORED = ".agentic-framework/"
 STAMP = ".fw-vendor-stamp.json"
+CHUNK = 1 << 20
+BIG = 64 << 20
+DIR_CAP = 5000
+EXPAND_BUDGET = 20000
 
 
 def _git(root, *args):
@@ -35,17 +48,71 @@ def _git(root, *args):
     return r.stdout if r.returncode == 0 else None
 
 
-def _dirty(target):
-    """{path: (status, sha1)} for dirty paths under target; None if not git."""
+def _digest(path, algo):
+    """Chunked content hash of path; "stat:<size>:<mtime_ns>" above BIG."""
+    st = os.stat(path)
+    if st.st_size > BIG:
+        return f"stat:{st.st_size}:{st.st_mtime_ns}"
+    h = hashlib.new(algo)
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(CHUNK), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def _dirty(target, pathspecs=None):
+    """{path: (status, sha1)} for dirty paths under target; None if not git.
+
+    pathspecs None: normal untracked mode (snapshot). A list: every untracked
+    file, but only under those top-relative paths (report, T-4723)."""
     top = _git(target, "rev-parse", "--show-toplevel")
     if top is None:
         return None, None
     top = top.decode().strip()
     prefix = (_git(target, "rev-parse", "--show-prefix") or b"").decode().strip()
-    out = _git(top, "status", "--porcelain=v1", "-z", "-uall")
+    if pathspecs is None:
+        args = ["-unormal"]
+    else:
+        # ":(top,literal)." matches nothing; the whole tree is a bare ":(top)"
+        args = ["-uall", "--"] + [":(top,literal)" + p.rstrip("/") if p.rstrip("/") else ":(top)"
+                                  for p in pathspecs]
+    out = _git(top, "status", "--porcelain=v1", "-z", *args)
     if out is None:
         return None, None
+    entries = list(_entries(out))
+    if pathspecs is None:
+        budget = EXPAND_BUDGET
+        # only git's own entries: an expanded nested repo comes back as "sub/" again
+        for k, (status, name) in enumerate(entries[:len(entries)]):
+            if status == "??" and name.endswith("/") and budget > 0:
+                inner = _expand(top, name, min(DIR_CAP, budget))
+                if inner is not None:
+                    entries[k:k + 1] = [None]  # placeholder, appended below
+                    entries.extend(inner)
+                    budget -= len(inner)
     found = {}
+    for item in entries:
+        if item is None:
+            continue
+        status, name = item
+        if "\n" in name or "\t" in name or not name.startswith(prefix):
+            continue
+        path = os.path.join(top, name)
+        try:
+            if os.path.islink(path):
+                digest = hashlib.sha1(os.readlink(path).encode("utf-8", "surrogateescape")).hexdigest()
+            elif name.endswith("/"):
+                digest = "dir"  # collapsed untracked directory: never read
+            else:
+                digest = _digest(path, "sha1")
+        except OSError:
+            digest = "-"
+        found[name] = (status, digest)
+    return top, found
+
+
+def _entries(out):
+    """(status, name) from `git status --porcelain=v1 -z` output."""
     parts = out.split(b"\0")
     i = 0
     while i < len(parts):
@@ -56,21 +123,33 @@ def _dirty(target):
         status = entry[:2].decode()
         if status[0] in "RC":
             i += 1  # -z puts the rename source in the next field
-        name = entry[3:].decode("utf-8", "surrogateescape")
-        if "\n" in name or "\t" in name or not name.startswith(prefix):
-            continue
-        path = os.path.join(top, name)
-        try:
-            if os.path.islink(path):
-                data = os.readlink(path).encode("utf-8", "surrogateescape")
-            else:
-                with open(path, "rb") as f:
-                    data = f.read()
-            digest = hashlib.sha1(data).hexdigest()
-        except OSError:
-            digest = "-"
-        found[name] = (status, digest)
-    return top, found
+        yield status, entry[3:].decode("utf-8", "surrogateescape")
+
+
+def _expand(top, name, cap):
+    """The untracked files under collapsed dir `name`, or None past `cap`.
+
+    Streams git's output and stops it at the cap, so a directory holding
+    hundreds of thousands of files costs `cap` entries, not a full listing."""
+    proc = subprocess.Popen(
+        ["git", "-C", top, "status", "--porcelain=v1", "-z", "-uall", "--",
+         ":(top,literal)" + name.rstrip("/")],
+        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    buf, count = b"", 0
+    try:
+        for block in iter(lambda: proc.stdout.read(65536), b""):
+            buf += block
+            count += block.count(b"\0")
+            if count > cap:
+                return None
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+        proc.stdout.close()
+        proc.wait()
+    if proc.returncode != 0:
+        return None
+    return list(_entries(buf))
 
 
 def snapshot(target):
@@ -135,8 +214,7 @@ def _vendor_wrote(top):
             if os.path.islink(path):
                 digest = "link:" + os.readlink(path)
             else:
-                with open(path, "rb") as f:
-                    digest = hashlib.sha256(f.read()).hexdigest()
+                digest = _digest(path, "sha256")
         except OSError:
             return False
         return files.get(rel) == digest
@@ -144,15 +222,21 @@ def _vendor_wrote(top):
 
 
 def report(target, before_file, wrote_file=None):
-    top, found = _dirty(target)
+    if wrote_file is None:
+        top, found = _dirty(target, [""])
+    else:
+        top = _git(target, "rev-parse", "--show-toplevel")
+        if top is None:
+            return 0
+        top = top.decode().strip()
+        exact, prefixes = _journal(target, top, wrote_file)
+        if not exact and not prefixes:
+            return 0
+        _, found = _dirty(target, sorted(exact) + prefixes)
+        found = {n: v for n, v in (found or {}).items()
+                 if n in exact or any(n.startswith(p) for p in prefixes)}
     if not found:
         return 0
-    if wrote_file is not None:
-        exact, prefixes = _journal(target, top, wrote_file)
-        found = {n: v for n, v in found.items()
-                 if n in exact or any(n.startswith(p) for p in prefixes)}
-        if not found:
-            return 0
     before = {}
     try:
         with open(before_file, encoding="utf-8", errors="surrogateescape") as f:
