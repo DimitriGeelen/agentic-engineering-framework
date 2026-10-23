@@ -75,10 +75,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 68
-  commits: 1
-  files_changed: 7
-  lines_added: 1584
-  lines_removed: 44
+  commits: 2
+  files_changed: 25
+  lines_added: 2989
+  lines_removed: 88
+  footprint_refreshed_at: '2026-10-22T23:35:08Z'
+  footprint_refreshed_by_commit: fea3e4c76
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4678-install-hooks-on-an-old-non-stock-framew.md

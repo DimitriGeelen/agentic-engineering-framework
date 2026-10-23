@@ -82,9 +82,11 @@ metrics:
   git_mining: ok
   wall_clock_minutes: 33
   commits: 3
-  files_changed: 8
+  files_changed: 10
   lines_added: 864
   lines_removed: 50
+  footprint_refreshed_at: '2026-10-22T21:56:15Z'
+  footprint_refreshed_by_commit: 9d24e70c0
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4670-libpathssh-t-4222-foreign-dir-rule-is-to.md

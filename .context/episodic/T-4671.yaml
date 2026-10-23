@@ -85,10 +85,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 11
-  commits: 2
-  files_changed: 12
-  lines_added: 701
-  lines_removed: 373
+  commits: 3
+  files_changed: 16
+  lines_added: 937
+  lines_removed: 382
+  footprint_refreshed_at: '2026-10-22T21:56:15Z'
+  footprint_refreshed_by_commit: 9d24e70c0
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4671-testsgovernancetestregisterrequirementsg.md

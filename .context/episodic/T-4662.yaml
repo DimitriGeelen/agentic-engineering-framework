@@ -74,9 +74,11 @@ metrics:
   git_mining: ok
   wall_clock_minutes: 156
   commits: 2
-  files_changed: 18
+  files_changed: 29
   lines_added: 2300
   lines_removed: 73
+  footprint_refreshed_at: '2026-10-22T23:35:05Z'
+  footprint_refreshed_by_commit: fea3e4c76
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4662-t-4409-isbashsafecommand-refuses-every-g.md

@@ -73,10 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 5
-  commits: 2
-  files_changed: 4
-  lines_added: 519
-  lines_removed: 33
+  commits: 3
+  files_changed: 6
+  lines_added: 631
+  lines_removed: 38
+  footprint_refreshed_at: '2026-10-23T10:15:39Z'
+  footprint_refreshed_by_commit: a4af9f286
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4685-fwtasksdiroverride1-inherited-without-th.md

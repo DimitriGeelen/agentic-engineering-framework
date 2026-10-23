@@ -73,12 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 177
-  commits: 2
-  files_changed: 13
-  lines_added: 3401
-  lines_removed: 36
-  footprint_refreshed_at: '2026-10-23T13:50:18Z'
-  footprint_refreshed_by_commit: pre-commit
+  commits: 1
+  files_changed: 6
+  lines_added: 129
+  lines_removed: 21
+  footprint_refreshed_at: '2026-10-23T13:50:20Z'
+  footprint_refreshed_by_commit: 157f9b6af
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4691-fw-upgrades-advisory-fw-doctor-step-exit.md

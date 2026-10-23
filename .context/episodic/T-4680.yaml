@@ -70,10 +70,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 651
-  commits: 1
-  files_changed: 4
-  lines_added: 155
-  lines_removed: 7
+  commits: 2
+  files_changed: 10
+  lines_added: 474
+  lines_removed: 21
+  footprint_refreshed_at: '2026-10-23T09:23:44Z'
+  footprint_refreshed_by_commit: 4a01ea0c8
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4680-fw-upgrade-from-a-tag-clone-placed-insid.md
