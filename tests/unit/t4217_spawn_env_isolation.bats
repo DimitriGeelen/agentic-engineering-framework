@@ -64,20 +64,36 @@ teardown() {
 # The claude-fw tmux wrap starts its own server (-L fw-agents). A server takes its global env from
 # the process that starts it, so the wrap's tmux call must not carry the caller's path variables;
 # the session still gets them through -e. A fake tmux records the environment it was started with.
+# T-4686: every fact _cfw_should_wrap_tmux (bin/claude-fw) reads is set here, never inherited:
+# env -i drops FW_CLAUDE_FW_NO_TMUX / FW_CLAUDE_FW_IN_TMUX / FW_DISPATCHED_WORKER / TL_CLAUDE_ENABLED
+# / TMUX / FW_CFW_REEXEC_PID; no --termlink, no -p; script(1) gives the pty; PATH is built, with the
+# stubs first and no host dir that could hold a real tmux or claude ahead of them; SHELL is bash
+# (script runs "$SHELL -c", and a zsh /etc/zshenv may rebuild PATH); FW_AGENT_SCOPE=0 skips the
+# systemd-run re-exec, whose probe alone may take as long as the 10 s timeout on another host.
+# A stub claude means a skipped wrap never starts a real session. The stub tmux records its
+# argv, so the test proves the WRAP ran rather than some other tmux call made later.
 @test "T-4217: claude-fw's tmux wrap does not hand the caller's path variables to the server" {
     command -v script >/dev/null || skip "script(1) unavailable (needed for a pty)"
     W="$(mktemp -d /tmp/t4217w.XXXXXX)"
-    mkdir -p "$W/bin"
-    printf '#!/bin/bash\nenv > %q\nexit 0\n' "$W/tmux.env" > "$W/bin/tmux"
-    chmod +x "$W/bin/tmux"
-    run env -u TMUX -u FW_CLAUDE_FW_IN_TMUX -u FW_DISPATCHED_WORKER -u TL_CLAUDE_ENABLED \
-        PATH="$W/bin:$PATH" PROJECT_ROOT=/some/other/project FRAMEWORK_ROOT=/some/other/project/.agentic-framework \
+    mkdir -p "$W/bin" "$W/home"
+    printf '#!/bin/bash\necho "$*" > %q\nenv > %q\nexit 0\n' "$W/tmux.args" "$W/tmux.env" > "$W/bin/tmux"
+    printf '#!/bin/bash\necho "$*" > %q\nexit 0\n' "$W/claude.ran" > "$W/bin/claude"
+    chmod +x "$W/bin/tmux" "$W/bin/claude"
+    run env -i PATH="$W/bin:/usr/bin:/bin" HOME="$W/home" SHELL=/bin/bash TERM=xterm LANG=C.UTF-8 \
+        FW_AGENT_SCOPE=0 \
+        PROJECT_ROOT=/some/other/project FRAMEWORK_ROOT=/some/other/project/.agentic-framework \
         _FW_PATHS_DERIVED_BY=test FW_ROUTED_FROM=/some/other/project \
         TASKS_DIR=/some/other/project/.tasks CONTEXT_DIR=/some/other/project/.context \
         script -qec "cd '$W' && timeout 10 bash '$ROOT/bin/claude-fw' -c" /dev/null
-    [ -s "$W/tmux.env" ]
+    if [ ! -s "$W/tmux.args" ]; then
+        echo "T-4686: fake tmux never ran — claude-fw did not take the tmux wrap (claude stub ran: $([ -e "$W/claude.ran" ] && echo yes || echo no))"
+        echo "$output"; rm -rf "$W"; false
+    fi
+    if ! grep -q -- '^-L fw-agents -f /dev/null new-session ' "$W/tmux.args"; then
+        echo "T-4686: fake tmux ran, but not as the wrap:"; cat "$W/tmux.args"; rm -rf "$W"; false
+    fi
     if grep -qE '^(PROJECT_ROOT|FRAMEWORK_ROOT|_FW_PATHS_DERIVED_BY|FW_ROUTED_FROM|TASKS_DIR|CONTEXT_DIR)=' "$W/tmux.env"; then
-        rm -rf "$W"; false
+        echo "leaked into the tmux server's env:"; cat "$W/tmux.env"; rm -rf "$W"; false
     fi
     rm -rf "$W"
 }

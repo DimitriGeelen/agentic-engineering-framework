@@ -1,13 +1,21 @@
 ---
 id: T-4686
-name: "t4217 test 2 (claude-fw tmux wrap hands no caller path variables to the server) fails on ring20: the fake tmux never runs (no tmux.env) when claude-fw starts from a /tmp dir outside any project"
+name: "t4217 test 2 (claude-fw tmux wrap hands no caller path variables to the server)
+  fails on ring20: the fake tmux never runs (no tmux.env) when claude-fw starts from
+  a /tmp dir outside any project"
 description: >
-  ring20 be.6 field report (sidecar 55d683dc): fails even with TMUX unset; green here. Find which host fact decides whether claude-fw takes the tmux path (termlink present? TL_CLAUDE_ENABLED? a project root found from cwd? the fake tmux shadowed by the constructed PATH like T-4682?), make the test pin that fact explicitly instead of inheriting it from the host, and make the test fail loudly ('fake tmux never ran') rather than with a missing file. Do not change claude-fw behaviour unless the investigation finds a real bug.
+  ring20 be.6 field report (sidecar 55d683dc): fails even with TMUX unset; green here.
+  Find which host fact decides whether claude-fw takes the tmux path (termlink present?
+  TL_CLAUDE_ENABLED? a project root found from cwd? the fake tmux shadowed by the
+  constructed PATH like T-4682?), make the test pin that fact explicitly instead of
+  inheriting it from the host, and make the test fail loudly ('fake tmux never ran')
+  rather than with a missing file. Do not change claude-fw behaviour unless the investigation
+  finds a real bug.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T10:02:42Z
-last_update: 2026-10-23T10:02:42Z
-date_finished: null
+last_update: 2026-10-23T10:05:47Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T10:05:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4686: t4217 test 2 (claude-fw tmux wrap hands no caller path variables to the server) fails on ring20: the fake tmux never runs (no tmux.env) when claude-fw starts from a /tmp dir outside any project
@@ -62,8 +87,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every host fact that decides `_cfw_should_wrap_tmux` (bin/claude-fw) is named in ## RCA with its line, and test 2 of tests/unit/t4217_spawn_env_isolation.bats sets each one explicitly instead of inheriting it
+- [x] Test 2 proves the fake tmux ran (marker) and fails with "fake tmux never ran" otherwise
+- [x] Simulated ring20 condition: the old test fails under it, the new test passes under it (evidence in ## RCA)
+- [x] tests/unit/t4217_spawn_env_isolation.bats is green (0 failures, 0 skips on this host); bats dead-negation lint clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +275,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4217_spawn_env_isolation.bats > /tmp/.t4686.out 2>&1 && ! grep -q "^not ok" /tmp/.t4686.out && grep -q "^ok 2 " /tmp/.t4686.out
+test "$(grep -c '# skip' /tmp/.t4686.out)" -eq 0
+FW_CLAUDE_FW_NO_TMUX=1 timeout 300 bats -f "claude-fw's tmux wrap" tests/unit/t4217_spawn_env_isolation.bats > /tmp/.t4686b.out 2>&1 && grep -q "^ok 1 " /tmp/.t4686b.out
+grep -q 'fake tmux never ran' tests/unit/t4217_spawn_env_isolation.bats
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t4686l.out 2>&1 && grep -q clean /tmp/.t4686l.out
 
 ## RCA
 
@@ -264,6 +296,26 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on ring20 (be.6) t4217 test 2 failed at `[ -s "$W/tmux.env" ]`: the fake tmux never ran, even with TMUX unset. Green here.
+
+**Root cause:** the test inherited most of the facts that decide whether claude-fw takes the tmux wrap. The decision is `_cfw_should_wrap_tmux` (bin/claude-fw:174-185), and what runs before it:
+- `_CFW_RESUMED` (bin/claude-fw:175), set from an inherited `FW_CFW_REEXEC_PID` naming this pid (:116);
+- `FW_CLAUDE_FW_NO_TMUX=1` (:176). The old test did **not** unset it. An operator who opted out on that host (for example because of the LANG=C box-line problem, T-4128) skips the wrap;
+- `FW_CLAUDE_FW_IN_TMUX` (:177), `TL_CLAUDE_ENABLED`/`--termlink` (:24, :178), `-p` (:179), `TMUX` (:180), `FW_DISPATCHED_WORKER` (:181). The old test unset these;
+- a tty on stdin and stdout (:182). script(1) supplies it, but script runs `$SHELL -c`, and `$SHELL` came from the host (a zsh `/etc/zshenv` can rebuild PATH);
+- `command -v tmux` (:183), with PATH = stub dir + **the host's whole PATH**;
+- before all of these, the T-4636 systemd scope re-exec (bin/claude-fw:146-158 → lib/agent-scope.sh:32-38). On a host where systemd exists, its probe is `timeout 10 systemd-run --scope … true`. That is the same 10 s as the test's own `timeout 10`, so a slow or hanging probe lets the outer timeout kill claude-fw before it reaches the wrap.
+
+On top of that, when the wrap was skipped the old test started the **real** `claude -c` on the host's PATH for 10 s. Its own later tmux calls (`show-environment -g`, `-V`, …) could also write tmux.env, so a skipped wrap could pass the test.
+
+**Reproduced (ring20's condition simulated here):** the old test is `not ok` with `FW_CLAUDE_FW_NO_TMUX=1` in the caller env, and also with a `systemd-run` that sleeps 15 s placed first on PATH. The new test is `ok` under both. A deliberately broken copy (wrap disabled inside the env -i) prints `T-4686: fake tmux never ran — claude-fw did not take the tmux wrap`. I do not know which of the two conditions ring20 actually has; the new test is immune to both.
+
+**Fix (test only; claude-fw behaviour unchanged):** test 2 now runs under `env -i` and sets every input itself: PATH=`stub:/usr/bin:/bin`, HOME, SHELL=/bin/bash, TERM, LANG, FW_AGENT_SCOPE=0. It adds a stub `claude`. The stub tmux records its argv, and the test asserts `-L fw-agents -f /dev/null new-session`, i.e. the wrap itself and not some other tmux call. It fails loudly when the stub never ran.
+
+**Why nothing caught it:** the test had a positive control only for the env-leak assertion, none for "the wrap ran", and every gating fact was inherited from whatever host ran it.
+
+**Prevention:** the argv-marker assertion plus the `env -i` construction. A gating fact added to `_cfw_should_wrap_tmux` later defaults to unset under env -i, so it cannot be inherited silently.
 
 ## Evolution
 
@@ -329,6 +381,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-23 — claude-fw behaviour
+- **Chose:** test-only change; no claude-fw edit.
+- **Why:** every gate in `_cfw_should_wrap_tmux` is intended behaviour. The scope probe's `timeout 10` can delay startup, but it is bounded and falls back, so it is not a bug.
+- **Rejected:** dropping the outer `timeout 10` in the test. It would have hidden a hang instead of pinning the fact that causes it.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -345,3 +402,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4686-t4217-test-2-claude-fw-tmux-wrap-hands-n.md
 - **Context:** Initial task creation
+
+### 2026-10-23T10:05:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
