@@ -49,6 +49,34 @@ watchtower_process_start_epoch() {
     # T-4337: a zombie is not a running process (bare kill -0 says it is).
     fw_pid_alive "$pid" || return 1
 
+    # T-4693: on Linux, read the start time itself rather than re-deriving it.
+    # `date +%s - etimes` is two whole-second floors taken at two moments, so the
+    # same pid yields S on one read and S+1 on the next; against files written in
+    # the second around a restart that is a STALE/current coin flip (ring20, 25 s
+    # after `systemctl restart`, "pid predates 217 files", current a minute later).
+    # starttime (field 22, clock ticks since boot) + btime is fixed for the pid.
+    # btime is truncated to whole seconds, so this can read up to 1 s early — the
+    # tolerance in watchtower_stale_sources absorbs that.
+    if [ -r "/proc/$pid/stat" ] && [ -r /proc/stat ]; then
+        local btime ticks hz st
+        btime=$(awk '/^btime /{print $2; exit}' /proc/stat 2>/dev/null)
+        hz=$(getconf CLK_TCK 2>/dev/null)
+        # comm (field 2) may hold spaces; count from after its closing paren,
+        # where state is field 3, so starttime (22) is the 20th.
+        ticks=$(sed 's/.*) //' "/proc/$pid/stat" 2>/dev/null | awk '{print $20}')
+        if [ -n "$btime" ] && [ -n "$hz" ] && [ "$hz" -gt 0 ] 2>/dev/null \
+            && [ -n "$ticks" ] && [ "$ticks" -ge 0 ] 2>/dev/null; then
+            st=$(( btime + ticks / hz ))
+            now=$(date +%s)
+            # Sanity: a start in the future means /proc is not what we think
+            # (e.g. a virtualised /proc/stat) — fall through to etimes.
+            if [ "$st" -le $(( now + 2 )) ]; then
+                echo "$st"
+                return 0
+            fi
+        fi
+    fi
+
     # `ps -o etimes=` (seconds since start) exists on Linux and modern BSD/macOS.
     elapsed=$(ps -o etimes= -p "$pid" 2>/dev/null | tr -d '[:space:]')
     if [ -n "$elapsed" ] && [ "$elapsed" -ge 0 ] 2>/dev/null; then
@@ -99,9 +127,16 @@ watchtower_stale_sources() {
     local pid="$1"
     local web_dir="${2:-$(watchtower_web_dir)}"
     local started file mtime found=1
+    # T-4693: whole-second mtimes vs a start time that is itself only good to
+    # ~1 s. A file within the tolerance of the start is ambiguous either way
+    # (fw upgrade writes web/ seconds before the restart); one clearly after is
+    # still reported.
+    local tol="${FW_WATCHTOWER_STALE_TOLERANCE:-2}"
+    case "$tol" in ''|*[!0-9]*) tol=2 ;; esac
 
     [ -d "$web_dir" ] || return 2
     started=$(watchtower_process_start_epoch "$pid") || return 1
+    started=$(( started + tol ))
 
     # Only the file types the server actually loads. __pycache__ is excluded:
     # it is written BY the running process, so it is newer than the process by

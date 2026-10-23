@@ -13,10 +13,10 @@ description: >
   read a minute later, fix the comparison (e.g. compare against the live pid's start
   time, with a small tolerance) and add a test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T11:13:11Z
-last_update: '2026-10-23T11:15:39Z'
+last_update: 2026-10-23T13:05:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,10 @@ ring20 data point (sidecar 3d9180b2): the STALE line already named pid 2792422, 
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause localised: the input that differs between the STALE read and the later current read is named with file:line in `## RCA`, backed by a reproduction on this host
+- [x] `watchtower_process_start_epoch` (lib/watchtower-staleness.sh) reads the exact start time from `/proc/<pid>/stat` starttime + `/proc/stat` btime where available, falling back to `ps -o etimes=` elsewhere
+- [x] `watchtower_stale_sources` ignores files whose mtime is within a small tolerance (`FW_WATCHTOWER_STALE_TOLERANCE`, default 2 s) of the process start, and still reports a file modified clearly after start
+- [x] Regression test `tests/unit/t4693_watchtower_start_time.bats` passes with the fix and fails against the pre-fix library
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +289,11 @@ ring20 data point (sidecar 3d9180b2): the STALE line already named pid 2792422, 
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 300 bats tests/unit/t4693_watchtower_start_time.bats > /tmp/.t4693.out 2>&1 && ! grep -q "^not ok" /tmp/.t4693.out
+test "$(grep -c '# skip' /tmp/.t4693.out)" -eq 0
+bash -n lib/watchtower-staleness.sh
+bin/fw vendor self --check --task T-4693
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -302,6 +309,14 @@ ring20 data point (sidecar 3d9180b2): the STALE line already named pid 2792422, 
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** ring20 be.8, ~25 s after `systemctl restart`: `fw watchtower current` (and doctor) said STALE, "pid 2792422 predates 217 files" — the NEW MainPID, triple file current. The same pid read current a minute later.
+
+**Root cause:** the input that differs between the two reads is the process start epoch. `watchtower_process_start_epoch` (lib/watchtower-staleness.sh, pre-fix lines 52-57) re-derived it on every call as `$(date +%s) - $(ps -o etimes=)`: two whole-second floors taken at two moments, so one pid yields S on one read and S+1 on the next depending on the sub-second phase of the check. `watchtower_stale_sources` (pre-fix line 113) then compared it with whole-second file mtimes using a strict `mtime > started` and no tolerance. `fw upgrade` rewrites all of web/ in the seconds around the restart, so those files sat exactly on the boundary and flipped between stale and current. Reproduced on this host: the pre-fix library returned 1792760988 and then 1792760989 for one live pid within a second (tests/unit/t4693_watchtower_start_time.bats test 1 against `git show HEAD:lib/watchtower-staleness.sh`). Not reproduced on ring20 itself: no ring20 access from this worker, so a host-specific clock contribution there (container-virtualised /proc/uptime, for example) is not ruled out. The tolerance covers a 1-2 s error, not a larger one.
+
+**Why structurally allowed:** the T-2938 tests check that the start epoch is "roughly now" (within -2..30 s) and use files hours away from the start, so a 1 s jitter between reads, and files written within a second of the start, were never exercised. Nothing read the same pid twice.
+
+**Prevention:** the start epoch now comes from `/proc/<pid>/stat` starttime + `/proc/stat` btime, which is fixed for the pid (falls back to etimes off Linux or when /proc looks wrong). The comparison allows `FW_WATCHTOWER_STALE_TOLERANCE` (default 2 s), which also absorbs btime's whole-second truncation. `tests/unit/t4693_watchtower_start_time.bats` pins both: the same pid gives the same start on six reads across 3 s, files within the tolerance never read stale, and a file 10 s after the start still does. Against the pre-fix library, 4 of its 5 tests fail.
 
 ## Evolution
 
@@ -383,3 +398,7 @@ ring20 data point (sidecar 3d9180b2): the STALE line already named pid 2792422, 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4693-fw-watchtower-current-flaps-stale-pid-pr.md
 - **Context:** Initial task creation
+
+### 2026-10-23T13:04:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
