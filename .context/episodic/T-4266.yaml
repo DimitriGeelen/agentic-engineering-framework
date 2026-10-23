@@ -76,10 +76,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 6855
-  commits: 2
-  files_changed: 4
-  lines_added: 213
-  lines_removed: 33
+  commits: 3
+  files_changed: 6
+  lines_added: 323
+  lines_removed: 38
+  footprint_refreshed_at: '2026-10-22T09:57:42Z'
+  footprint_refreshed_by_commit: 61c52de67
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4266-initshs-t-000-bootstrap-recovery-commit-.md

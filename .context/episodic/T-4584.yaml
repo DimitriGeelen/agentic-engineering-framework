@@ -81,10 +81,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 145
-  commits: 1
-  files_changed: 10
-  lines_added: 272
-  lines_removed: 22
+  commits: 2
+  files_changed: 12
+  lines_added: 385
+  lines_removed: 27
+  footprint_refreshed_at: '2026-10-22T10:12:18Z'
+  footprint_refreshed_by_commit: 54267ab99
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4584-9-completed-tasks-carry-horizon-now-so-t.md

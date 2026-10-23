@@ -79,10 +79,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 6850
-  commits: 3
-  files_changed: 8
-  lines_added: 196
-  lines_removed: 24
+  commits: 4
+  files_changed: 10
+  lines_added: 312
+  lines_removed: 29
+  footprint_refreshed_at: '2026-10-22T09:43:25Z'
+  footprint_refreshed_by_commit: e3e803b39
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4259-fw-init-seeds-a-cron-registry-but-leaves.md

@@ -74,10 +74,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 5245
-  commits: 1
-  files_changed: 4
-  lines_added: 185
-  lines_removed: 7
+  commits: 2
+  files_changed: 6
+  lines_added: 291
+  lines_removed: 12
+  footprint_refreshed_at: '2026-10-22T12:10:23Z'
+  footprint_refreshed_by_commit: afc69bb1f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4333-skipped-onboarding-tasks-t-001t-005-stay.md

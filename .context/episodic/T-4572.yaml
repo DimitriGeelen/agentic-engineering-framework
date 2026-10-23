@@ -71,10 +71,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 730
-  commits: 1
-  files_changed: 4
-  lines_added: 266
-  lines_removed: 16
+  commits: 2
+  files_changed: 6
+  lines_added: 369
+  lines_removed: 21
+  footprint_refreshed_at: '2026-10-22T10:00:07Z'
+  footprint_refreshed_by_commit: 06bafb53f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4572-fw-build-fails-esbuild-cannot-resolve-js.md

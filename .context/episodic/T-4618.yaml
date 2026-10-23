@@ -74,10 +74,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 192
-  commits: 1
-  files_changed: 5
-  lines_added: 161
-  lines_removed: 34
+  commits: 2
+  files_changed: 7
+  lines_added: 273
+  lines_removed: 39
+  footprint_refreshed_at: '2026-10-22T12:03:38Z'
+  footprint_refreshed_by_commit: 4290acc06
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4618-fwcostsbats-and-fwpluginauditbats-need-h.md

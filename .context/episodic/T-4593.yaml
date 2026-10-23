@@ -71,10 +71,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 178
-  commits: 1
-  files_changed: 2
-  lines_added: 36
-  lines_removed: 5
+  commits: 2
+  files_changed: 4
+  lines_added: 140
+  lines_removed: 9
+  footprint_refreshed_at: '2026-10-22T11:33:24Z'
+  footprint_refreshed_by_commit: 7dc60827f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4593-check-project-boundary-lets-a-bash-redir.md

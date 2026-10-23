@@ -86,10 +86,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 191
-  commits: 4
-  files_changed: 10
-  lines_added: 285
-  lines_removed: 14
+  commits: 5
+  files_changed: 12
+  lines_added: 403
+  lines_removed: 19
+  footprint_refreshed_at: '2026-10-22T11:32:06Z'
+  footprint_refreshed_by_commit: 92dcf8b21
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4591-push-blocker-verdict-ledger-has-13-rows-.md

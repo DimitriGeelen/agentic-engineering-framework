@@ -70,10 +70,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 192
-  commits: 1
-  files_changed: 4
-  lines_added: 139
-  lines_removed: 11
+  commits: 2
+  files_changed: 6
+  lines_added: 241
+  lines_removed: 16
+  footprint_refreshed_at: '2026-10-22T11:58:19Z'
+  footprint_refreshed_by_commit: 67b210ae3
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4608-t3232-verification-extractor-legs-fail-w.md

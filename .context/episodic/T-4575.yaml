@@ -79,10 +79,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 818
-  commits: 3
-  files_changed: 9
-  lines_added: 2291
-  lines_removed: 15
+  commits: 4
+  files_changed: 11
+  lines_added: 2402
+  lines_removed: 20
+  footprint_refreshed_at: '2026-10-22T11:29:01Z'
+  footprint_refreshed_by_commit: c6166eb3d
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4575-map-every-red-named-in-the-2026-10-21-cl.md

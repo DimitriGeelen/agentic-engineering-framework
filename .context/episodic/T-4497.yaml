@@ -82,10 +82,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 41
-  commits: 3
-  files_changed: 11
-  lines_added: 910
-  lines_removed: 21
+  commits: 4
+  files_changed: 15
+  lines_added: 1151
+  lines_removed: 31
+  footprint_refreshed_at: '2026-10-22T10:56:54Z'
+  footprint_refreshed_by_commit: ed6e61028
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4497-claude-fw--c-and-the-t-179-auto-restarts.md

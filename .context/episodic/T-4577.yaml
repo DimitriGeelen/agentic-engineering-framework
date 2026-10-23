@@ -75,10 +75,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 659
-  commits: 1
-  files_changed: 5
-  lines_added: 453
-  lines_removed: 13
+  commits: 2
+  files_changed: 7
+  lines_added: 560
+  lines_removed: 18
+  footprint_refreshed_at: '2026-10-22T10:04:22Z'
+  footprint_refreshed_by_commit: 31e57a784
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4577-checkpointsh-auto-handover-restart-signa.md
