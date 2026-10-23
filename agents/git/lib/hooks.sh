@@ -571,6 +571,7 @@ HOOK_EOF
 #                   + stale-index guard (T-4167) + Secret Scan (T-1844)
 #                   + bats dead-negation lint on staged tests (T-4379)
 #                   + task-template shipped-hash currency (T-4449)
+#                   + episodic footprint prediction for closing commits (T-4690)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
 # VERSION=1.7
@@ -866,6 +867,18 @@ if [ -f "$PARKED_GUARD" ]; then
     PROJECT_ROOT="$PROJECT_ROOT" bash "$PARKED_GUARD" check || exit 1
 fi
 
+# FW-HOOK-BLOCK: t4690-footprint-predict
+# T-4690: write the episodic footprint of a task this commit CLOSES into the
+# staged episodic now, counting this commit. Post-commit used to do it one
+# second after the commit, leaving the episodic modified after every close.
+# Last block on purpose: only a commit every gate above let through gets here.
+# Best-effort; post-commit re-checks whatever this predicted.
+FOOTPRINT_LIB="$FRAMEWORK_ROOT/lib/episodic_footprint.py"
+if [ -f "$FOOTPRINT_LIB" ] && command -v python3 >/dev/null 2>&1 \
+    && [ -n "$(git diff --cached --name-only -- '.context/episodic/T-*.yaml' 2>/dev/null)" ]; then
+    python3 "$FOOTPRINT_LIB" --predict-staged --project-root "$PROJECT_ROOT" 2>/dev/null || true
+fi
+
 exit 0
 HOOK_EOF
 
@@ -1081,13 +1094,19 @@ FOOTPRINT_LIB="$FRAMEWORK_ROOT/lib/episodic_footprint.py"
 if [ -f "$FOOTPRINT_LIB" ] && command -v python3 >/dev/null 2>&1; then
     _fp_sha=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)
     # One refresh per distinct task id in the message; `sort -u` because a
-    # message may name the same task several times.
-    for _fp_task in $(echo "$COMMIT_MSG" | grep -oE 'T-[0-9]+' | sort -u); do
+    # message may name the same task several times. T-4690: plus the ids
+    # pre-commit predicted, so a commit whose message does not name the task
+    # it closed is corrected here, not left over-counted. A correct prediction
+    # refreshes to `unchanged` and writes nothing.
+    _fp_pred=$(git rev-parse --git-path fw-footprint-predicted 2>/dev/null)
+    _fp_list=$( { echo "$COMMIT_MSG" | grep -oE 'T-[0-9]+'; [ -f "$_fp_pred" ] && cat "$_fp_pred"; } | sort -u)
+    rm -f "$_fp_pred" 2>/dev/null
+    for _fp_task in $_fp_list; do
         [ -f "$PROJECT_ROOT/.context/episodic/$_fp_task.yaml" ] || continue
         python3 "$FOOTPRINT_LIB" "$_fp_task" \
             --project-root "$PROJECT_ROOT" --commit "$_fp_sha" 2>/dev/null || true
     done
-    unset _fp_sha _fp_task
+    unset _fp_sha _fp_task _fp_pred _fp_list
 fi
 HOOK_EOF
 
