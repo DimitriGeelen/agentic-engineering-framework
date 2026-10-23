@@ -55,6 +55,20 @@ def test_landing_lists_projects_with_deep_links(client):
     assert "/designer/app?load=%2Fapi%2Fversion%3Fid%3Daef-dispatch-loop%26v%3D1" in html
 
 
+def test_every_card_shows_its_latest_thumbnail(client):
+    """T-4715: the gallery rendered no picture although /api/thumb serves one per map."""
+    c, store = client
+    _seed_project(store, "aef-task-lifecycle", "AEF task lifecycle", latest=2)
+    _seed_project(store, "aef-dispatch-loop", "AEF dispatch loop", latest=1)
+
+    html = c.get("/designer").get_data(as_text=True)
+    assert html.count('class="corpus-card') == html.count('class="corpus-thumb"') == 2
+    assert 'src="/api/thumb?id=aef-task-lifecycle&amp;v=2"' in html
+    assert 'src="/api/thumb?id=aef-dispatch-loop&amp;v=1"' in html
+    # A map without a stored PNG must not leave a broken-image icon.
+    assert 'onerror="this.remove()"' in html
+
+
 def test_landing_falls_back_to_bundle_when_store_empty(client):
     c, store = client
     resp = c.get("/designer")
