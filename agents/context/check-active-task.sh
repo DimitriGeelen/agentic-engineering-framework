@@ -351,6 +351,57 @@ _bootstrap_shape_hint() {
     echo "    by design (T-2987, L-547)." >&2
 }
 
+# T-4707: the same loop for the close commit. `--status work-completed` nulls
+# focus and prints `next: git commit -m '…' -- <paths> && git push`; that line,
+# as printed, passes the T-2054 null-focus allowance. Agents then append their
+# own tail (`2>&1 | … > log`, `; bin/fw sidecar send …`, `f=$(ls …)`) and the
+# whole line falls to "No active task" with nothing saying the commit itself was
+# fine. Name the clause that voided the allowance. A message, not a permission:
+# is_commit_checkpoint_command decides, exactly as before.
+_commit_shape_hint() {
+    local cmd="${1:-}" seg _op _si=-1 has_commit=0
+    local -a segs=() ops=() bad=()
+    [ -n "$cmd" ] || return 0
+    [[ "$cmd" =~ (^|[^[:alnum:]_-])git[[:space:]]+commit([[:space:]]|$) ]] || return 0
+    type _fw_chain_split &>/dev/null && type _fw_is_git_commit_clause &>/dev/null || return 0
+    local _FW_CWD_CHANGED=0 _FW_GIT_CWD
+    _FW_GIT_CWD="$(_fw_initial_git_cwd 2>/dev/null)"
+    while IFS= read -r -d '' seg && IFS= read -r -d '' _op; do
+        segs+=("$seg"); ops+=("$_op")
+    done < <(_fw_chain_split "$cmd" ops 2>/dev/null)
+    for seg in "${segs[@]}"; do
+        _si=$((_si+1))
+        [[ "$seg" =~ ^[[:space:]]*$ ]] && continue
+        if _fw_is_git_commit_clause "$seg" 2>/dev/null; then
+            has_commit=1
+            continue
+        fi
+        _fw_single_command_is_safe "$seg" 2>/dev/null \
+            || bad+=("$(printf '%s' "$seg" | tr '\n' ' ' | sed 's/^[[:space:]]*//' | head -c 70)")
+        _fw_advance_cwd "$seg" "${ops[$_si]}" 2>/dev/null
+    done
+    [ "$has_commit" = 1 ] || return 0
+
+    echo "" >&2
+    echo "  ⚠ The 'git commit' on this line would be allowed with no focus (T-2054:" >&2
+    echo "    committing a just-closed task's files). The line was refused because of" >&2
+    echo "    what else it carries:" >&2
+    case "$cmd" in *'$('*|*'`'*) echo "      - a command substitution \$(…) or \`…\`" >&2 ;; esac
+    [[ "$cmd" =~ (^|[[:space:]])(--no-verify|-n)([[:space:]]|$) ]] \
+        && echo "      - --no-verify / -n (skips the commit-msg hook)" >&2
+    local _view
+    _view="$(_fw_strip_quoted "$cmd" 2>/dev/null)" || _view="$cmd"
+    type has_bash_write_pattern &>/dev/null && has_bash_write_pattern "$_view" \
+        && echo "      - a write pattern (redirect '>', tee, rm, heredoc, sed -i …)" >&2
+    for seg in "${bad[@]}"; do
+        echo "      - a clause that is not read-only: $seg" >&2
+    done
+    echo "" >&2
+    echo "    Run the commit as the close printed it, on its own line:" >&2
+    echo "      git commit -m '<T-XXX>: close …' -- <paths> && git push" >&2
+    echo "    then run the rest after it. (T-4707; a message, not a permission.)" >&2
+}
+
 # Bash blocks show an empty "Attempting to modify:" — FILE_PATH is populated only
 # for Write/Edit. That blank was load-bearing in the T-2987 loop: the message never
 # showed WHICH command was blocked, which is the one datum that makes a stray
@@ -845,6 +896,7 @@ if [ -z "$CURRENT_TASK" ]; then
     echo "                     $(_fw_cmd) context focus WM-002   (close-out, trailing work)" >&2
     echo "                     $(_fw_cmd) context focus WM-003   (session lifecycle)" >&2
     _bootstrap_shape_hint "${BASH_CMD:-}"
+    _commit_shape_hint "${BASH_CMD:-}"
     echo "" >&2
     echo "$(_blocked_subject)" >&2
     echo "Policy: P-002 (Structural Enforcement Over Agent Discipline)" >&2

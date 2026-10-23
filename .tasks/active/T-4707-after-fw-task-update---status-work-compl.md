@@ -1,10 +1,18 @@
 ---
 id: T-4707
-name: "After fw task update --status work-completed clears focus, the printed next step (git commit ... -- <paths>) is blocked by check-active-task ('No active task')"
+name: "After fw task update --status work-completed clears focus, the printed next
+  step (git commit ... -- <paths>) is blocked by check-active-task ('No active task')"
 description: >
-  TermLink be.10 report (sidecar c896df19), also hit repeatedly by the AEF parent session on 2026-10-23: the close prints 'next: git commit ... -- <paths>', then that exact command is refused because focus was cleared. be.7 allowed it with a Tier-1 'task is closed' warning. The printed next step must work as printed: either let a git commit whose staged paths are only the just-closed task's close artifacts (task file move, its episodic) pass under no focus with the 'task is closed' warning, or have the close set focus to the close-out work item (WM-002) and say so. Test: close a fixture task, run the printed command verbatim, it succeeds.
+  TermLink be.10 report (sidecar c896df19), also hit repeatedly by the AEF parent
+  session on 2026-10-23: the close prints 'next: git commit ... -- <paths>', then
+  that exact command is refused because focus was cleared. be.7 allowed it with a
+  Tier-1 'task is closed' warning. The printed next step must work as printed: either
+  let a git commit whose staged paths are only the just-closed task's close artifacts
+  (task file move, its episodic) pass under no focus with the 'task is closed' warning,
+  or have the close set focus to the close-out work item (WM-002) and say so. Test:
+  close a fixture task, run the printed command verbatim, it succeeds.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T15:41:36Z
-last_update: 2026-10-23T15:41:36Z
-date_finished: null
+last_update: 2026-10-23T15:43:00Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T15:42:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4707: After fw task update --status work-completed clears focus, the printed next step (git commit ... -- <paths>) is blocked by check-active-task ('No active task')
@@ -62,8 +87,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] With focus cleared by a real close (update-task.sh in a throwaway git project), the printed `next: git commit -m '<id>: close ...' -- <paths> && git push` line, taken verbatim, passes `check-active-task` (T-2054 NOTE, exit 0) and then runs: the commit lands and is pushed (pinned end to end; measured already true at HEAD, see RCA)
+- [x] A close commit that carries another clause that voids the T-2054 allowance (a non-read-only clause such as `bin/fw sidecar send`, or a write pattern such as `> log`) is still refused with 'No active task'. The block now says the commit alone would be allowed and names the clause that voided it. This changes the message only; permissions are unchanged
+- [x] Control: a blocked no-focus line with no `git commit` in it gets no commit hint
+- [x] Regression bats `tests/unit/t4707_close_hint_commit_passes_gate.bats` (4 tests): the two hint legs fail against the HEAD hook (git-archive scratch tree) and pass after; neighbouring suites (capture_verbs_nulltask, t4182, t3179, t4204, t4094) stay green
+- [x] `bin/fw vendor self --check --task T-4707` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,22 +276,26 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4707_close_hint_commit_passes_gate.bats > /tmp/.t4707.out 2>&1 && grep -q '^ok 4 ' /tmp/.t4707.out && ! grep -q '^not ok' /tmp/.t4707.out
+test "$(grep -c '# skip' /tmp/.t4707.out)" -eq 0
+timeout 600 bats tests/unit/capture_verbs_nulltask.bats tests/unit/t4182_closure_commit_drift.bats tests/unit/t4204_commit_allowance_env_prefix.bats > /tmp/.t4707n.out 2>&1 && ! grep -q '^not ok' /tmp/.t4707n.out
+test "$(grep -c '# skip' /tmp/.t4707n.out)" -eq 0
+bash -n agents/context/check-active-task.sh
+bin/fw vendor self --check --task T-4707
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** after `--status work-completed` the close prints `next: git commit -m '<id>: close ...' -- <paths> && git push`, and agents (the AEF parent session, and TermLink at be.10) report that the commit was refused with `BLOCKED: No active task`.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause (measured, differs from the filing):** the printed line itself passes. With focus null, `agents/context/check-active-task.sh:760-764` (T-2054) admits any line for which `is_commit_checkpoint_command` (`agents/context/lib/safe-commands.sh`) is true, and the printed line qualifies. A real close in a fixture project followed by the printed line verbatim gets exit 0 and the T-2054 NOTE, and the commit and push succeed (test 1 passes on HEAD as well). The gate and the classifier are byte-identical between v1.8.15-be.7 and be.10 (`git log be.7..be.10` on both files shows no change). The refused commands in the parent's transcript (2026-10-23 14:22 T-4695..97 and 14:48 T-4702; also 10-19 to 10-21) were all the close commit plus a tail: `2>&1 | grep | tail`, `> scratch/push7.log`, `; bin/fw sidecar send ...`, `f=$(ls ...)`. Any of these voids the allowance, correctly: a redirect is a write, sidecar send is not read-only, and `$(...)` is judged by nothing. The block then printed only the generic "No active task" remedies, with nothing saying that the commit itself would have been fine. The agent therefore read it as "the printed next step is blocked". This is the same loop T-2987 fixed for bootstrap commands, in the commit branch.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the T-2054 / T-3221 allowance is decided by one predicate with no explanation channel, and the null-focus block is shared by every refused command. There was also no end-to-end test from close output to gate. Each half was tested on its own (t4094 tests the hint text, t3221 and t4182 test hand-written commit strings), so nothing showed that the printed line passes. Nothing showed that the observed failures came from what was appended to it either.
+
+**Fix:** `_commit_shape_hint` in check-active-task.sh, called from the null-focus block. When the line contains a `git commit` clause, it says the commit alone would be allowed and names what voided it: command substitution, `--no-verify`, a write pattern, or each non-read-only clause. It then shows the printed form to run on its own line. This changes the message only; `is_commit_checkpoint_command` decides exactly as before.
+
+**Prevention:** `tests/unit/t4707_close_hint_commit_passes_gate.bats` closes a real fixture task, extracts the printed `next:` line, judges it with the real hook and runs it, so a future change to either the hint or the gate that breaks the printed step goes red. Two legs pin the explanatory block, and a control leg confirms that a line with no commit gets no hint.
+
+**Not done (scope note for the parent):** the filing's second leg was "an unrelated staged file with no focus is still refused". That is not current policy. T-2054 deliberately admits any plain commit checkpoint under null focus (`git add x && git commit -m ... -- x` passes today), and the commit-msg hook enforces only the T-XXX reference. Narrowing it to "only the just-closed task's close artifacts" would be a governance change to T-2054 that breaks capture_verbs_nulltask and t3221. It is left for an operator decision, not done here.
 
 ## Evolution
 
@@ -329,6 +361,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-23 — message, not permission
+- **Chose:** keep the T-2054 allowance as it is and make the null-focus block explain a refused close commit (`_commit_shape_hint`).
+- **Why:** the printed next step already passes verbatim (measured end to end). The observed refusals were caused by clauses agents appended, which correctly void the allowance.
+- **Rejected:** (a) narrowing T-2054 to the closed task's own artifacts. That is a governance change to an existing deliberate allowance, and it is the operator's call. (b) Setting focus to WM-002 at close. That would widen what runs after close to every WM-fenced write, and nothing showed it was needed once the printed line is known to pass.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -345,3 +382,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4707-after-fw-task-update---status-work-compl.md
 - **Context:** Initial task creation
+
+### 2026-10-23T15:42:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
