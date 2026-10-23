@@ -9,10 +9,10 @@ description: >
   and/or add a --ref option. Keep upgrade_fresh_machine_simulation green. Source:
   proxmox-ring20-management be.4 field report (sidecar 4aade009, 2026-10-23).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T22:26:16Z
-last_update: '2026-10-22T22:28:51Z'
+last_update: 2026-10-23T08:58:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A full framework checkout (has .git, bin/fw, FRAMEWORK.md) at a tag, placed inside a consumer tree, run as `<clone>/bin/fw upgrade <consumer>` (from the consumer cwd and from inside the clone) uses that clone as the upgrade source and pins its HEAD (the tag commit) — no auto-clone of the default branch
+- [x] The run prints a one-line notice naming the in-tree checkout as the source
+- [x] The consumer's vendored `.agentic-framework/bin/fw upgrade` still takes the bare-from-consumer auto-clone path (unchanged)
+- [x] Regression test tests/unit/t4680_upgrade_clone_inside_consumer.bats fails before the fix, passes after; t4661 and upgrade_fresh_machine_simulation.bats stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,6 +282,14 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t4680_upgrade_clone_inside_consumer.bats > /tmp/.t4680.out 2>&1 && ! grep -q "^not ok" /tmp/.t4680.out
+test "$(grep -c '# skip' /tmp/.t4680.out)" -eq 0
+timeout 900 bats tests/unit/t4661_upgrade_from_worktree_source.bats > /tmp/.t4680b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4680b.out
+test "$(grep -c '# skip' /tmp/.t4680b.out)" -eq 0
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4680c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4680c.out
+test "$(grep -c '# skip' /tmp/.t4680c.out)" -eq 0
+bash -n bin/fw
+bin/fw vendor self --check --task T-4680
 
 ## RCA
 
@@ -296,6 +306,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** ring20 (be.4 report) cloned the framework at a tag INSIDE the consumer tree and ran `<clone>/bin/fw upgrade` from its consumer agent session. fw reported "Bare-from-consumer detected — auto-cloning upstream" and upgraded from the default branch, not the tag. The same clone placed outside the project worked.
+
+**Root cause:** `bin/fw` T-4362 block (the "inherited FRAMEWORK_ROOT is the project's vendored copy" drop, ~bin/fw:1440). An agent session in a consumer inherits `FRAMEWORK_ROOT=<consumer>/.agentic-framework`. T-4362 dropped that inherited value only when the invoked checkout lives OUTSIDE PROJECT_ROOT (`cand != proj && cand != proj/*`). An in-tree clone fails that test, so the inherited vendored root was kept, `lib/upgrade.sh:1467` saw FRAMEWORK_ROOT == vendored copy (bare-from-consumer) and auto-cloned `upstream_repo`'s default branch. Reproduced: `env FRAMEWORK_ROOT=$proj/.agentic-framework PROJECT_ROOT=$proj $proj/fw-src/bin/fw upgrade $proj --dry-run` → auto-clone; the identical clone at `$out/fw` → "upgrading from … (the fw you ran)". Without the inherited env the in-tree case already worked through resolve_framework's T-1346-B1 rule, which is why a plain-shell repro does not show it.
+
+**Why structurally allowed:** T-4362 and T-4453 were written for the 'clone outside the project' shape reported then; the 'outside' clause was meant to keep the vendored copy (which lives inside the project) from matching, but it excluded every in-tree checkout with it. No test covered a framework checkout inside the consumer, with or without an inherited FRAMEWORK_ROOT.
+
+**Prevention:** tests/unit/t4680_upgrade_clone_inside_consumer.bats builds a consumer with a vendored copy and a real tag clone inside it and asserts the tag commit is the source (with and without the inherited FRAMEWORK_ROOT, from both cwds), plus the control that the vendored bin/fw still takes bare-from-consumer.
 
 ## Evolution
 
@@ -377,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4680-fw-upgrade-from-a-tag-clone-placed-insid.md
 - **Context:** Initial task creation
+
+### 2026-10-23T08:57:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

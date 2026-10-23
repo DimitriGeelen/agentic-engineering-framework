@@ -1451,8 +1451,11 @@ if [ -n "${FRAMEWORK_ROOT:-}" ] && [ "${1:-}" = "upgrade" ] && [ -n "${PROJECT_R
     _t4362_cand="$(cd "$FW_BIN_DIR/.." && pwd -P)"
     _t4362_proj="$(cd "$PROJECT_ROOT" 2>/dev/null && pwd -P)" || _t4362_proj=""
     _t4362_fr="$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd -P)" || _t4362_fr=""
+    # T-4680: a checkout INSIDE the project counts too (ring20: a tag clone in the
+    # consumer tree), as long as it is not the inherited copy or the vendored copy.
     if [ -n "$_t4362_proj" ] && [ -n "$_t4362_fr" ] \
-        && [ "$_t4362_cand" != "$_t4362_proj" ] && [[ "$_t4362_cand" != "$_t4362_proj"/* ]] \
+        && [ "$_t4362_cand" != "$_t4362_proj" ] && [ "$_t4362_cand" != "$_t4362_fr" ] \
+        && [ "$_t4362_cand" != "$_t4362_proj/.agentic-framework" ] \
         && [[ "$_t4362_fr" == "$_t4362_proj"/* ]]; then
         echo "fw: inherited FRAMEWORK_ROOT=$FRAMEWORK_ROOT is the project's vendored copy; upgrading from $_t4362_cand (the fw you ran)" >&2
         FRAMEWORK_ROOT=""
@@ -1472,6 +1475,13 @@ if [ -z "${FRAMEWORK_ROOT:-}" ] && [ "${1:-}" = "upgrade" ] \
     _t4453_proj="$(cd "${PROJECT_ROOT:-/nonexistent}" 2>/dev/null && pwd -P)" || _t4453_proj=""
     if [ -z "$_t4453_proj" ] || { [ "$_t4453_cand" != "$_t4453_proj" ] && [[ "$_t4453_cand" != "$_t4453_proj"/* ]]; }; then
         FRAMEWORK_ROOT="$_t4453_cand"
+    elif [ "$_t4453_cand" != "$_t4453_proj" ] && [ "$_t4453_cand" != "$_t4453_proj/.agentic-framework" ]; then
+        # T-4680: a full checkout inside the project tree (not its vendored copy) is
+        # the source the operator picked, e.g. a tag clone; upgrade pins its HEAD.
+        FRAMEWORK_ROOT="$_t4453_cand"
+        _t4680_at=$(git -C "$_t4453_cand" describe --tags --always 2>/dev/null) || _t4680_at="HEAD"
+        echo "fw: upgrading from the framework checkout inside the project: $_t4453_cand ($_t4680_at)" >&2
+        unset _t4680_at
     fi
     unset _t4453_cand _t4453_proj
 fi
