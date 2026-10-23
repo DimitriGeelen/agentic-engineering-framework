@@ -3188,6 +3188,32 @@ MCPJSON
         echo -e "        git -C \"$target_dir\" ls-files -ci --exclude-standard -z -- .context/working | xargs -0 git -C \"$target_dir\" rm --cached --"
     fi
 
+    # T-4684: T-4675 put dispatch worker dirs (env.sh, prompt, results) under
+    # .context/dispatch/, ignored only by the framework's own root .gitignore.
+    # shellcheck source=lib/dispatch-gitignore.sh
+    source "$FRAMEWORK_ROOT/lib/dispatch-gitignore.sh"
+    local _dp_added _dp_tracked
+    if [ "$dry_run" = true ]; then
+        _dp_added=$(fw_dispatch_ensure_ignored "$target_dir" --dry-run)
+    else
+        _dp_added=$(fw_dispatch_ensure_ignored "$target_dir")
+    fi
+    if [ "${_dp_added:-0}" -gt 0 ]; then
+        changes=$((changes + 1))
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD ADD${NC}  dispatch worker-dir ignore rule to .context/.gitignore"
+        else
+            echo -e "  ${GREEN}ADDED${NC}  dispatch worker-dir ignore rule to .context/.gitignore"
+        fi
+    else
+        echo -e "  ${GREEN}OK${NC}  Dispatch worker dirs (.context/dispatch/) gitignored"
+    fi
+    _dp_tracked=$(fw_dispatch_tracked "$target_dir" | wc -l | tr -d ' ')
+    if [ "${_dp_tracked:-0}" -gt 0 ]; then
+        echo -e "  ${YELLOW}NOTE${NC}  $_dp_tracked file(s) under .context/dispatch are already tracked (env.sh may hold environment values); untrack with:"
+        echo -e "        git -C \"$target_dir\" rm -r --cached -- .context/dispatch"
+    fi
+
     # ── 9. Version tracking (.framework.yaml) ──
     echo -e "${YELLOW}[9/10] Version tracking${NC}"
 

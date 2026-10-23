@@ -1,10 +1,19 @@
 ---
 id: T-4684
-name: "Consumers do not gitignore .context/dispatch/ (T-4675 moved worker dirs there): a worker's env.sh, prompt.md and results can be committed by accident"
+name: "Consumers do not gitignore .context/dispatch/ (T-4675 moved worker dirs there):
+  a worker's env.sh, prompt.md and results can be committed by accident"
 description: >
-  832 be.5 report (sidecar 81cb0bca): T-4675 keeps worker dirs (prompt.md, env.sh, result.jsonl, stderr.log) under <project>/.context/dispatch/; the framework repo's .gitignore has .context/dispatch/ but consumers get no such rule, and env.sh can hold environment values. Make fw init and fw upgrade ensure the ignore in consumers, following the existing pattern (lib/vec-index-gitignore.sh / lib/working-gitignore.sh): idempotent, append-only, never removes user lines. If a consumer already tracks files under .context/dispatch/, warn with the git rm --cached command rather than untracking silently. Keep tests/unit/upgrade_fresh_machine_simulation.bats green; add a bats test for init, upgrade and the already-tracked warning.
+  832 be.5 report (sidecar 81cb0bca): T-4675 keeps worker dirs (prompt.md, env.sh,
+  result.jsonl, stderr.log) under <project>/.context/dispatch/; the framework repo's
+  .gitignore has .context/dispatch/ but consumers get no such rule, and env.sh can
+  hold environment values. Make fw init and fw upgrade ensure the ignore in consumers,
+  following the existing pattern (lib/vec-index-gitignore.sh / lib/working-gitignore.sh):
+  idempotent, append-only, never removes user lines. If a consumer already tracks
+  files under .context/dispatch/, warn with the git rm --cached command rather than
+  untracking silently. Keep tests/unit/upgrade_fresh_machine_simulation.bats green;
+  add a bats test for init, upgrade and the already-tracked warning.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T09:50:19Z
-last_update: 2026-10-23T09:50:19Z
-date_finished: null
+last_update: 2026-10-23T09:50:52Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T09:50:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4684: Consumers do not gitignore .context/dispatch/ (T-4675 moved worker dirs there): a worker's env.sh, prompt.md and results can be committed by accident
@@ -62,8 +88,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] New `lib/dispatch-gitignore.sh` holds the one rule list and an idempotent, append-only `fw_dispatch_ensure_ignored <root> [--dry-run]` writing `<root>/.context/.gitignore` (never removes user lines; prints rules added)
+- [ ] `fw init` calls it, so a fresh consumer's `git check-ignore` covers `.context/dispatch/<worker>/env.sh`
+- [ ] `fw upgrade` calls it (WOULD ADD / ADDED / OK lines) and, when files under `.context/dispatch/` are already tracked, prints a NOTE with the `git rm --cached` command instead of untracking them
+- [ ] `tests/unit/t4684_dispatch_gitignore.bats` covers helper, idempotence/dry-run, init end-to-end, upgrade wiring and the already-tracked warning; red on pre-fix code (no helper), green after
+- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green; `bin/fw vendor self --check --task T-4684` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +277,12 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4684_dispatch_gitignore.bats > /tmp/.t4684.out 2>&1 && ! grep -q "^not ok" /tmp/.t4684.out
+test "$(grep -c '# skip' /tmp/.t4684.out)" -eq 0
+timeout 1800 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4684fm.out 2>&1 && ! grep -q "^not ok" /tmp/.t4684fm.out
+test "$(grep -c '# skip' /tmp/.t4684fm.out)" -eq 0
+bash -n lib/dispatch-gitignore.sh && bash -n lib/init.sh && bash -n lib/upgrade.sh
+bin/fw vendor self --check --task T-4684
 
 ## RCA
 
@@ -264,6 +299,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** in a consumer, `.context/dispatch/<worker>/` (prompt.md, env.sh, result.jsonl, stderr.log) shows as untracked and is swept in by any `git add -A .context` (handover-style commits); env.sh can carry environment values. Reported by 832 (be.5, sidecar 81cb0bca).
+
+**Root cause:** T-4675 relocated worker dirs to `$PROJECT_ROOT/.context/dispatch` (`agents/termlink/termlink.sh:44`) and added the ignore only to the framework repo's ROOT `.gitignore` (`.gitignore:35`), which no consumer inherits. Neither `lib/init.sh` (writes only `.context/working/.gitignore`, ~line 391) nor `lib/upgrade.sh` (~3144-3190, vec-index + working rules only) emits a rule for `.context/dispatch/`.
+
+**Why structurally allowed:** same class as T-3861 and T-4231: a new runtime directory is ignored where the developer works (framework root .gitignore) and nothing checks that a runtime path a framework writer creates inside a consumer has a consumer-side ignore. Tests run in the framework repo, where the root rule hides the gap.
+
+**Prevention:** a shared rule list in `lib/dispatch-gitignore.sh` called by both init and upgrade (existing consumers get the rule on their next `fw upgrade`), plus `tests/unit/t4684_dispatch_gitignore.bats`, which runs a real `fw init` in a fresh repo and asserts `git check-ignore` on a worker's env.sh. Class lesson: a runtime path added to the framework root `.gitignore` also needs a consumer-side writer.
 
 ## Evolution
 
@@ -345,3 +388,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4684-consumers-do-not-gitignore-contextdispat.md
 - **Context:** Initial task creation
+
+### 2026-10-23T09:50:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
