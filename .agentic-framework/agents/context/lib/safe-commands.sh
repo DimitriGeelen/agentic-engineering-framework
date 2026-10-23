@@ -21,6 +21,9 @@
 # say where the shell is. The hook sets _FW_PAYLOAD_CWD from the payload's `cwd`
 # (check-active-task.sh). A caller with no payload (a test harness) does the same:
 #     export PROJECT_ROOT=<project> _FW_PAYLOAD_CWD=<absolute cwd of the command>
+# T-4687: _FW_PAYLOAD_CWD alone suffices: with PROJECT_ROOT unset, the project is
+# the nearest framework project (.framework.yaml) at or above it; none found is a
+# refusal with a stderr note naming both variables.
 # Without it the cwd is known only when $PWD IS PROJECT_ROOT. Otherwise every git
 # clause is NOT SAFE, and the first such refusal in a process says so on stderr.
 # There is deliberately no fallback to "$PWD somewhere inside PROJECT_ROOT": the
@@ -215,11 +218,34 @@ _fw_initial_git_cwd() {
 # (the caller has checked that the cwd was unknown, not foreign), but only when no
 # payload cwd was given at all: the harness case. A foreign cwd stays quiet.
 _fw_note_unknown_git_cwd() {
-    [[ "${_FW_PAYLOAD_CWD:-}" == /* ]] && return 0
     [ -n "${_FW_NO_CWD_NOTED:-}" ] && return 0
+    if [[ "${_FW_PAYLOAD_CWD:-}" == /* ]]; then
+        # T-4687: a payload cwd with a project is a foreign cwd: stays quiet.
+        [ -n "${PROJECT_ROOT:-}" ] && return 0
+        _FW_NO_CWD_NOTED=1
+        echo "safe-commands: git clause refused: PROJECT_ROOT is unset and _FW_PAYLOAD_CWD=$_FW_PAYLOAD_CWD is not inside a framework project (no .framework.yaml at or above it). Export PROJECT_ROOT=<project>, or point _FW_PAYLOAD_CWD into one (T-4687)." >&2
+        return 0
+    fi
     _FW_NO_CWD_NOTED=1
-    echo "safe-commands: git clause refused: the shell's cwd is unknown (no absolute _FW_PAYLOAD_CWD, and \$PWD is not PROJECT_ROOT). Callers without a hook payload: export _FW_PAYLOAD_CWD=<absolute cwd> (T-4662)." >&2
+    echo "safe-commands: git clause refused: the shell's cwd is unknown (no absolute _FW_PAYLOAD_CWD, and \$PWD is not PROJECT_ROOT). Callers without a hook payload: export _FW_PAYLOAD_CWD=<absolute cwd>; PROJECT_ROOT is derived from it when unset (T-4662, T-4687)." >&2
     return 0
+}
+
+# T-4687: _fw_project_from_cwd <absolute dir> prints the nearest directory at or
+# above DIR that is a framework project (.framework.yaml, or the framework repo
+# itself: FRAMEWORK.md + bin/fw). A filesystem walk, never git: running git in an
+# unknown repository reads that repository's config, which is what is being judged.
+_fw_project_from_cwd() {
+    local _d
+    _d="$(realpath -e -- "$1" 2>/dev/null)" || return 1
+    while :; do
+        if [ -f "$_d/.framework.yaml" ] || { [ -f "$_d/FRAMEWORK.md" ] && [ -f "$_d/bin/fw" ]; }; then
+            printf '%s' "$_d"
+            return 0
+        fi
+        [ "$_d" = / ] && return 1
+        _d="$(dirname -- "$_d")"
+    done
 }
 
 # T-4511: does the text carry process substitution, `<(CMD)` or `>(CMD)`? Bash runs
@@ -258,13 +284,20 @@ is_bash_safe_command() {
     # PROJECT_ROOT (then the shell started there too); otherwise the cwd is unknown
     # and the git arm fails closed.
     # Decided before `local`, which would hide the caller's value.
-    local _c0=""
+    local _c0="" _pr0=""
     if [ -n "${_FW_GIT_CWD+x}" ]; then
         _c0="$_FW_GIT_CWD"
     else
         _c0="$(_fw_initial_git_cwd)"
+        # T-4687: _FW_PAYLOAD_CWD alone is the contract (T-4662): with PROJECT_ROOT
+        # unset, the project is the framework project the payload cwd sits in.
+        if [ -z "${PROJECT_ROOT:-}" ] && [[ "${_FW_PAYLOAD_CWD:-}" == /* ]]; then
+            _pr0="$(_fw_project_from_cwd "$_FW_PAYLOAD_CWD")" || _pr0=""
+        fi
     fi
     local _FW_GIT_CWD="$_c0"
+    # Scoped to this call (and the calls it makes); an explicit PROJECT_ROOT is never replaced.
+    [ -n "$_pr0" ] && local -x PROJECT_ROOT="$_pr0"
     # T-4536: names this line assigned a literal that cannot read as an option
     # (_fw_note_literal_vars). Never inherited: a nested `X=$(...)` starts empty.
     local _FW_LIT_VARS=" "
@@ -623,6 +656,8 @@ _fw_git_skip_globals() {
     local -a words
     read -ra words <<< "$1"
     local i=1 n=${#words[@]} tok key _cwd="${_FW_GIT_CWD:-}" _p
+    # T-4687: no project at all is a contract refusal (exit 2, noted), not a foreign repo.
+    [ -n "${PROJECT_ROOT:-}" ] || return 2
     while [ "$i" -lt "$n" ]; do
         tok="${words[$i]}"
         case "$tok" in

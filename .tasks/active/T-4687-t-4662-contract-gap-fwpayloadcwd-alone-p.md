@@ -1,10 +1,17 @@
 ---
 id: T-4687
-name: "T-4662 contract gap: _FW_PAYLOAD_CWD alone (PROJECT_ROOT unset) still refuses a git read, silently, though the refusal message tells callers to export exactly that"
+name: "T-4662 contract gap: _FW_PAYLOAD_CWD alone (PROJECT_ROOT unset) still refuses
+  a git read, silently, though the refusal message tells callers to export exactly
+  that"
 description: >
-  050 be.6 report (sidecar e0b8f7ac): with no hook cwd, cwd /tmp, PROJECT_ROOT unset, _FW_PAYLOAD_CWD=/opt/050-email-archive -> is_bash_safe_command 'git status' returns 1 with no message; with PROJECT_ROOT also set it passes. Same in pristine be.6. Either derive the project from _FW_PAYLOAD_CWD when PROJECT_ROOT is unset (nearest .framework.yaml / repo root), or make the message name both variables; never refuse silently. Test both shapes.
+  050 be.6 report (sidecar e0b8f7ac): with no hook cwd, cwd /tmp, PROJECT_ROOT unset,
+  _FW_PAYLOAD_CWD=/opt/050-email-archive -> is_bash_safe_command 'git status' returns
+  1 with no message; with PROJECT_ROOT also set it passes. Same in pristine be.6.
+  Either derive the project from _FW_PAYLOAD_CWD when PROJECT_ROOT is unset (nearest
+  .framework.yaml / repo root), or make the message name both variables; never refuse
+  silently. Test both shapes.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T10:06:43Z
-last_update: 2026-10-23T10:06:43Z
-date_finished: null
+last_update: 2026-10-23T10:09:44Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-23T10:09:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4687: T-4662 contract gap: _FW_PAYLOAD_CWD alone (PROJECT_ROOT unset) still refuses a git read, silently, though the refusal message tells callers to export exactly that
@@ -62,8 +86,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] 050's shape — cwd /tmp, PROJECT_ROOT unset, _FW_PAYLOAD_CWD=<temp framework project (.framework.yaml)> — `is_bash_safe_command 'git status'` returns 0 (project derived from the payload cwd)
+- [x] _FW_PAYLOAD_CWD in a git repo that is not a framework project (no .framework.yaml above it), PROJECT_ROOT unset: refused, with ONE stderr line naming the reason and both PROJECT_ROOT and _FW_PAYLOAD_CWD
+- [x] Derivation does not widen the foreign-repo rule: a derived project still refuses `cd <foreign> && git status`, and an explicit PROJECT_ROOT is never overridden by the derivation
+- [x] Existing T-4409 and T-4662 bats suites stay green; new regression bats `tests/unit/t4687_payload_cwd_derives_project.bats` fails on the pre-fix library and passes after
+- [x] `bin/fw vendor self` run; `bin/fw vendor self --check --task T-4687` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +275,14 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4687_payload_cwd_derives_project.bats > /tmp/.t4687.out 2>&1 && ! grep -q "^not ok" /tmp/.t4687.out && grep -q "^ok 1 " /tmp/.t4687.out
+test "$(grep -c '# skip' /tmp/.t4687.out)" -eq 0
+timeout 300 bats tests/unit/t4662_safe_commands_no_cwd_contract.bats > /tmp/.t4687b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4687b.out && grep -q "^ok 1 " /tmp/.t4687b.out
+test "$(grep -c '# skip' /tmp/.t4687b.out)" -eq 0
+timeout 600 bats tests/unit/t4409_git_cwd_repo_boundary.bats > /tmp/.t4687c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4687c.out && grep -q "^ok 1 " /tmp/.t4687c.out
+test "$(grep -c '# skip' /tmp/.t4687c.out)" -eq 0
+bash -n agents/context/lib/safe-commands.sh
+bin/fw vendor self --check --task T-4687
 
 ## RCA
 
@@ -264,6 +299,16 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 050 (be.6): shell cwd /tmp, PROJECT_ROOT unset, `_FW_PAYLOAD_CWD=/opt/050-email-archive` — `is_bash_safe_command 'git status'` returned 1 with nothing on stderr, although the T-4662 refusal note tells callers to export exactly `_FW_PAYLOAD_CWD`.
+
+**Root cause:** two halves of one contract disagreed. `_fw_git_dir_is_project` (agents/context/lib/safe-commands.sh, `[ -n "${PROJECT_ROOT:-}" ] || return 1`) judges the cwd against PROJECT_ROOT, so with PROJECT_ROOT unset every cwd is "foreign" (exit 1, not the exit-2 "cwd unknown" case). And `_fw_note_unknown_git_cwd` returned early whenever `_FW_PAYLOAD_CWD` was absolute, assuming that case was a deliberate foreign cwd — so the refusal was silent. T-4662 documented `export PROJECT_ROOT=<project> _FW_PAYLOAD_CWD=<cwd>` in the header but the stderr note named only `_FW_PAYLOAD_CWD`.
+
+**Why structurally allowed:** every T-4662/T-4409 fixture set PROJECT_ROOT; no test exercised "_FW_PAYLOAD_CWD alone", which is the very shape the refusal message instructs. The message was tested for presence, not for leading to a passing call.
+
+**Fix:** with PROJECT_ROOT unset and an absolute payload cwd, `is_bash_safe_command` derives PROJECT_ROOT (call-scoped `local -x`) from the nearest `.framework.yaml` (or FRAMEWORK.md + bin/fw) at or above the payload cwd — a filesystem walk, never git, since running git in an unknown repo reads that repo's config. No project found → `_fw_git_skip_globals` exits 2 and the note names the reason and both variables. An explicit PROJECT_ROOT is never replaced; foreign-cwd-with-project stays quiet as before.
+
+**Prevention:** `tests/unit/t4687_payload_cwd_derives_project.bats` runs the exact shape the message instructs (fails 3/7 on the pre-fix library), plus the not-a-framework-project refusal-with-message and the foreign-repo / `-C` / scoping invariants.
 
 ## Evolution
 
@@ -345,3 +390,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4687-t-4662-contract-gap-fwpayloadcwd-alone-p.md
 - **Context:** Initial task creation
+
+### 2026-10-23T10:09:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
