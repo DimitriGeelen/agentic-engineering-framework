@@ -53,6 +53,7 @@ SETTINGS = [
     ("ARC_COMPLETION_THRESHOLD", "0.80", "Ratio of completed children at which fw audit warns an in-progress arc (G-062 mechanism #2); T-1656"),
     # T-2842: honoured by shipped code and documented in CLAUDE.md, but absent
     # from the registry — so they were env-var-only and never rendered here.
+    ("SCRATCH_WARN_GB", "10", "Size of .context/scratch in GB above which fw doctor WARNs and names the largest subdirs; release lanes are pruned after each release (T-4703)"),
     ("BRANCH_BEHIND_WARN", "50", "Commits-behind-origin/master threshold for the branch-hygiene WARN and handover merge-back nudge; T-100143/T-100144"),
     ("STALE_ARC_DAYS", "30", "Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale; T-1855"),
     ("BRANCH_AHEAD_WARN", "20", "Commits-ahead-of-origin threshold for the branch-hygiene ahead-unpushed WARN; measures the opposite direction to BRANCH_BEHIND_WARN — work committed locally and never pushed; fires on the dev branch only, WARN-only; T-3360"),
