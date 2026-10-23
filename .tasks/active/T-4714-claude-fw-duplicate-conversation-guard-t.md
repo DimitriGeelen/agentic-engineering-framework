@@ -92,10 +92,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_claude_ancestor_pid` recognises a process as claude when comm=='claude' OR basename of argv[0]'s first word is 'claude', and never returns (stops at) a `claude daemon …` / `claude bg-pty-host` process; /proc root is injectable for tests
-- [ ] `fw_conversation_holder` ignores a holder pid whose cmdline matches `^[^ ]*claude (daemon|bg-pty-host)( |$)`; /proc root injectable for tests
-- [ ] Regression tests with fake /proc trees: bg session (comm '2.1.304', argv 'claude bg-spare') under 'claude daemon run' returns the bg pid; daemon-only chain returns None; plain interactive claude still recognised; holder pointing at daemon pid is not live, at an interactive claude is live
-- [ ] Existing conversation-holder / claude-fw tests stay green; `bin/fw test invariants` green; vendor synced
+- [x] `_claude_ancestor_pid` recognises a process as claude when comm=='claude' OR basename of argv[0]'s first word is 'claude', and never returns (stops at) a `claude daemon …` / `claude bg-pty-host` process; /proc root is injectable for tests
+- [x] `fw_conversation_holder` ignores a holder pid whose cmdline matches `^[^ ]*claude (daemon|bg-pty-host)( |$)`; /proc root injectable for tests
+- [x] Regression tests with fake /proc trees: bg session (comm '2.1.304', argv 'claude bg-spare') under 'claude daemon run' returns the bg pid; daemon-only chain returns None; plain interactive claude still recognised; holder pointing at daemon pid is not live, at an interactive claude is live
+- [x] Existing conversation-holder / claude-fw tests stay green; `bin/fw test invariants` green; vendor synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
