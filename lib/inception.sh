@@ -678,12 +678,33 @@ do_inception_decide() {
         fi
     fi
 
+    # T-4727: warn — never block — when the recorded verb differs from the
+    # Recommendation's verdict, and note it in ## Decision so the override is
+    # auditable. The verdict is parsed by the extractor Watchtower's
+    # Recommendation card uses (same call as lib/review.sh, T-4726); an
+    # unparseable verdict prints '' and stays silent. Watchtower's decide
+    # (web/decide_runner.py) runs this same CLI, so it gets the note too.
+    local _rec_verdict="" _diverges=""
+    _rec_verdict=$(FW_TASK_FILE="$task_file" python3 -c "
+import os, sys
+sys.path.insert(0, sys.argv[1])
+from web.shared import extract_recommendation
+v = extract_recommendation(open(os.environ['FW_TASK_FILE'], encoding='utf-8', errors='replace').read())['verdict']
+print(v if v in ('GO', 'NO-GO', 'DEFER') else '')
+" "${FRAMEWORK_ROOT:-.}" 2>/dev/null || true)
+    if [ -n "$_rec_verdict" ] && [ "$_rec_verdict" != "$decision_upper" ]; then
+        _diverges="$_rec_verdict"
+        echo -e "${YELLOW}WARNING: recording $decision_upper but the Recommendation is $_rec_verdict (T-4727)${NC}" >&2
+    fi
+
     # Update Decision section via Python
-    python3 - "$task_file" "$decision_upper" "$rationale" "$timestamp" << 'PYDECIDE'
+    python3 - "$task_file" "$decision_upper" "$rationale" "$timestamp" "$_diverges" << 'PYDECIDE'
 import re
 import sys
 
-task_file, decision, rationale, timestamp = sys.argv[1:5]
+task_file, decision, rationale, timestamp, diverges = sys.argv[1:6]
+# T-4727: one extra line in the Decision block when the verb overrides the Recommendation.
+diverges_lines = ['', f'**Diverges from Recommendation**: {diverges}'] if diverges else []
 
 with open(task_file, 'r') as f:
     content = f.read()
@@ -709,6 +730,7 @@ for line in lines:
             new_lines.append(f'**Rationale**: {rationale}')
             new_lines.append(f'')
             new_lines.append(f'**Date**: {timestamp}')
+            new_lines.extend(diverges_lines)
             decision_written = True
         # Subsequent Decision sections (duplicates) — swallow entirely
         continue
@@ -747,6 +769,7 @@ if not decision_written:
         f'**Rationale**: {rationale}',
         '',
         f'**Date**: {timestamp}',
+        *diverges_lines,
         '',
     ]
     # Insertion priority: before `## Updates`, then before `## Recommendation`, then EOF.
