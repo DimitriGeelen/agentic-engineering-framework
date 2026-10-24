@@ -79,12 +79,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 15
-  commits: 3
-  files_changed: 18
-  lines_added: 1758
-  lines_removed: 130
-  footprint_refreshed_at: '2026-10-23T14:34:30Z'
-  footprint_refreshed_by_commit: pre-commit
+  commits: 2
+  files_changed: 11
+  lines_added: 919
+  lines_removed: 115
+  footprint_refreshed_at: '2026-10-23T14:34:34Z'
+  footprint_refreshed_by_commit: 78235f925
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4696-a-test-created-its-temp-dir-inside-the-r.md

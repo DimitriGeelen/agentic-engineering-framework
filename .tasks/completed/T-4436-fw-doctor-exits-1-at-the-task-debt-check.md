@@ -1,13 +1,20 @@
 ---
 id: T-4436
-name: "fw doctor exits 1 at the task-debt check when no task is unparsed: T-4433's grep|head pipeline trips set -euo pipefail"
+name: "fw doctor exits 1 at the task-debt check when no task is unparsed: T-4433's
+  grep|head pipeline trips set -euo pipefail"
 description: >
-  Regression from T-4433 (landed 2026-10-19). bin/fw:4124 debt_unparsed=$(grep '^unparsed:' file | head -1): when task_debt.py prints no 'unparsed:' line (the normal case), grep exits 1, pipefail makes the substitution fail, and set -euo pipefail (bin/fw:12) ends fw doctor right after 'Session tokens' — every later check (cron registry, ...) never runs and doctor exits 1. Found because T-4351/T-4432 Verification lines needing 'Cron registry in sync' failed. T-4433's test always had an unparsed task, so it never took the empty path.
+  Regression from T-4433 (landed 2026-10-19). bin/fw:4124 debt_unparsed=$(grep '^unparsed:'
+  file | head -1): when task_debt.py prints no 'unparsed:' line (the normal case),
+  grep exits 1, pipefail makes the substitution fail, and set -euo pipefail (bin/fw:12)
+  ends fw doctor right after 'Session tokens' — every later check (cron registry,
+  ...) never runs and doctor exits 1. Found because T-4351/T-4432 Verification lines
+  needing 'Cron registry in sync' failed. T-4433's test always had an unparsed task,
+  so it never took the empty path.
 
 status: started-work
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-19T22:24:44Z
-last_update: 2026-10-19T22:24:44Z
-date_finished: null
+last_update: '2026-10-22T07:45:58Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-22T07:45:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=308,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4436: fw doctor exits 1 at the task-debt check when no task is unparsed: T-4433's grep|head pipeline trips set -euo pipefail

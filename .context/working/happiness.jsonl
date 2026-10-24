@@ -169,3 +169,7 @@
 {"source": "human", "task_id": "T-0000", "ts": "2026-09-28T02:28:12.485124Z", "value": 1}
 {"source": "human", "task_id": "T-0000", "ts": "2026-09-28T02:28:12.801558Z", "value": 5}
 {"source": "human", "task_id": "T-0000", "ts": "2026-09-28T02:28:13.235737Z", "value": 2}
+{"source": "human", "task_id": "T-9996", "ts": "2026-10-23T01:18:42.679333Z", "value": 1}
+{"source": "human", "task_id": "T-9996", "ts": "2026-10-23T01:18:45.424180Z", "value": 1}
+{"source": "human", "task_id": "T-9996", "ts": "2026-10-24T01:19:30.231121Z", "value": 1}
+{"source": "human", "task_id": "T-9996", "ts": "2026-10-24T01:19:33.212038Z", "value": 1}

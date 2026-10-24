@@ -5574,3 +5574,94 @@ decisions:
     date: 2026-10-23
     task: T-4694
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-797
+    decision: "a write journal. `_t4697_wrote` is called at every do_upgrade write site and records paths relative to the target, or a directory such as `.agentic-framework/` for do_vendor and the designer install. The report lists a path only if the journal names it AND its content changed since the start snapshot. A run with no journal lists nothing."
+    scope: project
+    date: 2026-10-23
+    task: T-4697
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-798
+    decision: "keep the T-2054 allowance as it is and make the null-focus block explain a refused close commit (`_commit_shape_hint`)."
+    scope: project
+    date: 2026-10-23
+    task: T-4707
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-799
+    decision: "managed when EITHER (1) the triple-file pid's cgroup ends in a `*.service` that is not the caller's own unit AND that unit is a Watchtower unit (name contains `watchtower`, or its unit file's ExecStart runs watchtower.sh / `fw serve` / web.app), OR (2) a unit file in the unit dirs (/etc, /run, /usr/lib, /lib systemd/system and ~/.config/systemd/user) has an ExecStart running a Watchtower and names this project's root as a whole path in ExecStart or WorkingDirectory. Start/restart refuse with exit 5 and `systemctl <verb> <unit>`; ensure prints one line and logs it."
+    scope: project
+    date: 2026-10-23
+    task: T-4711
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-800
+    decision: "registry key `WATCHTOWER_ENSURE` (default 1) in lib/config.sh and web/blueprints/config.py. ensure reads env `FW_WATCHTOWER_ENSURE` first, then `.framework.yaml` directly, because post-compact-resume.sh sources the lib without lib/config.sh."
+    scope: project
+    date: 2026-10-23
+    task: T-4711
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-801
+    decision: "snapshot with `git status -unormal` (a wholly untracked directory is one entry and is never read); the report asks `git status -uall` only for the journal's paths (`:(top,literal)` pathspecs); hashing is chunked (1 MiB); a file above 64 MiB is recorded as `stat:<size>:<mtime_ns>` instead of by content. A collapsed directory holding ≤ 5,000 files (20,000 in total per snapshot) is expanded file by file, git's output streamed and killed at the cap — added because t4692 test 19 pins that a pre-existing untracked file inside a wholly untracked `.agentic-framework/`, rewritten with the same bytes, is not listed (a fresh vendored dir is ~2,900 files)."
+    scope: project
+    date: 2026-10-24
+    task: T-4723
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-802
+    decision: "rsync `-rlpgoD --checksum` (that is, `-a` minus `-t`), plus a staged, `cmp -s`-gated sync for the cp fallback."
+    scope: project
+    date: 2026-10-24
+    task: T-4720
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-803
+    decision: "a single implementation, `strip_quoted_spans()` in `lib/ac_placeholder.py`. `is_placeholder_item` applies it, and `lib/task-audit.sh` calls it once per file via `python3 lib/ac_placeholder.py --strip` (stdin to stdout, line-preserving). It falls back to the old single-backtick sed only when python3 is absent. The bash *pattern* regex stays as it is (case-sensitive, pinned by the existing parity test), so detection is not widened or narrowed apart from the quoting fix."
+    scope: project
+    date: 2026-10-24
+    task: T-4741
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-804
+    decision: "If the new stamp matches the one on disk in every field except `written_at`, leave the file as it is, so `written_at` keeps the time of the last vendor that changed something. Otherwise write it through a temp file in the same directory and `os.replace`."
+    scope: project
+    date: 2026-10-24
+    task: T-4740
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-805
+    decision: "invariant check — each commit-allowing NOTE line must have an `is_commit_checkpoint_command \"$BASH_CMD\"` call within the 30 lines above it, plus ≥2 of each and no substring form."
+    scope: project
+    date: 2026-10-24
+    task: T-4744
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-806
+    decision: "add `--exclude '*-be.*'` and keep `--always`. A clone on `v1.0.0-be.1` is labelled `v1.0.0-N-g<sha>`."
+    scope: project
+    date: 2026-10-24
+    task: T-4746
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-807
+    decision: "ignore `watchtower-outages.jsonl` (add it to `fw_working_ignore_rules`)."
+    scope: project
+    date: 2026-10-24
+    task: T-4747
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-808
+    decision: "rename `tests/unit/hermetic.py` → `tests/unit/_hermetic.py`, update its importers (conftest.py, test_hermetic_fixture.py) and cross-references, and add an AST-based guard test."
+    scope: project
+    date: 2026-10-24
+    task: T-4745
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-809
+    decision: "`agents/audit/audit.sh` grades \"generated but no deployed file\" as WARN naming `fw cron install` as the pending operator step; installed-and-differs stays FAIL."
+    scope: project
+    date: 2026-10-24
+    task: T-4748
+    rationale: "Auto-captured from task file on completion"

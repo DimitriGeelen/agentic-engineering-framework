@@ -280,8 +280,8 @@ produces the `--demo` artefact that `fw arc close continuous-run` requires
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0e4a5389
-- **Timestamp:** 2026-10-04T05:19:18Z
+- **Scan ID:** R-f7f5dcd6
+- **Timestamp:** 2026-10-23T05:18:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

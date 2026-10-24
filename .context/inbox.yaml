@@ -5815,3 +5815,122 @@ observations:
   dismissed_reason: "Operator chose option A 2026-09-29: adopt 832's predicate upstream as T-3568."
   dismissed_at: 2026-09-29T19:44:39Z
   promoted_to: null
+- id: OBS-588
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4439v3 unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation consult-w4439v3, client_msg_id b6613b3d-77cb-499c-a58a-ef9e92dfda38). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-22T07:58:04Z
+  context_task: WM-002
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-589
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4439v32 unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation consult-w4439v32, client_msg_id d7ecf1ff-b48e-48db-a8ad-48bd16f595ce). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-22T08:48:05Z
+  context_task: WM-002
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-590
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4439v33 unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation consult-w4439v33, client_msg_id de779709-ef9c-4176-9a3d-8437784d58c9). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-22T08:58:04Z
+  context_task: WM-002
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-591
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4526 unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation consult-w4526, client_msg_id c247c1e8-9bfe-42cd-9c2e-1de821b314c6). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-22T20:23:07Z
+  context_task: T-4649
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-592
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4531 unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation consult-w4531, client_msg_id dc094f4a-051a-4115-adc0-669707cefa48). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-22T21:48:02Z
+  context_task: WM-003
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-593
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4485 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation t4485-scope-addendum, client_msg_id a10537cf-eff3-48ac-8c13-03c3ab89ea65). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T02:03:03Z
+  context_task: WM-003
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-594
+  text: "sidecar consult to 1389a831016c4bf1/ring20-dashboard unanswered after 14 attempt(s) on the retry ladder (rung 6, conversation aef-release-v1.8.4, client_msg_id 8c26b390-c971-44b2-8890-4cc4bb913ba7). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T02:13:02Z
+  context_task: WM-003
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-595
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4491 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation t4491-field-lessons, client_msg_id b589be94-8add-4f5e-beee-cf0e24fbf757). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T02:48:02Z
+  context_task: WM-003
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-596
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4488 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation t4488-fixtures, client_msg_id 119a9de5-678c-45b9-9b02-dea40e0140db). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T02:58:02Z
+  context_task: WM-003
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-597
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4488 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation t4488-fixtures, client_msg_id c1a1e7e7-19ff-4f09-8f08-809d8db8f441). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T02:58:04Z
+  context_task: WM-003
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-598
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4499 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-w4499, client_msg_id 6470dc7a-a409-4a72-b81f-805b29c7336d). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T05:38:02Z
+  context_task: WM-003
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-599
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4499 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-w4499, client_msg_id ee32b1be-fb45-4b06-bf27-34c515d646fa). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T06:03:03Z
+  context_task: WM-003
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-600
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4439v3 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-w4439v3, client_msg_id b6613b3d-77cb-499c-a58a-ef9e92dfda38). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T08:03:03Z
+  context_task: WM-003
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-601
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4439v32 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-w4439v32, client_msg_id d7ecf1ff-b48e-48db-a8ad-48bd16f595ce). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T08:53:02Z
+  context_task: WM-003
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-602
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4439v33 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-w4439v33, client_msg_id de779709-ef9c-4176-9a3d-8437784d58c9). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T09:03:03Z
+  context_task: WM-003
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-603
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4526 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-w4526, client_msg_id c247c1e8-9bfe-42cd-9c2e-1de821b314c6). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T20:28:03Z
+  context_task: WM-001
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-604
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4531 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-w4531, client_msg_id dc094f4a-051a-4115-adc0-669707cefa48). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-10-23T21:53:03Z
+  context_task: T-4723
+  tags: [sidecar]
+  status: pending
+  promoted_to: null

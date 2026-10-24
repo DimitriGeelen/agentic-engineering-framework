@@ -516,12 +516,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 21
-  commits: 4
-  files_changed: 453
-  lines_added: 14335
-  lines_removed: 110381
-  footprint_refreshed_at: '2026-10-23T14:34:29Z'
-  footprint_refreshed_by_commit: pre-commit
+  commits: 3
+  files_changed: 446
+  lines_added: 13496
+  lines_removed: 110366
+  footprint_refreshed_at: '2026-10-23T14:34:34Z'
+  footprint_refreshed_by_commit: 78235f925
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4695-cron-written-generated-files-stay-modifi.md

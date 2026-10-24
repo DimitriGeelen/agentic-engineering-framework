@@ -5158,3 +5158,15 @@ X'` returning empty group."
   task: T-4713
   date: 2026-10-23
   context: Added via context agent
+- id: L-704
+  learning: "A Python stdin reader that depends on decode errors must open sys.stdin.buffer with an explicit errors= handler: the default follows the locale (surrogateescape under C/C.UTF-8, strict under en_US.UTF-8), so a test that pins the error path is only valid in the locale it ran in"
+  source: P-001
+  task: T-4733
+  date: 2026-10-24
+  context: Added via context agent
+- id: L-705
+  learning: "When removing a call site, grep tests/ for the callee's name rather than updating only the tests you already know: T-4688 inverted t2095/t2241/t4498 but missed t2266/t2267, which became 4 pre-push reds a day later"
+  source: P-001
+  task: T-4725
+  date: 2026-10-24
+  context: Added via context agent
