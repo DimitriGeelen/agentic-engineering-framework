@@ -11,11 +11,14 @@ lens naming a field, section or decoration the designer does not know fails here
 import re
 
 import pytest
+import yaml
 
 import web.blueprints.designer_api as designer_api
 from web.shared import FRAMEWORK_ROOT
 
-DESIGNER = FRAMEWORK_ROOT / "vendor" / "designer" / "aef-workflow-designer-0.25.0.html"
+# T-4732: the pinned build, read from the pin so a re-pin does not orphan this test.
+DESIGNER = FRAMEWORK_ROOT / yaml.safe_load(
+    (FRAMEWORK_ROOT / "policy" / "designer-pin.yaml").read_text())["vendored_path"]
 
 
 @pytest.fixture()

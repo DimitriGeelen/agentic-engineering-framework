@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.25.0"
-sha256: "2cbcca06b4f2157f8b1ff4c1b85ca98586289ac7fd02460fc2dd43649e0fb8ee"
-bytes: 1226527
+version: "0.26.0"
+sha256: "4124424d91a60719a71b1378e14e81e03cccb3e8a8deda92ae107b97c2f7cfd9"
+bytes: 1236781
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.25.0.html"
-source_tag: "designer-v0.25.0"
+source_artifact: "dist/aef-workflow-designer-0.26.0.html"
+source_tag: "designer-v0.26.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -167,7 +167,13 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   docs/releases/RELEASE-NOTES-0.25.0.md in 832). aef:io v1.1 opened read-only and saved losslessly; lens
 #   switch (GET /api/lens-definition, T-4402, is not served here yet, so only 'All' shows); labels placed
 #   off the flows and zoom-aware layout on large maps. Pulled with `fw designer sync --from-tag`.
-vendored_path: "vendor/designer/aef-workflow-designer-0.25.0.html"
+# T-4732 (2026-10-24): re-pinned 0.25.0 -> 0.26.0 (832 announce f482a114, release commit 85ec730c; notes
+#   docs/releases/RELEASE-NOTES-0.26.0.md in 832). ?browse=1 opens the Open-project card browser on load
+#   (832 T-1282 for our T-4716 redirect); legibility (labels clear of flows, 9 px floor, AA contrast);
+#   W-XML-GW-AMBIGUOUS says whether a default is declared, new W-XML-GW-DEFAULT-NOT-OWN. No node id, field or
+#   finding id changes. Still unanswered here: /api/validate, /api/instances, /api/field-profile,
+#   /api/field-suggestions, so Check, the instance overlay and field suggestions stay off.
+vendored_path: "vendor/designer/aef-workflow-designer-0.26.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
@@ -184,4 +190,4 @@ cdn_fonts: false
 # ever regresses this capability, flip back to false — the dual-form emit and
 # the lint gate reactivate automatically (T-2612 guard).
 resolves_workflow_ref: true
-notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority); 0.25.0: aef:io v1.1 read-only + lossless save, lens switch, labels off flows"
+notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority); 0.25.0: aef:io v1.1 read-only + lossless save, lens switch, labels off flows; 0.26.0: ?browse=1, legibility"
