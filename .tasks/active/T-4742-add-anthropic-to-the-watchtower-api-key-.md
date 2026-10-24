@@ -4,12 +4,12 @@ name: "Add Anthropic to the Watchtower API key store (settings key form + ANTHRO
 description: >
   Operator request 2026-10-25: the /settings API-key store offers openrouter, openai, mistral (web/secrets_store.py ENV_OVERRIDES, web/templates/settings.html key form). Add anthropic with env override ANTHROPIC_API_KEY. Storing the key only; wiring an Anthropic LLM provider is separate.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/secrets_store.py, web/templates/settings.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T22:06:10Z
-last_update: 2026-10-24T22:06:10Z
-date_finished: null
+last_update: 2026-10-24T22:09:15Z
+date_finished: 2026-10-24T22:09:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -368,3 +368,26 @@ bin/fw vendor self --check --task T-4742
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4742-add-anthropic-to-the-watchtower-api-key-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2f6217c2
+- **Timestamp:** 2026-10-24T22:09:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/secrets_store.py` `ENV_OVERRIDES` maps `anthropic` → `ANTHROPIC_API_KEY`, so the env var takes precedence over a stored key, as it does for the other providers
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/secrets_store.py in: `web/secrets_store.py` `ENV_OVERRIDES` maps `anthropic` → `ANTHROPIC_API_KEY`, so the env var takes precedence over a stored key, as it does for the o`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+- **Layer-1 escalations:** 1
+  1. **secret-handling** (high) — Secret or credential changes
+     - matched: `API key`
+
+### 2026-10-24T22:09:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
