@@ -197,15 +197,19 @@ setup() {
     [ "$status" -eq 0 ] && [ -z "$output" ]
 }
 
-@test "do_upgrade wiring: snapshot before the first step, would-create at every create site, report at the end" {
+@test "do_upgrade wiring: snapshot before the first step, would-create at every create site, report in the summary block" {
     local src="$FW_ROOT/lib/upgrade.sh"
     local snap step1 report recall
     snap=$(grep -n '^ *_t4717_commit_list_snapshot "\$target_dir"' "$src" | head -1 | cut -d: -f1)
     step1=$(grep -n 'T-1912: pre-step-1 version-ahead precheck' "$src" | head -1 | cut -d: -f1)
     [ -n "$snap" ] && [ -n "$step1" ] && [ "$snap" -lt "$step1" ]
+    # T-4724: under the change counters, before Next steps (was: after every notice).
     report=$(grep -n '_t4692_emit_commit_list "\$target_dir"' "$src" | cut -d: -f1)
-    recall=$(grep -n '_t4069_stale_wrapper_notice "\$target_dir"$' "$src" | cut -d: -f1)
-    [ -n "$report" ] && [ "$report" -gt "$recall" ]
+    applied=$(grep -n 'echo "  \$changes change(s) applied"' "$src" | cut -d: -f1)
+    next=$(grep -n 'echo -e "\${BOLD}Next steps:\${NC}"' "$src" | head -1 | cut -d: -f1)
+    [ -n "$report" ] && [ -n "$applied" ] && [ -n "$next" ]
+    [ "$(printf '%s\n' "$report" | wc -l)" -eq 1 ]
+    [ "$report" -gt "$applied" ] && [ "$report" -lt "$next" ]
     for f in 'CLAUDE.md' '.claude/settings.json' '.mcp.json' '.context/working/.gitignore' '.context/.gitignore'; do
         grep -qF "_t4692_would+=(\"$f\")" "$src" || { echo "missing would-create: $f"; false; }
     done

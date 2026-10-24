@@ -49,6 +49,22 @@ _upgrade_from_outside() {
     grep -qF '.agentic-framework/' "$S/add"
 }
 
+# T-4724: dimitri-mint-dev be.15 — the reason line printed at the very end, after
+# the doctor advisory. The list and its reason line come from one call; pin that
+# call between the change counters and Next steps.
+_line_of() { printf '%s\n' "$output" | grep -nF -m1 "$1" | cut -d: -f1; }
+
+@test "T-4724 file list prints under the change counters, before Next steps" {
+    _upgrade_from_outside
+    [ "$status" -eq 0 ]
+    applied=$(_line_of "change(s) applied")
+    list=$(_line_of "Files this upgrade created or changed")
+    next=$(_line_of "Next steps:")
+    [ -n "$applied" ] && [ -n "$list" ] && [ -n "$next" ]
+    [ "$applied" -lt "$list" ]
+    [ "$list" -lt "$next" ]
+}
+
 # T-4712: dimitri-mint-dev be.11 — hundreds of vendored files behind, and an earlier
 # upgrade left them uncommitted. The re-run re-vendors the same bytes, so "content
 # changed since the snapshot" dropped every vendored file and the list came out empty.

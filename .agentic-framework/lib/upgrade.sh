@@ -3495,6 +3495,9 @@ EOF
         if [ "$failed_steps" -gt 0 ]; then
             echo "  $failed_steps step(s) failed"
         fi
+        # T-4724: the file list (or why it is missing) belongs with the counters
+        # above, not after the doctor advisory where the be.15 field run found it.
+        _t4692_emit_commit_list "$target_dir" "$_t4692_before" "$_t4697_log" "$_t4717_why"
 
         if [ "$changes" -gt 0 ]; then
             echo ""
@@ -3514,7 +3517,6 @@ EOF
         fi
         _t3862_recall_prereqs "$target_dir"
         _t4069_stale_wrapper_notice "$target_dir"
-        _t4692_emit_commit_list "$target_dir" "$_t4692_before" "$_t4697_log" "$_t4717_why"
     fi
 }
 
