@@ -9,10 +9,10 @@ description: >
   is the branch's upstream remote if set, else the only/first remote, else omit the
   push clause; keep the hint runnable verbatim (T-4707/T-4710 tests stay green).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T20:56:30Z
-last_update: '2026-10-23T21:01:40Z'
+last_update: 2026-10-24T19:55:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,14 +88,15 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The close hint (`agents/task-create/update-task.sh:84`) ends with a bare `&& git push`, which fails on a branch with no upstream (TermLink be.14, sidecar 9c448cb6).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] With an upstream set, the hint's push clause is `git push <upstream-remote> HEAD`
+- [x] Without an upstream, it uses the only remote (or `origin` when several exist, else the first); with no remote at all, the push clause is left out
+- [x] Bats cover all three cases, and each printed hint runs verbatim in a temp repo with a bare remote
+- [ ] Existing T-4707/T-4710 close-hint bats stay green; vendored copy in sync (`fw vendor self --check --task T-4719`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,8 +281,22 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 600 bats tests/unit/t4719_close_hint_push_remote.bats > /tmp/.t4719.out 2>&1 && ! grep -q "^not ok" /tmp/.t4719.out && grep -q "^ok 5 " /tmp/.t4719.out
+test "$(grep -c '# skip' /tmp/.t4719.out)" -eq 0
+timeout 600 bats tests/unit/t4707_close_hint_commit_passes_gate.bats tests/unit/t4710_close_hint_untracked_active.bats > /tmp/.t4719b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4719b.out && grep -q "^ok 8 " /tmp/.t4719b.out
+bash -n agents/task-create/update-task.sh && bash -n agents/context/check-active-task.sh
+! grep -qF "&& git push\\n" agents/task-create/update-task.sh
+bin/fw vendor self --check --task T-4719
 
 ## RCA
+
+**Symptom:** TermLink (be.14, sidecar 9c448cb6) ran the printed close hint `git commit -m '<id>: close ...' -- <paths> && git push`; the commit landed, then `git push` failed with "has no upstream branch" (they push with `git push origin main`; their branch tracks nothing).
+
+**Root cause:** `agents/task-create/update-task.sh:84` (`_print_move_next_hint`) hard-coded a bare `git push`, which works only when the current branch has an upstream (or push.default/push.autoSetupRemote covers it) — the framework repo's own setup, assumed for every project. Paths were also joined unquoted (`$*`). The generic copy of the hint in `agents/context/check-active-task.sh:401` repeated the same bare push.
+
+**Why structurally allowed:** the T-4707/T-4710 bats that run the hint verbatim build their fixture with `git push -u origin main` — an upstream already set, the one configuration where a bare push cannot fail. "Runs verbatim" was only ever proven there.
+
+**Prevention:** `tests/unit/t4719_close_hint_push_remote.bats` runs the printed hint verbatim under five remote layouts (upstream on a non-origin remote; one non-origin remote and no upstream, with a control that a bare push fails there; several remotes with origin; several without; none) and asserts the commit reached the expected bare-remote ref. All five fail against the pre-fix script. The hint now resolves `git push <remote> HEAD` from the repo's own config and %q-quotes paths and remote.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -377,3 +392,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4719-close-hint--git-push-fails-when-the-bran.md
 - **Context:** Initial task creation
+
+### 2026-10-24T19:55:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

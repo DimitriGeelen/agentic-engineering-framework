@@ -352,7 +352,7 @@ _bootstrap_shape_hint() {
 }
 
 # T-4707: the same loop for the close commit. `--status work-completed` nulls
-# focus and prints `next: git commit -m '…' -- <paths> && git push`; that line,
+# focus and prints `next: git commit -m '…' -- <paths> && git push <remote> HEAD`; that line,
 # as printed, passes the T-2054 null-focus allowance. Agents then append their
 # own tail (`2>&1 | … > log`, `; bin/fw sidecar send …`, `f=$(ls …)`) and the
 # whole line falls to "No active task" with nothing saying the commit itself was
@@ -398,7 +398,7 @@ _commit_shape_hint() {
     done
     echo "" >&2
     echo "    Run the commit as the close printed it, on its own line:" >&2
-    echo "      git commit -m '<T-XXX>: close …' -- <paths> && git push" >&2
+    echo "      git commit -m '<T-XXX>: close …' -- <paths> && git push <remote> HEAD" >&2
     echo "    then run the rest after it. (T-4707; a message, not a permission.)" >&2
 }
 

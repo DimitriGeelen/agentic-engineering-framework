@@ -77,11 +77,39 @@ _t2864_reconcile_index() {
 # exact pathspec that was staged — not at the move site, where the episodic did
 # not exist yet and the "rename staged" claim was false for a never-committed
 # task (plain `mv`, nothing staged). Args: tid, then the paths to commit.
+#
+# T-4719: the push clause names a remote and HEAD. A bare `git push` fails on a
+# branch with no upstream (TermLink be.14, which always pushes `git push origin
+# main`). Remote: the branch's upstream remote; else the only remote; else
+# `origin` if present, else the first in `git remote` order; no remote at all →
+# no push clause. Paths and remote are %q-quoted so the line runs verbatim.
+_t4719_push_remote() {
+    local br r
+    local -a rs=()
+    br=$(git -C "$PROJECT_ROOT" symbolic-ref --quiet --short HEAD 2>/dev/null) || br=""
+    if [ -n "$br" ]; then
+        r=$(git -C "$PROJECT_ROOT" config --get "branch.$br.remote" 2>/dev/null) || r=""
+        # "." is a local upstream, not something to push to.
+        if [ -n "$r" ] && [ "$r" != "." ]; then printf '%s' "$r"; return 0; fi
+    fi
+    while IFS= read -r r; do [ -n "$r" ] && rs+=("$r"); done \
+        < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)
+    [ "${#rs[@]}" -gt 0 ] || return 0
+    for r in "${rs[@]}"; do
+        [ "$r" = "origin" ] && [ "${#rs[@]}" -gt 1 ] && { printf 'origin'; return 0; }
+    done
+    printf '%s' "${rs[0]}"
+}
+
 _print_move_next_hint() {
     [ "${FW_QUIET_NEXT_HINT:-0}" = "1" ] && return 0
     local tid="$1"; shift
+    local remote push="" p q=""
+    for p in "$@"; do q+=" $(printf '%q' "$p")"; done
+    remote=$(_t4719_push_remote)
+    [ -n "$remote" ] && push=" && git push $(printf '%q' "$remote") HEAD"
     printf '  \xe2\x86\xb3 close staged in index: %s\n' "$*"
-    printf "  \xe2\x86\xb3 next: git commit -m '%s: close ...' -- %s && git push\n" "$tid" "$*"
+    printf "  \xe2\x86\xb3 next: git commit -m '%s: close ...' --%s%s\n" "$tid" "$q" "$push"
 }
 
 # T-4094: remember what the archive move started from, so the postcondition
