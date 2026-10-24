@@ -48445,3 +48445,21 @@ scan_id: R-81f382b9
 task_id: T-4745
 payload:
   task_file: .tasks/active/T-4745-testsunithermeticpy-is-discovered-as-a-p.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T22:53:14Z'
+scan_id: R-b9bfc9d5
+task_id: T-4748
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T22:53:14Z'
+scan_id: R-b9bfc9d5
+task_id: T-4748
+payload:
+  task_file: .tasks/active/T-4748-fresh-greenfield-seed-fails-its-own-audi.md

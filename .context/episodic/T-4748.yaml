@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4748: Fresh greenfield seed fails its own audit: Cron drift generated but not installed (T-4259 now generates cron at init)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T22:53:59Z
+# ============================================================================
+
+task_id: T-4748
+task_name: "Fresh greenfield seed fails its own audit: Cron drift generated but not installed (T-4259 now generates cron at init)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T22:10:18Z
+completed: 2026-10-24T22:46:40Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-25T00:42:46+02:00
+last_commit: 2026-10-25T00:42:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit grades a generated-but-never-installed crontab WARN (doctor parity) — fresh fw init no longer FAILs its own audit since T-4259; installed-and-differs stays FAIL; drift bats pins WARN
+
+# Key outcomes
+outcomes:
+  - 'A project whose generated crontab was **never installed** (no deployed file at all) gets a WARN that names the pending operator step (`fw cron install`), not a FAIL. Installing a crontab is the operator''s, so the seed never installs one'
+  - 'A crontab that **was** installed and has since drifted still FAILs exactly as today (the T-1771 generated→deployed leg is unchanged)'
+  - '`greenfield_seed_audit_prototype.bats` passes (T-2703 and T-2740 tests), and the cron-drift audit bats stay green'
+  - 'The choice is recorded in `## Decisions`; vendored copy in sync (`fw vendor self --check --task T-4748`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — never-installed crontab: WARN in audit vs. seed installs/skips'
+    chose: '`agents/audit/audit.sh` grades "generated but no deployed file" as WARN naming `fw cron install` as the pending operator step; installed-and-differs stays FAIL.'
+    rationale: 'installing into /etc/cron.d is the operator''s host-level (root) act, so a seed must not do it; a never-installed project is a pending step, not drift. Matches `fw doctor` (bin/fw:4771), which already WARNs on this state. Real drift (deployed file differs) keeps the T-1771 FAIL.'
+    alternatives_rejected: ['(a) seed runs `fw cron install` — takes a root host action on the operator''s behalf; (b) test sets FW_CRON_INSTALL_DIR / skips — hides what every fresh consumer would really see (a FAIL); (c) init stops generating — reverts T-4259.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.tasks/active/T-4748-fresh-greenfield-seed-fails-its-own-audi.md'
+  - 'agents/audit/audit.sh'
+  - 'tests/unit/test_audit_cron_drift.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T00:42:46'
+    action: 'T-4748: audit grades a generated-but-never-installed crontab WARN (doctor parity) — fresh fw init no longer FAILs its own audit since T-4259; installed-and-differs stays FAIL; drift bats pins WARN'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 36
+  commits: 2
+  files_changed: 7
+  lines_added: 173
+  lines_removed: 23
+  footprint_refreshed_at: '2026-10-24T22:54:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4748-fresh-greenfield-seed-fails-its-own-audi.md
+generated_by: context-agent-hybrid
