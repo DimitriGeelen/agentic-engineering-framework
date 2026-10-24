@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4741: Placeholder detector counts quoted placeholder text (e.g. `[First criterion]` in backticks) as a real placeholder
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T21:56:14Z
+# ============================================================================
+
+task_id: T-4741
+task_name: "Placeholder detector counts quoted placeholder text (e.g. `[First criterion]` in backticks) as a real placeholder"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T21:28:33Z
+completed: 2026-10-24T21:55:48Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-24T23:54:45+02:00
+last_commit: 2026-10-24T23:54:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  placeholder audit ignores stubs quoted in n-backtick code spans or double quotes; one shared strip rule (ac_placeholder.strip_quoted_spans) for bash and Python readers
+
+# Key outcomes
+outcomes:
+  - 'Placeholders quoted inside any inline-code span (single, double or n-backtick, CommonMark rules) or inside a double-quoted string on one line are not counted'
+  - 'A bare ordinal-stub AC line (the default template''s unfilled first checkbox) and a line carrying both a quoted and a bare stub are still detected; the existing detector bats and pytest stay green'
+  - 'Bats cover single/double-backtick, double-quoted and bare cases'
+  - '`lib/ac_placeholder.py` (which documents the same pattern set) agrees: same inputs, same verdict, or the shared rule is factored into one place'
+  - 'Vendored copy in sync (`fw vendor self --check --task T-4741`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-24 — where the "mention, not instance" strip rule lives'
+    chose: 'a single implementation, `strip_quoted_spans()` in `lib/ac_placeholder.py`. `is_placeholder_item` applies it, and `lib/task-audit.sh` calls it once per file via `python3 lib/ac_placeholder.py --strip` (stdin to stdout, line-preserving). It falls back to the old single-backtick sed only when python3 is absent. The bash *pattern* regex stays as it is (case-sensitive, pinned by the existing parity test), so detection is not widened or narrowed apart from the quoting fix.'
+    rationale: 'sharing the rule means the two readers cannot drift on quoting. One python spawn per audited file is cheap, and `audit_task_placeholders` runs at review/decide time, not inside a PreToolUse hook. That keeps intact the latency argument the module docstring makes for not folding the hook reader in.'
+    alternatives_rejected: ['(a) a second strip implementation in bash/sed. sed -E has no backreference-with-lookaround for n-backtick runs, and lib/ has no perl, so it would mean a hand-rolled bash scanner kept in parity by tests only. (b) Moving the whole bash audit to Python. That widens bash to case-insensitive matching, a behaviour change beyond this bug.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/ac_placeholder.py'
+  - '.agentic-framework/lib/task-audit.sh'
+  - '.tasks/active/T-4741-placeholder-detector-counts-quoted-place.md'
+  - 'lib/ac_placeholder.py'
+  - 'lib/task-audit.sh'
+  - 'tests/unit/t4741_placeholder_quoted.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-24T23:54:45'
+    action: 'T-4741: placeholder audit ignores stubs quoted in n-backtick code spans or double quotes; one shared strip rule (ac_placeholder.strip_quoted_spans) for bash and Python readers'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 27
+  commits: 2
+  files_changed: 9
+  lines_added: 790
+  lines_removed: 21
+  footprint_refreshed_at: '2026-10-24T21:56:29Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4741-placeholder-detector-counts-quoted-place.md
+generated_by: context-agent-hybrid

@@ -48283,3 +48283,21 @@ scan_id: R-442f2ee3
 task_id: T-4720
 payload:
   task_file: .tasks/active/T-4720-fw-upgrade--vendor-rewrites-web-files-wh.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T21:56:01Z'
+scan_id: R-593420f2
+task_id: T-4741
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T21:56:01Z'
+scan_id: R-593420f2
+task_id: T-4741
+payload:
+  task_file: .tasks/active/T-4741-placeholder-detector-counts-quoted-place.md
