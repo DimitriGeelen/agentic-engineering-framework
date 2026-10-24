@@ -532,10 +532,24 @@ except ImportError:
             echo -e "  ${YELLOW}Note: No \`**Recommendation:**\` line found in task body — using fallback rationale${NC}" >&2
             _rec_line="your rationale"
         fi
+        # T-4726: the verb comes from the Recommendation's verdict, parsed by the
+        # same extractor Watchtower's Recommendation card uses — never a fixed
+        # `go` (a NO-GO recommendation used to print a ready-to-paste GO).
+        # Anything it cannot map prints the literal placeholder, which cannot be
+        # pasted as a decision.
+        local _rec_verb=""
+        _rec_verb=$(FW_TASK_FILE="$task_file" python3 -c "
+import os, sys
+sys.path.insert(0, sys.argv[1])
+from web.shared import extract_recommendation
+v = extract_recommendation(open(os.environ['FW_TASK_FILE'], encoding='utf-8', errors='replace').read())['verdict']
+print({'GO': 'go', 'NO-GO': 'no-go', 'DEFER': 'defer'}.get(v, ''))
+" "${FRAMEWORK_ROOT:-.}" 2>/dev/null || true)
+        [ -n "$_rec_verb" ] || _rec_verb="go|no-go|defer"
         # Truncate to fit terminal (keep under 60 chars)
         _rec_line="${_rec_line:0:58}"
         echo -e "  ${BOLD}CLI:${NC} cd $PROJECT_ROOT &&"
-        echo "    $(_fw_cmd) inception decide $task_id go \\"
+        echo "    $(_fw_cmd) inception decide $task_id $_rec_verb \\"
         echo "    --rationale \"${_rec_line}\""
         echo ""
     fi
