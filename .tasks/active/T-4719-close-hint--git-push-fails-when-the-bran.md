@@ -96,7 +96,7 @@ The close hint (`agents/task-create/update-task.sh:84`) ends with a bare `&& git
 - [x] With an upstream set, the hint's push clause is `git push <upstream-remote> HEAD`
 - [x] Without an upstream, it uses the only remote (or `origin` when several exist, else the first); with no remote at all, the push clause is left out
 - [x] Bats cover all three cases, and each printed hint runs verbatim in a temp repo with a bare remote
-- [ ] Existing T-4707/T-4710 close-hint bats stay green; vendored copy in sync (`fw vendor self --check --task T-4719`)
+- [x] Existing T-4707/T-4710 close-hint bats stay green; vendored copy in sync (`fw vendor self --check --task T-4719`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
