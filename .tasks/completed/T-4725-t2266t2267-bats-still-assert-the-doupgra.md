@@ -4,10 +4,10 @@ name: "t2266/t2267 bats still assert the do_upgrade self-vendor wiring T-4688 re
 description: >
   T-4688 removed the inline _self_vendor_* calls from do_upgrade and inverted t2095/t2241/t4498, but t2266 t1/t5 and t2267 t1/t5 still assert the old call sites; 4 new unit reds block the pre-push ratchet. Invert them the same way.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T10:21:54Z
-last_update: 2026-10-24T10:21:54Z
-date_finished: null
+last_update: 2026-10-24T10:23:58Z
+date_finished: 2026-10-24T10:23:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -354,3 +354,20 @@ test "$(grep -c '# skip' /tmp/.t4725.out)" -eq 0
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4725-t2266t2267-bats-still-assert-the-doupgra.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e7e09b35
+- **Timestamp:** 2026-10-24T10:24:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-24T10:23:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
