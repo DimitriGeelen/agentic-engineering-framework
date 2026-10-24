@@ -526,9 +526,24 @@ def cmd_post(a):
     commit = source_commit(a.source)
     if commit:
         stamp["source_commit"] = commit
-    with open(os.path.join(dest, STAMP), "w", encoding="utf-8") as fh:
+    # T-4740: a stamp that differs from the one on disk only in written_at is
+    # not rewritten, so a no-op re-vendor leaves it (and its mtime) alone.
+    # written_at then records the last vendor that changed something; nothing
+    # reads it (lib/update.sh reads source_commit, the rest read files).
+    sp = os.path.join(dest, STAMP)
+    try:
+        old = json.load(open(sp, encoding="utf-8"))
+    except (OSError, ValueError):
+        old = None
+    if isinstance(old, dict) and {k: v for k, v in old.items() if k != "written_at"} == \
+            {k: v for k, v in stamp.items() if k != "written_at"}:
+        print(f"  ✓ {STAMP} ({len(files)} files, unchanged)")
+        return rc
+    tmp = f"{sp}.fw-vendor-tmp.{os.getpid()}"
+    with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(stamp, fh, indent=0, sort_keys=True)
         fh.write("\n")
+    os.replace(tmp, sp)
     print(f"  ✓ {STAMP} ({len(files)} files)")
     return rc
 
