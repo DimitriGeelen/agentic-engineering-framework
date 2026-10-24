@@ -1,8 +1,13 @@
 ---
 id: T-4745
-name: "tests/unit/hermetic.py is discovered as a pytest file and collects no tests (exit 5, red every slow run)"
+name: "tests/unit/hermetic.py is discovered as a pytest file and collects no tests
+  (exit 5, red every slow run)"
 description: >
-  Found by T-4739: T-4378 added tests/unit/hermetic.py as a shared fixture helper; unit-suite.sh _discover_pytest runs it because it defines a def test* name, and pytest exits 5 (collected no tests). Red in every slow nightly since 2026-10-20; absent at v1.8.14. Rename to _hermetic.py (and update importers) or stop the discovery picking helper modules.
+  Found by T-4739: T-4378 added tests/unit/hermetic.py as a shared fixture helper;
+  unit-suite.sh _discover_pytest runs it because it defines a def test* name, and
+  pytest exits 5 (collected no tests). Red in every slow nightly since 2026-10-20;
+  absent at v1.8.14. Rename to _hermetic.py (and update importers) or stop the discovery
+  picking helper modules.
 
 status: captured
 workflow_type: build
@@ -39,8 +44,8 @@ origin: {kind: "agent", source: "T-4739"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T22:09:28Z
-last_update: 2026-10-24T22:09:28Z
-date_finished: null
+last_update: '2026-10-24T22:15:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-24T22:15:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4745: tests/unit/hermetic.py is discovered as a pytest file and collects no tests (exit 5, red every slow run)

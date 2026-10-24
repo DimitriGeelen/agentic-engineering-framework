@@ -1,8 +1,12 @@
 ---
 id: T-4739
-name: "v1.8.15 field-evidence report and release readiness (suite comparison vs v1.8.14, dry-run)"
+name: "v1.8.15 field-evidence report and release readiness (suite comparison vs v1.8.14,
+  dry-run)"
 description: >
-  Collect per-fix WORKS/FAILS verdicts from peers for be.1..be.17 into docs/reports/field-test-v1.8.15-results.md (v1.8.14 shape), run the full-suite comparison against v1.8.14 and fw release tag-and-release --dry-run. Fixes without a field test go to the operator as an explicit yes/no (T-4146 fallback).
+  Collect per-fix WORKS/FAILS verdicts from peers for be.1..be.17 into docs/reports/field-test-v1.8.15-results.md
+  (v1.8.14 shape), run the full-suite comparison against v1.8.14 and fw release tag-and-release
+  --dry-run. Fixes without a field test go to the operator as an explicit yes/no (T-4146
+  fallback).
 
 status: started-work
 workflow_type: build
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T21:12:14Z
-last_update: 2026-10-24T21:15:29Z
-date_finished: null
+last_update: '2026-10-24T22:15:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-24T22:15:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=307,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4739: v1.8.15 field-evidence report and release readiness (suite comparison vs v1.8.14, dry-run)

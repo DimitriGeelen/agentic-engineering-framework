@@ -1,8 +1,14 @@
 ---
 id: T-4748
-name: "Fresh greenfield seed fails its own audit: Cron drift generated but not installed (T-4259 now generates cron at init)"
+name: "Fresh greenfield seed fails its own audit: Cron drift generated but not installed
+  (T-4259 now generates cron at init)"
 description: >
-  Found by T-4739: greenfield_seed_audit_prototype.bats (T-2703 test 1, T-2740 test) — audit exits 2 with [FAIL] Cron drift: generated but not installed at /etc/cron.d/agentic-audit-proj. Since T-4259 (d8c12bde8, after v1.8.14) init writes a generated crontab, and audit.sh:3135 FAILs until the operator runs fw cron install. Red in slow nightlies since 2026-10-22; green before. Decide: WARN for a never-installed project (operator step pending), or have the seed install/skip.
+  Found by T-4739: greenfield_seed_audit_prototype.bats (T-2703 test 1, T-2740 test)
+  — audit exits 2 with [FAIL] Cron drift: generated but not installed at /etc/cron.d/agentic-audit-proj.
+  Since T-4259 (d8c12bde8, after v1.8.14) init writes a generated crontab, and audit.sh:3135
+  FAILs until the operator runs fw cron install. Red in slow nightlies since 2026-10-22;
+  green before. Decide: WARN for a never-installed project (operator step pending),
+  or have the seed install/skip.
 
 status: captured
 workflow_type: build
@@ -39,8 +45,8 @@ origin: {kind: "agent", source: "T-4739"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T22:10:18Z
-last_update: 2026-10-24T22:10:18Z
-date_finished: null
+last_update: '2026-10-24T22:15:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-24T22:15:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4748: Fresh greenfield seed fails its own audit: Cron drift generated but not installed (T-4259 now generates cron at init)
