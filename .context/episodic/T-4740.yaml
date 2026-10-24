@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4740: fw vendor rewrites the pinned designer build (and unchanged vendor metadata) on every run
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T22:04:53Z
+# ============================================================================
+
+task_id: T-4740
+task_name: "fw vendor rewrites the pinned designer build (and unchanged vendor metadata) on every run"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T21:17:16Z
+completed: 2026-10-24T22:02:40Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-24T23:58:04+02:00
+last_commit: 2026-10-24T23:58:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw vendor writes the pinned designer build and vendor metadata (VERSION, sentinels, .gitignore, .upstream, FRAMEWORK.md, stamp) only when content differs; t4740 bats pins no-op and real-change cases
+
+# Key outcomes
+outcomes:
+  - 'The pinned designer build is copied only when the destination is missing or differs (`cmp -s`). An identical build keeps its mtime and 0444 mode; a changed one is still replaced read-only. The superseded-build prune is unchanged'
+  - 'Each vendor metadata file written by do_vendor is written only when its new content differs, generated content included (write to a temp file, compare, then move)'
+  - 'Bats extend `tests/unit/t4720_vendor_unchanged_untouched.bats` (or a new t4740): a no-op re-vendor leaves the mtimes of the designer build and all six metadata files unchanged; a real change to one still rewrites it'
+  - '`upgrade_fresh_machine_simulation.bats` stays green (foreground, `timeout 1800`); vendored copy in sync (`fw vendor self --check --task T-4740`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-24 — vendor stamp `written_at` on a no-op re-vendor'
+    chose: 'If the new stamp matches the one on disk in every field except `written_at`, leave the file as it is, so `written_at` keeps the time of the last vendor that changed something. Otherwise write it through a temp file in the same directory and `os.replace`.'
+    rationale: 'No reader uses `written_at`. `lib/update.sh:152` reads `source_commit`, `lib/vendor_preserve.py:cmd_pre` reads `files`, and `lib/upgrade_commit_list.py:_vendor_wrote` reads `files` and treats the stamp itself as vendor-written. Refreshing the timestamp would make the stamp the one file a no-op re-vendor dirties in the consumer''s git.'
+    alternatives_rejected: ['Refreshing `written_at` on every run, which is the old behaviour and is the bug. Dropping `written_at`, which changes the schema for no gain.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/vendor_preserve.py'
+  - '.tasks/active/T-4740-fw-vendor-rewrites-the-pinned-designer-b.md'
+  - 'bin/fw'
+  - 'lib/vendor_preserve.py'
+  - 'tests/unit/t4740_vendor_metadata_untouched.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-24T23:58:04'
+    action: 'T-4740: fw vendor writes the pinned designer build and vendor metadata (VERSION, sentinels, .gitignore, .upstream, FRAMEWORK.md, stamp) only when content differs; t4740 bats pins no-op and real-change cases'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 45 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 45
+  commits: 2
+  files_changed: 8
+  lines_added: 721
+  lines_removed: 27
+  footprint_refreshed_at: '2026-10-24T22:05:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4740-fw-vendor-rewrites-the-pinned-designer-b.md
+generated_by: context-agent-hybrid
