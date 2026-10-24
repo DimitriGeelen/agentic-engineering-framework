@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4719: Close hint '&& git push' fails when the branch has no upstream tracking branch; print a push the project can run (configured remote + HEAD)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T20:17:13Z
+# ============================================================================
+
+task_id: T-4719
+task_name: "Close hint '&& git push' fails when the branch has no upstream tracking branch; print a push the project can run (configured remote + HEAD)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T20:56:30Z
+completed: 2026-10-24T20:15:22Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-24T22:00:03+02:00
+last_commit: 2026-10-24T22:04:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  close hint pushes to a named remote — git push <upstream|only|origin|first> HEAD, omitted with no remote; paths %q-quoted; t4719 bats run the hint verbatim in five remote layouts. tick AC 4 — t4707/t4710 green, vendored copy in sync
+
+# Key outcomes
+outcomes:
+  - 'With an upstream set, the hint''s push clause is `git push <upstream-remote> HEAD`'
+  - 'Without an upstream, it uses the only remote (or `origin` when several exist, else the first); with no remote at all, the push clause is left out'
+  - 'Bats cover all three cases, and each printed hint runs verbatim in a temp repo with a bare remote'
+  - 'Existing T-4707/T-4710 close-hint bats stay green; vendored copy in sync (`fw vendor self --check --task T-4719`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.tasks/active/T-4719-close-hint--git-push-fails-when-the-bran.md'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'tests/unit/t4719_close_hint_push_remote.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-24T22:00:03'
+    action: 'T-4719: close hint pushes to a named remote — git push <upstream|only|origin|first> HEAD, omitted with no remote; paths %q-quoted; t4719 bats run the hint verbatim in five remote layouts'
+  - time: '2026-10-24T22:04:23'
+    action: 'T-4719: tick AC 4 — t4707/t4710 green, vendored copy in sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1398 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1398
+  commits: 3
+  files_changed: 9
+  lines_added: 373
+  lines_removed: 19
+  footprint_refreshed_at: '2026-10-24T20:18:23Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4719-close-hint--git-push-fails-when-the-bran.md
+generated_by: context-agent-hybrid

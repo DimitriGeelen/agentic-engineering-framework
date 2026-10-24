@@ -48229,3 +48229,39 @@ scan_id: R-07ff034a
 task_id: T-4724
 payload:
   task_file: .tasks/active/T-4724-upgrade-file-list-reason-line-prints-aft.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T20:16:46Z'
+scan_id: R-99b33ca2
+task_id: T-4719
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T20:16:46Z'
+scan_id: R-99b33ca2
+task_id: T-4719
+payload:
+  task_file: .tasks/active/T-4719-close-hint--git-push-fails-when-the-bran.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T20:17:45Z'
+scan_id: R-b0949f5a
+task_id: T-4726
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T20:17:45Z'
+scan_id: R-b0949f5a
+task_id: T-4726
+payload:
+  task_file: .tasks/active/T-4726-fw-task-review-cli-hint-for-an-inception.md
