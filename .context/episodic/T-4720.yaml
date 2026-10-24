@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4720: fw upgrade / vendor rewrites web/ files whose content did not change, so fw watchtower current reports a running Watchtower STALE after every upgrade
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T20:27:29Z
+# ============================================================================
+
+task_id: T-4720
+task_name: "fw upgrade / vendor rewrites web/ files whose content did not change, so fw watchtower current reports a running Watchtower STALE after every upgrade"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T20:56:50Z
+completed: 2026-10-24T20:24:03Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-24T22:22:43+02:00
+last_commit: 2026-10-24T22:23:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw vendor writes only changed files (rsync -rlpgoD --checksum; cp fallback stages + cmp) so a no-op re-vendor leaves web/ mtimes alone and watchtower current stays green; t4720 bats pins both branches. tick AC4 — fresh-machine simulation 19/19, vendor anchoring 9/9, vendor self in sync
+
+# Key outcomes
+outcomes:
+  - '`do_vendor` (bin/fw) rsync branch copies by content (`--checksum`) and without `-t`, so a file byte-identical to its vendored copy is not rewritten and keeps its mtime, even when the source is a fresh checkout with new mtimes; a changed file is written (mtime = now)'
+  - '`do_vendor` cp fallback branch (no rsync on PATH) gives the same result: unchanged files untouched, changed/new files written, files gone from source deleted'
+  - 'New `tests/unit/t4720_vendor_unchanged_untouched.bats` (loads ../git_fence): a no-op re-vendor from a fresh-mtime copy leaves every web/ mtime unchanged (rsync and cp branches); one changed web/ file is the only mtime that moves; `watchtower_stale_sources` against a live process started before the re-vendor stays current after the no-op and reports exactly the changed file after the real change'
+  - '`upgrade_fresh_machine_simulation.bats` and `vendor_exclude_anchoring.bats` stay green (foreground); vendored copy in sync (`bin/fw vendor self --check --task T-4720`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-24 — how to make the vendor copy content-aware'
+    chose: 'rsync `-rlpgoD --checksum` (that is, `-a` minus `-t`), plus a staged, `cmp -s`-gated sync for the cp fallback.'
+    rationale: '`--checksum` alone is not enough. With `-t`, rsync still sets an identical file''s mtime to the source''s, and that is the false signal itself. Dropping `-t` means unchanged files are never touched and changed files get mtime = now, which is the truthful input for the mtime-based staleness check. It also fixes the false "current" where an old source mtime was copied onto a changed file. Checksumming the ~10 MB tree adds well under a second.'
+    alternatives_rejected: ['hashing content at Watchtower start in `lib/watchtower-staleness.sh`: out of scope, since the task fixes the copy and the check''s mtime bias is deliberate (T-2938). `--size-only`: misses same-size edits.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.tasks/active/T-4720-fw-upgrade--vendor-rewrites-web-files-wh.md'
+  - 'bin/fw'
+  - 'tests/unit/t4720_vendor_unchanged_untouched.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-24T22:22:43'
+    action: 'T-4720: fw vendor writes only changed files (rsync -rlpgoD --checksum; cp fallback stages + cmp) so a no-op re-vendor leaves web/ mtimes alone and watchtower current stays green; t4720 bats pins both branches'
+  - time: '2026-10-24T22:23:06'
+    action: 'T-4720: tick AC4 — fresh-machine simulation 19/19, vendor anchoring 9/9, vendor self in sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1407 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1407
+  commits: 4
+  files_changed: 8
+  lines_added: 1135
+  lines_removed: 27
+  footprint_refreshed_at: '2026-10-24T20:27:59Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4720-fw-upgrade--vendor-rewrites-web-files-wh.md
+generated_by: context-agent-hybrid
