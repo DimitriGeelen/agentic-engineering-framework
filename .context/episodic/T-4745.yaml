@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4745: tests/unit/hermetic.py is discovered as a pytest file and collects no tests (exit 5, red every slow run)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T22:46:25Z
+# ============================================================================
+
+task_id: T-4745
+task_name: "tests/unit/hermetic.py is discovered as a pytest file and collects no tests (exit 5, red every slow run)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T22:09:28Z
+completed: 2026-10-24T22:44:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-25T00:31:08+02:00
+last_commit: 2026-10-25T00:31:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  rename tests/unit/hermetic.py to _hermetic.py so pytest discovery skips the helper (docstring 'def test_x' matched the heuristic, exit 5 every slow run); AST guard test that content-discovered modules define a top-level test. fabric cards for tests/unit/_hermetic.py and the discovery guard test
+
+# Key outcomes
+outcomes:
+  - 'The unit-suite pytest leg no longer runs `tests/unit/hermetic.py` as a test file: either the helper is renamed `_hermetic.py` (every importer updated), or `_discover_pytest` skips helper modules. The choice is recorded in `## Decisions`'
+  - 'Every test that imports the helper still passes'
+  - '`tests/unit/tiers.yaml` still covers the corpus (unit-suite.sh refuses a run otherwise), and the t3302/t4377 runner bats stay green'
+  - 'Regression guard `tests/unit/test_t4745_discovered_modules_define_tests.py` fails when a heuristically-discovered module (not named test_*/*_test) has no top-level `def test*`/`class Test*` (proved red against the pre-rename tree)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — rename the helper vs change discovery'
+    chose: 'rename `tests/unit/hermetic.py` → `tests/unit/_hermetic.py`, update its importers (conftest.py, test_hermetic_fixture.py) and cross-references, and add an AST-based guard test.'
+    rationale: '`_`-prefixed helpers are the existing, documented exclusion in both discovery copies (`_review_runtime.py` already uses it). The rename touches two importers and leaves discovery semantics, parity-locked across unit-suite.sh and unit_tier.py and pinned by t4381, untouched during a release freeze.'
+    alternatives_rejected: ['making `_discover_pytest` AST-based. More precise, but it changes which files run corpus-wide in two parity-locked implementations right before a release; the guard test gives the same protection (a misclassified helper fails loudly) without moving the runner.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-_hermetic.yaml'
+  - '.fabric/components/tests-unit-test_hermetic_fixture.yaml'
+  - '.fabric/components/tests-unit-test_t4745_discovered_modules_define_tests.yaml'
+  - '.tasks/active/T-4745-testsunithermeticpy-is-discovered-as-a-p.md'
+  - 'tests/unit/_hermetic.py'
+  - 'tests/unit/conftest.py'
+  - 'tests/unit/helpers/hermetic.bash'
+  - 'tests/unit/test_hermetic_fixture.py'
+  - 'tests/unit/test_t4745_discovered_modules_define_tests.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T00:31:08'
+    action: 'T-4745: rename tests/unit/hermetic.py to _hermetic.py so pytest discovery skips the helper (docstring ''def test_x'' matched the heuristic, exit 5 every slow run); AST guard test that content-discovered modules define a top-level test'
+  - time: '2026-10-25T00:31:38'
+    action: 'T-4745: fabric cards for tests/unit/_hermetic.py and the discovery guard test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 34 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34
+  commits: 3
+  files_changed: 12
+  lines_added: 276
+  lines_removed: 18
+  footprint_refreshed_at: '2026-10-24T22:46:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4745-testsunithermeticpy-is-discovered-as-a-p.md
+generated_by: context-agent-hybrid

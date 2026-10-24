@@ -48427,3 +48427,21 @@ scan_id: R-8c0028b3
 task_id: T-4747
 payload:
   task_file: .tasks/active/T-4747-contextworkingwatchtower-outagesjsonl-t-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T22:45:39Z'
+scan_id: R-81f382b9
+task_id: T-4745
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T22:45:39Z'
+scan_id: R-81f382b9
+task_id: T-4745
+payload:
+  task_file: .tasks/active/T-4745-testsunithermeticpy-is-discovered-as-a-p.md
