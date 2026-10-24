@@ -115,6 +115,7 @@
                         <option value="openrouter">OpenRouter</option>
                         <option value="openai">OpenAI</option>
                         <option value="mistral">Mistral (La Plateforme)</option>
+                        <option value="anthropic">Anthropic</option>
                     </select>
                 </label>
                 <label>API Key
@@ -184,6 +185,7 @@ if (providerSelect) providerSelect.addEventListener('change', function() {
     <ul>
         <li><strong>Ollama</strong> — Local models. No API key needed. Models must be pulled first (<code>ollama pull model</code>).</li>
         <li><strong>OpenRouter</strong> — Cloud gateway to 200+ models (Claude, GPT, Gemini, Llama, etc). Requires an API key from <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>.</li>
+        <li><strong>Anthropic</strong> — Claude API key, from <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>. <code>ANTHROPIC_API_KEY</code> in the environment overrides the stored key.</li>
         <li><strong>Key storage</strong> — Keys are encrypted with Fernet (machine-bound via <code>/etc/machine-id</code>). Environment variables override stored keys.</li>
         <li><strong>Hot-switching</strong> — Changing the provider takes effect immediately, no restart needed.</li>
     </ul>
