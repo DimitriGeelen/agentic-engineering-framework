@@ -6,10 +6,10 @@ description: >
   Upgrade file-list snapshot hits MemoryError on a home-directory consumer (~700k
   untracked files)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T21:35:53Z
-last_update: '2026-10-23T22:46:08Z'
-date_finished:
+last_update: 2026-10-24T10:31:59Z
+date_finished: 2026-10-24T10:31:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -397,3 +397,25 @@ bin/fw vendor self --check --task T-4723
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4723-upgrade-file-list-snapshot-hits-memoryer.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-343710a4
+- **Timestamp:** 2026-10-24T10:39:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 137
+     - evidence: `! grep -nE 'f\.read\(\)' lib/upgrade_commit_list.py | grep -v 'splitlines' | grep -q .`
+
+### 2026-10-24T10:31:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

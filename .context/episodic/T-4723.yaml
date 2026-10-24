@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4723: Upgrade file-list snapshot hits MemoryError on a home-directory consumer (~700k untracked files)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T10:39:40Z
+# ============================================================================
+
+task_id: T-4723
+task_name: "Upgrade file-list snapshot hits MemoryError on a home-directory consumer (~700k untracked files)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T21:35:53Z
+completed: 2026-10-24T10:31:59Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-10-24T00:31:17+02:00
+last_commit: 2026-10-24T00:31:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  upgrade file list stays bounded on a home-directory consumer
+
+# Key outcomes
+outcomes:
+  - 'The snapshot hashes files in fixed-size chunks; no code path in lib/upgrade_commit_list.py reads a whole data file into memory'
+  - 'The snapshot no longer lists or content-hashes every untracked file: it runs `git status -unormal` (untracked directories collapse to one entry; small ones are expanded under a cap) and the report expands with `-uall` only the paths the journal names; files above a size cap are recorded by size+mtime, not read. The choice is recorded in ## Decisions'
+  - 'A regression test in tests/unit/t4705_upgrade_commit_list_vendored_external.bats covers a 3 GB sparse untracked file under `ulimit -v 1000000` plus 6,000 small untracked files in nested dirs: snapshot exits 0 and the report lists exactly the journalled new and modified paths; the test fails against the pre-fix helper'
+  - 'The existing upgrade_commit_list bats and tests/unit/upgrade_fresh_machine_simulation.bats stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-23 — how to stop hashing every untracked file'
+    chose: 'snapshot with `git status -unormal` (a wholly untracked directory is one entry and is never read); the report asks `git status -uall` only for the journal''s paths (`:(top,literal)` pathspecs); hashing is chunked (1 MiB); a file above 64 MiB is recorded as `stat:<size>:<mtime_ns>` instead of by content. A collapsed directory holding ≤ 5,000 files (20,000 in total per snapshot) is expanded file by file, git''s output streamed and killed at the cap — added because t4692 test 19 pins that a pre-existing untracked file inside a wholly untracked `.agentic-framework/`, rewritten with the same bytes, is not listed (a fresh vendored dir is ~2,900 files).'
+    rationale: 'keeps the tested semantics where they are — a tracked or individually listed untracked path dirty before and rewritten with the same bytes still compares equal by content (T-4717 "already dirty, unchanged" line; T-4692 "dirty before, untouched"). A journalled file inside a directory that was wholly untracked before has no before-entry, so it is listed — the verdict the old code gave a file that did not exist before; it is journalled, so the upgrade did write it. Work is bounded by the collapsed entry count plus the journal, not by the tree.'
+    alternatives_rejected: ['size+mtime for *all* untracked files — still lists and stats ~700 k paths per snapshot and holds them in memory, and an idempotent rewrite of an already-dirty untracked file (same bytes, new mtime) would flip from "unchanged" to "listed", changing T-4717 behaviour.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade_commit_list.py'
+  - '.tasks/active/T-4723-upgrade-file-list-snapshot-hits-memoryer.md'
+  - 'lib/upgrade_commit_list.py'
+  - 'tests/unit/t4705_upgrade_commit_list_vendored_external.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-24T00:31:17'
+    action: 'T-4723: upgrade file list stays bounded on a home-directory consumer'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 776 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 776
+  commits: 2
+  files_changed: 7
+  lines_added: 754
+  lines_removed: 56
+  footprint_refreshed_at: '2026-10-24T10:40:00Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4723-upgrade-file-list-snapshot-hits-memoryer.md
+generated_by: context-agent-hybrid

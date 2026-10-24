@@ -48175,3 +48175,21 @@ scan_id: R-def61940
 task_id: T-4732
 payload:
   task_file: .tasks/active/T-4732-re-pin-designer-0250---0260-832-announce.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T10:39:22Z'
+scan_id: R-343710a4
+task_id: T-4723
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T10:39:22Z'
+scan_id: R-343710a4
+task_id: T-4723
+payload:
+  task_file: .tasks/active/T-4723-upgrade-file-list-snapshot-hits-memoryer.md
