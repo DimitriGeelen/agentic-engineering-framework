@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4747: .context/working/watchtower-outages.jsonl (T-4706) is not in the consumer working ignore set; t4689 rail red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T22:42:54Z
+# ============================================================================
+
+task_id: T-4747
+task_name: ".context/working/watchtower-outages.jsonl (T-4706) is not in the consumer working ignore set; t4689 rail red"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T22:09:51Z
+completed: 2026-10-24T22:41:20Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-25T00:26:56+02:00
+last_commit: 2026-10-25T00:26:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ignore .context/working/watchtower-outages.jsonl in consumers (T-4706 keep-alive log); regression test
+
+# Key outcomes
+outcomes:
+  - '`watchtower-outages.jsonl` is in `fw_working_ignore_rules` (`lib/working-gitignore.sh`), so consumers'' `.context/working/.gitignore` ignores it'
+  - '`tests/unit/t4689_working_ignore_rail.bats` passes in full, with no skips'
+  - 'Any other file written by the T-4706 keep-alive under `.context/working/` is checked and covered too (or named as intentionally tracked)'
+  - 'Vendored copy in sync (`fw vendor self --check --task T-4747`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — ignore vs keep-tracked'
+    chose: 'ignore `watchtower-outages.jsonl` (add it to `fw_working_ignore_rules`).'
+    rationale: 'it is host-local runtime evidence (this host''s Watchtower pids and timestamps), like `estate-push-refused.jsonl`. Doctor reads it locally, and nothing reads it from git.'
+    alternatives_rejected: ['`fw_working_keep_tracked`. Committing per-host outage rows would churn consumer repos, and nothing on another host reads them.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/working-gitignore.sh'
+  - '.tasks/active/T-4747-contextworkingwatchtower-outagesjsonl-t-.md'
+  - 'lib/working-gitignore.sh'
+  - 'tests/unit/t4689_working_ignore_rail.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T00:26:56'
+    action: 'T-4747: ignore .context/working/watchtower-outages.jsonl in consumers (T-4706 keep-alive log); regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 31
+  commits: 2
+  files_changed: 7
+  lines_added: 169
+  lines_removed: 12
+  footprint_refreshed_at: '2026-10-24T22:43:10Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4747-contextworkingwatchtower-outagesjsonl-t-.md
+generated_by: context-agent-hybrid

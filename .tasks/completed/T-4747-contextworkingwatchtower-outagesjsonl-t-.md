@@ -8,12 +8,12 @@ description: >
   (4e3ba1199). Add it to fw_working_ignore_rules in lib/working-gitignore.sh so consumers
   do not commit it. Red in the 2026-10-24 slow nightly.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/working-gitignore.sh]
 related_tasks: [T-4739]
 origin: {kind: "agent", source: "T-4739"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,8 +43,8 @@ origin: {kind: "agent", source: "T-4739"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T22:09:51Z
-last_update: 2026-10-24T22:21:23Z
-date_finished:
+last_update: 2026-10-24T22:41:20Z
+date_finished: 2026-10-24T22:41:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -96,7 +96,7 @@ bvp_scores_proposed:
 - [x] `watchtower-outages.jsonl` is in `fw_working_ignore_rules` (`lib/working-gitignore.sh`), so consumers' `.context/working/.gitignore` ignores it
 - [x] `tests/unit/t4689_working_ignore_rail.bats` passes in full, with no skips
 - [x] Any other file written by the T-4706 keep-alive under `.context/working/` is checked and covered too (or named as intentionally tracked)
-- [ ] Vendored copy in sync (`fw vendor self --check --task T-4747`)
+- [x] Vendored copy in sync (`fw vendor self --check --task T-4747`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -400,3 +400,25 @@ bin/fw vendor self --check --task T-4747
 ### 2026-10-24T22:20:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8c0028b3
+- **Timestamp:** 2026-10-24T22:41:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 136
+     - evidence: `bash -c '. lib/working-gitignore.sh && fw_working_ignore_rules | grep -qxF watchtower-outages.jsonl'`
+
+### 2026-10-24T22:41:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
