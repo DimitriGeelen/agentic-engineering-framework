@@ -33,6 +33,7 @@ audit_task_placeholders() {
     local in_fence=0
     local line_num=0
     local line
+    local cand_nums=() cand_lines=()
 
     while IFS= read -r line || [ -n "$line" ]; do
         line_num=$((line_num + 1))
@@ -60,12 +61,37 @@ audit_task_placeholders() {
         [ $in_updates -eq 1 ] && continue
         [ $in_dialogue -eq 1 ] && continue
 
-        # Strip inline backtick spans (`...`) so documentation that quotes the
-        # patterns (e.g. T-1298 explaining what audit_task_placeholders detects)
-        # is not flagged. Single-backtick spans only — fenced blocks already
-        # handled above.
-        local cleaned
-        cleaned=$(echo "$line" | sed 's/`[^`]*`//g')
+        # Candidate line: matched after the loop, once the quoted-mention
+        # spans are stripped in a single pass (T-4741).
+        cand_nums+=("$line_num")
+        cand_lines+=("$line")
+    done < "$task_file"
+
+    # T-4741: strip text that MENTIONS a stub rather than being one (inline
+    # code spans of any backtick length, CommonMark-style, then same-line
+    # double-quoted strings), so documentation that quotes the patterns is not
+    # flagged. The rule lives in ONE place, lib/ac_placeholder.py
+    # strip_quoted_spans, shared with the Python readers (bvp judge, resolver).
+    # Before T-4741 this was a single-backtick sed, so a stub inside a
+    # double-backtick span or double quotes refused fw task review.
+    # Fallback without python3: the old single-backtick strip.
+    local cleaned_lines=()
+    if [ ${#cand_lines[@]} -gt 0 ]; then
+        local _strip_py
+        _strip_py="$(dirname "${BASH_SOURCE[0]}")/ac_placeholder.py"
+        if command -v python3 >/dev/null 2>&1 && [ -f "$_strip_py" ]; then
+            mapfile -t cleaned_lines < <(printf '%s\n' "${cand_lines[@]}" | python3 "$_strip_py" --strip 2>/dev/null)
+        fi
+        if [ ${#cleaned_lines[@]} -ne ${#cand_lines[@]} ]; then
+            mapfile -t cleaned_lines < <(printf '%s\n' "${cand_lines[@]}" | sed 's/`[^`]*`//g')
+        fi
+    fi
+
+    local i cleaned
+    for i in "${!cand_lines[@]}"; do
+        line="${cand_lines[$i]}"
+        line_num="${cand_nums[$i]}"
+        cleaned="${cleaned_lines[$i]}"
 
         # Placeholder patterns — literal template stubs that should have been
         # replaced. Each pattern here is explicitly chosen because it NEVER
@@ -81,7 +107,7 @@ audit_task_placeholders() {
   Line ${line_num}: $(echo "$line" | sed 's/^[[:space:]]*//')"
             found=1
         fi
-    done < "$task_file"
+    done
 
     if [ $found -eq 1 ]; then
         local RED='' YELLOW='' NC=''

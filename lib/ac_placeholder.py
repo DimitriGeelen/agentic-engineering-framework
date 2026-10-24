@@ -99,6 +99,32 @@ PLACEHOLDER_RE = re.compile(
     re.I,
 )
 
+#: T-4741: an inline code span per CommonMark — a run of N backticks, the
+#: content, then a closing run of exactly N backticks (neither run touching a
+#: further backtick). Line-local: the readers here are line-oriented.
+_CODE_SPAN_RE = re.compile(r"(?<!`)(`+)(?!`)(.*?)(?<!`)\1(?!`)")
+
+#: T-4741: a double-quoted string on one line.
+_DQUOTE_RE = re.compile(r'"[^"\n]*"')
+
+
+def strip_quoted_spans(text: str) -> str:
+    """Remove text that MENTIONS a stub rather than being one (T-4741).
+
+    Code spans of any backtick length go first, then same-line double-quoted
+    strings, each line on its own. A stub quoted to talk about it ("the
+    [Criterion 1] stub", or one inside a double-backtick span) disappears,
+    while a bare stub on the same line survives and is still flagged. This is
+    the ONE implementation of the rule: `lib/task-audit.sh` calls it through
+    `python3 lib/ac_placeholder.py --strip`.
+    """
+    out = []
+    for line in (text or "").split("\n"):
+        line = _CODE_SPAN_RE.sub("", line)
+        out.append(_DQUOTE_RE.sub("", line))
+    return "\n".join(out)
+
+
 #: A checkbox item carrying at least one non-space character of content.
 #: Used by `is_placeholder_block`.
 _REAL_ITEM_RE = re.compile(r"-\s*\[[ xX]\]\s*\S")
@@ -112,7 +138,7 @@ def is_placeholder_item(item: str) -> bool:
     which is why this matches specific stub literals rather than "any bracketed
     span". CANONICAL_NON_SAMPLES pins that.
     """
-    return bool(PLACEHOLDER_RE.search(item or ""))
+    return bool(PLACEHOLDER_RE.search(strip_quoted_spans(item or "")))
 
 
 def all_placeholder(items) -> bool:
@@ -149,3 +175,24 @@ def is_placeholder_block(ac_block: str) -> bool:
     if is_placeholder_item(s):
         return True
     return not _REAL_ITEM_RE.search(s)
+
+
+if __name__ == "__main__":
+    # T-4741: `--strip` filters stdin to stdout one line at a time, so the line
+    # count is preserved and lib/task-audit.sh can pair each output line with
+    # its input line.
+    import sys
+
+    if sys.argv[1:] != ["--strip"]:
+        sys.stderr.write("usage: ac_placeholder.py --strip < text\n")
+        sys.exit(2)
+    import io
+
+    # newline="\n": a stray \r must not split a line and shift the pairing.
+    src = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8",
+                           errors="surrogateescape", newline="\n")
+    dst = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8",
+                           errors="surrogateescape", newline="\n")
+    for raw in src:
+        dst.write(strip_quoted_spans(raw.rstrip("\n")) + "\n")
+    dst.flush()
