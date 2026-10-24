@@ -4,12 +4,12 @@ name: "context_tokens.py decodes the transcript per the caller's locale, so inva
 description: >
   lib/context_tokens.py iterates sys.stdin as text. Under a POSIX/C locale Python enters UTF-8 mode, where stdin uses surrogateescape: the invalid line is skipped and the gauge reports ok/provisional. Under a UTF-8 locale, decoding is strict, so the T-3241 crash branch fires (level unknown). t3241 t1 is red or green depending on who runs the suite; a manual fast-tier run from a Claude session turned it into a pre-push NEW red. Decode explicitly, independent of locale.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/context_tokens.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T10:57:04Z
-last_update: 2026-10-24T10:57:04Z
-date_finished: null
+last_update: 2026-10-24T10:59:50Z
+date_finished: 2026-10-24T10:59:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -356,3 +356,20 @@ bin/fw vendor self --check --task T-4733
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4733-contexttokenspy-decodes-the-transcript-p.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-58357103
+- **Timestamp:** 2026-10-24T11:00:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-24T10:59:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

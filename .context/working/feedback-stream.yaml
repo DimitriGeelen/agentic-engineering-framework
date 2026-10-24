@@ -48193,3 +48193,21 @@ scan_id: R-343710a4
 task_id: T-4723
 payload:
   task_file: .tasks/active/T-4723-upgrade-file-list-snapshot-hits-memoryer.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T11:00:24Z'
+scan_id: R-58357103
+task_id: T-4733
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T11:00:24Z'
+scan_id: R-58357103
+task_id: T-4733
+payload:
+  task_file: .tasks/active/T-4733-contexttokenspy-decodes-the-transcript-p.md
