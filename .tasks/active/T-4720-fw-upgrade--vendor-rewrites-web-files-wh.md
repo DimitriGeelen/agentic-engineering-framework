@@ -97,7 +97,7 @@ TermLink be.14 (sidecar 9c448cb6): every re-vendor rewrites `web/` files even wh
 - [x] `do_vendor` (bin/fw) rsync branch copies by content (`--checksum`) and without `-t`, so a file byte-identical to its vendored copy is not rewritten and keeps its mtime, even when the source is a fresh checkout with new mtimes; a changed file is written (mtime = now)
 - [x] `do_vendor` cp fallback branch (no rsync on PATH) gives the same result: unchanged files untouched, changed/new files written, files gone from source deleted
 - [x] New `tests/unit/t4720_vendor_unchanged_untouched.bats` (loads ../git_fence): a no-op re-vendor from a fresh-mtime copy leaves every web/ mtime unchanged (rsync and cp branches); one changed web/ file is the only mtime that moves; `watchtower_stale_sources` against a live process started before the re-vendor stays current after the no-op and reports exactly the changed file after the real change
-- [ ] `upgrade_fresh_machine_simulation.bats` and `vendor_exclude_anchoring.bats` stay green (foreground); vendored copy in sync (`bin/fw vendor self --check --task T-4720`)
+- [x] `upgrade_fresh_machine_simulation.bats` and `vendor_exclude_anchoring.bats` stay green (foreground); vendored copy in sync (`bin/fw vendor self --check --task T-4720`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
