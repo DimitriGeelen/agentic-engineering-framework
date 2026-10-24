@@ -10,14 +10,14 @@
 
 REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
 Silent-session scanner — S3 antifragility fallback for SessionEnd (T-1212)
-Invoked via cron every 15 min. Walks $HOME/.claude/projects/*/<session>.jsonl,
+Invoked via cron every 15 min. Walks $HOME/.claude/projects/<slug>/<session>.jsonl
+for THIS project's slug (and its worktree slugs) only (T-4699),
 finds session transcripts whose mtime is older than SESSION_SILENT_THRESHOLD_MIN
 (default 30 min) AND whose session_id does NOT appear in any file under
 .context/handovers/. For matches, runs `fw handover` with RECOVERED=1 so the
 generated handover carries a `[recovered, no agent context]` banner.
 Together with session-end.sh this closes the SessionEnd gap for:
 - Claude Code #17885 (/exit skips SessionEnd)
-- Claude Code #20197 (API 500 kills before hook fires)
 
 ## Dependencies (3)
 
