@@ -9,12 +9,12 @@ description: >
   (e.g. CLOSE_HINT_PUSH, default 1) that omits the push clause when 0, honoured by
   every printer of the hint (update-task.sh, check-active-task.sh).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/task-create/update-task.sh, lib/config.sh, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T21:09:00Z
-last_update: 2026-10-24T21:55:13Z
-date_finished:
+last_update: 2026-10-24T22:10:37Z
+date_finished: 2026-10-24T22:10:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -89,6 +89,12 @@ bvp_scores_proposed:
 - [x] `tests/lint/config-registry-parity.bats` and the invariants stay green (`timeout 900 bin/fw test invariants`); vendored copy in sync (`fw vendor self --check --task T-4738`)
 
 ### Human
+- [ ] [REVIEW] CLOSE_HINT_PUSH shows correctly on the config page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the `CLOSE_HINT_PUSH` row
+  **Expected:** The row shows default `1` and a description saying that 0 drops the push clause from the close hint, laid out like its neighbouring rows
+  **If not:** Note what looks wrong; the only web change is one registry line in `web/blueprints/config.py`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -351,6 +357,15 @@ Not bug-class (feature): no RCA required. The push clause came from T-4719 (`age
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Projects can now turn off the push in the close hint (`fw config set CLOSE_HINT_PUSH 0`), which 050 needs because a push deploys their production. With the key unset or 1, both hints print exactly what they printed before. The only rendered change is the new row on the config page, and the render gate asks you to look at it.
+
+**Evidence:**
+- Commit ff4373cbd: the key is registered in `lib/config.sh` and `web/blueprints/config.py`, and both printers read it through `fw_config`
+- `tests/unit/t4738_close_hint_push_optout.bats`: 9/9. Each test runs the printed hint verbatim against a bare remote: at 0 nothing reaches the remote, at 1 or unset the commit does
+- The live page http://192.168.10.107:3000/config lists CLOSE_HINT_PUSH after the Watchtower restart
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -382,3 +397,20 @@ Not bug-class (feature): no RCA required. The push clause came from T-4719 (`age
 ### 2026-10-24T21:54:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cbb483ae
+- **Timestamp:** 2026-10-24T22:11:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-24T22:10:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
