@@ -96,6 +96,17 @@ _pin() { grep "^version_sha:" "$CONSUMER/.framework.yaml" | sed 's/^version_sha:
     [ "$(_pin)" = "$TAG_SHA" ]
 }
 
+@test "in-tree clone on a be tag: the notice names the release tag below it, not the be tag (T-4746)" {
+    git -C "$SRC" config user.email t@t
+    git -C "$SRC" config user.name t
+    echo "be" >> "$SRC/VERSION"
+    git -C "$SRC" commit -qam "be work"
+    git -C "$SRC" tag -a v1.0.1-be.1 -m be
+    run _clean bash -c "cd '$CONSUMER' && '$SRC/bin/fw' upgrade '$CONSUMER' 2>&1"
+    [[ "$output" == *"checkout inside the project: $SRC (v1.0.0-1-g"* ]]
+    [[ "$output" != *"-be.1"* ]] || false
+}
+
 @test "control: the consumer's vendored bin/fw still resolves to the vendored copy (bare-from-consumer path)" {
     run _clean env FRAMEWORK_ROOT="$VENDORED" PROJECT_ROOT="$CONSUMER" \
         bash -c "cd '$CONSUMER' && '$VENDORED/bin/fw' upgrade '$CONSUMER' 2>&1"

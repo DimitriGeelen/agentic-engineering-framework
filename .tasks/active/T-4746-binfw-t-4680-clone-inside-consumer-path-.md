@@ -8,10 +8,10 @@ description: >
   v1.8.14) without the -be exclusion that T-4431 requires, so an upgrade label can
   name a pre-release tag. Red in slow nightlies since T-4680 landed.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4739]
@@ -43,7 +43,7 @@ origin: {kind: "agent", source: "T-4739"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T22:09:40Z
-last_update: '2026-10-24T22:16:20Z'
+last_update: 2026-10-24T22:21:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,9 +93,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The T-4680 `git describe --tags` in `bin/fw` (~1538) excludes `-be` pre-release tags, the same way the other T-4431 sites do
+- [x] `tests/unit/t4431_be_tags.bats` passes in full (test 11 green, no skips), and the T-4680 bats stay green
+- [x] A bats case: a candidate clone whose nearest tag is `vX.Y.Z-be.N` gets labelled with the release tag below it, not the be tag
+- [x] Vendored copy in sync (`fw vendor self --check --task T-4746`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,6 +281,12 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t4431_be_tags.bats > /tmp/.t4746a 2>&1 && ! grep -q "^not ok" /tmp/.t4746a
+test "$(grep -c '# skip' /tmp/.t4746a)" -eq 0
+timeout 900 bats tests/unit/t4680_upgrade_clone_inside_consumer.bats > /tmp/.t4746b 2>&1 && ! grep -q "^not ok" /tmp/.t4746b && grep -q "be tag" /tmp/.t4746b
+test "$(grep -c '# skip' /tmp/.t4746b)" -eq 0
+bash -n bin/fw
+bin/fw vendor self --check --task T-4746
 
 ## RCA
 
@@ -296,6 +303,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/unit/t4431_be_tags.bats` test 11 ("every describe --tags in lib/, bin/fw, agents/ excludes -be tags") has been red since T-4680 landed; T-4739's v1.8.15 suite comparison found it. What the user sees: when `fw upgrade` runs through a framework clone inside the consumer tree, its notice label comes from plain `git describe --tags --always`. So a clone at or past a `vX.Y.Z-be.N` pre-release tag gets labelled with the be tag, as if it were a release.
+
+**Root cause:** `bin/fw:1557` (`_t4680_at=$(git -C "$_t4453_cand" describe --tags --always ...)`) was added by 0cd8587bc (T-4680, after v1.8.14). It leaves out the `--exclude '*-be.*'` that T-4431 made the rule for every `describe --tags` in the framework (cf. `bin/fw:32`).
+
+**Why structurally allowed:** the T-4431 invariant is a bats grep (test 11). It only runs in the full/slow suite, not in the pre-commit or fast lanes T-4680 was verified with. T-4680's own bats test the pin (`version_sha`), not the label, and their fixture has no be tag.
+
+**Prevention:** fix it at the source (the same exclusion the other sites use) and add a T-4680 bats case with a be tag on the clone's HEAD. That case asserts the label names the release tag below it, so the component's own test file pins the label's behaviour, not just the corpus-wide grep.
 
 ## Evolution
 
@@ -361,6 +376,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-25 — label when HEAD is on a be tag
+- **Chose:** add `--exclude '*-be.*'` and keep `--always`. A clone on `v1.0.0-be.1` is labelled `v1.0.0-N-g<sha>`.
+- **Why:** T-4431's rule is that a be tag is never named as a release. The release-relative describe still identifies the commit, and `--always` still labels a clone with no tags by its sha.
+- **Rejected:** printing be tags with a "pre-release" suffix. That would be a second labelling convention for one notice line, and test 11 would still need an exemption.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -377,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4746-binfw-t-4680-clone-inside-consumer-path-.md
 - **Context:** Initial task creation
+
+### 2026-10-24T22:20:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

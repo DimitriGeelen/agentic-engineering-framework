@@ -1554,7 +1554,7 @@ if [ -z "${FRAMEWORK_ROOT:-}" ] && [ "${1:-}" = "upgrade" ] \
         # T-4680: a full checkout inside the project tree (not its vendored copy) is
         # the source the operator picked, e.g. a tag clone; upgrade pins its HEAD.
         FRAMEWORK_ROOT="$_t4453_cand"
-        _t4680_at=$(git -C "$_t4453_cand" describe --tags --always 2>/dev/null) || _t4680_at="HEAD"
+        _t4680_at=$(git -C "$_t4453_cand" describe --tags --always --exclude '*-be.*' 2>/dev/null) || _t4680_at="HEAD"
         echo "fw: upgrading from the framework checkout inside the project: $_t4453_cand ($_t4680_at)" >&2
         unset _t4680_at
     fi
