@@ -6,7 +6,7 @@ Inception research artifact. The decision belongs to the operator; this file rec
 
 Designer 0.26.0 is pinned by T-4732 and served at http://192.168.10.107:3000/designer. Once `GET /api/health` answers `{ok:true}`, it calls four further endpoints. AEF answers health today, so the designer tries all four. Operator ruling: 832 owns the designer UI; AEF serves only its data APIs.
 
-## Contract (832 msg 047ee6a3, 2026-10-24; full version in 832 `docs/reports/T-1300-designer-data-api-contract.md`)
+## Contract (832 msg 047ee6a3, 2026-10-24; full version in 832 `docs/reports/T-1300-designer-data-api-contract.md`, pushed at 832 commit 94deef57 on bleeding-edge per msg ffff9c33)
 
 Common rules:
 - An endpoint that is not served must answer a plain non-JSON 404. The designer reads that as "feature off" and stays quiet.
