@@ -2,14 +2,18 @@
 id: T-4732
 name: "Re-pin designer 0.25.0 -> 0.26.0 (832 announce f482a114)"
 description: >
-  832 released designer 0.26.0: tag designer-v0.26.0 (release commit 85ec730c), dist/aef-workflow-designer-0.26.0.html, sha256 4124424d91a60719a71b1378e14e81e03cccb3e8a8deda92ae107b97c2f7cfd9, 1236781 bytes. Brings ?browse=1 (T-1282, our T-4716), legibility fixes, gateway-default validator wording. No stored-map change. Pull at tag, verify, update pin, confirm to 832.
+  832 released designer 0.26.0: tag designer-v0.26.0 (release commit 85ec730c), dist/aef-workflow-designer-0.26.0.html,
+  sha256 4124424d91a60719a71b1378e14e81e03cccb3e8a8deda92ae107b97c2f7cfd9, 1236781
+  bytes. Brings ?browse=1 (T-1282, our T-4716), legibility fixes, gateway-default
+  validator wording. No stored-map change. Pull at tag, verify, update pin, confirm
+  to 832.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T10:27:57Z
-last_update: 2026-10-24T10:27:57Z
-date_finished: null
+last_update: 2026-10-24T10:30:43Z
+date_finished: 2026-10-24T10:30:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-24T10:30:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4732: Re-pin designer 0.25.0 -> 0.26.0 (832 announce f482a114)
@@ -353,3 +374,23 @@ bin/fw vendor self --check --task T-4732
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4732-re-pin-designer-0250---0260-832-announce.md
 - **Context:** Initial task creation
+
+### 2026-10-24T10:30:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-def61940
+- **Timestamp:** 2026-10-24T10:30:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-24T10:30:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

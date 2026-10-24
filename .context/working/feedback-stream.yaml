@@ -48157,3 +48157,21 @@ scan_id: R-e7e09b35
 task_id: T-4725
 payload:
   task_file: .tasks/active/T-4725-t2266t2267-bats-still-assert-the-doupgra.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T10:30:52Z'
+scan_id: R-def61940
+task_id: T-4732
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T10:30:52Z'
+scan_id: R-def61940
+task_id: T-4732
+payload:
+  task_file: .tasks/active/T-4732-re-pin-designer-0250---0260-832-announce.md
