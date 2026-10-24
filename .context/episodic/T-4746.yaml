@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4746: bin/fw T-4680 clone-inside-consumer path uses git describe --tags without excluding -be tags (t4431 red)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T22:38:50Z
+# ============================================================================
+
+task_id: T-4746
+task_name: "bin/fw T-4680 clone-inside-consumer path uses git describe --tags without excluding -be tags (t4431 red)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T22:09:40Z
+completed: 2026-10-24T22:36:19Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-25T00:29:10+02:00
+last_commit: 2026-10-25T00:29:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  exclude -be tags from the T-4680 in-tree clone upgrade label (t4431 test 11 green)
+
+# Key outcomes
+outcomes:
+  - 'The T-4680 `git describe --tags` in `bin/fw` (~1538) excludes `-be` pre-release tags, the same way the other T-4431 sites do'
+  - '`tests/unit/t4431_be_tags.bats` passes in full (test 11 green, no skips), and the T-4680 bats stay green'
+  - 'A bats case: a candidate clone whose nearest tag is `vX.Y.Z-be.N` gets labelled with the release tag below it, not the be tag'
+  - 'Vendored copy in sync (`fw vendor self --check --task T-4746`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — label when HEAD is on a be tag'
+    chose: 'add `--exclude ''*-be.*''` and keep `--always`. A clone on `v1.0.0-be.1` is labelled `v1.0.0-N-g<sha>`.'
+    rationale: 'T-4431''s rule is that a be tag is never named as a release. The release-relative describe still identifies the commit, and `--always` still labels a clone with no tags by its sha.'
+    alternatives_rejected: ['printing be tags with a "pre-release" suffix. That would be a second labelling convention for one notice line, and test 11 would still need an exemption.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.tasks/active/T-4746-binfw-t-4680-clone-inside-consumer-path-.md'
+  - 'bin/fw'
+  - 'tests/unit/t4680_upgrade_clone_inside_consumer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T00:29:10'
+    action: 'T-4746: exclude -be tags from the T-4680 in-tree clone upgrade label (t4431 test 11 green)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 2
+  files_changed: 6
+  lines_added: 150
+  lines_removed: 13
+  footprint_refreshed_at: '2026-10-24T22:40:32Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4746-binfw-t-4680-clone-inside-consumer-path-.md
+generated_by: context-agent-hybrid
