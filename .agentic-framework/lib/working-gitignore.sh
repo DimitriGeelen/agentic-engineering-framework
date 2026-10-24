@@ -91,6 +91,7 @@ fw_working_ignore_rules() {
         'escalation-drift-LATEST*.yaml' \
         'estate-ingest-audit.jsonl' \
         'estate-push-refused.jsonl' \
+        'watchtower-outages.jsonl' \
         'judge-evidence/' \
         'vendor-backup/'
 }

@@ -36,6 +36,13 @@ _repo() {
     done
 }
 
+@test "T-4747: the ensure keep-alive outage log is ignored after ensure_ignored" {
+    p=$(_repo)
+    fw_working_ensure_ignored "$p" >/dev/null
+    : > "$p/.context/working/watchtower-outages.jsonl"
+    git -C "$p" check-ignore -q .context/working/watchtower-outages.jsonl || { echo "not ignored: watchtower-outages.jsonl"; false; }
+}
+
 @test "keep-tracked records are not ignored" {
     p=$(_repo)
     fw_working_ensure_ignored "$p" >/dev/null

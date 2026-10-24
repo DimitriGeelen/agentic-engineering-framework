@@ -8,10 +8,10 @@ description: >
   (4e3ba1199). Add it to fw_working_ignore_rules in lib/working-gitignore.sh so consumers
   do not commit it. Red in the 2026-10-24 slow nightly.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4739]
@@ -43,7 +43,7 @@ origin: {kind: "agent", source: "T-4739"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T22:09:51Z
-last_update: '2026-10-24T22:16:20Z'
+last_update: 2026-10-24T22:21:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,9 +93,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `watchtower-outages.jsonl` is in `fw_working_ignore_rules` (`lib/working-gitignore.sh`), so consumers' `.context/working/.gitignore` ignores it
+- [x] `tests/unit/t4689_working_ignore_rail.bats` passes in full, with no skips
+- [x] Any other file written by the T-4706 keep-alive under `.context/working/` is checked and covered too (or named as intentionally tracked)
+- [ ] Vendored copy in sync (`fw vendor self --check --task T-4747`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,6 +281,11 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -c '. lib/working-gitignore.sh && fw_working_ignore_rules | grep -qxF watchtower-outages.jsonl'
+timeout 900 bats tests/unit/t4689_working_ignore_rail.bats > /tmp/.t4747.out 2>&1 && ! grep -q "^not ok" /tmp/.t4747.out
+test "$(grep -c '# skip' /tmp/.t4747.out)" -eq 0
+python3 tools/working-ignore-rail.py > /tmp/.t4747-rail.out 2>&1
+bin/fw vendor self --check --task T-4747
 
 ## RCA
 
@@ -296,6 +302,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/unit/t4689_working_ignore_rail.bats` test "rail is clean on the framework tree" went red in the 2026-10-24 slow nightly and in T-4739's v1.8.15 suite comparison: `UNIGNORED watchtower-outages.jsonl (first seen bin/fw:3179)`. A consumer running the keep-alive would commit its outage log.
+
+**Root cause:** T-4706 (4e3ba1199) added a new runtime writer: `bin/watchtower.sh` `ensure` appends to `$dir/watchtower-outages.jsonl`, which `lib/watchtower-ensure.sh` `fw_watchtower_recent_outages` and `bin/fw` doctor (:3179) read. It added no matching rule to `fw_working_ignore_rules` (`lib/working-gitignore.sh:25-96`). The other files that path touches (`watchtower.pid`, `watchtower.url`, `watchtower.log`, `watchtower-ensure.log`) were already covered by `*.pid`, `watchtower.url` and `*.log`.
+
+**Why structurally allowed:** the T-4689 rail (`tools/working-ignore-rail.py`) that catches this exact class only runs as a bats test in the slow nightly. It is not in the per-commit or pre-push path T-4706 went through, so the gap surfaced a day after the commit that caused it.
+
+**Prevention:** the rule is added, and a targeted regression test (`t4689_working_ignore_rail.bats`, "T-4747: the ensure keep-alive outage log is ignored after ensure_ignored") pins it. The test fails against the HEAD~ lib (checked: the file is not ignored). The general rail still catches the next new writer. Moving the rail earlier (pre-push/audit) is a separate decision, outside this task's write-set.
 
 ## Evolution
 
@@ -361,6 +375,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-25 — ignore vs keep-tracked
+- **Chose:** ignore `watchtower-outages.jsonl` (add it to `fw_working_ignore_rules`).
+- **Why:** it is host-local runtime evidence (this host's Watchtower pids and timestamps), like `estate-push-refused.jsonl`. Doctor reads it locally, and nothing reads it from git.
+- **Rejected:** `fw_working_keep_tracked`. Committing per-host outage rows would churn consumer repos, and nothing on another host reads them.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -377,3 +396,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4747-contextworkingwatchtower-outagesjsonl-t-.md
 - **Context:** Initial task creation
+
+### 2026-10-24T22:20:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
