@@ -300,8 +300,8 @@ def _restore_replaced_modules():
 # ---------------------------------------------------------------------------
 # T-4378: the shared hermetic fixture (temp project, stripped env, private TMPDIR,
 # decoy Watchtower and live-state tripwires). Opt-in: a test asks for `hermetic`.
-# Implementation and contract: tests/unit/hermetic.py (bats twin:
+# Implementation and contract: tests/unit/_hermetic.py (bats twin:
 # tests/unit/helpers/hermetic.bash).
 # ---------------------------------------------------------------------------
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from hermetic import hermetic  # noqa: E402,F401
+from _hermetic import hermetic  # noqa: E402,F401

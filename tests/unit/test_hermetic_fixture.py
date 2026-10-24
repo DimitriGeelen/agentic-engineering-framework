@@ -1,4 +1,4 @@
-"""T-4378: the shared `hermetic` fixture (tests/unit/hermetic.py) does what it says.
+"""T-4378: the shared `hermetic` fixture (tests/unit/_hermetic.py) does what it says.
 
 Each tripwire is driven by a deliberate leak aimed at a fake, never at the real
 checkout, and the leak is undone before teardown so the fixture's own check passes.
@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from hermetic import _snapshot
+from _hermetic import _snapshot
 
 FW = Path(__file__).resolve().parents[2] / "bin" / "fw"
 
@@ -102,7 +102,7 @@ def test_teardown_fails_a_test_that_leaks(tmp_path):
     """End to end: a test that connects to Watchtower is failed by the fixture itself."""
     (tmp_path / "conftest.py").write_text(
         f"import sys; sys.path.insert(0, {str(Path(__file__).parent)!r})\n"
-        "from hermetic import hermetic  # noqa\n")
+        "from _hermetic import hermetic  # noqa\n")
     (tmp_path / "test_leak.py").write_text(
         "import socket, time\n"
         "def test_leak(hermetic):\n"

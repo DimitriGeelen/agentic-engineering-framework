@@ -9,10 +9,10 @@ description: >
   absent at v1.8.14. Rename to _hermetic.py (and update importers) or stop the discovery
   picking helper modules.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4739]
@@ -44,7 +44,7 @@ origin: {kind: "agent", source: "T-4739"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T22:09:28Z
-last_update: '2026-10-24T22:16:19Z'
+last_update: 2026-10-24T22:21:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,9 +94,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The unit-suite pytest leg no longer runs `tests/unit/hermetic.py` as a test file: either the helper is renamed `_hermetic.py` (every importer updated), or `_discover_pytest` skips helper modules. The choice is recorded in `## Decisions`
+- [x] Every test that imports the helper still passes
+- [x] `tests/unit/tiers.yaml` still covers the corpus (unit-suite.sh refuses a run otherwise), and the t3302/t4377 runner bats stay green
+- [x] Regression guard `tests/unit/test_t4745_discovered_modules_define_tests.py` fails when a heuristically-discovered module (not named test_*/*_test) has no top-level `def test*`/`class Test*` (proved red against the pre-rename tree)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,6 +283,14 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+test ! -e tests/unit/hermetic.py && test -f tests/unit/_hermetic.py
+python3 -I agents/audit/unit_tier.py files --tier slow --dir tests/unit > /tmp/.t4745-slow 2>&1 && ! grep -q '/hermetic.py$' /tmp/.t4745-slow
+bash -c 'source <(sed -n "/^# BEGIN _discover_pytest/,/^# END _discover_pytest/p" agents/audit/unit-suite.sh); _discover_pytest tests/unit' > /tmp/.t4745-disc 2>&1 && ! grep -q '/hermetic.py$' /tmp/.t4745-disc
+timeout 900 python3 -m pytest tests/unit/test_t4745_discovered_modules_define_tests.py tests/unit/test_hermetic_fixture.py -q -p no:cacheprovider > /tmp/.t4745-py 2>&1 && grep -q passed /tmp/.t4745-py && ! grep -q failed /tmp/.t4745-py
+python3 -I agents/audit/unit_tier.py check --dir tests/unit > /tmp/.t4745-chk 2>&1
+timeout 900 bats tests/unit/t4381_unit_suite_accounting.bats > /tmp/.t4745-bats 2>&1 && ! grep -q "^not ok" /tmp/.t4745-bats
+bin/fw vendor self --check --task T-4745
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -297,6 +306,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** every slow nightly unit-suite run since 2026-10-20 graded `tests/unit/hermetic.py` red: pytest exit 5, "no tests ran". Absent at v1.8.14.
+
+**Root cause:** T-4378 (8ab7b4af4) added the shared pytest fixture as `tests/unit/hermetic.py`, a helper module without the `_` prefix the discovery rule reserves for helpers. Its module docstring carries a usage example, `    def test_x(hermetic):` (tests/unit/hermetic.py:5). Pytest-leg discovery is a text heuristic: `agents/audit/unit-suite.sh:151` (`_discover_pytest`) and its parity twin `agents/audit/unit_tier.py:63` (`discover`, `_PY_TEST_DEF`) grep for an indented-or-not `def test…` anywhere in the file. The docstring line made the helper a "test file"; unassigned files default to the slow tier; pytest collected nothing from it.
+
+**Why structurally allowed:** the heuristic (T-4381) cannot tell a docstring from code, and nothing checked that a heuristically-discovered module really defines a test. T-4378 ran its own tests (test_hermetic_fixture.py), not the slow-tier runner, so the misclassification surfaced only in the nightly report and was not traced until T-4739's release comparison.
+
+**Prevention:** `tests/unit/test_t4745_discovered_modules_define_tests.py` walks `unit_tier.discover()` and, for every module discovered by the heuristic rather than by its name, AST-parses it and requires a real top-level `def test*` / `class Test*`. A helper that only mentions a test in prose now fails at author time, naming the file and the fix (`_` prefix).
 
 ## Evolution
 
@@ -362,6 +379,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-25 — rename the helper vs change discovery
+- **Chose:** rename `tests/unit/hermetic.py` → `tests/unit/_hermetic.py`, update its importers (conftest.py, test_hermetic_fixture.py) and cross-references, and add an AST-based guard test.
+- **Why:** `_`-prefixed helpers are the existing, documented exclusion in both discovery copies (`_review_runtime.py` already uses it). The rename touches two importers and leaves discovery semantics, parity-locked across unit-suite.sh and unit_tier.py and pinned by t4381, untouched during a release freeze.
+- **Rejected:** making `_discover_pytest` AST-based. More precise, but it changes which files run corpus-wide in two parity-locked implementations right before a release; the guard test gives the same protection (a misclassified helper fails loudly) without moving the runner.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -378,3 +400,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4745-testsunithermeticpy-is-discovered-as-a-p.md
 - **Context:** Initial task creation
+
+### 2026-10-24T22:20:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

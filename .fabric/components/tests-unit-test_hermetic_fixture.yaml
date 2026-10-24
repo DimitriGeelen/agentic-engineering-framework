@@ -5,7 +5,7 @@ subsystem: tests
 location: tests/unit/test_hermetic_fixture.py
 tags: []
 
-purpose: "T-4378: the shared `hermetic` fixture (tests/unit/hermetic.py) does what it says."
+purpose: "T-4378: the shared `hermetic` fixture (tests/unit/_hermetic.py) does what it says."
 purpose_source: docstring
 
 depends_on:
