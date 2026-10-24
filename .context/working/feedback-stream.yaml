@@ -48211,3 +48211,21 @@ scan_id: R-58357103
 task_id: T-4733
 payload:
   task_file: .tasks/active/T-4733-contexttokenspy-decodes-the-transcript-p.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T11:09:40Z'
+scan_id: R-07ff034a
+task_id: T-4724
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T11:09:40Z'
+scan_id: R-07ff034a
+task_id: T-4724
+payload:
+  task_file: .tasks/active/T-4724-upgrade-file-list-reason-line-prints-aft.md

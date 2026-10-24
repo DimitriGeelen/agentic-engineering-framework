@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4724: Upgrade file-list reason line prints after the doctor advisory instead of in the summary block
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T11:09:56Z
+# ============================================================================
+
+task_id: T-4724
+task_name: "Upgrade file-list reason line prints after the doctor advisory instead of in the summary block"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-23T21:37:08Z
+completed: 2026-10-24T11:02:26Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-24T13:02:23+02:00
+last_commit: 2026-10-24T13:02:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  upgrade file list (or its reason line) prints under the change counters, before Next steps — not after the doctor advisory; t4692 wiring + t4705 live-output order pinned
+
+# Key outcomes
+outcomes:
+  - '`_t4692_emit_commit_list` is called directly after the change/skip/failed counters and before "Next steps:", so the file list or its reason line sits in the summary block'
+  - 'A bats case pins the order: in do_upgrade''s output, the file-list/reason line comes after "change(s) applied" and before "Next steps:"'
+  - 'Existing upgrade commit-list bats (t4692, t4697, t4705, t4712, t4717) and `upgrade_fresh_machine_simulation.bats` stay green'
+  - 'Vendored copy in sync (`fw vendor self --check --task T-4724`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.tasks/active/T-4724-upgrade-file-list-reason-line-prints-aft.md'
+  - 'lib/upgrade.sh'
+  - 'tests/unit/t4692_upgrade_commit_list.bats'
+  - 'tests/unit/t4705_upgrade_commit_list_vendored_external.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-24T13:02:23'
+    action: 'T-4724: upgrade file list (or its reason line) prints under the change counters, before Next steps — not after the doctor advisory; t4692 wiring + t4705 live-output order pinned'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 805 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 805
+  commits: 2
+  files_changed: 8
+  lines_added: 533
+  lines_removed: 10
+  footprint_refreshed_at: '2026-10-24T11:10:08Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4724-upgrade-file-list-reason-line-prints-aft.md
+generated_by: context-agent-hybrid
