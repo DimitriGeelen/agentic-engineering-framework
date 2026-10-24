@@ -48301,3 +48301,39 @@ scan_id: R-593420f2
 task_id: T-4741
 payload:
   task_file: .tasks/active/T-4741-placeholder-detector-counts-quoted-place.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T22:02:22Z'
+scan_id: R-f2b4fca0
+task_id: T-4727
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T22:02:22Z'
+scan_id: R-f2b4fca0
+task_id: T-4727
+payload:
+  task_file: .tasks/active/T-4727-fw-inception-decide-warns-when-the-recor.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T22:04:42Z'
+scan_id: R-94551c57
+task_id: T-4740
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T22:04:42Z'
+scan_id: R-94551c57
+task_id: T-4740
+payload:
+  task_file: .tasks/active/T-4740-fw-vendor-rewrites-the-pinned-designer-b.md

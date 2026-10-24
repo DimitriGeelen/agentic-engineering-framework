@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4727: fw inception decide warns when the recorded verb differs from the task's Recommendation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T22:02:37Z
+# ============================================================================
+
+task_id: T-4727
+task_name: "fw inception decide warns when the recorded verb differs from the task's Recommendation"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-24T10:25:44Z
+completed: 2026-10-24T22:01:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-24T23:45:55+02:00
+last_commit: 2026-10-24T23:45:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw inception decide warns on stderr and writes '**Diverges from Recommendation**: <REC>' into ## Decision when the verb differs from the parsed Recommendation verdict (web.shared.extract_recommendation); Watchtower decide inherits it via the same CLI
+
+# Key outcomes
+outcomes:
+  - '`fw inception decide T-X <verb>` prints `WARNING: recording <VERB> but the Recommendation is <REC> (T-4727)` to stderr when `<verb>` differs from the parsed Recommendation verdict, and still records the decision (warning, never a block)'
+  - 'The `## Decision` block gets one extra line `**Diverges from Recommendation**: <REC>` on a mismatch (no new schema field; decide writes no decisions.yaml row)'
+  - 'No warning and no note on a match (incl. DEFER decided defer) or when the Recommendation verdict is unparseable'
+  - 'The verdict comes from `web.shared.extract_recommendation` (same parser as Watchtower / T-4726), no new regex'
+  - '`tests/unit/t4727_decide_diverges_warning.bats` covers match, NO-GO decided go, unparseable (stderr + recorded note); the Watchtower path inherits the note because `web/decide_runner.py:326` runs the same CLI; existing decide bats green; `fw vendor self --check --task T-4727` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/inception.sh'
+  - '.tasks/active/T-4727-fw-inception-decide-warns-when-the-recor.md'
+  - 'lib/inception.sh'
+  - 'tests/unit/t4727_decide_diverges_warning.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-24T23:45:55'
+    action: 'T-4727: fw inception decide warns on stderr and writes ''**Diverges from Recommendation**: <REC>'' into ## Decision when the verb differs from the parsed Recommendation verdict (web.shared.extract_recommendation); Watchtower decide inherits it via the same CLI'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 696 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 696
+  commits: 2
+  files_changed: 7
+  lines_added: 732
+  lines_removed: 9
+  footprint_refreshed_at: '2026-10-24T22:05:38Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4727-fw-inception-decide-warns-when-the-recor.md
+generated_by: context-agent-hybrid

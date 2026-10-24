@@ -5,12 +5,12 @@ description: >
   inception.py:472-521 already computes decision_matches_recommendation; surface it
   as a warning at decide time. Reported by 010-termlink (T-2958 part 2).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/inception.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -39,8 +39,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T10:25:44Z
-last_update: '2026-10-24T22:00:18Z'
-date_finished:
+last_update: 2026-10-24T22:01:56Z
+date_finished: 2026-10-24T22:01:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -394,3 +394,22 @@ bin/fw vendor self --check --task T-4727
 ### 2026-10-24T21:25:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f2b4fca0
+- **Timestamp:** 2026-10-24T22:02:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — `tests/unit/t4727_decide_diverges_warning.bats` covers match, NO-GO decided go, unparseable (stderr + recorded note); the Watchtower path inherits the note because `web/decide_runner.py:326` runs the 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/decide_runner.py in: `tests/unit/t4727_decide_diverges_warning.bats` covers match, NO-GO decided go, unparseable (stderr + recorded note); the Watchtower path inherits the`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-24T22:01:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
