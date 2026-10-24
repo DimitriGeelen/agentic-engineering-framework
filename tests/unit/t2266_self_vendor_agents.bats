@@ -76,10 +76,11 @@ YAML
 # Helper structural
 # ─────────────────────────────────────────────────────────────────────────
 
-@test "t2266 t1: _self_vendor_agents() helper extracted in lib/upgrade.sh + wired in do_upgrade" {
+@test "t2266 t1: _self_vendor_agents() helper extracted in lib/upgrade.sh, not called by do_upgrade (T-4688)" {
     local fw_src="$FRAMEWORK_ROOT/lib/upgrade.sh"
     grep -qE '^_self_vendor_agents\(\) \{' "$fw_src"
-    grep -qE '_self_vendor_agents "\$dry_run"' "$fw_src"
+    # T-4688: do_upgrade no longer calls it; `fw vendor self` is the only caller.
+    ! grep -qE '^[[:space:]]+_self_vendor_agents "\$dry_run"' "$fw_src" || false
 }
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -145,7 +146,7 @@ YAML
 # do_upgrade calls the helper
 # ─────────────────────────────────────────────────────────────────────────
 
-@test "t2266 t5: do_upgrade --dry-run invokes _self_vendor_agents alongside siblings" {
+@test "t2266 t5: do_upgrade does not invoke _self_vendor_agents (T-4688)" {
     local proj="$TEST_TEMP_DIR/five-helpers-proj"
     make_consumer "$proj"
     do_vendor() { return 0; }
@@ -159,8 +160,8 @@ YAML
     export -f _self_vendor_libs _self_vendor_templates _self_vendor_policy _self_vendor_shim _self_vendor_agents 2>/dev/null || true
 
     run do_upgrade "$proj" --dry-run
-    [[ "$output" == *"AGENTS_CALLED with dry_run=true"* ]]
-    # --no-self-vendor must still skip ALL FIVE (T-2095 contract)
+    [[ "$output" != *"AGENTS_CALLED"* ]] || false
+    # --no-self-vendor is still accepted
     run do_upgrade "$proj" --dry-run --no-self-vendor
     [[ "$output" == *"Self-vendor skipped"* ]]
     [[ "$output" != *"AGENTS_CALLED"* ]]
