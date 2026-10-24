@@ -10,10 +10,10 @@ description: >
   should compare content hashes recorded at start. Test: re-vendor with no web/ change
   leaves fw watchtower current green.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T20:56:50Z
-last_update: '2026-10-23T21:01:40Z'
+last_update: 2026-10-24T19:55:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,14 +89,15 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+TermLink be.14 (sidecar 9c448cb6): every re-vendor rewrites `web/` files even when their content is unchanged. The new mtimes make `fw watchtower current` report STALE, so consumers restart Watchtower for nothing.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `do_vendor` (bin/fw) rsync branch copies by content (`--checksum`) and without `-t`, so a file byte-identical to its vendored copy is not rewritten and keeps its mtime, even when the source is a fresh checkout with new mtimes; a changed file is written (mtime = now)
+- [x] `do_vendor` cp fallback branch (no rsync on PATH) gives the same result: unchanged files untouched, changed/new files written, files gone from source deleted
+- [x] New `tests/unit/t4720_vendor_unchanged_untouched.bats` (loads ../git_fence): a no-op re-vendor from a fresh-mtime copy leaves every web/ mtime unchanged (rsync and cp branches); one changed web/ file is the only mtime that moves; `watchtower_stale_sources` against a live process started before the re-vendor stays current after the no-op and reports exactly the changed file after the real change
+- [ ] `upgrade_fresh_machine_simulation.bats` and `vendor_exclude_anchoring.bats` stay green (foreground); vendored copy in sync (`bin/fw vendor self --check --task T-4720`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +282,11 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t4720_vendor_unchanged_untouched.bats > /tmp/.t4720.out 2>&1 && ! grep -q "^not ok" /tmp/.t4720.out
+test "$(grep -c '# skip' /tmp/.t4720.out)" -eq 0
+timeout 900 bats tests/unit/vendor_exclude_anchoring.bats > /tmp/.t4720b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4720b.out
+grep -q -- 'rsync -rlpgoD --checksum' bin/fw
+bin/fw vendor self --check --task T-4720
 
 ## RCA
 
@@ -297,6 +303,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after every `fw upgrade` / `fw vendor`, `fw watchtower current` reports the consumer's running Watchtower STALE ("pid predates N files") although no `web/` file changed, so consumers restart Watchtower for nothing (TermLink be.14, sidecar 9c448cb6).
+
+**Root cause:** `do_vendor` copied each include with `rsync -a --delete --delete-excluded` (bin/fw, copy loop in `do_vendor`, the `rsync` line ~bin/fw:925 before the fix). `-a` implies `-t`, and rsync's default quick check compares size+mtime. The vendor source is a fresh checkout/clone whose files carry checkout-time mtimes, so every file "differs", is rewritten, and gets the source's new mtime. Reproduced before the fix: vendor from a git-archive copy, re-vendor from a second identical git-archive copy, and `web/app.py`'s mtime moves to the second copy's. The cp fallback (`rm -rf` + `cp -r`) rewrites every file for the same reason. `lib/watchtower-staleness.sh` is mtime-based by design (its header names `fw vendor` as an accepted false-WARN source), so the content-blind copy is where the false signal is made. The same `-t` had the opposite failure too: a CHANGED file from a source with an old mtime got a time older than the running process, a false "current".
+
+**Why structurally allowed:** no test ever re-vendored and looked at mtimes. The vendor tests assert which files exist, not which were written. The staleness check recorded the false WARN as an accepted cost rather than as a defect upstream of it.
+
+**Prevention:** `tests/unit/t4720_vendor_unchanged_untouched.bats` pins, on both copy branches, that a no-op re-vendor from a fresh-mtime source moves no mtime, and that a real change moves exactly that file's mtime and makes `watchtower_stale_sources` report it.
 
 ## Evolution
 
@@ -362,6 +376,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-24 — how to make the vendor copy content-aware
+- **Chose:** rsync `-rlpgoD --checksum` (that is, `-a` minus `-t`), plus a staged, `cmp -s`-gated sync for the cp fallback.
+- **Why:** `--checksum` alone is not enough. With `-t`, rsync still sets an identical file's mtime to the source's, and that is the false signal itself. Dropping `-t` means unchanged files are never touched and changed files get mtime = now, which is the truthful input for the mtime-based staleness check. It also fixes the false "current" where an old source mtime was copied onto a changed file. Checksumming the ~10 MB tree adds well under a second.
+- **Rejected:** hashing content at Watchtower start in `lib/watchtower-staleness.sh`: out of scope, since the task fixes the copy and the check's mtime bias is deliberate (T-2938). `--size-only`: misses same-size edits.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -378,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4720-fw-upgrade--vendor-rewrites-web-files-wh.md
 - **Context:** Initial task creation
+
+### 2026-10-24T19:55:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

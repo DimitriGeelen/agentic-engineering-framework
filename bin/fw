@@ -609,6 +609,49 @@ _vendor_excludes_for() {
     fi
 }
 
+# T-4720: mirror tree $1 onto $2 writing only what differs — the cp fallback's
+# equivalent of `rsync -rlpgoD --checksum --delete`. A byte-identical file is
+# left alone (mtime untouched), so lib/watchtower-staleness.sh, which compares
+# web/ mtimes with the Watchtower start time, does not read a no-op re-vendor as
+# new code. A file that differs is replaced (mtime = now); an entry the source
+# no longer has is removed; an executable-bit change alone is applied in place.
+_vendor_sync_changed() {
+    local src="$1" dst="$2" rel
+    if [ -d "$dst" ]; then
+        while IFS= read -r -d '' rel; do
+            rel="${rel#./}"
+            if [ ! -e "$src/$rel" ] && [ ! -L "$src/$rel" ]; then
+                rm -rf "${dst:?}/$rel"
+            fi
+        done < <(cd "$dst" && find . -mindepth 1 -depth -print0)
+    fi
+    mkdir -p "$dst"
+    while IFS= read -r -d '' rel; do
+        rel="${rel#./}"
+        if [ -L "$src/$rel" ]; then
+            if [ -L "$dst/$rel" ] && [ "$(readlink "$src/$rel")" = "$(readlink "$dst/$rel")" ]; then
+                continue
+            fi
+            rm -rf "${dst:?}/$rel"
+            cp -P "$src/$rel" "$dst/$rel"
+        elif [ -d "$src/$rel" ]; then
+            if [ ! -d "$dst/$rel" ] || [ -L "$dst/$rel" ]; then
+                rm -rf "${dst:?}/$rel"
+                mkdir -p "$dst/$rel"
+            fi
+        elif [ -f "$dst/$rel" ] && [ ! -L "$dst/$rel" ] && cmp -s "$src/$rel" "$dst/$rel"; then
+            if [ -x "$src/$rel" ] && [ ! -x "$dst/$rel" ]; then
+                chmod +x "$dst/$rel"
+            elif [ ! -x "$src/$rel" ] && [ -x "$dst/$rel" ]; then
+                chmod -x "$dst/$rel"
+            fi
+        else
+            rm -rf "${dst:?}/$rel"
+            cp "$src/$rel" "$dst/$rel"
+        fi
+    done < <(cd "$src" && find . -mindepth 1 -print0)
+}
+
 # --- Vendor (T-482/T-497, moved before auto-init for T-519) ---
 # Copy complete framework into project/.agentic-framework/ for full isolation.
 # Must be defined before auto-init dialogue because do_init calls do_vendor.
@@ -927,30 +970,43 @@ do_vendor() {
                     for _pat in "${_item_excludes[@]}"; do
                         rsync_args+=(--exclude="$_pat")
                     done
-                    rsync -a --delete --delete-excluded "${rsync_args[@]}" "$vendor_source/$item/" "$dest/$item/"
+                    # T-4720: -a minus -t, plus --checksum. With -a the quick check
+                    # was size+mtime, and a fresh checkout's mtimes all differ, so
+                    # every unchanged file was rewritten and stamped with the
+                    # source's new mtime — `fw watchtower current` then read each
+                    # re-vendor as new web/ code. Now an identical file is not
+                    # touched, and a changed one gets mtime = now (not the
+                    # source's, which could predate the running Watchtower).
+                    rsync -rlpgoD --checksum --delete --delete-excluded "${rsync_args[@]}" "$vendor_source/$item/" "$dest/$item/"
                 else
                     # The fallback used to honour only the three slashless patterns,
                     # via the find calls below — so even after the rsync anchoring
                     # was fixed, a host without rsync would still ship node_modules.
                     # Both branches now consume the same resolved list.
-                    rm -rf "${dest:?}/${item:?}"
-                    cp -r "$vendor_source/$item" "$dest/$item"
+                    # T-4720: copy into a stage, apply the excludes there, then
+                    # write only what differs (was rm -rf + cp -r: every file new).
+                    local _stage
+                    _stage=$(mktemp -d "${TMPDIR:-/tmp}/fw-vendor-stage-XXXXXX")
+                    cp -r "$vendor_source/$item" "$_stage/t"
                     local _pat _target
                     for _pat in "${_item_excludes[@]}"; do
                         case "$_pat" in
                             /*)  # transfer-root-anchored: an exact path under this include
-                                _target="$dest/$item/${_pat#/}"
+                                _target="$_stage/t/${_pat#/}"
                                 rm -rf "${_target%/}" 2>/dev/null || true ;;
                             */*) # anchored by virtue of containing a slash
-                                _target="$dest/$item/$_pat"
+                                _target="$_stage/t/$_pat"
                                 rm -rf "${_target%/}" 2>/dev/null || true ;;
                             *)   # basename at any depth — matches rsync's semantics
-                                find "$dest/$item" -name "$_pat" -exec rm -rf {} + 2>/dev/null || true ;;
+                                find "$_stage/t" -name "$_pat" -exec rm -rf {} + 2>/dev/null || true ;;
                         esac
                     done
+                    _vendor_sync_changed "$_stage/t" "$dest/$item"
+                    rm -rf "$_stage"
                 fi
             else
-                cp "$vendor_source/$item" "$dest/$item"
+                # T-4720: leave a byte-identical file untouched.
+                cmp -s "$vendor_source/$item" "$dest/$item" || cp "$vendor_source/$item" "$dest/$item"
             fi
             echo -e "  ${GREEN}✓${NC} $item"
         else
