@@ -10,10 +10,10 @@ description: >
   green before. Decide: WARN for a never-installed project (operator step pending),
   or have the seed install/skip.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4739]
@@ -45,7 +45,7 @@ origin: {kind: "agent", source: "T-4739"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T22:10:18Z
-last_update: '2026-10-24T22:16:20Z'
+last_update: 2026-10-24T22:21:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,9 +95,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A project whose generated crontab was **never installed** (no deployed file at all) gets a WARN that names the pending operator step (`fw cron install`), not a FAIL. Installing a crontab is the operator's, so the seed never installs one
+- [x] A crontab that **was** installed and has since drifted still FAILs exactly as today (the T-1771 generated→deployed leg is unchanged)
+- [x] `greenfield_seed_audit_prototype.bats` passes (T-2703 and T-2740 tests), and the cron-drift audit bats stay green
+- [x] The choice is recorded in `## Decisions`; vendored copy in sync (`fw vendor self --check --task T-4748`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,7 +284,22 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+bash -n agents/audit/audit.sh
+grep -q 'warn "Cron drift: generated but not installed' agents/audit/audit.sh
+timeout 900 bats tests/unit/test_audit_cron_drift.bats > /tmp/.t4748-drift.out 2>&1 && ! grep -q "^not ok" /tmp/.t4748-drift.out
+timeout 900 bats tests/unit/greenfield_seed_audit_prototype.bats > /tmp/.t4748-seed.out 2>&1 && ! grep -q "^not ok" /tmp/.t4748-seed.out
+test "$(grep -c '# skip' /tmp/.t4748-seed.out)" -eq 0
+bin/fw vendor self --check --task T-4748
+
 ## RCA
+
+**Symptom:** `greenfield_seed_audit_prototype.bats` (T-2703 test 1) red since 2026-10-22: `fw audit` on an untouched `fw init` project exits 2 with `[FAIL] Cron drift: generated but not installed at /etc/cron.d/agentic-audit-proj`.
+
+**Root cause:** T-4259 (init code in cfd8fbe84: `lib/init.sh` runs `fw cron generate`; regression bats d8c12bde8) made `fw init` write `.context/cron/agentic-audit.crontab`, but installing it into `/etc/cron.d` is a root/operator step init deliberately does not take. `agents/audit/audit.sh:3135` graded "generated, no deployed file" as FAIL — a state that before T-4259 only a project whose operator had already run `fw cron generate` could reach. After T-4259 every fresh project starts there, so the seed fails its own audit. `fw doctor` (bin/fw:4771) already graded the same state WARN; audit and doctor disagreed.
+
+**Why structurally allowed:** T-4259's regression bats ran the vendored `fw doctor` (WARN) on a fresh init, not `fw audit`; the only test running audit against a fresh seed (greenfield_seed_audit_prototype.bats) runs only in slow nightlies, which the T-4259 commit was not gated on.
+
+**Prevention:** audit now grades never-installed as WARN naming `fw cron install` (doctor parity); `test_audit_cron_drift.bats` pins WARN for an absent target and keeps FAIL for installed-and-differs; the greenfield seed test remains the end-to-end guard.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -354,6 +370,11 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-25 — never-installed crontab: WARN in audit vs. seed installs/skips
+- **Chose:** `agents/audit/audit.sh` grades "generated but no deployed file" as WARN naming `fw cron install` as the pending operator step; installed-and-differs stays FAIL.
+- **Why:** installing into /etc/cron.d is the operator's host-level (root) act, so a seed must not do it; a never-installed project is a pending step, not drift. Matches `fw doctor` (bin/fw:4771), which already WARNs on this state. Real drift (deployed file differs) keeps the T-1771 FAIL.
+- **Rejected:** (a) seed runs `fw cron install` — takes a root host action on the operator's behalf; (b) test sets FW_CRON_INSTALL_DIR / skips — hides what every fresh consumer would really see (a FAIL); (c) init stops generating — reverts T-4259.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -379,3 +400,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4748-fresh-greenfield-seed-fails-its-own-audi.md
 - **Context:** Initial task creation
+
+### 2026-10-24T22:21:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

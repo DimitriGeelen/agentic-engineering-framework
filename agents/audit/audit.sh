@@ -3131,11 +3131,13 @@ elif [ -f "$_cron_registry" ]; then
                  worktree "host state: $_cron_target_dir"
         fi
     elif [ -f "$_cron_source" ] && [ ! -f "$_cron_target" ]; then
-        # T-3126: host-state comparand, same as the deployed-drift arm above.
-        fail "Cron drift: generated but not installed at $_cron_target" \
-             "Generated crontab exists but is not deployed — scheduled jobs are not running" \
-             "Run: fw cron install" \
-             worktree "host state: $_cron_target_dir"
+        # T-4748: WARN, not FAIL. Since T-4259 `fw init` generates the crontab, so
+        # every fresh project starts here; installing into $_cron_target_dir is the
+        # operator's host-level step, not drift. Parity with `fw doctor`. A deployed
+        # file that DIFFERS (arm above) is still a FAIL.
+        warn "Cron drift: generated but not installed at $_cron_target" \
+             "Generated crontab exists but is not deployed — scheduled jobs are not running until the operator installs it" \
+             "Run: fw cron install"
     elif [ ! -f "$_cron_source" ]; then
         warn "Cron drift: registry present but not generated" \
              "$_cron_registry exists but $_cron_source is missing" \

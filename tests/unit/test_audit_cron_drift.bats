@@ -86,12 +86,13 @@ _run_structure_audit() {
     [[ "$output" == *"Fail: 1"* ]] || [[ "$output" == *"Fail:"*[1-9]* ]]
 }
 
-@test "generated but not installed → FAIL" {
+@test "generated but not installed → WARN naming fw cron install (T-4748: pending operator step, not drift)" {
     _minimal_registry
     echo "# generated" > "$SOURCE_PATH"
     # No deployed file — DEPLOYED_PATH absent
     _run_structure_audit
-    [[ "$output" == *"[FAIL]"*"Cron drift:"*"generated but not installed"* ]]
+    [[ "$output" == *"[WARN]"*"Cron drift:"*"generated but not installed"* ]]
+    ! grep -q '\[FAIL\].*generated but not installed' <<<"$output" || false
     [[ "$output" == *"Run: fw cron install"* ]]
 }
 
