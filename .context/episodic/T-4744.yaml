@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4744: t3221 pin counts 2 is_commit_checkpoint_command call sites; T-4182 added a third, so the test is red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-24T22:36:09Z
+# ============================================================================
+
+task_id: T-4744
+task_name: "t3221 pin counts 2 is_commit_checkpoint_command call sites; T-4182 added a third, so the test is red"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T22:09:17Z
+completed: 2026-10-24T22:32:37Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-25T00:28:41+02:00
+last_commit: 2026-10-25T00:28:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t3221 test 17 pins the invariant, not a call-site count — every commit-allowing NOTE branch in check-active-task.sh must call is_commit_checkpoint_command within 30 lines above it (>=2 calls, >=2 branches, no =~/== substring form); T-4182's correct third branch no longer reds it. Bite: two mutants of line 988 (substring regex; predicate -> true) both fail naming NOTE :1004. t3221 17/17 ok 0 skip; t3179/t4182/t3814 green; RCA + decision filled
+
+# Key outcomes
+outcomes:
+  - 't3221 test 17 pins the invariant, not a count: every commit-exemption branch in `agents/context/check-active-task.sh` calls `is_commit_checkpoint_command`, there are at least 2 such calls, and no substring form remains'
+  - 'The test fails on a synthetic copy where one branch uses a substring match instead of the predicate (bite check, recorded in the commit message)'
+  - '`tests/unit/t3221_commit_exemption_clause.bats` passes in full with no skips'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — how to re-pin test 17'
+    chose: 'invariant check — each commit-allowing NOTE line must have an `is_commit_checkpoint_command "$BASH_CMD"` call within the 30 lines above it, plus ≥2 of each and no substring form.'
+    rationale: 'it states the property T-3221 cares about (no exemption decides "is this a commit" on its own), survives correct new branches, and bites on a branch that drops the predicate.'
+    alternatives_rejected: ['bumping the count to 3 (re-arms the same trap for the next exemption); `-ge 2` alone (would pass a new branch using a substring match or no check at all).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4744-t3221-pin-counts-2-iscommitcheckpointcom.md'
+  - 'tests/unit/t3221_commit_exemption_clause.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T00:28:41'
+    action: 'T-4744: t3221 test 17 pins the invariant, not a call-site count — every commit-allowing NOTE branch in check-active-task.sh must call is_commit_checkpoint_command within 30 lines above it (>=2 calls, >=2 branches, no =~/== substring form); T-4182''s correct third branch no longer reds it. Bite: two mutants of line 988 (substring regex; predicate -> true) both fail naming NOTE :1004. t3221 17/17 ok 0 skip; t3179/t4182/t3814 green; RCA + decision filled'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23
+  commits: 2
+  files_changed: 5
+  lines_added: 222
+  lines_removed: 17
+  footprint_refreshed_at: '2026-10-24T22:40:19Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4744-t3221-pin-counts-2-iscommitcheckpointcom.md
+generated_by: context-agent-hybrid

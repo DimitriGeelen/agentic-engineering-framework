@@ -48337,3 +48337,75 @@ scan_id: R-94551c57
 task_id: T-4740
 payload:
   task_file: .tasks/active/T-4740-fw-vendor-rewrites-the-pinned-designer-b.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T22:09:21Z'
+scan_id: R-2f6217c2
+task_id: T-4742
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T22:09:21Z'
+scan_id: R-2f6217c2
+task_id: T-4742
+payload:
+  task_file: .tasks/active/T-4742-add-anthropic-to-the-watchtower-api-key-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T22:11:24Z'
+scan_id: R-cbb483ae
+task_id: T-4738
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T22:11:24Z'
+scan_id: R-cbb483ae
+task_id: T-4738
+payload:
+  task_file: .tasks/active/T-4738-close-hint-per-project-setting-to-omit-t.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T22:34:28Z'
+scan_id: R-98213a09
+task_id: T-4744
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T22:34:28Z'
+scan_id: R-98213a09
+task_id: T-4744
+payload:
+  task_file: .tasks/active/T-4744-t3221-pin-counts-2-iscommitcheckpointcom.md
+---
+kind: scan_emitted
+timestamp: '2026-10-24T22:37:20Z'
+scan_id: R-a4f962a6
+task_id: T-4746
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-24T22:37:20Z'
+scan_id: R-a4f962a6
+task_id: T-4746
+payload:
+  task_file: .tasks/active/T-4746-binfw-t-4680-clone-inside-consumer-path-.md
