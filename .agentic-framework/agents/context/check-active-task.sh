@@ -398,7 +398,12 @@ _commit_shape_hint() {
     done
     echo "" >&2
     echo "    Run the commit as the close printed it, on its own line:" >&2
-    echo "      git commit -m '<T-XXX>: close …' -- <paths> && git push <remote> HEAD" >&2
+    # T-4738: CLOSE_HINT_PUSH=0 drops the push clause, as in update-task.sh.
+    if [ "$(fw_config CLOSE_HINT_PUSH 1 2>/dev/null)" = "0" ]; then
+        echo "      git commit -m '<T-XXX>: close …' -- <paths>" >&2
+    else
+        echo "      git commit -m '<T-XXX>: close …' -- <paths> && git push <remote> HEAD" >&2
+    fi
     echo "    then run the rest after it. (T-4707; a message, not a permission.)" >&2
 }
 

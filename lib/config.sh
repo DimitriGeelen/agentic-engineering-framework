@@ -278,6 +278,7 @@ FW_CONFIG_REGISTRY=(
     "MAX_RESTARTS|5|Max auto-restarts within RESTART_WINDOW seconds. T-3243 made this a RATE limit: it was a lifetime count that killed a healthy loop after 4 hours-apart restarts, and claude-fw hardcoded 5 rather than reading this key at all."
     "RESTART_WINDOW|3600|Sliding window (seconds) over which MAX_RESTARTS is counted. Restarts older than this stop counting, so an hours-apart continuous run never accumulates while a spin still trips the cap (T-3243)."
     "SAFE_MODE|0|Bypass task gate (escape hatch)"
+    "CLOSE_HINT_PUSH|1|0 = close hint prints no push clause (push deploys prod at some consumers; T-4738)"
     "CALL_WARN|40|Tool-call count threshold for warn level (fallback)"
     "CALL_URGENT|60|Tool-call count threshold for urgent level (fallback)"
     "CALL_CRITICAL|80|Tool-call count threshold for critical level (fallback)"

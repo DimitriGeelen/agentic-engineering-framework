@@ -106,8 +106,13 @@ _print_move_next_hint() {
     local tid="$1"; shift
     local remote push="" p q=""
     for p in "$@"; do q+=" $(printf '%q' "$p")"; done
-    remote=$(_t4719_push_remote)
-    [ -n "$remote" ] && push=" && git push $(printf '%q' "$remote") HEAD"
+    # T-4738: CLOSE_HINT_PUSH=0 drops the push clause (at some consumers a push
+    # deploys production).
+    type fw_config &>/dev/null || source "$FRAMEWORK_ROOT/lib/config.sh" 2>/dev/null
+    if [ "$(fw_config CLOSE_HINT_PUSH 1 2>/dev/null)" != "0" ]; then
+        remote=$(_t4719_push_remote)
+        [ -n "$remote" ] && push=" && git push $(printf '%q' "$remote") HEAD"
+    fi
     printf '  \xe2\x86\xb3 close staged in index: %s\n' "$*"
     printf "  \xe2\x86\xb3 next: git commit -m '%s: close ...' --%s%s\n" "$tid" "$q" "$push"
 }

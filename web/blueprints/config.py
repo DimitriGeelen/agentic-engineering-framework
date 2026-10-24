@@ -35,6 +35,7 @@ SETTINGS = [
     ("RESTART_WINDOW", "3600", "Sliding window (seconds) over which MAX_RESTARTS is counted. Restarts older than this stop counting, so an hours-apart continuous run never accumulates while a spin still trips the cap (T-3243)."),
     ("CAPTURE_QUERY_TEXT", "0", "Keep the rendered prompt of a user query (fw ask) on disk in the dispatch blob. Default 0: the dispatch row keeps only prompt_sha256 and prompt_chars, so the typed query is not stored (arc-001 F-9, T-4061). Set 1 to opt in for debugging."),
     ("SAFE_MODE", "0", "Bypass task gate (escape hatch)"),
+    ("CLOSE_HINT_PUSH", "1", "0 = close hint prints no push clause (push deploys prod at some consumers; T-4738)"),
     ("CALL_WARN", "40", "Tool-call count threshold for warn level (fallback)"),
     ("CALL_URGENT", "60", "Tool-call count threshold for urgent level (fallback)"),
     ("CALL_CRITICAL", "80", "Tool-call count threshold for critical level (fallback)"),
