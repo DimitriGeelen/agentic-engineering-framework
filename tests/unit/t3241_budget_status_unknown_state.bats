@@ -62,6 +62,19 @@ EOF
     echo "$STATUS_JSON" | grep -q '"tokens": null'
 }
 
+# T-4733: under a C/C.UTF-8 locale Python reads stdin with surrogateescape, so the
+# bad line used to be skipped and the gauge read ok/provisional. Pin both locales.
+@test "crash, POSIX and C.UTF-8 locale: invalid UTF-8 still writes level=unknown" {
+    f="$TEST_TEMP_DIR/bad-utf8-c.jsonl"
+    printf '\xff\xfe this is not valid utf8\n{"message":{"model":"claude-opus-5","usage":{"input_tokens":100,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}\n' > "$f"
+    for loc in C C.UTF-8; do
+        LC_ALL="$loc" run_gate "crash-$loc" "$f"
+        [ "$status" -eq 0 ]
+        echo "$STATUS_JSON" | grep -q '"level": "unknown"' || { echo "locale $loc: $STATUS_JSON"; false; }
+        echo "$STATUS_JSON" | grep -q '"tokens": null'
+    done
+}
+
 # --- Control: a genuinely confident zero measurement still writes real ok/0 ---
 
 @test "control: two same-model entries with all-zero usage fields still write real level=ok, tokens=0" {

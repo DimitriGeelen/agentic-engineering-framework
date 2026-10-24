@@ -24,6 +24,7 @@ cost money and belongs in the total regardless of whose conversation it was.
 This module answers a different question ("what is in MY context window
 right now") — routing cost through it would silently drop real spend.
 """
+import io
 import json
 import sys
 from collections import Counter
@@ -138,9 +139,13 @@ def main():
     # (budget-gate.sh) already treat "no parseable integer on stdout" as a scan
     # failure, so catching here just makes that outcome deliberate and quiet
     # instead of an accidental crash with the same effect.
+    # T-4733: decode strictly from the raw bytes. sys.stdin's error handler
+    # follows the locale: surrogateescape under C/C.UTF-8 (the bad line was
+    # silently skipped and the gauge read ok), strict under en_US.UTF-8.
+    stdin = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8", errors="strict")
     try:
         tokens, model, status, provisional = compute_context_tokens_status(
-            sys.stdin, session_start_ts)
+            stdin, session_start_ts)
     except Exception:
         sys.exit(1)
 
