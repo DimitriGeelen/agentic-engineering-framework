@@ -284,10 +284,25 @@ second line'
     [ "$status" -ne 0 ]
 }
 
-@test "both exemption branches call the same predicate — no second copy to drift" {
-    local n
-    n="$(grep -c 'is_commit_checkpoint_command "\$BASH_CMD"' "$HOOK")"
-    [ "$n" -eq 2 ]
-    # and the substring form is gone from both
-    if grep -q 'BASH_CMD" =~ (^|\[\[:space:\]\])git\[\[:space:\]\]+commit' "$HOOK"; then false; fi
+@test "every commit exemption branch calls the same predicate — no second copy to drift" {
+    # T-4744: an invariant, not a count. This pinned exactly 2 call sites, and
+    # went red when T-4182 added a third exemption (the closure commit of a
+    # just-completed task) that uses the predicate correctly. What must hold:
+    # every branch that announces it is allowing a commit reached that verdict
+    # through is_commit_checkpoint_command, and no substring form survives.
+    local calls notes
+    calls="$(grep -c 'is_commit_checkpoint_command "\$BASH_CMD"' "$HOOK")"
+    notes="$(grep -cE 'echo "NOTE:.*allowing.*commit' "$HOOK")"
+    [ "$calls" -ge 2 ]
+    [ "$notes" -ge 2 ]
+    # each commit-allowing NOTE has a predicate call within the 30 lines above it
+    run awk '
+        /is_commit_checkpoint_command "\$BASH_CMD"/ { last = NR }
+        /echo "NOTE:.*allowing.*commit/ {
+            if (!last || NR - last > 30) { print NR ": " $0; bad = 1 }
+        }
+        END { exit bad }' "$HOOK"
+    [ "$status" -eq 0 ] || { echo "exemption without the predicate: $output"; false; }
+    # and the substring form (regex or glob on the raw command) is gone
+    if grep -qE '"\$BASH_CMD" (=~|==) .*git.*commit' "$HOOK"; then false; fi
 }

@@ -9,10 +9,10 @@ description: >
   slow nightly. Re-pin the invariant (every exemption branch uses the predicate, no
   substring form) instead of an exact count.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4739]
@@ -44,7 +44,7 @@ origin: {kind: "agent", source: "T-4739"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T22:09:17Z
-last_update: '2026-10-24T22:16:19Z'
+last_update: 2026-10-24T22:21:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,9 +94,9 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] t3221 test 17 pins the invariant, not a count: every commit-exemption branch in `agents/context/check-active-task.sh` calls `is_commit_checkpoint_command`, there are at least 2 such calls, and no substring form remains
+- [x] The test fails on a synthetic copy where one branch uses a substring match instead of the predicate (bite check, recorded in the commit message)
+- [x] `tests/unit/t3221_commit_exemption_clause.bats` passes in full with no skips
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +281,10 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t3221_commit_exemption_clause.bats > /tmp/.t4744-v 2>&1 && ! grep -q "^not ok" /tmp/.t4744-v
+test "$(grep -c '# skip' /tmp/.t4744-v)" -eq 0
+grep -q 'every commit exemption branch calls the same predicate' tests/unit/t3221_commit_exemption_clause.bats && ! grep -qF '[ "$n" -eq 2 ]' tests/unit/t3221_commit_exemption_clause.bats
+python3 tools/bats-dead-negation-lint.py tests/unit/t3221_commit_exemption_clause.bats > /tmp/.t4744-l 2>&1 && grep -q clean /tmp/.t4744-l
 
 ## RCA
 
@@ -297,6 +301,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** `tests/unit/t3221_commit_exemption_clause.bats` test 17 red since the 2026-10-22 slow nightly (`[ "$n" -eq 2 ]` failed, n=3); surfaced as a v1.8.15 release blocker by T-4739's suite comparison against v1.8.14.
+
+**Root cause:** the test, not the hook. Test 17 (`tests/unit/t3221_commit_exemption_clause.bats:287`) pinned the *exact count* of `is_commit_checkpoint_command "$BASH_CMD"` call sites in `agents/context/check-active-task.sh` to 2. b84ec0b72 (T-4182) legitimately added a third exemption — the closure commit of a just-completed task — and it uses the predicate correctly (`check-active-task.sh:988`, NOTE at :1004). The count was a proxy for "every exemption uses the shared predicate", and the proxy diverged from the property the moment a correct new branch appeared.
+
+**Why structurally allowed:** T-4182 ran its own t4182 bats and the t3179 sibling, but not t3221, which greps the same file as text; nothing maps "edited check-active-task.sh" to "re-run every bats that greps it". The red then sat in the slow nightly, which is only compared against a release baseline at release time (T-4739), so it surfaced three days later rather than at T-4182's close.
+
+**Prevention:** the test now pins the invariant — ≥2 predicate calls, ≥2 commit-allowing NOTE branches, every `echo "NOTE:…allowing…commit"` has a predicate call within the 30 lines above it, and no `=~`/`==` substring match of `$BASH_CMD` on git…commit. A further correct exemption no longer turns it red; a branch that admits a commit without the predicate does. Bite-checked against two mutants of line 988 (substring regex; predicate replaced by `true`): both fail and name the offending NOTE line. Same class as L-599 / T-3326 (do not pin a mutable count).
 
 ## Evolution
 
@@ -361,6 +372,10 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+### 2026-10-25 — how to re-pin test 17
+- **Chose:** invariant check — each commit-allowing NOTE line must have an `is_commit_checkpoint_command "$BASH_CMD"` call within the 30 lines above it, plus ≥2 of each and no substring form.
+- **Why:** it states the property T-3221 cares about (no exemption decides "is this a commit" on its own), survives correct new branches, and bites on a branch that drops the predicate.
+- **Rejected:** bumping the count to 3 (re-arms the same trap for the next exemption); `-ge 2` alone (would pass a new branch using a substring match or no check at all).
 
 ## Decision
 
@@ -378,3 +393,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4744-t3221-pin-counts-2-iscommitcheckpointcom.md
 - **Context:** Initial task creation
+
+### 2026-10-24T22:20:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
