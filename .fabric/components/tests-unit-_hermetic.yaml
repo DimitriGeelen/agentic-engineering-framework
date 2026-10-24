@@ -1,0 +1,21 @@
+id: tests/unit/_hermetic.py
+name: _hermetic
+type: script
+subsystem: tests
+location: tests/unit/_hermetic.py
+tags: []
+
+purpose: "One hermetic fixture for pytest (T-4378); the bats twin is tests/unit/helpers/hermetic.bash."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-24
+created_by: unknown
