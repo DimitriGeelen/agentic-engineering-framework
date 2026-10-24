@@ -30,7 +30,13 @@ GET  /api/field-profile       404 text/html
 GET  /api/field-suggestions   404 text/html
 ```
 
-All four already read as "off" under 832's rule (non-JSON, non-200). Check shows "HTTP 403" instead of 404. That is cosmetic, but if validate stays unbuilt, the route should be exempted from CSRF and answer a plain 404.
+**Correction (832 msg cae77bad):** absence is quiet for only three of the endpoints. Check is pressed by a person, so any failure (404 or 403) shows "could not check: HTTP <code>" and is recorded as a fault. **In AEF today Check is visibly broken, not off.** instances, field-profile and field-suggestions are quietly off on their plain HTML 404. A built validate must pass AEF's CSRF guard the way `POST /api/save` does (no token, `Content-Type: application/json`, same origin).
+
+Reference tests (832 T-1300, per endpoint):
+- Server side: `test_t955_validate_endpoint.py`, `test_t973_save_findings.py`, `test_gallery_instances_api.py`, `_t1128-field-profile-server.py`.
+- Designer side, headless Chromium: `test_t961_designer_validate_reach.py`, `_t884-instance-overlay-cdp.mjs`, `_t1125-field-profile-cdp.mjs`, `_t1126-field-suggestions-cdp.mjs`, and `_t1134-portal-without-endpoints-cdp.mjs` for the absence case.
+
+Pointing the designer-side tests at AEF's server is the acceptance run.
 
 ## Assessment
 

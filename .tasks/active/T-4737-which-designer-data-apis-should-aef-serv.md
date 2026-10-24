@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-24T20:09:41Z
-last_update: '2026-10-24T20:19:29Z'
+last_update: 2026-10-24T20:21:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -158,7 +158,8 @@ The contracts have arrived (832 msg 047ee6a3); this replaces the filing-time DEF
 field-profile and field-suggestions are write paths with an operator-approval flow. Nothing recorded asks for them, and their absence already degrades cleanly to a read-only panel.
 
 **Evidence:**
-- Contract and live probe: `docs/reports/T-4737-designer-data-apis.md`. Today all four answer non-JSON non-200 (validate 403 via CSRF, the rest a 404), so nothing is broken now.
+- Contract and live probe: `docs/reports/T-4737-designer-data-apis.md`. Correction from 832 (msg cae77bad): **Check is visibly broken in AEF today**. Pressing it shows "could not check: HTTP 403" and logs a fault, because a person-initiated call is never quiet. The other three are quietly off on their HTML 404. Of the four endpoints, validate is the one where not building it leaves something broken.
+- Acceptance: 832's designer-side headless tests (`test_t961_designer_validate_reach.py`, `_t884-instance-overlay-cdp.mjs`) run against AEF's server.
 - 832 offers reference tests as acceptance criteria for whichever endpoints are built.
 - Proposed build slices if GO: (1) pin `validate-workflow.py` with the designer and serve `/api/validate`; (2) serve `/api/instances` from task status → aef-task-lifecycle nodes, cross-checked by the T-2621 conformance rail.
 
