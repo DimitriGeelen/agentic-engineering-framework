@@ -10,10 +10,10 @@ description: >
   cap 900s); output: .context/audits/integration-suite/failures/2026-10-22T11:27:01Z/pytest/t3684_sidecar_watcher_e2e_test.py.out.
   Fix the test or the code; do not baseline it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, integration-red]
 components: []
 related_tasks: [T-4634]
@@ -45,7 +45,7 @@ origin: {kind: "agent", source: "T-4634"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T13:13:34Z
-last_update: '2026-10-22T13:15:54Z'
+last_update: 2026-10-25T12:50:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,6 +74,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-25T12:49:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-10-22T13:15:54Z'
     estimator: bvp-estimator-v1-heuristic
@@ -95,9 +111,9 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause localised and recorded in the RCA, classed as code defect / stale test / environment, with the evidence
+- [x] The cause is fixed where it lives (product code, or the test when the test is what is stale); tests 4 and 6 pass twice in a row in the foreground with no skips
+- [x] The test never touches this project's live sidecar receiver or hub state (isolated runtime); sibling sidecar tests stay green; nothing is added to any baseline; vendored copy in sync if vendored paths changed (`fw vendor self --check --task T-4645`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,6 +298,8 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 1800 python3 -m pytest tests/integration/t3684_sidecar_watcher_e2e_test.py -q -rs -p no:cacheprovider > /tmp/.t4645.out 2>&1 && grep -q "8 passed" /tmp/.t4645.out && ! grep -qiE "skipped|failed" /tmp/.t4645.out
+grep -q "_give_launcher(b_root)" tests/integration/t3684_sidecar_watcher_e2e_test.py
 
 ## RCA
 
@@ -298,6 +316,20 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** test_4 failed at `assert "supervisor restarted" in ens.stdout`: `fw sidecar ensure --all` answered "not started: no framework launcher in this project (.agentic-framework/bin/fw or bin/fw)" for both scratch projects. test_6 failed in the same first run (T-4634, -j4) with "C1 never became ready" (no session record, empty pty).
+
+**Class:** test_4 = **stale test**. test_6 = **environment, not reproducible** on this host.
+
+**Root cause (test_4):** T-4208 (cc3bcd8c2) changed `ensure_all()` to start each project through its own launcher (`lib/sidecar/watcher.py:1079` `project_launcher`, refusal at `:1112-1116`) instead of AEF's own copy. The scratch fixture (`tests/integration/t3693_sidecar_e2e_test.py:87` `_project`) builds a project with `.context/`, `.framework.yaml` and `.claude/settings.json` but no `fw`, so the keep-alive correctly refuses it. The product behaviour is intended (T-4208: never start a project with another copy's code); the test still assumed the pre-T-4208 contract. Confirmed red on this host 2026-10-25 before the fix (`-x` run: 5 passed, test_4 failed with the same message).
+
+**test_6:** passed alone (57 s) and in two consecutive full-file runs after the fix (8 passed, 0 skipped, ~500 s each). In the original failure C1 accepted folder trust and then never ran its Stop hook, with an empty pty: the claude session inside the wrapper stalled, during a -j4 suite run where this ~12-min live-model file shared the host with other live suites. Not reproduced under kernel 7.0 after the 2026-10-25 rebuild; no code or test change made for it.
+
+**Fix:** `tests/integration/t3684_sidecar_watcher_e2e_test.py`: new `_give_launcher(root)` installs a vendored-consumer launcher shim (`.agentic-framework/bin/fw` -> `exec <fw under test>`) in B right before test_4 calls `ensure --all`, so the keep-alive path runs as it does on a real consumer. The shared fixture in t3693 (T-4646's file) is untouched; only B gets the shim, after tests 1-3 ran in the plain shape.
+
+**Why structurally allowed:** the live E2E file costs ~12 min and model tokens, so it ran nowhere between T-4208 (which changed the contract) and T-4634's first integration-suite run; T-4208's own tests were unit-level and did not rerun this file.
+
+**Prevention:** the integration suite now runs (T-4634) and files a task per red file; this test now pins the T-4208 contract (ensure starts a project through its own launcher) instead of contradicting it.
 
 ## Evolution
 
@@ -379,3 +411,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4645-integration-red-t3684sidecarwatchere2ete.md
 - **Context:** Initial task creation
+
+### 2026-10-25T12:49:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

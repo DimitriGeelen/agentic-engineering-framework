@@ -248,6 +248,17 @@ def _scratch(name: str) -> Path:
     return base._project(BASE_DIR, name)
 
 
+def _give_launcher(root: Path) -> None:
+    """T-4645: a scratch project has no `fw` of its own, and `fw sidecar ensure
+    --all` (T-4208, watcher.project_launcher) reports such a project instead of
+    starting it. Install the vendored-consumer launcher as a shim to the fw under
+    test, so the keep-alive path is exercised as it runs on a real consumer."""
+    shim = root / ".agentic-framework" / "bin" / "fw"
+    shim.parent.mkdir(parents=True, exist_ok=True)
+    shim.write_text(f'#!/usr/bin/env bash\nexec "{FW}" "$@"\n')
+    shim.chmod(0o755)
+
+
 def _send(a_root: Path, to: str, body: str, *, urgent=False, deadline=900,
           registry: Path | None = None) -> dict:
     argv = [FW, "sidecar", "send", "--to", to, "--body", body, "--conversation",
@@ -557,7 +568,11 @@ def test_4_watcher_killed_reported_not_live_and_restarted(pair):
                  ["state"] == "not-live", 2 * TICK_S + 30, 2)
     doctor = _doctor_line(b_root)
     audit = _audit_lines(b_root)
-    # (c) the keep-alive (the cron command) restarts the supervisor
+    # (c) the keep-alive (the cron command) restarts the supervisor. Since
+    #     T-4208, ensure starts each project through ITS OWN launcher and refuses
+    #     a project with none, so B gets the vendored-consumer shape first
+    #     (.agentic-framework/bin/fw), delegating to the fw under test.
+    _give_launcher(b_root)
     ens = _run([FW, "sidecar", "ensure", "--all", "--json"], b_root)
     back = _wait(lambda: json.loads(_run([FW, "sidecar", "liveness", "--json"], b_root).stdout)
                  ["state"] == "live", 30, 1)
