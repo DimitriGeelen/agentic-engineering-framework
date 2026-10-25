@@ -989,15 +989,69 @@ _t4672_sync_designer() {
     done
     [ "$_installed" -eq 1 ] || return 0
     if [ -f "$target_dir/$rel" ] && [ -f "$src_root/$rel" ] && cmp -s "$target_dir/$rel" "$src_root/$rel"; then
+        _t4736_prune_root_designer "$target_dir" "$rel" "$src_root" "$dry_run"
         return 0
     fi
 
     if [ "$dry_run" = true ]; then
         echo -e "  ${CYAN}WOULD INSTALL${NC}  Workflow Designer $(basename "$rel") (the installed build does not match the new pin)"
+        _t4736_prune_root_designer "$target_dir" "$rel" "$src_root" "$dry_run"
         return 0
     fi
     _t4697_wrote "$(dirname "$rel")/"
     FRAMEWORK_ROOT="$vendored" fw_init_install_designer "$target_dir"
+    # Prune only once the pinned build is really in place: a refused install
+    # must not also take away the build the project was using.
+    [ -f "$target_dir/$rel" ] && _t4736_prune_root_designer "$target_dir" "$rel" "$src_root" "$dry_run"
+    return 0
+}
+
+# T-4736: prune superseded Workflow Designer builds from the consumer ROOT
+# (<project>/vendor/designer/). _self_vendor_designer prunes the vendored tree;
+# nothing pruned the installed copy, so every pin bump left ~1.2 MB behind
+# (050 be.16: an untracked 0.25.0 and a tracked 0.14.0 next to 0.26.0).
+#
+# A superseded build is deleted ONLY when both hold:
+#   - it is untracked in the consumer's git (a tracked file is the project's
+#     decision, and deleting it would show up as an unasked-for change), and
+#   - it is byte-identical to the build of the same name that AEF published
+#     (FRAMEWORK_ROOT/vendor/designer/ keeps every released build), so a file
+#     the user wrote or edited under a designer-like name is never touched.
+# Everything else is listed with the command that removes it, and kept.
+#
+# Inputs: $1 target dir, $2 pinned rel path, $3 pin source root, $4 dry_run
+# Return: 0 always (advisory).
+_t4736_prune_root_designer() {
+    local target_dir="$1" rel="$2" src_root="$3" dry_run="${4:-false}"
+    local rdir="$(dirname "$rel")" _f _name _rel_f _known _tracked
+    for _f in "$target_dir/$rdir"/aef-workflow-designer-*.html; do
+        [ -f "$_f" ] || continue
+        _name="$(basename "$_f")"
+        _rel_f="$rdir/$_name"
+        if [ "$_rel_f" = "$rel" ]; then
+            continue
+        fi
+        _known=0
+        if [ -f "$FRAMEWORK_ROOT/$_rel_f" ] && cmp -s "$_f" "$FRAMEWORK_ROOT/$_rel_f"; then
+            _known=1
+        elif [ -f "$src_root/$_rel_f" ] && cmp -s "$_f" "$src_root/$_rel_f"; then
+            _known=1
+        fi
+        _tracked=0
+        if git -C "$target_dir" ls-files --error-unmatch -- "$_rel_f" >/dev/null 2>&1; then
+            _tracked=1
+        fi
+        if [ "$_tracked" -eq 1 ]; then
+            echo -e "  ${YELLOW}KEPT${NC}  superseded designer build $_rel_f is tracked in git — remove it with: ${BOLD}cd $target_dir && git rm $_rel_f${NC}"
+        elif [ "$_known" -eq 0 ]; then
+            echo -e "  ${YELLOW}KEPT${NC}  $_rel_f does not match any published AEF build — remove it by hand if it is not yours: ${BOLD}rm $target_dir/$_rel_f${NC}"
+        elif [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD PRUNE${NC}  superseded designer build $_rel_f (untracked, identical to the published AEF build)"
+        else
+            rm -f "$_f"
+            echo -e "  ${GREEN}PRUNED${NC}  superseded designer build $_rel_f (untracked, identical to the published AEF build)"
+        fi
+    done
     return 0
 }
 
