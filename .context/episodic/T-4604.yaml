@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4604: t3298 source pin greps an EXIT-trap string audit.sh no longer contains
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T12:52:18Z
+# ============================================================================
+
+task_id: T-4604
+task_name: "t3298 source pin greps an EXIT-trap string audit.sh no longer contains"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T08:42:02Z
+completed: 2026-10-25T12:52:01Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-25T13:51:24+01:00
+last_commit: 2026-10-25T13:51:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA — t3298 #9 already green via T-4619 (15b7e3f74); stale-test duplicate, bite check recorded, no code change
+
+# Key outcomes
+outcomes:
+  - 'Cause localised and recorded in the RCA: what the t3298 source pin asserts, what `agents/audit/audit.sh` does now, and whether the behaviour the pin guarded still holds'
+  - 'The pin asserts the behaviour (the EXIT-trap cleanup still runs), not a literal string, and fails on a synthetic copy of audit.sh with the cleanup removed (bite check recorded)'
+  - 'The t3298 test file passes in full with no skips; nothing is added to the unit-suite baseline'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4604-t3298-source-pin-greps-an-exit-trap-stri.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T13:51:24'
+    action: 'T-4604: RCA — t3298 #9 already green via T-4619 (15b7e3f74); stale-test duplicate, bite check recorded, no code change'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4569 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cloud, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4569
+  commits: 2
+  files_changed: 4
+  lines_added: 175
+  lines_removed: 10
+  footprint_refreshed_at: '2026-10-25T12:52:22Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4604-t3298-source-pin-greps-an-exit-trap-stri.md
+generated_by: context-agent-hybrid
