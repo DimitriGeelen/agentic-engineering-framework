@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4735: Documented operator path to re-record the decision on a completed inception
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T11:46:16Z
+# ============================================================================
+
+task_id: T-4735
+task_name: "Documented operator path to re-record the decision on a completed inception"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-24T11:11:20Z
+completed: 2026-10-25T11:45:58Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  23 of 140 completed TermLink inceptions have Decision != Recommendation (some NO-GO recorded as GO via the T-4726 hint), and none can be corrected because decide refuses completed tasks. Needs an operator-only, logged correction path (decide stays agent-blocked). Reported by 010-termlink (TermLink T-2958 follow-up).
+
+# Key outcomes
+outcomes:
+  - '`fw inception correct` exists and handles completed inceptions (`lib/inception.sh` `do_inception_correct`, "not found in active or completed tasks")'
+  - '`tests/unit/t4324_inception_correct.bats` passes, including the agent refusal (test 7) and the `--i-am-human` actor record (test 8)'
+  - '`fw inception decide` on an archived inception points at `fw inception correct` (T-4734, `tests/unit/t4734_decide_archived_task.bats`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1474 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1474
+  commits: 1
+  files_changed: 3
+  lines_added: 483
+  lines_removed: 0
+  footprint_refreshed_at: '2026-10-25T11:46:59Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4735-documented-operator-path-to-re-record-th.md
+generated_by: context-agent-hybrid

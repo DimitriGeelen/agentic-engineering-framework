@@ -48535,3 +48535,21 @@ scan_id: R-5cafb5e1
 task_id: T-4734
 payload:
   task_file: .tasks/active/T-4734-fw-inception-decide-on-a-completed-incep.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T11:46:01Z'
+scan_id: R-bc17bb2f
+task_id: T-4735
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T11:46:01Z'
+scan_id: R-bc17bb2f
+task_id: T-4735
+payload:
+  task_file: .tasks/active/T-4735-documented-operator-path-to-re-record-th.md
