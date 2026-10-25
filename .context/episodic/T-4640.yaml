@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4640: Integration red: fw_onboarding_greenfield.bats tests 9-10 (doctor PROJECT-SCOPE warning, hooks from foreign CWD)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T13:01:12Z
+# ============================================================================
+
+task_id: T-4640
+task_name: "Integration red: fw_onboarding_greenfield.bats tests 9-10 (doctor PROJECT-SCOPE warning, hooks from foreign CWD)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T13:06:31Z
+completed: 2026-10-25T12:59:58Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-25T13:57:47+01:00
+last_commit: 2026-10-25T13:57:47+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor tags the orphan-UFW-rule WARN [host] (machine state, T-1707); greenfield allowlist admits the two by-design cron-not-installed WARNs (T-4413/T-4598); t4323 regression; RCA, ACs, Verification; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Cause localised and recorded in the RCA, classed as code defect / stale test / environment, with the evidence'
+  - 'The cause is fixed where it lives (product code, or the test when the test is what is stale); the failing tests pass twice in a row in the foreground with no skips'
+  - 'Sibling tests of the touched component stay green; nothing is added to any baseline; vendored copy in sync if vendored paths changed (`fw vendor self --check --task T-4640`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.tasks/active/T-4640-integration-red-fwonboardinggreenfieldba.md'
+  - 'bin/fw'
+  - 'tests/integration/fw_onboarding_greenfield.bats'
+  - 'tests/unit/t4323_firewall_rule_cleanup.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T13:57:47'
+    action: 'T-4640: doctor tags the orphan-UFW-rule WARN [host] (machine state, T-1707); greenfield allowlist admits the two by-design cron-not-installed WARNs (T-4413/T-4598); t4323 regression; RCA, ACs, Verification; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4313 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, integration-red]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4313
+  commits: 2
+  files_changed: 8
+  lines_added: 189
+  lines_removed: 15
+  footprint_refreshed_at: '2026-10-25T13:01:17Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4640-integration-red-fwonboardinggreenfieldba.md
+generated_by: context-agent-hybrid

@@ -48805,3 +48805,21 @@ scan_id: R-c1408f96
 task_id: T-4643
 payload:
   task_file: .tasks/active/T-4643-integration-red-upgradelivesimulationbat.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T13:00:55Z'
+scan_id: R-47e21206
+task_id: T-4640
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T13:00:55Z'
+scan_id: R-47e21206
+task_id: T-4640
+payload:
+  task_file: .tasks/active/T-4640-integration-red-fwonboardinggreenfieldba.md
