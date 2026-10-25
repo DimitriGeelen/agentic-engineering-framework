@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4730: fw termlink dispatch --help answers Unknown option, so the dispatch-gate hint is undiscoverable
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T11:43:10Z
+# ============================================================================
+
+task_id: T-4730
+task_name: "fw termlink dispatch --help answers Unknown option, so the dispatch-gate hint is undiscoverable"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T10:26:35Z
+completed: 2026-10-25T11:42:47Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-25T12:40:08+01:00
+last_commit: 2026-10-25T12:41:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw termlink dispatch/spawn/wait/record-outcome answer --help. tick Agent ACs, record decision. register fabric card for the subcommand --help bats
+
+# Key outcomes
+outcomes:
+  - '`fw termlink dispatch --help` (and `-h`) prints usage listing every option the dispatch parser accepts, and exits 0'
+  - 'Every other `fw termlink` subcommand whose parser dies on "Unknown option" (`agents/termlink/termlink.sh` ~404, ~579, ~1123) also answers `--help`/`-h`'
+  - 'A bats case asserts each subcommand''s `--help` exits 0 and names each option its parser handles (derived from the parser, so a new flag without a help line fails the test)'
+  - 'The hint in `check-agent-dispatch.sh:99` still names a working command; vendored copy in sync (`fw vendor self --check --task T-4730`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — where `--help` is handled'
+    chose: 'a `-h|--help` arm in each subcommand''s own option loop, with `ensure_termlink` moved after the loop so usage works without the binary.'
+    rationale: 'each verb''s help sits next to its parser, which the bats derives from; the hint in check-agent-dispatch.sh:99 stays valid unchanged.'
+    alternatives_rejected: ['a pre-scan of `"$*"` for `--help` before dispatch (would fire on a `--prompt` text containing "--help"); pointing the hint at top-level `fw termlink help` (that list was incomplete and unpinned).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.fabric/components/tests-unit-t4730_termlink_subcommand_help.yaml'
+  - '.tasks/active/T-4730-fw-termlink-dispatch---help-answers-unkn.md'
+  - 'agents/termlink/termlink.sh'
+  - 'tests/unit/t4730_termlink_subcommand_help.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T12:40:08'
+    action: 'T-4730: fw termlink dispatch/spawn/wait/record-outcome answer --help'
+  - time: '2026-10-25T12:41:07'
+    action: 'T-4730: tick Agent ACs, record decision'
+  - time: '2026-10-25T12:41:32'
+    action: 'T-4730: register fabric card for the subcommand --help bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1516 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1516
+  commits: 4
+  files_changed: 7
+  lines_added: 780
+  lines_removed: 23
+  footprint_refreshed_at: '2026-10-25T11:44:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4730-fw-termlink-dispatch---help-answers-unkn.md
+generated_by: context-agent-hybrid
