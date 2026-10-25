@@ -12,10 +12,10 @@ description: >
   guard and T-4714 (a continued conversation already live elsewhere must still be
   refused).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T21:25:48Z
-last_update: '2026-10-23T21:31:15Z'
+last_update: 2026-10-25T12:04:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,9 +96,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A shipped reference launcher exists at `install/launcher/aef-start.sh` (no copy existed anywhere in the repo; the P-01 kit never landed), defaults to continuing the project's last conversation (`claude-fw -c`), and `--new` starts a fresh one; `docs/reports/T-3659-p01-zero-to-running.md` points at it and states the default
+- [x] How `claude-fw -c` interacts with T-3890's duplicate-conversation guard (and T-4714, T-4497) is checked and stated in the doc: a conversation already live elsewhere makes claude-fw exit 3, and the launcher then does NOT fall back to a fresh session (it says why and how to get one with `--new`)
+- [x] `tests/unit/t4721_aef_start_launcher.bats` runs the shipped launcher with a stub `claude-fw` on PATH and asserts: default passes `-c`; `--new` does not; a quickly failing `-c` falls back to a fresh start; exit 3 (refused) does not fall back; a session that ran and then exited non-zero does not start a second one; no `claude-fw` falls back to `claude`
+- [x] `bin/claude-fw` is not edited by this task (T-4722 owns it)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,8 +284,22 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4721_aef_start_launcher.bats > /tmp/.t4721.out 2>&1 && ! grep -q "^not ok" /tmp/.t4721.out
+test "$(grep -c '# skip' /tmp/.t4721.out)" -eq 0
+bash -n install/launcher/aef-start.sh
+grep -q "install/launcher/aef-start.sh" docs/reports/T-3659-p01-zero-to-running.md && grep -q "exit 3" docs/reports/T-3659-p01-zero-to-running.md
+test -z "$(git log --format=%H --grep='^T-4721' -- bin/claude-fw)"
+python3 tools/bats-dead-negation-lint.py tests/unit/t4721_aef_start_launcher.bats
 
 ## RCA
+
+**Symptom:** 055 (operator laptop 'greenfield', sidecar 29c97c35): after a restart the one-click icon opened a brand-new conversation; the operator could not get back into his running work. 055 hand-patched his copy to `claude-fw -c || claude-fw || claude`.
+
+**Root cause:** the P-01 reference launcher `aef-start.sh` ran `claude-fw || claude`, a fresh conversation on every click. The framework never owned that file: `docs/reports/T-3659-p01-zero-to-running.md:49` records the kit as "not in the paste", and no build task landed it under `install/` after T-3659's GO, so each operator's copy drifted on its own and its default was never reviewed against `claude-fw -c` (T-4497 resolution, T-3890 guard).
+
+**Why structurally allowed:** a launcher living only in operators' home directories has no test, no review and no upgrade path; nothing in the repo could fail when its default was wrong. 055's patch has two further defects nothing would have caught: `||` treats claude-fw's T-3890 refusal (exit 3, conversation live elsewhere) as a failure and silently opens a second, fresh conversation, and it starts another session whenever a real continued session ends with a non-zero code.
+
+**Prevention:** the launcher now ships in-repo (`install/launcher/aef-start.sh`) with `tests/unit/t4721_aef_start_launcher.bats` pinning default `-c`, `--new`, the exit-3 no-fallback and the ran-then-failed no-fallback legs; the P-01 doc points at the shipped copy instead of describing one.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -364,6 +379,15 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-25 — when the launcher falls back from `claude-fw -c` to a fresh session
+- **Chose:** fall back only when `-c` failed fast (within `AEF_START_FALLBACK_SECS`, default 15 s) with a code other than 3; exit 3 (T-3890/T-4048 refusal) never falls back.
+- **Why:** claude-fw already starts fresh when there is nothing to continue (T-4497), so a fast failure means an old claude-fw or plain `claude -c` with no conversation. A refusal means the work is live elsewhere; opening a fresh one is exactly the hidden second session the guard exists to stop. A session that ran and then exited non-zero must not trigger a second one.
+- **Rejected:** 055's `claude-fw -c || claude-fw || claude` (falls back on refusal and after every non-zero session end); no fallback at all (an old claude-fw without T-4497 then dead-ends on "no conversation to continue").
+
+### 2026-10-25 — where the reference launcher lives
+- **Chose:** ship it as `install/launcher/aef-start.sh` (T-3659 IW-4, adopted with the GO) and point the doc at it.
+- **Rejected:** inlining it only in the research doc: untestable, and the reason it drifted in the first place.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -380,3 +404,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4721-reference-one-click-launcher-aef-startsh.md
 - **Context:** Initial task creation
+
+### 2026-10-25T12:04:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

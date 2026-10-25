@@ -49,5 +49,14 @@ On first launch the user is asked only for logins.
 - **The kit files:** P-01 says they sit "next to this page" (`launcher/aef-bootstrap.sh`, `launcher/aef-start.sh`, `windows/Install-AEF.ps1`, `windows/New-AefShortcut.ps1`, `linux/…`, `macos/…`). Their location was not in the paste. Once known, they come into `install/` under a build task after the GO, and are reviewed before landing.
 - **The operator's answers** to the four questions (or acceptance of the recommendations above).
 
+## Reference launcher: `install/launcher/aef-start.sh` (T-4721)
+The icon's launcher now ships in the repo as `install/launcher/aef-start.sh`; the rest of the kit is still not landed. It was `claude-fw || claude`, so every click opened a new conversation, and after a restart the operator could not get back into his work (055, laptop 'greenfield', 2026-10-23).
+
+- **Default: continue.** `aef-start.sh [PROJECT_DIR]` runs `claude-fw -c`. claude-fw resolves `-c` to this project's last interactive conversation, never a `claude -p` worker's, and starts fresh when there is none (T-4497).
+- **`--new`** starts a fresh conversation (`claude-fw` with no `-c`).
+- **Duplicate-conversation guard (T-3890, T-4714, T-4048).** `-c` goes through the guard like any resume. If the conversation is already live in another process, or is a live background job, claude-fw prints REFUSED and exits with **exit 3**. The launcher then does **not** fall back to a fresh session. Doing so would hide the live work behind a second conversation, which is exactly what 055's hand-patched `claude-fw -c || claude-fw || claude` did. It says the conversation is live elsewhere and points at `--new`. The claude daemon / pty host never counts as a holder (T-4714), so it does not cause a refusal.
+- **Fallback.** Any other failure within `AEF_START_FALLBACK_SECS` (default 15 s) means `-c` never started: an older claude-fw, or plain `claude -c` with nothing to continue. The launcher then starts a fresh conversation. A session that ran and then exited non-zero is not restarted. Without claude-fw on PATH it runs plain `claude` with the same rules, but plain claude has no guard.
+- Pinned by `tests/unit/t4721_aef_start_launcher.bats`.
+
 ## Dialogue Log
 - 2026-10-01, operator: "please ingest and action for onboarding improvement for windows" + the P-01 proposal. Actions: filed this inception (recommendation GO), seven defect tasks (T-3660–T-3666, with T-3665 security-relevant at horizon now), and this artifact. Build work is deferred because the parent session is past its spawn budget; the defect tasks are dispatchable next session.
