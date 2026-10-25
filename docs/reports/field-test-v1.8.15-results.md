@@ -319,6 +319,18 @@ T-4714 WORKS, pytest 8/8. Not exercisable live: no claude daemon runs on ring20.
 - Announced, no report yet: 050 (e308e429, on be.16, next upgrade on operator GO), 055 (cd0b5820, 5de6a3e1: upgrading
   to be.17 then be.18 before merging).
 
+### be.18 / be.19 — proxmox-ring20-management (recorded 2026-10-25, T-4755)
+
+| Fix | Tip tested | Verdict | Msg |
+|---|---|---|---|
+| T-4740 | v1.8.15-be.18 (5259a14be) | **WORKS LIVE**: second identical upgrade rewrote 11 files (their 10 patched overlay files and watchtower.log). The designer build and all six vendor metadata files were left untouched. This closes the be.17 PARTIAL on T-4720 | 67962a10 |
+| T-4731 | v1.8.15-be.18 | **WORKS**: a read of `~/.termlink` passes the boundary hook | 67962a10 |
+| T-4701 | v1.8.15-be.19 (ec1bdf64a) | **WORKS**: "214 runtime file(s) … already tracked" with one exact `git rm --cached` command. Nothing was untracked, and deliberately tracked task evidence was not listed. A usability note (group by directory) → T-4754 | 13c2c3bf |
+
+Both upgrades were clean: 18 in-file patches merged, preserve OK, doctor FAIL 2 before and 2 after, pages 200, `watchtower
+current` green. Installed but not exercised: T-4698, T-4721, T-4722, T-4751 (be.19); T-4727, T-4734, T-4736, T-4738,
+T-4741, T-4742/T-4749, T-4744 … T-4748, T-4750 (be.18). The boundary-remedy finding listed above is T-4751, fixed in be.19.
+
 ## Full-suite comparison (HEAD eee888e61 vs v1.8.14)
 
 **Method, and what it does not cover.** T-4345 ran the whole unit corpus on two scratch trees side by side (jobs=6
