@@ -84,7 +84,7 @@ bvp_scores_proposed:
 - [x] `agents/context/check-agent-dispatch.sh` counts only allowed dispatches: a blocked attempt does not raise the counter
 - [x] The counter is keyed to the session (the Claude session id from the hook payload, or `.context/working/session.yaml`), so a new session starts at 0 as the header comment promises; `fw dispatch reset` still works
 - [x] Bats: two blocked attempts leave the count unchanged; a new session id resets it; with DISPATCH_LIMIT=1, one dispatch is allowed and the second is blocked
-- [ ] Vendored copy in sync (`fw vendor self --check --task T-4729`)
+- [x] Vendored copy in sync (`fw vendor self --check --task T-4729`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
