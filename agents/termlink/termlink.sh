@@ -393,17 +393,29 @@ cmd_check() {
 }
 
 cmd_spawn() {
-    ensure_termlink
     local task="" name="" task_type=""
 
+    # T-4730: --help is parsed before ensure_termlink, so usage works without the binary.
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --task) task="$2"; shift 2 ;;
             --name) name="$2"; shift 2 ;;
             --task-type) task_type="$2"; shift 2 ;;
-            *) die "Unknown option: $1" ;;
+            -h|--help)
+                cat <<'USAGE'
+Usage: fw termlink spawn [--task T-XXX] [--name N] [--task-type TYPE]
+
+Open a tagged TermLink terminal session.
+  --task T-XXX       task the session works under (tagged task:T-XXX)
+  --name N           session name (default worker-<epoch>)
+  --task-type TYPE   workflow type tag (default: the task's workflow_type)
+  -h, --help         this text
+USAGE
+                return 0 ;;
+            *) die "Unknown option: $1 (try --help)" ;;
         esac
     done
+    ensure_termlink
 
     [ -z "$name" ] && name="worker-$(date +%s)"
 
@@ -574,6 +586,7 @@ List dispatch workers that VANISHED: no exit_code, no live process, and output
 (result.jsonl, else the worker dir) unchanged for N minutes (default
 TERMLINK_VANISHED_MINUTES, 10). Such a worker was killed without finishing (T-4635);
 waiting on it never returns. Exit 1 when any vanished, 0 when none.
+  -h, --help    this text
 USAGE
                 return 0 ;;
             *) die "Unknown option: $1" ;;
@@ -1034,8 +1047,39 @@ _clear_reused_wdir() {
     [ "$moved" -eq 0 ] || echo "Previous run of '$name' moved aside: $prev" >&2
 }
 
+# T-4730: every option the cmd_dispatch parser accepts. Pinned against the parser by
+# tests/unit/t4730_termlink_subcommand_help.bats — a new flag needs a line here.
+_dispatch_usage() {
+    cat <<'USAGE'
+Usage: fw termlink dispatch --task T-XXX --name N (--prompt P | --prompt-file F) [options]
+
+Spawn a worker (claude -p by default) in its own TermLink session.
+  --task T-XXX              task the worker runs under
+  --name N                  worker/session name
+  --prompt P                prompt text
+  --prompt-file F           read the prompt from file F
+  --project DIR             project the worker runs in (default: this project)
+  --timeout S               kill watchdog in seconds (default TERMLINK_WORKER_TIMEOUT)
+  --model M                 model for the worker
+  --task-type TYPE          workflow type (default: the task's workflow_type)
+  --worker-kind KIND        worker implementation (see: fw termlink worker-kinds)
+  --env KEY=VAL             export KEY=VAL into the worker (repeatable)
+  --tools LIST              restrict the tool catalogue (claude -p --tools)
+  --allowed-tools LIST      pre-approve tools for the non-interactive worker
+  --permission-mode MODE    claude -p permission mode (e.g. acceptEdits)
+  --mcp-config PATH         MCP server config for the worker
+  --strict-mcp-config       refuse MCP servers outside --mcp-config
+  --review-revision SHA     review dispatch: the commit under review
+  --review-run ID           review dispatch: the signed review run
+  --review-seat SEAT        review dispatch: the seat in that run
+  -h, --help                this text
+
+Example:
+  fw termlink dispatch --task T-042 --name worker-1 --prompt 'Analyze auth module'
+USAGE
+}
+
 cmd_dispatch() {
-    ensure_termlink
     local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind="" permission_mode="" mcp_config="" strict_mcp="" allowed_tools="" review_revision="" review_run="" review_seat=""
     # T-1700: workflow `env:` plumb-through. Repeatable --env KEY=VAL pairs are
     # injected into the spawned worker's shell so `claude -p` honors per-workflow
@@ -1120,9 +1164,11 @@ cmd_dispatch() {
                 # response both times, gave up at turn 8.
                 # No validation here — claude -p validates the tool names.
                 allowed_tools="$2"; shift 2 ;;
-            *) die "Unknown option: $1" ;;
+            -h|--help) _dispatch_usage; return 0 ;;
+            *) die "Unknown option: $1 (try --help)" ;;
         esac
     done
+    ensure_termlink
 
     case "$worker_kind" in
         ""|claude|ollama-loop|codex|opencode|antigravity) : ;;
@@ -1990,7 +2036,6 @@ RUNEOF
 }
 
 cmd_wait() {
-    ensure_termlink
     local name="" wait_all=false timeout="$TERMLINK_WORKER_TIMEOUT"
 
     while [[ $# -gt 0 ]]; do
@@ -1998,9 +2043,21 @@ cmd_wait() {
             --name) name="$2"; shift 2 ;;
             --all) wait_all=true; shift ;;
             --timeout) timeout="$2"; shift 2 ;;
-            *) die "Unknown option: $1" ;;
+            -h|--help)
+                cat <<'USAGE'
+Usage: fw termlink wait (--name N | --all) [--timeout S]
+
+Wait for dispatched workers to finish.
+  --name N      wait for worker N
+  --all         wait for every running worker
+  --timeout S   give up after S seconds (default TERMLINK_WORKER_TIMEOUT)
+  -h, --help    this text
+USAGE
+                return 0 ;;
+            *) die "Unknown option: $1 (try --help)" ;;
         esac
     done
+    ensure_termlink
 
     if [ "$wait_all" = true ]; then
         # Wait for all workers (from tl-dispatch.sh)
@@ -2171,6 +2228,8 @@ cmd_help() {
     echo -e "  ${GREEN}result${NC} <worker-name>          Read worker result file"
     echo -e "  ${GREEN}update${NC} [--quiet]              Pull latest + rebuild (daily cron uses --quiet)"
     echo ""
+    echo "  Full option list for a command: fw termlink <command> --help"
+    echo ""
     echo -e "${BOLD}Examples:${NC}"
     echo "  fw termlink check"
     echo "  fw termlink spawn --task T-042 --name test-runner"
@@ -2194,7 +2253,21 @@ cmd_record_outcome() {
             --exit-code) exit_code="$2"; shift 2 ;;
             --close-state) close_state="$2"; shift 2 ;;   # T-3440
             --task) task="$2"; shift 2 ;;                 # T-3440
-            *) die "Unknown option: $1" ;;
+            -h|--help)                                    # T-4730
+                cat <<'USAGE'
+Usage: fw termlink record-outcome --model M --task-type TYPE --exit-code N
+                                  [--close-state STATE] [--task T-XXX]
+
+Record one dispatch outcome in the route cache (called by run.sh after a worker exits).
+  --model M             model the worker ran
+  --task-type TYPE      workflow type of the dispatch
+  --exit-code N         worker exit code
+  --close-state STATE   task close state after the run
+  --task T-XXX          task the worker ran under
+  -h, --help            this text
+USAGE
+                return 0 ;;
+            *) die "Unknown option: $1 (try --help)" ;;
         esac
     done
     _route_cache_record_outcome "$model" "$task_type" "$exit_code" "$close_state" "$task"
