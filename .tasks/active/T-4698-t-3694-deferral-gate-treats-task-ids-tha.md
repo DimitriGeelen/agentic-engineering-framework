@@ -12,10 +12,10 @@ description: >
   weaken the gate for genuinely local unowned deferrals. Tests: qualified foreign
   id passes; bare unknown id still refused with the new hint.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T14:04:52Z
-last_update: '2026-10-23T14:15:47Z'
+last_update: 2026-10-25T12:04:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,9 +96,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The T-3694 deferral gate treats a task id as a local deferral target only when it is not qualified by a project prefix (`AEF T-XXXX`, `TermLink T-XXXX`, `<project>#T-XXXX`, `<project> T-XXXX` for a known peer/vendor name). The qualifier forms are defined in one place and documented in the block message
+- [x] An unqualified id that does not exist locally is still refused as today
+- [x] Bats: ring20's shape (AC naming "AEF's T-4690/T-4694 … follow-up message") closes; an unqualified missing T-id is still refused; a qualified-but-local-looking id (`AEF T-0001`) is not looked up locally
+- [x] Vendored copy in sync (`fw vendor self --check --task T-4698`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,8 +284,23 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4698_foreign_task_ids.bats > /tmp/.t4698.out 2>&1 && ! grep -q "^not ok" /tmp/.t4698.out
+test "$(grep -c '# skip' /tmp/.t4698.out)" -eq 0
+timeout 300 python3 -m pytest tests/unit/test_t3694_design_register.py -q > /tmp/.t4698-py.out 2>&1 && grep -q passed /tmp/.t4698-py.out
+# Self-deferral legs only: the two "control" cases there are red from T-4197's tautology gate on their `true` fixtures (pre-existing, not this task).
+timeout 600 bats -f "reproduction|waive" tests/governance/test_t3694_conformance_gate.bats > /tmp/.t4698-gov.out 2>&1 && ! grep -q "^not ok" /tmp/.t4698-gov.out
+grep -q "FOREIGN_QUALIFIERS" lib/design_register.py && grep -q "another project's task" agents/task-create/update-task.sh
+bin/fw vendor self --check --task T-4698
 
 ## RCA
+
+**Symptom:** ring20 T-2494 was refused at close by the T-3694 self-deferral gate: its AC named AEF's T-4690/T-4694 next to "follow-up message", and the gate reported them as missing local tasks.
+
+**Root cause:** `lib/design_register.py:_deferral_targets` extracted every `T-\d{3,}` match (`TASK_ID_RE.findall`) and `self_deferrals` looked each one up in the local `.tasks/`. Nothing distinguished an id qualified by another project's name ("AEF T-4690", "ring20#T-5") from a local one, and the "follow-up" branch takes every id in the sentence, so any consumer sentence that cites an upstream id beside "follow-up" was refused.
+
+**Why structurally allowed:** the gate was built and tested only in the framework repo, where every id in a task body is local. Its fixtures (T-3691) never contained a foreign id, and no consumer-shaped test existed.
+
+**Prevention:** qualifier forms are defined once (`FOREIGN_QUALIFIERS` in `lib/design_register.py`) and pinned by `tests/unit/t4698_foreign_task_ids.bats` (consumer-shaped root: ring20 shape closes, every qualifier form passes, bare missing id still refused with the hint, AEF-qualified ids are local again inside the framework repo). The refusal now tells the author how to qualify a foreign id, so the next consumer resolves it without a bypass.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -355,6 +371,11 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-10-25 — which qualifiers mark an id as foreign
+- **Chose:** a fixed peer list (`AEF`, `TermLink`, `framework`, `upstream`, possessive allowed), plus the open `<project>#T-X` form for any other project, plus inheritance across a `/` chain. Inside the framework repo itself (FRAMEWORK.md + bin/fw at root), `AEF`/`framework` count as local, so the gate is not weakened where those names are the local project.
+- **Why:** these cover ring20's actual text and the names consumers use for upstream ids. `#` gives every other project an unambiguous form without the gate having to know project names.
+- **Rejected:** treating any `<word> T-X` as qualified (an ordinary word before an id would excuse a local deferral). A config key listing peers (needs registry and Watchtower config parity work for a case the `#` form already covers). Comma-chain inheritance ("AEF T-1, T-2" could name a local T-2).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -380,3 +401,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4698-t-3694-deferral-gate-treats-task-ids-tha.md
 - **Context:** Initial task creation
+
+### 2026-10-25T12:03:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

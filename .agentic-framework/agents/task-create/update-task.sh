@@ -1116,6 +1116,10 @@ check_self_deferral() {
     echo "  1. File the follow-up task (fw task create ...) and reference this task in it" >&2
     echo "  2. Or add a line naming this task to the existing target's body" >&2
     echo "  3. Or do the work here and drop the deferral" >&2
+    echo "  4. If the id is another project's task, qualify it so it is not looked up here" >&2
+    echo "     (T-4698): 'AEF T-0404', 'TermLink T-0404', 'framework T-0404'," >&2
+    echo "     'upstream T-0404' (possessive 's ok), or '<project>#T-0404'." >&2
+    echo "     An id /-chained after a qualified one ('AEF's T-1/T-2') is qualified too." >&2
     echo "" >&2
     echo "Operator override (Tier-2 logged): --skip-self-deferral --reason \"...\"" >&2
     exit 1

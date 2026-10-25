@@ -424,17 +424,52 @@ _DEFER_AFTER_RE = re.compile(
     re.I)
 _FOLLOWUP_RE = re.compile(r"\bfollow[- ]?ups?\b", re.I)
 
+# T-4698: an id qualified by another project is not a local deferral target —
+# ring20 T-2494 was refused for citing "AEF's T-4690/T-4694 … follow-up message".
+# The qualifier forms, matched against the text right before the id:
+#   <peer> T-X   (peer in FOREIGN_PEERS, optionally possessive: "AEF's T-X")
+#   <project>#T-X
+#   T-X/T-Y      (an id /-chained after a qualified one inherits the qualifier)
+# Inside the framework repo itself the AEF names are the local project.
+FOREIGN_PEERS = ("AEF", "TermLink", "framework", "upstream")
+_SELF_PEERS_IN_FRAMEWORK = {"aef", "framework"}
+FOREIGN_QUALIFIERS = re.compile(
+    r"(?:\b(?P<peer>" + "|".join(FOREIGN_PEERS) + r")(?:['’]s)?\s+"
+    r"|[\w.-]+#)$", re.I)
 
-def _deferral_targets(sentence: str) -> list:
+
+def _is_framework_repo(root: Path) -> bool:
+    return (root / "FRAMEWORK.md").is_file() and (root / "bin" / "fw").exists()
+
+
+def _local_ids(text: str, local_peers: frozenset = frozenset()) -> list:
+    """(id, offset) of task ids in `text` that name THIS project (foreign-qualified
+    ones dropped)."""
+    ids, prev_foreign_end = [], None
+    for m in TASK_ID_RE.finditer(text):
+        before = text[:m.start()]
+        q = FOREIGN_QUALIFIERS.search(before)
+        foreign = bool(q) and (q.group("peer") or "").lower() not in local_peers
+        if not q and prev_foreign_end is not None and \
+                re.fullmatch(r"\s*/\s*", text[prev_foreign_end:m.start()]):
+            foreign = True
+        prev_foreign_end = m.end() if foreign else None
+        if not foreign:
+            ids.append((m.group(0), m.start()))
+    return ids
+
+
+def _deferral_targets(sentence: str, local_peers: frozenset = frozenset()) -> list:
     s = re.sub(r"\bdeferred:\S+", "", sentence, flags=re.I)
+    local = _local_ids(s, local_peers)
     ids = []
     for m in _DEFER_AFTER_RE.finditer(s):
         # Targets sit right after the verb ("deferred to separate tasks (T-X,
         # T-Y)"); an id further along the sentence is usually its subject or
         # evidence, not where the work went.
-        ids += TASK_ID_RE.findall(s[m.end():m.end() + 100])
+        ids += [t for t, at in local if m.end() <= at < m.end() + 100]
     if _FOLLOWUP_RE.search(s):
-        ids += TASK_ID_RE.findall(s)
+        ids += [t for t, _ in local]
     return list(dict.fromkeys(ids))
 
 
@@ -480,11 +515,12 @@ def self_deferrals(task_file: Path, root: Path, tasks: dict | None = None) -> li
     m = re.match(r"(T-\d+)", task_file.name)
     self_id = m.group(1) if m else str(_frontmatter(text).get("id") or "")
     tasks = LazyTaskIndex(root) if tasks is None else tasks
+    local_peers = frozenset(_SELF_PEERS_IN_FRAMEWORK if _is_framework_repo(root) else ())
     problems, seen = [], set()
     own = _own_result_text(text)
     sentences = re.split(r"(?<=[.;!?])\s+|\n", own)
     for s in sentences:
-        for tid in _deferral_targets(s):
+        for tid in _deferral_targets(s, local_peers):
             if tid == self_id or tid in seen:
                 continue
             seen.add(tid)
