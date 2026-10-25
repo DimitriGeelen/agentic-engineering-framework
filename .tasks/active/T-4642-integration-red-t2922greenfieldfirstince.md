@@ -9,10 +9,10 @@ description: >
   -j4, per-file cap 900s); output: .context/audits/integration-suite/failures/2026-10-22T11:27:01Z/bats/t2922_greenfield_first_inception.bats.out.
   Fix the test or the code; do not baseline it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, integration-red]
 components: []
 related_tasks: [T-4634]
@@ -44,7 +44,7 @@ origin: {kind: "agent", source: "T-4634"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T13:09:20Z
-last_update: '2026-10-22T13:15:53Z'
+last_update: 2026-10-25T12:50:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,6 +73,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-25T12:49:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-10-22T13:15:53Z'
     estimator: bvp-estimator-v1-heuristic
@@ -94,9 +110,9 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause localised and recorded in the RCA, classed as code defect / stale test / environment, with the evidence
+- [x] The cause is fixed where it lives (product code, or the test when the test is what is stale); the failing tests pass twice in a row in the foreground with no skips
+- [x] Sibling tests of the touched component stay green; nothing is added to any baseline; vendored copy in sync if vendored paths changed (`fw vendor self --check --task T-4642`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +297,9 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 1800 bats tests/integration/t2922_greenfield_first_inception.bats > /tmp/.t4642.out 2>&1 && ! grep -q "^not ok" /tmp/.t4642.out
+test "$(grep -c '# skip' /tmp/.t4642.out)" -eq 0
+grep -q 'fw" config set PORT' tests/integration/t2922_greenfield_first_inception.bats
 
 ## RCA
 
@@ -297,6 +316,18 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Class:** stale test (exposed by the host environment). No code defect.
+
+**Symptom:** tests 5 and 7 of `tests/integration/t2922_greenfield_first_inception.bats` red, reproduced 2026-10-25 on this host (same output as the 2026-10-22 suite run): no `http://localhost:*/inception/<id>` placeholder in `fw task review` output, and `_watchtower_base_or_placeholder` answering `rc=2 out=http://watchtower-not-running.invalid` instead of `rc=2 out=http://localhost:…`.
+
+**Root cause:** the fixture (`setup_file`, bats:35-46) never configures a port, so its configured port is the default 3000. On this host :3000 and :3001 are both LISTENing (live Watchtowers, `ss -tln`). T-3379 (commit f8e5cce94, after the T-2922 test was written) made `lib/watchtower.sh:286` `_watchtower_base_or_placeholder` skip any candidate port something already holds (`_watchtower_port_listening`, lib/watchtower.sh:303-309) and fall back to the RFC 2606 `http://watchtower-not-running.invalid` — correct behaviour, so the neighbour's server never receives this project's review links. The T-2922 test still assumed the default port is free; that assumption only holds on a host with no Watchtower on :3000.
+
+**Evidence:** an empty mktemp project with the default port: `_watchtower_base_or_placeholder X` → `http://watchtower-not-running.invalid`, rc=2. With a free port configured the same call returns `http://localhost:<port>`, rc=2.
+
+**Why structurally allowed:** T-3379 changed the helper's contract and added its own unit test (t3379_review_placeholder_foreign_port.bats, which picks free ports) but did not re-run the older integration file that pinned the old contract; integration bats were not in any routine run until T-4634. On the dev host the default port had been free at test-writing time, so the hidden dependency on ambient port state never showed.
+
+**Fix / prevention:** the fixture now configures a free port (bound :0, released) via `fw config set PORT` in setup_file, and tests 5 and 7 assert that exact port — the test now pins "the configured port" literally and no longer depends on what else listens on :3000.
 
 ## Evolution
 
@@ -378,3 +409,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4642-integration-red-t2922greenfieldfirstince.md
 - **Context:** Initial task creation
+
+### 2026-10-25T12:49:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

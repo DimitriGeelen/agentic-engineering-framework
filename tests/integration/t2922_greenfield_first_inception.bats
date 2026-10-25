@@ -47,6 +47,18 @@ setup_file() {
         "$FRAMEWORK_ROOT/bin/fw" init . >/dev/null 2>&1
     )
 
+    # T-4642: configure a port nothing listens on. Since T-3379 the placeholder
+    # skips any port another service holds (it would hand this project's links
+    # to a neighbour), so the default :3000 is only "ours to come back on" on a
+    # host with no Watchtower there. Pinning a free port makes legs 5 and 7 test
+    # the configured port literally instead of the host's ambient port state.
+    T2922_PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1]); s.close()')
+    export T2922_PORT
+    (
+        cd "$T2922_PROJ" || exit 1
+        PROJECT_ROOT="$T2922_PROJ" "$FRAMEWORK_ROOT/bin/fw" config set PORT "$T2922_PORT" >/dev/null 2>&1
+    )
+
     # The premise of every leg below: nothing is serving this project. If a
     # Watchtower triple exists here the fixture is not greenfield and the legs
     # would pass for the wrong reason.
@@ -158,7 +170,7 @@ setup() {
     # path that still reads as a link. The placeholder must be a real absolute
     # URL, correct the moment `fw serve` runs.
     run bash -c "cd '$T2922_PROJ' && PROJECT_ROOT='$T2922_PROJ' '$FRAMEWORK_ROOT/bin/fw' task review '$T2922_TASK' 2>&1"
-    [[ "$output" == *"http://localhost:"*"/inception/$T2922_TASK"* ]] || {
+    [[ "$output" == *"http://localhost:$T2922_PORT/inception/$T2922_TASK"* ]] || {
         echo "no absolute placeholder URL in output" >&2
         return 1
     }
@@ -218,7 +230,7 @@ setup() {
         echo \"rc=\$rc out=\$out\"
     "
     [ "$status" -eq 0 ]
-    [[ "$output" == "rc=2 out=http://localhost:"* ]]
+    [ "$output" = "rc=2 out=http://localhost:$T2922_PORT" ]
 }
 
 @test "t2922: it never answers empty — the down case is a code, not a blank" {
