@@ -94,7 +94,7 @@ bvp_scores_proposed:
 - [x] Fixed at the cause. If the CLI is at fault, a stop/start acts only on the project it is run in (cwd's project, or an explicit `--project`), never on the framework repo merely because `bin/fw` lives there. If only the test leaked env, the test's `_clean_env` drops `PROJECT_ROOT`/`FRAMEWORK_ROOT`, and the CLI refuses a stop whose cwd is not inside the project it resolves
 - [x] A guard test runs the t3693/t3684 teardown shape (stop from a temp agent root) and asserts that a *separate* fixture "live" project's `.context/sidecar/watcher/stopped` was not written and its events.jsonl gained no STOP_REQUESTED. It must never use the real live project
 - [x] t3693 and t3684 pass, and after each run this project's live watcher is still running (`.context/sidecar/watcher/stopped` absent or older than the run)
-- [ ] Vendored copy in sync (`fw vendor self --check --task T-4753`)
+- [x] Vendored copy in sync (`fw vendor self --check --task T-4753`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
