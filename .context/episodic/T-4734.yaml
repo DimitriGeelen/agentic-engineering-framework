@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4734: fw inception decide on a completed inception says 'not found in active tasks' instead of 'archived
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T11:43:38Z
+# ============================================================================
+
+task_id: T-4734
+task_name: "fw inception decide on a completed inception says 'not found in active tasks' instead of 'archived"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T11:10:57Z
+completed: 2026-10-25T11:43:14Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-25T12:40:59+01:00
+last_commit: 2026-10-25T12:41:28+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  decide on a completed task says archived and names inception correct. tick Agent ACs
+
+# Key outcomes
+outcomes:
+  - '`fw inception decide` on a task found in `.tasks/completed/` refuses with a message naming it as archived (completed), not "not found in active tasks"'
+  - 'The message points at the re-record path (T-4735) if it exists, or says that none exists yet; it never suggests moving the file by hand'
+  - 'A task id that exists nowhere still gets the "not found" message'
+  - 'Bats cover the archived and the truly-missing case (decide run with --i-am-human in a temp project); vendored copy in sync (`fw vendor self --check --task T-4734`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — where the archived check lives'
+    chose: 'a completed-scoped lookup inside `do_inception_decide`''s not-found branch, pointing at the existing `fw inception correct` (T-4324).'
+    rationale: 'decide must stay active-only (it completes the task); only the message was wrong. The re-record path T-4735 asks for already exists as T-4324''s `correct`, so the hint names a real command.'
+    alternatives_rejected: ['changing `find_task_file` in lib/tasks.sh (correct as is, shared by many callers); letting decide act on completed tasks (re-recording is a separate, logged act — `correct`).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/inception.sh'
+  - '.tasks/active/T-4734-fw-inception-decide-on-a-completed-incep.md'
+  - 'lib/inception.sh'
+  - 'tests/unit/t2964_inception_decide_target_before_sovereignty.bats'
+  - 'tests/unit/t4734_decide_archived_task.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T12:40:59'
+    action: 'T-4734: decide on a completed task says archived and names inception correct'
+  - time: '2026-10-25T12:41:28'
+    action: 'T-4734: tick Agent ACs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1472 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1472
+  commits: 3
+  files_changed: 7
+  lines_added: 623
+  lines_removed: 12
+  footprint_refreshed_at: '2026-10-25T11:44:10Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4734-fw-inception-decide-on-a-completed-incep.md
+generated_by: context-agent-hybrid
