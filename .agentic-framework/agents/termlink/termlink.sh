@@ -400,7 +400,13 @@ _check_hub_store_parity() {
 cmd_check() {
     if command -v termlink >/dev/null 2>&1; then
         local version
-        version=$(termlink --version 2>/dev/null | head -1)
+        # T-4641: a termlink that is on PATH but does not run must be reported, not
+        # abort the script under set -e with no output.
+        if ! version=$(termlink --version 2>/dev/null | head -1) || [ -z "$version" ]; then
+            echo -e "${YELLOW}WARN${NC}  TermLink found at $(command -v termlink) but 'termlink --version' failed"
+            echo "  Repo: https://onedev.docker.ring20.geelenandcompany.com/termlink"
+            return 1
+        fi
         echo -e "${GREEN}OK${NC}  TermLink installed: $version"
         echo "  Path: $(command -v termlink)"
         echo "  Repo: https://onedev.docker.ring20.geelenandcompany.com/termlink"

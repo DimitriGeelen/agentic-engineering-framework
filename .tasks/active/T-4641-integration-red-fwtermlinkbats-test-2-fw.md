@@ -7,10 +7,10 @@ description: >
   2026-10-22T11:27Z, -j4, per-file cap 900s); output: .context/audits/integration-suite/failures/2026-10-22T11:27:01Z/bats/fw_termlink.bats.out.
   Fix the test or the code; do not baseline it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, integration-red]
 components: []
 related_tasks: [T-4634]
@@ -42,7 +42,7 @@ origin: {kind: "agent", source: "T-4634"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T13:07:54Z
-last_update: '2026-10-22T13:15:53Z'
+last_update: 2026-10-25T12:49:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -71,6 +71,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-25T12:49:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-10-22T13:15:53Z'
     estimator: bvp-estimator-v1-heuristic
@@ -92,9 +108,9 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause localised and recorded in the RCA, classed as code defect / stale test / environment, with the evidence
+- [x] The cause is fixed where it lives (product code, or the test when the test is what is stale); the failing tests pass twice in a row in the foreground with no skips
+- [x] Sibling tests of the touched component stay green; nothing is added to any baseline; vendored copy in sync if vendored paths changed (`fw vendor self --check --task T-4641`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,8 +295,23 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/integration/fw_termlink.bats > /tmp/.t4641-int.out 2>&1 && ! grep -q "^not ok" /tmp/.t4641-int.out
+test "$(grep -c '# skip' /tmp/.t4641-int.out)" -eq 0
+timeout 900 bats tests/unit/t4641_termlink_check_broken_binary.bats > /tmp/.t4641-unit.out 2>&1 && ! grep -q "^not ok" /tmp/.t4641-unit.out
+test "$(grep -c '# skip' /tmp/.t4641-unit.out)" -eq 0
+bin/fw vendor self --check --task T-4641
 
 ## RCA
+
+**Class:** code defect (surfaced by a test-environment change, not caused by it).
+
+**Symptom:** `tests/integration/fw_termlink.bats` test 2 fails: the output of `fw termlink check` contains neither `TermLink` nor `termlink`. Reproduced red on this host 2026-10-25 (kernel 7.0), so it is not a host-rebuild artefact. The output was empty and the exit code 97.
+
+**Root cause:** `agents/termlink/termlink.sh` `cmd_check` (≈line 403) runs `version=$(termlink --version 2>/dev/null | head -1)` under `set -euo pipefail` (line 16). When the `termlink` on PATH exists but `--version` exits non-zero, errexit kills the script on that assignment, before any line is printed. The user gets exit 97 and no output: a silent failure in the one verb whose job is to report install health. In the test suite this path is always taken. Since T-4205 (b3fc6eedb, 2026-10-15), `tests/test_helper.bash:24` puts `tests/lib/termlink-tripwire/termlink` first on PATH, and that fake refuses `--version` with exit 97. Evidence: with the tripwire on PATH, `fw termlink check` gave rc=97, no output, and the tripwire log held `probe --version`. Without it: `OK TermLink installed: termlink 0.12.1130`, rc=0.
+
+**Why structurally allowed:** the test was written when `termlink` was always the real binary or absent, the only two branches `cmd_check` handles. T-4205 added a third state ("on PATH but does not run"). No unit test covered `cmd_check` with a failing binary, and the integration suite had not run until T-4634 (2026-10-22). So the regression was invisible for 7 days.
+
+**Prevention:** `cmd_check` now handles a binary that is present but fails `--version`: it prints `WARN TermLink found at <path> but 'termlink --version' failed` and returns 1, with no silent exit. The new regression test `tests/unit/t4641_termlink_check_broken_binary.bats` pins this with a stub that exits 97, plus a control with a working stub.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -376,3 +407,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4641-integration-red-fwtermlinkbats-test-2-fw.md
 - **Context:** Initial task creation
+
+### 2026-10-25T12:49:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
