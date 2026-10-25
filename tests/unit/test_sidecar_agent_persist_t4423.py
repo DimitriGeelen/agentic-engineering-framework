@@ -34,6 +34,7 @@ def proj(tmp_path, monkeypatch):
     (root / ".context").mkdir(parents=True)
     (root / ".framework.yaml").write_text(f"project_name: {PROJ}\n")
     monkeypatch.setenv("PROJECT_ROOT", str(root))
+    monkeypatch.chdir(root)   # T-4753: start/stop refuse a PROJECT_ROOT that is not the cwd's project
     monkeypatch.setenv("FW_SIDECAR_ENABLED_DIR", str(tmp_path / "host-enabled"))
     for k in ("FW_DISPATCHED_WORKER", "FW_SIDECAR_AGENT_ID", "FW_REVIEW_WORKER",
               "FW_RAIL_PROJECT_LABEL", "RAIL_PROJECT_LABEL", "TERMLINK_SESSION_ID",
