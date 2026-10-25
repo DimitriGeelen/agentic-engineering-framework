@@ -330,7 +330,7 @@ termlink_start() {
             supplied\ *)
                 _tlrt=${_tlrt#supplied }
                 export TERMLINK_RUNTIME_DIR="${_tlrt%% *}"
-                echo "claude-fw: WARNING: TERMLINK_RUNTIME_DIR was unset (no hub in the default dir); registering on the canonical hub at $TERMLINK_RUNTIME_DIR (T-3779)" >&2 ;;
+                echo "claude-fw: WARNING: TERMLINK_RUNTIME_DIR was unset (no hub in the default dir); registering on the canonical hub at $TERMLINK_RUNTIME_DIR (${_tlrt##*; }) (T-3779, T-4722)" >&2 ;;
             ambiguous\ *|none\ *)
                 echo "claude-fw: WARNING: TermLink runtime: ${_tlrt#* } (T-3779)" >&2 ;;
         esac

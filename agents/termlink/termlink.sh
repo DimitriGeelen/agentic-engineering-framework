@@ -332,6 +332,28 @@ _resolve_dispatch_model_and_fallback() {
 ensure_termlink() {
     command -v termlink >/dev/null 2>&1 || die "termlink not found on PATH
   Install: git clone https://onedev.docker.ring20.geelenandcompany.com/termlink && cd termlink && cargo install --path crates/termlink-cli"
+    _tl_resolve_runtime_dir
+}
+
+# T-4722 (after T-3779): with TERMLINK_RUNTIME_DIR unset and no hub in the
+# default dir, spawn/dispatch would register where no hub listens. Export the
+# hub's dir on a `supplied` verdict and say once which source it came from.
+_tl_resolve_runtime_dir() {
+    [ -n "${TERMLINK_RUNTIME_DIR:-}" ] && return 0
+    [ -f "$FRAMEWORK_ROOT/lib/termlink-runtime.sh" ] || return 0
+    # shellcheck source=/dev/null
+    . "$FRAMEWORK_ROOT/lib/termlink-runtime.sh"
+    local v
+    v=$(fw_termlink_runtime_resolve)
+    case "$v" in
+        supplied\ *)
+            v=${v#supplied }
+            export TERMLINK_RUNTIME_DIR="${v%% *}"
+            echo "fw termlink: TERMLINK_RUNTIME_DIR was unset; using the hub's runtime dir $TERMLINK_RUNTIME_DIR (${v##*; }) (T-4722)" >&2 ;;
+        ambiguous\ *)
+            echo "fw termlink: WARNING: TermLink runtime: ${v#* } (T-4722)" >&2 ;;
+    esac
+    return 0
 }
 
 # --- Platform detection ---

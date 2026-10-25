@@ -12,10 +12,10 @@ description: >
   and warn when the registration would land outside the hub; coordinate with TermLink
   (they may prefer termlink itself to resolve it).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T21:26:08Z
-last_update: '2026-10-23T21:31:15Z'
+last_update: 2026-10-25T12:05:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,9 +96,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] When `TERMLINK_RUNTIME_DIR` is unset, `claude-fw` and `fw termlink` resolve the running hub's runtime dir: from the hub's systemd unit environment, or from `termlink hub status`, which prints "Runtime dir:" with a pidfile and socket there. They export it before registering, so registration lands where the hub is
+- [ ] A set `TERMLINK_RUNTIME_DIR` always wins; with no hub running, behaviour is unchanged (default dir, no error)
+- [ ] The resolution is logged once (which source it used), never silently guessed
+- [ ] Bats with a stub `termlink`/`systemctl` cover: unset → resolved from hub status; set → kept; no hub → default; vendored copy in sync (`fw vendor self --check --task T-4722`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,6 +284,11 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4722_termlink_hub_runtime_discovery.bats > /tmp/.t4722.out 2>&1 && ! grep -q "^not ok" /tmp/.t4722.out
+test "$(grep -c '# skip' /tmp/.t4722.out)" -eq 0
+timeout 300 bats tests/unit/t3779_termlink_runtime.bats tests/unit/t3698_mcp_termlink_runtime_pin.bats > /tmp/.t4722b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4722b.out
+bash -n bin/claude-fw && bash -n lib/termlink-runtime.sh && bash -n agents/termlink/termlink.sh
+bin/fw vendor self --check --task T-4722
 
 ## RCA
 
@@ -299,6 +305,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** On the 055 laptop, `claude-fw --termlink` registered its session in /tmp/termlink-0 while `termlink-hub.service` listened in /root/.termlink/hub-persist; the session was invisible to `termlink remote list` and peers.
+
+**Root cause:** `lib/termlink-runtime.sh:74` (`fw_termlink_runtime_resolve`) only probed a static candidate list — `$TERMLINK_RUNTIME_DIR_FALLBACK`, else the single literal `/var/lib/termlink`. It never asked the running hub where it lives, so a hub configured anywhere else resolved to `none` and claude-fw (`bin/claude-fw:328`) registered in the default dir with only a generic warning. `fw termlink spawn`/`dispatch` (`agents/termlink/termlink.sh` `ensure_termlink`) did not resolve at all.
+
+**Why structurally allowed:** T-3779 was written against this host, where the hub dir happens to equal the hard-coded literal; its tests pin the candidate list via `TERMLINK_RUNTIME_DIR_FALLBACK`, so no test ever had a hub outside the literal.
+
+**Prevention:** the resolver now also reads the hub's own declared dir (systemd `termlink-hub` unit Environment, then `termlink hub status` "Runtime dir:") and names the source in its reason; `tests/unit/t4722_termlink_hub_runtime_discovery.bats` pins a hub in a non-literal dir found via stub `systemctl` and stub `termlink`, plus set-wins and no-hub-unchanged.
 
 ## Evolution
 
@@ -364,6 +378,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-25 — where hub discovery feeds in
+- **Chose:** discovered dirs join the candidate list only when `TERMLINK_RUNTIME_DIR_FALLBACK` is unset (the built-in default); an explicit FALLBACK stays the authoritative list. A discovered dir still has to pass `fw_termlink_hub_live`.
+- **Why:** an operator-supplied list is a deliberate statement; the built-in literal is the guess that failed on 055. It also keeps the T-3779/T-3698 fixtures hermetic.
+- **Rejected:** always appending discovery (turns explicit lists into suggestions, breaks existing hermetic tests); waiting for TermLink to resolve it itself (`termlink hub status` already partly does, so we consume it as one source — a termlink-side fix stays compatible).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -380,3 +399,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4722-claude-fw-registers-outside-the-termlink.md
 - **Context:** Initial task creation
+
+### 2026-10-25T12:04:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -19,8 +19,10 @@
 #     none       unset, and no live hub anywhere we know — nothing to choose
 #     ambiguous  unset, several live hub dirs — refuse to guess
 # Known hub dirs: $TERMLINK_RUNTIME_DIR_FALLBACK (space-separated), else
-# /var/lib/termlink. Tests override the default dir via
-# FW_TERMLINK_DEFAULT_RUNTIME_DIR.
+# /var/lib/termlink plus the dir the running hub declares (T-4722,
+# fw_termlink_hub_discovered_dirs). Tests override the default dir via
+# FW_TERMLINK_DEFAULT_RUNTIME_DIR and the built-in literal via
+# FW_TERMLINK_BUILTIN_RUNTIME_DIR.
 
 fw_termlink_hub_live() {   # fw_termlink_hub_live <dir>  → 0 when a hub answers there
     local d="$1" pid
@@ -61,6 +63,26 @@ fw_termlink_doctor_line() {
     return 0
 }
 
+# fw_termlink_hub_discovered_dirs (T-4722)
+#   Prints "<source> <dir>" lines for the dir the running hub declares: the
+#   termlink-hub systemd unit's Environment (source systemd-unit), then
+#   `termlink hub status` "Runtime dir:" (source hub-status). Missing tools
+#   print nothing. The caller still requires fw_termlink_hub_live.
+fw_termlink_hub_discovered_dirs() {
+    local d
+    if command -v systemctl >/dev/null 2>&1; then
+        d=$(timeout 5 systemctl show termlink-hub -p Environment --value 2>/dev/null \
+            | tr ' ' '\n' | sed -n 's/^TERMLINK_RUNTIME_DIR=//p' | head -1) || d=""
+        [ -n "$d" ] && echo "systemd-unit $d"
+    fi
+    if command -v termlink >/dev/null 2>&1; then
+        d=$(timeout 5 termlink hub status 2>/dev/null \
+            | sed -n 's/^[[:space:]]*Runtime dir:[[:space:]]*//p' | head -1) || d=""
+        [ -n "$d" ] && echo "hub-status $d"
+    fi
+    return 0
+}
+
 fw_termlink_runtime_resolve() {
     if [ -n "${TERMLINK_RUNTIME_DIR:-}" ]; then
         echo "set $TERMLINK_RUNTIME_DIR TERMLINK_RUNTIME_DIR is set"
@@ -71,14 +93,24 @@ fw_termlink_runtime_resolve() {
         echo "default $def hub is live in the default runtime dir"
         return 0
     fi
-    local cands="${TERMLINK_RUNTIME_DIR_FALLBACK:-/var/lib/termlink}" c live=()
+    local cands="${TERMLINK_RUNTIME_DIR_FALLBACK:-${FW_TERMLINK_BUILTIN_RUNTIME_DIR:-/var/lib/termlink}}" c live=()
+    # T-4722: with no explicit FALLBACK list, also ask the running hub where it
+    # lives (055: hub-persist dir, not the built-in literal). "<source> <dir>".
+    local disc="" src
+    [ -z "${TERMLINK_RUNTIME_DIR_FALLBACK:-}" ] && disc=$(fw_termlink_hub_discovered_dirs)
+    while read -r src c; do
+        [ -n "$c" ] || continue
+        case " $cands " in *" $c "*) continue ;; esac
+        cands="$cands $c"
+    done <<< "$disc"
     for c in $cands; do
         [ "$c" = "$def" ] && continue
         fw_termlink_hub_live "$c" && live+=("$c")
     done
     case "${#live[@]}" in
         0) echo "none $def no live hub in the default dir or in: $cands" ;;
-        1) echo "supplied ${live[0]} TERMLINK_RUNTIME_DIR was unset and $def has no hub" ;;
+        1) src=$(printf '%s\n' "$disc" | awk -v d="${live[0]}" '$2 == d {print $1; exit}')
+           echo "supplied ${live[0]} TERMLINK_RUNTIME_DIR was unset and $def has no hub; source: ${src:-known dir list}" ;;
         *) echo "ambiguous $def live hubs in several dirs: ${live[*]} — set TERMLINK_RUNTIME_DIR" ;;
     esac
     return 0
