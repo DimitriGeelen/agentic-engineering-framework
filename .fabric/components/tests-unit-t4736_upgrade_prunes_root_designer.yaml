@@ -1,0 +1,21 @@
+id: tests/unit/t4736_upgrade_prunes_root_designer.bats
+name: t4736_upgrade_prunes_root_designer
+type: script
+subsystem: tests
+location: tests/unit/t4736_upgrade_prunes_root_designer.bats
+tags: []
+
+purpose: "T-4736: `fw upgrade` prunes superseded Workflow Designer builds from the consumer ROOT vendor/designer/, but only the ones it can prove are AEF's own."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-25
+created_by: unknown
