@@ -144,10 +144,18 @@ fw_working_ensure_ignored() {
 }
 
 # fw_working_tracked_runtime <project_root>
-# Prints tracked files under .context/working/ that the rules above now ignore —
+# Prints tracked files under .context/working/ that the rules above ignore —
 # an ignore rule does not untrack a file a project already committed.
+# T-4701: the rules (plus the vector-index rules, when that lib is loaded) are
+# passed to git directly, so the answer does not depend on whether they are on
+# disk yet — `fw upgrade --dry-run` sees what the apply run will see.
 fw_working_tracked_runtime() {
-    local root="$1"
+    local root="$1" rule
+    local -a excl=()
     git -C "$root" rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
-    git -C "$root" ls-files -ci --exclude-standard -- .context/working 2>/dev/null
+    while IFS= read -r rule; do
+        excl+=(-x "$rule")
+    done < <(fw_working_ignore_rules
+             declare -F fw_vec_index_ignore_rules >/dev/null && fw_vec_index_ignore_rules)
+    git -C "$root" ls-files -ci --exclude-standard "${excl[@]}" -- .context/working 2>/dev/null
 }

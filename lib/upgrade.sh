@@ -3273,10 +3273,19 @@ MCPJSON
     else
         echo -e "  ${GREEN}OK${NC}  Runtime state under .context/working gitignored"
     fi
-    _wk_tracked=$(fw_working_tracked_runtime "$target_dir" | wc -l | tr -d ' ')
-    if [ "${_wk_tracked:-0}" -gt 0 ]; then
-        echo -e "  ${YELLOW}NOTE${NC}  $_wk_tracked runtime file(s) under .context/working are already tracked; untrack with:"
-        echo -e "        git -C \"$target_dir\" ls-files -ci --exclude-standard -z -- .context/working | xargs -0 git -C \"$target_dir\" rm --cached --"
+    # T-4701: ignoring does not untrack. Name every path and print the literal
+    # command (never untrack here — the consumer's index is theirs to change).
+    local -a _wk_paths=()
+    local _wk_p
+    while IFS= read -r _wk_p; do
+        [ -n "$_wk_p" ] && _wk_paths+=("$_wk_p")
+    done < <(fw_working_tracked_runtime "$target_dir")
+    _wk_tracked=${#_wk_paths[@]}
+    if [ "$_wk_tracked" -gt 0 ]; then
+        echo -e "  ${YELLOW}NOTE${NC}  $_wk_tracked runtime file(s) under .context/working are already tracked (an ignore rule does not untrack):"
+        printf '        %s\n' "${_wk_paths[@]}"
+        echo -e "        untrack with (files stay on disk):"
+        echo "        git -C \"$target_dir\" rm --cached --$(printf ' %q' "${_wk_paths[@]}")"
     fi
 
     # T-4684: T-4675 put dispatch worker dirs (env.sh, prompt, results) under

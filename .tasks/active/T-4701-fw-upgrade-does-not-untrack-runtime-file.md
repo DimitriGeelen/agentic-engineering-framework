@@ -10,10 +10,10 @@ description: >
   a flag; never untrack silently. Test with a consumer that tracks one such file.
   Source: TermLink field report (sidecar 5267b1f7, their T-3566).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-23T14:28:41Z
-last_update: '2026-10-23T14:30:54Z'
+last_update: 2026-10-25T12:04:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,6 +83,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-25T12:04:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4701: fw upgrade does not untrack runtime files a consumer committed before the ignore rule existed (e.g. .context/working/.session-silent-scanner.log tracked, 551 MB); ignoring alone does not untrack
@@ -94,9 +110,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw upgrade` lists every path in the framework's runtime ignore sets (working-gitignore rules, vector index, dispatch) that the consumer's git still tracks, with the exact `git rm --cached -- <paths>` command, the same way T-4684 does for `.context/dispatch`. Nothing is untracked silently
+- [x] With no such tracked path, nothing is printed
+- [x] Bats: a consumer tracking one working-dir runtime file gets the warning and the exact command, the file stays tracked, and running the printed command untracks it; a clean consumer prints nothing; `upgrade_fresh_machine_simulation.bats` stays green (foreground, `timeout 1800`)
+- [x] Vendored copy in sync (`fw vendor self --check --task T-4701`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,21 +299,21 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 900 bats tests/unit/t4701_tracked_runtime_untrack.bats > /tmp/.t4701.out 2>&1 && ! grep -q "^not ok" /tmp/.t4701.out
+test "$(grep -c '# skip' /tmp/.t4701.out)" -eq 0
+timeout 900 bats tests/unit/t4231_working_runtime_gitignore.bats tests/unit/t3861_vec_index_gitignore.bats tests/unit/t4684_dispatch_gitignore.bats > /tmp/.t4701s.out 2>&1 && ! grep -q "^not ok" /tmp/.t4701s.out
+bash -n lib/upgrade.sh && bash -n lib/working-gitignore.sh
+bin/fw vendor self --check --task T-4701
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** TermLink (their T-3566) found `.context/working/.session-silent-scanner.log` tracked in git at 551 MB. The upgrade had added the `*.log` ignore rule, but ignoring does not untrack, and the operator was never told which files to untrack.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `fw_working_tracked_runtime` (lib/working-gitignore.sh:149-153) ran `git ls-files -ci --exclude-standard`, so it judged "runtime" by the rules already written to the consumer's on-disk `.context/working/.gitignore`. Under `fw upgrade --dry-run` (lib/upgrade.sh:3259-3276) those rules have not been appended yet, so the check found nothing and printed nothing. The preview that should show what an upgrade will do was blind to exactly these files. In apply mode the NOTE did fire, but only as a count plus an `ls-files | xargs rm --cached` pipeline (lib/upgrade.sh:3277-3279). It never named a path, so a 551 MB log looked the same as a 0-byte counter, and the pipeline's result depended on whatever ignore rules existed when the operator got round to running it.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** t4231's tracked-runtime test calls `fw_working_ensure_ignored` before `fw_working_tracked_runtime`, so it only covered the apply-path order. Nothing exercised dry-run, and nothing asserted that the warning names paths or that its command, run as printed, untracks them.
+
+**Prevention:** `fw_working_tracked_runtime` now also matches against the framework's own rule lists (working-state plus vector index, passed as `-x` patterns), so dry-run, apply and a re-run all give the same answer. Upgrade lists every tracked path and prints one literal `git -C <dir> rm --cached -- <paths>` command. tests/unit/t4701_tracked_runtime_untrack.bats pins four things: dry-run and apply both warn, the file stays tracked, the printed command untracks it, and a clean consumer prints nothing.
 
 ## Evolution
 
@@ -353,14 +370,15 @@ bvp_scores_proposed:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-25 — warn with exact paths; no untrack flag
+- **Chose:** list each tracked runtime path and print one literal `git rm --cached -- <paths>` command. Never untrack.
+- **Why:** it keeps T-4684's contract (warn, never untrack). A literal command can be reviewed, and it stays correct whatever ignore rules exist when it is run. Untracking rewrites the consumer's index, so that is the consumer's call.
+- **Rejected:** an `--untrack-runtime` flag, which adds CLI surface plus bypass and consumer parity work for a one-off cleanup. Also rejected: the old `ls-files -ci | xargs` pipeline, because it names nothing and only works if the rules are present when it runs.
+
+### 2026-10-25 — match the framework rule lists, not only the on-disk .gitignore
+- **Chose:** `git ls-files -ci --exclude-standard -x <each framework rule>`, scoped to `.context/working`.
+- **Why:** `--dry-run` then sees what apply will see. Records the project keeps never match a rule (tools/working-ignore-rail.py enforces that), so they are not flagged. Dispatch keeps its own T-4684 note, because the whole directory is runtime there.
+- **Rejected:** checking only after the rules are appended, which leaves dry-run blind.
 
 ## Decision
 
@@ -378,3 +396,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4701-fw-upgrade-does-not-untrack-runtime-file.md
 - **Context:** Initial task creation
+
+### 2026-10-25T12:04:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
