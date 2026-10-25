@@ -4,12 +4,12 @@ name: "Watchtower Anthropic LLM provider (official SDK, streaming chat, model li
 description: >
   Operator request 2026-10-25, follow-on to T-4742: wire an Anthropic provider into web/llm/ next to Ollama and OpenRouter, using the key T-4742 stores (get_api_key('anthropic'), ANTHROPIC_API_KEY env override). Official anthropic Python SDK as an optional import; default model claude-opus-5-5; streaming; refusal handling.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/web/test_t4749_anthropic_provider.py, web/blueprints/settings.py, web/llm/anthropic_provider.py, web/llm/manager.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T22:14:45Z
-last_update: 2026-10-25T11:41:30Z
-date_finished: null
+last_update: 2026-10-25T11:53:40Z
+date_finished: 2026-10-25T11:53:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -81,6 +81,14 @@ What we reuse: the key order (already matched by T-4742), the never-silent trunc
 - [x] Watchtower restarted; `bin/fw watchtower current` passes; vendored copy in sync (`fw vendor self --check --task T-4749`)
 
 ### Human
+- [ ] [REVIEW] A live chat through the Anthropic provider streams correctly in Watchtower
+  **Steps:**
+  1. Install the SDK and restart Watchtower: `bash /opt/999-Agentic-Engineering-Framework/.context/runme/anthropic-sdk/runme.sh`
+  2. If no Anthropic key is stored yet, add it at http://192.168.10.107:3000/settings/ (Key Name: Anthropic)
+  3. On the same page, choose Anthropic as the provider and save
+  4. Open http://192.168.10.107:3000/search and ask a question in its Ask box
+  **Expected:** The runme ends `RUNME EXIT 0` and prints an anthropic version. On http://192.168.10.107:3000/settings/ the Anthropic provider shows as available with models listed. On http://192.168.10.107:3000/search the answer streams in, a thinking summary may appear first, and nothing errors
+  **If not:** Note the error text shown on either page. The provider reports why it is unavailable (no key, SDK missing, or the API error class and status), and `.context/runme/anthropic-sdk/run.log` shows the install
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -339,6 +347,16 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The provider is built on the official SDK, following the shapes documented in the claude-api reference: streaming, adaptive thinking shown as summaries, the server-side refusal fallback, and the model list. Refusals and truncations surface as visible errors, never as a silent ok. All tests mock the SDK, so nothing here has called the real API yet. Your live chat after the install is the first real call, and the one check left.
+
+**Evidence:**
+- Commit 2020655ee: `web/llm/anthropic_provider.py` (137 lines), registered in `web/llm/manager.py` and hot-registered on key save in `web/blueprints/settings.py`
+- `tests/web/test_t4749_anthropic_provider.py`: the stream mapping, refusal and max_tokens to an error, the model list, unavailable without the SDK, and registration from the env and from the key store all pass, with no network
+- Without the SDK (this host today), the provider reports "anthropic SDK not installed" and Watchtower is otherwise unaffected; `fw watchtower current` passes
+- `web/requirements.txt` pins `anthropic>=1.0`. PyPI has up to 2.3.0, which the install will pick, so the live check also confirms the SDK major version
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -379,3 +397,22 @@ bin/fw watchtower current
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4749-watchtower-anthropic-llm-provider-offici.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d05361c5
+- **Timestamp:** 2026-10-25T11:53:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] A live chat through the Anthropic provider streams correctly in Watchtower
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='EXIT 0' in Expected: The runme ends `RUNME EXIT 0` and prints an anthropic version. On http://192.168.10.107:3000/settings/ the Anthropic provider shows as avail`
+- **AC#3 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-25T11:53:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
