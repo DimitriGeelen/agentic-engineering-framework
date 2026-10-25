@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4731: check-project-boundary refuses reads of the project's own TermLink state (~/.termlink, hub runtime dir)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T11:47:45Z
+# ============================================================================
+
+task_id: T-4731
+task_name: "check-project-boundary refuses reads of the project's own TermLink state (~/.termlink, hub runtime dir)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T10:26:52Z
+completed: 2026-10-25T11:47:14Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-25T12:42:09+01:00
+last_commit: 2026-10-25T12:42:54+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary gate admits reads of TermLink state (~/.termlink, runtime dir). register fabric card for the boundary TermLink-state regression test
+
+# Key outcomes
+outcomes:
+  - '`agents/context/check-project-boundary.sh` judges `~/...`, `$HOME/...` and the expanded absolute path the same way (tilde and `$HOME` resolved before the verdict)'
+  - 'READS of `~/.termlink/` and the TermLink hub runtime dir (`/var/lib/termlink`, or the runtime dir TermLink reports) are in-bounds; WRITES there keep their current verdict'
+  - 'A read of another project''s files is still refused, in all three path spellings'
+  - 'Bats cover: literal `~` read allowed, `$HOME` read allowed, absolute read allowed, another project''s read refused, write into `~/.termlink` unchanged; vendored copy in sync (`fw vendor self --check --task T-4731`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — how to admit a non-default TERMLINK_RUNTIME_DIR'
+    chose: 'add `$TERMLINK_RUNTIME_DIR/` (realpath) to the read prefixes only when its last path component contains `termlink`.'
+    rationale: 'the env var is caller-controlled. Trusting it as-is would let `TERMLINK_RUNTIME_DIR=/opt` open every project for reads. Every real value in use (`/var/lib/termlink`, `/tmp/termlink-0`) passes the name test.'
+    alternatives_rejected: ['(a) trusting the env var unconditionally, for the reason above; (b) ignoring it, which would re-file this bug for any hub run with a custom runtime dir; (c) asking `termlink` for its runtime dir at hook time, which adds a subprocess to every Bash call.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.fabric/components/tests-unit-t4731_boundary_termlink_state_reads.yaml'
+  - '.tasks/active/T-4731-check-project-boundary-refuses-reads-of-.md'
+  - 'agents/context/check-project-boundary.sh'
+  - 'tests/unit/t4731_boundary_termlink_state_reads.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T12:42:09'
+    action: 'T-4731: boundary gate admits reads of TermLink state (~/.termlink, runtime dir)'
+  - time: '2026-10-25T12:42:54'
+    action: 'T-4731: register fabric card for the boundary TermLink-state regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1520 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1520
+  commits: 3
+  files_changed: 8
+  lines_added: 674
+  lines_removed: 5
+  footprint_refreshed_at: '2026-10-25T11:48:19Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4731-check-project-boundary-refuses-reads-of-.md
+generated_by: context-agent-hybrid

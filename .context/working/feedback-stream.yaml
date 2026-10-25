@@ -48553,3 +48553,39 @@ scan_id: R-bc17bb2f
 task_id: T-4735
 payload:
   task_file: .tasks/active/T-4735-documented-operator-path-to-re-record-th.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T11:47:32Z'
+scan_id: R-ef0d841e
+task_id: T-4731
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T11:47:32Z'
+scan_id: R-ef0d841e
+task_id: T-4731
+payload:
+  task_file: .tasks/active/T-4731-check-project-boundary-refuses-reads-of-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T11:47:54Z'
+scan_id: R-c019f8b1
+task_id: T-4736
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T11:47:54Z'
+scan_id: R-c019f8b1
+task_id: T-4736
+payload:
+  task_file: .tasks/active/T-4736-fw-upgrade-never-prunes-superseded-desig.md
