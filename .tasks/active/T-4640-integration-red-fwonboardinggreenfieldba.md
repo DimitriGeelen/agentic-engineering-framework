@@ -9,10 +9,10 @@ description: >
   (T-4634, 2026-10-22T11:27Z, -j4, per-file cap 900s); output: .context/audits/integration-suite/failures/2026-10-22T11:27:01Z/bats/fw_onboarding_greenfield.bats.out.
   Fix the test or the code; do not baseline it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, integration-red]
 components: []
 related_tasks: [T-4634]
@@ -44,7 +44,7 @@ origin: {kind: "agent", source: "T-4634"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T13:06:31Z
-last_update: '2026-10-22T13:15:53Z'
+last_update: 2026-10-25T12:49:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,6 +73,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-25T12:49:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-10-22T13:15:53Z'
     estimator: bvp-estimator-v1-heuristic
@@ -94,9 +110,9 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause localised and recorded in the RCA, classed as code defect / stale test / environment, with the evidence
+- [x] The cause is fixed where it lives (product code, or the test when the test is what is stale); the failing tests pass twice in a row in the foreground with no skips
+- [x] Sibling tests of the touched component stay green; nothing is added to any baseline; vendored copy in sync if vendored paths changed (`fw vendor self --check --task T-4640`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,8 +297,27 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+bash -n bin/fw
+timeout 1800 bats tests/integration/fw_onboarding_greenfield.bats > /tmp/.t4640-int.out 2>&1 && ! grep -q "^not ok" /tmp/.t4640-int.out
+test "$(grep -c '# skip' /tmp/.t4640-int.out)" -eq 0
+timeout 300 bats tests/unit/t4323_firewall_rule_cleanup.bats > /tmp/.t4640-4323.out 2>&1 && grep -q "^ok .* T-4640:" /tmp/.t4640-4323.out && ! grep -q "^not ok" /tmp/.t4640-4323.out
+bin/fw vendor self --check --task T-4640
 
 ## RCA
+
+**Classification:** test 9 has two causes. The UFW finding is a **code defect** (a host finding with the wrong scope). The cron WARNs come from a **stale test**: product behaviour changed on purpose and the test was not updated. Test 10 had gone green before any change; its cause is **not reproducible** (see below).
+
+**Symptom:** on 2026-10-25 (rebuilt host, kernel 7.0), `timeout 1800 bats tests/integration/fw_onboarding_greenfield.bats`: 15/16 ok, test 9 red with three unexplained WARNs: `cron: cron not installed yet (operator step) …`, `Cron generated but not installed at /etc/cron.d/agentic-audit-proj` and `5 framework-labelled UFW rule(s) open a port nothing listens on`. The 2026-10-22 run showed only the two cron WARNs (that host had no orphan UFW rules then).
+
+**Root cause:**
+1. `bin/fw:3194` (T-4323, 2026-10-22): the orphan-UFW-rule check printed a plain project-scope `WARN`. UFW rules are machine state and need `sudo` to fix, so this is exactly the kind of finding `_doctor_warn_host` (`bin/fw:2000`, T-1707) exists to tag `[host]`. On any host that has orphan framework rules, every consumer's doctor reported it as that project's own health problem.
+2. Test allowlist (`tests/integration/fw_onboarding_greenfield.bats:205`): since T-4598, `fw init` seeds and generates cron jobs. T-4413 (`lib/vector_index_health.py:466`) deliberately made "no deployed crontab" a WARN, because `fw cron install` writes root cron and is an operator step. `bin/fw:4771` (`Cron generated but not installed`) became reachable at greenfield for the same reason. Both WARNs are intended product behaviour on every fresh install. The closed allowlist was never updated, so the test went stale.
+
+**Test 10 (hooks resolve from a foreign CWD):** red on 2026-10-22 (the `-j4` run under load), green now in 3/3 runs with no change to `lib/doctor-hook-exercise.py` or the bin/fw hook-exercise block since 2026-10-20. That run printed no hook-exercise line at all: not OK, and not the T-4461 timeout WARN, which test 9 would have listed. So the helper produced empty output. Its doctor.log was not kept (only the bats .out), so the cause cannot be recovered. Most likely load during the parallel suite run. Recorded as not reproducible, not fixed.
+
+**Why structurally allowed:** the scope of a doctor finding is chosen by hand at each `echo WARN` call site, and nothing checks it. T-4323's own test only grepped for the check's presence. The greenfield allowlist is default-deny by design, so it caught both cases. The gap was that the integration suite was not in any gate that T-4413, T-4598 or T-4323 had to pass.
+
+**Prevention:** regression test `T-4640: the orphan-rule WARN is [host]-scoped` in `tests/unit/t4323_firewall_rule_cleanup.bats` (fails on HEAD's bin/fw, passes now). The greenfield allowlist entries match only the two "deployed file missing" wordings, so cron drift, a registry ahead of generate, and a deployed file lacking a job still turn test 9 red.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -378,3 +413,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4640-integration-red-fwonboardinggreenfieldba.md
 - **Context:** Initial task creation
+
+### 2026-10-25T12:49:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

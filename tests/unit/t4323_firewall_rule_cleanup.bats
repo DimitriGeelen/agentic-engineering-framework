@@ -136,3 +136,12 @@ EOF
     grep -q 'firewall_orphan_rules' "$FRAMEWORK_ROOT/bin/fw"
     grep -q 'sudo ufw delete allow ' "$FRAMEWORK_ROOT/bin/fw"
 }
+
+@test "T-4640: the orphan-rule WARN is [host]-scoped (UFW is machine state, not project state)" {
+    # Untagged, it reads as project health: fw_onboarding_greenfield.bats'
+    # closed allowlist went red on a host that had orphan rules (T-4640).
+    run grep -n '_doctor_warn_host "$_fw_orphan_n framework-labelled UFW rule' "$FRAMEWORK_ROOT/bin/fw"
+    [ "$status" -eq 0 ]
+    run grep -n 'WARN${NC}  $_fw_orphan_n framework-labelled UFW' "$FRAMEWORK_ROOT/bin/fw"
+    [ "$status" -ne 0 ]
+}

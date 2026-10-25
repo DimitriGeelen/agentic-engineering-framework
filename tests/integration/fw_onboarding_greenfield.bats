@@ -202,6 +202,13 @@ _findings() {
     #                           (T-1707); by construction not this project's health.
     #   Unsupervised session  — fires whenever the session is not under claude-fw,
     #                           which is always true inside a test runner.
+    #   Cron not installed    — `fw init` seeds and generates cron jobs (T-4598)
+    #                           but installing them writes root cron, a deliberate
+    #                           operator step (T-4413), so every greenfield project
+    #                           has generated-but-not-installed cron. Only the two
+    #                           "missing deployed file" wordings pass; drift, a
+    #                           registry ahead of generate, or a deployed file
+    #                           lacking a job still fail here (T-4640).
     run _findings "$GDIR/doctor.log" WARN
     local unexplained=""
     while IFS= read -r line; do
@@ -209,6 +216,8 @@ _findings() {
         case "$line" in
             *"[host]"*)               continue ;;
             *"Unsupervised session"*) continue ;;
+            *"cron: cron not installed yet (operator step)"*) continue ;;
+            *"Cron generated but not installed at "*)         continue ;;
         esac
         unexplained="${unexplained}${line}"$'\n'
     done <<< "$output"

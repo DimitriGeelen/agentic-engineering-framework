@@ -3191,9 +3191,9 @@ PY
         _fw_orphans=$(firewall_orphan_rules 2>/dev/null)
         if [ -n "$_fw_orphans" ]; then
             _fw_orphan_n=$(printf '%s\n' "$_fw_orphans" | grep -c .)
-            echo -e "  ${YELLOW}WARN${NC}  $_fw_orphan_n framework-labelled UFW rule(s) open a port nothing listens on"
+            # T-4640: UFW is machine state, not this project's — [host] scope (T-1707).
+            _doctor_warn_host "$_fw_orphan_n framework-labelled UFW rule(s) open a port nothing listens on"
             printf '%s\n' "$_fw_orphans" | sed 's|^|         sudo ufw delete allow |; s|$|/tcp|'
-            warnings=$((warnings + 1))
         fi
     fi
 
