@@ -1,0 +1,21 @@
+id: tests/unit/t4730_termlink_subcommand_help.bats
+name: t4730_termlink_subcommand_help
+type: script
+subsystem: tests
+location: tests/unit/t4730_termlink_subcommand_help.bats
+tags: []
+
+purpose: "T-4730 — every `fw termlink` subcommand that parses options answers --help/-h with usage naming every option its parser accepts, and exits 0."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-25
+created_by: unknown
