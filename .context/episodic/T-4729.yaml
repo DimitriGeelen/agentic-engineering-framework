@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4729: check-agent-dispatch counts blocked attempts and never resets per session
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T11:42:44Z
+# ============================================================================
+
+task_id: T-4729
+task_name: "check-agent-dispatch counts blocked attempts and never resets per session"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T10:26:18Z
+completed: 2026-10-25T11:42:22Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-25T12:38:26+01:00
+last_commit: 2026-10-25T12:40:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  agent-dispatch gate counts only allowed dispatches, keyed per session. tick vendor AC. fabric card for the dispatch-counter regression test
+
+# Key outcomes
+outcomes:
+  - '`agents/context/check-agent-dispatch.sh` counts only allowed dispatches: a blocked attempt does not raise the counter'
+  - 'The counter is keyed to the session (the Claude session id from the hook payload, or `.context/working/session.yaml`), so a new session starts at 0 as the header comment promises; `fw dispatch reset` still works'
+  - 'Bats: two blocked attempts leave the count unchanged; a new session id resets it; with DISPATCH_LIMIT=1, one dispatch is allowed and the second is blocked'
+  - 'Vendored copy in sync (`fw vendor self --check --task T-4729`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — session key for the counter'
+    chose: 'store `<count> <session-key>` in the existing counter file; key = hook payload `session_id`, falling back to `session_id:` in `.context/working/session.yaml`; a different key (or a legacy bare number) starts at 0.'
+    rationale: 'one file keeps `fw dispatch reset` and the post-compact volatile-file sweep working unchanged; the payload id changes on every new Claude session, which is what "per session" means.'
+    alternatives_rejected: ['a per-session counter file (`.agent-dispatch-counter.<id>`) — accumulates files and needs `fw dispatch reset` / post-compact-resume changes; resetting from a SessionStart hook — another component''s file, and it would not cover sessions launched without that hook.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-agent-dispatch.sh'
+  - '.fabric/components/tests-unit-t4729_agent_dispatch_counter.yaml'
+  - '.tasks/active/T-4729-check-agent-dispatch-counts-blocked-atte.md'
+  - 'agents/context/check-agent-dispatch.sh'
+  - 'tests/unit/t4729_agent_dispatch_counter.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T12:38:26'
+    action: 'T-4729: agent-dispatch gate counts only allowed dispatches, keyed per session'
+  - time: '2026-10-25T12:39:54'
+    action: 'T-4729: tick vendor AC'
+  - time: '2026-10-25T12:40:25'
+    action: 'T-4729: fabric card for the dispatch-counter regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1516 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1516
+  commits: 4
+  files_changed: 8
+  lines_added: 724
+  lines_removed: 40
+  footprint_refreshed_at: '2026-10-25T11:43:52Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4729-check-agent-dispatch-counts-blocked-atte.md
+generated_by: context-agent-hybrid

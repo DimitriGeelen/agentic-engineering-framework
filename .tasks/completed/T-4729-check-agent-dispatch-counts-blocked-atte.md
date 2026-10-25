@@ -7,12 +7,12 @@ description: >
   session (line 10). Count only allowed dispatches; key/reset per session id. Reported
   by 010-termlink (TermLink T-2981 2a).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-agent-dispatch.sh, tests/unit/t4729_agent_dispatch_counter.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T10:26:18Z
-last_update: 2026-10-25T11:33:18Z
-date_finished:
+last_update: 2026-10-25T11:42:22Z
+date_finished: 2026-10-25T11:42:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -387,3 +387,22 @@ bin/fw vendor self --check --task T-4729
 ### 2026-10-25T11:32:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7a343bf2
+- **Timestamp:** 2026-10-25T11:42:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — The counter is keyed to the session (the Claude session id from the hook payload, or `.context/working/session.yaml`), so a new session starts at 0 as the header comment promises; `fw dispatch reset` 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/session.yaml in: The counter is keyed to the session (the Claude session id from the hook payload, or `.context/working/session.yaml`), so a new session starts at 0 as`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-25T11:42:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
