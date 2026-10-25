@@ -48463,3 +48463,21 @@ scan_id: R-b9bfc9d5
 task_id: T-4748
 payload:
   task_file: .tasks/active/T-4748-fresh-greenfield-seed-fails-its-own-audi.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T11:39:05Z'
+scan_id: R-9764c22e
+task_id: T-4728
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T11:39:05Z'
+scan_id: R-9764c22e
+task_id: T-4728
+payload:
+  task_file: .tasks/active/T-4728-six-task-file-pretooluse-gates-are-wired.md

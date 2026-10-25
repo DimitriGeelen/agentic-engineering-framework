@@ -8,10 +8,10 @@ description: >
   T-3695 covered only check-human-ac-tick on Bash. Hook rewiring is an operator action.
   Reported by 010-termlink (TermLink T-2957, from 050 P-EMAIL-ARCHIVE-001).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T10:26:01Z
-last_update: '2026-10-25T11:35:37Z'
-date_finished:
+last_update: 2026-10-25T11:39:01Z
+date_finished: 2026-10-25T11:39:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -86,9 +86,9 @@ So the rewiring is dissolved, not built. What was missing is proof that the exis
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A bats file pins TermLink's shape. For heredoc (`cat > … <<EOF`), `python3 - <<EOF` and `tee` rewrites that set an unresolvable `arc_id` or a malformed `inception_decisions` without touching any Human box, each command is first proven to change the file for real, then refused by `check-human-ac-tick` under agent control
-- [ ] Controls: the same commands without agent control get the advisory path (exit 0), and a read of the task file passes
-- [ ] The dissolution is recorded in `## Decisions` (why the five validators need no Bash leg, and why the heredoc advisory cannot have one) and in the reply to TermLink
+- [x] A bats file pins TermLink's shape. For heredoc (`cat > … <<EOF`), `python3 - <<EOF` and `tee` rewrites that set an unresolvable `arc_id` or a malformed `inception_decisions` without touching any Human box, each command is first proven to change the file for real, then refused by `check-human-ac-tick` under agent control
+- [x] Controls: the same commands without agent control get the advisory path (exit 0), and a read of the task file passes
+- [x] The dissolution is recorded in `## Decisions` (why the five validators need no Bash leg, and why the heredoc advisory cannot have one) and in the reply to TermLink
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -386,3 +386,20 @@ test "$(grep -c '# skip' /tmp/.t4728.out)" -eq 0
 ### 2026-10-25T11:35:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9764c22e
+- **Timestamp:** 2026-10-25T11:39:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-25T11:39:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

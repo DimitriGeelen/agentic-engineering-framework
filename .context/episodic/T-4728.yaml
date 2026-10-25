@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4728: Six task-file PreToolUse gates are wired Write|Edit only, so a Bash heredoc rewrite skips them
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T11:39:33Z
+# ============================================================================
+
+task_id: T-4728
+task_name: "Six task-file PreToolUse gates are wired Write|Edit only, so a Bash heredoc rewrite skips them"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T10:26:01Z
+completed: 2026-10-25T11:39:01Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-25T12:38:44+01:00
+last_commit: 2026-10-25T12:38:44+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  dissolve the Bash rewiring of six task-file gates — check-human-ac-tick already refuses every shell write to .tasks/**; new bats pins it for content-only heredoc/python/tee rewrites (TermLink T-2957)
+
+# Key outcomes
+outcomes:
+  - 'A bats file pins TermLink''s shape. For heredoc (`cat > … <<EOF`), `python3 - <<EOF` and `tee` rewrites that set an unresolvable `arc_id` or a malformed `inception_decisions` without touching any Human box, each command is first proven to change the file for real, then refused by `check-human-ac-tick` under agent control'
+  - 'Controls: the same commands without agent control get the advisory path (exit 0), and a read of the task file passes'
+  - 'The dissolution is recorded in `## Decisions` (why the five validators need no Bash leg, and why the heredoc advisory cannot have one) and in the reply to TermLink'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — no Bash leg for the six gates'
+    chose: 'Dissolve the rewiring and pin the existing refusal with a test.'
+    rationale: 'Five of the six (active-completed-dup, arc-id, inception-decisions, inception-schema, onboarding-gate) validate task-file *content*. On Bash, `check-human-ac-tick` refuses the write before content matters, so a Bash leg would never get to run. The sixth (`check-heredoc-cmd-sub`) parses proposed Write/Edit content for `bin/fw`; a Bash command has no proposed content to parse. Writing to `.claude/settings.json` is also operator-only, so rewiring would have cost an operator step for no added check.'
+    alternatives_rejected: ['Wiring all six to Bash. Each would need a command-to-file-content reconstruction, the same text-gate problem T-2742 describes, to re-check something already refused.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4728-six-task-file-pretooluse-gates-are-wired.md'
+  - 'tests/unit/t4728_bash_task_rewrite_refused.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T12:38:44'
+    action: 'T-4728: dissolve the Bash rewiring of six task-file gates — check-human-ac-tick already refuses every shell write to .tasks/**; new bats pins it for content-only heredoc/python/tee rewrites (TermLink T-2957)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1513 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1513
+  commits: 2
+  files_changed: 5
+  lines_added: 613
+  lines_removed: 7
+  footprint_refreshed_at: '2026-10-25T11:39:58Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4728-six-task-file-pretooluse-gates-are-wired.md
+generated_by: context-agent-hybrid
