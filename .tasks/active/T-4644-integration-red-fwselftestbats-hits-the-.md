@@ -8,10 +8,10 @@ description: >
   run (T-4634, 2026-10-22T11:27Z, -j4, per-file cap 900s); output: .context/audits/integration-suite/failures/2026-10-22T11:27:01Z/bats/fw_self_test.bats.out.
   Fix the test or the code; do not baseline it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, integration-red]
 components: []
 related_tasks: [T-4634]
@@ -43,7 +43,7 @@ origin: {kind: "agent", source: "T-4634"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T13:12:08Z
-last_update: '2026-10-22T13:15:54Z'
+last_update: 2026-10-25T12:50:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,6 +72,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-25T12:49:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-10-22T13:15:54Z'
     estimator: bvp-estimator-v1-heuristic
@@ -93,9 +109,10 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause localised and recorded in the RCA, with measured timings: which step of `fw self-test` consumes the 900 s per-file cap
+- [x] Fixed at the cause: `tests/integration/fw_self_test.bats` runs `fw self-test` once (in `setup_file`) and all 4 tests assert on that one capture; the cap is not raised, and no test is skipped
+- [x] Regression test `tests/unit/t4644_self_test_single_run.bats` fails on the old file (4 invocations) and passes on the fixed one
+- [x] `fw_self_test.bats` finishes within the cap with every test run (4/4 ok, 0 skips), twice in a row; nothing is added to any baseline (no vendored path changed, so no vendor sync is needed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +298,12 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+timeout 900 bats tests/unit/t4644_self_test_single_run.bats > /tmp/.t4644u 2>&1 && ! grep -q "^not ok" /tmp/.t4644u
+test "$(grep -c '# skip' /tmp/.t4644u)" -eq 0
+test "$(grep -c '"$FW" self-test' tests/integration/fw_self_test.bats)" -eq 1
+timeout 900 bats tests/integration/fw_self_test.bats > /tmp/.t4644i 2>&1 && test "$(grep -c '^ok ' /tmp/.t4644i)" -eq 4 && ! grep -q "^not ok" /tmp/.t4644i
+test "$(grep -c '# skip' /tmp/.t4644i)" -eq 0
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -296,6 +319,22 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** In the first integration-suite run (T-4634, 2026-10-22, -j4, per-file cap 900 s), `tests/integration/fw_self_test.bats` was killed at the cap with only `ok 1` reported.
+
+**Root cause (class: stale test, made worse by environment load):** each of the file's 4 tests (`tests/integration/fw_self_test.bats:8,14,19,24`, written for T-947) ran the full `"$FW" self-test`. That command runs every phase (gates, lifecycle, upgrade, onboarding with a Watchtower smoke test), so the file did the same ~150 s of work four times, and each test read only one substring of that identical output. Measured on this host, 2026-10-25, kernel 7.0, load average about 10:
+- one `fw self-test` run: 154 s (gates 26 s, lifecycle 26 s, upgrade 56 s, onboarding 41 s). No single phase hangs.
+- the file standalone (`bats --timing`): tests took 149, 155, 161 and 141 s. Total 606 s, which is green but uses 67% of the cap.
+- under -j4 suite contention, the failing run did not finish test 2 within 900 s, so each run took over 225 s. With four runs, roughly 1.5× slowdown is enough to pass the cap.
+So the test was green on its own and red in the suite. The cause is the repeated runs, not a hang in `fw self-test`.
+
+**Why structurally allowed:** the file was written as 4 independent `run` calls of one expensive command. Bats has no per-file budget, and before T-4634 nothing ran the integration suite with a cap, so the 4× cost was never measured.
+
+**Fix:** `setup_file` runs `fw self-test` once and stores its output and status in `$BATS_FILE_TMPDIR`. All 4 tests assert on that one capture with the same assertions as before, which takes the file from about 606 s to about 155 s. The cap is not raised and no test is skipped.
+
+**Prevention:** `tests/unit/t4644_self_test_single_run.bats` fails if `fw_self_test.bats` invokes `"$FW" self-test` more than once, so the 4× pattern cannot come back.
+
+**Noted, out of scope:** the captured run has 3 inner FAILs that the old test hid, because it allows exit status ≤ 1. They are lifecycle `set-focus` ("focus is 'null'"), upgrade `upgrade-help`, and upgrade `version-track` (it expects `1.8.14` but gets the describe-suffixed `1.8.14+1317.g…`). They are reported to the parent as separate defects.
 
 ## Evolution
 
@@ -377,3 +416,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4644-integration-red-fwselftestbats-hits-the-.md
 - **Context:** Initial task creation
+
+### 2026-10-25T12:49:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
