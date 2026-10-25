@@ -8,10 +8,10 @@ description: >
   form and re-pin it, or restore it if it was lost. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (line 104). Reproduced on bleeding-edge HEAD unless stated; triaged in T-4589.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [cloud, test]
 components: []
 related_tasks: [T-4589]
@@ -43,7 +43,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:42:02Z
-last_update: '2026-10-22T08:45:44Z'
+last_update: 2026-10-25T12:49:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,6 +72,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-25T12:49:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-10-22T08:45:44Z'
     estimator: bvp-estimator-v1-heuristic
@@ -93,9 +109,9 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause localised and recorded in the RCA: what the t3298 source pin asserts, what `agents/audit/audit.sh` does now, and whether the behaviour the pin guarded still holds
+- [x] The pin asserts the behaviour (the EXIT-trap cleanup still runs), not a literal string, and fails on a synthetic copy of audit.sh with the cleanup removed (bite check recorded)
+- [x] The t3298 test file passes in full with no skips; nothing is added to the unit-suite baseline
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,8 +296,36 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 1800 bats tests/unit/t3298_audit_lock_integrity.bats > /tmp/.t4604.v 2>&1 && ! grep -q "^not ok" /tmp/.t4604.v
+test "$(grep -c '# skip' /tmp/.t4604.v)" -eq 0
+grep -q "fallback arm releases the lock on a normal exit" tests/unit/t3298_audit_lock_integrity.bats
+grep -Eq "trap \"rm -f '\\\$AUDIT_LOCK_FILE'( '[^']*')*\" EXIT" agents/audit/audit.sh
 
 ## RCA
+
+**Symptom:** cloud run f028d507 (docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt:104) reported
+`tests/unit/t3298_audit_lock_integrity.bats` test 9 red: `grep -q "trap \"rm -f '\$AUDIT_LOCK_FILE'\" EXIT"` found nothing in audit.sh.
+
+**Root cause — stale test, already fixed before this task was worked.** T-4542 widened the fallback (no-flock)
+arm's EXIT trap to also remove the holder record: `agents/audit/audit.sh:773` is now
+`trap "rm -f '$AUDIT_LOCK_FILE' '$AUDIT_LOCK_HOLDER_FILE'" EXIT`. The rm-release still exists; only the exact
+literal the pin grepped for changed. T-4619 (commit 15b7e3f74, 2026-10-22 09:40Z — about an hour after this task
+was filed at 08:42Z, from the same triage) re-pinned test 9 by operand (`rm -f '$AUDIT_LOCK_FILE'` followed by any
+further quoted operands) and added behavioural test 11 ("fallback arm releases the lock on a normal exit (lock file
+and holder record gone)"), which runs audit.sh with flock removed from PATH and asserts both files are gone.
+Not environment-related: the 2026-10-25 host rebuild (kernel 7.0.0-38) has no bearing; the test is green because of
+the T-4619 edit.
+
+**Evidence (2026-10-25, this host):** full file run 3× in the foreground: 13/13 ok, 0 `not ok`, 0 skips each time.
+Bite check: tree built with `git archive HEAD` into a mktemp dir, audit.sh:773 replaced with a no-op → tests 9 and 11
+go `not ok`, all others stay ok. So the behaviour is now pinned by a behavioural leg, not only the string.
+
+**Why structurally allowed:** T-4589's triage filed one task per red from the cloud report, and T-4619 was filed in
+parallel as a push-blocker for the same red. Nothing de-duplicated tasks by failing test id, so two tasks owned one test.
+
+**Prevention:** the pin no longer depends on the exact trap text (T-4619), and test 11 asserts the cleanup by
+behaviour, so a further operand change does not re-red it while a lost cleanup still does. No code change in this
+task; T-4604 is a duplicate of T-4619 and can close on the verification above.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -377,3 +421,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4604-t3298-source-pin-greps-an-exit-trap-stri.md
 - **Context:** Initial task creation
+
+### 2026-10-25T12:49:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
