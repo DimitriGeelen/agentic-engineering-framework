@@ -482,7 +482,22 @@ do_inception_decide() {
     local task_file
     task_file=$(find_task_file "$task_id" active)
     if [ -z "$task_file" ]; then
-        echo -e "${RED}Task $task_id not found in active tasks${NC}" >&2
+        # T-4734: a work-completed task is archived, not missing. Say so, and name the
+        # re-record path (T-4324) instead of leaving the agent to guess at a file move.
+        local _archived
+        _archived=$(find_task_file "$task_id" completed)
+        if [ -n "$_archived" ]; then
+            echo -e "${RED}ERROR: $task_id is archived (work-completed): ${_archived#"$PROJECT_ROOT"/}${NC}" >&2
+            echo -e "'fw inception decide' records a verdict on an open exploration only." >&2
+            if grep -q "^workflow_type: inception" "$_archived"; then
+                echo -e "To re-record a wrong GO/NO-GO on it (operator only, logged):" >&2
+                echo -e "  $(_emit_user_command "inception correct $task_id go|no-go --reason 'why the recorded verdict was wrong'")" >&2
+            else
+                echo -e "It is not an inception task, so there is no verdict to record." >&2
+            fi
+            exit 1
+        fi
+        echo -e "${RED}Task $task_id not found in active or completed tasks${NC}" >&2
         exit 1
     fi
 

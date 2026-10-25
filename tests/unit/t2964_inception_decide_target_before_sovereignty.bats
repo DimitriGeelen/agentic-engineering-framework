@@ -105,7 +105,7 @@ EOF
     CLAUDECODE=1 run do_inception_decide T-9999 go --rationale "verbal ruling"
 
     [ "$status" -ne 0 ]
-    [[ "$output" == *"not found in active tasks"* ]]
+    [[ "$output" == *"not found in active or completed tasks"* ]]
     [[ "$output" != *"not an inception task"* ]]
 }
 
