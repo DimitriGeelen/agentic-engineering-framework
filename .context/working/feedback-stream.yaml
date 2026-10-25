@@ -48841,3 +48841,21 @@ scan_id: R-9f15cf07
 task_id: T-4644
 payload:
   task_file: .tasks/active/T-4644-integration-red-fwselftestbats-hits-the-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T13:27:25Z'
+scan_id: R-be75d9c2
+task_id: T-4645
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T13:27:25Z'
+scan_id: R-be75d9c2
+task_id: T-4645
+payload:
+  task_file: .tasks/active/T-4645-integration-red-t3684sidecarwatchere2ete.md

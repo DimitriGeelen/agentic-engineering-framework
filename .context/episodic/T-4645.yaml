@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4645: Integration red: t3684_sidecar_watcher_e2e_test.py tests 4 and 6 (supervisor: no framework launcher in fixture project)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T13:27:37Z
+# ============================================================================
+
+task_id: T-4645
+task_name: "Integration red: t3684_sidecar_watcher_e2e_test.py tests 4 and 6 (supervisor: no framework launcher in fixture project)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T13:13:34Z
+completed: 2026-10-25T13:19:09Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-25T14:17:13+01:00
+last_commit: 2026-10-25T14:17:13+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t3684 live E2E test_4 gives scratch project B a vendored launcher shim before fw sidecar ensure --all (stale since T-4208 own-launcher contract); test_6 not reproducible — 8/8 green twice; RCA
+
+# Key outcomes
+outcomes:
+  - 'Cause localised and recorded in the RCA, classed as code defect / stale test / environment, with the evidence'
+  - 'The cause is fixed where it lives (product code, or the test when the test is what is stale); tests 4 and 6 pass twice in a row in the foreground with no skips'
+  - 'The test never touches this project''s live sidecar receiver or hub state (isolated runtime); sibling sidecar tests stay green; nothing is added to any baseline; vendored copy in sync if vendored paths changed (`fw vendor self --check --task T-4645`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4645-integration-red-t3684sidecarwatchere2ete.md'
+  - 'tests/integration/t3684_sidecar_watcher_e2e_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T14:17:13'
+    action: 'T-4645: t3684 live E2E test_4 gives scratch project B a vendored launcher shim before fw sidecar ensure --all (stale since T-4208 own-launcher contract); test_6 not reproducible — 8/8 green twice; RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4325 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, integration-red]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4325
+  commits: 2
+  files_changed: 5
+  lines_added: 177
+  lines_removed: 12
+  footprint_refreshed_at: '2026-10-25T13:27:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4645-integration-red-t3684sidecarwatchere2ete.md
+generated_by: context-agent-hybrid
