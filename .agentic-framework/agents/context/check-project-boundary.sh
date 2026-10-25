@@ -825,6 +825,15 @@ READ_ALLOWED_PREFIXES = (
     '/lib64/',
     '/opt/',              # exact /opt only — handled below; SUBDIRS narrowed
 ) + tuple(z + '/' for z in ((_HOME + '/.local', _HOME + '/.claude') if _HOME else ()))   # T-4361
+# T-4731 (010-termlink T-3000): TermLink's own per-account state (~/.termlink: outbound
+# queue, identity, hubs.toml) and the hub runtime dir are READ zones for every project
+# that uses `fw termlink`. Writes keep their verdict: _write_guarded does not see these.
+# /var/lib/termlink and /tmp/termlink-* are already covered above; a TERMLINK_RUNTIME_DIR
+# elsewhere counts only when its last component names termlink, so `TERMLINK_RUNTIME_DIR=/opt`
+# cannot open every project.
+_TL_RT = os.path.realpath(os.environ.get('TERMLINK_RUNTIME_DIR', '') or '/')
+READ_ALLOWED_PREFIXES += ('/root/.termlink/',) + ((_HOME + '/.termlink/',) if _HOME else ()) \
+    + ((_TL_RT + '/',) if 'termlink' in os.path.basename(_TL_RT) else ())
 # Exact-path allowlist (no trailing slash test).
 READ_ALLOWED_EXACT = {
     project_root,
