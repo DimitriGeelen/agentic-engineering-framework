@@ -436,12 +436,21 @@ def test_real_termlink_inject_reaches_the_tagged_session(base):
                     "--backend", "background", "--shell", "--wait", "--wait-timeout", "15"],
                    cwd=root, env=_clean_env(), capture_output=True, timeout=30, check=True)
     try:
+        tl_id = _session_for(tag)
+        assert tl_id, f"spawned session {name} not discoverable by tag {tag}"
+        # Readiness is per session since T-3745: the injector reads only the
+        # session's own record, so seed it the way the Stop hook writes it
+        # (TERMLINK_SESSION_ID names the PTY). No claude process runs here, so
+        # claude_pid is pinned to None; an ancestor `claude -p` running the
+        # suite would otherwise mark the record headless (T-4646).
         seed = (
             "from lib.sidecar import receiver, adapter;"
             "receiver.store_message('m-live', {'client_msg_id':'m-live','from':'x','body':'b'});"
-            "adapter.set_ready_for_input(True)")
+            "adapter._claude_ancestor_pid = lambda *a, **k: None;"
+            "assert adapter.set_session_ready({'session_id': 's-t3693-live'}, True)")
         subprocess.run([sys.executable, "-c", seed], cwd=FW_ROOT, check=True,
-                       env=_clean_env(PROJECT_ROOT=str(root)), timeout=60)
+                       env=_clean_env(PROJECT_ROOT=str(root), TERMLINK_SESSION_ID=tl_id),
+                       timeout=60)
         # The real CLI the tick (T-3684) will call.
         out = subprocess.run([FW, "sidecar", "deliver-pending", "--trigger", "live-test",
                               "--json"], cwd=root, env=_clean_env(),

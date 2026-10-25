@@ -9,10 +9,10 @@ description: >
   -j4, per-file cap 900s); output: .context/audits/integration-suite/failures/2026-10-22T11:27:01Z/pytest/t3693_sidecar_e2e_test.py.out.
   Fix the test or the code; do not baseline it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, integration-red]
 components: []
 related_tasks: [T-4634]
@@ -44,7 +44,7 @@ origin: {kind: "agent", source: "T-4634"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T13:14:43Z
-last_update: '2026-10-22T13:30:58Z'
+last_update: 2026-10-25T13:28:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,6 +73,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-25T13:27:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-10-22T13:30:58Z'
     estimator: bvp-estimator-v1-heuristic
@@ -94,9 +110,9 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause localised and recorded in the RCA, classed as code defect / stale test / environment, with the evidence
+- [x] The cause is fixed where it lives (product code, or the test when the test is what is stale); the test passes twice in a row in the foreground with no skips
+- [x] The test never touches this project's live sidecar receiver or hub state (isolated runtime); sibling sidecar tests stay green; nothing is added to any baseline; vendored copy in sync if vendored paths changed (`fw vendor self --check --task T-4646`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,8 +297,22 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+grep -q "set_session_ready" tests/integration/t3693_sidecar_e2e_test.py && ! grep -q "adapter.set_ready_for_input(True)" tests/integration/t3693_sidecar_e2e_test.py
+timeout 600 python3 -m pytest tests/integration/t3693_sidecar_e2e_test.py -q -rs -k test_real_termlink_inject_reaches_the_tagged_session > /tmp/.t4646.out 2>&1 && grep -q "1 passed" /tmp/.t4646.out && ! grep -qE "skipped|failed" /tmp/.t4646.out
 
 ## RCA
+
+**Class:** stale test.
+
+**Symptom:** `test_real_termlink_inject_reaches_the_tagged_session` red since its first integration-suite run (T-4634, 2026-10-22): `fw sidecar deliver-pending` returned `injected=[]`, reason `agent not ready: no session in a registered TermLink PTY has reported a Stop yet`. Reproduced on this host 2026-10-25 (kernel 7.0): 1 failed, 2 passed (the two round-trip legs drive real Claude agents whose real Stop hooks write records, so they pass).
+
+**Root cause:** the test (T-3693, 2026-10-02) seeds readiness with the project-wide flag `adapter.set_ready_for_input(True)` (tests/integration/t3693_sidecar_e2e_test.py:441 before the fix). One day later T-3745 (41a55a515, 2026-10-03) made readiness per session: the injector `_choose_termlink` (lib/sidecar/inject.py:430-452) reads ONLY `.context/sidecar/sessions/<id>.json` records whose `termlink_session` is a tagged session, and the project-wide file is "a display summary … not consulted by any injection decision" (lib/sidecar/adapter.py:20-34). The tagged TermLink session existed but no record named it, so the chooser returned exactly the reason seen. The product behaviour is correct (never type into a session that has not reported its own Stop); the test's seed predates the contract.
+
+**Why structurally allowed:** the test is `needs_live` (real termlink hub), so it never ran in the unit suite; there was no integration-suite run at all until T-4634, 19 days after T-3745 changed the contract. T-3745 updated unit tests that fake the producer but not this live leg.
+
+**Fix:** the seed now writes the session's own record the way the Stop hook does — `adapter.set_session_ready({"session_id": ...}, True)` with `TERMLINK_SESSION_ID` set to the spawned session's discover id — and pins `claude_pid` to None (no claude process here; otherwise an ancestor `claude -p` running the suite would mark the record headless and exclude it, making the test host-dependent).
+
+**Prevention:** the integration suite now runs (T-4634 cron), which is what caught this; the test now exercises the per-session contract, so a future change to that contract turns it red at the next run instead of a stale seed passing or failing for an unrelated reason. Learning: a live test that seeds state by hand must seed through the same producer API the real hook uses (L-681 class: a faked producer is only as current as the day it was written).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -378,3 +408,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4646-integration-red-t3693sidecare2etestpy-re.md
 - **Context:** Initial task creation
+
+### 2026-10-25T13:27:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
