@@ -15,6 +15,9 @@ setup() {
     HALT="$TMP/.context/working/.continuous-halt"
     DIRECTIVE="$TMP/.context/working/.next-directive.yaml"
     LOG="$TMP/.context/working/.stop-driver.log"
+    # T-4750: a suite run from inside a dispatched worker inherits this; the
+    # parent-session tests below must not see it.
+    unset FW_DISPATCHED_WORKER
 }
 
 teardown() {
@@ -76,6 +79,22 @@ d = json.load(sys.stdin)
 assert d.get('decision') == 'block', d
 assert d.get('reason'), 'reason must be non-empty'
 "
+}
+
+# --- T-4750: only the parent session is driven -----------------------------
+
+@test "T-4750: armed, but a dispatched worker yields stop and logs why" {
+    armed_state
+    FW_DISPATCHED_WORKER=1 run run_driver '{}'
+    [ "$status" -eq 0 ]
+    [ "$output" = "{}" ]
+    grep -q 'decision=stop reason=dispatched-worker' "$LOG"
+}
+
+@test "T-4750: same armed state without the worker marker still continues" {
+    armed_state
+    FW_DISPATCHED_WORKER=0 run run_driver '{}'
+    [ "$output" != "{}" ]
 }
 
 # --- T-4032: a pending budget restart ends the turn ------------------------

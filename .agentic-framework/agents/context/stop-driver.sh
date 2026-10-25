@@ -91,6 +91,13 @@ if [ -f "$HALT_FILE" ]; then
     yield
 fi
 
+# T-4750: the loop state is project-wide, so a dispatched TermLink worker would be
+# re-prompted toward the arc beside its siblings. Only the parent session is driven.
+if [ "${FW_DISPATCHED_WORKER:-0}" = "1" ]; then
+    log stop "dispatched-worker"
+    yield
+fi
+
 # --- Brake 3a: the platform's own runaway guard -----------------------------
 # stop_hook_active means we already drove this continuation; honouring it is what
 # keeps a bug in our own counter from becoming an unbounded loop.
