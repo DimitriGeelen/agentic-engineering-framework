@@ -1,0 +1,21 @@
+id: tests/unit/t4731_boundary_termlink_state_reads.bats
+name: t4731_boundary_termlink_state_reads
+type: script
+subsystem: tests
+location: tests/unit/t4731_boundary_termlink_state_reads.bats
+tags: []
+
+purpose: "T-4731 (010-termlink T-3000): the project-boundary gate refused reads of TermLink's own per-account state (`sqlite3 ~/.termlink/outbound.sqlite`) as \"another project\"."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-25
+created_by: unknown
