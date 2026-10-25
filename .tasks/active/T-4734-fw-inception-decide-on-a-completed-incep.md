@@ -82,10 +82,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw inception decide` on a task found in `.tasks/completed/` refuses with a message naming it as archived (completed), not "not found in active tasks"
-- [ ] The message points at the re-record path (T-4735) if it exists, or says that none exists yet; it never suggests moving the file by hand
-- [ ] A task id that exists nowhere still gets the "not found" message
-- [ ] Bats cover the archived and the truly-missing case (decide run with --i-am-human in a temp project); vendored copy in sync (`fw vendor self --check --task T-4734`)
+- [x] `fw inception decide` on a task found in `.tasks/completed/` refuses with a message naming it as archived (completed), not "not found in active tasks"
+- [x] The message points at the re-record path (T-4735) if it exists, or says that none exists yet; it never suggests moving the file by hand
+- [x] A task id that exists nowhere still gets the "not found" message
+- [x] Bats cover the archived and the truly-missing case (decide run with --i-am-human in a temp project); vendored copy in sync (`fw vendor self --check --task T-4734`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
