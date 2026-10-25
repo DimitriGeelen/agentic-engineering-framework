@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-24T21:12:14Z
-last_update: '2026-10-24T22:16:19Z'
+last_update: 2026-10-25T11:56:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,9 @@ Operator GO 2026-10-24 to prepare the v1.8.15 master release. Since v1.8.14 (202
 - [x] `docs/reports/field-test-v1.8.15-results.md` lists every fix with a peer verdict (fix, project, tip tested, verdict, source message id), in the v1.8.14 shape
 - [x] FAILS, partial or ambiguous verdicts are listed with the follow-up task each produced
 - [x] The report gives the count of consumer-facing tasks since v1.8.14 with no field test, so the T-4146 fallback can be applied honestly
-- [ ] Full-suite comparison against v1.8.14: no unit-suite failure attributed to the release diff (new reds since v1.8.14 named, each with its task or its proof of being environmental)
+- [x] Full-suite comparison against v1.8.14: no unit-suite failure attributed to the release diff (new reds since v1.8.14 named, each with its task or its proof of being environmental)
   <!-- NOT MET (2026-10-24): every new red is named with its cause, but 6 release-diff causes (8 files) remain, filed T-4743..T-4748; and the comparison is targeted (42 files), the full corpus could not finish in 2 h on the loaded host. See report §Full-suite comparison. -->
+  <!-- MET with one named exception (round 2, 2026-10-25): T-4744..T-4748 green at HEAD; the only release-diff red left is operator-gated T-4743 (3 files); 2 environmental reds with evidence. Still targeted (54 files + 4 at d085cb3d4), on /tmp git-archive trees. See report §Full-suite comparison → Round 2. -->
 - [x] `bin/fw release tag-and-release --dry-run` output captured in the report
 
 ### Human
@@ -287,6 +288,8 @@ grep -q "^## Release readiness" docs/reports/field-test-v1.8.15-results.md && gr
 grep -q "fast-forward master by" docs/reports/field-test-v1.8.15-results.md
 test "$(grep -cE '^- T-[0-9]+ — ' docs/reports/field-test-v1.8.15-results.md)" -gt 0
 test "$(ls .tasks/active/ .tasks/completed/ | grep -cE '^T-474[3-8]-')" -eq 6
+test "$(grep -c '^### Round 2 — 2026-10-25' docs/reports/field-test-v1.8.15-results.md)" -eq 3
+grep -q "fast-forward master by 1320" docs/reports/field-test-v1.8.15-results.md
 
 ## RCA
 

@@ -13,6 +13,8 @@ T-4399, T-3924) shipped in v1.8.14 and are not counted again. T-4222 also shippe
 is listed but not counted.
 
 **No verdict has arrived for be.17 yet.** 010-termlink (6b3bce86) and 055 (cd0b5820) have announced be.17 upgrades.
+*(Round 1, 2026-10-24. Round 2, 2026-10-25: two be.17 reports have arrived since, from ring20-mgmt (70e4bd0b) and
+010-termlink (b283259c). See §be.17 and the round-2 subsections below.)*
 
 ## Summary
 
@@ -25,6 +27,10 @@ is listed but not counted.
 - Suite comparison (targeted, see below): 10 files are red at HEAD and not at v1.8.14. Eight of them come from 6
   release-diff causes, each now filed as its own task (T-4743 … T-4748). Two are environmental.
 - `fw release tag-and-release --dry-run`: rc 0, fast-forward available. No release decision is recorded for v1.8.15.
+- **Round 2 (2026-10-25, HEAD d085cb3d4).** T-4744 … T-4748 are fixed and their reds are green at HEAD. The only
+  release-diff red left is T-4743 (operator-gated), plus 2 environmental reds. be.17 brought verdicts for T-4720
+  (WORKS / PARTIAL → T-4740) and T-4726 (WORKS), so 82 fixes now have a verdict. At HEAD, **302 of 377** vendored-path
+  task ids have no field verdict. The dry-run is still rc 0 and would fast-forward master by 1320 commits.
 
 | Fix | Projects | Tip(s) tested | Verdict | Msg ids | Follow-up |
 |---|---|---|---|---|---|
@@ -105,14 +111,16 @@ is listed but not counted.
 | T-4716 | ring20-mgmt, dimitri-mint-dev | be.15 | **WORKS** ×2 | e9ef88ee, 9bb3a50a | — |
 | T-4717 | ring20-mgmt, 050, dimitri-mint-dev | be.15 | **WORKS** ×2 / PARTIAL | e9ef88ee, 5fdbef7c, 9bb3a50a | T-4723, T-4724 |
 | T-4718 | ring20-mgmt, dimitri-mint-dev | be.15 | **WORKS** ×2 | e9ef88ee, 9bb3a50a | — |
+| T-4720 | 010-termlink, ring20-mgmt | be.17 | **WORKS** / PARTIAL | b283259c, 70e4bd0b | T-4740 (round 2) |
 | T-4723 | dimitri-mint-dev | be.16 | **WORKS** | afb8ec6b | — |
 | T-4724 | 050, ring20-mgmt, dimitri-mint-dev | be.16 | **WORKS** ×3 | 8fe2eab0, ab21bdd5, afb8ec6b | — |
-| T-4732 | 050, ring20-mgmt, dimitri-mint-dev | be.16 | **WORKS** ×3 | 8fe2eab0, ab21bdd5, afb8ec6b | T-4736 |
+| T-4726 | 010-termlink | be.17 | **WORKS** | b283259c | T-4741 (side finding, round 2) |
+| T-4732 | 050, ring20-mgmt, dimitri-mint-dev, 010-termlink | be.16, be.17 | **WORKS** ×4 | 8fe2eab0, ab21bdd5, afb8ec6b, b283259c | T-4736 |
 | T-4733 | 050 | be.16 | **WORKS** | 8fe2eab0 | — |
 
 Tips: be.1 120a67833 · be.2 afe974124 · be.3 2ec39ef8e · be.4 b19757443 · be.5 fea3e4c76 · be.6 797875a32 ·
 be.7 ce8075dba · be.8 04dc39868 · be.9 e9fb67bc9 · be.10 e82e3d9a7 · be.11 42086fee3 · be.12 4f906e6a3 ·
-be.13 c9ec9459e · be.14 965dbcdc5 · be.15 31afaf383 · be.16 ae71b4f0c. "(bats)" / "(pytest)" in a section means the
+be.13 c9ec9459e · be.14 965dbcdc5 · be.15 31afaf383 · be.16 ae71b4f0c · be.17 165039bb4. "(bats)" / "(pytest)" in a section means the
 peer ran our tests in their tree rather than exercising the fix live.
 
 ## FAILS, PARTIAL and ambiguous verdicts and their follow-ups
@@ -134,11 +142,19 @@ peer ran our tests in their tree rather than exercising the fix live.
 | T-4712 | FAILS: plain one-step external-clone upgrade, no list (dimitri-mint-dev, 6a934c08) | T-4717 | → |
 | T-4717 | PARTIAL: the reason line works, but the snapshot hits MemoryError on a home-directory consumer and the line prints at the end (dimitri-mint-dev, 9bb3a50a) | T-4723, T-4724 | WORKS: T-4723 (dimitri-mint-dev), T-4724 (050, ring20-mgmt, dimitri-mint-dev), be.16 |
 | T-4706 | PARTIAL / finding: the keep-alive is not seeded to consumers and needs a systemd opt-out (dimitri-mint-dev b410de74, ring20-mgmt 2ce6a48a) | T-4711 | WORKS (ring20-mgmt systemd path, dimitri-mint-dev, 010-termlink) |
+| T-4720 | PARTIAL (round 2): a second re-vendor still rewrites the pinned designer build (bin/fw rm -f + cp, outside the --checksum path) and 4–6 unchanged vendor metadata files (ring20-mgmt 70e4bd0b; 010-termlink b283259c names the same metadata leftover) | T-4740 (completed 2026-10-24) | **no verdict** |
 
 Side findings that came with WORKS verdicts and are still open: T-4698 (deferral gate reads another project's ids;
 ring20-mgmt 714c296e, active), T-4719 (close-hint push remote; in be.17, no verdict), T-4720 (re-vendor leaves
 Watchtower STALE; in be.17, no verdict), T-4736 (superseded designer builds never pruned; 050 8fe2eab0, active), T-4738
 (push clause opt-out; 050 abf6d155, active), T-4726 (decide-verb hint; 010-termlink 51ce7c34; in be.17, no verdict).
+
+Round 2 (2026-10-25): T-4720 and T-4726 now have be.17 verdicts (table above); T-4719 is installed at ring20-mgmt
+and 010-termlink but not yet exercised, so it still has none. New side findings: `fw task review` counts a *quoted*
+placeholder as a placeholder (010-termlink b283259c → T-4741, completed, no verdict); and check-project-boundary
+refuses its own remedy, `fw config set BOUNDARY_EXTRA_READ_PATHS <outside path>` (010-termlink 9897c190,
+2026-10-25 11:41Z). **No task found for the second one**: T-4361 and T-4649 mention the key but predate the report.
+It is left for the parent to file.
 
 ## Per-report sections
 
@@ -287,6 +303,22 @@ T-4714 WORKS, pytest 8/8. Not exercisable live: no claude daemon runs on ring20.
 - Findings: superseded designer builds pile up at the root `vendor/designer/` (→ T-4736); the push clause should be
   optional (→ T-4738).
 
+### be.17 — ring20-mgmt (70e4bd0b) · 010-termlink (b283259c, 9897c190), 2026-10-24/25 (round 2)
+- Upgrade: ring20-mgmt via its upgrade script, 18 in-file patches merged clean, doctor FAIL 2 before / 2 after (no
+  new), 6 pages 200. 010-termlink be.14 → be.17, rehearsal and real run rc 0, check-active-task.sh 3-way merged clean
+  with T-4719, fw doctor rc 0.
+- T-4720: WORKS (010-termlink: only the 4 Designer web files with new content were rewritten). PARTIAL (ring20-mgmt:
+  a second run rewrote the pinned designer build `vendor/designer/aef-workflow-designer-0.26.0.html` with identical
+  content, plus vendor metadata files) → T-4740.
+- T-4726: WORKS (010-termlink: five real records, three NO-GO-recommended inceptions recorded GO now map to no-go,
+  two DEFER to defer).
+- T-4732: WORKS (010-termlink: designer 0.25.0 removed, 0.26.0 in place).
+- T-4719: installed at both, not exercised yet. No verdict.
+- Findings: quoted placeholder text counted by `fw task review` (→ T-4741); check-project-boundary refuses
+  `fw config set BOUNDARY_EXTRA_READ_PATHS` with an outside path, the remedy its own block message names (no task yet).
+- Announced, no report yet: 050 (e308e429, on be.16, next upgrade on operator GO), 055 (cd0b5820, 5de6a3e1: upgrading
+  to be.17 then be.18 before merging).
+
 ## Full-suite comparison (HEAD eee888e61 vs v1.8.14)
 
 **Method, and what it does not cover.** T-4345 ran the whole unit corpus on two scratch trees side by side (jobs=6
@@ -339,6 +371,53 @@ t3580_judge_cli_test.py, t3580_round2_test.py, t2266, t2267, t3241. **New at HEA
 corpus only (T-4743, T-4744, T-4745). Three touch shipped code (T-4746: a label can name a -be tag; T-4747: a runtime
 file a consumer could commit; T-4748: a fresh greenfield project fails its own audit until `fw cron install`). None of
 the six has a field report against it.
+
+### Round 2 — 2026-10-25 (HEAD 5259a14be, plus the 4 test files new in d085cb3d4)
+
+**Method.** Same per-file runner as round 1 (`agents/audit/unit-suite.sh` invocation, `env -i`, cron PATH, one TMPDIR
+per file, `timeout -k 10`), in the foreground in chunks of at most 10 min, both trees at once with 8 jobs each. One
+change: the `git archive v1.8.14` and `git archive HEAD` trees, each with a fresh `git init` and one snapshot commit,
+sat in a `mktemp -d` under `/tmp`, **outside the live repo**. That removes round 1's create_task.bats noise. The
+targets were round 1's 42 files plus every test file changed since 42e87308b: 14 files, 12 of them new to the list
+(stop_driver, t2964, t4680, t4728, t4729, t4730, t4731, t4734, t4736, test_audit_cron_drift, test_hermetic_fixture.py,
+test_t4745_*). t3221 and t4689 were already in it, and support files (`_hermetic.py`, conftest.py, helpers/) are not
+test files. That makes 54. The per-file cap was 480 s; the three files that
+hit it were re-run at 575 s. HEAD moved to d085cb3d4 while this ran. Its 4 new test files (t4698, t4701, t4721, t4722)
+were run on a third `git archive d085cb3d4` tree: all 4 are green (28 ok, 0 not ok). Host load was 22–33 on 24 cores.
+
+**Round 1's release-diff reds, per task:**
+
+| Task | Round-1 red | Round 2 at HEAD | Status |
+|---|---|---|---|
+| T-4744 | t3221_commit_exemption_clause.bats test 17 | rc 0, all ok | **green** |
+| T-4745 | hermetic.py: collected no tests (exit 5) | renamed `_hermetic.py`, so it is no longer a test file; test_t4745_discovered_modules_define_tests.py and test_hermetic_fixture.py are green | **green** |
+| T-4746 | t4431_be_tags.bats test 11 | rc 0, all ok | **green** |
+| T-4747 | t4689_working_ignore_rail.bats test 4 | rc 0, all ok | **green** |
+| T-4748 | greenfield_seed_audit_prototype.bats T-2703, T-2740 | rc 0, 3/3 ok in 345 s (v1.8.14: rc 0 in 496 s at the 575 s cap, so it is no longer undetermined) | **green** |
+| T-4743 | episodic_frontmatter_extraction (10), episodic_yaml_timeline_escape (6), test_task_create_description_yaml.py::test_corpus_frontmatter_is_intact | still red; the only unparseable files in the HEAD tree are `.context/episodic/T-4679.yaml` and `.tasks/completed/T-4679-*.md` (ScannerError) | **open, operator-gated** |
+
+**Red at HEAD, not red at v1.8.14 (round 2): 5 files from 2 causes.**
+
+| File | Failing test(s) | Cause | Owner |
+|---|---|---|---|
+| episodic_frontmatter_extraction.bats | 10: the whole episodic corpus parses | Release diff (corpus): T-4679 episodic | **T-4743** (open, operator-gated) |
+| episodic_yaml_timeline_escape.bats | 6: every episodic in the corpus parses | Same | **T-4743** |
+| test_task_create_description_yaml.py | test_corpus_frontmatter_is_intact | Same defect in the T-4679 task file | **T-4743** |
+| t4705_upgrade_commit_list_vendored_external.bats | 3, 4 (7 of 9 ok) | Environmental, as in round 1: the archive snapshot has no history or tags (`fatal: not a valid object name: HEAD~300`, `… v1.8.15-be.11`) | — |
+| bvp_auto_promote_enable.bats | 7: cron registry in sync (fw doctor) | Environmental, as in round 1: the test reads the real repo's doctor, which in the scratch tree says "cron not installed yet … /etc/cron.d/agentic-audit-head is missing" plus "registry edited but not generated" (archive mtimes). The test is absent from the last three live-repo nightly failure lists (2026-10-24) | — |
+
+**Red on both sides, same tests (not attributed):** round 1's 11 files are unchanged (approvals_close_ready_arcs,
+atomic_yaml_write_lint, audit_split_root_asset_lint, review_pipefail, test_operator_facing_stderr.py,
+audit_inception_recommendation, doctor_hook_counters, lib_review, t3636_objectives_seed, test_doctor_scope_tags,
+git_identity_check). One file is new to the list: **test_audit_cron_drift.bats** test 1. It fails identically on both
+trees because `fw cron generate` refuses an fw path "under a temp dir outside the project". That is a placement
+artefact of this round's `/tmp` trees, and the file is not in the last three live nightly failure lists.
+**create_task.bats is green on both sides** (rc 0), which confirms that round 1's extra failures came from the
+scratch dir sitting inside the repo. Every other target is green on both sides or new and green at HEAD. Six fast-tier
+bats files each report one `# skip`, as in round 1.
+
+**Failures attributed to the release diff, round 2: 3 files from 1 cause, T-4743**, which is operator-gated. T-4744 …
+T-4748 are confirmed green. No new release-diff cause was found.
 
 ## Release dry-run (`bin/fw release tag-and-release --dry-run`, 2026-10-24, HEAD eee888e61)
 
@@ -471,6 +550,139 @@ would prune release work dir .context/scratch/v1813 (release already shipped)
 rc=0
 ```
 
+### Round 2 — 2026-10-25, HEAD d085cb3d4
+
+Verbatim; ANSI colour codes stripped. Changes from round 1: 1312 commits since v1.8.14 (master fast-forward by 1320),
+the same 7 GitHub issues would get "released" and the same 3 are held (#104 T-4361, #102 T-4359, #98 T-4355).
+No release decision is recorded.
+
+```
+No recorded release decision for v1.8.15 (an unattended run would refuse)
+Remote 'github/master' is an ancestor of HEAD — fast-forward available.
+Remote 'origin/master' is an ancestor of HEAD — fast-forward available.
+Remote 'github/bleeding-edge' is an ancestor of HEAD — fast-forward available.
+Remote 'origin/bleeding-edge' is an ancestor of HEAD — fast-forward available.
+would tag v1.8.15 (1312 commits since v1.8.14, bump=patch)
+would reconcile VERSION 1.8.14 → 1.8.15 (tag-as-canonical, T-3242)
+would fast-forward master by 1320 commit(s) to v1.8.15
+would push bleeding-edge in the same atomic push (T-3848)
+GitHub issues (stages 8-9)...
+would post released on #99 (T-4356): please-confirm
+<!-- aef-intake:stage=released -->
+**[AEF intake] Released** — 2026-10-25
+
+**T-4356** is released in **v1.8.15**.
+
+Please confirm it fixes this for you. Reply here if it does not. With no reply in 14 days this issue is closed with a note, and you can reopen it.
+
+**What was fixed:** GH #99: Vector-index health reports `index-reindex-hourly scheduled` when no cron entry is installed.
+**How it was tested:** `tests/unit/t3783_vector_index_health.bats`
+**Field evidence:** none recorded for this fix.
+**Why it was released:** v1.8.15 passed the release gates; no release decision is recorded for it in .context/releases/decisions.jsonl.
+**Links:** release notes https://github.com/DimitriGeelen/agentic-engineering-framework/releases/tag/v1.8.15 · field-evidence report https://github.com/DimitriGeelen/agentic-engineering-framework/blob/v1.8.15/docs/reports/field-test-v1.8.15-results.md
+
+*These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read.*
+hold   #104 (T-4361): T-4361 is still active (awaiting review); not posted. Re-run after it completes
+hold   #102 (T-4359): T-4359 is still active (awaiting review); not posted. Re-run after it completes
+hold   #98 (T-4355): T-4355 is still active (awaiting review); not posted. Re-run after it completes
+would post released on #100 (T-4357): please-confirm
+<!-- aef-intake:stage=released -->
+**[AEF intake] Released** — 2026-10-25
+
+**T-4357** is released in **v1.8.15**.
+
+Please confirm it fixes this for you. Reply here if it does not. With no reply in 14 days this issue is closed with a note, and you can reopen it.
+
+**What was fixed:** GH #100: fw doctor says `resolver-loop.timer is installed but inactive` on hosts where it is not installed.
+**How it was tested:** `tests/unit/t4357_doctor_resolver_timer_presence.bats`, `tests/unit/test_t4386_doctor_perf.py`, `test_t4386_doctor_perf`
+**Field evidence:** none recorded for this fix.
+**Why it was released:** v1.8.15 passed the release gates; no release decision is recorded for it in .context/releases/decisions.jsonl.
+**Links:** release notes https://github.com/DimitriGeelen/agentic-engineering-framework/releases/tag/v1.8.15 · field-evidence report https://github.com/DimitriGeelen/agentic-engineering-framework/blob/v1.8.15/docs/reports/field-test-v1.8.15-results.md
+
+*These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read.*
+would post released on #101 (T-4358): please-confirm
+<!-- aef-intake:stage=released -->
+**[AEF intake] Released** — 2026-10-25
+
+**T-4358** is released in **v1.8.15**.
+
+Please confirm it fixes this for you. Reply here if it does not. With no reply in 14 days this issue is closed with a note, and you can reopen it.
+
+**What was fixed:** GH #101: fw doctor warns `TURN DRIVER is not armed` for every interactive claude-fw session that never used continuous mode.
+**How it was tested:** `tests/unit/t4358_doctor_turn_driver_interactive.bats`, `tests/unit/test_t4386_doctor_perf.py`, `test_t4386_doctor_perf`
+**Field evidence:** none recorded for this fix.
+**Why it was released:** v1.8.15 passed the release gates; no release decision is recorded for it in .context/releases/decisions.jsonl.
+**Links:** release notes https://github.com/DimitriGeelen/agentic-engineering-framework/releases/tag/v1.8.15 · field-evidence report https://github.com/DimitriGeelen/agentic-engineering-framework/blob/v1.8.15/docs/reports/field-test-v1.8.15-results.md
+
+*These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read.*
+would post released on #97 (T-4354): please-confirm
+<!-- aef-intake:stage=released -->
+**[AEF intake] Released** — 2026-10-25
+
+**T-4354** is released in **v1.8.15**.
+
+Please confirm it fixes this for you. Reply here if it does not. With no reply in 14 days this issue is closed with a note, and you can reopen it.
+
+**What was fixed:** GH #97: fw doctor Watchtower smoke test probes localhost, so all endpoints fail when Watchtower is bound to FW_HOST.
+**How it was tested:** `tests/unit/test_t4354_smoke_test_base_url.py`, `tests/unit/test_t4363_startup_warmup.py`, `tests/unit/test_t4386_doctor_perf.py`, `tests/unit/t3453_doctor_smoke_inverted_alarm.bats`, `tests/unit/t3933_doctor_smoke_skip.bats`, `test_t4354_smoke_test_base_url`, `test_t4363_startup_warmup`, `test_t4386_doctor_perf`
+**Field evidence:** none recorded for this fix.
+**Why it was released:** v1.8.15 passed the release gates; no release decision is recorded for it in .context/releases/decisions.jsonl.
+**Links:** release notes https://github.com/DimitriGeelen/agentic-engineering-framework/releases/tag/v1.8.15 · field-evidence report https://github.com/DimitriGeelen/agentic-engineering-framework/blob/v1.8.15/docs/reports/field-test-v1.8.15-results.md
+
+*These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read.*
+would post released on #105 (T-4362): please-confirm
+<!-- aef-intake:stage=released -->
+**[AEF intake] Released** — 2026-10-25
+
+**T-4362** is released in **v1.8.15**.
+
+Please confirm it fixes this for you. Reply here if it does not. With no reply in 14 days this issue is closed with a note, and you can reopen it.
+
+**What was fixed:** GH #105: A clone's bin/fw called by full path from inside a consumer project runs the project's vendored copy instead.
+**How it was tested:** `tests/unit/t4362_clone_fw_full_path_from_consumer.bats`
+**Field evidence:** none recorded for this fix.
+**Why it was released:** v1.8.15 passed the release gates; no release decision is recorded for it in .context/releases/decisions.jsonl.
+**Links:** release notes https://github.com/DimitriGeelen/agentic-engineering-framework/releases/tag/v1.8.15 · field-evidence report https://github.com/DimitriGeelen/agentic-engineering-framework/blob/v1.8.15/docs/reports/field-test-v1.8.15-results.md
+
+*These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read.*
+would post released on #96 (T-4353): please-confirm
+<!-- aef-intake:stage=released -->
+**[AEF intake] Released** — 2026-10-25
+
+**T-4353** is released in **v1.8.15**.
+
+Please confirm it fixes this for you. Reply here if it does not. With no reply in 14 days this issue is closed with a note, and you can reopen it.
+
+**What was fixed:** GH #96: After a fresh auto-restart the new session is told "Post-Compaction Context Recovery" — the agent then reports a compaction that never happened.
+**How it was tested:** `tests/unit/t4353_resume_header_by_source.bats`, `tests/unit/restart_sentinel_ttl.bats`, `tests/unit/session_start_hook_warning.bats`
+**Field evidence:** none recorded for this fix.
+**Why it was released:** v1.8.15 passed the release gates; no release decision is recorded for it in .context/releases/decisions.jsonl.
+**Links:** release notes https://github.com/DimitriGeelen/agentic-engineering-framework/releases/tag/v1.8.15 · field-evidence report https://github.com/DimitriGeelen/agentic-engineering-framework/blob/v1.8.15/docs/reports/field-test-v1.8.15-results.md
+
+*These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read.*
+would post released on #95 (T-4352): please-confirm
+<!-- aef-intake:stage=released -->
+**[AEF intake] Released** — 2026-10-25
+
+**T-4352** is released in **v1.8.15**.
+
+Please confirm it fixes this for you. Reply here if it does not. With no reply in 14 days this issue is closed with a note, and you can reopen it.
+
+**What was fixed:** GH #95: Auto-restart is documented as `claude -c` but the default is a fresh session.
+**How it was tested:** `tests/unit/t4352_restart_mode_docs.bats`
+**Field evidence:** none recorded for this fix.
+**Why it was released:** v1.8.15 passed the release gates; no release decision is recorded for it in .context/releases/decisions.jsonl.
+**Links:** release notes https://github.com/DimitriGeelen/agentic-engineering-framework/releases/tag/v1.8.15 · field-evidence report https://github.com/DimitriGeelen/agentic-engineering-framework/blob/v1.8.15/docs/reports/field-test-v1.8.15-results.md
+
+*These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read.*
+release v1.8.15: 0 posted, 0 closed, 3 held, 0 failed (dry-run: nothing posted or closed)
+would prune release work dir .context/scratch/hf1814 (release already shipped)
+would prune release work dir .context/scratch/v1811 (release already shipped)
+would prune release work dir .context/scratch/v1812 (release already shipped)
+would prune release work dir .context/scratch/v1813 (release already shipped)
+rc=0
+```
+
 ## Release readiness
 
 **The field-evidence path of T-4146 does not apply. v1.8.15 goes to the operator as an explicit yes/no, with the
@@ -491,6 +703,27 @@ dry-run above.**
 
 The question for the operator: release v1.8.15 to master now, with 286 untested task ids and T-4743 … T-4748 open,
 yes or no? Or fix T-4746 … T-4748 first and ask again?
+
+### Round 2 — 2026-10-25, HEAD d085cb3d4
+
+**Still the T-4146 fallback: the operator gets an explicit yes/no with the round-2 dry-run above.**
+
+- **Suite:** T-4744 … T-4748 are fixed and green at HEAD. The only failure still attributed to the release diff is
+  **T-4743** (the T-4679 task file and episodic do not parse: 3 red files), which is operator-gated. The other 2 new
+  reds are environmental (no history or tags in the archive; the scratch tree's cron is not installed), as in round 1.
+  No new release-diff cause turned up. On that basis Agent AC4 of T-4739 is ticked, with T-4743 named as the one
+  exception. The comparison is still targeted (54 files, plus 4 at d085cb3d4), not the full corpus.
+- **Field evidence:** be.17 brought WORKS for T-4720 (010-termlink) and T-4726 (010-termlink), and a PARTIAL for T-4720
+  (ring20-mgmt; the designer-build rewrite → T-4740, which has no verdict). T-4719 is installed but not yet exercised.
+  At HEAD, **75 of 377** vendored-path task ids have a field verdict and **302 have none**. The 18 ids added since
+  round 1, including the T-4744 … T-4748 fixes, T-4740 and T-4741, are all untested.
+- **Open finding without a task:** check-project-boundary refuses its own remedy, `fw config set
+  BOUNDARY_EXTRA_READ_PATHS` (010-termlink 9897c190).
+- **Dry-run:** rc 0. It would fast-forward master by 1320 commits, push bleeding-edge in the same atomic push, post
+  "released" on 7 GitHub issues and hold 3. No release decision is recorded.
+
+The question for the operator: release v1.8.15 to master now, with 302 untested task ids and T-4743 open (corpus
+only; it ships no code), yes or no?
 
 <details>
 <summary>Appendix A — 286 vendored-path task ids since v1.8.14 with no field verdict, by area</summary>
