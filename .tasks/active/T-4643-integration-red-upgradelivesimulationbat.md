@@ -9,10 +9,10 @@ description: >
   (T-4634, 2026-10-22T11:27Z, -j4, per-file cap 900s); output: .context/audits/integration-suite/failures/2026-10-22T11:27:01Z/bats/upgrade_live_simulation.bats.out.
   Fix the test or the code; do not baseline it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test, integration-red]
 components: []
 related_tasks: [T-4634]
@@ -44,7 +44,7 @@ origin: {kind: "agent", source: "T-4634"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T13:10:44Z
-last_update: '2026-10-22T13:15:53Z'
+last_update: 2026-10-25T12:50:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,6 +73,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-25T12:49:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-10-22T13:15:53Z'
     estimator: bvp-estimator-v1-heuristic
@@ -94,9 +110,10 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause localised and recorded in the RCA, with measured timings: where the 5-minute docker budget goes, and whether the run is slow or hung
+- [x] Fixed at the cause: the simulation does less redundant work, or the budget is re-derived from measurement with the reasoning recorded. Never raised blindly, and the test is never skipped
+  (Outcome: budget re-derived from measurement, 300s stands; measured 53-185s across 4 runs; cause was environmental, no code change. See RCA.)
+- [x] `upgrade_live_simulation.bats` passes twice in a row in the foreground; nothing is added to any baseline; vendored copy in sync if vendored paths changed (`fw vendor self --check --task T-4643`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -145,6 +162,8 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+out=$(timeout 1800 bats tests/integration/upgrade_live_simulation.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -284,6 +303,35 @@ cost_estimate_proposed:
 
 ## RCA
 
+**Classification: environment.** A one-off spike in host load or network during the first daytime integration-suite run. Not a code defect and not a stale test. No code was changed.
+
+**Symptom:** In the 2026-10-22T11:27Z integration run (`-j4`, dirty tree, work hours), test 1 passed functionally: `rc=0` and all three output markers present. It failed only the AC2 time-budget assertion (`tests/integration/upgrade_live_simulation.bats:213`) with `elapsed=526s budget=300s`. File wall time was 530s.
+
+**Root cause (measured):** the work inside the budget is network- and CPU-bound, with no redundant step. Phase timings come from an instrumented copy of the container script, run 2026-10-25 13:51Z at host load avg ~14 on kernel 7.0:
+- `apt-get update` + install git/rsync/python3: **40s**. Network (deb.debian.org): the largest cost and the most variable.
+- `git clone --depth=1 file:///upstream.git` (1.8 GB bare): 7s
+- `fw init`: 2s
+- `fw upgrade` (live): 19s
+- Container total: 73s. The host-side 1.8 GB bare clone runs *before* `start_epoch`, so the budget does not count it.
+
+Per-run history for this file, from `.context/audits/integration-suite/` (runs.log, failures/*/…meta, daily yaml slowest-files):
+
+| run | jobs | file wall | result |
+|---|---|---|---|
+| 2026-10-22T11:27Z (daytime, dirty tree) | 4 | 530s | budget red |
+| 2026-10-22T23:33Z (nightly) | 4 | 185s | green |
+| 2026-10-23T23:33Z (nightly) | 4 | 112s | green |
+| 2026-10-25 foreground, load ~14 | 1 | 53s | green |
+| 2026-10-25 foreground, load ~10 | 1 | ~55s | green (2nd in a row) |
+
+Every run after the first sits at 18-62% of the budget. Only the first run went over: daytime, dirty tree, running alongside other workers and other parallel docker tests. Its container log was not kept, because the test prints the log only when `docker_rc != 0`. So which phase stalled in that run cannot be recovered. The measured split points to apt/network as the most likely.
+
+**Why the 300s budget stands (re-derived, not raised):** the slowest green run measured is 185s under nightly `-j4` load. 300s is 1.6x headroom over that and ~4x over a quiet run. Raising the budget would hide a real regression in `fw upgrade` (19s today). Lowering it would make the test flaky on apt. No measurement justifies a change.
+
+**Why structurally allowed:** one run cannot tell a slow host from a slow upgrade path. On a budget-only breach the test also discards the container log, so the red carried no phase information.
+
+**Prevention / follow-up (not done here: the test is green, and the rule is not to "fix" a green test):** when the budget assertion fails, print the container log (or per-phase timestamps), so the next breach diagnoses itself. The nightly integration suite has 2 green runs since and remains the detector for a recurrence.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -378,3 +426,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4643-integration-red-upgradelivesimulationbat.md
 - **Context:** Initial task creation
+
+### 2026-10-25T12:49:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
