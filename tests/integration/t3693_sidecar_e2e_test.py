@@ -458,7 +458,10 @@ def test_real_termlink_inject_reaches_the_tagged_session(base):
         rep = json.loads(out.stdout)
         assert rep["injected"] == ["m-live"], rep
         time.sleep(1)
-        assert "[sidecar] 1 peer message waiting" in _pty(name, 20)
+        # T-4646: the PTY redraw can double a character of the echoed line under load
+        # (seen: "1 peerr message waiting"), so assert the part that carries the
+        # meaning — the injected message id — not the exact prose.
+        assert "message waiting (ids m-live)" in _pty(name, 20)
         events = [e["event"] for e in _jsonl(root / ".context/sidecar/receiver/events.jsonl")]
         assert "INJECT_ATTEMPT" in events and "HANDED_OVER" not in events
     finally:
