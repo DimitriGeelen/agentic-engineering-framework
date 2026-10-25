@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4736: fw upgrade never prunes superseded designer builds from a consumer's root vendor/designer/
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T11:48:07Z
+# ============================================================================
+
+task_id: T-4736
+task_name: "fw upgrade never prunes superseded designer builds from a consumer's root vendor/designer/"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T19:58:30Z
+completed: 2026-10-25T11:47:48Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-25T12:45:06+01:00
+last_commit: 2026-10-25T12:45:45+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade prunes superseded designer builds from the consumer root. register fabric card for the root-designer prune test
+
+# Key outcomes
+outcomes:
+  - 'Localised first: name the code that writes `vendor/designer/aef-workflow-designer-<pin>.html` at a consumer''s ROOT (as opposed to under `.agentic-framework/`), and record it in the RCA'
+  - 'When the pin changes, the upgrade removes a superseded root build only if it is untracked in the consumer''s git AND byte-identical to a build AEF published (sha256 match against a known pin), so a user''s own file is never deleted'
+  - 'Tracked or unknown superseded builds are listed in the upgrade output with the command to remove them, and are never deleted'
+  - 'Bats: an untracked old build that the upgrade wrote is pruned; a tracked old build is listed and kept; an unknown file with a designer-like name is kept; `upgrade_fresh_machine_simulation.bats` stays green (foreground, `timeout 1800`); vendored copy in sync (`fw vendor self --check --task T-4736`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — how to tell an AEF-written build from a user''s file'
+    chose: 'byte-identity (`cmp -s`) against the same-named build in the upgrade source''s `vendor/designer/`, plus untracked in the consumer''s git. That directory is tracked in the framework repo and keeps every released build, and both upgrade paths (in-repo `fw upgrade <dir>`, and a consumer''s clone of upstream) run with FRAMEWORK_ROOT on a full checkout.'
+    rationale: 'it covers builds already on disk today (050''s 0.25.0 predates any journal), it needs no new vendored file, and when it cannot prove a match it keeps the file. If a build is ever removed from the framework repo, its copies are listed instead of deleted.'
+    alternatives_rejected: ['(a) A write journal or stamp: it only knows about files written after it ships, so it would never clear the existing leftovers. (b) A new shipped sha256 manifest of every published build: one more vendored policy file to keep in step with every re-pin, for the same answer byte comparison gives. (c) Prune everything except the pin: this deletes tracked files and user files, which the task forbids.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.fabric/components/tests-unit-t4736_upgrade_prunes_root_designer.yaml'
+  - '.tasks/active/T-4736-fw-upgrade-never-prunes-superseded-desig.md'
+  - 'lib/upgrade.sh'
+  - 'tests/unit/t4736_upgrade_prunes_root_designer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T12:45:06'
+    action: 'T-4736: fw upgrade prunes superseded designer builds from the consumer root'
+  - time: '2026-10-25T12:45:45'
+    action: 'T-4736: register fabric card for the root-designer prune test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 949 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 949
+  commits: 3
+  files_changed: 7
+  lines_added: 761
+  lines_removed: 5
+  footprint_refreshed_at: '2026-10-25T11:48:23Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4736-fw-upgrade-never-prunes-superseded-desig.md
+generated_by: context-agent-hybrid
