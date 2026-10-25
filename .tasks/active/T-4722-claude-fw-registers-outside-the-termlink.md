@@ -96,10 +96,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] When `TERMLINK_RUNTIME_DIR` is unset, `claude-fw` and `fw termlink` resolve the running hub's runtime dir: from the hub's systemd unit environment, or from `termlink hub status`, which prints "Runtime dir:" with a pidfile and socket there. They export it before registering, so registration lands where the hub is
-- [ ] A set `TERMLINK_RUNTIME_DIR` always wins; with no hub running, behaviour is unchanged (default dir, no error)
-- [ ] The resolution is logged once (which source it used), never silently guessed
-- [ ] Bats with a stub `termlink`/`systemctl` cover: unset → resolved from hub status; set → kept; no hub → default; vendored copy in sync (`fw vendor self --check --task T-4722`)
+- [x] When `TERMLINK_RUNTIME_DIR` is unset, `claude-fw` and `fw termlink` resolve the running hub's runtime dir: from the hub's systemd unit environment, or from `termlink hub status`, which prints "Runtime dir:" with a pidfile and socket there. They export it before registering, so registration lands where the hub is
+- [x] A set `TERMLINK_RUNTIME_DIR` always wins; with no hub running, behaviour is unchanged (default dir, no error)
+- [x] The resolution is logged once (which source it used), never silently guessed
+- [x] Bats with a stub `termlink`/`systemctl` cover: unset → resolved from hub status; set → kept; no hub → default; vendored copy in sync (`fw vendor self --check --task T-4722`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
