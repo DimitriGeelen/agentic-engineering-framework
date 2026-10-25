@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4751: check-project-boundary refuses its own remedy: fw config set BOUNDARY_EXTRA_READ_PATHS <outside path> is blocked as an outside-path argument
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T12:42:30Z
+# ============================================================================
+
+task_id: T-4751
+task_name: "check-project-boundary refuses its own remedy: fw config set BOUNDARY_EXTRA_READ_PATHS <outside path> is blocked as an outside-path argument"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-25T12:22:46Z
+completed: 2026-10-25T12:41:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-25T13:39:11+01:00
+last_commit: 2026-10-25T13:39:11+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary gate admits its own remedy — fw config set BOUNDARY_EXTRA_READ_PATHS <outside paths>
+
+# Key outcomes
+outcomes:
+  - '`fw config set BOUNDARY_EXTRA_READ_PATHS /a:/b` and `fw config get BOUNDARY_EXTRA_READ_PATHS` pass `check-project-boundary`, though the value names outside paths (in either `bin/fw` or `.agentic-framework/bin/fw` form, with or without a `cd PROJECT &&` prefix). The exemption is logged'
+  - 'The exemption is narrow: another `fw config set` key with an outside path, `fw config set BOUNDARY_EXTRA_READ_PATHS` chained with another command that reads outside, or a read of the path itself are all judged as today'
+  - 'The block message''s remedy line is now runnable verbatim (a test runs the printed command through the hook and expects exit 0)'
+  - 'Bats cover the allowed forms, the three narrow-exemption refusals, and the remedy round-trip; vendored copy in sync (`fw vendor self --check --task T-4751`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — exempt the value token, and make the remedy line exempt-shaped'
+    chose: 'a T-3766-style strict-grammar exemption that blanks only the value token of `<fw> config set BOUNDARY_EXTRA_READ_PATHS <abs:paths>` for Patterns 4/4b, with the fw either absolute-to-this-project or relative while the cwd is the project root; logged Tier-2 to `.context/working/.gate-bypass-log.yaml`. The remedy line now prints `cd <PROJECT_ROOT> && bin/fw|.agentic-framework/bin/fw config set ...`.'
+    rationale: 'the task asks for the command to work, not for a manual workaround; blanking one token keeps every sibling segment and every write pattern judged as before.'
+    alternatives_rejected: ['naming the `.framework.yaml` hand-edit in the message (leaves the CLI path broken and unlogged); trusting a bare PATH `fw` (which `_fw_cmd` may print): a PATH lookup is not provably this project''s fw, so the message stops printing it.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.tasks/active/T-4751-check-project-boundary-refuses-its-own-r.md'
+  - 'agents/context/check-project-boundary.sh'
+  - 'tests/unit/t4751_boundary_config_extra_read_remedy.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T13:39:11'
+    action: 'T-4751: boundary gate admits its own remedy — fw config set BOUNDARY_EXTRA_READ_PATHS <outside paths>'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 18
+  commits: 2
+  files_changed: 7
+  lines_added: 807
+  lines_removed: 9
+  footprint_refreshed_at: '2026-10-25T12:42:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4751-check-project-boundary-refuses-its-own-r.md
+generated_by: context-agent-hybrid

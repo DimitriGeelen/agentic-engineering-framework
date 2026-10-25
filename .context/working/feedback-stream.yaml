@@ -48715,3 +48715,21 @@ scan_id: R-8b2df982
 task_id: T-4698
 payload:
   task_file: .tasks/active/T-4698-t-3694-deferral-gate-treats-task-ids-tha.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T12:42:18Z'
+scan_id: R-4a2dec32
+task_id: T-4751
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T12:42:18Z'
+scan_id: R-4a2dec32
+task_id: T-4751
+payload:
+  task_file: .tasks/active/T-4751-check-project-boundary-refuses-its-own-r.md
