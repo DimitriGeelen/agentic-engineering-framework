@@ -81,10 +81,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw termlink dispatch --help` (and `-h`) prints usage listing every option the dispatch parser accepts, and exits 0
-- [ ] Every other `fw termlink` subcommand whose parser dies on "Unknown option" (`agents/termlink/termlink.sh` ~404, ~579, ~1123) also answers `--help`/`-h`
-- [ ] A bats case asserts each subcommand's `--help` exits 0 and names each option its parser handles (derived from the parser, so a new flag without a help line fails the test)
-- [ ] The hint in `check-agent-dispatch.sh:99` still names a working command; vendored copy in sync (`fw vendor self --check --task T-4730`)
+- [x] `fw termlink dispatch --help` (and `-h`) prints usage listing every option the dispatch parser accepts, and exits 0
+- [x] Every other `fw termlink` subcommand whose parser dies on "Unknown option" (`agents/termlink/termlink.sh` ~404, ~579, ~1123) also answers `--help`/`-h`
+- [x] A bats case asserts each subcommand's `--help` exits 0 and names each option its parser handles (derived from the parser, so a new flag without a help line fails the test)
+- [x] The hint in `check-agent-dispatch.sh:99` still names a working command; vendored copy in sync (`fw vendor self --check --task T-4730`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -363,6 +363,11 @@ bin/fw vendor self --check --task T-4730
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-25 — where `--help` is handled
+- **Chose:** a `-h|--help` arm in each subcommand's own option loop, with `ensure_termlink` moved after the loop so usage works without the binary.
+- **Why:** each verb's help sits next to its parser, which the bats derives from; the hint in check-agent-dispatch.sh:99 stays valid unchanged.
+- **Rejected:** a pre-scan of `"$*"` for `--help` before dispatch (would fire on a `--prompt` text containing "--help"); pointing the hint at top-level `fw termlink help` (that list was incomplete and unpinned).
 
 ## Decision
 
