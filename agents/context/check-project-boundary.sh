@@ -597,6 +597,57 @@ def _cred_exempt_spans(cmd, root):
 
 _CRED_SPANS = _cred_exempt_spans(_strip_heredocs(command), project_root)
 
+
+# T-4751 (010-termlink be.17): the block message's own remedy,
+#     <fw> config set BOUNDARY_EXTRA_READ_PATHS /path/one:/path/two
+# names outside paths by design: the value is a path list being DECLARED, not read.
+# That one value token is exempt from the read-side Patterns 4/4b, in that segment only.
+# Strict grammar, as T-3766: the segment is exactly five words, its first word is this
+# project's fw (absolute, or `bin/fw` / `.agentic-framework/bin/fw` while the cwd is the
+# project root: the session cwd, and every earlier `cd` in the command names the root),
+# the key is spelled canonically, the value is colon-joined absolute paths, and the raw
+# segment has no quote, escape, `$`, backtick, redirection, glob, brace or `~`. Any other
+# key, a sibling segment, or a path given to any other verb is judged as before. Fails
+# closed: any error yields no exemption.
+_EXTRA_KEY = 'BOUNDARY_EXTRA_READ_PATHS'
+_EXTRA_VALUE = re.compile(r'^/[A-Za-z0-9._+@/-]*(:/[A-Za-z0-9._+@/-]*)*$')
+
+
+def _config_extra_read_spans(cmd, root, cwd):
+    try:
+        roots = {root, os.path.realpath(root)}
+        at_root = (cwd or root).rstrip('/') in roots or os.path.realpath(cwd or root) in roots
+        spans = []
+        mask = _segment_mask(cmd)
+        for s, e in _split_segments(mask):
+            words_m = list(re.finditer(r'\S+', mask[s:e]))
+            words = [t.group(0) for t in words_m]
+            if not words:
+                continue
+            if words[0] in ('cd', 'pushd', 'popd'):
+                tgt = words[1].rstrip('/') if len(words) == 2 else ''
+                at_root = bool(tgt) and (tgt in roots or os.path.realpath(tgt) in roots)
+                continue
+            if len(words) != 5 or words[1:4] != ['config', 'set', _EXTRA_KEY]:
+                continue
+            exe = words[0]
+            if exe not in (root + '/bin/fw', root + '/.agentic-framework/bin/fw') \
+                    and not (at_root and exe in ('bin/fw', '.agentic-framework/bin/fw')):
+                continue
+            if re.search(r'[\'"\\$`<>(){}*?\[\]~]', cmd[s:e]):
+                continue
+            if not _EXTRA_VALUE.match(words[4]):
+                continue
+            spans.append((s + words_m[4].start(), s + words_m[4].end()))
+        return spans
+    except Exception:
+        return []
+
+
+_EXTRA_SPANS = _config_extra_read_spans(_strip_heredocs(command), project_root,
+                                        os.environ.get('_BOUNDARY_CWD', ''))
+_CRED_SPANS = _CRED_SPANS + _EXTRA_SPANS
+
 command = _strip_heredocs(command)   # T-2920: must precede _strip_quoted
 command = _drop_termlink_segments(command, project_root)   # T-3076
 command = _strip_quoted(command)
@@ -1006,7 +1057,9 @@ if _hits:
     print(f'BLOCKED|{h.reason}{tgt} (outside project root {project_root})')
     sys.exit(0)
 
-print('SAFE')
+# T-4751: a verdict that used the BOUNDARY_EXTRA_READ_PATHS exemption says so, for the log.
+_cmd_raw = _strip_heredocs(os.environ.get('_BOUNDARY_CMD', ''))
+print('SAFE|' + ' '.join(_cmd_raw[s_:e_] for s_, e_ in _EXTRA_SPANS) if _EXTRA_SPANS else 'SAFE')
 PYEOF
 )
 
@@ -1016,6 +1069,19 @@ PYEOF
         exit 0
     fi
     if [ "$MATCH_RESULT" = "SAFE" ]; then
+        exit 0
+    fi
+    # T-4751: the block message's remedy (declaring BOUNDARY_EXTRA_READ_PATHS) passed on
+    # its exemption; record it Tier-2 so a widened read boundary is never silent.
+    if [ "${MATCH_RESULT%%|*}" = "SAFE" ]; then
+        _bd_log="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
+        mkdir -p "${_bd_log%/*}" 2>/dev/null && {
+            echo "- timestamp: '$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+            echo "  gate: 'check-project-boundary'"
+            echo "  flag: 'config-set-BOUNDARY_EXTRA_READ_PATHS'"
+            echo "  value: '${MATCH_RESULT#SAFE|}'"
+            echo "  reason: 'declared read path list exempt from outside-path argument check (T-4751)'"
+        } >> "$_bd_log" 2>/dev/null
         exit 0
     fi
 
@@ -1046,7 +1112,11 @@ PYEOF
     echo "  target project enforces its own governance in its own process." >&2
     echo "" >&2
     echo "  To let this project READ an extra path (e.g. a tool install dir):" >&2
-    echo "    $(_fw_cmd) config set BOUNDARY_EXTRA_READ_PATHS /path/one:/path/two" >&2
+    # T-4751: a project-local fw, so the line passes this hook's own exemption verbatim
+    # (a bare PATH `fw`, which _fw_cmd may print, is not trusted to be this project's).
+    _bd_fw=".agentic-framework/bin/fw"
+    [ "$PROJECT_ROOT" = "$FRAMEWORK_ROOT" ] && _bd_fw="bin/fw"
+    echo "    cd $PROJECT_ROOT && $_bd_fw config set BOUNDARY_EXTRA_READ_PATHS /path/one:/path/two" >&2
     echo "" >&2
     echo "  Project root: $PROJECT_ROOT" >&2
     echo "" >&2
