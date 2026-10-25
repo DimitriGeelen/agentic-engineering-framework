@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4644: Integration red: fw_self_test.bats hits the 900s per-file cap (only test 1 of 4 finished)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T13:18:36Z
+# ============================================================================
+
+task_id: T-4644
+task_name: "Integration red: fw_self_test.bats hits the 900s per-file cap (only test 1 of 4 finished)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T13:12:08Z
+completed: 2026-10-25T13:16:05Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-25T14:14:49+01:00
+last_commit: 2026-10-25T14:14:49+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw_self_test.bats runs fw self-test once in setup_file (was 4x, 606s -> ~140s, under the 900s integration cap); t4644 regression bats; RCA
+
+# Key outcomes
+outcomes:
+  - 'Cause localised and recorded in the RCA, with measured timings: which step of `fw self-test` consumes the 900 s per-file cap'
+  - 'Fixed at the cause: `tests/integration/fw_self_test.bats` runs `fw self-test` once (in `setup_file`) and all 4 tests assert on that one capture; the cap is not raised, and no test is skipped'
+  - 'Regression test `tests/unit/t4644_self_test_single_run.bats` fails on the old file (4 invocations) and passes on the fixed one'
+  - '`fw_self_test.bats` finishes within the cap with every test run (4/4 ok, 0 skips), twice in a row; nothing is added to any baseline (no vendored path changed, so no vendor sync is needed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4644-integration-red-fwselftestbats-hits-the-.md'
+  - 'tests/integration/fw_self_test.bats'
+  - 'tests/unit/t4644_self_test_single_run.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T14:14:49'
+    action: 'T-4644: fw_self_test.bats runs fw self-test once in setup_file (was 4x, 606s -> ~140s, under the 900s integration cap); t4644 regression bats; RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4323 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, integration-red]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4323
+  commits: 2
+  files_changed: 6
+  lines_added: 208
+  lines_removed: 15
+  footprint_refreshed_at: '2026-10-25T13:18:40Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4644-integration-red-fwselftestbats-hits-the-.md
+generated_by: context-agent-hybrid
