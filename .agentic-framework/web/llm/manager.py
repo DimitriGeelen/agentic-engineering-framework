@@ -121,6 +121,20 @@ def get_manager() -> ProviderManager:
         openrouter_provider = OpenRouterProvider(api_key=api_key)
         _manager.register(openrouter_provider)
 
+    # Register Anthropic if a key resolves (T-4749): env first, then the store.
+    # The key value is never logged.
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not anthropic_key:
+        try:
+            from web.secrets_store import get_api_key
+            anthropic_key = get_api_key("anthropic") or ""
+        except ImportError:
+            pass
+
+    if anthropic_key:
+        from web.llm.anthropic_provider import AnthropicProvider
+        _manager.register(AnthropicProvider(api_key=anthropic_key))
+
     # Check for saved provider preference
     active = os.environ.get("FW_LLM_PROVIDER", "ollama")
     if active in [p["name"] for p in _manager.list_providers()]:

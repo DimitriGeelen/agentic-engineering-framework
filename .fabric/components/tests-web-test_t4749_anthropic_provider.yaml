@@ -1,0 +1,21 @@
+id: tests/web/test_t4749_anthropic_provider.py
+name: test_t4749_anthropic_provider
+type: script
+subsystem: tests
+location: tests/web/test_t4749_anthropic_provider.py
+tags: []
+
+purpose: "T-4749: the Anthropic provider maps the SDK stream onto StreamChunks, never reports a truncated or declined answer as ok, and is registered from the env or the key store."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-25
+created_by: unknown

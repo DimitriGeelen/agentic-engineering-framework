@@ -428,6 +428,12 @@ def save_api_key():
             provider = OpenRouterProvider(api_key=value)
             _manager.register(provider)
 
+    # Hot-register Anthropic on first save (T-4749)
+    if name == "anthropic" and _manager is not None:
+        if not _manager.get("anthropic"):
+            from web.llm.anthropic_provider import AnthropicProvider
+            _manager.register(AnthropicProvider(api_key=value))
+
     return Response(
         '<div role="alert" style="padding:0.5rem 1rem;background:var(--pico-primary-focus);'
         'border-radius:var(--pico-border-radius);margin-top:0.5rem">'
