@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4722: claude-fw registers outside the TermLink hub when login shells lack TERMLINK_RUNTIME_DIR that termlink-hub.service uses (sessions invisible to remote list)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T12:28:01Z
+# ============================================================================
+
+task_id: T-4722
+task_name: "claude-fw registers outside the TermLink hub when login shells lack TERMLINK_RUNTIME_DIR that termlink-hub.service uses (sessions invisible to remote list)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T21:26:08Z
+completed: 2026-10-25T12:27:15Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-25T13:11:04+01:00
+last_commit: 2026-10-25T13:13:33+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  resolve TermLink runtime dir from the running hub (systemd unit env, termlink hub status) when TERMLINK_RUNTIME_DIR is unset; claude-fw and fw termlink export it and log the source. tick Agent ACs — resolver, tests, vendor green
+
+# Key outcomes
+outcomes:
+  - 'When `TERMLINK_RUNTIME_DIR` is unset, `claude-fw` and `fw termlink` resolve the running hub''s runtime dir: from the hub''s systemd unit environment, or from `termlink hub status`, which prints "Runtime dir:" with a pidfile and socket there. They export it before registering, so registration lands where the hub is'
+  - 'A set `TERMLINK_RUNTIME_DIR` always wins; with no hub running, behaviour is unchanged (default dir, no error)'
+  - 'The resolution is logged once (which source it used), never silently guessed'
+  - 'Bats with a stub `termlink`/`systemctl` cover: unset → resolved from hub status; set → kept; no hub → default; vendored copy in sync (`fw vendor self --check --task T-4722`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — where hub discovery feeds in'
+    chose: 'discovered dirs join the candidate list only when `TERMLINK_RUNTIME_DIR_FALLBACK` is unset (the built-in default); an explicit FALLBACK stays the authoritative list. A discovered dir still has to pass `fw_termlink_hub_live`.'
+    rationale: 'an operator-supplied list is a deliberate statement; the built-in literal is the guess that failed on 055. It also keeps the T-3779/T-3698 fixtures hermetic.'
+    alternatives_rejected: ['always appending discovery (turns explicit lists into suggestions, breaks existing hermetic tests); waiting for TermLink to resolve it itself (`termlink hub status` already partly does, so we consume it as one source — a termlink-side fix stays compatible).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/lib/termlink-runtime.sh'
+  - '.tasks/active/T-4722-claude-fw-registers-outside-the-termlink.md'
+  - 'agents/termlink/termlink.sh'
+  - 'bin/claude-fw'
+  - 'lib/termlink-runtime.sh'
+  - 'tests/unit/t4722_termlink_hub_runtime_discovery.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T13:11:04'
+    action: 'T-4722: resolve TermLink runtime dir from the running hub (systemd unit env, termlink hub status) when TERMLINK_RUNTIME_DIR is unset; claude-fw and fw termlink export it and log the source'
+  - time: '2026-10-25T13:13:33'
+    action: 'T-4722: tick Agent ACs — resolver, tests, vendor green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2341 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2341
+  commits: 4
+  files_changed: 20
+  lines_added: 1628
+  lines_removed: 45
+  footprint_refreshed_at: '2026-10-25T12:31:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4722-claude-fw-registers-outside-the-termlink.md
+generated_by: context-agent-hybrid

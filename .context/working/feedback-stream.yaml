@@ -48607,3 +48607,111 @@ scan_id: R-b29e2e41
 task_id: T-4750
 payload:
   task_file: .tasks/active/T-4750-continuous-mode-stop-hook-re-prompts-dis.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T11:53:50Z'
+scan_id: R-d05361c5
+task_id: T-4749
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T11:53:50Z'
+scan_id: R-d05361c5
+task_id: T-4749
+payload:
+  task_file: .tasks/active/T-4749-watchtower-anthropic-llm-provider-offici.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T12:26:44Z'
+scan_id: R-903e90d0
+task_id: T-4701
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T12:26:44Z'
+scan_id: R-903e90d0
+task_id: T-4701
+payload:
+  task_file: .tasks/active/T-4701-fw-upgrade-does-not-untrack-runtime-file.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T12:27:01Z'
+scan_id: R-6ed5f272
+task_id: T-4721
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T12:27:01Z'
+scan_id: R-6ed5f272
+task_id: T-4721
+payload:
+  task_file: .tasks/active/T-4721-reference-one-click-launcher-aef-startsh.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T12:27:49Z'
+scan_id: R-906b25ab
+task_id: T-4722
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T12:27:49Z'
+scan_id: R-906b25ab
+task_id: T-4722
+payload:
+  task_file: .tasks/active/T-4722-claude-fw-registers-outside-the-termlink.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T12:28:05Z'
+scan_id: R-41cbd9ec
+task_id: T-4739
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T12:28:05Z'
+scan_id: R-41cbd9ec
+task_id: T-4739
+payload:
+  task_file: .tasks/active/T-4739-v1815-field-evidence-report-and-release-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T12:29:46Z'
+scan_id: R-8b2df982
+task_id: T-4698
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T12:29:46Z'
+scan_id: R-8b2df982
+task_id: T-4698
+payload:
+  task_file: .tasks/active/T-4698-t-3694-deferral-gate-treats-task-ids-tha.md

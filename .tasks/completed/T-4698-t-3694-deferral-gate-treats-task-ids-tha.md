@@ -1,23 +1,23 @@
 ---
-id: T-4722
-name: "claude-fw registers outside the TermLink hub when login shells lack TERMLINK_RUNTIME_DIR
-  that termlink-hub.service uses (sessions invisible to remote list)"
+id: T-4698
+name: "T-3694 deferral gate treats task ids that belong to another project (e.g. 'AEF
+  T-4690' in a consumer's AC text) as local deferral targets and refuses the close"
 description: >
-  055 field finding on the operator laptop (sidecar 29c97c35, 055 T-628): termlink-hub.service
-  runs with TERMLINK_RUNTIME_DIR=/root/.termlink/hub-persist, interactive/login shells
-  had none, so claude-fw's TermLink registration went to the default runtime dir.
-  055 added the variable to /root/.profile and .bashrc. Upstream fix: claude-fw (and
-  fw termlink) resolve the hub's runtime dir when the variable is unset (read it from
-  the running hub / the termlink-hub unit's Environment, or termlink's own discovery)
-  and warn when the registration would land outside the hub; coordinate with TermLink
-  (they may prefer termlink itself to resolve it).
+  ring20 be.9 report (sidecar 714c296e): closing ring20 T-2494 was refused because
+  its AC text named AEF's T-4690/T-4694 next to 'follow-up message'; the gate looked
+  for local ring20 tasks that do not exist. Consumers that discuss upstream ids will
+  hit this. Fix: treat an id as a local deferral target only when it is not qualified
+  by a project/vendor prefix (AEF T-XXXX, TermLink T-XXXX, <project>#T-XXXX) — define
+  the qualifier forms — and say in the refusal how to qualify a foreign id. Do not
+  weaken the gate for genuinely local unowned deferrals. Tests: qualified foreign
+  id passes; bare unknown id still refused with the new hint.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, lib/design_register.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,9 +45,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-23T21:26:08Z
-last_update: '2026-10-25T12:15:43Z'
-date_finished:
+created: 2026-10-23T14:04:52Z
+last_update: 2026-10-25T12:29:14Z
+date_finished: 2026-10-25T12:29:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,7 +59,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-23T21:30:44Z'
+  - ts: '2026-10-23T14:15:26Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -69,7 +69,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-23T21:31:15Z'
+  - ts: '2026-10-23T14:15:47Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
@@ -103,7 +103,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4722: claude-fw registers outside the TermLink hub when login shells lack TERMLINK_RUNTIME_DIR that termlink-hub.service uses (sessions invisible to remote list)
+# T-4698: T-3694 deferral gate treats task ids that belong to another project (e.g. 'AEF T-4690' in a consumer's AC text) as local deferral targets and refuses the close
 
 ## Context
 
@@ -112,10 +112,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [x] When `TERMLINK_RUNTIME_DIR` is unset, `claude-fw` and `fw termlink` resolve the running hub's runtime dir: from the hub's systemd unit environment, or from `termlink hub status`, which prints "Runtime dir:" with a pidfile and socket there. They export it before registering, so registration lands where the hub is
-- [x] A set `TERMLINK_RUNTIME_DIR` always wins; with no hub running, behaviour is unchanged (default dir, no error)
-- [x] The resolution is logged once (which source it used), never silently guessed
-- [x] Bats with a stub `termlink`/`systemctl` cover: unset → resolved from hub status; set → kept; no hub → default; vendored copy in sync (`fw vendor self --check --task T-4722`)
+- [x] The T-3694 deferral gate treats a task id as a local deferral target only when it is not qualified by a project prefix (`AEF T-XXXX`, `TermLink T-XXXX`, `<project>#T-XXXX`, `<project> T-XXXX` for a known peer/vendor name). The qualifier forms are defined in one place and documented in the block message
+- [x] An unqualified id that does not exist locally is still refused as today
+- [x] Bats: ring20's shape (an AC naming two upstream AEF task ids beside the phrase "follow-up message") closes; an unqualified missing T-id is still refused; a qualified-but-local-looking id (`AEF T-0001`) is not looked up locally
+- [x] Vendored copy in sync (`fw vendor self --check --task T-4698`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -300,13 +300,23 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4722_termlink_hub_runtime_discovery.bats > /tmp/.t4722.out 2>&1 && ! grep -q "^not ok" /tmp/.t4722.out
-test "$(grep -c '# skip' /tmp/.t4722.out)" -eq 0
-timeout 300 bats tests/unit/t3779_termlink_runtime.bats tests/unit/t3698_mcp_termlink_runtime_pin.bats > /tmp/.t4722b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4722b.out
-bash -n bin/claude-fw && bash -n lib/termlink-runtime.sh && bash -n agents/termlink/termlink.sh
-bin/fw vendor self --check --task T-4722
+timeout 300 bats tests/unit/t4698_foreign_task_ids.bats > /tmp/.t4698.out 2>&1 && ! grep -q "^not ok" /tmp/.t4698.out
+test "$(grep -c '# skip' /tmp/.t4698.out)" -eq 0
+timeout 300 python3 -m pytest tests/unit/test_t3694_design_register.py -q > /tmp/.t4698-py.out 2>&1 && grep -q passed /tmp/.t4698-py.out
+# Self-deferral legs only: the two "control" cases there are red from T-4197's tautology gate on their `true` fixtures (pre-existing, not this task).
+timeout 600 bats -f "reproduction|waive" tests/governance/test_t3694_conformance_gate.bats > /tmp/.t4698-gov.out 2>&1 && ! grep -q "^not ok" /tmp/.t4698-gov.out
+grep -q "FOREIGN_QUALIFIERS" lib/design_register.py && grep -q "another project's task" agents/task-create/update-task.sh
+bin/fw vendor self --check --task T-4698
 
 ## RCA
+
+**Symptom:** ring20 T-2494 was refused at close by the T-3694 self-deferral gate: its AC named AEF's T-4690/T-4694 next to "follow-up message", and the gate reported them as missing local tasks.
+
+**Root cause:** `lib/design_register.py:_deferral_targets` extracted every `T-\d{3,}` match (`TASK_ID_RE.findall`) and `self_deferrals` looked each one up in the local `.tasks/`. Nothing distinguished an id qualified by another project's name ("AEF T-4690", "ring20#T-5") from a local one, and the "follow-up" branch takes every id in the sentence, so any consumer sentence that cites an upstream id beside "follow-up" was refused.
+
+**Why structurally allowed:** the gate was built and tested only in the framework repo, where every id in a task body is local. Its fixtures (T-3691) never contained a foreign id, and no consumer-shaped test existed.
+
+**Prevention:** qualifier forms are defined once (`FOREIGN_QUALIFIERS` in `lib/design_register.py`) and pinned by `tests/unit/t4698_foreign_task_ids.bats` (consumer-shaped root: ring20 shape closes, every qualifier form passes, bare missing id still refused with the hint, AEF-qualified ids are local again inside the framework repo). The refusal now tells the author how to qualify a foreign id, so the next consumer resolves it without a bypass.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -321,14 +331,6 @@ bin/fw vendor self --check --task T-4722
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** On the 055 laptop, `claude-fw --termlink` registered its session in /tmp/termlink-0 while `termlink-hub.service` listened in /root/.termlink/hub-persist; the session was invisible to `termlink remote list` and peers.
-
-**Root cause:** `lib/termlink-runtime.sh:74` (`fw_termlink_runtime_resolve`) only probed a static candidate list — `$TERMLINK_RUNTIME_DIR_FALLBACK`, else the single literal `/var/lib/termlink`. It never asked the running hub where it lives, so a hub configured anywhere else resolved to `none` and claude-fw (`bin/claude-fw:328`) registered in the default dir with only a generic warning. `fw termlink spawn`/`dispatch` (`agents/termlink/termlink.sh` `ensure_termlink`) did not resolve at all.
-
-**Why structurally allowed:** T-3779 was written against this host, where the hub dir happens to equal the hard-coded literal; its tests pin the candidate list via `TERMLINK_RUNTIME_DIR_FALLBACK`, so no test ever had a hub outside the literal.
-
-**Prevention:** the resolver now also reads the hub's own declared dir (systemd `termlink-hub` unit Environment, then `termlink hub status` "Runtime dir:") and names the source in its reason; `tests/unit/t4722_termlink_hub_runtime_discovery.bats` pins a hub in a non-literal dir found via stub `systemctl` and stub `termlink`, plus set-wins and no-hub-unchanged.
 
 ## Evolution
 
@@ -385,6 +387,11 @@ bin/fw vendor self --check --task T-4722
 
 ## Decisions
 
+### 2026-10-25 — which qualifiers mark an id as foreign
+- **Chose:** a fixed peer list (`AEF`, `TermLink`, `framework`, `upstream`, possessive allowed), plus the open `<project>#T-X` form for any other project, plus inheritance across a `/` chain. Inside the framework repo itself (FRAMEWORK.md + bin/fw at root), `AEF`/`framework` count as local, so the gate is not weakened where those names are the local project.
+- **Why:** these cover ring20's actual text and the names consumers use for upstream ids. `#` gives every other project an unambiguous form without the gate having to know project names.
+- **Rejected:** treating any `<word> T-X` as qualified (an ordinary word before an id would excuse a local deferral). A config key listing peers (needs registry and Watchtower config parity work for a case the `#` form already covers). Comma-chain inheritance ("AEF T-1, T-2" could name a local T-2).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -393,11 +400,6 @@ bin/fw vendor self --check --task T-4722
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
-
-### 2026-10-25 — where hub discovery feeds in
-- **Chose:** discovered dirs join the candidate list only when `TERMLINK_RUNTIME_DIR_FALLBACK` is unset (the built-in default); an explicit FALLBACK stays the authoritative list. A discovered dir still has to pass `fw_termlink_hub_live`.
-- **Why:** an operator-supplied list is a deliberate statement; the built-in literal is the guess that failed on 055. It also keeps the T-3779/T-3698 fixtures hermetic.
-- **Rejected:** always appending discovery (turns explicit lists into suggestions, breaks existing hermetic tests); waiting for TermLink to resolve it itself (`termlink hub status` already partly does, so we consume it as one source — a termlink-side fix stays compatible).
 
 ## Decision
 
@@ -411,11 +413,28 @@ bin/fw vendor self --check --task T-4722
 
 ## Updates
 
-### 2026-10-23T21:26:08Z — task-created [task-create-agent]
+### 2026-10-23T14:04:52Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4722-claude-fw-registers-outside-the-termlink.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4698-t-3694-deferral-gate-treats-task-ids-tha.md
 - **Context:** Initial task creation
 
-### 2026-10-25T12:04:24Z — status-update [task-update-agent]
+### 2026-10-25T12:03:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8b2df982
+- **Timestamp:** 2026-10-25T12:29:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-25T12:29:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

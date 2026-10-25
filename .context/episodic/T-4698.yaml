@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4698: T-3694 deferral gate treats task ids that belong to another project (e.g. 'AEF T-4690' in a consumer's AC text) as local deferral targets and refuses the close
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T12:29:58Z
+# ============================================================================
+
+task_id: T-4698
+task_name: "T-3694 deferral gate treats task ids that belong to another project (e.g. 'AEF T-4690' in a consumer's AC text) as local deferral targets and refuses the close"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T14:04:52Z
+completed: 2026-10-25T12:29:14Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-23T16:05:13+02:00
+last_commit: 2026-10-25T13:12:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture deferral gate treating foreign task ids as local (ring20 be.9). self-deferral gate skips foreign-qualified task ids (AEF/TermLink/framework/upstream T-X, <project>#T-X, /-chains); refusal says how to qualify
+
+# Key outcomes
+outcomes:
+  - 'The T-3694 deferral gate treats a task id as a local deferral target only when it is not qualified by a project prefix (`AEF T-XXXX`, `TermLink T-XXXX`, `<project>#T-XXXX`, `<project> T-XXXX` for a known peer/vendor name). The qualifier forms are defined in one place and documented in the block message'
+  - 'An unqualified id that does not exist locally is still refused as today'
+  - 'Bats: ring20''s shape (an AC naming two upstream AEF task ids beside the phrase "follow-up message") closes; an unqualified missing T-id is still refused; a qualified-but-local-looking id (`AEF T-0001`) is not looked up locally'
+  - 'Vendored copy in sync (`fw vendor self --check --task T-4698`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — which qualifiers mark an id as foreign'
+    chose: 'a fixed peer list (`AEF`, `TermLink`, `framework`, `upstream`, possessive allowed), plus the open `<project>#T-X` form for any other project, plus inheritance across a `/` chain. Inside the framework repo itself (FRAMEWORK.md + bin/fw at root), `AEF`/`framework` count as local, so the gate is not weakened where those names are the local project.'
+    rationale: 'these cover ring20''s actual text and the names consumers use for upstream ids. `#` gives every other project an unambiguous form without the gate having to know project names.'
+    alternatives_rejected: ['treating any `<word> T-X` as qualified (an ordinary word before an id would excuse a local deferral). A config key listing peers (needs registry and Watchtower config parity work for a case the `#` form already covers). Comma-chain inheritance ("AEF T-1, T-2" could name a local T-2).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/design_register.py'
+  - '.tasks/active/T-4698-t-3694-deferral-gate-treats-task-ids-tha.md'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/design_register.py'
+  - 'tests/unit/t4698_foreign_task_ids.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-23T16:05:13'
+    action: 'T-4698: capture deferral gate treating foreign task ids as local (ring20 be.9)'
+  - time: '2026-10-25T13:12:52'
+    action: 'T-4698: self-deferral gate skips foreign-qualified task ids (AEF/TermLink/framework/upstream T-X, <project>#T-X, /-chains); refusal says how to qualify'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2784 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2784
+  commits: 3
+  files_changed: 17
+  lines_added: 1261
+  lines_removed: 41
+  footprint_refreshed_at: '2026-10-25T12:31:00Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4698-t-3694-deferral-gate-treats-task-ids-tha.md
+generated_by: context-agent-hybrid

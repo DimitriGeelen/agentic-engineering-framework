@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4739: v1.8.15 field-evidence report and release readiness (suite comparison vs v1.8.14, dry-run)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T12:28:17Z
+# ============================================================================
+
+task_id: T-4739
+task_name: "v1.8.15 field-evidence report and release readiness (suite comparison vs v1.8.14, dry-run)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-24T21:12:14Z
+completed: 2026-10-25T12:28:04Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-10-25T00:14:48+02:00
+last_commit: 2026-10-25T13:21:49+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.8.15 field-evidence report — 80 fixes with peer verdicts, 286 of 359 vendored-path ids untested, targeted suite comparison vs v1.8.14 (6 release-diff causes filed T-4743..T-4748), release dry-run captured; T-4146 fallback applies (operator yes/no). round 2 — T-4744..T-4748 green at HEAD, only operator-gated T-4743 left as release-diff red (2 environmental); be.17 verdicts T-4720/T-4726 added; dry-run re-captured (ff master by 1320); AC4 ticked
+
+# Key outcomes
+outcomes:
+  - '`docs/reports/field-test-v1.8.15-results.md` lists every fix with a peer verdict (fix, project, tip tested, verdict, source message id), in the v1.8.14 shape'
+  - 'FAILS, partial or ambiguous verdicts are listed with the follow-up task each produced'
+  - 'The report gives the count of consumer-facing tasks since v1.8.14 with no field test, so the T-4146 fallback can be applied honestly'
+  - 'Full-suite comparison against v1.8.14: no unit-suite failure attributed to the release diff (new reds since v1.8.14 named, each with its task or its proof of being environmental)'
+  - '`bin/fw release tag-and-release --dry-run` output captured in the report'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'v1.8.15 field-evidence report — 80 fixes with peer verdicts, 286 of 359 vendored-path ids untested, targeted suite comparison vs v1.8.14 (6 release-diff causes filed T-4743..T-4748), release dry-run captured; T-4146 fallback applies (operator yes/no)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-24 — suite comparison: targeted, not full corpus'
+    chose: 'run all 42 HEAD-side red/undetermined/changed/differing files on `git archive` trees of v1.8.14 and HEAD (per-file, unit-suite.sh invocation, foreground chunks).'
+    rationale: 'host load 30–47 on 24 cores; the full two-tree run reached ~120 of 1193/1498 files in 19 min, so it could not finish in the 2 h window. Nightly reports at ≤9 h behind HEAD supply the HEAD-side red set.'
+    alternatives_rejected: ['guessing from nightly reports alone (no base side); running in the background (forbidden by the dispatch brief).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4739-v1815-field-evidence-report-and-release-.md'
+  - '.tasks/active/T-4743-t-4679-task-file-and-episodic-do-not-par.md'
+  - '.tasks/active/T-4744-t3221-pin-counts-2-iscommitcheckpointcom.md'
+  - '.tasks/active/T-4745-testsunithermeticpy-is-discovered-as-a-p.md'
+  - '.tasks/active/T-4746-binfw-t-4680-clone-inside-consumer-path-.md'
+  - '.tasks/active/T-4747-contextworkingwatchtower-outagesjsonl-t-.md'
+  - '.tasks/active/T-4748-fresh-greenfield-seed-fails-its-own-audi.md'
+  - 'docs/reports/field-test-v1.8.15-results.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T00:14:48'
+    action: 'T-4739: v1.8.15 field-evidence report — 80 fixes with peer verdicts, 286 of 359 vendored-path ids untested, targeted suite comparison vs v1.8.14 (6 release-diff causes filed T-4743..T-4748), release dry-run captured; T-4146 fallback applies (operator yes/no)'
+  - time: '2026-10-25T13:21:49'
+    action: 'T-4739: round 2 — T-4744..T-4748 green at HEAD, only operator-gated T-4743 left as release-diff red (2 environmental); be.17 verdicts T-4720/T-4726 added; dry-run re-captured (ff master by 1320); AC4 ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 915 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 915
+  commits: 3
+  files_changed: 19
+  lines_added: 4156
+  lines_removed: 29
+  footprint_refreshed_at: '2026-10-25T12:31:02Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4739-v1815-field-evidence-report-and-release-.md
+generated_by: context-agent-hybrid

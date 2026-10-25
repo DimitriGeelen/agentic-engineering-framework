@@ -1,23 +1,21 @@
 ---
-id: T-4698
-name: "T-3694 deferral gate treats task ids that belong to another project (e.g. 'AEF
-  T-4690' in a consumer's AC text) as local deferral targets and refuses the close"
+id: T-4701
+name: "fw upgrade does not untrack runtime files a consumer committed before the ignore
+  rule existed (e.g. .context/working/.session-silent-scanner.log tracked, 551 MB);
+  ignoring alone does not untrack"
 description: >
-  ring20 be.9 report (sidecar 714c296e): closing ring20 T-2494 was refused because
-  its AC text named AEF's T-4690/T-4694 next to 'follow-up message'; the gate looked
-  for local ring20 tasks that do not exist. Consumers that discuss upstream ids will
-  hit this. Fix: treat an id as a local deferral target only when it is not qualified
-  by a project/vendor prefix (AEF T-XXXX, TermLink T-XXXX, <project>#T-XXXX) — define
-  the qualifier forms — and say in the refusal how to qualify a foreign id. Do not
-  weaken the gate for genuinely local unowned deferrals. Tests: qualified foreign
-  id passes; bare unknown id still refused with the new hint.
+  For every path in the framework's runtime ignore sets (working-gitignore, vec-index,
+  dispatch) that git still tracks in the consumer, upgrade warns with the exact git
+  rm --cached command (as T-4684 does for .context/dispatch), or offers it behind
+  a flag; never untrack silently. Test with a consumer that tracks one such file.
+  Source: TermLink field report (sidecar 5267b1f7, their T-3566).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade.sh, lib/working-gitignore.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-23T14:04:52Z
-last_update: '2026-10-25T12:15:43Z'
-date_finished:
+created: 2026-10-23T14:28:41Z
+last_update: 2026-10-25T12:24:11Z
+date_finished: 2026-10-25T12:24:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,7 +57,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-23T14:15:26Z'
+  - ts: '2026-10-23T14:30:28Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -69,7 +67,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-23T14:15:47Z'
+  - ts: '2026-10-23T14:30:54Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
@@ -85,25 +83,25 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-10-25T12:15:43Z'
+  - ts: '2026-10-25T12:04:06Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
-      D1: 1
+      D1: 0
       D2: 0
       D3: 0
-      D4: 0
+      D4: 2
       F-RECALL: 0
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
-      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4698: T-3694 deferral gate treats task ids that belong to another project (e.g. 'AEF T-4690' in a consumer's AC text) as local deferral targets and refuses the close
+# T-4701: fw upgrade does not untrack runtime files a consumer committed before the ignore rule existed (e.g. .context/working/.session-silent-scanner.log tracked, 551 MB); ignoring alone does not untrack
 
 ## Context
 
@@ -112,10 +110,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [x] The T-3694 deferral gate treats a task id as a local deferral target only when it is not qualified by a project prefix (`AEF T-XXXX`, `TermLink T-XXXX`, `<project>#T-XXXX`, `<project> T-XXXX` for a known peer/vendor name). The qualifier forms are defined in one place and documented in the block message
-- [x] An unqualified id that does not exist locally is still refused as today
-- [x] Bats: ring20's shape (AC naming "AEF's T-4690/T-4694 … follow-up message") closes; an unqualified missing T-id is still refused; a qualified-but-local-looking id (`AEF T-0001`) is not looked up locally
-- [x] Vendored copy in sync (`fw vendor self --check --task T-4698`)
+- [x] `fw upgrade` lists every path in the framework's runtime ignore sets (working-gitignore rules, vector index, dispatch) that the consumer's git still tracks, with the exact `git rm --cached -- <paths>` command, the same way T-4684 does for `.context/dispatch`. Nothing is untracked silently
+- [x] With no such tracked path, nothing is printed
+- [x] Bats: a consumer tracking one working-dir runtime file gets the warning and the exact command, the file stays tracked, and running the printed command untracks it; a clean consumer prints nothing; `upgrade_fresh_machine_simulation.bats` stays green (foreground, `timeout 1800`)
+- [x] Vendored copy in sync (`fw vendor self --check --task T-4701`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -300,37 +298,22 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-timeout 300 bats tests/unit/t4698_foreign_task_ids.bats > /tmp/.t4698.out 2>&1 && ! grep -q "^not ok" /tmp/.t4698.out
-test "$(grep -c '# skip' /tmp/.t4698.out)" -eq 0
-timeout 300 python3 -m pytest tests/unit/test_t3694_design_register.py -q > /tmp/.t4698-py.out 2>&1 && grep -q passed /tmp/.t4698-py.out
-# Self-deferral legs only: the two "control" cases there are red from T-4197's tautology gate on their `true` fixtures (pre-existing, not this task).
-timeout 600 bats -f "reproduction|waive" tests/governance/test_t3694_conformance_gate.bats > /tmp/.t4698-gov.out 2>&1 && ! grep -q "^not ok" /tmp/.t4698-gov.out
-grep -q "FOREIGN_QUALIFIERS" lib/design_register.py && grep -q "another project's task" agents/task-create/update-task.sh
-bin/fw vendor self --check --task T-4698
+
+timeout 900 bats tests/unit/t4701_tracked_runtime_untrack.bats > /tmp/.t4701.out 2>&1 && ! grep -q "^not ok" /tmp/.t4701.out
+test "$(grep -c '# skip' /tmp/.t4701.out)" -eq 0
+timeout 900 bats tests/unit/t4231_working_runtime_gitignore.bats tests/unit/t3861_vec_index_gitignore.bats tests/unit/t4684_dispatch_gitignore.bats > /tmp/.t4701s.out 2>&1 && ! grep -q "^not ok" /tmp/.t4701s.out
+bash -n lib/upgrade.sh && bash -n lib/working-gitignore.sh
+bin/fw vendor self --check --task T-4701
 
 ## RCA
 
-**Symptom:** ring20 T-2494 was refused at close by the T-3694 self-deferral gate: its AC named AEF's T-4690/T-4694 next to "follow-up message", and the gate reported them as missing local tasks.
+**Symptom:** TermLink (their T-3566) found `.context/working/.session-silent-scanner.log` tracked in git at 551 MB. The upgrade had added the `*.log` ignore rule, but ignoring does not untrack, and the operator was never told which files to untrack.
 
-**Root cause:** `lib/design_register.py:_deferral_targets` extracted every `T-\d{3,}` match (`TASK_ID_RE.findall`) and `self_deferrals` looked each one up in the local `.tasks/`. Nothing distinguished an id qualified by another project's name ("AEF T-4690", "ring20#T-5") from a local one, and the "follow-up" branch takes every id in the sentence, so any consumer sentence that cites an upstream id beside "follow-up" was refused.
+**Root cause:** `fw_working_tracked_runtime` (lib/working-gitignore.sh:149-153) ran `git ls-files -ci --exclude-standard`, so it judged "runtime" by the rules already written to the consumer's on-disk `.context/working/.gitignore`. Under `fw upgrade --dry-run` (lib/upgrade.sh:3259-3276) those rules have not been appended yet, so the check found nothing and printed nothing. The preview that should show what an upgrade will do was blind to exactly these files. In apply mode the NOTE did fire, but only as a count plus an `ls-files | xargs rm --cached` pipeline (lib/upgrade.sh:3277-3279). It never named a path, so a 551 MB log looked the same as a 0-byte counter, and the pipeline's result depended on whatever ignore rules existed when the operator got round to running it.
 
-**Why structurally allowed:** the gate was built and tested only in the framework repo, where every id in a task body is local. Its fixtures (T-3691) never contained a foreign id, and no consumer-shaped test existed.
+**Why structurally allowed:** t4231's tracked-runtime test calls `fw_working_ensure_ignored` before `fw_working_tracked_runtime`, so it only covered the apply-path order. Nothing exercised dry-run, and nothing asserted that the warning names paths or that its command, run as printed, untracks them.
 
-**Prevention:** qualifier forms are defined once (`FOREIGN_QUALIFIERS` in `lib/design_register.py`) and pinned by `tests/unit/t4698_foreign_task_ids.bats` (consumer-shaped root: ring20 shape closes, every qualifier form passes, bare missing id still refused with the hint, AEF-qualified ids are local again inside the framework repo). The refusal now tells the author how to qualify a foreign id, so the next consumer resolves it without a bypass.
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Prevention:** `fw_working_tracked_runtime` now also matches against the framework's own rule lists (working-state plus vector index, passed as `-x` patterns), so dry-run, apply and a re-run all give the same answer. Upgrade lists every tracked path and prints one literal `git -C <dir> rm --cached -- <paths>` command. tests/unit/t4701_tracked_runtime_untrack.bats pins four things: dry-run and apply both warn, the file stays tracked, the printed command untracks it, and a clean consumer prints nothing.
 
 ## Evolution
 
@@ -387,19 +370,15 @@ bin/fw vendor self --check --task T-4698
 
 ## Decisions
 
-### 2026-10-25 — which qualifiers mark an id as foreign
-- **Chose:** a fixed peer list (`AEF`, `TermLink`, `framework`, `upstream`, possessive allowed), plus the open `<project>#T-X` form for any other project, plus inheritance across a `/` chain. Inside the framework repo itself (FRAMEWORK.md + bin/fw at root), `AEF`/`framework` count as local, so the gate is not weakened where those names are the local project.
-- **Why:** these cover ring20's actual text and the names consumers use for upstream ids. `#` gives every other project an unambiguous form without the gate having to know project names.
-- **Rejected:** treating any `<word> T-X` as qualified (an ordinary word before an id would excuse a local deferral). A config key listing peers (needs registry and Watchtower config parity work for a case the `#` form already covers). Comma-chain inheritance ("AEF T-1, T-2" could name a local T-2).
+### 2026-10-25 — warn with exact paths; no untrack flag
+- **Chose:** list each tracked runtime path and print one literal `git rm --cached -- <paths>` command. Never untrack.
+- **Why:** it keeps T-4684's contract (warn, never untrack). A literal command can be reviewed, and it stays correct whatever ignore rules exist when it is run. Untracking rewrites the consumer's index, so that is the consumer's call.
+- **Rejected:** an `--untrack-runtime` flag, which adds CLI surface plus bypass and consumer parity work for a one-off cleanup. Also rejected: the old `ls-files -ci | xargs` pipeline, because it names nothing and only works if the rules are present when it runs.
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-25 — match the framework rule lists, not only the on-disk .gitignore
+- **Chose:** `git ls-files -ci --exclude-standard -x <each framework rule>`, scoped to `.context/working`.
+- **Why:** `--dry-run` then sees what apply will see. Records the project keeps never match a rule (tools/working-ignore-rail.py enforces that), so they are not flagged. Dispatch keeps its own T-4684 note, because the whole directory is runtime there.
+- **Rejected:** checking only after the rules are appended, which leaves dry-run blind.
 
 ## Decision
 
@@ -413,11 +392,28 @@ bin/fw vendor self --check --task T-4698
 
 ## Updates
 
-### 2026-10-23T14:04:52Z — task-created [task-create-agent]
+### 2026-10-23T14:28:41Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4698-t-3694-deferral-gate-treats-task-ids-tha.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4701-fw-upgrade-does-not-untrack-runtime-file.md
 - **Context:** Initial task creation
 
-### 2026-10-25T12:03:59Z — status-update [task-update-agent]
+### 2026-10-25T12:04:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-903e90d0
+- **Timestamp:** 2026-10-25T12:26:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-25T12:24:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

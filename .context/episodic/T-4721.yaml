@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4721: Reference one-click launcher (aef-start.sh, P-01, docs/reports/T-3659-p01-zero-to-running.md) always opens a NEW conversation (claude-fw || claude); default to continue the project's last conversation, with --new for a fresh one
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T12:27:13Z
+# ============================================================================
+
+task_id: T-4721
+task_name: "Reference one-click launcher (aef-start.sh, P-01, docs/reports/T-3659-p01-zero-to-running.md) always opens a NEW conversation (claude-fw || claude); default to continue the project's last conversation, with --new for a fresh one"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-23T21:25:48Z
+completed: 2026-10-25T12:26:59Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-25T13:10:57+01:00
+last_commit: 2026-10-25T13:10:57+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ship reference launcher install/launcher/aef-start.sh — continue last conversation by default, --new for fresh, no fallback on claude-fw's T-3890 refusal (exit 3); P-01 doc points at it; bats pins every leg
+
+# Key outcomes
+outcomes:
+  - 'A shipped reference launcher exists at `install/launcher/aef-start.sh` (no copy existed anywhere in the repo; the P-01 kit never landed), defaults to continuing the project''s last conversation (`claude-fw -c`), and `--new` starts a fresh one; `docs/reports/T-3659-p01-zero-to-running.md` points at it and states the default'
+  - 'How `claude-fw -c` interacts with T-3890''s duplicate-conversation guard (and T-4714, T-4497) is checked and stated in the doc: a conversation already live elsewhere makes claude-fw exit 3, and the launcher then does NOT fall back to a fresh session (it says why and how to get one with `--new`)'
+  - '`tests/unit/t4721_aef_start_launcher.bats` runs the shipped launcher with a stub `claude-fw` on PATH and asserts: default passes `-c`; `--new` does not; a quickly failing `-c` falls back to a fresh start; exit 3 (refused) does not fall back; a session that ran and then exited non-zero does not start a second one; no `claude-fw` falls back to `claude`'
+  - '`bin/claude-fw` is not edited by this task (T-4722 owns it)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-25 — when the launcher falls back from `claude-fw -c` to a fresh session'
+    chose: 'fall back only when `-c` failed fast (within `AEF_START_FALLBACK_SECS`, default 15 s) with a code other than 3; exit 3 (T-3890/T-4048 refusal) never falls back.'
+    rationale: 'claude-fw already starts fresh when there is nothing to continue (T-4497), so a fast failure means an old claude-fw or plain `claude -c` with no conversation. A refusal means the work is live elsewhere; opening a fresh one is exactly the hidden second session the guard exists to stop. A session that ran and then exited non-zero must not trigger a second one.'
+    alternatives_rejected: ['055''s `claude-fw -c || claude-fw || claude` (falls back on refusal and after every non-zero session end); no fallback at all (an old claude-fw without T-4497 then dead-ends on "no conversation to continue").']
+  - decision: '2026-10-25 — where the reference launcher lives'
+    chose: 'ship it as `install/launcher/aef-start.sh` (T-3659 IW-4, adopted with the GO) and point the doc at it.'
+    alternatives_rejected: ['inlining it only in the research doc: untestable, and the reason it drifted in the first place.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4721-reference-one-click-launcher-aef-startsh.md'
+  - 'docs/reports/T-3659-p01-zero-to-running.md'
+  - 'install/launcher/aef-start.sh'
+  - 'tests/unit/t4721_aef_start_launcher.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T13:10:57'
+    action: 'T-4721: ship reference launcher install/launcher/aef-start.sh — continue last conversation by default, --new for fresh, no fallback on claude-fw''s T-3890 refusal (exit 3); P-01 doc points at it; bats pins every leg'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2341 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2341
+  commits: 2
+  files_changed: 15
+  lines_added: 905
+  lines_removed: 31
+  footprint_refreshed_at: '2026-10-25T12:31:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4721-reference-one-click-launcher-aef-startsh.md
+generated_by: context-agent-hybrid
