@@ -48589,3 +48589,21 @@ scan_id: R-c019f8b1
 task_id: T-4736
 payload:
   task_file: .tasks/active/T-4736-fw-upgrade-never-prunes-superseded-desig.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T11:51:07Z'
+scan_id: R-b29e2e41
+task_id: T-4750
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T11:51:07Z'
+scan_id: R-b29e2e41
+task_id: T-4750
+payload:
+  task_file: .tasks/active/T-4750-continuous-mode-stop-hook-re-prompts-dis.md
