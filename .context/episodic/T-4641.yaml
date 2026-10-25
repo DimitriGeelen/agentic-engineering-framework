@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4641: Integration red: fw_termlink.bats test 2 'fw termlink check: verifies installation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T12:58:18Z
+# ============================================================================
+
+task_id: T-4641
+task_name: "Integration red: fw_termlink.bats test 2 'fw termlink check: verifies installation"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T13:07:54Z
+completed: 2026-10-25T12:58:00Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-25T13:56:39+01:00
+last_commit: 2026-10-25T13:56:39+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw termlink check reports a termlink whose --version fails (WARN + exit 1) instead of dying silently under set -e — fixes fw_termlink.bats test 2 under the T-4205 tripwire; t4641 regression bats; RCA; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Cause localised and recorded in the RCA, classed as code defect / stale test / environment, with the evidence'
+  - 'The cause is fixed where it lives (product code, or the test when the test is what is stale); the failing tests pass twice in a row in the foreground with no skips'
+  - 'Sibling tests of the touched component stay green; nothing is added to any baseline; vendored copy in sync if vendored paths changed (`fw vendor self --check --task T-4641`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw termlink check reports a termlink whose --version fails (WARN + exit 1) instead of dying silently under set -e — fixes fw_termlink.bats test 2 under the T-4205 tripwire; t4641 regression bats; RCA; vendor synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.tasks/active/T-4641-integration-red-fwtermlinkbats-test-2-fw.md'
+  - 'agents/termlink/termlink.sh'
+  - 'tests/unit/t4641_termlink_check_broken_binary.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T13:56:39'
+    action: 'T-4641: fw termlink check reports a termlink whose --version fails (WARN + exit 1) instead of dying silently under set -e — fixes fw_termlink.bats test 2 under the T-4205 tripwire; t4641 regression bats; RCA; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4310 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, integration-red]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4310
+  commits: 2
+  files_changed: 7
+  lines_added: 221
+  lines_removed: 13
+  footprint_refreshed_at: '2026-10-25T12:58:22Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4641-integration-red-fwtermlinkbats-test-2-fw.md
+generated_by: context-agent-hybrid
