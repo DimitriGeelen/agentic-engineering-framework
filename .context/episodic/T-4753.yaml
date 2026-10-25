@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4753: t3693 sidecar e2e teardown stops the LIVE project's sidecar watcher (receiver stop run from a temp project resolves the real project)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-25T14:44:57Z
+# ============================================================================
+
+task_id: T-4753
+task_name: "t3693 sidecar e2e teardown stops the LIVE project's sidecar watcher (receiver stop run from a temp project resolves the real project)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-25T14:16:35Z
+completed: 2026-10-25T14:43:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-25T15:40:21+01:00
+last_commit: 2026-10-25T15:42:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar start/stop refuse when an inherited PROJECT_ROOT names another project than the cwd's (--project to choose); agent-shell env made a stop typed in a t3693 temp root stop the live watcher; guard test on fixtures, RCA. tick ACs — t3693 3/3 and t3684 8/8 green with the live watcher untouched; vendor in sync; invariants green
+
+# Key outcomes
+outcomes:
+  - 'Localised and recorded in the RCA: why `fw sidecar receiver stop` (and `fw sidecar stop`) run from a temp agent root acted on `/opt/999-Agentic-Engineering-Framework`. Name the exact resolution step (`PROJECT_ROOT` env leak in the test, or CLI resolving from the framework location instead of cwd)'
+  - 'Fixed at the cause. If the CLI is at fault, a stop/start acts only on the project it is run in (cwd''s project, or an explicit `--project`), never on the framework repo merely because `bin/fw` lives there. If only the test leaked env, the test''s `_clean_env` drops `PROJECT_ROOT`/`FRAMEWORK_ROOT`, and the CLI refuses a stop whose cwd is not inside the project it resolves'
+  - 'A guard test runs the t3693/t3684 teardown shape (stop from a temp agent root) and asserts that a *separate* fixture "live" project''s `.context/sidecar/watcher/stopped` was not written and its events.jsonl gained no STOP_REQUESTED. It must never use the real live project'
+  - 't3693 and t3684 pass, and after each run this project''s live watcher is still running (`.context/sidecar/watcher/stopped` absent or older than the run)'
+  - 'Vendored copy in sync (`fw vendor self --check --task T-4753`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'sidecar start/stop refuse when an inherited PROJECT_ROOT names another project than the cwd''s (--project to choose); agent-shell env made a stop typed in a t3693 temp root stop the live watcher; guard test on fixtures, RCA'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.tasks/active/T-4753-t3693-sidecar-e2e-teardown-stops-the-liv.md'
+  - 'lib/sidecar_cli.py'
+  - 'tests/unit/test_sidecar_agent_persist_t4423.py'
+  - 'tests/unit/test_t4753_sidecar_stop_target_guard.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T15:40:21'
+    action: 'T-4753: sidecar start/stop refuse when an inherited PROJECT_ROOT names another project than the cwd''s (--project to choose); agent-shell env made a stop typed in a t3693 temp root stop the live watcher; guard test on fixtures, RCA'
+  - time: '2026-10-25T15:42:25'
+    action: 'T-4753: tick ACs — t3693 3/3 and t3684 8/8 green with the live watcher untouched; vendor in sync; invariants green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 3
+  files_changed: 8
+  lines_added: 744
+  lines_removed: 8
+  footprint_refreshed_at: '2026-10-25T14:45:02Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4753-t3693-sidecar-e2e-teardown-stops-the-liv.md
+generated_by: context-agent-hybrid

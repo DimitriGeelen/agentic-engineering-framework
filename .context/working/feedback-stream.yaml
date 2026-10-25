@@ -48895,3 +48895,21 @@ scan_id: R-da4dee39
 task_id: T-4755
 payload:
   task_file: .tasks/active/T-4755-record-be18be19-field-verdicts-in-the-v1.md
+---
+kind: scan_emitted
+timestamp: '2026-10-25T14:44:46Z'
+scan_id: R-a8c1759f
+task_id: T-4753
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-25T14:44:46Z'
+scan_id: R-a8c1759f
+task_id: T-4753
+payload:
+  task_file: .tasks/active/T-4753-t3693-sidecar-e2e-teardown-stops-the-liv.md
