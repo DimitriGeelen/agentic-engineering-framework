@@ -137,6 +137,13 @@ class Checker:
         self._check_steps(where, vec.get("steps"))
         variants = vec.get("variants")
         then = vec.get("then")
+        # T-4796: the equivalent alternates are per variant; at vector level they would be
+        # inert (no variants) or shared by every variant's route.
+        for k, step in enumerate(vec.get("steps") or []):
+            if isinstance(step, dict) and "expect_equivalent" in step:
+                self.err(f"{where}/steps[{k}]", "expect_equivalent belongs on a variant step")
+        if isinstance(then, dict) and "admissible_histories_equivalent" in then:
+            self.err(where, "admissible_histories_equivalent belongs on a variant then")
         if variants is None:
             if isinstance(then, dict) and "judged_by" in then:
                 self.err(where, "then.judged_by: variants, but the vector has no variants")
@@ -167,9 +174,24 @@ class Checker:
                 if "given" in var and not isinstance(var["given"], dict):
                     self.err(vw, "variant given must be a mapping")
                 self._check_steps(vw, var.get("steps"))
+                self._check_equivalent_alternates(vw, var)
                 if not var.get("steps") and not vec.get("steps"):
                     self.err(vw, "variant has no steps and the vector has no shared steps")
                 self._check_then(vw, var.get("then"), required=True)
+
+    def _check_equivalent_alternates(self, vw: str, var: dict) -> None:
+        """T-4796: expect_equivalent / admissible_histories_equivalent belong to a variant
+        that offers an equivalent; the runner reads them only on that route."""
+        offers = "equivalent" in var
+        for k, step in enumerate(var.get("steps") or []):
+            if isinstance(step, dict) and "expect_equivalent" in step and not offers:
+                self.err(f"{vw}/steps[{k}]", "expect_equivalent on a variant that offers no equivalent")
+        then = var.get("then")
+        if isinstance(then, dict) and "admissible_histories_equivalent" in then:
+            if not offers:
+                self.err(vw, "admissible_histories_equivalent on a variant that offers no equivalent")
+            self._check_histories(vw, then["admissible_histories_equivalent"],
+                                  "admissible_histories_equivalent")
 
     def _check_applicability(self, where: str, app) -> None:
         if not isinstance(app, dict):
@@ -230,6 +252,14 @@ class Checker:
         if "expect" not in step:
             self.err(sw, "step needs an expect")
             return
+        for key in step:
+            if key.startswith("expect") and key not in ("expect", "expect_equivalent"):
+                self.err(sw, f"unknown key '{key}'")
+        if "expect_equivalent" in step:
+            if op == "concurrent":
+                self.err(sw, "expect_equivalent is not offered on concurrent")
+            else:
+                self._check_expect(sw, step["expect_equivalent"])
         if op == "concurrent":
             inner = (step.get("args") or {}).get("step")
             count = (step.get("args") or {}).get("count")
@@ -305,22 +335,28 @@ class Checker:
                 self.err(where, f"I2: final {key} has an outcome but state is not done")
             if state == "done" and "outcome" in attempt and outcome is None:
                 self.err(where, f"I2: final {key} is done with a null outcome")
-        hist = then.get("admissible_histories")
-        if hist is not None:
-            if not isinstance(hist, dict):
-                self.err(where, "admissible_histories must map attempt -> list of state sequences")
-            else:
-                for key, seqs in hist.items():
-                    if not isinstance(seqs, list) or not seqs:
-                        self.err(where, f"admissible_histories {key} must be a non-empty list")
-                        continue
-                    for seq in seqs:
-                        if not isinstance(seq, list) or not seq:
-                            self.err(where, f"admissible_histories {key} entry must be a non-empty list")
-                            continue
-                        for s in seq:
-                            if s not in STATES:
-                                self.err(where, f"admissible_histories {key} names unknown state '{s}'")
+        for key in then:
+            if key.startswith("admissible_histories") and key not in (
+                    "admissible_histories", "admissible_histories_equivalent"):
+                self.err(where, f"unknown key '{key}'")
+        if then.get("admissible_histories") is not None:
+            self._check_histories(where, then["admissible_histories"], "admissible_histories")
+
+    def _check_histories(self, where: str, hist, name: str) -> None:
+        if not isinstance(hist, dict):
+            self.err(where, f"{name} must map attempt -> list of state sequences")
+            return
+        for key, seqs in hist.items():
+            if not isinstance(seqs, list) or not seqs:
+                self.err(where, f"{name} {key} must be a non-empty list")
+                continue
+            for seq in seqs:
+                if not isinstance(seq, list) or not seq:
+                    self.err(where, f"{name} {key} entry must be a non-empty list")
+                    continue
+                for s in seq:
+                    if s not in STATES:
+                        self.err(where, f"{name} {key} names unknown state '{s}'")
 
 
 def check_file(path: Path) -> list[str]:

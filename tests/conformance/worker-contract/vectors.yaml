@@ -407,6 +407,9 @@ vectors:
     then: {judged_by: variants}
     variants:
       - name: alive-after-restart
+        equivalent: >-
+          the restart is a supervisor takeover, so recovery may record T-RECLAIM (running->running);
+          the authoritative probe then sees the worker alive and nothing transitions
         steps:
           - op: sweep
             writer: hub
@@ -418,13 +421,20 @@ vectors:
             A1: {state: running, outcome: null}
           admissible_histories:
             A1: [[running]]
+          admissible_histories_equivalent:
+            A1: [[running], [running, running]]
       - name: absent-after-restart
+        equivalent: >-
+          the restart is a supervisor takeover (T-RECLAIM may be recorded) and the first absent
+          observation is an authoritative probe (G=0), so T4 comes on that sweep and the attempt
+          stays lost
         steps:
           - op: sweep
             writer: hub
             attempt: 1
             args: {observe: absent, epoch: E2}
             expect: {no_transition: true}
+            expect_equivalent: {accepted: T4}
           - op: sweep
             writer: hub
             attempt: 1
@@ -433,15 +443,22 @@ vectors:
           - op: advance
             args: {by: G}
             expect: {any_of: [{accepted: T4}, {no_transition: true}]}
+            expect_equivalent: {no_transition: true}
           - op: advance
             args: {by: deadline_running}
             expect: {any_of: [{accepted: T6, notices: 1}, {no_transition: true}]}
+            expect_equivalent: {no_transition: true}
         then:
           final:
             A1: {state: {any_of: [lost, unknown]}, outcome: null}
           admissible_histories:
             A1: [[running, lost], [running, unknown]]
+          admissible_histories_equivalent:
+            A1: [[running, lost], [running, running, lost]]
       - name: undecidable-then-alive
+        equivalent: >-
+          the restart is a supervisor takeover, so recovery may record T-RECLAIM (running->running)
+          before the undecided probe, T6 and the T7a return
         steps:
           - op: probe_undecided
             writer: hub
@@ -466,6 +483,8 @@ vectors:
           operator_notices: 1
           admissible_histories:
             A1: [[running, unknown, running]]
+          admissible_histories_equivalent:
+            A1: [[running, unknown, running], [running, running, unknown, running]]
 
   - id: CC-09
     title: Partition

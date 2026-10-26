@@ -287,3 +287,113 @@ def test_equivalent_on_a_variant_without_one_fails(doc):
     r = run_local.run_vector(vec, adapter, "s")
     assert r["status"] == "fail"
     assert "offers no equivalent" in r["variants"][0]["reason"]
+
+
+# ── CC-08 equivalent route: takeover restart + authoritative probe (T-4796) ─
+RING20 = {
+    "alive-after-restart": ("running", ["running", "running"]),
+    "absent-after-restart": ("lost", ["running", "running", "lost"]),
+    "undecidable-then-alive": ("running", ["running", "running", "unknown", "running"]),
+}
+
+
+class Ring20Adapter:
+    """Answers like ring20: T4 on the first absent sweep after restart, T-RECLAIM in the
+    history. `declare` lists the CC-08 variants it claims as equivalent routes; `report`
+    controls whether each step result names the equivalent."""
+
+    def __init__(self, variant, declare=True, report=True):
+        self.capabilities = set()
+        self.equivalent_routes = {f"CC-08/{variant}"} if declare else set()
+        self.report = report
+        self.state, self.history = RING20[variant]
+
+    def reset(self, given):
+        pass
+
+    def apply(self, step):
+        exp = step.get("expect_equivalent", step["expect"])
+        if step["op"] == "sweep" and (step.get("args") or {}).get("observe") == "absent":
+            exp = {"accepted": "T4"} if not getattr(self, "_t4", False) else {"no_transition": True}
+            self._t4 = True
+        elif "any_of" in exp:
+            exp = {"no_transition": True}
+        result = dict(exp)
+        if self.report:
+            result["equivalent"] = "supervisor takeover; systemd probe authoritative (G=0)"
+        return result
+
+    def snapshot(self):
+        return {"attempts": {"A1": {"state": self.state, "outcome": None, "history": self.history}},
+                "operator_notices": 1}
+
+
+def test_cc08_variants_offer_equivalents_and_keys_validate(doc):
+    vec = _vec(doc, "CC-08")
+    assert all(v.get("equivalent") for v in vec["variants"])
+    absent = next(v for v in vec["variants"] if v["name"] == "absent-after-restart")
+    assert absent["steps"][0]["expect"] == {"no_transition": True}
+    assert absent["steps"][0]["expect_equivalent"] == {"accepted": "T4"}
+
+
+def test_cc08_ring20_equivalent_route_passes_all_variants(doc):
+    for name in RING20:
+        vec = _variant(doc, "CC-08", name)
+        r = run_local.run_vector(vec, Ring20Adapter(name), "ring20")
+        assert r["status"] == "pass", r
+        assert "takeover" in r["variants"][0]["equivalent"]
+
+
+def test_cc08_hub_that_t4s_early_fails(doc):
+    vec = _variant(doc, "CC-08", "absent-after-restart")
+    r = run_local.run_vector(vec, Ring20Adapter("absent-after-restart", declare=False, report=False), "hub")
+    assert r["status"] == "fail"
+    assert "expected {'no_transition': True}" in r["variants"][0]["reason"]
+
+
+def test_cc08_hub_with_reclaim_history_fails_without_the_route(doc):
+    vec = _variant(doc, "CC-08", "alive-after-restart")
+    r = run_local.run_vector(vec, Ring20Adapter("alive-after-restart", declare=False, report=False), "hub")
+    assert r["status"] == "fail"
+    assert "not in admissible" in r["variants"][0]["reason"]
+
+
+def test_cc08_reported_but_undeclared_keeps_the_strict_expect(doc):
+    vec = _variant(doc, "CC-08", "absent-after-restart")
+    r = run_local.run_vector(vec, Ring20Adapter("absent-after-restart", declare=False), "hub")
+    assert r["status"] == "fail"
+
+
+def test_cc08_declared_route_taken_silently_fails(doc):
+    for name in RING20:
+        vec = _variant(doc, "CC-08", name)
+        r = run_local.run_vector(vec, Ring20Adapter(name, report=False), "ring20")
+        assert r["status"] == "fail"
+        assert "taken silently" in r["variants"][0]["reason"]
+
+
+def test_cc08_equivalent_route_still_refuses_unknown_end(doc):
+    vec = _variant(doc, "CC-08", "absent-after-restart")
+    adapter = Ring20Adapter("absent-after-restart")
+    adapter.history = ["running", "running", "unknown"]
+    r = run_local.run_vector(vec, adapter, "ring20")
+    assert r["status"] == "fail"
+
+
+def test_equivalent_alternates_are_validated(doc):
+    bad = copy.deepcopy(doc)
+    _vec(bad, "CC-08")["variants"][1]["steps"][0]["expect_equivalnt"] = {"accepted": "T4"}
+    assert any("unknown key 'expect_equivalnt'" in e for e in _errors(bad))
+    bad = copy.deepcopy(doc)
+    _vec(bad, "CC-08")["variants"][0]["then"]["admissible_histories_equivalnt"] = {"A1": [["running"]]}
+    assert any("unknown key 'admissible_histories_equivalnt'" in e for e in _errors(bad))
+    bad = copy.deepcopy(doc)
+    _vec(bad, "CC-08")["variants"][1]["steps"][0]["expect_equivalent"] = {"accepted": "T99"}
+    assert any("unknown transition 'T99'" in e for e in _errors(bad))
+    bad = copy.deepcopy(doc)
+    del _vec(bad, "CC-08")["variants"][0]["equivalent"]
+    assert any("admissible_histories_equivalent on a variant that offers no equivalent" in e
+               for e in _errors(bad))
+    bad = copy.deepcopy(doc)
+    _vec(bad, "CC-02")["steps"][0]["expect_equivalent"] = {"no_transition": True}
+    assert any("expect_equivalent belongs on a variant step" in e for e in _errors(bad))

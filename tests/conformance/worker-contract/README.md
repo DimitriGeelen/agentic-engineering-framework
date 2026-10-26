@@ -46,3 +46,6 @@ instead. Adapter contract:
   accepted only then, and the case result names what ran;
 - a declared route whose result carries no `"equivalent"` fails ("taken silently"), and so does an
   `"equivalent"` on a variant that offers none.
+- on that declared, named route a variant step's `expect_equivalent:` replaces its `expect`, and the
+  variant's `then.admissible_histories_equivalent:` replaces `admissible_histories` (T-4796, CC-08).
+  Everywhere else the plain expect and histories apply, so a hub that departs from them still fails.

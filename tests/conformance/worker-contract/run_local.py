@@ -22,6 +22,9 @@ judged on the steps as usual. A backend that names the variant in `equivalent_ro
 return a non-empty "equivalent": "<what ran>" in every step result; its expect is accepted only
 then, and that string is named in the case result. A declared route whose result lacks it
 fails ("equivalent route taken silently"), as does an "equivalent" on a variant offering none.
+On a declared route that names what ran, a step's `expect_equivalent:` replaces its `expect`
+and the variant's `then.admissible_histories_equivalent:` replaces `admissible_histories`
+(T-4796); everywhere else the plain expect and histories apply.
 
 Until that module exists every vector is reported `not-implemented` with what is
 missing. A vector is reported `pass` only after its steps ran and every expect and
@@ -156,7 +159,7 @@ def check_route(result: dict, step: dict, route: str | None, offered: str | None
 def check_step(adapter, step: dict, route: str | None = None, offered: str | None = None) -> str | None:
     result = adapter.apply(step)
     ran = check_route(result, step, route, offered)
-    exp = step["expect"]
+    exp = step.get("expect_equivalent", step["expect"]) if route and ran else step["expect"]
     if step["op"] == "concurrent":
         results = result.get("results") or []
         if len(results) != step["args"]["count"]:
@@ -174,7 +177,7 @@ def check_step(adapter, step: dict, route: str | None = None, offered: str | Non
     return ran
 
 
-def check_then(before: dict, after: dict, then: dict) -> None:
+def check_then(before: dict, after: dict, then: dict, equivalent: bool = False) -> None:
     attempts = after.get("attempts") or {}
     for key, want in (then.get("final") or {}).items():
         got = attempts.get(key)
@@ -183,7 +186,10 @@ def check_then(before: dict, after: dict, then: dict) -> None:
         for field, value in want.items():
             if not match_value(got.get(field), value):
                 raise Mismatch(f"final {key}.{field}: expected {value}, got {got.get(field)}")
-    for key, seqs in (then.get("admissible_histories") or {}).items():
+    histories = then.get("admissible_histories") or {}
+    if equivalent and "admissible_histories_equivalent" in then:
+        histories = then["admissible_histories_equivalent"]
+    for key, seqs in histories.items():
         hist = (attempts.get(key) or {}).get("history")
         if hist not in seqs:
             raise Mismatch(f"history {key}: {hist} not in admissible {seqs}")
@@ -195,7 +201,8 @@ def check_then(before: dict, after: dict, then: dict) -> None:
             raise Mismatch(f"fields of {key} changed")
     if then.get("record_unchanged") and before.get("attempts") != attempts:
         raise Mismatch("record changed")
-    handled = {"final", "admissible_histories", "history_unchanged", "fields_unchanged", "record_unchanged"}
+    handled = {"final", "admissible_histories", "admissible_histories_equivalent", "history_unchanged",
+               "fields_unchanged", "record_unchanged"}
     for key, value in then.items():
         if key in handled:
             continue
@@ -236,7 +243,7 @@ def run_vector(vec: dict, adapter, backend_reason: str) -> dict:
             before = copy.deepcopy(adapter.snapshot())
             ran = [r for r in (check_step(adapter, step, route, run["equivalent"])
                                for step in run["steps"]) if r]
-            check_then(before, adapter.snapshot(), run["then"])
+            check_then(before, adapter.snapshot(), run["then"], equivalent=bool(route and ran))
             passed = {"variant": label, "status": "pass"}
             if ran:
                 passed["equivalent"] = "; ".join(dict.fromkeys(ran))
