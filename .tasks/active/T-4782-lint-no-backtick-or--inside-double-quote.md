@@ -94,7 +94,7 @@ bvp_scores_proposed:
 - [x] A new invariant, tests/lint/hook-python-c-substitution.bats (a small Python scanner under tools/ is fine), finds every double-quoted `python3 -c "..."` block in hook scripts: agents/context/*.sh, agents/context/lib/*.sh, and any script that .claude/settings.json or `fw hook` dispatches to. It fails, naming file:line, on an unescaped backtick or `$(` inside such a block. Escaped `\$(` and `\`` and intended `$VAR` expansion stay allowed
 - [x] A fixture proves the scanner catches 055's exact case: a Python `#` comment holding a backtick-quoted `tmux kill-server` inside `python3 -c "..."`. A clean fixture passes
 - [x] The current tree passes. Any real hit in today's hooks is fixed by moving that block to a quoted heredoc (`<<'PY'`) or a lib/*.py module, never by suppressing it
-- [ ] `timeout 900 bin/fw test invariants` passes; vendor in sync
+- [x] `timeout 900 bin/fw test invariants` passes; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
