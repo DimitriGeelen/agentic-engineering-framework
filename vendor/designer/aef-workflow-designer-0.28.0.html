@@ -1215,6 +1215,20 @@ font-family: 'Outfit';
   .io-v11 .d { color: var(--text-faint); font-style: italic; margin-left: 4px; }
   .io-v11-kid { padding-left: 2px; }
   .io-v11-kid .tag { color: var(--accent); }
+  /* T-1301: the io attributes editor, under its row, behind a toggle */
+  .io-attrs-toggle { font-family: var(--mono); font-size: 10px; color: var(--text-dim); cursor: pointer; margin: 0 0 4px 2px;
+                     padding: 1px 0 1px 7px; user-select: none; }
+  .io-attrs-toggle:hover, .io-attrs-toggle.open { color: var(--accent); }
+  .io-attrs { margin: -2px 0 6px 2px; padding: 3px 0 3px 7px; border-left: 2px solid var(--accent); display: grid; gap: 3px; }
+  .io-attr { display: grid; grid-template-columns: 86px minmax(0, 1fr); align-items: center; column-gap: 6px; min-width: 0; }
+  .io-attr-k { font-family: var(--mono); font-size: 10px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; }
+  .io-attr-v { width: 100%; padding: 2px 6px; }
+  select.io-attr-v { padding-right: 16px; }
+  textarea.io-attr-v { resize: none; overflow: hidden; field-sizing: content; min-height: 22px; line-height: 1.4;
+                       white-space: pre-wrap; overflow-wrap: anywhere; display: block; }
+  .io-ref-pick { grid-column: 2; margin-top: 2px; color: var(--text-dim); }
+  .io-attr-hint { grid-column: 2; font-size: 10px; color: var(--orange); }
+  .io-attr-hint:empty { display: none; }
   .io-v11-when { padding-left: 14px; }
   .wf-v11 .wf-v11-pfx { display: grid; grid-template-columns: auto 1fr; gap: 0 8px; margin-top: 3px; }
   .wf-v11 .wf-v11-pfx > span { overflow-wrap: anywhere; min-width: 0; }
@@ -8634,8 +8648,11 @@ function ioListField(kind /* 'inputs' | 'outputs' */, items, isInput, node) {
   }
   items.forEach((item, idx) => {
     list.appendChild(ioRow(item, idx, items, isInput));
-    const v11 = ioV11Block(item, isInput, node);   // T-1249: read-only
+    const editing = _ioAttrsOpen.has(item);   // T-1301
+    const v11 = ioV11Block(item, isInput, node, editing);   // T-1249: read-only
     if (v11) list.appendChild(v11);
+    list.appendChild(ioAttrsToggle(item, editing));
+    if (editing) list.appendChild(ioAttrsEditor(item, isInput));
   });
   wrap.appendChild(list);
 
@@ -8694,7 +8711,7 @@ function v11Span(parent, k, v, derived) {
   parent.appendChild(sp);
   return sp;
 }
-function ioV11Block(item, isInput, node) {
+function ioV11Block(item, isInput, node, editing) {   // editing (T-1301): the editor shows the attributes; keep derived + children
   const attrs = new Map(item.extra || []);
   const kids = v11ParseFragment(item.children || []).filter(c => c.namespaceURI === AEF_EXT_NS &&
     (c.localName === 'field' || c.localName === 'expect' || c.localName === 'example'));
@@ -8716,12 +8733,12 @@ function ioV11Block(item, isInput, node) {
     const p = pfx(attrs.get('ref'));
     if (p && p.kind === 'field') refAsField = attrs.get('ref');
   }
-  const shown = IO_V11_ATTRS.filter(k => attrs.has(k));
+  const shown = editing ? [] : IO_V11_ATTRS.filter(k => attrs.has(k));
   // T-1304: the v1 attributes v1.1 keeps (2.3): `ref` (a data-object identity unless the rule above reads it as a
   // fieldRef, then shown once, as that) and `dataType` (informational only). Producers write them today (greenfield's
   // style A: ref="nid:attr-…" dataType="id"); hiding them hid a producer's whole link to its ontology.
-  const v1Ref = attrs.has('ref') && !refAsField ? attrs.get('ref') : null;
-  const v1DataType = attrs.has('dataType') ? attrs.get('dataType') : null;
+  const v1Ref = !editing && attrs.has('ref') && !refAsField ? attrs.get('ref') : null;
+  const v1DataType = !editing && attrs.has('dataType') ? attrs.get('dataType') : null;
   if (!shown.length && !kids.length && !derivedSys && !refAsField && v1Ref === null && v1DataType === null) return null;
 
   const box = document.createElement('div');
@@ -8844,6 +8861,131 @@ function ioRow(item, idx, items, isInput) {
   row.appendChild(del);
 
   return row;
+}
+
+// ── T-1301 (slice 2 of T-1242, arc-006): EDIT the io attributes ──
+// Behind an "edit" toggle under each io row, closed by default, so the read-only summary (T-1249/T-1304) stays exactly as
+// released until someone edits. The attributes live in item.extra ([name, value] pairs, source order kept): a change
+// replaces the value in place, a new attribute is appended, an emptied control removes it. Nothing here adds
+// mappingVersion or aef:prefixes (mapping v1.1 is the author's choice, not a side effect of one edit).
+const _ioAttrsOpen = new WeakSet();   // view state: the io items whose editor is open
+const IO_EDIT_CHOICES = {
+  role: ['read', 'write', 'create', 'match', 'delete'],
+  operation: ['read', 'create', 'update', 'upsert', 'delete'],
+  cardinality: ['one', 'optional', 'many'],
+};
+const IO_EDIT_HELP = {
+  ref: 'what this input/output refers to, e.g. an ontology IRI (v1 attribute)',
+  fieldRef: 'the field, as a CURIE whose prefix the map declares',
+  typeRef: 'the object type, as a CURIE whose prefix the map declares',
+  schemaRef: 'a schema the data conforms to (URL or CURIE)',
+  conceptRef: 'the business concept (IRI or CURIE)',
+  role: 'what the step does with the field',
+  operation: 'what the step does with the object instance',
+  cardinality: 'one, optional or many',
+  sourceSystem: 'the system the data comes from',
+  targetSystem: 'the system the data goes to',
+  dataType: 'informational (v1 attribute): it does not change the type',
+};
+function ioEditAttrs(isInput) {
+  return ['ref', 'fieldRef', 'typeRef', 'schemaRef', 'conceptRef', 'role', 'operation', 'cardinality',
+          isInput ? 'sourceSystem' : 'targetSystem', 'dataType'];
+}
+function ioSetAttr(item, k, v) {   // in place: replace, append or remove; leaves item.extra untouched when nothing changes
+  const extra = (item.extra || []).slice();
+  const i = extra.findIndex(([n]) => n === k);
+  if (v === '') { if (i < 0) return false; extra.splice(i, 1); }
+  else if (i >= 0) { if (extra[i][1] === v) return false; extra[i] = [k, v]; }
+  else extra.push([k, v]);
+  if (extra.length) item.extra = extra; else delete item.extra;
+  return true;
+}
+function ioUndeclaredPrefix(k, v) {   // a CURIE prefix the map does not declare, for the attributes that take one
+  if (!['fieldRef', 'typeRef', 'conceptRef'].includes(k)) return null;
+  const m = /^([A-Za-z_][\w.-]*):(?!\/\/)/.exec(v || '');
+  if (!m || ['http', 'https', 'urn'].includes(m[1].toLowerCase())) return null;
+  return procMetaInfo(state).prefixes.some(p => p.name === m[1]) ? null : m[1];
+}
+function ioRefValues() {   // the ref values already used in the open map, for the ref field's suggestions
+  const out = new Set();
+  for (const n of (state && state.nodes) || []) {
+    for (const it of [].concat((n.io && n.io.inputs) || [], (n.io && n.io.outputs) || [])) {
+      for (const [k, v] of it.extra || []) if (k === 'ref' && v) out.add(v);
+    }
+  }
+  return Array.from(out).sort();
+}
+function ioAttrsToggle(item, open) {
+  const t = document.createElement('div');
+  t.className = 'io-attrs-toggle' + (open ? ' open' : '');
+  // "close", not "done": an edit applies at once, and the toggle only collapses (T-1301 sweep: "done" read as "save")
+  t.textContent = open ? '▾ close editor' : '▸ edit attributes';
+  t.title = open ? 'Collapse the editor: your edits are already applied; the summary shows them' : 'Edit ref, role, dataType and the mapping v1.1 attributes';
+  t.onclick = () => { if (open) _ioAttrsOpen.delete(item); else _ioAttrsOpen.add(item); renderProperties(); };
+  return t;
+}
+function ioAttrsEditor(item, isInput) {
+  const box = document.createElement('div');
+  box.className = 'io-attrs';
+  const cur = new Map(item.extra || []);
+  for (const k of ioEditAttrs(isInput)) {
+    const row = document.createElement('label');
+    row.className = 'io-attr';
+    const name = document.createElement('span');
+    name.className = 'io-attr-k';
+    name.textContent = k;
+    name.title = IO_EDIT_HELP[k] || '';
+    row.appendChild(name);
+    let c;
+    const val = cur.has(k) ? cur.get(k) : '';
+    if (IO_EDIT_CHOICES[k]) {
+      c = document.createElement('select');
+      const opts = [''].concat(IO_EDIT_CHOICES[k]);
+      if (val && !opts.includes(val)) opts.push(val);   // a producer's own value is kept, never rewritten
+      for (const o of opts) {
+        const e = document.createElement('option');
+        e.value = o; e.textContent = o || '—';
+        if (o === val) e.selected = true;
+        c.appendChild(e);
+      }
+    } else {
+      // a wrapping field that grows with its value: a single-line input cut a producer's IRI at every window width
+      // (the panel has a fixed width; T-1301 review). Enter commits instead of adding a line.
+      c = document.createElement('textarea');
+      c.rows = Math.max(1, Math.ceil(val.length / 24));   // where field-sizing:content is not supported
+      c.value = val;
+      c.spellcheck = false;   // no placeholder: a muted word in an empty field read as a default value (T-1301 sweep)
+      c.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); c.blur(); } });
+    }
+    c.className = (IO_EDIT_CHOICES[k] ? 'io-type' : 'io-name') + ' io-attr-v';   // the io row's own control look
+    c.dataset.attr = k;
+    // the full value first: the panel's width cuts a long IRI at every window width (T-1305 is the layout fix)
+    c.title = (val ? val + '\n' : '') + (IO_EDIT_HELP[k] || '');
+    c.addEventListener('change', e => { if (ioSetAttr(item, k, e.target.value.trim())) renderProperties(); });
+    row.appendChild(c);
+    if (k === 'ref') {   // the refs already in this map, offered explicitly (a datalist cannot ride a wrapping field)
+      const refs = ioRefValues().filter(v => v !== val);
+      if (refs.length) {
+        const pick = document.createElement('select');
+        pick.className = 'io-type io-attr-v io-ref-pick';
+        pick.dataset.pick = 'ref';
+        const first = document.createElement('option');
+        first.value = ''; first.textContent = 'use a ref from this map…';
+        pick.appendChild(first);
+        for (const v of refs) { const o = document.createElement('option'); o.value = v; o.textContent = v; pick.appendChild(o); }
+        pick.addEventListener('change', e => { if (e.target.value && ioSetAttr(item, 'ref', e.target.value)) renderProperties(); });
+        row.appendChild(pick);
+      }
+    }
+    const pfx = ioUndeclaredPrefix(k, val);
+    const hint = document.createElement('span');
+    hint.className = 'io-attr-hint';
+    hint.dataset.attr = k;
+    hint.textContent = pfx ? `prefix "${pfx}" is not declared in this map` : '';
+    row.appendChild(hint);
+    box.appendChild(row);
+  }
+  return box;
 }
 
 // ============================================================================
@@ -12787,10 +12929,13 @@ function ioAttrsXml(i, isInput) {
   const r = i.raw;
   if (r && i.name === (r.name || '') && i.type === (r.type || 'string') && (!isInput || !!i.required === (r.required === 'true'))) {
     const extra = new Map(i.extra || []);
+    // T-1301: an attribute added since the read (the io editor) is not in the source's order: append it, after the
+    // source's own, or it was dropped on save without a word.
+    const known = new Set(r.order);
     return r.order.map(k => {
       const v = k === 'name' ? r.name : k === 'type' ? r.type : (k === 'required' && isInput) ? r.required : extra.get(k);
       return v == null ? '' : ` ${k}="${escAttr(v)}"`;
-    }).join('');
+    }).join('') + ioExtraAttrXml((i.extra || []).filter(([k]) => !known.has(k)));
   }
   const reqAttr = isInput && i.required ? ' required="true"' : '';
   return ` name="${escAttr(i.name)}" type="${escAttr(i.type)}"${reqAttr}${ioExtraAttrXml(i.extra)}`;
@@ -13165,7 +13310,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.27.0';
+const APP_VERSION = '0.28.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
