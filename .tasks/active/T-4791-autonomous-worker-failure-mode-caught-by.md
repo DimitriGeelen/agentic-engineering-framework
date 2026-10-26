@@ -1,6 +1,23 @@
 ---
 id: T-4791
-name: "AUTONOMOUS-WORKER FAILURE MODE, caught by a second rail: the SEQ-T3411 round-1 procAsFit worker (T-3412) edited three vendored paths (lib/inception.sh, agents/context/check-active-task.sh, agents/task-create/create-task.sh) and never ran 'fw vendor self'. It closed GREEN — P-011 3/3 passed — because its Verification block contained zero occurrences of 'vendor'. CLAUDE.md requires 'bin/fw vendor self --check' in Verification for exactly those paths and requires the sync BEFORE work-completed (OBS-250, T-3236); the worker did not know or did not apply it. The structural point: P-011 is AUTHOR-CONTROLLED by construction — it runs only the lines the author thought to write — so a rule an autonomous worker does not know produces a green close rather than a red one, and its handback reports success. This is the L-291 toolchain-build lesson in a new costume (the gate is only as complete as the author's memory). Two rails did work: the pre-push self-vendor gate (T-2240/T-3125) caught it and named the exact fix, which is defence-in-depth behaving correctly. Candidate structural fix, NOT done here: have the close gate DERIVE the required verification lines from the task's actual git diff (touched a vendored path -> require the vendor check; touched *.py -> require a test run) instead of trusting the author to remember. That converts an author-memory dependency into a deterministic check, which is the framework's own REFACTOR thesis. Remediated under T-3414."
+name: "AUTONOMOUS-WORKER FAILURE MODE, caught by a second rail: the SEQ-T3411 round-1
+  procAsFit worker (T-3412) edited three vendored paths (lib/inception.sh, agents/context/check-active-task.sh,
+  agents/task-create/create-task.sh) and never ran 'fw vendor self'. It closed GREEN
+  — P-011 3/3 passed — because its Verification block contained zero occurrences of
+  'vendor'. CLAUDE.md requires 'bin/fw vendor self --check' in Verification for exactly
+  those paths and requires the sync BEFORE work-completed (OBS-250, T-3236); the worker
+  did not know or did not apply it. The structural point: P-011 is AUTHOR-CONTROLLED
+  by construction — it runs only the lines the author thought to write — so a rule
+  an autonomous worker does not know produces a green close rather than a red one,
+  and its handback reports success. This is the L-291 toolchain-build lesson in a
+  new costume (the gate is only as complete as the author's memory). Two rails did
+  work: the pre-push self-vendor gate (T-2240/T-3125) caught it and named the exact
+  fix, which is defence-in-depth behaving correctly. Candidate structural fix, NOT
+  done here: have the close gate DERIVE the required verification lines from the task's
+  actual git diff (touched a vendored path -> require the vendor check; touched *.py
+  -> require a test run) instead of trusting the author to remember. That converts
+  an author-memory dependency into a deterministic check, which is the framework's
+  own REFACTOR thesis. Remediated under T-3414."
 description: >
   Promoted from observation OBS-452
 
@@ -38,8 +55,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T23:04:20Z
-last_update: 2026-10-26T23:04:20Z
-date_finished: null
+last_update: '2026-10-26T23:15:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +67,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-26T23:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4791: AUTONOMOUS-WORKER FAILURE MODE, caught by a second rail: the SEQ-T3411 round-1 procAsFit worker (T-3412) edited three vendored paths (lib/inception.sh, agents/context/check-active-task.sh, agents/task-create/create-task.sh) and never ran 'fw vendor self'. It closed GREEN — P-011 3/3 passed — because its Verification block contained zero occurrences of 'vendor'. CLAUDE.md requires 'bin/fw vendor self --check' in Verification for exactly those paths and requires the sync BEFORE work-completed (OBS-250, T-3236); the worker did not know or did not apply it. The structural point: P-011 is AUTHOR-CONTROLLED by construction — it runs only the lines the author thought to write — so a rule an autonomous worker does not know produces a green close rather than a red one, and its handback reports success. This is the L-291 toolchain-build lesson in a new costume (the gate is only as complete as the author's memory). Two rails did work: the pre-push self-vendor gate (T-2240/T-3125) caught it and named the exact fix, which is defence-in-depth behaving correctly. Candidate structural fix, NOT done here: have the close gate DERIVE the required verification lines from the task's actual git diff (touched a vendored path -> require the vendor check; touched *.py -> require a test run) instead of trusting the author to remember. That converts an author-memory dependency into a deterministic check, which is the framework's own REFACTOR thesis. Remediated under T-3414.

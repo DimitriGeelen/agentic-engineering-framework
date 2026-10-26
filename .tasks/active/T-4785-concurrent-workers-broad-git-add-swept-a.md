@@ -1,6 +1,14 @@
 ---
 id: T-4785
-name: "Concurrent worker's broad git-add swept another worker's context records into its own close commit: T-3429's close (32119079a, 2026-09-22 18:16:34Z) contains D-614/D-615/D-616 and OBS-476, all authored by the T-3437 worker minutes earlier. The records survive and name T-3437 in their own content, but git history attributes them to T-3429, so Updates-mining by T-XXX (P-002) will trace them to the wrong task. Parallel dispatch stanzas tell workers to stage by name and never git add -A/-u; nothing enforces it, and shared append-only state (.context/project/decisions.yaml, .context/inbox.yaml) is the converging write-set the framework writes on every task's behalf (CLAUDE.md Execution Model item 4)."
+name: "Concurrent worker's broad git-add swept another worker's context records into
+  its own close commit: T-3429's close (32119079a, 2026-09-22 18:16:34Z) contains
+  D-614/D-615/D-616 and OBS-476, all authored by the T-3437 worker minutes earlier.
+  The records survive and name T-3437 in their own content, but git history attributes
+  them to T-3429, so Updates-mining by T-XXX (P-002) will trace them to the wrong
+  task. Parallel dispatch stanzas tell workers to stage by name and never git add
+  -A/-u; nothing enforces it, and shared append-only state (.context/project/decisions.yaml,
+  .context/inbox.yaml) is the converging write-set the framework writes on every task's
+  behalf (CLAUDE.md Execution Model item 4)."
 description: >
   Promoted from observation OBS-477
 
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T23:02:10Z
-last_update: 2026-10-26T23:02:10Z
-date_finished: null
+last_update: '2026-10-26T23:15:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-26T23:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:refactor); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4785: Concurrent worker's broad git-add swept another worker's context records into its own close commit: T-3429's close (32119079a, 2026-09-22 18:16:34Z) contains D-614/D-615/D-616 and OBS-476, all authored by the T-3437 worker minutes earlier. The records survive and name T-3437 in their own content, but git history attributes them to T-3429, so Updates-mining by T-XXX (P-002) will trace them to the wrong task. Parallel dispatch stanzas tell workers to stage by name and never git add -A/-u; nothing enforces it, and shared append-only state (.context/project/decisions.yaml, .context/inbox.yaml) is the converging write-set the framework writes on every task's behalf (CLAUDE.md Execution Model item 4).
