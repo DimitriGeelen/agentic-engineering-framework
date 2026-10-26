@@ -452,6 +452,11 @@ def outbound_items(now: datetime | None = None) -> list[dict]:
     except OSError:
         files = []
     posted: set[str] | None = None   # T-4348: read the hub ledger only if a notice needs it
+    # T-4766: the ack ledger is authoritative. A consult the retry ladder closed
+    # (answered, read, notice, released, settled, exhausted) is not waiting —
+    # the same is_open() settle-sent refuses on, so the two views cannot disagree.
+    from . import retry
+    ladder_closed = retry.closed_ids()
     for f in files:
         try:
             msg = json.loads(f.read_text(encoding="utf-8"))
@@ -459,7 +464,7 @@ def outbound_items(now: datetime | None = None) -> list[dict]:
             continue
         cid = str(msg.get("client_msg_id") or f.stem)
         t0 = _ts(msg.get("created_at"))
-        if cid in seen or cid in closed or t0 is None or t0 < ep:
+        if cid in seen or cid in closed or cid in ladder_closed or t0 is None or t0 < ep:
             continue
         got = rc.get(cid, {})
         if receipts.HANDED_OVER in got or receipts.REPLIED in got:

@@ -129,6 +129,13 @@ def latest_rows() -> dict[str, dict]:
     return latest
 
 
+def closed_ids() -> set[str]:
+    """T-4766: ids whose latest ledger row the ladder is finished with —
+    `is_open` over `latest_rows`, the one question settle-sent and the sweep
+    ask, so `fw sidecar waiting` cannot list what they call closed."""
+    return {cmid for cmid, row in latest_rows().items() if not is_open(row)}
+
+
 def ladder_position(row: dict) -> tuple[int, int | None, str | None]:
     """`(attempts_so_far, next_rung, next_retry_at)`, legacy rows included.
 
