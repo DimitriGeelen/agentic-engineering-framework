@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4758: Record ring20 be.21 verdict (T-4753) in the v1.8.15 field-evidence report
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T09:29:16Z
+# ============================================================================
+
+task_id: T-4758
+task_name: "Record ring20 be.21 verdict (T-4753) in the v1.8.15 field-evidence report"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-26T09:27:08Z
+completed: 2026-10-26T09:29:03Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-26T10:28:07+01:00
+last_commit: 2026-10-26T10:28:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.8.15 report records ring20 be.21 verdict — T-4753 WORKS
+
+# Key outcomes
+outcomes:
+  - 'The report records ring20''s be.21 verdict on T-4753 with tip and message id, plus their other-direction observation and the task filed for it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4758-record-ring20-be21-verdict-t-4753-in-the.md'
+  - 'docs/reports/field-test-v1.8.15-results.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T10:28:07'
+    action: 'T-4758: v1.8.15 report records ring20 be.21 verdict — T-4753 WORKS'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 5
+  lines_added: 472
+  lines_removed: 4
+  footprint_refreshed_at: '2026-10-26T09:29:21Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4758-record-ring20-be21-verdict-t-4753-in-the.md
+generated_by: context-agent-hybrid

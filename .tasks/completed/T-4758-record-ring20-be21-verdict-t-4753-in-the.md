@@ -4,10 +4,10 @@ name: "Record ring20 be.21 verdict (T-4753) in the v1.8.15 field-evidence report
 description: >
   ring20 sidecar e3dc42be: T-4753 WORKS on be.21. Append to docs/reports/field-test-v1.8.15-results.md next to the be.18/be.19 section.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T09:27:08Z
-last_update: 2026-10-26T09:27:08Z
-date_finished: null
+last_update: 2026-10-26T09:29:03Z
+date_finished: 2026-10-26T09:29:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -246,6 +246,7 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+grep -q 'be.21 — proxmox-ring20-management' docs/reports/field-test-v1.8.15-results.md && grep -q 'e3dc42be' docs/reports/field-test-v1.8.15-results.md
 
 ## RCA
 
@@ -343,3 +344,20 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4758-record-ring20-be21-verdict-t-4753-in-the.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-86eb93c2
+- **Timestamp:** 2026-10-26T09:29:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-26T09:29:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
