@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4762: T-4741 follow-up: inline code span spanning two lines of a folded description still counts a quoted placeholder
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T09:59:31Z
+# ============================================================================
+
+task_id: T-4762
+task_name: "T-4741 follow-up: inline code span spanning two lines of a folded description still counts a quoted placeholder"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T09:34:16Z
+completed: 2026-10-26T09:59:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T10:41:24+01:00
+last_commit: 2026-10-26T10:41:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  placeholder audit strips code spans per block, so a span split across a folded description or wrapped paragraph no longer leaves quoted stubs bare
+
+# Key outcomes
+outcomes:
+  - 'A code span that opens on one line and closes on the next is stripped, both in a frontmatter folded/block scalar (`description: >` / `|`) and in a body markdown paragraph. TermLink''s T-1899 shape passes `fw task review`/the placeholder audit'
+  - 'Bare placeholder AC lines are still caught, with the reported line number pointing at the line where the placeholder actually is'
+  - 'The bash reader (`audit_task_placeholders`) and the Python reader (`ac_placeholder`) give the same verdict on every fixture; the T-4741 bats stay green'
+  - 'Bats add a fixture reproducing TermLink''s lines 7–8 (span split across the fold) and one with a span split in a body paragraph; vendored copy in sync (`fw vendor self --check --task T-4762`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — where a span is allowed to cross a line'
+    chose: 'match code spans per block (a run of lines between blank lines and block starts: list item, heading, blockquote, table row, fence, `---`; inside frontmatter, a top-level YAML key). The bash reader strips the whole file in one pass and indexes the result by line number.'
+    rationale: 'this is CommonMark''s rule (a span may wrap inside a paragraph but not past one), and a folded scalar is one paragraph. Treating each list item as its own block means a stray backtick in one AC cannot hide a bare stub in the next.'
+    alternatives_rejected: ['(a) joining the whole file, which lets one stray backtick swallow everything up to the next backtick, including real stubs; (b) special-casing only `description: >`, which misses the body-paragraph shape; (c) keeping the candidate-lines-only pipe, which has no paragraph context, because the Updates and fence gaps are removed from it.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/ac_placeholder.py'
+  - '.agentic-framework/lib/task-audit.sh'
+  - '.tasks/active/T-4762-t-4741-follow-up-inline-code-span-spanni.md'
+  - 'lib/ac_placeholder.py'
+  - 'lib/task-audit.sh'
+  - 'tests/unit/t4762_placeholder_span_across_lines.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T10:41:24'
+    action: 'T-4762: placeholder audit strips code spans per block, so a span split across a folded description or wrapped paragraph no longer leaves quoted stubs bare'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24
+  commits: 2
+  files_changed: 9
+  lines_added: 804
+  lines_removed: 45
+  footprint_refreshed_at: '2026-10-26T09:59:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4762-t-4741-follow-up-inline-code-span-spanni.md
+generated_by: context-agent-hybrid
