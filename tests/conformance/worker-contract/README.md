@@ -32,3 +32,17 @@ ids may be n/a.
 
 Other backends write their own runner against the adapter shape described in `run_local.py`
 (reset from `given`, apply one step, snapshot the record).
+
+## Equivalent routes on a variant
+
+A transition-subject case is never n/a (§6.6 N2). When one variant is phrased for a path a
+backend does not have (CC-16 `supervisor-refusal` presumes a refusal after T1; some backends
+refuse before T1), the variant carries `equivalent:`, one line naming what such a backend runs
+instead. Adapter contract:
+
+- a backend that runs the real path returns no `"equivalent"` and is judged on the steps as usual;
+- a backend that takes the equivalent lists `"<case id>/<variant>"` in `adapter.equivalent_routes`
+  and returns `"equivalent": "<what ran>"` in every step result of that variant. The expect is
+  accepted only then, and the case result names what ran;
+- a declared route whose result carries no `"equivalent"` fails ("taken silently"), and so does an
+  `"equivalent"` on a variant that offers none.

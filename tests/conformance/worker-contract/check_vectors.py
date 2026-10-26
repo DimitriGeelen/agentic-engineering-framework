@@ -36,6 +36,7 @@ VOCAB_KEYS = {"states", "outcomes", "transitions", "writers", "fence_reasons",
               "errors", "refusals", "capabilities", "ops"}
 VECTOR_KEYS = {"id", "title", "spec_refs", "applicability", "given", "steps", "then"}
 OPTIONAL_VECTOR_KEYS = {"variants", "spec_note", "parity"}
+VARIANT_KEYS = {"name", "requires", "given", "steps", "then", "equivalent"}
 EXPECT_PRIMARY = {"accepted", "fence_reject", "error", "refused", "response",
                   "no_transition", "ok"}
 EXPECT_MODIFIERS = {"notices", "values", "bind"}
@@ -155,6 +156,11 @@ class Checker:
                 if not var.get("name") or var["name"] in names:
                     self.err(vw, "variant needs a unique name")
                 names.add(var.get("name"))
+                for key in set(var) - VARIANT_KEYS:
+                    self.err(vw, f"unknown key '{key}'")
+                if "equivalent" in var and (not isinstance(var["equivalent"], str)
+                                            or not var["equivalent"].strip()):
+                    self.err(vw, "equivalent must be a non-empty string naming what a backend runs instead")
                 for cap in var.get("requires") or []:
                     if cap not in self.vocab.get("capabilities", set()):
                         self.err(vw, f"unknown capability '{cap}'")

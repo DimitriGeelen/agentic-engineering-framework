@@ -204,3 +204,81 @@ def test_runner_transition_case_with_no_applicable_variant_fails(doc):
     r = run_local.run_vector(vec, ScriptedAdapter(set(), {}), "s")
     assert r["status"] == "fail"
     assert "N2" in r["reason"]
+
+
+# ── equivalent route on a variant (T-4793) ────────────────────────────────
+class EquivalentAdapter(ScriptedAdapter):
+    """Declares CC-16/supervisor-refusal as an equivalent route and answers it with
+    (or, with silent=True, without) the "equivalent" string."""
+
+    def __init__(self, then, silent=False, route="CC-16/supervisor-refusal"):
+        super().__init__(set(), then)
+        self.equivalent_routes = {route}
+        self.silent = silent
+
+    def apply(self, step):
+        result = super().apply(step)
+        if not self.silent:
+            result["equivalent"] = "derive_outcome(E1) -> refused (rule 2)"
+        return result
+
+
+def _variant(doc, vid, name):
+    vec = copy.deepcopy(_vec(doc, vid))
+    vec["variants"] = [v for v in vec["variants"] if v["name"] == name]
+    return vec
+
+
+def test_cc16_supervisor_refusal_offers_an_equivalent(doc):
+    var = next(v for v in _vec(doc, "CC-16")["variants"] if v["name"] == "supervisor-refusal")
+    assert "derivation" in var["equivalent"]
+    assert "requires" not in var
+    assert _vec(doc, "CC-16")["applicability"]["requires"] == []
+
+
+def test_variant_unknown_key_and_empty_equivalent_are_refused(doc):
+    bad = copy.deepcopy(doc)
+    _vec(bad, "CC-16")["variants"][0]["equivalnt"] = "typo"
+    assert any("unknown key 'equivalnt'" in e for e in _errors(bad))
+    bad = copy.deepcopy(doc)
+    _vec(bad, "CC-16")["variants"][2]["equivalent"] = "  "
+    assert any("equivalent must be a non-empty string" in e for e in _errors(bad))
+
+
+def test_reference_backend_passes_all_cc16_variants_by_real_path(doc):
+    vec = _vec(doc, "CC-16")
+    results = []
+    for var in vec["variants"]:
+        one = copy.deepcopy(vec)
+        one["variants"] = [var]
+        r = run_local.run_vector(one, ScriptedAdapter(set(), var["then"]), "reference")
+        assert r["status"] == "pass", r
+        assert "equivalent" not in r["variants"][0]
+        results.append(r)
+    assert len(results) == 6
+
+
+def test_equivalent_route_passes_and_is_named(doc):
+    vec = _variant(doc, "CC-16", "supervisor-refusal")
+    r = run_local.run_vector(vec, EquivalentAdapter(vec["variants"][0]["then"]), "s")
+    assert r["status"] == "pass", r
+    assert r["variants"][0]["equivalent"] == "derive_outcome(E1) -> refused (rule 2)"
+
+
+def test_equivalent_route_taken_silently_fails(doc):
+    vec = _variant(doc, "CC-16", "supervisor-refusal")
+    r = run_local.run_vector(vec, EquivalentAdapter(vec["variants"][0]["then"], silent=True), "s")
+    assert r["status"] == "fail"
+    assert "taken silently" in r["variants"][0]["reason"]
+
+
+def test_equivalent_on_a_variant_without_one_fails(doc):
+    vec = _variant(doc, "CC-16", "exit-1")
+    adapter = EquivalentAdapter(vec["variants"][0]["then"], route="CC-16/supervisor-refusal")
+    r = run_local.run_vector(vec, adapter, "s")
+    assert r["status"] == "fail"
+    assert "offers no equivalent" in r["variants"][0]["reason"]
+    adapter = EquivalentAdapter(vec["variants"][0]["then"], route="CC-16/exit-1")
+    r = run_local.run_vector(vec, adapter, "s")
+    assert r["status"] == "fail"
+    assert "offers no equivalent" in r["variants"][0]["reason"]

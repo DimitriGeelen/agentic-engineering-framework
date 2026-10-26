@@ -982,6 +982,7 @@ vectors:
           final: {A1: {state: done, outcome: failed, exit_code: 1}}
           admissible_histories: {A1: [[running, done]]}
       - name: supervisor-refusal
+        equivalent: a backend with no post-T1 refusal path (it refuses before T1) runs derivation rule 2 through its derivation function on this evidence and reports done{refused} (§3.3, §6.6 N2)
         given:
           evidence:
             E1: {attempt: 1, nonce: n1, exit_code: 3, supervisor_refused: true, handback: absent, signed: true, persisted_at: 10}

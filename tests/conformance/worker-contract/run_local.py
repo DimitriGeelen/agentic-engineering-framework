@@ -13,6 +13,15 @@ adapter object:
                                 raise NotImplementedError("<what>") for an op it lacks
     adapter.snapshot()          {"attempts": {"A1": {"state", "outcome", "history": [states], …}},
                                  plus any then-level facts it reports (operator_notices, …)}
+    adapter.equivalent_routes   optional set of "<case id>/<variant name>" the backend cannot run
+                                directly and runs by the variant's `equivalent:` instead (§6.6 N2)
+
+Equivalent route (T-4793). A variant may carry `equivalent:` (what a backend without the
+phrased path runs instead). A backend that runs the real path returns no "equivalent" and is
+judged on the steps as usual. A backend that names the variant in `equivalent_routes` must
+return a non-empty "equivalent": "<what ran>" in every step result; its expect is accepted only
+then, and that string is named in the case result. A declared route whose result lacks it
+fails ("equivalent route taken silently"), as does an "equivalent" on a variant offering none.
 
 Until that module exists every vector is reported `not-implemented` with what is
 missing. A vector is reported `pass` only after its steps ran and every expect and
@@ -89,13 +98,14 @@ def ops_used(vec: dict) -> list[str]:
 
 def runs_of(vec: dict) -> list[dict]:
     if not vec.get("variants"):
-        return [{"name": None, "requires": [], "given": vec["given"],
+        return [{"name": None, "requires": [], "equivalent": None, "given": vec["given"],
                  "steps": list(vec["steps"]), "then": vec["then"]}]
     out = []
     for var in vec["variants"]:
         given = copy.deepcopy(vec["given"])
         given.update(var.get("given") or {})
-        out.append({"name": var["name"], "requires": var.get("requires") or [], "given": given,
+        out.append({"name": var["name"], "requires": var.get("requires") or [],
+                    "equivalent": var.get("equivalent"), "given": given,
                     "steps": list(vec["steps"]) + list(var["steps"]), "then": var["then"]})
     return out
 
@@ -130,8 +140,22 @@ def match_expect(result: dict, exp: dict) -> bool:
     return True
 
 
-def check_step(adapter, step: dict) -> None:
+def check_route(result: dict, step: dict, route: str | None, offered: str | None) -> str | None:
+    """Return what ran by the equivalent route, or None for the real path (T-4793)."""
+    ran = result.get("equivalent")
+    if ran is not None and not (isinstance(ran, str) and ran.strip()):
+        raise Mismatch(f"step {step['op']}: 'equivalent' must be a non-empty string, got {ran!r}")
+    if ran and offered is None:
+        raise Mismatch(f"step {step['op']}: equivalent '{ran}' reported on a run that offers no equivalent")
+    if route and not ran:
+        raise Mismatch(f"step {step['op']}: equivalent route taken silently ({route} declared, "
+                       "result carries no 'equivalent')")
+    return ran or None
+
+
+def check_step(adapter, step: dict, route: str | None = None, offered: str | None = None) -> str | None:
     result = adapter.apply(step)
+    ran = check_route(result, step, route, offered)
     exp = step["expect"]
     if step["op"] == "concurrent":
         results = result.get("results") or []
@@ -144,9 +168,10 @@ def check_step(adapter, step: dict) -> None:
         bad = [r for r in losers if not any(match_expect(r, e) for e in exp["rest_any_of"])]
         if bad:
             raise Mismatch(f"concurrent: loser result {bad[0]} not admissible")
-        return
+        return ran
     if not match_expect(result, exp):
         raise Mismatch(f"step {step['op']}: expected {exp}, got {result}")
+    return ran
 
 
 def check_then(before: dict, after: dict, then: dict) -> None:
@@ -195,19 +220,27 @@ def run_vector(vec: dict, adapter, backend_reason: str) -> dict:
             return {**base, "status": "n/a", "reason": f"capability not offered: {', '.join(lacking)}"}
         return {**base, "status": "fail",
                 "reason": f"N2: lacks {', '.join(lacking)} on a case that may not be n/a"}
+    declared = set(getattr(adapter, "equivalent_routes", set()) or set())
     variant_results = []
     for run in runs_of(vec):
         label = run["name"] or "main"
         if any(c not in caps for c in run["requires"]):
             variant_results.append({"variant": label, "status": "n/a"})
             continue
+        key = f"{vec['id']}/{label}"
+        route = key if key in declared else None
         try:
+            if route and not run["equivalent"]:
+                raise Mismatch(f"{key} declared as an equivalent route, but the variant offers no equivalent")
             adapter.reset(copy.deepcopy(run["given"]))
             before = copy.deepcopy(adapter.snapshot())
-            for step in run["steps"]:
-                check_step(adapter, step)
+            ran = [r for r in (check_step(adapter, step, route, run["equivalent"])
+                               for step in run["steps"]) if r]
             check_then(before, adapter.snapshot(), run["then"])
-            variant_results.append({"variant": label, "status": "pass"})
+            passed = {"variant": label, "status": "pass"}
+            if ran:
+                passed["equivalent"] = "; ".join(dict.fromkeys(ran))
+            variant_results.append(passed)
         except NotImplementedError as exc:
             variant_results.append({"variant": label, "status": "not-implemented", "missing": [str(exc)]})
         except Mismatch as exc:
@@ -255,7 +288,8 @@ def main(argv: list[str]) -> int:
     else:
         print(f"backend: {reason}")
         for r in results:
-            detail = r.get("reason") or "; ".join(r.get("missing", [])[:1])
+            detail = r.get("reason") or "; ".join(r.get("missing", [])[:1]) or "; ".join(
+                f"{v['variant']} by equivalent: {v['equivalent']}" for v in r.get("variants", []) if "equivalent" in v)
             print(f"  {r['id']:6} {r['status']:16} {r['title']}" + (f" — {detail}" if detail else ""))
         print("summary: " + ", ".join(f"{k}={v}" for k, v in sorted(counts.items())))
     if counts.get("fail"):
