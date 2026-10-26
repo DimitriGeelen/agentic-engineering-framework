@@ -139,7 +139,7 @@ T0_DEQUOTED=$(printf '%s' "$COMMAND" | tr -d "\"'\\\\\$")
 # Round 6: ANSI-C quoting ($'tier\x30') is decoded in Python, so any $' skips
 # the fast path.
 if [[ "$COMMAND" != *"\$'"* ]] && ! printf '%s\n%s\n' "$COMMAND" "$T0_DEQUOTED" | grep -qEi \
-    'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-|git\s+commit\b[^;|&]*\s-[a-z]*n|(HOME|XDG_CONFIG_HOME|GIT_CONFIG[A-Z0-9_]*)=|hooksPath|include\.path|includeif|tier0|--no-v|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|killall\s|fw\s.*--force|fw\s.*inception\s.*decide'; then
+    'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-|git\s+commit\b[^;|&]*\s-[a-z]*n|(HOME|XDG_CONFIG_HOME|GIT_CONFIG[A-Z0-9_]*)=|hooksPath|include\.path|includeif|tier0|--no-v|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|killall\s|kill-se|fw\s.*--force|fw\s.*inception\s.*decide'; then
     exit 0
 fi
 
@@ -344,6 +344,12 @@ PATTERNS = [
      'PKILL -f: pkill -f/--full matches its pattern against the full command line of every process on the host, so it hits unrelated processes (055: pkill -KILL -f sleep|trap killed a live agent session). Instead: kill the PID or process group you started (kill -TERM <pid>, kill -TERM -<pgid>)'),
     (r'\bkillall\b[^;|&\n]*\s(?:-' + NOT_SIGNAME + r'[a-zA-Z]*r[a-zA-Z]*|--re(?:g(?:e(?:x(?:p)?)?)?)?)(?![^\s;|&)])',
      'KILLALL -r: killall -r/--regexp kills every process whose name matches a regular expression, unrelated ones included. Instead: kill the PID or process group you started (kill -TERM <pid>, kill -TERM -<pgid>)'),
+    # T-4783 (055 T-640): an agent shell inside tmux has TMUX set, and tmux
+    # prefers it over TMUX_TMPDIR, so a bare kill reaches the shared server.
+    # A kill that names its own socket (-S path, -L name) passes; so does every
+    # other verb. tmux accepts abbreviations, hence kill-ser.../kill-ses...
+    (r'\btmux\b(?![^;|&\n]*\s-[SL])[^;|&\n]*\bkill-se(?:r(?:v(?:e(?:r)?)?)?|s(?:s(?:i(?:o(?:n)?)?)?)?)\b',
+     'TMUX KILL WITHOUT SOCKET: tmux kill-server/kill-session with no -S/-L acts on the server TMUX points at (it wins over TMUX_TMPDIR), which inside an agent shell is the shared server every session runs on. Instead: name your own socket, tmux -S <socket> kill-server or tmux -L <name> kill-server'),
 
     # === Infrastructure destructive ===
     (r'\bdocker\s+system\s+prune\b',
