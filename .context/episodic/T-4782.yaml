@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4782: Lint: no backtick or $( inside double-quoted python3 -c blocks in hook scripts (bash runs them on every call)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T22:16:24Z
+# ============================================================================
+
+task_id: T-4782
+task_name: "Lint: no backtick or $( inside double-quoted python3 -c blocks in hook scripts (bash runs them on every call)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T21:49:25Z
+completed: 2026-10-26T22:15:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T23:13:03+01:00
+last_commit: 2026-10-26T23:14:28+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  hook lint — no backtick or $( in double-quoted python -c blocks; check-tier0 approval card moved to quoted heredoc. tick invariants AC (suite green, vendor in sync)
+
+# Key outcomes
+outcomes:
+  - 'A new invariant, tests/lint/hook-python-c-substitution.bats (a small Python scanner under tools/ is fine), finds every double-quoted `python3 -c "..."` block in hook scripts: agents/context/*.sh, agents/context/lib/*.sh, and any script that .claude/settings.json or `fw hook` dispatches to. It fails, naming file:line, on an unescaped backtick or `$(` inside such a block. Escaped `\$(` and `\`` and intended `$VAR` expansion stay allowed'
+  - 'A fixture proves the scanner catches 055''s exact case: a Python `#` comment holding a backtick-quoted `tmux kill-server` inside `python3 -c "..."`. A clean fixture passes'
+  - 'The current tree passes. Any real hit in today''s hooks is fixed by moving that block to a quoted heredoc (`<<''PY''`) or a lib/*.py module, never by suppressing it'
+  - '`timeout 900 bin/fw test invariants` passes; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — new hook-scoped lint vs widening T-2707''s lint'
+    chose: 'a separate, hook-scoped scanner that flags both backtick and `$(`.'
+    rationale: 'T-2707''s tree-wide lint allows `$(` on purpose (deliberate interpolation exists outside hooks). Hooks run on every tool call, so the stricter rule pays there, and today''s hooks had exactly one `$(` hit.'
+    alternatives_rejected: ['widening T-2707 tree-wide (false positives on deliberate interpolation outside hooks, L-527); escaping the hit as `\$(` (suppression, not a fix; the AC forbids it).']
+  - decision: '2026-10-26 — fix for check-tier0.sh''s approval-card block'
+    chose: 'quoted heredoc (`python3 - "$APPROVAL_YAML" <<''PY''`), timestamp computed in Python.'
+    rationale: 'the block already took every other shell value through env and argv, so the move is mechanical and the whole block becomes inert to bash.'
+    alternatives_rejected: ['a new lib/*.py module (more churn for a 30-line block).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-tier0.sh'
+  - '.agentic-framework/tools/hook-python-c-substitution-lint.py'
+  - '.fabric/components/tools-hook-python-c-substitution-lint.yaml'
+  - '.tasks/active/T-4782-lint-no-backtick-or--inside-double-quote.md'
+  - 'agents/context/check-tier0.sh'
+  - 'tests/lint/fixtures/t4782/bad-055-tier0-comment.sh.fixture'
+  - 'tests/lint/fixtures/t4782/bad-dollar-paren.sh.fixture'
+  - 'tests/lint/fixtures/t4782/clean.sh.fixture'
+  - 'tests/lint/hook-python-c-substitution.bats'
+  - 'tools/hook-python-c-substitution-lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T23:13:03'
+    action: 'T-4782: hook lint — no backtick or $( in double-quoted python -c blocks; check-tier0 approval card moved to quoted heredoc'
+  - time: '2026-10-26T23:14:28'
+    action: 'T-4782: tick invariants AC (suite green, vendor in sync)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 3
+  files_changed: 13
+  lines_added: 969
+  lines_removed: 14
+  footprint_refreshed_at: '2026-10-26T22:16:51Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4782-lint-no-backtick-or--inside-double-quote.md
+generated_by: context-agent-hybrid

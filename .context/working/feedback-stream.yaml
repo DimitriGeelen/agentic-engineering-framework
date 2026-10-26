@@ -49399,3 +49399,21 @@ scan_id: R-27435632
 task_id: T-4779
 payload:
   task_file: .tasks/active/T-4779-verdict-ledger-stale-review-withdraws-ev.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T22:16:07Z'
+scan_id: R-c524500c
+task_id: T-4782
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T22:16:07Z'
+scan_id: R-c524500c
+task_id: T-4782
+payload:
+  task_file: .tasks/active/T-4782-lint-no-backtick-or--inside-double-quote.md
