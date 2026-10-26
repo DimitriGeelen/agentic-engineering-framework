@@ -49453,3 +49453,21 @@ scan_id: R-89d9a8ed
 task_id: T-4784
 payload:
   task_file: .tasks/active/T-4784-triage-the-379-pending-observations-inbo.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T23:15:54Z'
+scan_id: R-44d3f7e5
+task_id: T-4793
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T23:15:54Z'
+scan_id: R-44d3f7e5
+task_id: T-4793
+payload:
+  task_file: .tasks/active/T-4793-conformance-vectors-cc-16-supervisor-ref.md

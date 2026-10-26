@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4793: Conformance vectors: CC-16 supervisor-refusal variant needs an equivalent route for backends that refuse before T1
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T23:16:06Z
+# ============================================================================
+
+task_id: T-4793
+task_name: "Conformance vectors: CC-16 supervisor-refusal variant needs an equivalent route for backends that refuse before T1"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T23:07:03Z
+completed: 2026-10-26T23:15:46Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T00:14:41+01:00
+last_commit: 2026-10-27T00:14:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CC-16 supervisor-refusal equivalent route — variant equivalent: field, runner accepts it only when the adapter names what ran, schema check rejects unknown variant keys
+
+# Key outcomes
+outcomes:
+  - 'Route agreed with ring20 (msg dd8fe9b8): the equivalent route, not a new n/a capability. vectors.yaml CC-16 variant `supervisor-refusal` gains an `equivalent:` field describing what a backend with no post-T1 refusal path runs instead (derivation rule 2 through its derivation function, §3.3/§6.6). No `requires` is added, and n/a stays the closed list'
+  - 'run_local.py: for a variant with `equivalent:`, the runner calls `adapter.apply(step)` as usual. It accepts the step''s expect ONLY if the adapter''s result carries a non-empty `"equivalent": "<what ran>"`, and it names that string in the case result. A result without it fails the variant ("equivalent route taken silently"), so a silent pass is impossible. A backend that does run the real path returns no equivalent and is judged on the step as today'
+  - 'check_vectors.py accepts the `equivalent` field on a variant (and still rejects unknown keys); README.md documents the field and the adapter contract in a few lines'
+  - 'Tests: the in-repo reference backend still passes CC-16 on all six variants; a fake adapter that returns the equivalent passes the variant with the equivalent named; a fake adapter that returns the expected state WITHOUT equivalent fails it; `timeout 900 bin/fw test invariants` passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — how the runner tells the real path from a silent equivalent'
+    chose: 'the adapter declares the variants it runs by the equivalent in an optional `adapter.equivalent_routes` set (`"CC-16/supervisor-refusal"`). For a declared route every step result must carry a non-empty `"equivalent"`, else the variant fails ("taken silently"); the string is named in the case result. An undeclared adapter is judged on the steps as today. An `"equivalent"` on a variant that offers none fails.'
+    rationale: 'the agreed contract (msg to ring20 in reply to dd8fe9b8) asks for both "a matching result without `equivalent` fails" and "a real-path backend returns no `equivalent` and is judged as today". From the step result alone the two are the same result, so the runner needs the backend to say which route it took. A declaration keeps the closed n/a list and adds no `requires` or vocabulary capability.'
+    alternatives_rejected: ['(a) inferring the route from the result alone — a silent equivalent then passes, which the contract forbids; (b) a new vocabulary capability such as `worker_refusal` — a 3-way spec amendment (§6.6 closed n/a list); (c) per-variant n/a — breaks N2 for a transition-subject case.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4793-conformance-vectors-cc-16-supervisor-ref.md'
+  - 'tests/conformance/worker-contract/README.md'
+  - 'tests/conformance/worker-contract/check_vectors.py'
+  - 'tests/conformance/worker-contract/run_local.py'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+  - 'tests/unit/test_worker_contract_vectors.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T00:14:41'
+    action: 'T-4793: CC-16 supervisor-refusal equivalent route — variant equivalent: field, runner accepts it only when the adapter names what ran, schema check rejects unknown variant keys'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8
+  commits: 2
+  files_changed: 9
+  lines_added: 662
+  lines_removed: 13
+  footprint_refreshed_at: '2026-10-26T23:16:32Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4793-conformance-vectors-cc-16-supervisor-ref.md
+generated_by: context-agent-hybrid
