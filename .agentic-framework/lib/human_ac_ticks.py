@@ -506,11 +506,31 @@ def anchor_commit(root: Path) -> str | None:
     return out[-1] if out else None
 
 
-def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tuple[list[dict], str]:
+def committed_ledger_digests(root: Path, rev: str = "HEAD") -> Counter:
+    """Digest counts of the ledger as committed at `rev` (T-4769). Only used to NAME a tick
+    whose licence is an uncommitted row; the audit's budget is still the working tree."""
+    p = subprocess.run(["git", "-C", str(root), "show", f"{rev}:{LEDGER}"], capture_output=True,
+                       encoding="utf-8", errors="replace")
+    out: Counter = Counter()
+    for line in (p.stdout if p.returncode == 0 else "").splitlines():
+        try:
+            r = json.loads(line)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if isinstance(r, dict):
+            out[r.get("digest")] += 1
+    return out
+
+
+def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD",
+                 pending: list | None = None) -> tuple[list[dict], str]:
     """(every unprovenanced Human tick in non-merge commits in range, range description).
 
     Range: `since` (a date) when given; else `<anchor>..rev`; else the CUTOFF date (a repo
-    where the detector is not committed, e.g. an untracked vendored copy)."""
+    where the detector is not committed, e.g. an untracked vendored copy).
+    `pending`, when given, receives each tick licensed only by a ledger row that is in the
+    working tree but not committed at `rev` (T-4769) — it passes HERE and FAILs in every
+    other checkout."""
     if since:
         rng, where = [f"--since={since}", rev], since
     else:
@@ -540,12 +560,14 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
                                     for parent in (p[1].split() or [None])]))
     blobs = _BlobReader(root)
     try:
-        return _scan(root, commits, diffs, blobs, budget, checkers, findings), where
+        return _scan(root, commits, diffs, blobs, budget, checkers, findings,
+                     committed_ledger_digests(root, rev), pending), where
     finally:
         blobs.close()
 
 
-def _scan(root, commits, diffs, blobs, budget, checkers, findings) -> list[dict]:
+def _scan(root, commits, diffs, blobs, budget, checkers, findings,
+          committed: Counter | None = None, pending: list | None = None) -> list[dict]:
     grants = delegation_grants(root)
     cited: Counter = Counter()  # (grant id, verdict id) already spent: one cite, one tick
     for sha, parents, who, aemail, cemail, cdate, msg in commits:
@@ -599,6 +621,10 @@ def _scan(root, commits, diffs, blobs, budget, checkers, findings) -> list[dict]
                 d = key_digest(tid, key)
                 if budget[d] > 0:
                     budget[d] -= 1
+                    if committed is not None and committed[d] > 0:
+                        committed[d] -= 1
+                    elif pending is not None:  # T-4769: licensed by an UNCOMMITTED row
+                        pending.append({"commit": sha, "task": tid, "criterion": key[:100]})
                     continue
                 why = ""
                 if key in cites:  # T-4165: a standing delegation, cited on the criterion
@@ -641,21 +667,28 @@ def audit(root: Path, since: str | None = None) -> tuple[int, list[str]]:
     why = _no_history(root)
     if why:
         return 4, [f"{why} — no committed history to audit"]
+    pending: list[dict] = []
     try:
-        findings, since = scan_commits(root, since)
+        findings, since = scan_commits(root, since, pending=pending)
     except (subprocess.CalledProcessError, OSError) as e:
         return 3, [f"could not read git history: {e}"]
+    # T-4769: a row that is only in the working tree licenses the tick HERE and nowhere
+    # else; say so on the summary line (the one fw audit prints). Verdict unchanged.
+    lines = [f"NOTE {p['task']} tick in {p['commit'][:10]} \"{p['criterion']}\" is licensed by "
+             f"a provenance row that is not committed" for p in pending]
+    tail = (f"; {len(pending)} tick(s) licensed only by UNCOMMITTED rows — commit {LEDGER}, "
+            f"or every other checkout FAILs them as 'no record'") if pending else ""
     if not findings:
-        return 0, [f"no unprovenanced ### Human ticks in commits since {since}"]
-    lines = []
+        return 0, lines + [f"no unprovenanced ### Human ticks in commits since {since}{tail}"]
     for f in findings:
         lines.append(
             f"FAIL {f['task']} {f['kind']} in {'merge ' if f.get('merge') else ''}{f['commit'][:10]} by "
             f"{'AGENT ' if f['agent'] else ''}{f['who']}: \"{f['criterion']}\" — no Watchtower/"
             f"operator record and no reviewer verdict. Ticked in Watchtower? Then the server is "
             f"stale (bin/fw watchtower restart) or the tick predates T-4070: the operator "
-            f"records it with: python3 lib/human_ac_ticks.py ack {f['task']} --ac N")
-    lines.append(f"{len(findings)} unprovenanced ### Human tick(s) since {since}")
+            f"records it with: python3 lib/human_ac_ticks.py ack {f['task']} --ac N. Recorded "
+            f"in another checkout? A row counts only where it exists: commit {LEDGER} there")
+    lines.append(f"{len(findings)} unprovenanced ### Human tick(s) since {since}{tail}")
     return 2, lines
 
 
