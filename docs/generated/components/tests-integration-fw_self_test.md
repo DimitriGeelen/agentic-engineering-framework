@@ -10,6 +10,9 @@
 
 Integration tests for fw self-test
 Origin: T-947
+T-4644: `fw self-test` runs every phase (~150 s). Each test used to run it
+again, which took the file past the 900 s per-file integration cap under -j4.
+Every assertion reads the same output, so the file runs it once and shares it.
 
 ## Dependencies (2)
 

@@ -1,6 +1,6 @@
 # test_hermetic_fixture
 
-> T-4378: the shared `hermetic` fixture (tests/unit/hermetic.py) does what it says.
+> T-4378: the shared `hermetic` fixture (tests/unit/_hermetic.py) does what it says.
 
 **Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_hermetic_fixture.py`
 
