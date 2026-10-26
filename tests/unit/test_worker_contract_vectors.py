@@ -187,7 +187,12 @@ def test_runner_wrong_answer_is_fail(doc):
 
 
 def test_runner_missing_op_is_not_implemented(doc):
-    vec = _vec(doc, "CC-23")
+    # T-4794: CC-23 judges by variants; flatten its answer-channel variant into one run.
+    cc23 = _vec(doc, "CC-23")
+    var = next(v for v in cc23["variants"] if v["name"] == "worker-field-accepted")
+    vec = {k: v for k, v in cc23.items() if k != "variants"}
+    vec["steps"] = list(cc23["steps"]) + list(var["steps"])
+    vec["then"] = var["then"]
     r = run_local.run_vector(vec, ScriptedAdapter(set(), vec["then"], missing_op="append_question"), "s")
     assert r["status"] == "not-implemented"
     assert "op:append_question" in r["missing"]

@@ -1259,11 +1259,24 @@ vectors:
       clock: 20
     steps:
       - {op: complete, writer: worker, attempt: 1, nonce: n1, credential: none, evidence: E1, expect: {fence_reject: bad_credential}}
-      - {op: append_question, writer: worker, attempt: 1, nonce: n1, args: {question_id: q1, body: ok to proceed}, expect: {ok: true}}
-      - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
-    then:
-      final: {A1: {state: done, outcome: succeeded, questions: 1}}
-      admissible_histories: {A1: [[running, done]]}
+    then: {judged_by: variants}
+    # T-4794: the questions append is the §5 answer channel itself, so it lives in its own
+    # variant that requires answer_channel (closed n/a list); the subject runs everywhere.
+    variants:
+      - name: nonce-alone
+        steps:
+          - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
+        then:
+          final: {A1: {state: done, outcome: succeeded}}
+          admissible_histories: {A1: [[running, done]]}
+      - name: worker-field-accepted
+        requires: [answer_channel]
+        steps:
+          - {op: append_question, writer: worker, attempt: 1, nonce: n1, args: {question_id: q1, body: ok to proceed}, expect: {ok: true}}
+          - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
+        then:
+          final: {A1: {state: done, outcome: succeeded, questions: 1}}
+          admissible_histories: {A1: [[running, done]]}
 
   - id: CC-24
     title: Late T5 whose evidence postdates the lost entry
