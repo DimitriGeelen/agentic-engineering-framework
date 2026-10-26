@@ -49273,3 +49273,57 @@ scan_id: R-fd9db1c5
 task_id: T-4773
 payload:
   task_file: .tasks/active/T-4773-prompt-hook-recognise-a-replayed-stale-s.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T15:59:16Z'
+scan_id: R-27f6d883
+task_id: T-4774
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T15:59:16Z'
+scan_id: R-27f6d883
+task_id: T-4774
+payload:
+  task_file: .tasks/active/T-4774-arc-focus-drift-and-age-warning-in-hando.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T21:44:07Z'
+scan_id: R-cba7c03b
+task_id: T-4775
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T21:44:07Z'
+scan_id: R-cba7c03b
+task_id: T-4775
+payload:
+  task_file: .tasks/active/T-4775-dispatch-spawn-path-resolves-the-stale-u.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T21:44:45Z'
+scan_id: R-a7c85376
+task_id: T-4780
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T21:44:45Z'
+scan_id: R-a7c85376
+task_id: T-4780
+payload:
+  task_file: .tasks/active/T-4780-repin-designer-to-0290-io-field-editing-.md

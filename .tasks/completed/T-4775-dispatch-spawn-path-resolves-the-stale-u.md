@@ -12,12 +12,12 @@ description: >
   ~/.local/bin. Workers dispatched with a PATH that has ~/.local/bin first are fine
   (w4773, w4774 run 2.1.310).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/termlink.sh, lib/spawn-env.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T15:32:43Z
-last_update: '2026-10-26T16:45:18Z'
-date_finished:
+last_update: 2026-10-26T21:43:52Z
+date_finished: 2026-10-26T21:43:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -403,3 +403,20 @@ bin/fw vendor self --check --task T-4775
 
 ### 2026-10-26T16:31:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cba7c03b
+- **Timestamp:** 2026-10-26T21:44:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-26T21:43:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4775: Dispatch spawn PATH resolves the stale /usr/local/bin/claude (2.1.27) when the caller PATH lacks ~/.local/bin
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T21:44:20Z
+# ============================================================================
+
+task_id: T-4775
+task_name: "Dispatch spawn PATH resolves the stale /usr/local/bin/claude (2.1.27) when the caller PATH lacks ~/.local/bin"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T15:32:43Z
+completed: 2026-10-26T21:43:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T17:37:32+01:00
+last_commit: 2026-10-26T17:37:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  spawn PATH ranks native ~/.local/bin/claude ahead of a caller-resolved npm claude; run.sh logs worker binary + version
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first reproduces the bug: with a caller PATH that has a stub old `claude` in an early dir and no ~/.local/bin, while $HOME/.local/bin/claude exists, `fw_spawn_path` puts the old dir before $HOME/.local/bin, so the worker resolves the old claude'
+  - '`fw_spawn_path` (lib/spawn-env.sh) puts $HOME/.local/bin (the native Claude install dir) before the directory of a claude resolved from the caller''s PATH whenever $HOME/.local/bin/claude exists and the resolved claude is an npm install (resolves into node_modules/@anthropic-ai/claude-code/ — narrowed, see Decisions). The T-4682 rule stays: termlink is still run from the caller''s resolved TERMLINK_BIN'
+  - 'The dispatch runtime (run.sh, heredoc in agents/termlink/termlink.sh) records the absolute claude path and its `--version` in meta.json or stderr.log, so a stale binary is visible after the fact'
+  - 'The existing spawn-env tests (t4647, t4666, t4682 and siblings) stay green; new tests are in tests/unit/t4775_spawn_path_native_claude.bats; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — when does ~/.local/bin outrank the caller''s claude'
+    chose: 'only when the caller-resolved claude is an npm install (readlink -f lands in `node_modules/@anthropic-ai/claude-code/`) and `$HOME/.local/bin/claude` is executable; ~/.local/bin is inserted just before the npm dir.'
+    rationale: 'the npm install is the deprecated one that goes stale; the native installer owns ~/.local/bin. A caller-chosen non-npm claude (test stubs, pinned builds) keeps winning, as T-4666 intended.'
+    alternatives_rejected: ['"always when ~/.local/bin/claude exists" (the AC''s first wording) — ~/.local/bin also holds a real `termlink` and `fw`; ranking it ahead of every caller dir would let the real claude/termlink shadow the PATH stubs in t4647/t4674/t4636 and friends, the exact T-4682 failure (stub tests spawning real sessions). Calling `--version` on both and comparing — slow, and a version probe at PATH-build time runs arbitrary binaries.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/spawn-env.sh'
+  - '.tasks/active/T-4775-dispatch-spawn-path-resolves-the-stale-u.md'
+  - 'agents/termlink/termlink.sh'
+  - 'lib/spawn-env.sh'
+  - 'tests/unit/t4775_spawn_path_native_claude.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T17:37:32'
+    action: 'T-4775: spawn PATH ranks native ~/.local/bin/claude ahead of a caller-resolved npm claude; run.sh logs worker binary + version'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 371 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 371
+  commits: 2
+  files_changed: 9
+  lines_added: 678
+  lines_removed: 5
+  footprint_refreshed_at: '2026-10-26T21:45:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4775-dispatch-spawn-path-resolves-the-stale-u.md
+generated_by: context-agent-hybrid
