@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4765: t4212_ux_shots fixture PROJECT_ROOT is not a project, so fw fell back to the live repo (exposed by T-4756's note)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T10:09:07Z
+# ============================================================================
+
+task_id: T-4765
+task_name: "t4212_ux_shots fixture PROJECT_ROOT is not a project, so fw fell back to the live repo (exposed by T-4756's note)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-26T10:07:36Z
+completed: 2026-10-26T10:08:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-26T11:08:52+01:00
+last_commit: 2026-10-26T11:08:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t4212 fixture is a real project, so fw no longer falls back to the live repo; assert paths under the fixture root (exposed by T-4756's note)
+
+# Key outcomes
+outcomes:
+  - 'The t4212 fixture''s `PROJECT_ROOT` is a minimal project (has `.framework.yaml`), so `fw` keeps it and prints no T-4756 note'
+  - 'Test 2 asserts the planned paths are under the fixture project, not merely ending in `/.context/visual/...`, so a fallback to another project would fail it'
+  - '`t4212_ux_shots.bats` passes in full with no skips'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 't4212 fixture is a real project, so fw no longer falls back to the live repo; assert paths under the fixture root (exposed by T-4756''s note)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4765-t4212uxshots-fixture-projectroot-is-not-.md'
+  - 'tests/unit/t4212_ux_shots.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T11:08:52'
+    action: 'T-4765: t4212 fixture is a real project, so fw no longer falls back to the live repo; assert paths under the fixture root (exposed by T-4756''s note)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 5
+  lines_added: 477
+  lines_removed: 5
+  footprint_refreshed_at: '2026-10-26T10:09:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4765-t4212uxshots-fixture-projectroot-is-not-.md
+generated_by: context-agent-hybrid

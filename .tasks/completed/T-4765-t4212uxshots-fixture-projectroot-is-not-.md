@@ -4,10 +4,10 @@ name: "t4212_ux_shots fixture PROJECT_ROOT is not a project, so fw fell back to 
 description: >
   Pre-push 2026-10-26 NEW red: t4212_ux_shots test 2 expects 3 output lines and gets 4. The fixture exports PROJECT_ROOT=$BATS_TEST_TMPDIR/project, an empty dir; bin/fw treats a non-project PROJECT_ROOT as stale and resolves the cwd project instead (the live AEF repo), so the plan paths pointed into the real repo. T-4756 now prints one stderr note when it does that, which bats run captures. Fix the fixture: make the temp dir a minimal project so it is kept.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T10:07:36Z
-last_update: 2026-10-26T10:07:36Z
-date_finished: null
+last_update: 2026-10-26T10:08:53Z
+date_finished: 2026-10-26T10:08:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -352,3 +352,20 @@ test "$(grep -c '# skip' /tmp/.t4765.out)" -eq 0
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4765-t4212uxshots-fixture-projectroot-is-not-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8d302f6c
+- **Timestamp:** 2026-10-26T10:08:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-26T10:08:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
