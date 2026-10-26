@@ -86,7 +86,7 @@ bvp_scores_proposed:
 - [x] Localised in the RCA: where an outstanding consult is tracked on the sender side (`lib/sidecar/outbox.py`, the awaiting-ack ledger, the sweep/retry ladder), and why nothing lets the sender close one
 - [x] A sender-side verb (e.g. `fw sidecar settle <msg_id> --reason "…"`) marks one of the sender's own outstanding consults settled. The sweep stops nudging it, it is never dead-lettered afterwards, and the row records who settled it, why and when. The verb changes no peer state and posts nothing to the peer
 - [x] It refuses a message id that is not this agent's own outstanding consult, and an already-settled one. The ledger stays append-only (settling appends an event; no row is rewritten)
-- [ ] Unit tests with a fixture ledger cover: settle stops the nudge, unknown id refused, foreign id refused, double settle refused, ledger append-only. The sidecar unit tests stay green; vendored copy in sync (`fw vendor self --check --task T-4757`)
+- [x] Unit tests with a fixture ledger cover: settle stops the nudge, unknown id refused, foreign id refused, double settle refused, ledger append-only. The sidecar unit tests stay green; vendored copy in sync (`fw vendor self --check --task T-4757`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
