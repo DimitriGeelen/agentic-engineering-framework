@@ -86,7 +86,7 @@ bvp_scores_proposed:
 - [x] `policy/designer-pin.yaml` names 0.30.0: version, sha256 137810095a2a673bd543d16eab2cb6634b2ba0011f8afe5e2d9005c31cd1bcd6, bytes 1261404, tag designer-v0.30.0, artifact and vendored_path, with a dated T-4795 history line
 - [x] `fw designer sync --from-tag designer-v0.30.0` exits 0 (sha256 matches the MANIFEST at the tag and the pin), and `vendor/designer/aef-workflow-designer-0.30.0.html` is installed; the consumer copy holds only 0.30.0
 - [x] `/designer/app` serves 0.30.0 (HTTP 200, body contains 0.30.0); `tests/web/test_lens_definition.py` passes
-- [ ] Vendored copy in sync (`fw vendor self --check --task T-4795`)
+- [x] Vendored copy in sync (`fw vendor self --check --task T-4795`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
