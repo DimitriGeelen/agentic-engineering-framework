@@ -8,12 +8,12 @@ description: >
   was outside that arc, and nothing flagged it. Two checks: drift (recent work is
   not in the focused arc) and age (focused_at older than N days).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/handover/handover.sh, bin/fw, lib/arc_focus_health.py, lib/config.sh, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T15:24:19Z
-last_update: '2026-10-26T15:45:35Z'
-date_finished:
+last_update: 2026-10-26T15:59:08Z
+date_finished: 2026-10-26T15:59:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -147,8 +147,16 @@ bvp_scores_proposed:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
 
+- [ ] [REVIEW] The new ARC_FOCUS_STALE_DAYS row reads right on the Watchtower config page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row ARC_FOCUS_STALE_DAYS, just below STALE_ARC_DAYS
+  **Expected:** The row shows default 14 and its description in full, with the same layout as the neighbouring rows
+  **If not:** Note what looks wrong; the agent fixes the row text in web/blueprints/config.py
+
 ## Verification
 
+bin/fw watchtower current
 timeout 300 bats tests/unit/t4774_arc_focus_health.bats > /tmp/.t4774-v.out 2>&1 && ! grep -q "^not ok" /tmp/.t4774-v.out
 test "$(grep -c '# skip' /tmp/.t4774-v.out)" -eq 0
 grep -q '"ARC_FOCUS_STALE_DAYS|14|' lib/config.sh && grep -q '"ARC_FOCUS_STALE_DAYS", "14"' web/blueprints/config.py
@@ -341,6 +349,16 @@ bin/fw vendor self --check --task T-4774
 
 ## Recommendation
 
+**Recommendation:** GO
+
+**Rationale:** The check works on live state. Both warnings fire for the arc focus pinned since 2026-09-17, which is the case that prompted the task. The only render change is one data row on the config page.
+
+**Evidence:**
+- `python3 lib/arc_focus_health.py` prints AGE (38 days, limit 14) and DRIFT (0 of 730 recent tasks in the arc)
+- `bin/fw doctor` shows both as WARN; the handover gets the WARNING line
+- tests/unit/t4774_arc_focus_health.bats is green, and the Verification block passes 5 of 5
+- The new row is served after the restart: http://192.168.10.107:3000/config
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -405,3 +423,22 @@ bin/fw vendor self --check --task T-4774
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4774-arc-focus-drift-and-age-warning-in-hando.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-27f6d883
+- **Timestamp:** 2026-10-26T15:59:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — One shared check, for example `lib/arc_focus_health.py` using `lib.arc_membership`, reads `.context/working/arc-focus.yaml` and returns OK, AGE or DRIFT with evidence. It is silent (OK) when no arc is
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/arc-focus.yaml in: One shared check, for example `lib/arc_focus_health.py` using `lib.arc_membership`, reads `.context/working/arc-focus.yaml` and returns OK, AGE or DRI`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-26T15:59:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
