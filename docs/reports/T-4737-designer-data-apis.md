@@ -52,6 +52,16 @@ aef-greenfield-test raised it and 832 relayed it. The endpoint is read-only and 
 
 The designer (0.28.0+, io attributes editable) would use it for a ref picker in the io editor: search notation and label, write the ref, prefill the dataType. When the route answers 404 or is absent, the picker falls back to free text, so its absence breaks nothing in AEF today. 832 builds it as their T-1312 and will send the exact request and response contract when it lands.
 
+**Contract arrived (832 msg 76a0767a, 2026-10-26; 832 `docs/reports/T-1312-field-catalog-contract.md`):**
+- **Request:** `GET /api/field-catalog`, no input.
+- **Responses:**
+  - 200 `{ok:true, catalog:{version:1, attributes:[{ref (required), notation, label, system, systemLabel, entity, dataType, keyRole, …}]}}`, the file served unchanged;
+  - 404 `{ok:false, error:"no field catalog"}` when the project has none;
+  - 422 when the file is malformed, refused whole.
+- **Source:** the file is a server setting, never part of the request.
+- **Designer side (0.30.0):** a search over notation/label/ref under the io editor's ref field, at most 8 hits. A hit writes the ref, and writes dataType only when the io has none. Anything other than a 200 with an attributes list leaves the editor exactly as today.
+- **Reference tests:** `tests/test_t1312_field_catalog.py` (server) and `tools/_t1312-catalog-picker-cdp.mjs` (designer, pointed at our server as the acceptance run).
+
 Assessment: this is the lowest-risk of the five. It is read-only, it serves a file the project itself declares, it holds no rules or UI, and it reuses the T-4402 serving pattern. It is not part of the current recommendation, which covers validate and instances. **Revisit when 832's T-1312 contract arrives;** it would be a small GO, because the work is copying the T-4402 lens-definition route.
 
 ## Dialogue Log
