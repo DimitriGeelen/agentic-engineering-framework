@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T22:12:28Z
-last_update: 2026-10-26T23:34:52Z
+last_update: 2026-10-26T23:52:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -139,6 +139,14 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+
+- [ ] [REVIEW] The new gate rule blocks what you approved and nothing you rely on
+  **Steps:**
+  1. Open http://192.168.10.107:3000/review/T-4783
+  2. Read the rule and its block message in the Recommendation below (copied from the change)
+  3. Check the allowed list: `tmux -S <socket> kill-server`, `tmux -L <name> kill-server`, `tmux ls`, `tmux list-panes`, `tmux capture-pane`, `kill-window`, `kill-pane`, and the words appearing only inside quoted text
+  **Expected:** Nothing you use day to day is blocked; a bare `tmux kill-server` or `tmux kill-session` from an agent is refused with the -S/-L hint
+  **If not:** Name the command that should pass or fail, and the agent adjusts the pattern and its tests
 
 ## Verification
 
@@ -332,6 +340,16 @@ bin/fw vendor self --check --task T-4783
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The rule is exactly 055's proposal, which you approved. It closes the typed-command path behind the 2026-10-26 outage (a bare tmux kill inherits TMUX and reaches the shared server). Combined with T-4781 (one server per project), a stray kill is both refused and contained.
+
+**The rule (agents/context/check-tier0.sh):** the prefilter gains `kill-se`, and a pattern blocks `tmux … kill-se(rver|ssion)` and their abbreviations when the same command segment names no `-S` or `-L`. Block message: "TMUX KILL WITHOUT SOCKET: … name your own socket, tmux -S <socket> kill-server or tmux -L <name> kill-server".
+
+**Evidence:**
+- tests/unit/t4783_tier0_tmux_kill.bats has 12 tests: 055's blocked shapes (bare, chained, /usr/bin/tmux, -f config, kill-ses prefix, TMUX_TMPDIR=…) and allowed shapes (-S, -L, ls, list-panes, capture-pane, quoted text, kill-window/kill-pane)
+- Together with tier0_scope_boundary.bats and the T-4782 hook lint: 26 ok, 0 failures; vendor in sync
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
