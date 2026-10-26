@@ -85,7 +85,7 @@ bvp_scores_proposed:
 - [x] The T-4701 tracked-runtime-file notice prints a grouped summary before the command: one line per directory (or per rule for globbed names), with the count, largest group first, e.g. `181 x .context/working/episodic-gen/*`
 - [x] The exact `git rm --cached -- <paths>` command that follows is unchanged and still complete. Nothing is ever untracked by the upgrade
 - [x] Bats: a consumer tracking files in two directories plus one single file gets a grouped summary with the right counts and order, and the printed command untracks exactly those paths; the T-4701 bats stay green
-- [ ] `upgrade_fresh_machine_simulation.bats` stays green (foreground, `timeout 1800`); vendored copy in sync (`fw vendor self --check --task T-4754`)
+- [x] `upgrade_fresh_machine_simulation.bats` stays green (foreground, `timeout 1800`); vendored copy in sync (`fw vendor self --check --task T-4754`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
