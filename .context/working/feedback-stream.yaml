@@ -49183,3 +49183,21 @@ scan_id: R-ef643fb1
 task_id: T-4768
 payload:
   task_file: .tasks/active/T-4768-fw-inception-decide-cli-path-writes-the-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T13:09:03Z'
+scan_id: R-86ddc349
+task_id: T-4769
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T13:09:03Z'
+scan_id: R-86ddc349
+task_id: T-4769
+payload:
+  task_file: .tasks/active/T-4769-human-ac-ticks-audit-names-an-uncommitte.md

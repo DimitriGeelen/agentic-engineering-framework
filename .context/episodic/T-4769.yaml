@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4769: Human-AC ticks audit names an uncommitted matching provenance row as the cause instead of 'no record
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T13:09:16Z
+# ============================================================================
+
+task_id: T-4769
+task_name: "Human-AC ticks audit names an uncommitted matching provenance row as the cause instead of 'no record"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T11:59:37Z
+completed: 2026-10-26T13:08:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T14:03:36+01:00
+last_commit: 2026-10-26T14:04:30+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Human-AC tick audit names ticks licensed only by an uncommitted ledger row (summary line, commit remedy) and the other-checkout cause on FAIL lines; verdicts unchanged; pytest 4 legs. tick Agent ACs — verification green
+
+# Key outcomes
+outcomes:
+  - 'In the checkout that holds the provenance row uncommitted (where the row counts today: `ledger_rows` reads the working-tree file), the audit''s summary line (the one `fw audit` prints) names the ticks licensed ONLY by rows absent from `HEAD:.context/reviews/human-ac-ticks.jsonl` and the remedy (commit that file), because every other checkout will FAIL them'
+  - 'In a checkout without the row (the 055 field case), the per-tick FAIL line says a row recorded in another checkout counts only once committed, instead of only "no record"'
+  - 'Verdicts unchanged: rc 0/2 exactly as before; an uncommitted row is not made to count anywhere it did not already, and a committed row is not made to count less'
+  - 'Unit tests on a temp repo cover: committed row (pass, no note), uncommitted row (rc 0, note names the commit remedy), no row (FAIL rc 2, new hint); siblings t3695/t4075/t4375/t4165/t4070 green; vendored copy in sync (`fw vendor self --check --task T-4769`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — where the "uncommitted row" message goes'
+    chose: 'keep the working-tree budget (verdicts unchanged); add a summary-line note where the row is uncommitted, and a hint on the FAIL line everywhere else.'
+    rationale: 'the filed premise ("the uncommitted row still does not count ... the audit still FAILs") does not hold in the checkout that wrote the row: it counts there today, and t3695 pins the operator `ack`-then-pass workflow. A FAIL "with the new message" in that checkout is reachable only by making the audit committed-only, a verdict change the brief rules out ("only the message changes"). The checkout that FAILs cannot see the row, so its message can only name the possibility.'
+    alternatives_rejected: ['budget from `HEAD` only. Stricter: `ack` would FAIL until committed, t3695 breaks, pre-push behaviour changes. A governance call for the operator, not this bug; flagged to the parent.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/human_ac_ticks.py'
+  - '.tasks/active/T-4769-human-ac-ticks-audit-names-an-uncommitte.md'
+  - 'lib/human_ac_ticks.py'
+  - 'tests/unit/test_t4769_uncommitted_tick_row.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T14:03:36'
+    action: 'T-4769: Human-AC tick audit names ticks licensed only by an uncommitted ledger row (summary line, commit remedy) and the other-checkout cause on FAIL lines; verdicts unchanged; pytest 4 legs'
+  - time: '2026-10-26T14:04:30'
+    action: 'T-4769: tick Agent ACs — verification green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 69 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 69
+  commits: 3
+  files_changed: 7
+  lines_added: 698
+  lines_removed: 27
+  footprint_refreshed_at: '2026-10-26T13:09:20Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4769-human-ac-ticks-audit-names-an-uncommitte.md
+generated_by: context-agent-hybrid
