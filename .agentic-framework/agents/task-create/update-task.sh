@@ -52,11 +52,24 @@ source "$FRAMEWORK_ROOT/lib/section-extract.sh"
 # Idempotent and silent on the happy path (`git mv` already staged both sides).
 # Best-effort: a staging failure is not fatal here — the T-1863 disk check and
 # the pre-commit dup scan both still run behind it.
+# T-4777 (peer 832, their T-1313): true only when PROJECT_ROOT is the top of
+# its OWN repo. `git -C "$PROJECT_ROOT"` walks upward, so a project dir with no
+# .git inside another repo (832's sandboxes under .context/st/) resolves to the
+# ENCLOSING repo, and the archive step staged the sandbox's files there. Every
+# git write in the close path asks this first; without it, the file still moves.
+_t4777_own_repo() {
+    command -v git >/dev/null 2>&1 || return 1
+    local top
+    top=$(git -C "$PROJECT_ROOT" rev-parse --show-toplevel 2>/dev/null) || return 1
+    [ -n "$top" ] || return 1
+    [ "$(realpath -- "$top" 2>/dev/null || echo "$top")" \
+        = "$(realpath -- "$PROJECT_ROOT" 2>/dev/null || echo "$PROJECT_ROOT")" ]
+}
+
 _t2864_reconcile_index() {
     local src="$1" dest="$2"
     [ -n "$src" ] && [ -n "$dest" ] && [ "$src" != "$dest" ] || return 0
-    command -v git >/dev/null 2>&1 || return 0
-    git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1 || return 0
+    _t4777_own_repo || return 0
     # Only act when the source is STILL tracked in the index after the move —
     # i.e. the `|| mv` fallback ran and left a stale index entry behind.
     if git -C "$PROJECT_ROOT" ls-files --error-unmatch -- "$src" >/dev/null 2>&1; then
@@ -125,6 +138,7 @@ _t4094_note_move_source() {
     _T4094_SRC="$1"
     _T4094_SRC_AT_HEAD=0
     local rel="${1#"$PROJECT_ROOT"/}"
+    _t4777_own_repo || return 0
     if [ -n "$(git -C "$PROJECT_ROOT" ls-tree --name-only HEAD -- "$rel" 2>/dev/null)" ]; then
         _T4094_SRC_AT_HEAD=1
     fi
@@ -2189,7 +2203,7 @@ if [ -n "$NEW_STATUS" ]; then
                 # commits and requires a cleanup follow-up.
                 _t1863_orig="$TASK_FILE"
                 _t4094_note_move_source "$TASK_FILE"
-                if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
+                if _t4777_own_repo && git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
                     git -C "$PROJECT_ROOT" mv "$TASK_FILE" "$DEST" 2>/dev/null \
                         || mv "$TASK_FILE" "$DEST"
                 else
@@ -2871,7 +2885,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             # T-1523: git mv when tracked so both rename sides stage atomically
             _t1863_orig="$TASK_FILE"
             _t4094_note_move_source "$TASK_FILE"
-            if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
+            if _t4777_own_repo && git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
                 git -C "$PROJECT_ROOT" mv "$TASK_FILE" "$DEST" 2>/dev/null \
                     || mv "$TASK_FILE" "$DEST"
             else
@@ -3245,7 +3259,7 @@ fi
 # pathspec, so `git commit -- <paths>` takes these files and nothing else.
 if [ -n "${_T4094_SRC:-}" ] && [ -n "${TASK_FILE:-}" ] && [ -f "$TASK_FILE" ] \
    && [ "$(dirname "$TASK_FILE")" = "$TASKS_DIR/completed" ] \
-   && git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+   && _t4777_own_repo; then
     _t4094_paths=()
     for _t4094_p in "$TASK_FILE" "$CONTEXT_DIR/episodic/$TASK_ID.yaml"; do
         [ -f "$_t4094_p" ] || continue

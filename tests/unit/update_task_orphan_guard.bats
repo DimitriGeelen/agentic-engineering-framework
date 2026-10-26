@@ -95,10 +95,13 @@ EOF
 _load_reconcile_fn() {
     local src="$FRAMEWORK_ROOT/agents/task-create/update-task.sh"
     [ -f "$src" ] || return 1
-    local fn
-    fn=$(awk '/^_t2864_reconcile_index\(\) \{/{f=1} f{print} f&&/^\}/{exit}' "$src")
-    [ -n "$fn" ] || return 1
-    eval "$fn"
+    local fn name
+    # T-4777: the reconcile asks _t4777_own_repo first, so load both.
+    for name in _t4777_own_repo _t2864_reconcile_index; do
+        fn=$(awk -v n="$name" '$0 ~ "^"n"\\(\\) \\{"{f=1} f{print} f&&/^\}/{exit}' "$src")
+        [ -n "$fn" ] || return 1
+        eval "$fn"
+    done
 }
 
 # Reproduce the fallback state: source gone from disk, still in the index,
