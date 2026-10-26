@@ -1663,7 +1663,11 @@ _LIFECYCLE_VERBS = (cmd_start, cmd_stop, cmd_receiver_start, cmd_receiver_stop)
 
 
 def main(argv=None) -> int:
-    args = build_parser().parse_args(argv)
+    try:
+        args = build_parser().parse_args(argv)
+    except SystemExit:
+        identity.apply()  # T-4761: --help/usage exits still leave the identity installed (T-4311)
+        raise
     if args.func in _LIFECYCLE_VERBS:
         why = _lifecycle_target_refusal(args)
         if why:
