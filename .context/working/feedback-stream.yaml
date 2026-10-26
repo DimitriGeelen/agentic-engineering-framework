@@ -49507,3 +49507,21 @@ scan_id: R-ab77fd7f
 task_id: T-4795
 payload:
   task_file: .tasks/active/T-4795-repin-designer-to-0300-field-catalog-ref.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T23:50:55Z'
+scan_id: R-910d5cc9
+task_id: T-4796
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T23:50:55Z'
+scan_id: R-910d5cc9
+task_id: T-4796
+payload:
+  task_file: .tasks/active/T-4796-conformance-vectors-cc-08-equivalent-rou.md

@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4796: Conformance vectors: CC-08 equivalent route admits T-RECLAIM after restart and T4 on the first authoritative probe
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T23:51:07Z
+# ============================================================================
+
+task_id: T-4796
+task_name: "Conformance vectors: CC-08 equivalent route admits T-RECLAIM after restart and T4 on the first authoritative probe"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T23:39:50Z
+completed: 2026-10-26T23:50:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-27T00:45:52+01:00
+last_commit: 2026-10-27T00:45:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CC-08 equivalent route — expect_equivalent / admissible_histories_equivalent admit takeover T-RECLAIM and T4 on the first authoritative probe; hub path unchanged
+
+# Key outcomes
+outcomes:
+  - 'run_local.py: a step may carry `expect_equivalent:` and a run (variant `then`) may carry `admissible_histories_equivalent:`. The runner uses them ONLY when the adapter declares that `<case>/<variant>` in `equivalent_routes` AND the step result carries a non-empty `equivalent` (T-4793 rule). In every other case the plain `expect` / `admissible_histories` apply unchanged, so a hub backend that T4s early still FAILs'
+  - 'vectors.yaml CC-08: each of the three variants (alive-after-restart, absent-after-restart, undecidable-then-alive) gets `equivalent:` text. alive-after-restart and undecidable-then-alive admit the T-RECLAIM histories ([running, running] and [running, running, unknown, running]) via `admissible_histories_equivalent`. absent-after-restart''s first post-restart sweep gets `expect_equivalent: {accepted: T4}`, the later sweeps are adjusted so the route ends `lost` with the authoritative probe, and its final stays `lost`'
+  - 'check_vectors.py accepts the two new keys (and still rejects unknown keys); README documents them in two or three lines'
+  - 'Tests in tests/unit/test_worker_contract_vectors.py: a scripted hub-path adapter that T4s on the first absent sweep FAILS CC-08 absent-after-restart; a scripted adapter declaring the equivalent route and reporting the equivalent PASSES all three CC-08 variants with the ring20 histories; declaring the route without reporting the equivalent FAILs ("taken silently"). All existing tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — where the alternate expects live'
+    chose: 'per-step `expect_equivalent:` and per-variant `then.admissible_histories_equivalent:`, used only when the variant is declared in `equivalent_routes` AND the step result names the equivalent (the T-4793 gate already makes "declared" imply "named", or the step fails as taken silently).'
+    rationale: 'keeps the hub expect strict and byte-identical; a hub that T4s early still fails on the plain expect. Undeclared-but-reported keeps the plain expect, so reporting an equivalent alone cannot loosen a run.'
+    alternatives_rejected: ['widening CC-08''s plain expects with `any_of` (would let a hub T4 on the first sweep pass silently); a separate equivalent variant per reading (duplicates the steps and loses the pairing with the hub variant).']
+  - decision: '2026-10-27 — equivalent histories also admit the hub histories'
+    chose: '`admissible_histories_equivalent` for alive/undecidable lists both the hub history and the T-RECLAIM one; absent lists [running, lost] and [running, running, lost] (lost only).'
+    rationale: 'a takeover need not record T-RECLAIM when nothing changed; what the route must not do is end `unknown` after an authoritative probe said absent.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4796-conformance-vectors-cc-08-equivalent-rou.md'
+  - 'tests/conformance/worker-contract/README.md'
+  - 'tests/conformance/worker-contract/check_vectors.py'
+  - 'tests/conformance/worker-contract/run_local.py'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+  - 'tests/unit/test_worker_contract_vectors.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T00:45:52'
+    action: 'T-4796: CC-08 equivalent route — expect_equivalent / admissible_histories_equivalent admit takeover T-RECLAIM and T4 on the first authoritative probe; hub path unchanged'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 2
+  files_changed: 9
+  lines_added: 722
+  lines_removed: 26
+  footprint_refreshed_at: '2026-10-26T23:51:35Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4796-conformance-vectors-cc-08-equivalent-rou.md
+generated_by: context-agent-hybrid
