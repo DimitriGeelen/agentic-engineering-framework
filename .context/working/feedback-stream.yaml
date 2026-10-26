@@ -49003,3 +49003,21 @@ scan_id: R-63758e4c
 task_id: T-4761
 payload:
   task_file: .tasks/active/T-4761-regression-from-t-4753-testsidecarrailid.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T09:46:26Z'
+scan_id: R-f0decad9
+task_id: T-4760
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T09:46:26Z'
+scan_id: R-f0decad9
+task_id: T-4760
+payload:
+  task_file: .tasks/active/T-4760-regression-from-t-4727-testinceptiondeci.md
