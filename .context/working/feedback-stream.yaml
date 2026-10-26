@@ -49255,3 +49255,21 @@ scan_id: R-a90d3d2e
 task_id: T-4772
 payload:
   task_file: .tasks/active/T-4772-record-termlink-be25-field-report-in-the.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T15:17:17Z'
+scan_id: R-fd9db1c5
+task_id: T-4773
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T15:17:17Z'
+scan_id: R-fd9db1c5
+task_id: T-4773
+payload:
+  task_file: .tasks/active/T-4773-prompt-hook-recognise-a-replayed-stale-s.md

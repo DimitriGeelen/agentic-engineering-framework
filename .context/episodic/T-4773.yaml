@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4773: Prompt hook: recognise a replayed stale sidecar doorbell (last-prompt restore) and say it is already handled
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T15:17:31Z
+# ============================================================================
+
+task_id: T-4773
+task_name: "Prompt hook: recognise a replayed stale sidecar doorbell (last-prompt restore) and say it is already handled"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T14:59:00Z
+completed: 2026-10-26T15:16:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T16:08:07+01:00
+last_commit: 2026-10-26T16:16:53+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  prompt hook names a replayed sidecar doorbell's handled ids as stale; doorbell carries its typed time. sidecar e2e test expects the doorbell's ', typed <ts>' suffix
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first reproduces the bug: a submitted prompt that is the doorbell line (from `injection_line` in lib/sidecar/inject.py) for ids already seen or answered gets no line saying the doorbell is stale'
+  - 'The UserPromptSubmit sidecar-inbox hook (`fw hook sidecar-inbox`) recognises a submitted doorbell line whose ids are all already seen or answered, and adds one line: "stale doorbell: ids <ids> already handled at <ts>" (ts taken from the receiver ledger) — implemented in the receiver prompt hook (`fw hook sidecar-receiver-adapter` → lib/sidecar/hooks.py prompt), see ## Decisions'
+  - 'A doorbell with at least one id still unseen keeps today''s behaviour; the stale line names only the handled ids'
+  - '`injection_line` adds its injection time (UTC, minute precision) to the line, still one printable line with the id sanitising unchanged; existing inject/doorbell tests are updated and stay green'
+  - 'The prompt hook also recognises the old doorbell format, which has no timestamp'
+  - 'New tests in tests/unit/t4773_stale_doorbell.bats pass, and sibling sidecar inject and prompt-hook tests pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'sidecar e2e test expects the doorbell''s '', typed <ts>'' suffix'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — which hook carries the stale line'
+    chose: 'the receiver prompt hook, `lib/sidecar/hooks.py prompt` (wired as `fw hook sidecar-receiver-adapter`).'
+    rationale: 'the doorbell is typed by the receiver''s injector (`inject.py`) and names receiver message ids; only that hook can resolve them against the receiver store and ledger. The AC''s name `fw hook sidecar-inbox` is the hub-topic surface (`agents/context/sidecar-inbox.sh`), which never sees receiver ids.'
+    alternatives_rejected: ['adding it to sidecar-inbox.sh — it would have to re-implement receiver lookups in a second place.']
+  - decision: '2026-10-26 — both candidates, not one'
+    chose: 'candidate (1) (hook detects handled ids, says so with the ledger time) AND (2) (the line carries `typed <UTC minute>`).'
+    rationale: '(1) is what saves the turn; (2) costs one token-group and lets a human or agent see a replay at a glance. (2) alone would still need the agent to go and check.'
+    alternatives_rejected: ['dropping the replayed prompt — a hook cannot rewrite the prompt, and a turn on a stale line that says "already handled" is cheap.']
+  - decision: '2026-10-26 — what counts as "handled" and which timestamp'
+    chose: 'handled = handed over, dropped, or in `seen.withheld` (answered / shown as often as allowed). Time = latest HANDED_OVER row in the receiver ledger for those ids, else the latest ledger row for them.'
+    rationale: '`seen.withheld` is the one predicate the hook and injector already share (T-3872); a shown-not-yet-confirmed message is withheld too and is as stale to the agent. Short ids that resolve to no stored message are not named (unknown is not handled).'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/hooks.py'
+  - '.agentic-framework/lib/sidecar/inject.py'
+  - '.tasks/active/T-4773-prompt-hook-recognise-a-replayed-stale-s.md'
+  - 'lib/sidecar/hooks.py'
+  - 'lib/sidecar/inject.py'
+  - 'tests/integration/t3693_sidecar_e2e_test.py'
+  - 'tests/unit/t4773_stale_doorbell.bats'
+  - 'tests/unit/test_sidecar_tmux_route_t4003.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T16:08:07'
+    action: 'T-4773: prompt hook names a replayed sidecar doorbell''s handled ids as stale; doorbell carries its typed time'
+  - time: '2026-10-26T16:16:53'
+    action: 'T-4773: sidecar e2e test expects the doorbell''s '', typed <ts>'' suffix'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 17
+  commits: 3
+  files_changed: 11
+  lines_added: 875
+  lines_removed: 17
+  footprint_refreshed_at: '2026-10-26T15:17:52Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4773-prompt-hook-recognise-a-replayed-stale-s.md
+generated_by: context-agent-hybrid

@@ -12,12 +12,12 @@ description: >
   adds 'stale doorbell: already handled at <ts>'; (2) the doorbell carries its injection
   time so a replay is recognisable.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/hooks.py, lib/sidecar/inject.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T14:59:00Z
-last_update: '2026-10-26T15:15:19Z'
-date_finished:
+last_update: 2026-10-26T15:16:54Z
+date_finished: 2026-10-26T15:16:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -432,3 +432,20 @@ format and parser change together) and adds `stale doorbell: ids … already han
 ### 2026-10-26T15:02:08Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fd9db1c5
+- **Timestamp:** 2026-10-26T15:17:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-26T15:16:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
