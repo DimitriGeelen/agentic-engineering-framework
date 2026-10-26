@@ -67,7 +67,7 @@ date_finished: null
 - [x] DRIFT: of the tasks committed in the last N days (task ids from commit subjects, N the same setting), none, or fewer than a stated fraction, belong to the focused arc. The message names the arc and how many recent tasks were in it versus outside it. Handover and WM- commits are excluded from the count.
 - [x] The handover's `## Current Arc` section (agents/handover/handover.sh, T-1661 block) prints one WARNING line under the arc line when AGE or DRIFT fires. The line tells the operator to re-confirm with `fw arc focus <arc>` (which refreshes focused_at) or to clear it with `fw arc focus --clear`.
 - [x] `fw doctor` shows the same result as a WARN, and as OK when the focus is fresh or absent. It never blocks anything.
-- [ ] New tests in tests/unit/t4774_arc_focus_health.bats cover: no focus (OK), fresh and in use (OK), old (AGE), recent work all outside the arc (DRIFT), and handover/WM commits being ignored. Sibling handover and arc tests stay green, and `timeout 900 bin/fw test invariants` passes (including config-registry parity).
+- [x] New tests in tests/unit/t4774_arc_focus_health.bats cover: no focus (OK), fresh and in use (OK), old (AGE), recent work all outside the arc (DRIFT), and handover/WM commits being ignored. Sibling handover and arc tests stay green, and `timeout 900 bin/fw test invariants` passes (including config-registry parity).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
