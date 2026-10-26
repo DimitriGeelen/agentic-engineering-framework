@@ -2,7 +2,11 @@
 id: T-4774
 name: "Arc focus drift and age warning in handover and fw doctor"
 description: >
-  Operator ruling 2026-10-26, after 1409's focus-anchor answer (msg 24684375): keep AEF's single arc-focus.yaml (T-1661) and add a warning when it is stale. Ours had been pinned to ewcr-arc0-contract-evidence since 2026-09-17 while every recent task was outside that arc, and nothing flagged it. Two checks: drift (recent work is not in the focused arc) and age (focused_at older than N days).
+  Operator ruling 2026-10-26, after 1409's focus-anchor answer (msg 24684375): keep
+  AEF's single arc-focus.yaml (T-1661) and add a warning when it is stale. Ours had
+  been pinned to ewcr-arc0-contract-evidence since 2026-09-17 while every recent task
+  was outside that arc, and nothing flagged it. Two checks: drift (recent work is
+  not in the focused arc) and age (focused_at older than N days).
 
 status: started-work
 workflow_type: build
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T15:24:19Z
-last_update: 2026-10-26T15:27:13Z
-date_finished: null
+last_update: '2026-10-26T15:45:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-26T15:45:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=322,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4774: Arc focus drift and age warning in handover and fw doctor
