@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4778: Reviewer auto-tick fires on an empty static-scan PASS, including needs_human escalations and criteria it cannot observe
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T22:06:26Z
+# ============================================================================
+
+task_id: T-4778
+task_name: "Reviewer auto-tick fires on an empty static-scan PASS, including needs_human escalations and criteria it cannot observe"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T16:29:20Z
+completed: 2026-10-26T22:05:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T22:50:45+01:00
+last_commit: 2026-10-26T22:50:45+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reviewer auto-tick requires positive evidence — never on needs_human, only for a named catalogue check the scan ran; per-AC decisions in verdict block
+
+# Key outcomes
+outcomes:
+  - 'Failing tests first reproduce 010''s cases against `_should_auto_tick` / `_compute_auto_ticks` (lib/reviewer/static_scan.py): (a) a scan with needs_human true still auto-ticks a [REVIEWER] criterion; (b) a criterion with no deterministic check is ticked on an empty-findings PASS'
+  - 'No auto-tick happens when the verdict has needs_human true (any escalation), whatever the per-criterion findings'
+  - 'Auto-tick requires positive evidence: the criterion names a deterministic check (a command in its Steps/Expected, or a Verification line it references) that the reviewer actually ran in this scan, with the expected result. An empty findings list alone is never enough. Any other criterion is left unticked and reported as "route to fw reviewer judge"'
+  - 'The decision for each criterion (ticked / not ticked + reason) appears in the `## Reviewer Verdict` block, so a consumer can audit it'
+  - 'CLAUDE.md §Reviewer auto-tick (T-1985) paragraph is updated to state the new conditions'
+  - 'New tests are in tests/unit/t4778_reviewer_autotick_evidence.bats (or a pytest file); the existing reviewer and auto-tick tests stay green or are updated to the new contract with the reason in ## Decisions; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — what counts as "a deterministic check the reviewer actually ran"'
+    chose: 'a catalogue pattern id named in the criterion text (e.g. "no findings on `tautology`") whose detector `scan_task` runs (`SCANNED_PATTERN_IDS`), with zero findings — kept or override-suppressed — for that pattern in this scan.'
+    rationale: 'the static scan executes no shell. The only checks it actually runs are its own detectors, so those are the only results it can attest to. This matches the canonical `[REVIEWER]` shape ("Run `fw reviewer T-XXX`; Expected: no findings on X").'
+    alternatives_rejected: ['executing the shell command a criterion names in its Steps/Expected — a static scanner running task-authored commands (including the destructive ones 010 hit) is a new execution surface, and the close gate (P-011) already runs `## Verification`. Criteria of that shape stay unticked with "route to fw reviewer judge", where the verdict-ledger path (T-3579) closes them.']
+  - decision: '2026-10-26 — existing T-1985 tests changed contract'
+    chose: 'updated the positive cases in tests/unit/test_reviewer_auto_tick.py to name a scanned pattern; their AC text ("static check passes", "reviewer audit passes — sentinel") names none, so under the new contract they correctly stay unticked.'
+    rationale: 'those tests pinned exactly the empty-PASS proxy this task removes.'
+    alternatives_rejected: ['keeping a legacy "empty PASS ticks" mode behind a flag — it is the defect.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - '.tasks/active/T-4778-reviewer-auto-tick-fires-on-an-empty-sta.md'
+  - 'CLAUDE.md'
+  - 'lib/reviewer/static_scan.py'
+  - 'tests/unit/t4778_reviewer_autotick_evidence.bats'
+  - 'tests/unit/test_reviewer_auto_tick.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T22:50:45'
+    action: 'T-4778: reviewer auto-tick requires positive evidence — never on needs_human, only for a named catalogue check the scan ran; per-AC decisions in verdict block'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 336 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 336
+  commits: 2
+  files_changed: 8
+  lines_added: 865
+  lines_removed: 82
+  footprint_refreshed_at: '2026-10-26T22:11:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4778-reviewer-auto-tick-fires-on-an-empty-sta.md
+generated_by: context-agent-hybrid
