@@ -49057,3 +49057,21 @@ scan_id: R-ea306273
 task_id: T-4762
 payload:
   task_file: .tasks/active/T-4762-t-4741-follow-up-inline-code-span-spanni.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T10:00:22Z'
+scan_id: R-9f809af0
+task_id: T-4763
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T10:00:22Z'
+scan_id: R-9f809af0
+task_id: T-4763
+payload:
+  task_file: .tasks/active/T-4763-check-human-ac-tick-tokeniser-treats-a-b.md

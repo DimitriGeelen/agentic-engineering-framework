@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4763: check-human-ac-tick tokeniser treats a backtick inside single quotes as unbalanced, refusing a read-only grep of task files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T10:00:36Z
+# ============================================================================
+
+task_id: T-4763
+task_name: "check-human-ac-tick tokeniser treats a backtick inside single quotes as unbalanced, refusing a read-only grep of task files"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T09:39:10Z
+completed: 2026-10-26T09:59:37Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T10:54:59+01:00
+last_commit: 2026-10-26T10:56:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  shell_write_scan honours single-quote literal backticks — tokenise refusal judged on lexer-found substitution bodies. tick final Agent AC — verification green, vendor in sync
+
+# Key outcomes
+outcomes:
+  - 'Localised in the RCA: where `lib/shell_write_scan.py` decides a command "does not tokenise (unbalanced quote)", and why a backtick inside single quotes trips it'
+  - 'A backtick (one or three) inside single quotes is literal: a read-only `grep` over `.tasks/` whose single-quoted pattern contains a code fence passes the Bash leg of `check-human-ac-tick`, as does a `fw sidecar send --body ''…''` quoting one'
+  - 'Real command substitution is still scanned: backticks bare or inside double quotes, and `$(…)`, are judged as today (the T-3695 "command substitution inside double quotes is scanned" test stays green)'
+  - 'Bats add the TermLink shape (single-quoted triple backtick in a grep over task files) as an allow case, plus a double-quoted-backtick write as a still-refused case; t3695 and the shell_write_scan tests stay green; vendored copy in sync (`fw vendor self --check --task T-4763`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — where to relax the tokenise refusal'
+    chose: 'keep `_substitutions`'' over-approximate body list for the write scan, so every body it finds that tokenises is still scanned for writes, including bodies inside single quotes such as `bash -c ''…$(…)…''`. Only the "does not tokenise" refusal for those bodies is moved to the quote-aware lexer (`executed_texts`) whenever the lexer parses the command. That lexer pass now refuses a real body that does not tokenise, where it used to skip it silently. If the lexer fails, the old behaviour stays.'
+    rationale: 'this is the narrowest change that removes the false positive. No scanned text is dropped: the regex pass and the lexer pass both still run, and the lexer pass can only add refusals.'
+    alternatives_rejected: ['(a) replacing `_substitutions` with the lexer''s spans would stop scanning single-quoted bodies, which narrows a security gate. (b) Making `_substitutions` skip single quotes by itself would duplicate the lexer''s quoting rules in a second place.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.tasks/active/T-4763-check-human-ac-tick-tokeniser-treats-a-b.md'
+  - 'lib/shell_write_scan.py'
+  - 'tests/unit/t4763_squote_backtick.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T10:54:59'
+    action: 'T-4763: shell_write_scan honours single-quote literal backticks — tokenise refusal judged on lexer-found substitution bodies'
+  - time: '2026-10-26T10:56:35'
+    action: 'T-4763: tick final Agent AC — verification green, vendor in sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 20
+  commits: 3
+  files_changed: 7
+  lines_added: 683
+  lines_removed: 30
+  footprint_refreshed_at: '2026-10-26T10:00:40Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4763-check-human-ac-tick-tokeniser-treats-a-b.md
+generated_by: context-agent-hybrid
