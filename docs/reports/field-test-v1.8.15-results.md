@@ -378,6 +378,10 @@ All upgrades clean (TermLink 22 changes, 3-way merge clean; ring20 18 patches, d
 TermLink be.24: rc 0, 21 changes, `lib/sidecar_cli.py` 3-way merged clean across T-4753/T-4757/T-4761, doctor rc 0. ring20 be.25: 38 preserved files and 18 patches intact, doctor FAIL 2 before and 2 after (both older than this release).
 Not exercised yet: T-4722, T-4757 (live), T-4764, T-4767, T-4768 (live).
 
+TermLink be.25 (5a584b09, recorded by T-4772): be.24 → be.25 clean (rc 0, 21 changes, no preserved file changed
+upstream, CLAUDE.md project part identical, doctor rc 0, guard layer PASS). T-4768 and T-4769 present, not exercised
+live: their operator records decisions, and they will report at the first CLI decide.
+
 ## Full-suite comparison (HEAD eee888e61 vs v1.8.14)
 
 **Method, and what it does not cover.** T-4345 ran the whole unit corpus on two scratch trees side by side (jobs=6
