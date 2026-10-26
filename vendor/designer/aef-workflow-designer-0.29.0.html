@@ -1146,7 +1146,7 @@ font-family: 'Outfit';
     display: grid;
     grid-template-columns: 1fr 78px auto auto;
     gap: 4px;
-    align-items: center;
+    align-items: start;   /* T-1305: a wrapped name grows downwards; type, req and × stay on its first line */
   }
   .io-row.no-req { grid-template-columns: 1fr 78px auto; }
   .io-name, .io-type {
@@ -1161,6 +1161,11 @@ font-family: 'Outfit';
     min-width: 0;
   }
   .io-name:focus, .io-type:focus { border-color: var(--accent); }
+  /* T-1305: the io name wraps and grows with its value, so a producer's field path is never cut */
+  textarea.io-name-wrap { resize: none; overflow: hidden; field-sizing: content; min-height: 0; line-height: 1.35;
+                          white-space: pre-wrap; overflow-wrap: anywhere; display: block; width: 100%; }
+  .io-row.io-row-long > .io-name { grid-column: 1 / -1; }
+  .io-row.io-row-long > .io-type { grid-column: 2; }
   .io-type {
     appearance: none;
     -webkit-appearance: none;
@@ -1227,6 +1232,14 @@ font-family: 'Outfit';
   textarea.io-attr-v { resize: none; overflow: hidden; field-sizing: content; min-height: 22px; line-height: 1.4;
                        white-space: pre-wrap; overflow-wrap: anywhere; display: block; }
   .io-ref-pick { grid-column: 2; margin-top: 2px; color: var(--text-dim); }
+  /* T-1302: the fields (aef:field children) of an io, in its editor */
+  .io-fields { display: grid; gap: 5px; margin-top: 4px; padding-top: 5px; border-top: 1px dashed var(--border); }
+  .io-field-row { display: grid; grid-template-columns: 86px minmax(0, 1fr); gap: 3px 6px; align-items: start; min-width: 0; }
+  .io-field-line2 { grid-column: 1 / -1; display: flex; gap: 4px; align-items: center; min-width: 0; }
+  .io-field-line2 select { flex: 1 1 0; min-width: 0; width: auto; }
+  .io-field-line2 select[data-fattr="cardinality"] { flex-grow: 1.35; }   /* room for "cardinality —" (T-1302 sweep) */
+  .io-field-row + .io-field-row { border-top: 1px dotted var(--border); padding-top: 5px; }   /* where a field ends (sweep) */
+  .io-field-when { font-family: var(--mono); font-size: 10px; color: var(--text-dim); white-space: nowrap; }
   .io-attr-hint { grid-column: 2; font-size: 10px; color: var(--orange); }
   .io-attr-hint:empty { display: none; }
   .io-v11-when { padding-left: 14px; }
@@ -8713,8 +8726,9 @@ function v11Span(parent, k, v, derived) {
 }
 function ioV11Block(item, isInput, node, editing) {   // editing (T-1301): the editor shows the attributes; keep derived + children
   const attrs = new Map(item.extra || []);
+  // T-1302: while editing, the fields are rows in the editor; expectations and examples stay here, read-only
   const kids = v11ParseFragment(item.children || []).filter(c => c.namespaceURI === AEF_EXT_NS &&
-    (c.localName === 'field' || c.localName === 'expect' || c.localName === 'example'));
+    ((c.localName === 'field' && !editing) || c.localName === 'expect' || c.localName === 'example'));
   const meta = procMetaInfo(state);
   const pfx = q => { const m = /^([A-Za-z_][\w.-]*):/.exec(q || ''); return m ? meta.prefixes.find(p => p.name === m[1]) : null; };
   // the system this io's direction names (2.5): the io's own attribute; else the step default on the step's aef:meta;
@@ -8820,12 +8834,20 @@ function ioRow(item, idx, items, isInput) {
   const row = document.createElement('div');
   row.className = 'io-row';
 
-  const nameIn = document.createElement('input');
-  nameIn.className = 'io-name';
+  // T-1305: a wrapping field that grows with the name. A producer's name is its field path (sfdc:Opportunity.OwnerId),
+  // and a single-line input cut it at every window width (the panel has a fixed width). Enter commits, no new line.
+  const nameIn = document.createElement('textarea');
+  nameIn.className = 'io-name io-name-wrap';
+  nameIn.rows = Math.max(1, Math.ceil((item.name || '').length / 18));   // where field-sizing:content is unsupported
   nameIn.value = item.name;
   nameIn.placeholder = 'name';
   nameIn.spellcheck = false;
-  nameIn.addEventListener('input', e => { item.name = e.target.value; });
+  nameIn.title = item.name || '';
+  nameIn.addEventListener('input', e => { item.name = e.target.value.replace(/\n/g, ''); });
+  nameIn.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); nameIn.blur(); } });
+  // a name longer than the name column holds takes the row's full width, and type/req/× go to the line below, so a
+  // field path wraps only when it is longer than the whole panel (not mid-word in a narrow column)
+  if ((item.name || '').length > 18) row.classList.add('io-row-long');
   row.appendChild(nameIn);
 
   const typeSel = document.createElement('select');
@@ -8985,7 +9007,108 @@ function ioAttrsEditor(item, isInput) {
     row.appendChild(hint);
     box.appendChild(row);
   }
+  box.appendChild(ioFieldsEditor(item));   // T-1302
   return box;
+}
+
+// ── T-1302 (slice 3 of T-1242, arc-006): EDIT the fields (aef:field children) of an io ──
+// item.children holds each child element as its exact XML (T-1243). A field row edits ITS element only: attributes are set
+// in place (an existing one keeps its position, a new one is appended), aef:when children ride along, and only that child is
+// serialised again. Untouched children, aef:expect, aef:example and unknown children keep their bytes. (AEF T-4415 §B.)
+const IO_FIELD_CHOICES = { role: ['read', 'write', 'create', 'match', 'delete'], cardinality: ['one', 'optional', 'many'] };
+function ioChildSerialize(el) {   // one child element as written back: no redundant xmlns (buildBpmnXml's root declares it)
+  const x = new XMLSerializer().serializeToString(el);
+  return x.replace(/^(<[^\s>\/]+)((?:\s+[^\s=>]+="[^"]*")*)/, (m, tag, attrs) => tag + attrs.replace(/\s+xmlns(?::([A-Za-z_][\w.-]*))?="([^"]*)"/g,
+    (d, pfx, uri) => (pfx && IO_EXPORT_ROOT_NS[pfx] === uri) ? '' : d));
+}
+function ioFieldEdit(item, i, fn) {   // parse child i, let fn change it, write it back (only if it changed)
+  const el = v11ParseFragment([item.children[i]])[0];
+  if (!el) return;
+  fn(el);
+  const x = ioChildSerialize(el);
+  if (x === item.children[i]) return;
+  item.children = item.children.slice(); item.children[i] = x;
+  renderProperties();
+}
+function ioFieldsEditor(item) {
+  const sec = document.createElement('div');
+  sec.className = 'io-fields';
+  const head = document.createElement('div');
+  head.className = 'io-attr-k io-fields-head';
+  head.textContent = 'fields';
+  head.title = 'the fields of this input/output (aef:field): path or fieldRef, role, required, cardinality';
+  sec.appendChild(head);
+  (item.children || []).forEach((xml, i) => {
+    const el = v11ParseFragment([xml])[0];
+    if (!el || el.namespaceURI !== AEF_EXT_NS || el.localName !== 'field') return;   // expect/example/unknown: not here
+    const row = document.createElement('div');
+    row.className = 'io-field-row';
+    const kind = el.hasAttribute('fieldRef') && !el.hasAttribute('path') ? 'fieldRef' : 'path';
+    const ks = document.createElement('select');
+    ks.className = 'io-type io-attr-v io-field-kind';
+    ks.dataset.fattr = 'kind';
+    for (const o of ['path', 'fieldRef']) { const e = document.createElement('option'); e.value = o; e.textContent = o; if (o === kind) e.selected = true; ks.appendChild(e); }
+    ks.title = 'address the field by a path inside the object, or by a fieldRef (a CURIE)';
+    ks.addEventListener('change', e => ioFieldEdit(item, i, f => {   // move the value to the other attribute, in place
+      const v = f.getAttribute(kind) || ''; f.removeAttribute(kind); if (v) f.setAttribute(e.target.value, v);
+    }));
+    const addr = document.createElement('textarea');
+    addr.className = 'io-name io-attr-v io-field-addr';
+    addr.dataset.fattr = 'addr';
+    addr.rows = 1; addr.spellcheck = false;
+    addr.placeholder = kind + '…';   // a prompt, not a value: an empty new field said nothing (T-1302 sweep)
+    addr.value = el.getAttribute(kind) || '';
+    addr.title = addr.value;
+    addr.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addr.blur(); } });
+    addr.addEventListener('change', e => ioFieldEdit(item, i, f => {
+      const v = e.target.value.trim(); if (v) f.setAttribute(kind, v); else f.removeAttribute(kind);
+    }));
+    const line2 = document.createElement('div');
+    line2.className = 'io-field-line2';
+    for (const k of ['role', 'cardinality']) {
+      const s = document.createElement('select');
+      s.className = 'io-type io-attr-v';
+      s.dataset.fattr = k;
+      s.title = k;
+      const cur = el.getAttribute(k) || '';
+      const opts = [''].concat(IO_FIELD_CHOICES[k]);
+      if (cur && !opts.includes(cur)) opts.push(cur);   // a producer's own value is kept
+      for (const o of opts) { const e = document.createElement('option'); e.value = o; e.textContent = o || (k + ' —'); if (o === cur) e.selected = true; s.appendChild(e); }
+      s.addEventListener('change', e => ioFieldEdit(item, i, f => { if (e.target.value) f.setAttribute(k, e.target.value); else f.removeAttribute(k); }));
+      line2.appendChild(s);
+    }
+    const req = document.createElement('label');
+    req.className = 'io-req';
+    const rc = document.createElement('input');
+    rc.type = 'checkbox'; rc.dataset.fattr = 'required';
+    rc.checked = el.getAttribute('required') === 'true';
+    rc.addEventListener('change', e => ioFieldEdit(item, i, f => { if (e.target.checked) f.setAttribute('required', 'true'); else f.removeAttribute('required'); }));
+    const rl = document.createElement('span'); rl.textContent = 'req';
+    req.append(rc, rl);
+    line2.appendChild(req);
+    if (el.getElementsByTagNameNS(AEF_EXT_NS, 'when').length) {
+      const w = document.createElement('span');
+      w.className = 'io-field-when';
+      w.textContent = 'when ×' + el.getElementsByTagNameNS(AEF_EXT_NS, 'when').length;
+      w.title = 'this field has conditions (aef:when); they are kept as written';
+      line2.appendChild(w);
+    }
+    const del = document.createElement('div');
+    del.className = 'io-del io-field-del';
+    del.textContent = '×';
+    del.title = 'remove this field';
+    del.onclick = () => { item.children = item.children.filter((_, j) => j !== i); if (!item.children.length) delete item.children; renderProperties(); };
+    line2.appendChild(del);
+    row.append(ks, addr, line2);
+    sec.appendChild(row);
+  });
+  const add = document.createElement('div');
+  add.className = 'io-add io-field-add';
+  add.textContent = '+ add field';
+  add.title = 'add a field to this input/output (aef:field); give it a path or a fieldRef';
+  add.onclick = () => { item.children = (item.children || []).concat(['<aef:field/>']); renderProperties(); };
+  sec.appendChild(add);
+  return sec;
 }
 
 // ============================================================================
@@ -13310,7 +13433,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.28.0';
+const APP_VERSION = '0.29.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
