@@ -146,8 +146,20 @@ _route() {
     run bash -c "sed -n '${inc_start},${inc_end}p' '$src' | grep -E '^[[:space:]]+FRAMEWORK\.md[[:space:]]*$'"
     [ "$status" -ne 0 ]
 
-    # Copied after the array ends.
-    fmd_line=$(grep -n 'cp "\$vendor_source/FRAMEWORK.md" "\$dest/FRAMEWORK.md"' "$src" | head -1 | cut -d: -f1)
+    # Written after the array ends. T-4759: found by its TARGET, not by one
+    # spelling of the writer — T-4740 swapped `cp` for _vendor_write_if_changed
+    # (temp file + atomic mv) and the literal-cp grep went red with the
+    # ordering intact.
+    fmd_line=$(grep -nE '(cp "\$vendor_source/FRAMEWORK\.md" |_vendor_write_if_changed )"\$dest/FRAMEWORK\.md"' "$src" | head -1 | cut -d: -f1)
     [ -n "$fmd_line" ]
     [ "$fmd_line" -gt "$inc_end" ]
+
+    # And after every other vendor-metadata write (VERSION, sentinels,
+    # .gitignore, .upstream): the sentinel claims they are all on disk.
+    local other last_other=0
+    while IFS= read -r other; do
+        [ "$other" -gt "$last_other" ] && last_other=$other
+    done < <(grep -nE '_vendor_write_if_changed "\$dest/' "$src" | grep -v 'FRAMEWORK\.md' | cut -d: -f1)
+    [ "$last_other" -gt 0 ]
+    [ "$fmd_line" -gt "$last_other" ]
 }
