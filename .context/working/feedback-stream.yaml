@@ -49147,3 +49147,21 @@ scan_id: R-f78d26fb
 task_id: T-4767
 payload:
   task_file: .tasks/active/T-4767-re-pin-designer-0270---0280-832-announce.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T12:01:41Z'
+scan_id: R-0fc60554
+task_id: T-4766
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T12:01:41Z'
+scan_id: R-0fc60554
+task_id: T-4766
+payload:
+  task_file: .tasks/active/T-4766-fw-sidecar-waiting-lists-outbound-consul.md

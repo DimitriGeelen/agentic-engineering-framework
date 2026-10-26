@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4766: fw sidecar waiting lists outbound consults the retry ladder already closed (answered), with a drop hint
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T12:01:59Z
+# ============================================================================
+
+task_id: T-4766
+task_name: "fw sidecar waiting lists outbound consults the retry ladder already closed (answered), with a drop hint"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T10:48:11Z
+completed: 2026-10-26T12:01:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T12:59:19+01:00
+last_commit: 2026-10-26T13:00:42+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sidecar waiting asks the ack ledger (retry.closed_ids/is_open) so ladder-closed consults are not listed. tick the last Agent AC — verification green
+
+# Key outcomes
+outcomes:
+  - 'Localised in the RCA: how `fw sidecar waiting` (`lib/sidecar/waiting.py`) decides an outbound consult is still open, and why it misses closures the retry ladder writes (`lib/sidecar/retry.py` `is_open`/`_close`)'
+  - '`waiting` decides outbound openness with the same predicate as the ladder and `settle-sent` (one shared function, not a copy), so a consult closed as answered, read, notice, released, settled or exhausted is not listed'
+  - 'Inbound entries and anything genuinely open are listed exactly as before; the drop hint appears only for entries that are open'
+  - 'Unit tests with a fixture ledger cover: answered → not listed; settled via settle-sent → not listed; still open → listed with its escalation; settle-sent and waiting agree on every fixture row. Never touch the live sidecar state; the sidecar unit tests stay green; vendored copy in sync (`fw vendor self --check --task T-4766`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — where the shared predicate lives'
+    chose: 'a `retry.closed_ids()` helper (`is_open` over `latest_rows`) that waiting''s hub-path loop calls.'
+    rationale: 'the ack ledger and `is_open` are authoritative and already used by the sweep and settle-sent; one call, no duplicated prefix list.'
+    alternatives_rejected: ['copying the error-prefix check into waiting (two lists drift — this bug''s class); having `retry._close` also write a waiting closure (fixes only future closures, not the 15 rows already on ring20''s ledger).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/retry.py'
+  - '.agentic-framework/lib/sidecar/waiting.py'
+  - '.tasks/active/T-4766-fw-sidecar-waiting-lists-outbound-consul.md'
+  - 'lib/sidecar/retry.py'
+  - 'lib/sidecar/waiting.py'
+  - 'tests/unit/test_sidecar_waiting_ladder_closed_t4766.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T12:59:19'
+    action: 'T-4766: fw sidecar waiting asks the ack ledger (retry.closed_ids/is_open) so ladder-closed consults are not listed'
+  - time: '2026-10-26T13:00:42'
+    action: 'T-4766: tick the last Agent AC — verification green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 73 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 73
+  commits: 3
+  files_changed: 9
+  lines_added: 688
+  lines_removed: 9
+  footprint_refreshed_at: '2026-10-26T12:02:09Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4766-fw-sidecar-waiting-lists-outbound-consul.md
+generated_by: context-agent-hybrid
