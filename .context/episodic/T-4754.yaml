@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4754: fw upgrade tracked-runtime-file notice: group paths by directory before the single git rm --cached command
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T09:26:41Z
+# ============================================================================
+
+task_id: T-4754
+task_name: "fw upgrade tracked-runtime-file notice: group paths by directory before the single git rm --cached command"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-25T14:19:19Z
+completed: 2026-10-26T09:24:43Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-26T10:16:21+01:00
+last_commit: 2026-10-26T10:22:54+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade groups tracked runtime files (N x <dir>/* | <glob rule> | path, largest first) before the complete git rm --cached command; t4754 bats; RCA, Decisions, Verification. vendor synced (lib/upgrade.sh, lib/working-gitignore.sh). tick AC4 — fresh-machine simulation 19/19, invariants green, vendor in sync
+
+# Key outcomes
+outcomes:
+  - 'The T-4701 tracked-runtime-file notice prints a grouped summary before the command: one line per directory (or per rule for globbed names), with the count, largest group first, e.g. `181 x .context/working/episodic-gen/*`'
+  - 'The exact `git rm --cached -- <paths>` command that follows is unchanged and still complete. Nothing is ever untracked by the upgrade'
+  - 'Bats: a consumer tracking files in two directories plus one single file gets a grouped summary with the right counts and order, and the printed command untracks exactly those paths; the T-4701 bats stay green'
+  - '`upgrade_fresh_machine_simulation.bats` stays green (foreground, `timeout 1800`); vendored copy in sync (`fw vendor self --check --task T-4754`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — what the grouped summary replaces'
+    chose: 'the grouped summary replaces the one-path-per-line list; the `git rm --cached` command stays complete (it is the full list). Groups: a path under a subdirectory of `.context/working` groups as `<that first-level dir>/*`; a top-level file groups under the first glob rule it matches (`*.log.*` → `.context/working/*.log.*`); an exact-name rule (or a glob group of one) shows the path itself. Every line is `N x <label>`, largest first, ties by label.'
+    rationale: '214 lines of list plus a 214-path command is two copies of the same unreviewable thing; the counts answer "what kind of files are these" and the command answers "which exactly".'
+    alternatives_rejected: ['keeping the full list below the summary (doubles the noise the peer reported); grouping only by directory (all top-level files would lump into one `.context/working/*` group, hiding logs vs pid files).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/working-gitignore.sh'
+  - '.tasks/active/T-4754-fw-upgrade-tracked-runtime-file-notice-g.md'
+  - 'lib/upgrade.sh'
+  - 'lib/working-gitignore.sh'
+  - 'tests/unit/t4701_tracked_runtime_untrack.bats'
+  - 'tests/unit/t4754_tracked_runtime_grouped.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T10:16:21'
+    action: 'T-4754: fw upgrade groups tracked runtime files (N x <dir>/* | <glob rule> | path, largest first) before the complete git rm --cached command; t4754 bats; RCA, Decisions, Verification'
+  - time: '2026-10-26T10:16:40'
+    action: 'T-4754: vendor synced (lib/upgrade.sh, lib/working-gitignore.sh)'
+  - time: '2026-10-26T10:22:54'
+    action: 'T-4754: tick AC4 — fresh-machine simulation 19/19, invariants green, vendor in sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1145 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1145
+  commits: 4
+  files_changed: 10
+  lines_added: 684
+  lines_removed: 11
+  footprint_refreshed_at: '2026-10-26T09:26:46Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4754-fw-upgrade-tracked-runtime-file-notice-g.md
+generated_by: context-agent-hybrid
