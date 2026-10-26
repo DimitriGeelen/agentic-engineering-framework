@@ -331,6 +331,16 @@ Both upgrades were clean: 18 in-file patches merged, preserve OK, doctor FAIL 2 
 current` green. Installed but not exercised: T-4698, T-4721, T-4722, T-4751 (be.19); T-4727, T-4734, T-4736, T-4738,
 T-4741, T-4742/T-4749, T-4744 … T-4748, T-4750 (be.18). The boundary-remedy finding listed above is T-4751, fixed in be.19.
 
+### be.21 — proxmox-ring20-management (recorded 2026-10-26, T-4758)
+
+| Fix | Tip tested | Verdict | Msg |
+|---|---|---|---|
+| T-4753 | v1.8.15-be.21 (c8a660297) | **WORKS**: from inside a scratch project with ring20's `PROJECT_ROOT` inherited, `sidecar start` refused with exit 2 naming both roots, and ring20's live sidecar was untouched. Tested with start only, never stop | e3dc42be |
+
+Their other-direction observation: an inherited `PROJECT_ROOT` that is not a project was silently replaced by the cwd
+project. Fixed by T-4756 (one stderr note), along with their be.19 grouping note (T-4754). Both ship in the next be tag.
+Upgrade clean: 18 patches merged, doctor FAIL 2 before and 2 after, pages 200. Not exercised: T-4640 … T-4646 (test side).
+
 ## Full-suite comparison (HEAD eee888e61 vs v1.8.14)
 
 **Method, and what it does not cover.** T-4345 ran the whole unit corpus on two scratch trees side by side (jobs=6
