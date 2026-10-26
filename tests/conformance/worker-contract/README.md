@@ -27,6 +27,7 @@ ids may be n/a.
 |---|---|
 | `vectors.yaml` | the vectors; its header explains `given` / `steps` / `then` / `variants` |
 | `check_vectors.py` | schema check; exit 0 valid, 1 invalid, 2 unreadable |
+| `check_mapping.py` | reads an external backend's §6.6 mapping (`wc-conformance-mapping/0.1`, ring20's draft format) and checks it; whether a case may be N/A comes from `applicability.n_a_allowed` here, not from the backend (T-4752). Fixtures in `fixtures/` |
 | `run_local.py` | runs the vectors against AEF's local backend. While that backend does not exist, each vector is reported `not-implemented` with what is missing, never `pass` |
 
 Other backends write their own runner against the adapter shape described in `run_local.py`

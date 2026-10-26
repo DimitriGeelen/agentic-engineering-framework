@@ -1,0 +1,164 @@
+# T-4752 fixture: fault 2 (ring20): CC-13 PASS without evidence
+# Derived from ring20's wc-conformance-mapping/0.1 draft (docs/reports/T-4752/received/conformance-map-v0.3.3.yaml).
+format: wc-conformance-mapping/0.1
+spec_version: wc/0.3.3
+spec_commit: e21244ddd
+code_commit: 06a9c0123
+date: '2026-10-25'
+prose: docs/reports/T-2467/conformance-map-v0.3.3.md
+declarations:
+  backend: ring20
+  id_scheme: 'ring20:<commission_id>; attempt = (ring20:<commission_id>, n); handback.commission compared modulo
+    the ring20: prefix (N4)'
+  single_writer: exclusive lease (flock on .context/orchestration/locks/ledger.lock) instead of supervisor_gen (N1);
+    Ledger.append fails closed without it
+  writer_auth: 'channel-bound: root-owned stdout (systemd StandardOutput=file), read after the unit is inactive;
+    the nonce is an echo'
+  evidence_channel: 'channel-bound: last fenced hand-back block of that stdout + PID 1''s exit record (N3)'
+  persisted_at_source: __REALTIME_TIMESTAMP of PID 1's journal record of the unit's end (worker cannot set it)
+  G: 0
+  absent_optional_fields:
+  - worker_binding
+  - registry_epoch_seen
+  - dispatcher.session
+cases:
+- id: CC-01
+  verdict: PASS
+  rationale: the hand-back is read before lost is written; admissible running->done; G = 0
+  evidence:
+  - tests/test-orch-supervisor.py::T10_3_Recovery.test_worker_finished_and_gc_while_supervisor_down
+  - 'scripts/orch-supervisor.py: evaluate() reads handback before lost()'
+- id: CC-02
+  verdict: PASS
+  rationale: after done, a late lost is rejected fence_reject(forbidden_transition); final state stays done
+  evidence:
+  - tests/test-orch-supervisor.py::T10_7_Fencing.test_cc02_lost_after_done_is_forbidden_transition
+- id: CC-03
+  verdict: PASS
+  rationale: admissible running->done (evidence found on recovery) or lost when there is none
+  evidence:
+  - tests/test-orch-supervisor.py::T10_3_Recovery.test_worker_finished_and_gc_while_supervisor_down
+  - tests/test-orch-supervisor.py::T10_3_Recovery.test_expired_run_still_evaluates_finished_worker
+  - tests/test-orch-supervisor.py::T10_5_Lost.test_unknown_exit_no_handback_keeps_lost_path
+- id: CC-04
+  verdict: PASS
+  rationale: 'a re-submit after commit is a T8 response: same evidence -> idempotent success, no history entry'
+  evidence:
+  - tests/test-orch-supervisor.py::T10_7_Fencing.test_cc05a_same_evidence_is_idempotent
+  note: evidence identity = output_hash of the attempt's own handed_back row
+- id: CC-05
+  verdict: PASS
+  rationale: '(a) same evidence: idempotent, no row; (b) different: fence_reject(done_conflict), record unchanged,
+    one operator notice'
+  evidence:
+  - tests/test-orch-supervisor.py::T10_7_Fencing.test_cc05a_same_evidence_is_idempotent
+  - tests/test-orch-supervisor.py::T10_7_Fencing.test_cc05b_different_evidence_is_done_conflict
+- id: CC-06
+  verdict: PASS
+  rationale: no A2 while A1's unit survives; an early A2 request is cas_mismatch; A2 gets a fresh nonce; a late
+    A1 running-path write is stale_attempt
+  evidence:
+  - tests/test-orch-supervisor.py::T10_5_Lost.test_cc06_retry_refused_while_old_worker_survives
+- id: CC-07
+  verdict: GAP
+  rationale: T5 for a non-current lost attempt is not implemented (§3.3 fence (b))
+  tasks:
+  - ring20:T-2513
+- id: CC-08
+  verdict: GAP
+  rationale: 'no unknown state: after a supervisor restart a unit that cannot be decided stays launched (one notice);
+    no T6/T7a'
+  tasks:
+  - ring20:T-2515
+- id: CC-09
+  verdict: GAP
+  rationale: 'run as late evidence after lost/unknown: needs T5 and T7b'
+  tasks:
+  - ring20:T-2513
+  - ring20:T-2515
+- id: CC-10
+  verdict: PASS
+  rationale: 'no questions channel or dispatcher.session; the lifecycle half (T3) is run as CC-01/CC-03 (fixture
+    edit, T-4752: N/A is not allowed on a §3 case)'
+  evidence:
+  - tests/test-orch-supervisor.py::T10_3_Recovery.test_worker_finished_and_gc_while_supervisor_down
+- id: CC-11
+  verdict: N/A
+  rationale: no answer channel (§5)
+- id: CC-12
+  verdict: N/A
+  rationale: no answer channel (§5)
+- id: CC-13
+  verdict: PASS
+  rationale: 'single-writer lease (N1): exactly one of 8 concurrent supervisors runs; Ledger.append fails closed
+    without the lease'
+  note: 'mutation check: with a no-op lease the race test fails'
+- id: CC-14
+  verdict: PASS
+  rationale: a former lease holder's write is refused; a refused supervisor writes nothing and the lease frees after
+    the holder ends
+  evidence:
+  - tests/test-orch-supervisor.py::T2519_LeaseCheckedAppend.test_former_holder_refused
+  - tests/test-orch-supervisor.py::T10_13_Lease.test_refusal_is_bounded_writes_nothing_and_lease_frees
+- id: CC-15
+  verdict: GAP
+  rationale: no unknown state and no operator resolve verb; reconcile is terminal
+  tasks:
+  - ring20:T-2515
+  - ring20:T-2517
+- id: CC-16
+  verdict: GAP
+  rationale: no outcome field derived by the §3.3 rules; hand-back status not read. Exit evidence now exists for
+    every exit (T-2510)
+  tasks:
+  - ring20:T-2511
+- id: CC-17
+  verdict: N/A
+  rationale: no registry_epoch (I7, optional for §6.6)
+- id: CC-18
+  verdict: N/A
+  rationale: ids are minted by AEF capture_dispatch, never chosen by the caller
+- id: CC-19
+  verdict: GAP
+  rationale: no paused outcome; review/count do not refuse it
+  tasks:
+  - ring20:T-2511
+  - ring20:T-2518
+- id: CC-20
+  verdict: GAP
+  rationale: seen-alive half done (one lost_seen_alive row + one notice, no transition); the later T5 upgrade is
+    missing
+  evidence:
+  - tests/test-orch-supervisor.py::T10_5_Lost.test_cc20_lost_attempt_seen_alive
+  tasks:
+  - ring20:T-2513
+- id: CC-21
+  verdict: GAP
+  rationale: no T6b; no direct T3b for a unit that exited before launched was written
+  tasks:
+  - ring20:T-2516
+- id: CC-22
+  verdict: GAP
+  rationale: no T7d, no attested fields; consumers do not refuse attested work
+  tasks:
+  - ring20:T-2517
+  - ring20:T-2518
+- id: CC-23
+  verdict: PASS
+  rationale: 'channel-bound writer authentication: the only lifecycle input is root-owned stdout read after the
+    unit is inactive; only the lease holder writes; the worker cannot write the repo or out/'
+  evidence:
+  - 'scripts/orch-supervisor.py: SystemdLauncher props StandardOutput=file (root)'
+  - 'scripts/orch-preflight.py: isolation probe'
+  - tests/test-orch-supervisor.py::T2519_LeaseCheckedAppend
+- id: CC-24
+  verdict: GAP
+  rationale: persisted_at now recorded (PID 1 journal timestamp, T-2510); the late T5 bound by it is missing
+  tasks:
+  - ring20:T-2513
+- id: CC-25
+  verdict: GAP
+  rationale: a stop ends in lost, not T3, and records no cause; sequenced after the outcome rules
+  tasks:
+  - ring20:T-2514
+  - ring20:T-2511

@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-25T12:22:58Z
-last_update: '2026-10-25T15:00:23Z'
+last_update: 2026-10-26T10:23:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,8 @@ cost_estimate_proposed:
 
 ### Agent
 - [x] ring20's draft (sidecar 43ffd8bf checker, 520283e9 mapping; format `wc-conformance-mapping/0.1`) is stored verbatim under `docs/reports/T-4752/received/` with its sha256 checked against the one ring20 stated. It is not executed until reviewed
-- [ ] The format is reviewed against the spec's §6.6, including ring20's open question: derive `exercises_section3` from a per-case table in the spec (§9) rather than letting the backend declare it. The proposed spec change is written as a draft for the spec owners
-- [ ] AEF's conformance runner reads a mapping in this format and applies the checker's rules (25 unique CC ids; PASS needs evidence; GAP needs a task; N/A only where the spec table allows). Tests use fixture mappings, including the four faults ring20 injected
+- [x] The format is reviewed against the spec's §6.6, including ring20's open question: derive `exercises_section3` from a per-case table in the spec (§9) rather than letting the backend declare it. The proposed spec change is written as a draft for the spec owners
+- [x] AEF's conformance runner reads a mapping in this format and applies the checker's rules (25 unique CC ids; PASS needs evidence; GAP needs a task; N/A only where the spec table allows). Tests use fixture mappings, including the four faults ring20 injected
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +281,11 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+test -s docs/reports/T-4752/review.md && grep -q "CC-10" docs/reports/T-4752/review.md
+grep -q "^## §9 applicability table" docs/reports/T-4752/spec-proposal.md && grep -q "T8" docs/reports/T-4752/spec-proposal.md
+python3 tests/conformance/worker-contract/check_mapping.py tests/conformance/worker-contract/fixtures/mapping-valid.yaml
+bash -c 'for f in dup-id pass-no-evidence gap-no-task na-on-section3; do python3 tests/conformance/worker-contract/check_mapping.py tests/conformance/worker-contract/fixtures/mapping-$f.yaml; test $? -eq 1 || exit 1; done'
+python3 -m pytest tests/unit/test_worker_contract_vectors.py tests/unit/test_worker_contract_mapping.py -q > /tmp/.t4752.out 2>&1 && grep -q passed /tmp/.t4752.out
 
 ## RCA
 
