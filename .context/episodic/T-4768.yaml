@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4768: fw inception decide (CLI path) writes the Human-tick provenance row but never commits it, so clean checkouts fail the ticks audit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T13:08:36Z
+# ============================================================================
+
+task_id: T-4768
+task_name: "fw inception decide (CLI path) writes the Human-tick provenance row but never commits it, so clean checkouts fail the ticks audit"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T11:59:23Z
+completed: 2026-10-26T13:08:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T14:07:13+01:00
+last_commit: 2026-10-26T14:07:13+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CLI inception decide commits the decision with its Human-tick provenance row (git commit --only, mirrors Watchtower _commit_decision)
+
+# Key outcomes
+outcomes:
+  - 'Localised in the RCA: where the CLI decide path appends to `.context/reviews/human-ac-ticks.jsonl` (`lib/inception.sh` ~421), and how the Watchtower path gets the row into its decision commit while the CLI path does not'
+  - 'The CLI decide path commits the provenance row in the same commit as the decision, the same way Watchtower does, so a clean checkout of that commit passes the Human-AC ticks audit. If decide makes no commit of its own on the CLI path, it stages the row and the decision commit it prints includes it'
+  - 'No other uncommitted work is swept into that commit (explicit pathspec, never `git add -A`)'
+  - 'A bats test in a temp git repo runs CLI decide (`--i-am-human`), then checks out the resulting commit cleanly and asserts the ticks audit passes there; the inception-decide tests outside the baseline stay green; vendored copy in sync (`fw vendor self --check --task T-4768`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — how the CLI path gets the row into history'
+    chose: '`do_inception_decide` commits its own paths with `git commit --only -m "T-XXX: inception decision <V>" -- <task file (active+completed)> <episodic> <ledger>`, and skips this under `--from-watchtower`.'
+    rationale: 'it uses the same scope and mechanism as Watchtower''s `_commit_decision` (T-4127 `--only`, T-4590 ledger), and the same shape `do_inception_correct` already uses. `--only` leaves other staged work staged.'
+    alternatives_rejected: ['(a) only `git add` the ledger and print a commit hint: the 055 evidence is that nobody runs the hint, and staging alone still lets a clean checkout fail. (b) importing `web.blueprints.inception._commit_decision` from the CLI: that pulls Flask into a CLI path. (c) committing under `--from-watchtower` too: the runner commits while the CLI subprocess is still running, so two committers would race. - **Known scope:** the ledger is committed as a whole file, so older uncommitted rows for other tasks go in with it. Watchtower''s commit does the same, and that is what we want: those are the rows a clean checkout is missing.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/inception.sh'
+  - '.tasks/active/T-4768-fw-inception-decide-cli-path-writes-the-.md'
+  - 'lib/inception.sh'
+  - 'tests/unit/t4768_cli_decide_commits_tick_provenance.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T14:07:13'
+    action: 'T-4768: CLI inception decide commits the decision with its Human-tick provenance row (git commit --only, mirrors Watchtower _commit_decision)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 68 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 68
+  commits: 2
+  files_changed: 7
+  lines_added: 786
+  lines_removed: 5
+  footprint_refreshed_at: '2026-10-26T13:08:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4768-fw-inception-decide-cli-path-writes-the-.md
+generated_by: context-agent-hybrid

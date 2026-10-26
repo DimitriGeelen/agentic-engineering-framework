@@ -13,12 +13,12 @@ description: >
   path does commit the row (see commits 'inception decision GO (via Watchtower)').
   Make the CLI path commit the ledger row together with the decision, the same way.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/inception.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T11:59:23Z
-last_update: 2026-10-26T12:58:25Z
-date_finished:
+last_update: 2026-10-26T13:08:04Z
+date_finished: 2026-10-26T13:08:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -396,3 +396,22 @@ bin/fw vendor self --check --task T-4768
 
 ### 2026-10-26T12:58:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ef643fb1
+- **Timestamp:** 2026-10-26T13:08:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Localised in the RCA: where the CLI decide path appends to `.context/reviews/human-ac-ticks.jsonl` (`lib/inception.sh` ~421), and how the Watchtower path gets the row into its decision commit while th
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/reviews/human-ac-ticks.jsonl in: Localised in the RCA: where the CLI decide path appends to `.context/reviews/human-ac-ticks.jsonl` (`lib/inception.sh` ~421), and how the Watchtower p`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-26T13:08:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
