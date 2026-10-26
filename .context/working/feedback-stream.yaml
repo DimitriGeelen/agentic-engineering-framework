@@ -49237,3 +49237,21 @@ scan_id: R-6a9593e7
 task_id: T-4771
 payload:
   task_file: .tasks/active/T-4771-record-be24be25-field-verdicts-termlink-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T14:00:37Z'
+scan_id: R-a90d3d2e
+task_id: T-4772
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T14:00:37Z'
+scan_id: R-a90d3d2e
+task_id: T-4772
+payload:
+  task_file: .tasks/active/T-4772-record-termlink-be25-field-report-in-the.md
