@@ -49489,3 +49489,21 @@ scan_id: R-61127cfe
 task_id: T-4794
 payload:
   task_file: .tasks/active/T-4794-conformance-vectors-cc-23-question-appen.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T23:40:50Z'
+scan_id: R-ab77fd7f
+task_id: T-4795
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T23:40:50Z'
+scan_id: R-ab77fd7f
+task_id: T-4795
+payload:
+  task_file: .tasks/active/T-4795-repin-designer-to-0300-field-catalog-ref.md
