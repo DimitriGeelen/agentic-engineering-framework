@@ -78,6 +78,10 @@ READ = "read"
 #: was ever expected, so the ladder has nothing to chase (delivery.deliver
 #: writes it). Not a dead-letter.
 NOTICE = "notice"
+#: T-4757: error prefix for a consult its SENDER settled (`fw sidecar
+#: settle-sent`) — answered out of band, or obsolete. The sender's own
+#: knowledge, not a peer signal; not a dead-letter.
+SETTLED = "settled"
 EXHAUSTED = "ladder-exhausted"
 UNRETRYABLE = "ladder-unretryable"
 
@@ -107,7 +111,7 @@ def is_open(row: dict) -> bool:
     if state == outbox.UNKNOWN:
         return False
     error = row.get("error") or ""
-    if error.startswith((ANSWERED, RELEASED, READ, NOTICE)):
+    if error.startswith((ANSWERED, RELEASED, READ, NOTICE, SETTLED)):
         return False
     if row.get("attempts") is None and state in (outbox.INJECTED_NOW,
                                                  outbox.INJECTED_LATER):
@@ -277,6 +281,63 @@ def default_nudge(msg: dict, rung: int, attempts: int, *, transport) -> str:
     except delivery.TransportError as exc:
         return f"nudge-failed: {exc}"
     return "nudge-sent"
+
+
+# ── the sender settles its own consult (T-4757) ─────────────────────────────
+
+class SettleRefusal(Exception):
+    """`settle_sent` refused; the message says why. Nothing was written."""
+
+
+def settle_sent(client_msg_id: str, reason: str, *,
+                agent: str | None = None) -> dict:
+    """Close one of OUR outstanding consults on the ladder, with a reason.
+
+    Every other way off the ladder is peer evidence (answered, read, notice)
+    or exhaustion, so a consult answered out of band, or made obsolete, was
+    re-posted and nudged until it dead-lettered. This appends one closing row
+    (same ack state, `error: settled: <reason>`, `settled_by`, `reason`) and
+    one closure in the waiting register. Nothing is posted to the peer and no
+    peer state is touched; no existing row is rewritten.
+
+    Refused: an empty reason, an id with no ledger row, a message this agent
+    did not send (the outbox is per project, not per agent), and a row the
+    ladder is already finished with — settled, answered, read or dead-lettered.
+    """
+    reason = (reason or "").strip()
+    if not reason:
+        raise SettleRefusal("a reason is required (--reason \"...\")")
+    me = agent or inbox.agent_id()
+    row = latest_rows().get(client_msg_id)
+    if row is None:
+        raise SettleRefusal(f"no outstanding consult {client_msg_id!r} in the ack "
+                            f"ledger (fw sidecar status lists what was sent)")
+    msg = _read_message(client_msg_id)
+    if msg is None:
+        raise SettleRefusal(f"{client_msg_id}: message file missing, so it cannot be "
+                            f"shown to be this agent's own consult")
+    if msg.get("from") != me:
+        raise SettleRefusal(f"{client_msg_id}: not this agent's consult (sent by "
+                            f"{msg.get('from')!r}, this agent is {me!r})")
+    error = row.get("error") or ""
+    if error.startswith(SETTLED):
+        raise SettleRefusal(f"{client_msg_id}: already settled ({error})")
+    if not is_open(row):
+        raise SettleRefusal(f"{client_msg_id}: not outstanding — the ladder already "
+                            f"closed it ({row.get('state')}: {error or 'no annotation'})")
+    attempts, _rung, _due = ladder_position(row)
+    outbox.record_ack(client_msg_id, row.get("target"), row.get("hub"),
+                      row.get("state"), deadline=row.get("deadline"),
+                      error=f"{SETTLED}: {reason}", attempts=attempts,
+                      next_retry_at=None,
+                      rung=retry_ladder.rung_for(max(attempts - 1, 0)),
+                      settled_by=me, reason=reason)
+    from . import waiting
+    waiting._append(waiting.closures_path(), {
+        "id": client_msg_id, "side": "outbound", "peer": msg.get("to"),
+        "conversation_id": msg.get("conversation_id"), "reason": reason,
+        "by": f"sender:{me}", "ts": outbox._now_iso()})
+    return outbox.latest_ack_state(client_msg_id)
 
 
 # ── the sweep ─────────────────────────────────────────────────────────────────

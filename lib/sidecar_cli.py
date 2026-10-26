@@ -632,6 +632,23 @@ def cmd_sweep(args) -> int:
     return 0
 
 
+def cmd_settle_sent(args) -> int:
+    """T-4757: settle one of OUR outstanding consults (answered out of band, or
+    obsolete). The sweep stops re-posting and nudging it and never dead-letters
+    it. Appends to our own ledgers only; nothing is posted to the peer."""
+    try:
+        row = retry.settle_sent(args.id, args.reason)
+    except retry.SettleRefusal as exc:
+        print(f"fw sidecar settle-sent: {exc}", file=sys.stderr)
+        return 1
+    if args.json:
+        print(json.dumps(row, indent=2))
+        return 0
+    print(f"settled {row['client_msg_id']} (to {_meta(row.get('target'))}) by "
+          f"{row['settled_by']}: {row['reason']}")
+    return 0
+
+
 def cmd_e2e(args) -> int:
     """Live end-to-end run against the real hub and a real dispatched worker.
 
@@ -1440,6 +1457,14 @@ def build_parser() -> argparse.ArgumentParser:
                     help="ISO-8601 instant to sweep as-of (testing and replay; "
                          "default: the real clock)")
     sw.set_defaults(func=cmd_sweep)
+
+    ss_ = sub.add_parser("settle-sent", help="settle one of this agent's own outstanding "
+                         "consults (answered out of band, or obsolete): the retry sweep stops "
+                         "nudging it and never dead-letters it; nothing is sent to the peer (T-4757)")
+    ss_.add_argument("id", help="client_msg_id of the consult this agent sent")
+    ss_.add_argument("--reason", required=True, help="why it no longer needs an answer")
+    ss_.add_argument("--json", action="store_true")
+    ss_.set_defaults(func=cmd_settle_sent)
 
     ee = sub.add_parser("e2e", help="live end-to-end check: real hub, real dispatched "
                         "worker, every hop verified from both sides (T-3423)")

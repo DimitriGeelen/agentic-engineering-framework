@@ -160,7 +160,8 @@ def record_ack(client_msg_id: str, target: str, hub: str | None,
                state: str, deadline: str | None = None,
                error: str | None = None, attempts: int | None = None,
                next_retry_at: str | None = None,
-               rung: int | None = None) -> None:
+               rung: int | None = None, settled_by: str | None = None,
+               reason: str | None = None) -> None:
     """Append one row to the ack ledger. Append-only — never rewritten.
 
     `error` annotates a row without changing its state, so a failed delivery
@@ -173,6 +174,9 @@ def record_ack(client_msg_id: str, target: str, hub: str | None,
     them (every row this ledger held before T-3434) reads back as a message
     that has had one attempt and no scheduled retry — which is exactly what
     those rows were.
+
+    `settled_by` / `reason` are written only on a sender's own settle row
+    (T-4757, `retry.settle_sent`), so every other row keeps its shape.
     """
     row = {
         "client_msg_id": client_msg_id,
@@ -186,6 +190,9 @@ def record_ack(client_msg_id: str, target: str, hub: str | None,
         "rung": rung,
         "ts": _now_iso(),
     }
+    if settled_by is not None:
+        row["settled_by"] = settled_by
+        row["reason"] = reason
     with open(_ledger_path(), "a", encoding="utf-8") as fh:
         fh.write(json.dumps(row) + "\n")
 
