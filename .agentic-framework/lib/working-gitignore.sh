@@ -159,3 +159,42 @@ fw_working_tracked_runtime() {
              declare -F fw_vec_index_ignore_rules >/dev/null && fw_vec_index_ignore_rules)
     git -C "$root" ls-files -ci --exclude-standard "${excl[@]}" -- .context/working 2>/dev/null
 }
+
+# fw_working_group_tracked
+# T-4754: reads the paths fw_working_tracked_runtime printed (stdin) and prints
+# one `N x <label>` line per group, largest first, so a long list is reviewable
+# before the full `git rm --cached` command. A path in a subdirectory groups as
+# `.context/working/<dir>/*`; a top-level file groups under the first glob rule
+# it matches (`.context/working/*.log.*`); an exact-name rule, or a group of one,
+# shows the path itself.
+fw_working_group_tracked() {
+    local p rest name rule label
+    local -a globs=()
+    while IFS= read -r rule; do
+        case "$rule" in */) continue ;; *[*?[]*) globs+=("$rule") ;; esac
+    done < <(fw_working_ignore_rules
+             declare -F fw_vec_index_ignore_rules >/dev/null && fw_vec_index_ignore_rules)
+    local -A count=() first=()
+    while IFS= read -r p; do
+        [ -n "$p" ] || continue
+        rest="${p#.context/working/}"
+        if [ "$rest" != "${rest#*/}" ]; then
+            label=".context/working/${rest%%/*}/*"
+        else
+            name="$rest" label="$p"
+            for rule in "${globs[@]}"; do
+                # shellcheck disable=SC2254  # the rule is a glob on purpose
+                case "$name" in $rule) label=".context/working/$rule"; break ;; esac
+            done
+        fi
+        count[$label]=$(( ${count[$label]:-0} + 1 ))
+        [ -n "${first[$label]:-}" ] || first[$label]="$p"
+    done
+    for label in "${!count[@]}"; do
+        if [ "${count[$label]}" -eq 1 ]; then
+            printf '%s\t%s\n' 1 "${first[$label]}"
+        else
+            printf '%s\t%s\n' "${count[$label]}" "$label"
+        fi
+    done | LC_ALL=C sort -t "$(printf '\t')" -k1,1nr -k2,2 | sed 's/\t/ x /'
+}

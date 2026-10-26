@@ -3283,8 +3283,10 @@ MCPJSON
     _wk_tracked=${#_wk_paths[@]}
     if [ "$_wk_tracked" -gt 0 ]; then
         echo -e "  ${YELLOW}NOTE${NC}  $_wk_tracked runtime file(s) under .context/working are already tracked (an ignore rule does not untrack):"
-        printf '        %s\n' "${_wk_paths[@]}"
-        echo -e "        untrack with (files stay on disk):"
+        # T-4754: grouped counts first (214 paths are not reviewable as a list);
+        # the command below still names every path.
+        printf '%s\n' "${_wk_paths[@]}" | fw_working_group_tracked | sed 's/^/        /'
+        echo -e "        untrack all $_wk_tracked with (files stay on disk):"
         echo "        git -C \"$target_dir\" rm --cached --$(printf ' %q' "${_wk_paths[@]}")"
     fi
 
