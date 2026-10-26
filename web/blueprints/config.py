@@ -58,6 +58,7 @@ SETTINGS = [
     ("SCRATCH_WARN_GB", "10", "Size of .context/scratch in GB above which fw doctor WARNs and names the largest subdirs; release lanes are pruned after each release (T-4703)"),
     ("BRANCH_BEHIND_WARN", "50", "Commits-behind-origin/master threshold for the branch-hygiene WARN and handover merge-back nudge; T-100143/T-100144"),
     ("STALE_ARC_DAYS", "30", "Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale; T-1855"),
+    ("ARC_FOCUS_STALE_DAYS", "14", "Days after which handover and fw doctor WARN the arc focus is stale: focused_at older (AGE) or under 10% of recent tasks in the focused arc (DRIFT); advisory; T-4774"),
     ("BRANCH_AHEAD_WARN", "20", "Commits-ahead-of-origin threshold for the branch-hygiene ahead-unpushed WARN; measures the opposite direction to BRANCH_BEHIND_WARN — work committed locally and never pushed; fires on the dev branch only, WARN-only; T-3360"),
     ("BRANCH_STALE_DAYS", "30", "Days without a commit ON a branch before its behind-count may raise a branch-hygiene staleness finding; gates BRANCH_BEHIND_WARN so a busy master cannot make every healthy branch stale; T-3094"),
     # Release-train branch model (T-3185): DEV_BRANCH authors, RELEASE_BRANCH

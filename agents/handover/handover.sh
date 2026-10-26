@@ -958,6 +958,15 @@ if [ -f "$ARC_FOCUS_FILE" ]; then
             echo "## Current Arc"
             echo ""
             echo "**${cur_arc}** — ${arc_name} (${arc_status}, ${task_count} task(s))"
+            # T-4774: one WARNING line when the focus is old (AGE) or recent work
+            # is not in it (DRIFT). Same predicate as fw doctor.
+            _afh_days=$(fw_config ARC_FOCUS_STALE_DAYS 14 2>/dev/null || echo 14)
+            _afh_out=$(python3 "$FRAMEWORK_ROOT/lib/arc_focus_health.py" --project-root "$PROJECT_ROOT" --days "$_afh_days" 2>/dev/null | grep -E '^(AGE|DRIFT)\|' || true)
+            if [ -n "$_afh_out" ]; then
+                _afh_msgs=$(printf '%s\n' "$_afh_out" | cut -d'|' -f2 | paste -sd ';' - | sed 's/;/; /g')
+                echo ""
+                echo "**WARNING:** arc focus may be stale — ${_afh_msgs}. Re-confirm with \`fw arc focus ${cur_arc}\` (refreshes focused_at) or clear it with \`fw arc focus --clear\`."
+            fi
             echo ""
             echo "Run \`fw arc show ${cur_arc}\` for detail; \`fw arc focus --clear\` to drop focus."
             echo ""

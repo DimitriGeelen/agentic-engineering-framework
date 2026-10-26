@@ -3031,6 +3031,21 @@ PY
         esac
     done < <(printf '%s\n' "$_idx_out" | tail -n +2)
 
+    # Check: arc focus staleness (T-4774). Same predicate as the handover's
+    # ## Current Arc warning: AGE (focused_at too old) or DRIFT (recent work
+    # outside the focused arc). WARN-only; OK when fresh or no arc is focused.
+    if [ -f "$FRAMEWORK_ROOT/lib/arc_focus_health.py" ]; then
+        _afh_days=$(fw_config ARC_FOCUS_STALE_DAYS 14 2>/dev/null || echo 14)
+        while IFS='|' read -r _afh_verdict _afh_msg _afh_hint; do
+            case "$_afh_verdict" in
+                OK)        echo -e "  ${GREEN}OK${NC}  $_afh_msg" ;;
+                AGE|DRIFT) echo -e "  ${YELLOW}WARN${NC}  $_afh_msg"
+                           [ -n "$_afh_hint" ] && echo -e "         $_afh_hint"
+                           warnings=$((warnings + 1)) ;;
+            esac
+        done < <(python3 "$FRAMEWORK_ROOT/lib/arc_focus_health.py" --project-root "$PROJECT_ROOT" --days "$_afh_days" 2>/dev/null)
+    fi
+
     # Check: recall usage — the "Used" signal (T-3019, T-3005 slice 6a)
     #
     # The check above says the index is fresh. This one says whether anyone is
