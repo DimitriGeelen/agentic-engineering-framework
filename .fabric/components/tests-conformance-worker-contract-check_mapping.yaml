@@ -1,0 +1,21 @@
+id: tests/conformance/worker-contract/check_mapping.py
+name: check_mapping
+type: script
+subsystem: tests
+location: tests/conformance/worker-contract/check_mapping.py
+tags: []
+
+purpose: "Reader for an external backend's conformance mapping (T-4752)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-26
+created_by: unknown
