@@ -1,0 +1,15 @@
+#!/bin/bash
+# T-4782 FIXTURE — DATA ONLY. Allowed shapes: $VAR and ${VAR} expansion, escaped
+# \$( and \` (literal to bash), single-quoted python -c, and quoted heredocs.
+# Shell-level text outside the python string is not scanned: `echo hi` $(true)
+python3 -c "
+path = '$STATUS_FILE'
+root = '${PROJECT_ROOT}'
+note = 'literal \$(not run) and \`not run\`'
+print(path, root, note)
+"
+python3 -c 'print("`x` $(y)")'
+python3 - <<'PY'
+# `inside a quoted heredoc` $(also fine)
+print("ok")
+PY

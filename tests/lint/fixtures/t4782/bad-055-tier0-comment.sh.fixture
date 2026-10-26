@@ -1,0 +1,9 @@
+#!/bin/bash
+# T-4782 FIXTURE — DATA ONLY, NEVER EXECUTE. Reproduces 055's T-641 shape: a python
+# comment inside a double-quoted python3 -c block names a command in backticks.
+# Bash would run that command before python starts. The scanner must flag line 7.
+T0_CMD="$COMMAND" python3 -c "
+import os
+# never run `tmux kill-server` from here
+print(os.environ.get('T0_CMD', ''))
+" 2>/dev/null || true

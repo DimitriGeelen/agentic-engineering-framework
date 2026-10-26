@@ -925,8 +925,8 @@ fi
 APPROVAL_DIR="${APPROVAL_DIR:-$PROJECT_ROOT/.context/approvals}"
 mkdir -p "$APPROVAL_DIR" 2>/dev/null
 APPROVAL_YAML="$APPROVAL_DIR/pending-${COMMAND_HASH:0:12}.yaml"
-T0_RISK="$DESCRIPTION" T0_CMD="$COMMAND" T0_HASH="$COMMAND_HASH" T0_ROOT="$PROJECT_ROOT" T0_FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 -c "
-import yaml, sys, os, subprocess
+T0_RISK="$DESCRIPTION" T0_CMD="$COMMAND" T0_HASH="$COMMAND_HASH" T0_ROOT="$PROJECT_ROOT" T0_FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 - "$APPROVAL_YAML" 2>/dev/null <<'PY' || true
+import yaml, sys, os, subprocess, datetime
 
 # ── Provenance (T-3078) ─────────────────────────────────────────────────────
 # Derived in lib/tier0_origin.py, not here: the classification needs its own
@@ -947,7 +947,7 @@ def _origin():
         return {'kind': 'unknown'}
 
 data = {
-    'timestamp': '$(date -u +%Y-%m-%dT%H:%M:%SZ)',
+    'timestamp': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
     'type': 'tier0',
     'risk': os.environ.get('T0_RISK', ''),
     'command_preview': os.environ.get('T0_CMD', '')[:200],
@@ -961,7 +961,7 @@ tmp_path = sys.argv[1] + '.tmp'
 with open(tmp_path, 'w') as f:
     yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
 os.replace(tmp_path, sys.argv[1])
-" "$APPROVAL_YAML" 2>/dev/null || true
+PY
 
 # Push notification for Tier 0 block (T-709)
 if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then

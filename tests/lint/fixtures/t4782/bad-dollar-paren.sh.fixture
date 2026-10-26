@@ -1,0 +1,8 @@
+#!/bin/bash
+# T-4782 FIXTURE — DATA ONLY, NEVER EXECUTE. A $( inside the python body is
+# command substitution too. The scanner must flag line 6.
+python3 -c "
+import sys
+stamp = '$(date -u +%Y)'
+print(stamp)
+"
