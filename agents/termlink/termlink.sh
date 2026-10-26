@@ -1588,6 +1588,12 @@ if [ -z "${_FW_RUNTIME_ENV_CLEAN:-}" ]; then
     _DIRS=("$_FWB")
     for _K in claude termlink node "$(cat "$3/worker_bin" 2>/dev/null)"; do
         _K=$(command -v "$_K" 2>/dev/null) || continue
+        # T-4775: same rule as fw_spawn_path — an npm claude yields to the native ~/.local/bin one.
+        case "$_K" in */claude)
+            case "$(readlink -f "$_K" 2>/dev/null)" in */node_modules/@anthropic-ai/claude-code/*)
+                [ -n "${HOME:-}" ] && [ -x "$HOME/.local/bin/claude" ] && _DIRS+=("$HOME/.local/bin") ;;
+            esac ;;
+        esac
         case "$_K" in /*) _DIRS+=("${_K%/*}") ;; esac
     done
     [ -n "${HOME:-}" ] && _DIRS+=("$HOME/.local/bin" "$HOME/.cargo/bin")
@@ -1883,6 +1889,10 @@ else
         echo "FATAL: review worker binary not resolved to an absolute path" >> "$WDIR/stderr.log"
         CLAUDE_PID=""
     else
+        # T-4775: name the binary that actually runs, and its version — a stale claude on the
+        # constructed PATH was invisible after the fact.
+        _WB=$(command -v "$WORKER_BIN" 2>/dev/null || echo "$WORKER_BIN")
+        echo "worker binary: $_WB ($(timeout 20 "$_WB" --version 2>&1 < /dev/null | head -1))" >> "$WDIR/stderr.log"
         "$WORKER_BIN" -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $SETTING_SOURCES_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG $MCP_CONFIG_FLAG $STRICT_MCP_FLAG $ALLOWED_TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>>"$WDIR/stderr.log" &
         CLAUDE_PID=$!
     fi

@@ -37,6 +37,14 @@ fw_spawn_path() {
     _dirs+=("$fwbin")
     for _b in claude termlink node "$@"; do
         _b=$(command -v "$_b" 2>/dev/null) || continue
+        # T-4775: an npm-installed claude (the deprecated install, e.g. /usr/local/bin -> 2.1.27)
+        # yields to the native ~/.local/bin/claude when both exist; a caller PATH without
+        # ~/.local/bin otherwise ranked the stale one first. Any other caller-chosen claude wins.
+        case "$_b" in */claude)
+            case "$(readlink -f "$_b" 2>/dev/null)" in */node_modules/@anthropic-ai/claude-code/*)
+                [ -n "${HOME:-}" ] && [ -x "$HOME/.local/bin/claude" ] && _dirs+=("$HOME/.local/bin") ;;
+            esac ;;
+        esac
         case "$_b" in /*) _dirs+=("${_b%/*}") ;; esac
     done
     [ -n "${HOME:-}" ] && _dirs+=("$HOME/.local/bin" "$HOME/.cargo/bin")
