@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4761: Regression from T-4753: test_sidecar_rail_identity_t4311 lib.sidecar_cli entry point red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T09:45:37Z
+# ============================================================================
+
+task_id: T-4761
+task_name: "Regression from T-4753: test_sidecar_rail_identity_t4311 lib.sidecar_cli entry point red"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-26T09:32:21Z
+completed: 2026-10-26T09:45:16Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T10:37:59+01:00
+last_commit: 2026-10-26T10:37:59+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar_cli main installs the rail identity on argparse exit too — T-4753 reorder left --help without it (t4311 red); RCA
+
+# Key outcomes
+outcomes:
+  - 'Localised in the RCA: what the t4311 identity test passes for the `lib.sidecar_cli` entry point (argv3), and why T-4753''s guard refuses it. Classified as a stale test (its fixture sets a cwd/PROJECT_ROOT mismatch a real call would not) or a guard that is too broad'
+  - 'Fixed at the cause: either the test fixture runs the entry point from inside its own project, or the guard stops refusing that legitimate case. T-4753''s protection holds either way (`test_t4753_sidecar_stop_target_guard.py` 9/9)'
+  - '`test_sidecar_rail_identity_t4311.py` passes in full; the sidecar unit tests stay green; vendored copy in sync if vendored paths changed (`fw vendor self --check --task T-4761`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.tasks/active/T-4761-regression-from-t-4753-testsidecarrailid.md'
+  - 'lib/sidecar_cli.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T10:37:59'
+    action: 'T-4761: sidecar_cli main installs the rail identity on argparse exit too — T-4753 reorder left --help without it (t4311 red); RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 2
+  files_changed: 6
+  lines_added: 527
+  lines_removed: 7
+  footprint_refreshed_at: '2026-10-26T09:45:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4761-regression-from-t-4753-testsidecarrailid.md
+generated_by: context-agent-hybrid
