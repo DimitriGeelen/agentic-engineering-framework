@@ -6,6 +6,9 @@
 setup() {
     export PROJECT_ROOT="$BATS_TEST_TMPDIR/project"
     mkdir -p "$PROJECT_ROOT"
+    # T-4765: a real (minimal) project, or bin/fw discards PROJECT_ROOT and
+    # resolves the cwd's project instead: the live repo.
+    : > "$PROJECT_ROOT/.framework.yaml"
     FW="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)/bin/fw"
 }
 
@@ -19,7 +22,7 @@ setup() {
     run "$FW" ux shots T-4212 a=file:///tmp/a.html --plan-only
     [ "$status" -eq 0 ]
     [ "$(echo "$output" | wc -l)" -eq 3 ]
-    echo "$output" | grep -q '/.context/visual/T-4212/a@1024.png$'
+    echo "$output" | grep -qF "$PROJECT_ROOT/.context/visual/T-4212/a@1024.png"
     echo "$output" | grep -q '/.context/visual/T-4212/a@1440.png$'
     echo "$output" | grep -q '/.context/visual/T-4212/a@1920.png$'
 }
