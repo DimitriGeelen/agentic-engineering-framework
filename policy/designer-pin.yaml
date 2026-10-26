@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.29.0"
-sha256: "121db17a6a989051c8ada17a96ef091ae9664134cd754cc9870bb1a39e7f9a67"
-bytes: 1254629
+version: "0.30.0"
+sha256: "137810095a2a673bd543d16eab2cb6634b2ba0011f8afe5e2d9005c31cd1bcd6"
+bytes: 1261404
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.29.0.html"
-source_tag: "designer-v0.29.0"
+source_artifact: "dist/aef-workflow-designer-0.30.0.html"
+source_tag: "designer-v0.30.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -185,7 +185,9 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   No new endpoint; edits save via /api/save.
 # T-4780 (2026-10-26): re-pinned 0.28.0 -> 0.29.0 (832 announce 0bd386ad). io field editing (832 T-1302) and
 #   whole io names (T-1305). No new endpoint; edits save via /api/save.
-vendored_path: "vendor/designer/aef-workflow-designer-0.29.0.html"
+# T-4795 (2026-10-27): re-pinned 0.29.0 -> 0.30.0 (832 msg 97852295). Ref picker over GET /api/field-catalog (hidden
+#   while AEF does not serve it; T-4737) and the add-field order fix (832 T-1314). No new endpoint required.
+vendored_path: "vendor/designer/aef-workflow-designer-0.30.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
@@ -202,4 +204,4 @@ cdn_fonts: false
 # ever regresses this capability, flip back to false — the dual-form emit and
 # the lint gate reactivate automatically (T-2612 guard).
 resolves_workflow_ref: true
-notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority); 0.25.0: aef:io v1.1 read-only + lossless save, lens switch, labels off flows; 0.26.0: ?browse=1, legibility; 0.27.0: io panel shows producer ref + dataType; 0.28.0: io attributes editable; 0.29.0: io field editing, whole io names"
+notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority); 0.25.0: aef:io v1.1 read-only + lossless save, lens switch, labels off flows; 0.26.0: ?browse=1, legibility; 0.27.0: io panel shows producer ref + dataType; 0.28.0: io attributes editable; 0.29.0: io field editing, whole io names; 0.30.0: field-catalog ref picker, add-field order"

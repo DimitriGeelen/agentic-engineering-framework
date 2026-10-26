@@ -1232,6 +1232,21 @@ font-family: 'Outfit';
   textarea.io-attr-v { resize: none; overflow: hidden; field-sizing: content; min-height: 22px; line-height: 1.4;
                        white-space: pre-wrap; overflow-wrap: anywhere; display: block; }
   .io-ref-pick { grid-column: 2; margin-top: 2px; color: var(--text-dim); }
+  /* T-1312: the field-catalog picker under the ref field */
+  .io-cat { grid-column: 2; margin-top: 2px; display: grid; gap: 2px; min-width: 0; }
+  .io-cat-hits { display: grid; gap: 1px; min-width: 0; }
+  /* a choice, not a note: bordered like a button (T-1312 sweep: flat blocks read as information) */
+  .io-cat-hit { padding: 2px 6px; border-radius: 3px; cursor: pointer; min-width: 0; overflow-wrap: break-word;
+                border: 1px solid var(--border); background: var(--surface-2, rgba(127,127,127,0.08)); }
+  .io-cat-hit:hover { background: var(--accent-soft, rgba(127,127,127,0.2)); border-color: var(--accent); }
+  /* the notation on its own line, broken only after . : - (wbr); the label below it, broken at spaces */
+  .io-cat-n { display: block; font-family: var(--mono); font-size: 11px; color: var(--text); }
+  .io-cat-l { display: block; font-size: 11px; color: var(--text-dim); }
+  /* a search, not a value: dashed edge and a leading glyph */
+  input.io-cat-search { border-style: dashed; padding-left: 20px;
+                        background-repeat: no-repeat; background-position: 6px 50%; background-size: 10px;
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='4' cy='4' r='3' fill='none' stroke='%23888' stroke-width='1.3'/%3E%3Cpath d='M6.3 6.3L9.3 9.3' stroke='%23888' stroke-width='1.3'/%3E%3C/svg%3E"); }
+  .io-cat-more { font-size: 10px; color: var(--text-dim); padding: 1px 6px; }
   /* T-1302: the fields (aef:field children) of an io, in its editor */
   .io-fields { display: grid; gap: 5px; margin-top: 4px; padding-top: 5px; border-top: 1px dashed var(--border); }
   .io-field-row { display: grid; grid-template-columns: 86px minmax(0, 1fr); gap: 3px 6px; align-items: start; min-width: 0; }
@@ -7218,6 +7233,28 @@ async function loadLensDefinition() {
   if (typeof renderAll === 'function' && lensSpec()) renderAll();
   if (typeof renderProperties === 'function') renderProperties();
 }
+// T-1312: the project's field catalog (GET /api/field-catalog; greenfield's nid-attributes.json, format v1), for the ref
+// picker in the io editor. null = none (404, refused, standalone): the ref field stays free text, as before.
+let _fieldCatalog = null;
+async function loadFieldCatalog() {
+  try {
+    const r = await fetch('/api/field-catalog', { cache: 'no-store' });
+    const ct = (r.headers && r.headers.get && r.headers.get('content-type')) || '';
+    const d = (r.ok || /json/i.test(ct)) ? await r.json().catch(() => null) : null;
+    const rows = r.ok && d && d.ok && d.catalog && Array.isArray(d.catalog.attributes) ? d.catalog.attributes : null;
+    _fieldCatalog = rows && rows.length ? rows.filter(x => x && typeof x.ref === 'string' && x.ref.trim()) : null;
+  } catch (e) { _fieldCatalog = null; aefRecordFault('field-catalog:load', e); }
+  if (typeof renderProperties === 'function') renderProperties();
+}
+const IO_CAT_MAX = 8;   // hits listed at once; type more words to narrow
+function ioCatalogMatches(q) {   // every word of q in the row's notation, label or ref (case-insensitive)
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length || !_fieldCatalog) return [];
+  return _fieldCatalog.filter(x => {
+    const hay = [x.notation, x.label, x.ref].filter(v => typeof v === 'string').join(' ').toLowerCase();
+    return words.every(w => hay.includes(w));
+  });
+}
 
 // T-1124 (T-1118 B1): which selection has its empty Extensions fields opened (null = none).
 let _emptyFieldsRevealed = null;
@@ -8937,6 +8974,66 @@ function ioRefValues() {   // the ref values already used in the open map, for t
   }
   return Array.from(out).sort();
 }
+// T-1312: search the project's field catalog; a hit writes ref, and dataType only when the io has none (a producer's own
+// dataType is never overwritten). The hits are a list of buttons under the search field, not a datalist, so the notation
+// and the label both show and wrap (a datalist cannot ride the wrapping ref field, T-1301).
+const _ioCatQuery = new WeakMap();   // item -> the search text, so a re-render (a loader settling, an edit) keeps it
+function ioCatalogPicker(item) {
+  const box = document.createElement('div');
+  box.className = 'io-cat';
+  const s = document.createElement('input');
+  s.type = 'search';
+  s.className = 'io-name io-attr-v io-cat-search';
+  s.dataset.pick = 'catalog';
+  s.spellcheck = false;
+  s.placeholder = 'search catalog…';   // short: the longer one was cut at every width (T-1312 sweep)
+  s.title = 'search the project\'s field catalog (' + _fieldCatalog.length + ' attributes) by notation, label or ref; every word must match';
+  const list = document.createElement('div');
+  list.className = 'io-cat-hits';
+  const show = () => {
+    list.textContent = '';
+    const all = ioCatalogMatches(s.value);
+    for (const x of all.slice(0, IO_CAT_MAX)) {
+      const h = document.createElement('div');
+      h.className = 'io-cat-hit';
+      h.dataset.ref = x.ref;
+      h.title = x.ref + (x.dataType ? '\ndataType ' + x.dataType : '');
+      const n = document.createElement('span');
+      n.className = 'io-cat-n';
+      // break chances after . : - only, so sfdc:Opportunity.OwnerId breaks between its parts, never inside a name
+      (x.notation || x.ref).split(/(?<=[.:-])/).forEach((part, pi) => { if (pi) n.appendChild(document.createElement('wbr')); n.appendChild(document.createTextNode(part)); });
+      const l = document.createElement('span');
+      l.className = 'io-cat-l';
+      l.textContent = (x.label || '') + (x.dataType ? ' · ' + x.dataType : '');
+      h.append(n, l);
+      h.addEventListener('mousedown', e => e.preventDefault());   // keep the search field's focus until the click lands
+      h.addEventListener('click', () => {
+        _ioCatQuery.delete(item);   // picked: the search is done
+        let changed = ioSetAttr(item, 'ref', x.ref);
+        const has = (item.extra || []).some(([k, v]) => k === 'dataType' && v);
+        if (!has && x.dataType) changed = ioSetAttr(item, 'dataType', x.dataType) || changed;
+        if (changed) renderProperties();
+      });
+      list.appendChild(h);
+    }
+    if (all.length > IO_CAT_MAX) {
+      const more = document.createElement('div');
+      more.className = 'io-cat-more';
+      more.textContent = (all.length - IO_CAT_MAX) + ' more: type more words to narrow';
+      list.appendChild(more);
+    } else if (s.value.trim() && !all.length) {
+      const none = document.createElement('div');
+      none.className = 'io-cat-more';
+      none.textContent = 'no match in the catalog';
+      list.appendChild(none);
+    }
+  };
+  s.addEventListener('input', () => { if (s.value) _ioCatQuery.set(item, s.value); else _ioCatQuery.delete(item); show(); });
+  s.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+  box.append(s, list);
+  if (_ioCatQuery.has(item)) { s.value = _ioCatQuery.get(item); show(); }
+  return box;
+}
 function ioAttrsToggle(item, open) {
   const t = document.createElement('div');
   t.className = 'io-attrs-toggle' + (open ? ' open' : '');
@@ -8998,6 +9095,7 @@ function ioAttrsEditor(item, isInput) {
         pick.addEventListener('change', e => { if (e.target.value && ioSetAttr(item, 'ref', e.target.value)) renderProperties(); });
         row.appendChild(pick);
       }
+      if (_fieldCatalog) row.appendChild(ioCatalogPicker(item));   // T-1312
     }
     const pfx = ioUndeclaredPrefix(k, val);
     const hint = document.createElement('span');
@@ -9106,7 +9204,16 @@ function ioFieldsEditor(item) {
   add.className = 'io-add io-field-add';
   add.textContent = '+ add field';
   add.title = 'add a field to this input/output (aef:field); give it a path or a fieldRef';
-  add.onclick = () => { item.children = (item.children || []).concat(['<aef:field/>']); renderProperties(); };
+  // T-1314: with the fields, not at the end: after the last aef:field, or before the first other child (expect, example)
+  add.onclick = () => {
+    const kids = (item.children || []).slice();
+    const isField = x => { const el = v11ParseFragment([x])[0]; return !!el && el.namespaceURI === AEF_EXT_NS && el.localName === 'field'; };
+    let at = -1;
+    kids.forEach((x, j) => { if (isField(x)) at = j; });
+    kids.splice(at + 1, 0, '<aef:field/>');
+    item.children = kids;
+    renderProperties();
+  };
   sec.appendChild(add);
   return sec;
 }
@@ -11615,6 +11722,7 @@ async function detectSaveApi() {
       refreshUuidIndex();   // T-240: bind uuid workflowRefs to live maps at startup
       loadFieldProfile();   // T-1125: the project's field profile (404 = designer default)
       loadLensDefinition(); // T-1241: the audience lenses (404 = no lens, every field)
+      loadFieldCatalog();   // T-1312: the project's field catalog for the ref picker (404 = free text)
       // T-1282 (AEF T-4716): ?browse=1 opens the Open-project browser on load, so a host can
       // route its own "designer" page straight to it. Here, not at load, because the browser
       // needs the API this block just confirmed. ?load wins: a named document is opened instead.
@@ -13433,7 +13541,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.29.0';
+const APP_VERSION = '0.30.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
