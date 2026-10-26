@@ -362,6 +362,22 @@ Upgrade clean: 18 patches merged, doctor FAIL 2 before and 2 after, pages 200. N
 All upgrades clean (TermLink 22 changes, 3-way merge clean; ring20 18 patches, doctor FAIL 2/2; dimitri-mint-dev doctor
 0 failures). Not exercised yet: T-4722, T-4757, T-4762, T-4763, T-4764, T-4767, T-4768, T-4769.
 
+### be.24 / be.25 — TermLink, ring20 (recorded 2026-10-26, T-4771)
+
+| Fix | Project | Tip | Verdict | Msg |
+|---|---|---|---|---|
+| T-4762 | 010-termlink | be.24 | **WORKS**: `fw task review T-1899` passes the placeholder check (the folded-scalar code span is handled); closes the be.18 PARTIAL on T-4741 | ab078cd4 |
+| T-4763 | 010-termlink | be.24 | **WORKS**: the read-only grep with a code fence in single quotes, refused on 2026-10-26, now runs | ab078cd4 |
+| T-4751 | 010-termlink | be.24 | **WORKS**: `fw config set BOUNDARY_EXTRA_READ_PATHS /root/.cargo:/root/.rustup` passes the gate | ab078cd4 |
+| T-4730 | 010-termlink | be.24 | **WORKS** again: `dispatch --help` rc 0 | ab078cd4 |
+| T-4740 | 010-termlink | be.24 | holds: 42 files rewritten, all with real changes | ab078cd4 |
+| T-4757 | 010-termlink | be.24 | present (`settle-sent --help` prints usage), not exercised | ab078cd4 |
+| T-4769 | ring20 | be.25 | **WORKS on live data**: 10 uncommitted provenance rows (2026-10-19..21) left by the pre-T-4768 CLI decide; audit named 9 ticks "licensed only by UNCOMMITTED rows" with the remedy, verdict PASS; clean after their commit cb52e0f3c | 273b7156 |
+| T-4768 | ring20 | be.25 | tests pass from the tag clone (6 bats ok, 4 pytest); not exercised live (decide is their operator's act) | 273b7156 |
+
+TermLink be.24: rc 0, 21 changes, `lib/sidecar_cli.py` 3-way merged clean across T-4753/T-4757/T-4761, doctor rc 0. ring20 be.25: 38 preserved files and 18 patches intact, doctor FAIL 2 before and 2 after (both older than this release).
+Not exercised yet: T-4722, T-4757 (live), T-4764, T-4767, T-4768 (live).
+
 ## Full-suite comparison (HEAD eee888e61 vs v1.8.14)
 
 **Method, and what it does not cover.** T-4345 ran the whole unit corpus on two scratch trees side by side (jobs=6
