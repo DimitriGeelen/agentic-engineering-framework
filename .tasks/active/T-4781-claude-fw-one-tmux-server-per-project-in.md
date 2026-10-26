@@ -93,14 +93,14 @@ Scope, beyond the four asks in the description:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Failing tests first show today's sharing: two claude-fw wraps started from two different project roots use the same tmux socket (`-L fw-agents`); and the wrap runs `set-option -g`/`-s` on that shared server
-- [ ] bin/claude-fw derives a per-project socket name, `fw-agents-<16 hex of the T-3693 fw-project tag>` (the same project id `_fw_project_tag` already computes), and passes it to every tmux call it makes, including the three redraw hooks. Two project roots get two servers; the same root always gets the same one
-- [ ] Global options are set only on a server this project owns (a per-project socket), never on a server another project shares. A test pins that no `-g`/`-s` set-option targets a socket other than the project's own
-- [ ] lib/sidecar/inject.py finds this project's pane on the per-project socket (TMUX_SOCKETS, or the socket derived the same way), still checks the legacy `fw-agents` and the default server during the transition, and its existing tests (test_sidecar_tmux_route_t4003.py and siblings) are updated and green
-- [ ] Item (6) in ## Context (limit TMUX inheritance) is investigated. The outcome (done, or not done and why, naming what needs TMUX in the pane) is recorded in ## Decisions; nothing that relies on TMUX inside the pane is broken
-- [ ] `fw doctor` WARNs when one tmux server carries claude-fw sessions of more than one project (sessions named `fw-<dir>-<pid>`, or a pane's PROJECT_ROOT), and says OK otherwise. It never blocks
-- [ ] Discovery: `tmux -L fw-agents-<id> ls` lists the session under the same `fw-<dir>-<pid>` name as today, so the 055 cockpit and TermLink can find it by name. The socket naming rule is documented in a short comment in bin/claude-fw and in the T-4781 Decisions
-- [ ] tests: the existing claude-fw tmux tests (t4003, t4426, t4217) are updated to the new socket and stay green; new tests in tests/unit/t4781_per_project_tmux.bats; `timeout 900 bin/fw test invariants` passes; vendor in sync
+- [x] Failing tests first show today's sharing: two claude-fw wraps started from two different project roots use the same tmux socket (`-L fw-agents`); and the wrap runs `set-option -g`/`-s` on that shared server
+- [x] bin/claude-fw derives a per-project socket name, `fw-agents-<16 hex of the T-3693 fw-project tag>` (the same project id `_fw_project_tag` already computes), and passes it to every tmux call it makes, including the three redraw hooks. Two project roots get two servers; the same root always gets the same one
+- [x] Global options are set only on a server this project owns (a per-project socket), never on a server another project shares. A test pins that no `-g`/`-s` set-option targets a socket other than the project's own
+- [x] lib/sidecar/inject.py finds this project's pane on the per-project socket (TMUX_SOCKETS, or the socket derived the same way), still checks the legacy `fw-agents` and the default server during the transition, and its existing tests (test_sidecar_tmux_route_t4003.py and siblings) are updated and green
+- [x] Item (6) in ## Context (limit TMUX inheritance) is investigated. The outcome (done, or not done and why, naming what needs TMUX in the pane) is recorded in ## Decisions; nothing that relies on TMUX inside the pane is broken
+- [x] `fw doctor` WARNs when one tmux server carries claude-fw sessions of more than one project (sessions named `fw-<dir>-<pid>`, or a pane's PROJECT_ROOT), and says OK otherwise. It never blocks
+- [x] Discovery: `tmux -L fw-agents-<id> ls` lists the session under the same `fw-<dir>-<pid>` name as today, so the 055 cockpit and TermLink can find it by name. The socket naming rule is documented in a short comment in bin/claude-fw and in the T-4781 Decisions
+- [x] tests: the existing claude-fw tmux tests (t4003, t4426, t4217) are updated to the new socket and stay green; new tests in tests/unit/t4781_per_project_tmux.bats; `timeout 900 bin/fw test invariants` passes; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
