@@ -88,7 +88,7 @@ bvp_scores_proposed:
 - [x] Localised in the RCA: where `lib/shell_write_scan.py` decides a command "does not tokenise (unbalanced quote)", and why a backtick inside single quotes trips it
 - [x] A backtick (one or three) inside single quotes is literal: a read-only `grep` over `.tasks/` whose single-quoted pattern contains a code fence passes the Bash leg of `check-human-ac-tick`, as does a `fw sidecar send --body '…'` quoting one
 - [x] Real command substitution is still scanned: backticks bare or inside double quotes, and `$(…)`, are judged as today (the T-3695 "command substitution inside double quotes is scanned" test stays green)
-- [ ] Bats add the TermLink shape (single-quoted triple backtick in a grep over task files) as an allow case, plus a double-quoted-backtick write as a still-refused case; t3695 and the shell_write_scan tests stay green; vendored copy in sync (`fw vendor self --check --task T-4763`)
+- [x] Bats add the TermLink shape (single-quoted triple backtick in a grep over task files) as an allow case, plus a double-quoted-backtick write as a still-refused case; t3695 and the shell_write_scan tests stay green; vendored copy in sync (`fw vendor self --check --task T-4763`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
