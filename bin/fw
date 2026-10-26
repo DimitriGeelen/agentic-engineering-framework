@@ -277,6 +277,21 @@ if [ -n "${PROJECT_ROOT:-}" ] && [ ! -e "$PROJECT_ROOT" ] && \
     exit 2
 fi
 
+# T-4756: remember an inherited root that is not a project, so its replacement below
+# can be named on stderr. The $HOME / passwd-home poison (T-2391) stays silent: every
+# tmux-spawned shell carries it. `fw hook` stays silent too (runs on every tool call).
+_t4756_inherited=""
+if [ -n "${PROJECT_ROOT:-}" ] && [ "${1:-}" != "hook" ] && \
+   { [ ! -d "$PROJECT_ROOT" ] || { [ ! -f "$PROJECT_ROOT/.framework.yaml" ] && [ ! -d "$PROJECT_ROOT/.tasks" ]; }; }; then
+    _t4756_canon=$(cd "$PROJECT_ROOT" 2>/dev/null && pwd -P) || _t4756_canon="$PROJECT_ROOT"
+    _t4756_home=$(cd "${HOME:-/nonexistent}" 2>/dev/null && pwd -P) || _t4756_home=""
+    _passwd_home_canon
+    if [ "$_t4756_canon" != "$_t4756_home" ] && [ "$_t4756_canon" != "$_FW_PASSWD_HOME" ]; then
+        _t4756_inherited="$PROJECT_ROOT"
+    fi
+    unset _t4756_canon _t4756_home
+fi
+
 # Resolve PROJECT_ROOT
 if [ -z "${PROJECT_ROOT:-}" ] || _project_root_is_stale "${PROJECT_ROOT:-}"; then
     # T-2390: prefer CLAUDE_PROJECT_DIR when set + valid. Claude Code exports it
@@ -347,6 +362,10 @@ if [ -z "${PROJECT_ROOT:-}" ] || _project_root_is_stale "${PROJECT_ROOT:-}"; the
         fi
     fi
 fi
+if [ -n "$_t4756_inherited" ] && [ -n "${PROJECT_ROOT:-}" ] && [ "$PROJECT_ROOT" != "$_t4756_inherited" ]; then
+    echo "fw: inherited PROJECT_ROOT=$_t4756_inherited ignored (not a project); using $PROJECT_ROOT" >&2
+fi
+unset _t4756_inherited
 
 # T-3285 (OBS-370): a VALID inherited PROJECT_ROOT can still be the WRONG one.
 # An outer fw process exports PROJECT_ROOT + _FW_PATHS_DERIVED_BY (lib/paths.sh);
