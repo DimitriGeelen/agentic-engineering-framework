@@ -428,6 +428,53 @@ if _human_ticked and len(sys.argv) > 3 and sys.argv[2]:
 PYTICK
 }
 
+# T-4768: commit a CLI decision with its own paths — the task file (both sides of the
+# active→completed move), its episodic, and the Human-tick ledger tick_inception_decide_acs
+# appended to. Mirrors web/blueprints/inception.py:_commit_decision (T-4590 put the ledger
+# in _is_decision_file): left uncommitted, the main checkout's audit read the row from the
+# working tree, and every clean checkout FAILed the decided tick as unprovenanced (055).
+# `git commit --only -- <paths>` takes only these paths; other staged work stays staged.
+# Graceful: a commit failure warns with the command to run, never fails the decision.
+_commit_cli_decision() {
+    local task_id="$1" decision_upper="$2" base="$3"
+    local top
+    top=$(git -C "$PROJECT_ROOT" rev-parse --show-toplevel 2>/dev/null) || return 0
+    [ "$(cd "$top" && pwd -P)" = "$(cd "$PROJECT_ROOT" && pwd -P)" ] || return 0
+    git -C "$PROJECT_ROOT" rev-parse --verify -q HEAD >/dev/null || return 0
+
+    local p candidates=() known=() addable=()
+    candidates=(".tasks/active/$base" ".tasks/completed/$base" ".context/reviews/human-ac-ticks.jsonl")
+    for p in "$PROJECT_ROOT"/.context/episodic/"$task_id".yaml "$PROJECT_ROOT"/.context/episodic/"$task_id"-*.yaml; do
+        [ -e "$p" ] && candidates+=("${p#"$PROJECT_ROOT"/}")
+    done
+    for p in "${candidates[@]}"; do
+        if [ -e "$PROJECT_ROOT/$p" ]; then
+            known+=("$p"); addable+=("$p")
+        elif git -C "$PROJECT_ROOT" cat-file -e "HEAD:$p" 2>/dev/null || \
+             git -C "$PROJECT_ROOT" ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then
+            known+=("$p")
+        fi
+    done
+    [ "${#known[@]}" -gt 0 ] || return 0
+
+    local _msg="$task_id: inception decision $decision_upper"
+    if [ "${#addable[@]}" -gt 0 ] && ! git -C "$PROJECT_ROOT" add -- "${addable[@]}" 2>/dev/null; then
+        echo -e "${YELLOW}WARN: decision recorded but not committed (git add failed). Commit it with:${NC}" >&2
+        echo "  cd $PROJECT_ROOT && git add -- ${addable[*]} && git commit -m \"$_msg\" -- ${known[*]}" >&2
+        return 0
+    fi
+    # Already committed (nothing of ours differs from HEAD): nothing to do.
+    if git -C "$PROJECT_ROOT" diff --cached --quiet HEAD -- "${known[@]}" 2>/dev/null; then
+        return 0
+    fi
+    if git -C "$PROJECT_ROOT" commit -q --only -m "$_msg" -- "${known[@]}" >/dev/null 2>&1; then
+        echo "Committed: $_msg"
+    else
+        echo -e "${YELLOW}WARN: decision recorded but not committed. Commit it with:${NC}" >&2
+        echo "  cd $PROJECT_ROOT && git commit --only -m \"$_msg\" -- ${known[*]}" >&2
+    fi
+}
+
 do_inception_decide() {
     local task_id="${1:-}"
     local decision="${2:-}"
@@ -900,6 +947,10 @@ EOF
 
     # Clean up review marker (T-973)
     rm -f "$PROJECT_ROOT/.context/working/.reviewed-$task_id" 2>/dev/null || true
+
+    # T-4768: commit the decision with its Human-tick provenance row. Watchtower's decide
+    # runner (web/decide_runner.py) commits through _commit_decision itself, so skip there.
+    [ "$from_watchtower" = true ] || _commit_cli_decision "$task_id" "$decision_upper" "$(basename "$task_file")"
 
     echo ""
     echo -e "${GREEN}Inception decision recorded${NC}"
