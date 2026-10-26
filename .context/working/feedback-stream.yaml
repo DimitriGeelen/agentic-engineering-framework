@@ -49327,3 +49327,75 @@ scan_id: R-a7c85376
 task_id: T-4780
 payload:
   task_file: .tasks/active/T-4780-repin-designer-to-0290-io-field-editing-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T22:03:16Z'
+scan_id: R-bb98fca7
+task_id: T-4776
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T22:03:16Z'
+scan_id: R-bb98fca7
+task_id: T-4776
+payload:
+  task_file: .tasks/active/T-4776-dispatch-watchdog-sends-only-sigterm-a-t.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T22:05:00Z'
+scan_id: R-77360df6
+task_id: T-4777
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T22:05:00Z'
+scan_id: R-77360df6
+task_id: T-4777
+payload:
+  task_file: .tasks/active/T-4777-update-tasksh-archive-git-add-stages-int.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T22:05:54Z'
+scan_id: R-17d4e56e
+task_id: T-4778
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T22:05:54Z'
+scan_id: R-17d4e56e
+task_id: T-4778
+payload:
+  task_file: .tasks/active/T-4778-reviewer-auto-tick-fires-on-an-empty-sta.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T22:10:02Z'
+scan_id: R-27435632
+task_id: T-4779
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T22:10:02Z'
+scan_id: R-27435632
+task_id: T-4779
+payload:
+  task_file: .tasks/active/T-4779-verdict-ledger-stale-review-withdraws-ev.md

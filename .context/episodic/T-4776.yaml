@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4776: Dispatch watchdog sends only SIGTERM: a timed-out worker that ignores TERM keeps running past its timeout
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T22:04:08Z
+# ============================================================================
+
+task_id: T-4776
+task_name: "Dispatch watchdog sends only SIGTERM: a timed-out worker that ignores TERM keeps running past its timeout"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T15:32:58Z
+completed: 2026-10-26T22:02:37Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T22:58:50+01:00
+last_commit: 2026-10-26T22:58:50+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  run.sh kill watchdog escalates TERM -> KILL after a grace period; timeout recorded in close_state
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first reproduces the bug: a stub worker that traps and ignores SIGTERM is still alive after the run.sh watchdog fires on a short timeout'
+  - 'All three watchdog sites in the run.sh heredoc (agents/termlink/termlink.sh: LOOP_PID, HARNESS_PID, CLAUDE_PID) send SIGTERM, wait a short grace period (a named constant, about 10 s), then send SIGKILL if the process is still alive. TIMEOUT is written once, and the SIGKILL escalation is logged to stderr.log'
+  - 'After a timeout, exit_code is written and the worker no longer shows as ACTIVE in `fw termlink cleanup --dry-run`'
+  - 'New tests in tests/unit/t4776_watchdog_sigkill.bats pass; existing dispatch/run.sh tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — one helper vs three patched one-liners'
+    chose: 'a single `_fw_watchdog` function in the run.sh template between T-4776 markers, called at all three sites.'
+    rationale: 'with one helper the grace/KILL logic cannot drift between sites, and the bats test can extract and run the real code (the house style used by t3440).'
+    alternatives_rejected: ['patching the three inline one-liners, which would leave three copies that are untestable in isolation. Signalling the whole process group instead, which is a wider behaviour change: the subshell/sudo children of the LOOP and antigravity sites are a separate question.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.tasks/active/T-4776-dispatch-watchdog-sends-only-sigterm-a-t.md'
+  - 'agents/termlink/termlink.sh'
+  - 'tests/unit/t4776_watchdog_sigkill.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T22:58:50'
+    action: 'T-4776: run.sh kill watchdog escalates TERM -> KILL after a grace period; timeout recorded in close_state'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 389 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 389
+  commits: 2
+  files_changed: 7
+  lines_added: 786
+  lines_removed: 11
+  footprint_refreshed_at: '2026-10-26T22:11:22Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4776-dispatch-watchdog-sends-only-sigterm-a-t.md
+generated_by: context-agent-hybrid
