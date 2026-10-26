@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4780: Repin designer to 0.29.0 (io field editing, whole io names)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T21:44:59Z
+# ============================================================================
+
+task_id: T-4780
+task_name: "Repin designer to 0.29.0 (io field editing, whole io names)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-26T16:30:04Z
+completed: 2026-10-26T21:44:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T17:34:06+01:00
+last_commit: 2026-10-26T17:34:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  re-pin designer 0.28.0 -> 0.29.0 (832 announce 0bd386ad; io field editing, whole io names); pulled by tag, sha256 verified against MANIFEST and pin
+
+# Key outcomes
+outcomes:
+  - '`policy/designer-pin.yaml` names 0.29.0: version, sha256 121db17a6a989051c8ada17a96ef091ae9664134cd754cc9870bb1a39e7f9a67, bytes 1254629, tag designer-v0.29.0, artifact and vendored_path, with a dated T-4780 history line'
+  - '`fw designer sync --from-tag designer-v0.29.0` exits 0 (sha256 matches the MANIFEST at the tag and the pin), and `vendor/designer/aef-workflow-designer-0.29.0.html` is installed; the consumer copy holds only 0.29.0'
+  - '`/designer/app` serves 0.29.0 (HTTP 200, body contains 0.29.0); `tests/web/test_lens_definition.py` passes'
+  - 'Vendored copy in sync (`fw vendor self --check --task T-4780`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.29.0.html'
+  - '.tasks/active/T-4780-repin-designer-to-0290-io-field-editing-.md'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.29.0.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T17:34:06'
+    action: 'T-4780: re-pin designer 0.28.0 -> 0.29.0 (832 announce 0bd386ad; io field editing, whole io names); pulled by tag, sha256 verified against MANIFEST and pin'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 314 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 314
+  commits: 2
+  files_changed: 7
+  lines_added: 15779
+  lines_removed: 25
+  footprint_refreshed_at: '2026-10-26T21:45:35Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4780-repin-designer-to-0290-io-field-editing-.md
+generated_by: context-agent-hybrid
