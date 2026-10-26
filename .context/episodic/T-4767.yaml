@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4767: Re-pin designer 0.27.0 -> 0.28.0 (832 announce 4cd11df7)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T11:09:53Z
+# ============================================================================
+
+task_id: T-4767
+task_name: "Re-pin designer 0.27.0 -> 0.28.0 (832 announce 4cd11df7)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-26T11:07:22Z
+completed: 2026-10-26T11:09:27Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T12:09:25+01:00
+last_commit: 2026-10-26T12:09:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  re-pin designer 0.27.0 -> 0.28.0 (832 announce 4cd11df7, commit 7eb864d4; io attributes editable); pulled by tag, sha256 verified against MANIFEST and pin
+
+# Key outcomes
+outcomes:
+  - '`policy/designer-pin.yaml` names 0.28.0: version, sha256 f8c5e15f…aade45fb, bytes 1246384, tag designer-v0.28.0, artifact and vendored_path, with a dated T-4767 history line'
+  - '`fw designer sync --from-tag designer-v0.28.0` exits 0 (sha256 matches the MANIFEST at the tag and the pin), and `vendor/designer/aef-workflow-designer-0.28.0.html` is installed. Older builds stay in `vendor/designer/`; the consumer copy holds only 0.28.0'
+  - '`/designer/app` serves 0.28.0 (HTTP 200, body contains 0.28.0); `tests/web/test_lens_definition.py` passes'
+  - 'Vendored copy in sync (`fw vendor self --check --task T-4767`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.28.0.html'
+  - '.tasks/active/T-4767-re-pin-designer-0270---0280-832-announce.md'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.28.0.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T12:09:25'
+    action: 'T-4767: re-pin designer 0.27.0 -> 0.28.0 (832 announce 4cd11df7, commit 7eb864d4; io attributes editable); pulled by tag, sha256 verified against MANIFEST and pin'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 8
+  lines_added: 15704
+  lines_removed: 26
+  footprint_refreshed_at: '2026-10-26T11:10:05Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4767-re-pin-designer-0270---0280-832-announce.md
+generated_by: context-agent-hybrid

@@ -49129,3 +49129,21 @@ scan_id: R-19da8d77
 task_id: T-4752
 payload:
   task_file: .tasks/active/T-4752-shared-worker-contract-machine-readable-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T11:09:35Z'
+scan_id: R-f78d26fb
+task_id: T-4767
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T11:09:35Z'
+scan_id: R-f78d26fb
+task_id: T-4767
+payload:
+  task_file: .tasks/active/T-4767-re-pin-designer-0270---0280-832-announce.md
