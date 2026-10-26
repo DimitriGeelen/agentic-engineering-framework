@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4781: claude-fw: one tmux server per project instead of the shared -L fw-agents
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T22:46:00Z
+# ============================================================================
+
+task_id: T-4781
+task_name: "claude-fw: one tmux server per project instead of the shared -L fw-agents"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T21:43:02Z
+completed: 2026-10-26T22:45:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T23:39:46+01:00
+last_commit: 2026-10-26T23:41:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw runs one tmux server per project (fw-agents-<project id>), sidecar finds it, doctor WARNs on a shared server. tick Agent ACs (wrap/sidecar/doctor tests green, invariants green, vendor in sync)
+
+# Key outcomes
+outcomes:
+  - 'Failing tests first show today''s sharing: two claude-fw wraps started from two different project roots use the same tmux socket (`-L fw-agents`); and the wrap runs `set-option -g`/`-s` on that shared server'
+  - 'bin/claude-fw derives a per-project socket name, `fw-agents-<16 hex of the T-3693 fw-project tag>` (the same project id `_fw_project_tag` already computes), and passes it to every tmux call it makes, including the three redraw hooks. Two project roots get two servers; the same root always gets the same one'
+  - 'Global options are set only on a server this project owns (a per-project socket), never on a server another project shares. A test pins that no `-g`/`-s` set-option targets a socket other than the project''s own'
+  - 'lib/sidecar/inject.py finds this project''s pane on the per-project socket (TMUX_SOCKETS, or the socket derived the same way), still checks the legacy `fw-agents` and the default server during the transition, and its existing tests (test_sidecar_tmux_route_t4003.py and siblings) are updated and green'
+  - 'Item (6) in ## Context (limit TMUX inheritance) is investigated. The outcome (done, or not done and why, naming what needs TMUX in the pane) is recorded in ## Decisions; nothing that relies on TMUX inside the pane is broken'
+  - '`fw doctor` WARNs when one tmux server carries claude-fw sessions of more than one project (sessions named `fw-<dir>-<pid>`, or a pane''s PROJECT_ROOT), and says OK otherwise. It never blocks'
+  - 'Discovery: `tmux -L fw-agents-<id> ls` lists the session under the same `fw-<dir>-<pid>` name as today, so the 055 cockpit and TermLink can find it by name. The socket naming rule is documented in a short comment in bin/claude-fw and in the T-4781 Decisions'
+  - 'tests: the existing claude-fw tmux tests (t4003, t4426, t4217) are updated to the new socket and stay green; new tests in tests/unit/t4781_per_project_tmux.bats; `timeout 900 bin/fw test invariants` passes; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — socket naming rule'
+    chose: '`tmux -L fw-agents-<16 hex>`, where the hex is the T-3693 fw-project id (sha256 of the realpath project root, the same walk `_fw_project_tag` and `lib/sidecar/inject.py project_tag()` do). bin/claude-fw `_cfw_tmux_socket` and inject.py `tmux_socket()` derive it independently; a bats case pins them equal. The session name stays `fw-<dir>-<pid>`, so the 055 cockpit and TermLink find it by name; `tmux -L fw-agents-<id> ls` lists it. Started by the wrapper after its T-4636 scope re-exec, so the server lives in the scope of the project''s own first wrap.'
+    rationale: 'the id already exists, is stable per root, collision-free in practice, and both sides compute it without config. `-L` keeps the socket in the user''s tmux dir, where `tmux -L` discovery and the doctor scan look.'
+    alternatives_rejected: ['`-S <project runtime dir>/tmux.sock` — an unfamiliar path for attach (`tmux -S …`), and per-project runtime dirs differ between consumers; `-L fw-agents-<dirname>` — two projects with the same basename would share again.']
+  - decision: '2026-10-26 — item (6), limit TMUX inheritance: NOT done'
+    chose: 'keep `$TMUX` in the pane. With one server per project, a bare `tmux kill-server` issued from a pane now ends only that project''s server. - **Why (what needs TMUX in the pane):** (a) `fw termlink dispatch` workers inherit TMUX through the spawn allow-list (lib/spawn-env.sh, agents/termlink/termlink.sh run.sh) and land on the wrapper''s own server — the T-4049 destroy-unattached scoping exists because of exactly that; (b) Claude Code itself reads `$TMUX` for terminal detection (passthrough, key handling); (c) unsetting it does not remove the hazard — a bare `tmux kill-server` without TMUX targets the DEFAULT server, which holds the fleet panes and the operator''s own tmux, so it would move the blast radius, not remove it. (lib/sidecar/inject.py does not need TMUX: it queries named sockets.)'
+    alternatives_rejected: ['`env -u TMUX` for claude inside the wrap — see (c). A command-level gate on bare kill-server is the right control and is filed as T-4783.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/doctor-tmux.sh'
+  - '.agentic-framework/lib/sidecar/inject.py'
+  - '.fabric/components/lib-doctor-tmux.yaml'
+  - '.tasks/active/T-4781-claude-fw-one-tmux-server-per-project-in.md'
+  - 'bin/claude-fw'
+  - 'bin/fw'
+  - 'lib/doctor-tmux.sh'
+  - 'lib/sidecar/inject.py'
+  - 'tests/unit/t4003_claude_fw_tmux_wrap.bats'
+  - 'tests/unit/t4217_spawn_env_isolation.bats'
+  - 'tests/unit/t4426_claude_fw_tmux_redraw.bats'
+  - 'tests/unit/t4781_per_project_tmux.bats'
+  - 'tests/unit/test_sidecar_tmux_route_t4003.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T23:39:46'
+    action: 'T-4781: claude-fw runs one tmux server per project (fw-agents-<project id>), sidecar finds it, doctor WARNs on a shared server'
+  - time: '2026-10-26T23:41:18'
+    action: 'T-4781: tick Agent ACs (wrap/sidecar/doctor tests green, invariants green, vendor in sync)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 62 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 62
+  commits: 3
+  files_changed: 18
+  lines_added: 946
+  lines_removed: 77
+  footprint_refreshed_at: '2026-10-26T22:46:33Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4781-claude-fw-one-tmux-server-per-project-in.md
+generated_by: context-agent-hybrid
