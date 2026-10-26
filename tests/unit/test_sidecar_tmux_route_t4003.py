@@ -9,6 +9,7 @@ The target is found from the agent's own claude pid → the tty it reads:
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -86,7 +87,9 @@ def test_c2_delivery_types_the_fixed_line_by_pane_id_then_enter(proj, monkeypatc
     rep = inject._deliver_locked("test", r)
     assert rep["injected"] == ["m-1"] and rep["route"] == "tmux", rep
     assert r.typed[0][:5] == ["tmux", "send-keys", "-t", "%9", "-l"]
-    assert r.typed[0][5] == inject.injection_line(["m-1"])          # no peer content
+    # no peer content (T-4773: the line carries its typed minute, so compare without it)
+    _untimed = lambda s: re.sub(r", typed \S+?\)", ")", s)
+    assert _untimed(r.typed[0][5]) == _untimed(inject.injection_line(["m-1"]))
     assert r.typed[1] == ["tmux", "send-keys", "-t", "%9", "Enter"]
 
 

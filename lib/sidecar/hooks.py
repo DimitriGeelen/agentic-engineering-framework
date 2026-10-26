@@ -310,6 +310,13 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     # T-3872: the same predicate gates the injector (seen.withheld).
     from . import seen as seen_mod
     held = seen_mod.withheld(ids)
+    # T-4773: before anything is marked shown, so mail surfaced below is not
+    # mistaken for mail that was already handled.
+    try:
+        stale = _stale_doorbell(hook_input.get("prompt"))
+    except Exception:
+        _log_error("stale_doorbell")
+        stale = None
     by_id: dict[str, dict] = {}
     for i in ids:
         m = receiver.read_message(i)
@@ -320,13 +327,19 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     order = sorted(by_id, key=lambda i: (not by_id[i].get("urgent"),
                                          str(by_id[i].get("_stored_at") or ""), i))
     if not order:
+        if stale:
+            out.write(json.dumps({"hookSpecificOutput": {
+                "hookEventName": "UserPromptSubmit",
+                "additionalContext": stale,
+            }}) + "\n")
+            out.flush()
         return []
     surfacing = secrets.token_hex(16)
     messages, frame = _fit([by_id[i] for i in order], surfacing)
     surfaced = [str(m.get("client_msg_id")) for m in messages]
     out.write(json.dumps({"hookSpecificOutput": {
         "hookEventName": "UserPromptSubmit",
-        "additionalContext": frame,
+        "additionalContext": f"{stale}\n\n{frame}" if stale else frame,
     }}) + "\n")
     out.flush()
     try:
@@ -347,6 +360,41 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
             env=dict(os.environ, PROJECT_ROOT=str(receiver._root())),
             start_new_session=True)
     return surfaced
+
+
+def _stale_doorbell(prompt_text) -> str | None:
+    """T-4773: Claude Code can resubmit the typed doorbell line as the last
+    prompt after a compact/restore. When the submitted prompt IS a doorbell,
+    name the ids in it that are already handled (handed over, dropped, or
+    withheld: answered / shown) and when the receiver ledger saw that, so the
+    agent does not spend a turn looking for mail that is gone. Ids that match
+    no stored message are not named: unknown is not handled."""
+    parsed = inject.parse_doorbell(prompt_text)
+    if not parsed:
+        return None
+    shorts, typed = parsed
+    from . import seen as seen_mod
+    stored = sorted(p.stem for p in receiver._messages_dir().glob("*.json"))
+    handled_shorts: list[str] = []
+    handled_ids: set[str] = set()
+    for short in dict.fromkeys(shorts):
+        matches = [m for m in stored if inject.short_id(m) == short]
+        if not matches:
+            continue
+        open_ = [m for m in matches if not receiver.is_message_handed_over(m)
+                 and not (receiver._messages_dir() / f"{m}.dropped").exists()]
+        if open_ and len(seen_mod.withheld(open_)) < len(open_):
+            continue
+        handled_shorts.append(short)
+        handled_ids.update(matches)
+    if not handled_shorts:
+        return None
+    rows = [r for r in receiver.read_events() if r.get("msg_id") in handled_ids and r.get("ts")]
+    done = [r["ts"] for r in rows if r.get("event") == receiver.HANDED_OVER]
+    when = max(done or [r["ts"] for r in rows] or ["an unrecorded time"])
+    return (f"stale doorbell: ids {' '.join(handled_shorts)} already handled at {when} — "
+            f"this prompt is a replay of the sidecar line"
+            f"{f' typed {typed}' if typed else ''}; no peer mail is waiting for these ids (T-4773)")
 
 
 def _unconfirmed_ids() -> set[str]:
