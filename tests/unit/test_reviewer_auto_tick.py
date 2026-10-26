@@ -1,6 +1,9 @@
 """Tests for v1.5 auto-tick [REVIEWER] Agent ACs (T-1985).
 
 Covers all 9 sovereignty test cases plus helpers.
+
+T-4778: a positive case must name a check the scan ran (a SCANNED_PATTERN_IDS
+id, here `tautology`) — an empty findings list alone no longer ticks.
 """
 
 from __future__ import annotations
@@ -105,28 +108,28 @@ def test_feedback_stream_has_tick_false_no_file(tmp_path):
 
 def test_should_auto_tick_positive():
     """(a) tick fires on clean PASS + [REVIEWER] Agent AC."""
-    ac = _make_parsed_ac("[REVIEWER] static check passes")
+    ac = _make_parsed_ac("[REVIEWER] static check passes: no findings on tautology")
     result = ss._should_auto_tick(ac, findings=[], task_overrides=[], verdict_overall="PASS")
     assert result is True
 
 
 def test_should_auto_tick_no_tick_on_fail_verdict():
     """(b) no tick on FAIL verdict."""
-    ac = _make_parsed_ac("[REVIEWER] static check passes")
+    ac = _make_parsed_ac("[REVIEWER] static check passes: no findings on tautology")
     result = ss._should_auto_tick(ac, findings=[], task_overrides=[], verdict_overall="FAIL")
     assert result is False
 
 
 def test_should_auto_tick_no_tick_on_concern_verdict():
     """(b-variant) no tick on CONCERN verdict."""
-    ac = _make_parsed_ac("[REVIEWER] static check passes")
+    ac = _make_parsed_ac("[REVIEWER] static check passes: no findings on tautology")
     result = ss._should_auto_tick(ac, findings=[], task_overrides=[], verdict_overall="CONCERN")
     assert result is False
 
 
 def test_should_auto_tick_no_tick_with_matching_finding():
     """(c) no tick on AC with matching ac_index finding."""
-    ac = _make_parsed_ac("[REVIEWER] static check passes", ac_index=2, ac_subhead="Agent")
+    ac = _make_parsed_ac("[REVIEWER] static check passes: no findings on tautology", ac_index=2, ac_subhead="Agent")
     finding = ss.Finding(
         pattern_id="tautology",
         pattern_name="Tautological verification",
@@ -136,7 +139,7 @@ def test_should_auto_tick_no_tick_with_matching_finding():
         evidence="true",
         ac_index=2,
         ac_subhead="Agent",
-        ac_text="[REVIEWER] static check passes",
+        ac_text="[REVIEWER] static check passes: no findings on tautology",
     )
     result = ss._should_auto_tick(ac, findings=[finding], task_overrides=[], verdict_overall="PASS")
     assert result is False
@@ -151,7 +154,7 @@ def test_should_auto_tick_no_tick_already_ticked():
 
 def test_should_auto_tick_no_tick_with_active_suppress_override():
     """(e) no tick when suppress override targets the AC."""
-    ac = _make_parsed_ac("[REVIEWER] check", ac_index=1)
+    ac = _make_parsed_ac("[REVIEWER] check: no findings on tautology", ac_index=1)
     override = _make_override("T-0001", ac_index=1, expired=False)
     result = ss._should_auto_tick(ac, findings=[], task_overrides=[override], verdict_overall="PASS")
     assert result is False
@@ -159,7 +162,7 @@ def test_should_auto_tick_no_tick_with_active_suppress_override():
 
 def test_should_auto_tick_expired_override_does_not_block():
     """(e-expired) expired override is ignored — tick fires."""
-    ac = _make_parsed_ac("[REVIEWER] check", ac_index=1)
+    ac = _make_parsed_ac("[REVIEWER] check: no findings on tautology", ac_index=1)
     override = _make_override("T-0001", ac_index=1, expired=True)
     result = ss._should_auto_tick(ac, findings=[], task_overrides=[override], verdict_overall="PASS")
     assert result is True
@@ -167,7 +170,7 @@ def test_should_auto_tick_expired_override_does_not_block():
 
 def test_should_auto_tick_wildcard_override_does_not_block():
     """(e-wildcard) ac_index=None override suppresses findings but must NOT block ticking a specific AC."""
-    ac = _make_parsed_ac("[REVIEWER] check", ac_index=1)
+    ac = _make_parsed_ac("[REVIEWER] check: no findings on tautology", ac_index=1)
     # Wildcard override (None) suppresses a pattern for the whole task, not a specific AC
     wildcard_override = _make_override("T-0001", ac_index=None, expired=False)
     result = ss._should_auto_tick(ac, findings=[], task_overrides=[wildcard_override], verdict_overall="PASS")
@@ -190,9 +193,9 @@ def test_should_auto_tick_no_tick_review_prefix():
 
 def test_should_auto_tick_finding_on_different_ac_does_not_block():
     """Finding on ac_index=3 must not block ac_index=1."""
-    ac = _make_parsed_ac("[REVIEWER] check", ac_index=1, ac_subhead="Agent")
+    ac = _make_parsed_ac("[REVIEWER] check: no findings on tautology", ac_index=1, ac_subhead="Agent")
     finding = ss.Finding(
-        pattern_id="tautology",
+        pattern_id="empty-body",
         pattern_name="Tautological verification",
         detection_confidence="deterministic",
         lie_severity="severe",
@@ -204,6 +207,32 @@ def test_should_auto_tick_finding_on_different_ac_does_not_block():
     )
     result = ss._should_auto_tick(ac, findings=[finding], task_overrides=[], verdict_overall="PASS")
     assert result is True
+
+
+def test_t4778_no_tick_when_needs_human():
+    """T-4778 (010 case a): needs_human escalation blocks the tick."""
+    ac = _make_parsed_ac("[REVIEWER] no findings on tautology")
+    tick, reason = ss._auto_tick_decision(ac, [], [], "PASS", needs_human=True)
+    assert tick is False
+    assert reason.startswith("needs_human")
+
+
+def test_t4778_no_tick_on_empty_pass_without_named_check():
+    """T-4778 (010 case b): empty-findings PASS is not evidence on its own."""
+    ac = _make_parsed_ac("[REVIEWER] Hub restarted on the remote host")
+    tick, reason = ss._auto_tick_decision(ac, [], [], "PASS")
+    assert tick is False
+    assert reason == "no check this scan ran; route to fw reviewer judge"
+
+
+def test_t4778_suppressed_finding_on_named_check_blocks():
+    """A finding the override suppressed still means the named check did not pass."""
+    ac = _make_parsed_ac("[REVIEWER] no findings on tautology")
+    f = ss.Finding(
+        pattern_id="tautology", pattern_name="t", detection_confidence="deterministic",
+        lie_severity="severe", location="Verification:line 1", evidence="true",
+    )
+    assert ss._should_auto_tick(ac, [], [], "PASS", suppressed=[f]) is False
 
 
 # ─────────────── _parse_agent_acs ───────────────
@@ -285,7 +314,7 @@ def test_sovereignty_a_tick_fires_clean_pass(tmp_path, catalogue):
     """(a) tick fires on clean PASS + [REVIEWER] Agent AC."""
     p = _make_task_file(
         tmp_path, "a",
-        "### Agent\n- [ ] [REVIEWER] reviewer audit passes — sentinel",
+        "### Agent\n- [ ] [REVIEWER] reviewer audit passes — no findings on tautology",
     )
     stream = tmp_path / ".context" / "working" / "feedback-stream.yaml"
     stream.parent.mkdir(parents=True, exist_ok=True)
@@ -401,7 +430,7 @@ def test_sovereignty_h_no_retick_after_human_untick(tmp_path, catalogue):
     """(h) re-scan after human-untick respects feedback-stream and does NOT re-tick."""
     p = _make_task_file(
         tmp_path, "h",
-        "### Agent\n- [ ] [REVIEWER] reviewer check passes",
+        "### Agent\n- [ ] [REVIEWER] reviewer check passes: no findings on tautology",
     )
     stream = tmp_path / ".context" / "working" / "feedback-stream.yaml"
     stream.parent.mkdir(parents=True, exist_ok=True)
@@ -424,7 +453,7 @@ def test_sovereignty_h_no_retick_after_human_untick(tmp_path, catalogue):
                 "key": f"auto_tick:T-9900:1:{digest}",
                 "ac_index": 1,
                 "digest": digest,
-                "text_excerpt": "[REVIEWER] reviewer check passes",
+                "text_excerpt": "[REVIEWER] reviewer check passes: no findings on tautology",
             },
         },
     )
@@ -441,13 +470,13 @@ def test_sovereignty_i_retick_after_digest_change(tmp_path, catalogue):
     """(i) AC text changed → new digest → eligible to tick again."""
     p = _make_task_file(
         tmp_path, "i",
-        "### Agent\n- [ ] [REVIEWER] original check text",
+        "### Agent\n- [ ] [REVIEWER] original check text: no findings on tautology",
     )
     stream = tmp_path / ".context" / "working" / "feedback-stream.yaml"
     stream.parent.mkdir(parents=True, exist_ok=True)
 
     # Write a fake sovereignty-rail entry for the OLD AC text digest
-    old_digest = ss._compute_ac_text_digest("[REVIEWER] original check text")
+    old_digest = ss._compute_ac_text_digest("[REVIEWER] original check text: no findings on tautology")
     ss.append_feedback_event(
         stream,
         {
@@ -459,21 +488,21 @@ def test_sovereignty_i_retick_after_digest_change(tmp_path, catalogue):
                 "key": f"auto_tick:T-9900:1:{old_digest}",
                 "ac_index": 1,
                 "digest": old_digest,
-                "text_excerpt": "[REVIEWER] original check text",
+                "text_excerpt": "[REVIEWER] original check text: no findings on tautology",
             },
         },
     )
 
     # Rewrite the AC text (simulates human editing the task)
     text = p.read_text()
-    text = text.replace("[REVIEWER] original check text", "[REVIEWER] updated check text (v2)")
+    text = text.replace("[REVIEWER] original check text: no findings on tautology", "[REVIEWER] updated check text (v2): no findings on tautology")
     p.write_text(text)
 
     # New digest differs → should be eligible to tick
     verdict = ss.scan_task(p, catalogue)
     ticked_info, mutations = ss._compute_auto_ticks(p, "T-9900", verdict, [], stream)
     assert len(ticked_info) == 1, "new digest should allow re-tick"
-    new_digest = ss._compute_ac_text_digest("[REVIEWER] updated check text (v2)")
+    new_digest = ss._compute_ac_text_digest("[REVIEWER] updated check text (v2): no findings on tautology")
     assert ticked_info[0]["digest"] == new_digest
 
 
@@ -514,12 +543,12 @@ def test_render_verdict_includes_auto_ticked_block():
         timestamp="2026-01-01T00:00:00Z",
         overall="PASS",
         auto_ticked=[
-            {"ac_index": 2, "digest": "abc123def456", "text_excerpt": "[REVIEWER] check"},
+            {"ac_index": 2, "digest": "abc123def456", "text_excerpt": "[REVIEWER] check: no findings on tautology"},
         ],
     )
     rendered = ss.render_verdict_md(verdict)
     assert "**Auto-ticked:** 1 AC(s)" in rendered
-    assert "AC #2: abc123def456 [[REVIEWER] check]" in rendered
+    assert "AC #2: abc123def456 [[REVIEWER] check: no findings on tautology]" in rendered
 
 
 def test_render_verdict_no_auto_ticked_block_when_empty():
