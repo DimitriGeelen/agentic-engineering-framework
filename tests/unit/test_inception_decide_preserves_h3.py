@@ -33,17 +33,50 @@ def _shipped_pydecide() -> str:
     return code
 
 
-def _rewrite_decision(tmp_path, content: str, decision: str, rationale: str, timestamp: str) -> str:
-    """Run lib/inception.sh's PYDECIDE block on a task file holding `content`."""
+def _shell_invocation_argc() -> int:
+    """Count the positional args lib/inception.sh passes to the PYDECIDE heredoc."""
+    src = INCEPTION_SH.read_text()
+    m = re.search(r"^\s*python3 - (.*?) << 'PYDECIDE'$", src, re.M)
+    assert m, "PYDECIDE invocation line not found in lib/inception.sh"
+    return len(re.findall(r'"[^"]*"', m.group(1)))
+
+
+def _rewrite_decision(tmp_path, content: str, decision: str, rationale: str,
+                      timestamp: str, diverges: str = "") -> str:
+    """Run lib/inception.sh's PYDECIDE block on a task file holding `content`.
+
+    T-4760: argv mirrors the shell call (T-4727 added `$_diverges`, always passed,
+    empty when the verb matches the Recommendation).
+    """
     task = tmp_path / "T-9999-fixture.md"
     task.write_text(content)
     script = tmp_path / "pydecide.py"
     script.write_text(_shipped_pydecide())
     subprocess.run(
-        ["python3", str(script), str(task), decision, rationale, timestamp],
+        ["python3", str(script), str(task), decision, rationale, timestamp, diverges],
         check=True, capture_output=True, text=True,
     )
     return task.read_text()
+
+
+def test_harness_argv_matches_shell_invocation():
+    """T-4760: the harness must pass as many args as the shipped call does."""
+    assert _shell_invocation_argc() == 5, (
+        "lib/inception.sh changed the PYDECIDE call signature - update "
+        "_rewrite_decision to pass the same args"
+    )
+
+
+def test_diverges_line_written_and_h3_preserved(tmp_path):
+    """T-4727 note survives alongside the T-1526 H3 contract."""
+    body = (
+        "## Decision\n**Decision**: OLD\n\n"
+        "### 2026-04-26T00:00:00Z — task-update [agent]\n- keep me\n"
+    )
+    out = _rewrite_decision(tmp_path, body, "NO-GO", "r", "t", diverges="GO")
+    assert out.count("**Diverges from Recommendation**: GO") == 1
+    assert "**Decision**: NO-GO" in out and "OLD" not in out
+    assert "- keep me" in out
 
 
 def test_h3_below_decision_preserved_on_rewrite(tmp_path):
