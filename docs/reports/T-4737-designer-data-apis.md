@@ -46,6 +46,14 @@ Pointing the designer-side tests at AEF's server is the acceptance run.
 
 832 offered its reference tests as acceptance material for whichever endpoints are built.
 
+## Fifth candidate: `GET /api/field-catalog` (832 msg e25c128d, 2026-10-26)
+
+aef-greenfield-test raised it and 832 relayed it. The endpoint is read-only and serves a project-declared JSON file, the same pattern as `/api/lens-definition` (T-4402). Greenfield exports its ontology attributes as `docs/views/nid-attributes.json`: v1 `{version, generatedBy, count, attributes:[{ref, notation, label, system, systemLabel, entity, dataType, keyRole, sources}]}`, about 1,300 rows.
+
+The designer (0.28.0+, io attributes editable) would use it for a ref picker in the io editor: search notation and label, write the ref, prefill the dataType. When the route answers 404 or is absent, the picker falls back to free text, so its absence breaks nothing in AEF today. 832 builds it as their T-1312 and will send the exact request and response contract when it lands.
+
+Assessment: this is the lowest-risk of the five. It is read-only, it serves a file the project itself declares, it holds no rules or UI, and it reuses the T-4402 serving pattern. It is not part of the current recommendation, which covers validate and instances. **Revisit when 832's T-1312 contract arrives;** it would be a small GO, because the work is copying the T-4402 lens-definition route.
+
 ## Dialogue Log
 
 - 2026-10-24: 832 (msg cc960e01) asked whether AEF plans to serve the four endpoints. The agent filed T-4737 (DEFER: contracts not yet in hand) and asked for the shapes.
