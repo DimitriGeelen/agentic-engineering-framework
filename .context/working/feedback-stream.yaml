@@ -49111,3 +49111,21 @@ scan_id: R-ea288d90
 task_id: T-4757
 payload:
   task_file: .tasks/active/T-4757-sidecar-a-sender-cannot-settle-its-own-o.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T10:34:53Z'
+scan_id: R-19da8d77
+task_id: T-4752
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T10:34:53Z'
+scan_id: R-19da8d77
+task_id: T-4752
+payload:
+  task_file: .tasks/active/T-4752-shared-worker-contract-machine-readable-.md

@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4752: Shared worker contract: machine-readable conformance mapping format for external backends
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T10:35:08Z
+# ============================================================================
+
+task_id: T-4752
+task_name: "Shared worker contract: machine-readable conformance mapping format for external backends"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-25T12:22:58Z
+completed: 2026-10-26T10:34:43Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-25T15:50:50+01:00
+last_commit: 2026-10-26T11:30:16+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  store ring20's wc-conformance-mapping/0.1 draft (mapping + checker) verbatim as received material, sha256 verified, not executed. review ring20's mapping checker, draft §6.6/§9/T8 spec proposal, add check_mapping.py reader with fixtures and tests. fabric cards for check_mapping.py and its test
+
+# Key outcomes
+outcomes:
+  - 'ring20''s draft (sidecar 43ffd8bf checker, 520283e9 mapping; format `wc-conformance-mapping/0.1`) is stored verbatim under `docs/reports/T-4752/received/` with its sha256 checked against the one ring20 stated. It is not executed until reviewed'
+  - 'The format is reviewed against the spec''s §6.6, including ring20''s open question: derive `exercises_section3` from a per-case table in the spec (§9) rather than letting the backend declare it. The proposed spec change is written as a draft for the spec owners'
+  - 'AEF''s conformance runner reads a mapping in this format and applies the checker''s rules (25 unique CC ids; PASS needs evidence; GAP needs a task; N/A only where the spec table allows). Tests use fixture mappings, including the four faults ring20 injected'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'review ring20''s mapping checker, draft §6.6/§9/T8 spec proposal, add check_mapping.py reader with fixtures and tests'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-conformance-worker-contract-check_mapping.yaml'
+  - '.fabric/components/tests-unit-test_worker_contract_mapping.yaml'
+  - '.tasks/active/T-4752-shared-worker-contract-machine-readable-.md'
+  - 'docs/reports/T-4752/received/README.md'
+  - 'docs/reports/T-4752/received/conformance-map-v0.3.3.yaml'
+  - 'docs/reports/T-4752/received/wc-mapping-check.py'
+  - 'docs/reports/T-4752/review.md'
+  - 'docs/reports/T-4752/spec-proposal.md'
+  - 'tests/conformance/worker-contract/README.md'
+  - 'tests/conformance/worker-contract/check_mapping.py'
+  - 'tests/conformance/worker-contract/fixtures/mapping-dup-id.yaml'
+  - 'tests/conformance/worker-contract/fixtures/mapping-gap-no-task.yaml'
+  - 'tests/conformance/worker-contract/fixtures/mapping-na-on-section3.yaml'
+  - 'tests/conformance/worker-contract/fixtures/mapping-pass-no-evidence.yaml'
+  - 'tests/conformance/worker-contract/fixtures/mapping-valid.yaml'
+  - 'tests/unit/test_worker_contract_mapping.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-25T15:50:50'
+    action: 'T-4752: store ring20''s wc-conformance-mapping/0.1 draft (mapping + checker) verbatim as received material, sha256 verified, not executed'
+  - time: '2026-10-26T11:29:29'
+    action: 'T-4752: review ring20''s mapping checker, draft §6.6/§9/T8 spec proposal, add check_mapping.py reader with fixtures and tests'
+  - time: '2026-10-26T11:30:16'
+    action: 'T-4752: fabric cards for check_mapping.py and its test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1331 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1331
+  commits: 4
+  files_changed: 19
+  lines_added: 2140
+  lines_removed: 8
+  footprint_refreshed_at: '2026-10-26T10:35:13Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4752-shared-worker-contract-machine-readable-.md
+generated_by: context-agent-hybrid
