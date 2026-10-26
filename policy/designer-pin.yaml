@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.26.0"
-sha256: "4124424d91a60719a71b1378e14e81e03cccb3e8a8deda92ae107b97c2f7cfd9"
-bytes: 1236781
+version: "0.27.0"
+sha256: "dd707e13caa61910f976a07c2b73b32abeba3ac048f001a485e782a6b8e38c59"
+bytes: 1237858
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.26.0.html"
-source_tag: "designer-v0.26.0"
+source_artifact: "dist/aef-workflow-designer-0.27.0.html"
+source_tag: "designer-v0.27.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -173,7 +173,11 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   W-XML-GW-AMBIGUOUS says whether a default is declared, new W-XML-GW-DEFAULT-NOT-OWN. No node id, field or
 #   finding id changes. Still unanswered here: /api/validate, /api/instances, /api/field-profile,
 #   /api/field-suggestions, so Check, the instance overlay and field suggestions stay off.
-vendored_path: "vendor/designer/aef-workflow-designer-0.26.0.html"
+# T-4764 (2026-10-26): re-pinned 0.26.0 -> 0.27.0 (832 announce 604650eb, commit 8d2bffe2; notes
+#   docs/releases/RELEASE-NOTES-0.27.0.md in 832). The io panel shows a producer's v1 ref and dataType read-only
+#   (832 T-1304; a ref is shown once, as the derived fieldRef, when its prefix is declared kind="field"); authoring-kit
+#   findings carry map evidence (T-1290). Stored maps unchanged (aef:io byte-identical to 0.26.0); no new endpoint.
+vendored_path: "vendor/designer/aef-workflow-designer-0.27.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
@@ -190,4 +194,4 @@ cdn_fonts: false
 # ever regresses this capability, flip back to false — the dual-form emit and
 # the lint gate reactivate automatically (T-2612 guard).
 resolves_workflow_ref: true
-notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority); 0.25.0: aef:io v1.1 read-only + lossless save, lens switch, labels off flows; 0.26.0: ?browse=1, legibility"
+notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority); 0.25.0: aef:io v1.1 read-only + lossless save, lens switch, labels off flows; 0.26.0: ?browse=1, legibility; 0.27.0: io panel shows producer ref + dataType"

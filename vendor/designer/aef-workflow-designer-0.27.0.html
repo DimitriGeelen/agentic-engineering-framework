@@ -8717,16 +8717,26 @@ function ioV11Block(item, isInput, node) {
     if (p && p.kind === 'field') refAsField = attrs.get('ref');
   }
   const shown = IO_V11_ATTRS.filter(k => attrs.has(k));
-  if (!shown.length && !kids.length && !derivedSys && !refAsField) return null;
+  // T-1304: the v1 attributes v1.1 keeps (2.3): `ref` (a data-object identity unless the rule above reads it as a
+  // fieldRef, then shown once, as that) and `dataType` (informational only). Producers write them today (greenfield's
+  // style A: ref="nid:attr-…" dataType="id"); hiding them hid a producer's whole link to its ontology.
+  const v1Ref = attrs.has('ref') && !refAsField ? attrs.get('ref') : null;
+  const v1DataType = attrs.has('dataType') ? attrs.get('dataType') : null;
+  if (!shown.length && !kids.length && !derivedSys && !refAsField && v1Ref === null && v1DataType === null) return null;
 
   const box = document.createElement('div');
   box.className = 'io-v11';
   box.title = 'mapping v1.1 · read-only';
-  if (shown.length || derivedSys || refAsField) {
+  if (shown.length || derivedSys || refAsField || v1Ref !== null || v1DataType !== null) {
     const kv = document.createElement('div');
     kv.className = 'io-v11-kv';
     if (refAsField) v11Span(kv, 'fieldRef', refAsField, 'derived · from ref');
+    // the hints say what the attribute IS, not a version: a bare "v1" read as the version of the referenced item (T-1304 sweep)
+    if (v1Ref !== null) v11Span(kv, 'ref', v1Ref, 'v1 attribute').title =
+      'ref (v1 attribute): what this input/output refers to, e.g. an ontology IRI. Kept as written.';
     for (const k of shown) v11Span(kv, k, attrs.get(k));
+    if (v1DataType !== null) v11Span(kv, 'dataType', v1DataType, 'informational').title =
+      'dataType (v1 attribute): informational only. It does not change the type, and it is kept as written.';
     if (derivedSys) v11Span(kv, sysKey, derivedSys[0], derivedSys[1]);
     box.appendChild(kv);
   }
@@ -13155,7 +13165,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.26.0';
+const APP_VERSION = '0.27.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
