@@ -49093,3 +49093,21 @@ scan_id: R-8d302f6c
 task_id: T-4765
 payload:
   task_file: .tasks/active/T-4765-t4212uxshots-fixture-projectroot-is-not-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T10:34:20Z'
+scan_id: R-ea288d90
+task_id: T-4757
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T10:34:20Z'
+scan_id: R-ea288d90
+task_id: T-4757
+payload:
+  task_file: .tasks/active/T-4757-sidecar-a-sender-cannot-settle-its-own-o.md
