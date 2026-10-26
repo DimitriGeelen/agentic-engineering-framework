@@ -2959,15 +2959,25 @@ def _strength_fault(ctx: "_Ctx", row: dict, crit) -> tuple[str, str] | None:
 #: framework state, and the task file (the criterion itself is pinned by its digest).
 _NOT_WORK = (".context/", ".tasks/")
 
+#: Release artifacts (T-4779): generated copies of source, written by a release commit that names
+#: every shipped task. They change nothing that was reviewed; a change to the source they are
+#: generated from is judged on the source path itself.
+_RELEASE_ARTIFACTS = ("dist/",)
+
 
 def _stale_fault(ctx: _Ctx, row: dict) -> tuple[str, str] | None:
     """A green reviewed revision R. If work for the task landed after R, the green is about code
-    that is no longer what ships: refuse it (T-3580 round 3, reviewed-revision negative control)."""
+    that is no longer what ships: refuse it (T-3580 round 3, reviewed-revision negative control).
+
+    A path is work only if its content at HEAD differs from R and it is not a release artifact
+    (T-4779): a release commit adding dist/ copies, or a change reverted before close, is not."""
     rev = str(row.get("revision") or "")
     rc, out = _git_out(ctx.root, "log", f"{rev}..HEAD", f"--grep={ctx.task_id}", "--name-only",
                        "--format=%x1e%H%x1f%B%x1d")
-    if rc != 0:
+    rc2, diff = _git_out(ctx.root, "diff", "--no-renames", "--name-only", rev, "HEAD") if rc == 0 else (rc, "")
+    if rc != 0 or rc2 != 0:
         return "stale-review", f"git cannot say what changed since reviewed revision {rev[:9]} — refusing"
+    changed = set(diff.splitlines())
     ref = re.compile(rf"(?<![A-Za-z0-9-]){re.escape(ctx.task_id)}(?![0-9])")
     for rec in out.split("\x1e"):
         if "\x1d" not in rec:
@@ -2976,7 +2986,8 @@ def _stale_fault(ctx: _Ctx, row: dict) -> tuple[str, str] | None:
         sha, _, msg = head.partition("\x1f")
         if not ref.search(msg):
             continue
-        work = [f for f in files.splitlines() if f.strip() and not f.startswith(_NOT_WORK)]
+        work = [f for f in files.splitlines() if f.strip() and f in changed
+                and not f.startswith(_NOT_WORK + _RELEASE_ARTIFACTS)]
         if work:
             return "stale-review", (f"{ctx.task_id} work changed after reviewed revision {rev[:9]} "
                                     f"(commit {sha[:9]} touches {work[0]}) — the verdict is about "
@@ -4221,6 +4232,11 @@ def _cli(argv: list[str] | None = None) -> int:
     if args.cmd == "apply":
         res = apply(args.task_id)
         print(json.dumps(res))
+        # T-4779: a withdrawal rewrites the task file even when the close is then refused; say so
+        # on its own line, not only inside the JSON.
+        for w in res.get("withdrawn") or []:
+            print(f"WITHDRAWN: {args.task_id} AC{w['ac']} verdict {w['verdict_id']} — tick removed, "
+                  f"owner: human — {w['why']}", file=sys.stderr)
         if res.get("refused"):
             print("REFUSED: reviewer-derived tick(s) no longer match the applied log — restore the "
                   "annotation, or an operator runs `fw reviewer verdict release`", file=sys.stderr)
