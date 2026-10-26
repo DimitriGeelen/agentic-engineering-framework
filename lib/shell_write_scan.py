@@ -1554,29 +1554,39 @@ def scan(command: str, cwd: str | None = None, project_root: str | None = None) 
     command = _blank_data_args(command)
     guarded = _guarded_within(os.path.realpath(project_root)) if project_root else None
     ctx = _Ctx(cwd=cwd, mentions=mentions_guarded(command), guarded=guarded)
+    unlexed = "command does not tokenise (unbalanced quote) and names a guarded path"
     try:
+        # T-4763: the lexer's reading, when the text lexes. It knows `'```'` is literal;
+        # _substitutions does not, and pairs those backticks into a fake body.
+        try:
+            texts = executed_texts(command) if ctx.mentions else []
+            lexed = ctx.mentions
+        except ParseError:
+            texts, lexed = [], False
         # the command itself, then every $(...) / `...` body found ANYWHERE in it — a
         # substitution inside double quotes still executes (review round 3); one inside
         # single quotes does not, but scanning it too only errs toward refusing
-        for text in [command] + _substitutions(command):
+        for k, text in enumerate([command] + _substitutions(command)):
             toks = _tokens(text)
             if toks is None:
-                if ctx.mentions:
-                    ctx.hits.append(Hit("command does not tokenise (unbalanced quote) and names a guarded path"))
+                # T-4763: a body that does not tokenise is refused here only when the
+                # lexer could not read the command; otherwise the lexer pass below
+                # refuses every body bash really runs that does not tokenise
+                if ctx.mentions and (k == 0 or not lexed):
+                    ctx.hits.append(Hit(unlexed))
                 continue
             for seg in _segments(toks):
                 _segment(seg, ctx)
         # T-4149: plus the lexer's reading (a `<<EOF` in a comment or quote no longer
         # hides the lines after it). Only ever adds refusals to the reading above.
-        if ctx.mentions:
-            try:
-                texts = executed_texts(command)
-            except ParseError:
-                texts = []
-            for text in texts:
-                toks = _tokens(text, strip_heredocs=False)
-                for seg in _segments(toks or []):
-                    _segment(seg, ctx)
+        for text in texts:
+            toks = _tokens(text, strip_heredocs=False)
+            if toks is None:
+                if not any(h.reason == unlexed for h in ctx.hits):
+                    ctx.hits.append(Hit(unlexed))
+                continue
+            for seg in _segments(toks):
+                _segment(seg, ctx)
     except Exception as e:  # noqa: BLE001 — a scanner bug must not open the gate
         if ctx.mentions:
             ctx.hits.append(Hit(f"scanner error ({type(e).__name__}) on a command naming a guarded path"))
