@@ -15,12 +15,12 @@ description: >
   marker the ledger honours; and a refused close that rewrites the task file prints
   a loud line.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/verdict_ledger.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -49,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T16:29:34Z
-last_update: '2026-10-26T22:00:29Z'
-date_finished:
+last_update: 2026-10-26T22:09:33Z
+date_finished: 2026-10-26T22:09:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -103,7 +103,7 @@ cost_estimate_proposed:
 - [x] A failing test first reproduces 832's case against `_stale_fault` (lib/verdict_ledger.py): after the reviewed revision, a commit naming the task touches only dist/ copies (or a release MANIFEST) of source that is byte-identical at the reviewed revision, and the verdict is withdrawn as stale-review
 - [x] Such a commit is no longer stale-making: a file counts as changed work only if its content differs from its content at the reviewed revision, or it is a generated artifact whose source differs. Pick a rule that a test can pin and record it in ## Decisions; the negative control still holds (a real source change after the reviewed revision still withdraws)
 - [x] When `verdict_ledger.py apply` withdraws a tick, it prints one loud line to stderr naming the task, the criterion, the verdict id and the reason, so it can't be missed on a refused close. Do NOT edit agents/task-create/update-task.sh: worker T-4777 owns it right now. If the line cannot be made loud enough without it, say so in ## Decisions
-- [ ] The append-only/ledger audit (`python3 lib/verdict_ledger.py audit`) still passes; new tests are in tests/unit/t4779_stale_review_release.bats (or pytest); the existing verdict-ledger tests stay green; vendor in sync
+- [x] The append-only/ledger audit (`python3 lib/verdict_ledger.py audit`) still passes; new tests are in tests/unit/t4779_stale_review_release.bats (or pytest); the existing verdict-ledger tests stay green; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -410,3 +410,24 @@ timeout 900 python3 -m pytest -p no:cacheprovider tests/unit/t4779_stale_review_
 
 ### 2026-10-26T16:33:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-27435632
+- **Timestamp:** 2026-10-26T22:10:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — When `verdict_ledger.py apply` withdraws a tick, it prints one loud line to stderr naming the task, the criterion, the verdict id and the reason, so it can't be missed on a refused close. Do NOT edit 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/task-create/update-task.sh in: When `verdict_ledger.py apply` withdraws a tick, it prints one loud line to stderr naming the task, the criterion, the verdict id and the reason, so i`
+- **AC#4 (Agent)** — The append-only/ledger audit (`python3 lib/verdict_ledger.py audit`) still passes; new tests are in tests/unit/t4779_stale_review_release.bats (or pytest); the existing verdict-ledger tests stay green
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/t4779_stale_review_release.bats in: The append-only/ledger audit (`python3 lib/verdict_ledger.py audit`) still passes; new tests are in tests/unit/t4779_stale_review_release.bats (or pyt`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-26T22:09:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

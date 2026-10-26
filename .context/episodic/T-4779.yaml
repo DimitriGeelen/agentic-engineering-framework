@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4779: Verdict ledger stale-review withdraws every shipped task's verdicts on the release commit (dist/ copies of reviewed source); refused close unticks silently
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T22:10:29Z
+# ============================================================================
+
+task_id: T-4779
+task_name: "Verdict ledger stale-review withdraws every shipped task's verdicts on the release commit (dist/ copies of reviewed source); refused close unticks silently"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T16:29:34Z
+completed: 2026-10-26T22:09:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T22:55:49+01:00
+last_commit: 2026-10-26T22:55:49+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  stale-review counts only reviewed work that differs at HEAD (dist/ release artifacts excluded); apply prints WITHDRAWN on stderr
+
+# Key outcomes
+outcomes:
+  - 'A failing test first reproduces 832''s case against `_stale_fault` (lib/verdict_ledger.py): after the reviewed revision, a commit naming the task touches only dist/ copies (or a release MANIFEST) of source that is byte-identical at the reviewed revision, and the verdict is withdrawn as stale-review'
+  - 'Such a commit is no longer stale-making: a file counts as changed work only if its content differs from its content at the reviewed revision, or it is a generated artifact whose source differs. Pick a rule that a test can pin and record it in ## Decisions; the negative control still holds (a real source change after the reviewed revision still withdraws)'
+  - 'When `verdict_ledger.py apply` withdraws a tick, it prints one loud line to stderr naming the task, the criterion, the verdict id and the reason, so it can''t be missed on a refused close. Do NOT edit agents/task-create/update-task.sh: worker T-4777 owns it right now. If the line cannot be made loud enough without it, say so in ## Decisions'
+  - 'The append-only/ledger audit (`python3 lib/verdict_ledger.py audit`) still passes; new tests are in tests/unit/t4779_stale_review_release.bats (or pytest); the existing verdict-ledger tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — what counts as changed work after the reviewed revision'
+    chose: 'a path touched by a task-naming commit after R counts only if (a) it is not a release artifact (top-level `dist/`, constant `_RELEASE_ARTIFACTS`) and (b) its content at HEAD differs from its content at R (`git diff --name-only R HEAD`). A source change behind a dist/ copy is still caught, on the source path itself.'
+    rationale: 'pinnable with one extra git call; covers 832''s release commit (new versioned copies + a MANIFEST that is new content, so content-equality alone would not pass it) and touch-and-revert.'
+    alternatives_rejected: ['blob-equality for dist/ files (832''s copies differ in APP_VERSION and MANIFEST is new content, so it would still withdraw); a release marker in the commit message (a new convention every consumer must adopt, and any message can claim it). Residual: a hand edit made only inside dist/ is not stale-making; dist/ is generated output, and its source path is what is judged.']
+  - decision: '2026-10-26 — making the withdrawal loud without touching update-task.sh'
+    chose: '`verdict_ledger.py apply` prints one `WITHDRAWN: <task> AC<n> verdict <id> — <reason>` line per withdrawal on stderr; JSON stays on stdout.'
+    rationale: 'update-task.sh (owned by T-4777 right now) captures `apply` with `2>&1` and echoes it inside its yellow WITHDRAWN message, so the line reaches the operator on its own line on every close attempt, refused ones included. Echoing it to stderr from update-task.sh as a separate, red line would be louder still; that is a follow-up for that file''s owner, not done here.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.tasks/active/T-4779-verdict-ledger-stale-review-withdraws-ev.md'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/t4779_stale_review_release_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T22:55:49'
+    action: 'T-4779: stale-review counts only reviewed work that differs at HEAD (dist/ release artifacts excluded); apply prints WITHDRAWN on stderr'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 339 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 339
+  commits: 2
+  files_changed: 6
+  lines_added: 655
+  lines_removed: 12
+  footprint_refreshed_at: '2026-10-26T22:11:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4779-verdict-ledger-stale-review-withdraws-ev.md
+generated_by: context-agent-hybrid
