@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T10:48:11Z
-last_update: 2026-10-26T11:53:08Z
+last_update: '2026-10-26T12:00:27Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,6 +75,16 @@ bvp_scores_proposed:
       (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-26T12:00:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=317,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4766: fw sidecar waiting lists outbound consults the retry ladder already closed (answered), with a drop hint
@@ -89,7 +99,7 @@ bvp_scores_proposed:
 - [x] Localised in the RCA: how `fw sidecar waiting` (`lib/sidecar/waiting.py`) decides an outbound consult is still open, and why it misses closures the retry ladder writes (`lib/sidecar/retry.py` `is_open`/`_close`)
 - [x] `waiting` decides outbound openness with the same predicate as the ladder and `settle-sent` (one shared function, not a copy), so a consult closed as answered, read, notice, released, settled or exhausted is not listed
 - [x] Inbound entries and anything genuinely open are listed exactly as before; the drop hint appears only for entries that are open
-- [ ] Unit tests with a fixture ledger cover: answered → not listed; settled via settle-sent → not listed; still open → listed with its escalation; settle-sent and waiting agree on every fixture row. Never touch the live sidecar state; the sidecar unit tests stay green; vendored copy in sync (`fw vendor self --check --task T-4766`)
+- [x] Unit tests with a fixture ledger cover: answered → not listed; settled via settle-sent → not listed; still open → listed with its escalation; settle-sent and waiting agree on every fixture row. Never touch the live sidecar state; the sidecar unit tests stay green; vendored copy in sync (`fw vendor self --check --task T-4766`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
