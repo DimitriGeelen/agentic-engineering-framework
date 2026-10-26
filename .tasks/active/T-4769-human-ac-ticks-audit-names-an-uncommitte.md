@@ -84,10 +84,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] In the checkout that holds the provenance row uncommitted (where the row counts today: `ledger_rows` reads the working-tree file), the audit's summary line (the one `fw audit` prints) names the ticks licensed ONLY by rows absent from `HEAD:.context/reviews/human-ac-ticks.jsonl` and the remedy (commit that file), because every other checkout will FAIL them
-- [ ] In a checkout without the row (the 055 field case), the per-tick FAIL line says a row recorded in another checkout counts only once committed, instead of only "no record"
-- [ ] Verdicts unchanged: rc 0/2 exactly as before; an uncommitted row is not made to count anywhere it did not already, and a committed row is not made to count less
-- [ ] Unit tests on a temp repo cover: committed row (pass, no note), uncommitted row (rc 0, note names the commit remedy), no row (FAIL rc 2, new hint); siblings t3695/t4075/t4375/t4165/t4070 green; vendored copy in sync (`fw vendor self --check --task T-4769`)
+- [x] In the checkout that holds the provenance row uncommitted (where the row counts today: `ledger_rows` reads the working-tree file), the audit's summary line (the one `fw audit` prints) names the ticks licensed ONLY by rows absent from `HEAD:.context/reviews/human-ac-ticks.jsonl` and the remedy (commit that file), because every other checkout will FAIL them
+- [x] In a checkout without the row (the 055 field case), the per-tick FAIL line says a row recorded in another checkout counts only once committed, instead of only "no record"
+- [x] Verdicts unchanged: rc 0/2 exactly as before; an uncommitted row is not made to count anywhere it did not already, and a committed row is not made to count less
+- [x] Unit tests on a temp repo cover: committed row (pass, no note), uncommitted row (rc 0, note names the commit remedy), no row (FAIL rc 2, new hint); siblings t3695/t4075/t4375/t4165/t4070 green; vendored copy in sync (`fw vendor self --check --task T-4769`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
