@@ -72,7 +72,8 @@ _repo() {
     run timeout 600 "$FRAMEWORK_ROOT/bin/fw" upgrade "$proj" --dry-run
     [ "$status" -eq 0 ] || { echo "$output" | tail -20; false; }
     [[ "$output" == *"already tracked"* ]] || { echo "$output" | grep -n "working" ; false; }
-    [[ "$output" == *"        .context/working/.session-silent-scanner.log"* ]]
+    # T-4754: listed as a grouped count (a group of one shows the path)
+    [[ "$output" == *"        1 x .context/working/.session-silent-scanner.log"* ]]
     [[ "$output" == *"git -C \"$proj\" rm --cached -- .context/working/.session-silent-scanner.log"* ]]
 
     run timeout 600 "$FRAMEWORK_ROOT/bin/fw" upgrade "$proj"
