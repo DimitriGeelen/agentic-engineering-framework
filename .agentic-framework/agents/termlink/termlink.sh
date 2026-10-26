@@ -1612,6 +1612,28 @@ WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"; MODEL="$5"
 TASK_TYPE="$6"; FW_BIN="$7"
 cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" >> "$WDIR/stderr.log"; exit 1; }
 
+# --- T-4776 watchdog (start)
+# Kill watchdog for the worker process: TERM at TIMEOUT, then KILL after WATCHDOG_KILL_GRACE
+# seconds if it is still alive. TERM alone left a claude blocked in a dialog running 28 h
+# past its timeout, and `wait` with it, so exit_code was never written. Run it backgrounded:
+#   ( _fw_watchdog "$PID" ) &
+WATCHDOG_KILL_GRACE="${WATCHDOG_KILL_GRACE:-10}"
+_fw_watchdog() {
+    local pid="$1" i=0
+    sleep "$TIMEOUT"
+    kill "$pid" 2>/dev/null || return 0
+    : > "$WDIR/timed_out"
+    echo "TIMEOUT" >> "$WDIR/stderr.log"
+    while [ "$i" -lt "$WATCHDOG_KILL_GRACE" ]; do
+        sleep 1; i=$((i + 1))
+        kill -0 "$pid" 2>/dev/null || return 0
+    done
+    kill -KILL "$pid" 2>/dev/null && \
+        echo "TIMEOUT: pid $pid still alive ${WATCHDOG_KILL_GRACE}s after SIGTERM — sent SIGKILL" >> "$WDIR/stderr.log"
+    return 0
+}
+# --- T-4776 watchdog (end)
+
 # T-3580 round 6: the completion secret is ISSUED to this runtime by its authenticated start
 # (below), never written to disk by registration. Deliberately NOT exported; it reaches
 # `complete` only on stdin, after the worker has exited.
@@ -1788,7 +1810,7 @@ if [ "$WORKER_KIND" = "ollama-loop" ]; then
         [ -n "$MODEL" ] && export OLLAMA_LOOP_MODEL="$MODEL"
         ( python3 "$LOOP_BIN" --wdir "$WDIR" >"$WDIR/stdout.log" 2>>"$WDIR/stderr.log" ) &
         LOOP_PID=$!
-        (sleep "$TIMEOUT" && kill "$LOOP_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
+        ( _fw_watchdog "$LOOP_PID" ) &
         WATCHDOG_PID=$!
         wait "$LOOP_PID" 2>/dev/null
         EXIT_CODE=$?
@@ -1845,7 +1867,7 @@ elif [ -n "$HARNESS" ]; then
                 ;;
         esac
         HARNESS_PID=$!
-        (sleep "$TIMEOUT" && kill "$HARNESS_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
+        ( _fw_watchdog "$HARNESS_PID" ) &
         WATCHDOG_PID=$!
         wait "$HARNESS_PID" 2>/dev/null
         EXIT_CODE=$?
@@ -1899,7 +1921,7 @@ else
     if [ -z "$CLAUDE_PID" ]; then
         EXIT_CODE=1
     else
-    (sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
+    ( _fw_watchdog "$CLAUDE_PID" ) &
     WATCHDOG_PID=$!
     wait "$CLAUDE_PID" 2>/dev/null
     EXIT_CODE=$?
@@ -1985,6 +2007,7 @@ fi
 #                (partial-complete, waiting on a Human AC — the worker did its part)
 #   n/a        — no task dispatched, no task file found, non-zero exit, or any
 #                other status (nothing to assert)
+#   timeout    — the kill watchdog fired (T-4776: run.sh's timed_out marker)
 CLOSE_TASK=""
 [ -f "$WDIR/task" ] && CLOSE_TASK=$(cat "$WDIR/task" 2>/dev/null)
 CLOSE_STATE="n/a"
@@ -2010,6 +2033,7 @@ if [ -n "$CLOSE_TASK" ] && [ "${EXIT_CODE:-1}" = "0" ]; then
         done
     fi
 fi
+[ -f "$WDIR/timed_out" ] && CLOSE_STATE="timeout"
 echo "$CLOSE_STATE" > "$WDIR/close_state"
 if [ "$CLOSE_STATE" = "incomplete" ]; then
     echo "WARNING: worker exited 0 but $CLOSE_TASK is still started-work — close not run"
