@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4756: bin/fw silently replaces an inherited non-project PROJECT_ROOT with the cwd project; print one stderr note
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T09:24:37Z
+# ============================================================================
+
+task_id: T-4756
+task_name: "bin/fw silently replaces an inherited non-project PROJECT_ROOT with the cwd project; print one stderr note"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-25T14:55:05Z
+completed: 2026-10-26T09:24:14Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-26T10:14:14+01:00
+last_commit: 2026-10-26T10:14:14+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  bin/fw names an inherited non-project PROJECT_ROOT it discards (one stderr line; silent for $HOME poison and fw hook); regression bats, RCA
+
+# Key outcomes
+outcomes:
+  - 'When `bin/fw` discards an inherited `PROJECT_ROOT` because it is not a project and uses the cwd''s project instead, it prints exactly one stderr line, e.g. `fw: inherited PROJECT_ROOT=X ignored (not a project); using Y`. Stdout is unchanged, so command output and machine-read stdout stay clean'
+  - 'No note when `PROJECT_ROOT` is unset, already equals the resolved root, or is kept; T-4753''s refusal (a valid *other* project) is unchanged'
+  - 'The note is printed once per invocation even when `bin/fw` re-execs itself, and is suppressible for hooks that must stay silent (an existing quiet flag/env if one exists, else documented)'
+  - 'Bats cover: non-project PROJECT_ROOT → one note on stderr, stdout unchanged; unset → no note; same root → no note; vendored copy in sync (`fw vendor self --check --task T-4756`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-26 — which discarded roots get the note, and how hooks stay silent'
+    chose: 'note only when the inherited root is not a project (missing dir under a hook context, or a dir with no `.framework.yaml`/`.tasks`) and is not the home directory; skip it entirely under `fw hook NAME`. No new env/config key.'
+    rationale: 'the `$HOME` (and passwd-home) case is T-2391''s daemon poison, carried by every tmux-spawned shell; a note there would print on every command. Hooks run on every tool call and their stderr is surfaced to the agent, so a note there is noise, and the session''s root is already `CLAUDE_PROJECT_DIR`. The note is printed before any re-exec, and the re-exec inherits the resolved (valid) root, so it cannot repeat.'
+    alternatives_rejected: ['a `FW_*` quiet switch (a new config key needs registry + Watchtower config parity for a case no caller has asked for); noting the `$HOME` case too (spam).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.tasks/active/T-4756-binfw-silently-replaces-an-inherited-non.md'
+  - 'bin/fw'
+  - 'tests/unit/t4756_inherited_root_note.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T10:14:14'
+    action: 'T-4756: bin/fw names an inherited non-project PROJECT_ROOT it discards (one stderr line; silent for $HOME poison and fw hook); regression bats, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1109 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1109
+  commits: 2
+  files_changed: 7
+  lines_added: 639
+  lines_removed: 5
+  footprint_refreshed_at: '2026-10-26T09:24:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4756-binfw-silently-replaces-an-inherited-non.md
+generated_by: context-agent-hybrid
