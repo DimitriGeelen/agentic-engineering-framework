@@ -33,10 +33,11 @@ audit_task_placeholders() {
     local in_fence=0
     local line_num=0
     local line
-    local cand_nums=() cand_lines=()
+    local cand_nums=() cand_lines=() all_lines=()
 
     while IFS= read -r line || [ -n "$line" ]; do
         line_num=$((line_num + 1))
+        all_lines+=("$line")
 
         # Toggle fenced code block state (```)
         if [[ "$line" =~ ^\`\`\` ]]; then
@@ -74,16 +75,19 @@ audit_task_placeholders() {
     # strip_quoted_spans, shared with the Python readers (bvp judge, resolver).
     # Before T-4741 this was a single-backtick sed, so a stub inside a
     # double-backtick span or double quotes refused fw task review.
-    # Fallback without python3: the old single-backtick strip.
+    # T-4762: the WHOLE file is stripped, not just the candidate lines, because
+    # a span can open on one line of a paragraph (or a folded frontmatter
+    # scalar) and close on the next; the output is indexed by line number.
+    # Fallback without python3: the old single-backtick strip, per line.
     local cleaned_lines=()
     if [ ${#cand_lines[@]} -gt 0 ]; then
         local _strip_py
         _strip_py="$(dirname "${BASH_SOURCE[0]}")/ac_placeholder.py"
         if command -v python3 >/dev/null 2>&1 && [ -f "$_strip_py" ]; then
-            mapfile -t cleaned_lines < <(printf '%s\n' "${cand_lines[@]}" | python3 "$_strip_py" --strip 2>/dev/null)
+            mapfile -t cleaned_lines < <(printf '%s\n' "${all_lines[@]}" | python3 "$_strip_py" --strip 2>/dev/null)
         fi
-        if [ ${#cleaned_lines[@]} -ne ${#cand_lines[@]} ]; then
-            mapfile -t cleaned_lines < <(printf '%s\n' "${cand_lines[@]}" | sed 's/`[^`]*`//g')
+        if [ ${#cleaned_lines[@]} -ne ${#all_lines[@]} ]; then
+            mapfile -t cleaned_lines < <(printf '%s\n' "${all_lines[@]}" | sed 's/`[^`]*`//g')
         fi
     fi
 
@@ -91,7 +95,7 @@ audit_task_placeholders() {
     for i in "${!cand_lines[@]}"; do
         line="${cand_lines[$i]}"
         line_num="${cand_nums[$i]}"
-        cleaned="${cleaned_lines[$i]}"
+        cleaned="${cleaned_lines[$((line_num - 1))]}"
 
         # Placeholder patterns — literal template stubs that should have been
         # replaced. Each pattern here is explicitly chosen because it NEVER

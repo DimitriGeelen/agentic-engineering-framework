@@ -101,27 +101,87 @@ PLACEHOLDER_RE = re.compile(
 
 #: T-4741: an inline code span per CommonMark — a run of N backticks, the
 #: content, then a closing run of exactly N backticks (neither run touching a
-#: further backtick). Line-local: the readers here are line-oriented.
-_CODE_SPAN_RE = re.compile(r"(?<!`)(`+)(?!`)(.*?)(?<!`)\1(?!`)")
+#: further backtick). T-4762: DOTALL, because a span may run across a line
+#: break inside one block; `_blocks` keeps it from crossing a block boundary.
+_CODE_SPAN_RE = re.compile(r"(?<!`)(`+)(?!`)(.*?)(?<!`)\1(?!`)", re.S)
+
+#: T-4762: lines that end the current block. A fence line (passed through
+#: untouched, as is everything inside the fence) ...
+_FENCE_RE = re.compile(r"^ {0,3}(?:```|~~~)")
+#: ... a markdown block start (list item, heading, blockquote, table row,
+#: thematic break / frontmatter delimiter) ...
+_MD_BLOCK_START_RE = re.compile(r"^\s*(?:[-*+]\s|[0-9]+[.)]\s|#{1,6}(?:\s|$)|>|\|)|^---\s*$")
+#: ... or, inside frontmatter, a top-level YAML key or the closing `---`.
+_YAML_KEY_RE = re.compile(r"^(?:[A-Za-z_][\w-]*\s*:|---\s*$)")
 
 #: T-4741: a double-quoted string on one line.
 _DQUOTE_RE = re.compile(r'"[^"\n]*"')
+
+
+def _blocks(lines):
+    """Group lines into (strippable, [lines]) runs (T-4762).
+
+    A code span may continue onto the next line of the same paragraph, list
+    item or frontmatter scalar (a folded `description: >` is one paragraph),
+    but never past a blank line or the start of another block. Fenced code is
+    yielded as non-strippable runs, one line each, so a fence's backticks
+    never pair with a span outside it.
+    """
+    in_front = bool(lines) and lines[0].strip() == "---"
+    in_fence = False
+    cur = []
+    for n, line in enumerate(lines):
+        if _FENCE_RE.match(line):
+            if cur:
+                yield True, cur
+                cur = []
+            in_fence = not in_fence
+            yield False, [line]
+            continue
+        if in_fence:
+            yield False, [line]
+            continue
+        if in_front and n > 0:
+            starts = bool(_YAML_KEY_RE.match(line))
+            if line.strip() == "---":
+                in_front = False
+        else:
+            starts = bool(_MD_BLOCK_START_RE.match(line))
+        if not line.strip() or starts:
+            if cur:
+                yield True, cur
+            cur = []
+        cur.append(line)
+    if cur:
+        yield True, cur
+
+
+def _drop_span(m):
+    # Keep the span's line breaks so every later line keeps its number.
+    return "\n" * m.group(0).count("\n")
 
 
 def strip_quoted_spans(text: str) -> str:
     """Remove text that MENTIONS a stub rather than being one (T-4741).
 
     Code spans of any backtick length go first, then same-line double-quoted
-    strings, each line on its own. A stub quoted to talk about it ("the
-    [Criterion 1] stub", or one inside a double-backtick span) disappears,
-    while a bare stub on the same line survives and is still flagged. This is
-    the ONE implementation of the rule: `lib/task-audit.sh` calls it through
+    strings. A stub quoted to talk about it ("the [Criterion 1] stub", or one
+    inside a double-backtick span) disappears, while a bare stub on the same
+    line survives and is still flagged. This is the ONE implementation of the
+    rule: `lib/task-audit.sh` calls it through
     `python3 lib/ac_placeholder.py --strip`.
+
+    T-4762: spans are matched per block, not per line, so a span that opens
+    on one line and closes on the next (a wrapped paragraph, a YAML folded
+    scalar) is stripped whole. The output has exactly the input's lines.
     """
     out = []
-    for line in (text or "").split("\n"):
-        line = _CODE_SPAN_RE.sub("", line)
-        out.append(_DQUOTE_RE.sub("", line))
+    for strippable, lines in _blocks((text or "").split("\n")):
+        if not strippable:
+            out.extend(lines)
+            continue
+        joined = _CODE_SPAN_RE.sub(_drop_span, "\n".join(lines))
+        out.extend(_DQUOTE_RE.sub("", l) for l in joined.split("\n"))
     return "\n".join(out)
 
 
@@ -178,9 +238,10 @@ def is_placeholder_block(ac_block: str) -> bool:
 
 
 if __name__ == "__main__":
-    # T-4741: `--strip` filters stdin to stdout one line at a time, so the line
-    # count is preserved and lib/task-audit.sh can pair each output line with
-    # its input line.
+    # T-4741: `--strip` filters stdin to stdout, line count preserved, so
+    # lib/task-audit.sh can pair each output line with its input line.
+    # T-4762: the whole input is stripped at once (spans can cross lines), so
+    # pass the whole file, not a selection of its lines.
     import sys
 
     if sys.argv[1:] != ["--strip"]:
@@ -193,6 +254,9 @@ if __name__ == "__main__":
                            errors="surrogateescape", newline="\n")
     dst = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8",
                            errors="surrogateescape", newline="\n")
-    for raw in src:
-        dst.write(strip_quoted_spans(raw.rstrip("\n")) + "\n")
+    data = src.read()
+    if data:
+        if data.endswith("\n"):
+            data = data[:-1]
+        dst.write(strip_quoted_spans(data) + "\n")
     dst.flush()
