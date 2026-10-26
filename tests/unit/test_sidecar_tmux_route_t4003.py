@@ -40,9 +40,9 @@ class Runner:
     """`termlink discover` answers `sessions`; `tmux list-panes` answers `panes`; every other
     call is recorded as typing."""
 
-    def __init__(self, sessions=(), panes=(), tmux=True, private=()):
+    def __init__(self, sessions=(), panes=(), tmux=True, private=(), own=()):
         self.sessions, self.panes, self.tmux, self.typed = list(sessions), list(panes), tmux, []
-        self.private = list(private)
+        self.private, self.own = list(private), list(own)
 
     def __call__(self, argv, **_):
         if argv[:2] == ["termlink", "discover"]:
@@ -50,7 +50,12 @@ class Runner:
         if argv[0] == "tmux" and "list-panes" in argv:
             if not self.tmux:
                 raise FileNotFoundError("tmux")
-            panes = self.private if argv[1:3] == ["-L", "fw-agents"] else self.panes
+            if argv[1:3] == ["-L", "fw-agents"]:
+                panes = self.private
+            elif argv[1:2] == ["-L"] and argv[2].startswith("fw-agents-"):
+                panes = self.own if argv[2] == inject.tmux_socket() else []
+            else:
+                panes = self.panes
             out = "\n".join(f"{t} {p} {s}" for t, p, s in panes)
             return subprocess.CompletedProcess(argv, 0, out, "")
         self.typed.append(argv)
@@ -160,3 +165,22 @@ def test_c2_finds_and_types_into_the_private_fw_agents_server(proj, monkeypatch)
     rep = inject._deliver_locked("test", r)
     assert rep["injected"] == ["m-2"], rep
     assert r.typed[0][:6] == ["tmux", "-L", "fw-agents", "send-keys", "-t", "%2"]
+
+
+def test_c2_finds_and_types_into_this_projects_own_tmux_server(proj, monkeypatch):
+    """T-4781: bin/claude-fw wraps on a per-project server, fw-agents-<16 hex of the project tag>;
+    the legacy shared fw-agents and the default server are still searched."""
+    _record(monkeypatch)
+    sock = inject.tmux_socket()
+    assert sock == "fw-agents-" + inject.project_tag().split("=", 1)[1]
+    assert inject._tmux_sockets() == (sock, None, "fw-agents")
+    r = Runner(panes=[("/dev/pts/3", "%1", "fleet-x")], own=[(TTY, "%5", "fw-t4003-9")])
+    target, why = inject.choose_target(False, r, input_state=_free)
+    assert target["pane"] == "%5" and target["socket"] == sock, why
+    monkeypatch.setattr(receiver, "awaiting_handover", lambda: ["m-5"])
+    monkeypatch.setattr(receiver, "read_message", lambda m: {"urgent": False})
+    monkeypatch.setattr(inject, "_inject_marker", lambda m: proj / f"{m}.injected")
+    monkeypatch.setattr(receiver, "record_event", lambda *a, **k: None)
+    rep = inject._deliver_locked("test", r)
+    assert rep["injected"] == ["m-5"], rep
+    assert r.typed[0][:6] == ["tmux", "-L", sock, "send-keys", "-t", "%5"]

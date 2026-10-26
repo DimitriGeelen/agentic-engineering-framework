@@ -3967,6 +3967,12 @@ for e in d.get('errors',[])[:3]:
     fi  # T-2452/F6: end --quick guard for Watchtower smoke test
 
     _doctor_phase "TermLink checks"  # T-3452
+    # Check (T-4781): one tmux server carrying claude-fw sessions of several projects.
+    if [ -f "$FRAMEWORK_ROOT/lib/doctor-tmux.sh" ]; then
+        # shellcheck source=/dev/null
+        source "$FRAMEWORK_ROOT/lib/doctor-tmux.sh"
+        doctor_check_tmux_sharing
+    fi
     # Check: TermLink (optional cross-terminal session communication)
     if command -v termlink >/dev/null 2>&1; then
         local tl_version

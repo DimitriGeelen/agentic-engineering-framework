@@ -171,6 +171,36 @@ unset FW_CFW_SCOPED_PID
 # the operator; `claude-fw -c` stays the command. Skipped for --termlink, inside tmux already
 # (fleet panes), headless or non-terminal runs, dispatched workers, and when tmux is missing.
 # Opt out: FW_CLAUDE_FW_NO_TMUX=1.
+
+# T-3693: `fw-project=<16 hex of sha256(realpath project root)>`. Project root:
+# PROJECT_ROOT, else the nearest ancestor holding .framework.yaml (or the
+# framework repo itself), else $PWD — the same walk lib/sidecar/receiver.py does.
+# Defined here because the tmux wrap below names its server after it (T-4781).
+_fw_project_tag() {
+    local d="${PROJECT_ROOT:-}"
+    if [ -z "$d" ]; then
+        d="$PWD"
+        while [ "$d" != "/" ]; do
+            if [ -f "$d/.framework.yaml" ] || { [ -f "$d/FRAMEWORK.md" ] && [ -f "$d/bin/fw" ]; }; then
+                break
+            fi
+            d=$(dirname "$d")
+        done
+        [ "$d" = "/" ] && d="$PWD"
+    fi
+    d=$(cd "$d" 2>/dev/null && pwd -P) || return 0
+    printf 'fw-project=%s' "$(printf '%s' "$d" | sha256sum | cut -c1-16)"
+}
+
+# T-4781: the tmux server (-L) a wrap of THIS project runs on: fw-agents-<16 hex>, the same id
+# as the fw-project tag. One server per project, never the old shared `fw-agents`: on that one a
+# bare `tmux kill-server` from any project's pane killed every project's agent at once, and
+# `set-option -g` changed every project's globals. lib/sidecar/inject.py derives the same name.
+_cfw_tmux_socket() {
+    local t; t=$(_fw_project_tag); t="${t#fw-project=}"
+    printf 'fw-agents-%s' "${t:-pid$$}"
+}
+
 _cfw_should_wrap_tmux() {
     [ "$_CFW_RESUMED" = 1 ] && return 1   # T-4118: a re-exec stays where the session already is
     [ "${FW_CLAUDE_FW_NO_TMUX:-0}" = 1 ] && return 1
@@ -186,7 +216,7 @@ _cfw_should_wrap_tmux() {
 if _cfw_should_wrap_tmux; then
     _cfw_self="$(readlink -f "$0")"   # this script itself (not a lib/ lookup, T-3954)
     _cfw_name="fw-$(printf '%s' "$(basename "$PWD")" | tr -c 'A-Za-z0-9_-' '_' | cut -c1-40)-$$"
-    _cfw_sock=fw-agents   # the tmux server this wrap runs on (-L); the redraw hooks below reuse it
+    _cfw_sock="$(_cfw_tmux_socket)"   # this project's own tmux server (-L, T-4781); the redraw hooks below reuse it
     # tmux does not hand the caller's environment to a new session: pass what matters.
     _cfw_env=(-e FW_CLAUDE_FW_IN_TMUX=1)
     while IFS='=' read -r _k _; do
@@ -195,7 +225,7 @@ if _cfw_should_wrap_tmux; then
                 _cfw_env+=(-e "$_k=${!_k}") ;;
         esac
     done < <(env | grep -E '^[A-Za-z_][A-Za-z0-9_]*=' | cut -d= -f1 | sort -u | sed 's/$/=/')
-    # Its OWN tmux server (-L fw-agents) with no user config (-f /dev/null): never the fleet's
+    # Its project's OWN tmux server (-L fw-agents-<id>, T-4781) with no user config (-f /dev/null): never the fleet's
     # server, never the operator's tmux habits. On it tmux must be invisible to Claude Code:
     #   prefix None   — Ctrl-B (Claude Code: background a running command) reaches Claude;
     #   escape-time 0 — Esc interrupts at once (tmux default waits 500 ms for a sequence);
@@ -203,15 +233,15 @@ if _cfw_should_wrap_tmux; then
     # The 055 cockpit's display faults came from its browser bridge (polled relay, competing
     # viewer sizes, 055 T-474); none of that is here: one client, the operator's own terminal.
     # lib/sidecar/inject.py looks for panes on this server as well as the default one.
-    # destroy-unattached is set on THIS session only (T-4049, 055 G-014): the server is shared
-    # by every wrapped project, and a session inside it inherits $TMUX, so a global setting
+    # destroy-unattached is set on THIS session only (T-4049, 055 G-014): the server is shared by every wrapped session of this project
+    # (before T-4781, by every project), and a session inside it inherits $TMUX, so a global setting
     # destroyed every detached session a wrapped agent created (fw termlink dispatch workers).
     # T-4217 (G-116): a tmux server takes its GLOBAL env from the process that starts it. The
     # session's own paths travel via -e below, so the server itself must not inherit the
     # caller's PROJECT_ROOT/FRAMEWORK_ROOT (another project's, if the server is shared).  T-4222: also TASKS_DIR/CONTEXT_DIR.
     # T-4426: after a mouse-wheel scroll into copy mode, on attach and on resize, Claude Code's
     # screen stays cluttered until Ctrl+L. Three hooks send C-l to this session's pane. Each is
-    # set on "$_cfw_name" (or its window), never -g: the shared server also carries dispatch
+    # set on "$_cfw_name" (or its window), never -g: the server also carries dispatch
     # workers, and they must not get Ctrl+L. pane-mode-changed is a window hook in tmux 3.4, so
     # it targets "$_cfw_name:"; it fires on every mode change, so it sends C-l only when the
     # pane is back out of its mode (#{pane_in_mode} = 0). run-shell -b expands the formats; a
@@ -240,25 +270,6 @@ if [ "$_CFW_RESUMED" = 1 ]; then
     TERMLINK_ENABLED="$_CFW_R_TL_ENABLED"
     [ -n "$TERMLINK_SESSION" ] || TERMLINK_ENABLED=0
 fi
-
-# T-3693: `fw-project=<16 hex of sha256(realpath project root)>`. Project root:
-# PROJECT_ROOT, else the nearest ancestor holding .framework.yaml (or the
-# framework repo itself), else $PWD — the same walk lib/sidecar/receiver.py does.
-_fw_project_tag() {
-    local d="${PROJECT_ROOT:-}"
-    if [ -z "$d" ]; then
-        d="$PWD"
-        while [ "$d" != "/" ]; do
-            if [ -f "$d/.framework.yaml" ] || { [ -f "$d/FRAMEWORK.md" ] && [ -f "$d/bin/fw" ]; }; then
-                break
-            fi
-            d=$(dirname "$d")
-        done
-        [ "$d" = "/" ] && d="$PWD"
-    fi
-    d=$(cd "$d" 2>/dev/null && pwd -P) || return 0
-    printf 'fw-project=%s' "$(printf '%s' "$d" | sha256sum | cut -c1-16)"
-}
 
 # T-3954: where this wrapper's framework lives. claude-fw is usually run as an installed
 # COPY (/usr/bin, ~/.local/bin), and a copy has no lib/ beside it: every

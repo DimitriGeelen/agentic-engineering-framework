@@ -61,7 +61,7 @@ teardown() {
     fi
 }
 
-# The claude-fw tmux wrap starts its own server (-L fw-agents). A server takes its global env from
+# The claude-fw tmux wrap starts its project's own server (-L fw-agents-<id>, T-4781). A server takes its global env from
 # the process that starts it, so the wrap's tmux call must not carry the caller's path variables;
 # the session still gets them through -e. A fake tmux records the environment it was started with.
 # T-4686: every fact _cfw_should_wrap_tmux (bin/claude-fw) reads is set here, never inherited:
@@ -89,7 +89,7 @@ teardown() {
         echo "T-4686: fake tmux never ran — claude-fw did not take the tmux wrap (claude stub ran: $([ -e "$W/claude.ran" ] && echo yes || echo no))"
         echo "$output"; rm -rf "$W"; false
     fi
-    if ! grep -q -- '^-L fw-agents -f /dev/null new-session ' "$W/tmux.args"; then
+    if ! grep -qE -- '^-L fw-agents-[0-9a-z]+ -f /dev/null new-session ' "$W/tmux.args"; then
         echo "T-4686: fake tmux ran, but not as the wrap:"; cat "$W/tmux.args"; rm -rf "$W"; false
     fi
     if grep -qE '^(PROJECT_ROOT|FRAMEWORK_ROOT|_FW_PATHS_DERIVED_BY|FW_ROUTED_FROM|TASKS_DIR|CONTEXT_DIR)=' "$W/tmux.env"; then

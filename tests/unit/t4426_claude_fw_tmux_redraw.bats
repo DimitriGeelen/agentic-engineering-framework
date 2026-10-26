@@ -2,7 +2,7 @@
 # T-4426 (ring20-dashboard proposal): after a mouse-wheel scroll into tmux copy mode, on attach
 # and on resize, Claude Code's screen stays cluttered until Ctrl+L. claude-fw's tmux chain now
 # sets three hooks that send C-l to the wrapped session's pane. They are scoped to that session
-# (or its window), never -g: the fw-agents server also carries dispatch workers.
+# (or its window), never -g: the project's fw-agents-<id> server (T-4781) also carries dispatch workers.
 #
 # The static leg runs the real claude-fw with a fake tmux that records its argv. The live leg
 # takes the set-hook groups from that recorded argv and replays them on a throwaway tmux server
@@ -54,7 +54,9 @@ _run_tty() {
     grep -qx -- "$name" <<< "$groups"
     # The mode guard is the format check, and the commands reuse the server name claude-fw uses.
     grep -q '\[ #{pane_in_mode} = 0 \]' "$T/tmux.argv"
-    [ "$(grep -c -- '-L fw-agents send-keys -t #{pane_id} C-l' "$T/tmux.argv")" -eq 3 ]
+    # T-4781: that server is the project's own (fw-agents-<id>), as the chain's first -L names it.
+    [[ "${ARGV[1]}" == fw-agents-* ]]
+    [ "$(grep -c -- "-L ${ARGV[1]} send-keys -t #{pane_id} C-l" "$T/tmux.argv")" -eq 3 ]
 }
 
 @test "T-4426: live, copy mode ending sends ^L to the wrapped pane only (throwaway server)" {
@@ -82,7 +84,7 @@ _run_tty() {
             g=()
             i=$((i + 1))
             while [ "$i" -lt "${#ARGV[@]}" ] && [ "${ARGV[$i]}" != ";" ]; do
-                g+=("${ARGV[$i]//fw-agents/$SOCK}")
+                g+=("${ARGV[$i]//"${ARGV[1]}"/$SOCK}")
                 i=$((i + 1))
             done
             tmux -L "$SOCK" "set-hook" "${g[@]}"
@@ -120,7 +122,7 @@ _run_tty() {
             local g=()
             i=$((i + 1))
             while [ "$i" -lt "${#ARGV[@]}" ] && [ "${ARGV[$i]}" != ";" ]; do
-                g+=("${ARGV[$i]//fw-agents/$SOCK}")
+                g+=("${ARGV[$i]//"${ARGV[1]}"/$SOCK}")
                 i=$((i + 1))
             done
             tmux -L "$SOCK" "set-hook" "${g[@]}"
