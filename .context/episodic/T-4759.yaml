@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4759: Regression from T-4740: fw_vendor_completeness 'do_vendor writes FRAMEWORK.md last' red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-26T09:45:10Z
+# ============================================================================
+
+task_id: T-4759
+task_name: "Regression from T-4740: fw_vendor_completeness 'do_vendor writes FRAMEWORK.md last' red"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-26T09:31:38Z
+completed: 2026-10-26T09:43:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-26T10:42:35+01:00
+last_commit: 2026-10-26T10:42:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw_vendor_completeness test 8 finds the FRAMEWORK.md sentinel write by target, not literal cp; also pins it after every other metadata write (stale test after T-4740)
+
+# Key outcomes
+outcomes:
+  - 'Localised in the RCA: why FRAMEWORK.md is no longer written last, and whether "last" still holds when its content is unchanged (no write at all)'
+  - 'The completeness-sentinel contract holds again: an interrupted vendor is still detectable. The fix keeps T-4740''s write-only-if-changed for every other file, so the no-op re-vendor leaves mtimes alone'
+  - '`fw_vendor_completeness.bats`, `t4720_vendor_unchanged_untouched.bats`, the t4740 bats and `upgrade_fresh_machine_simulation.bats` (foreground, `timeout 1800`) pass with no skips; vendored copy in sync (`fw vendor self --check --task T-4759`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4759-regression-from-t-4740-fwvendorcompleten.md'
+  - 'tests/unit/fw_vendor_completeness.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-26T10:42:35'
+    action: 'T-4759: fw_vendor_completeness test 8 finds the FRAMEWORK.md sentinel write by target, not literal cp; also pins it after every other metadata write (stale test after T-4740)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 2
+  files_changed: 5
+  lines_added: 519
+  lines_removed: 7
+  footprint_refreshed_at: '2026-10-26T09:45:14Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4759-regression-from-t-4740-fwvendorcompleten.md
+generated_by: context-agent-hybrid

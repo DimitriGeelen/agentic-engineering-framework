@@ -48967,3 +48967,21 @@ scan_id: R-86eb93c2
 task_id: T-4758
 payload:
   task_file: .tasks/active/T-4758-record-ring20-be21-verdict-t-4753-in-the.md
+---
+kind: scan_emitted
+timestamp: '2026-10-26T09:44:56Z'
+scan_id: R-f559e201
+task_id: T-4759
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-26T09:44:56Z'
+scan_id: R-f559e201
+task_id: T-4759
+payload:
+  task_file: .tasks/active/T-4759-regression-from-t-4740-fwvendorcompleten.md
