@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4815: Reviewer counts the task template's commented-out example AC as a real AC
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T13:07:41Z
+# ============================================================================
+
+task_id: T-4815
+task_name: "Reviewer counts the task template's commented-out example AC as a real AC"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T11:27:37Z
+completed: 2026-10-27T13:07:07Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T13:28:53+01:00
+last_commit: 2026-10-27T13:29:03+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reviewer skips AC-bearing HTML comments in every detector, not only _parse_agent_acs. tick vendor/tests AC
+
+# Key outcomes
+outcomes:
+  - 'A failing test first: a task file whose ### Human section holds only the template''s HTML comment (with its example `- [ ] [REVIEWER] …` and `- [ ] [REVIEW] …` lines) is scanned by lib/reviewer/static_scan.py as having Human ACs, and a detector reports a finding on that example AC'
+  - 'AC parsing in the reviewer skips HTML-comment blocks everywhere it reads ACs (the path that produced the T-4773/T-4783 false finding as well as the T-2156 path), so commented-out examples are never ACs; real ACs before and after a comment are still parsed with their correct indexes'
+  - 'New tests in tests/unit/test_t4815_reviewer_skips_comment_acs.py; the existing reviewer tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — what to blank in the AC section'
+    chose: 'blank (newline-preserving) only HTML comments that contain an AC bullet (`- [ ]`/`- [x]`) or a `##`+ heading; keep other comments verbatim. Applied once in `scan_task`.'
+    rationale: 'opt-out markers that detectors read (`review-link-homework-ok`, `ac-evidence-untick-ok`, audience markers) are HTML comments inside AC bodies; blanking every comment broke `test_reviewer_review_link_homework.bats` "reviewer silent when opt-out marker present". Comments carrying AC/heading lines are template examples, never ACs.'
+    alternatives_rejected: ['blank every comment (breaks opt-out markers); patch each detector separately (six-plus copies; the next detector would repeat the T-2156 shape).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - '.tasks/active/T-4815-reviewer-counts-the-task-templates-comme.md'
+  - 'lib/reviewer/static_scan.py'
+  - 'tests/unit/test_t4815_reviewer_skips_comment_acs.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T13:28:53'
+    action: 'T-4815: reviewer skips AC-bearing HTML comments in every detector, not only _parse_agent_acs'
+  - time: '2026-10-27T13:29:03'
+    action: 'T-4815: tick vendor/tests AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 99 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 99
+  commits: 3
+  files_changed: 6
+  lines_added: 649
+  lines_removed: 10
+  footprint_refreshed_at: '2026-10-27T13:08:50Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4815-reviewer-counts-the-task-templates-comme.md
+generated_by: context-agent-hybrid
