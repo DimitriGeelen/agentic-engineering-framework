@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T23:03:29Z
-last_update: '2026-10-27T23:13:40Z'
+last_update: 2026-10-27T23:36:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -161,6 +161,13 @@ The need: a blocked push says, right next to the refusal, which check(s) failed 
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+
+### Human
+- [ ] [REVIEW] Close-readiness: the work meets its Agent criteria and the Verification section passes (T-4789, reviewer-judged, T-4156)
+  **Steps:**
+  1. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw reviewer judge T-4789`
+  **Expected:** an independent reviewer records a green verdict for this criterion's current text
+  **If not:** remediate the findings the reviewer lists, then re-run the judge
 
 ## Verification
 
@@ -418,3 +425,7 @@ bin/fw vendor self --check --task T-4789
 
 ### 2026-10-27T23:13:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-27T23:36:33Z — delegate ready-to-close [fw-task-delegate]
+- **Ruling:** D-626 / T-3557 / T-4156 — no Human criteria, Agent criteria done: one reviewer-judged close-readiness criterion added; owner unchanged.
+- **Close path:** `bin/fw reviewer judge T-4789`; a green verdict ticks it, red/amber returns findings to remediate.
