@@ -157,7 +157,10 @@ _do_update_vendored() {
     # Get upstream URL from .framework.yaml
     local upstream_url=""
     if [ -f "$project_root/.framework.yaml" ]; then
-        upstream_url=$(grep "^upstream_repo:" "$project_root/.framework.yaml" 2>/dev/null | sed 's/^upstream_repo:[[:space:]]*//' || true)
+        # T-4849: a YAML-aware read, not grep+sed — a value folded onto a
+        # continuation line (fw config set before T-3735) read as ''.
+        source "$(dirname "${BASH_SOURCE[0]}")/yaml.sh"
+        upstream_url=$(get_yaml_field "$project_root/.framework.yaml" upstream_repo)
     fi
 
     if [ -z "$upstream_url" ]; then

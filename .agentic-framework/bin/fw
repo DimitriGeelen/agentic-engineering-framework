@@ -2136,7 +2136,9 @@ do_doctor() {
             fi
             # T-1097/G-028: Reconcile upstream_repo vs running FRAMEWORK_ROOT
             local upstream_repo
-            upstream_repo=$(grep "^upstream_repo:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^upstream_repo:[[:space:]]*//' || true)
+            # T-4849: folded/quoted-aware read (lib/yaml.sh), not grep+sed.
+            source "$FRAMEWORK_ROOT/lib/yaml.sh"
+            upstream_repo=$(get_yaml_field "$PROJECT_ROOT/.framework.yaml" upstream_repo)
             # T-2843: the predicate moved to lib/doctor-upstream.sh. It is NOT a
             # plain inequality — in vendored mode (the D-377 default) the running
             # fw is this project's own .agentic-framework by design, so it can

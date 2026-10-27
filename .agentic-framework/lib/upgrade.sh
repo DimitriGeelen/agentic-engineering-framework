@@ -1596,10 +1596,9 @@ do_upgrade() {
         local _upstream_source=""
         [ -n "$_upstream_url" ] && _upstream_source="--from-upstream flag"
         if [ -z "$_upstream_url" ] && [ -f "$target_dir/.framework.yaml" ]; then
-            _upstream_url=$(grep "^upstream_repo:" "$target_dir/.framework.yaml" 2>/dev/null \
-                | head -1 \
-                | sed -E 's/^upstream_repo:[[:space:]]*//' \
-                | sed -E 's/[[:space:]]+$//')
+            # T-4849: folded/quoted-aware read (lib/yaml.sh), not grep+sed.
+            source "$(dirname "${BASH_SOURCE[0]}")/yaml.sh"
+            _upstream_url=$(get_yaml_field "$target_dir/.framework.yaml" upstream_repo)
             [ -n "$_upstream_url" ] && _upstream_source=".framework.yaml upstream_repo:"
         fi
         # T-2232 leg 3: vendored .upstream sentinel (written by do_vendor in

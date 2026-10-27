@@ -11,10 +11,10 @@ description: >
   the line is laid out (folded, quoted or plain), e.g. through a YAML parse with the
   grep as a fallback, and a test with a folded value.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, upgrade]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T22:20:57Z
-last_update: '2026-10-27T22:30:53Z'
+last_update: 2026-10-27T23:13:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,8 @@ See description. Follow-up of T-4847. The need: `fw update` finds the upstream r
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test puts a folded (continuation-line) `upstream_repo:` value in a temp project's .framework.yaml and shows lib/update.sh's reader returns empty; it fails before the fix
-- [ ] The reader returns the full value for plain, quoted and folded layouts (a YAML parse, with the existing grep as the fallback when python/yaml is unavailable); other line-wise readers of upstream_repo in lib/ and bin/fw get the same treatment, or are listed in Decisions with why not
+- [x] Reproduce first: a bats test puts a folded (continuation-line) `upstream_repo:` value in a temp project's .framework.yaml and shows lib/update.sh's reader returns empty; it fails before the fix
+- [x] The reader returns the full value for plain, quoted and folded layouts (a YAML parse, with the existing grep as the fallback when python/yaml is unavailable); other line-wise readers of upstream_repo in lib/ and bin/fw get the same treatment, or are listed in Decisions with why not
 - [ ] tests/unit/t3735_config_set_no_fold.bats and t4847_config_set_preserves_lines.bats stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
@@ -287,7 +287,7 @@ bin/fw vendor self --check --task T-4849
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
-## RCA
+<!-- RCA: see the ## RCA section below (after Evolution). -->
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -326,6 +326,16 @@ bin/fw vendor self --check --task T-4849
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** `fw update` failed with "No upstream_repo" on a consumer whose .framework.yaml had `upstream_repo:` folded onto a continuation line (written by `fw config set` before T-3735). Since T-4847, a later `fw config set` no longer heals the fold, so the file stays broken.
+
+**Root cause:** four line-wise readers, `grep '^upstream_repo:' | sed 's/^upstream_repo:…//'`, read only the key's own physical line: lib/update.sh:160, lib/upstream.sh:22, lib/upgrade.sh:1599 (auto-clone leg 2) and bin/fw:2139 (doctor). A folded value sits on the next line, so they read ''. The update.sh, upgrade.sh and bin/fw readers also kept surrounding quotes, so a quoted value came through as `"https://…"` (reproduced by the new test).
+
+**Why structurally allowed:** each caller had its own copy of the grep+sed pattern instead of using the shared YAML field reader (lib/yaml.sh `get_yaml_field`, which T-2731 had already made continuation- and quote-aware). T-3735 fixed the writer (no folding), not the readers. The writer's side effect of unfolding hid this until T-4847 removed it.
+
+**Prevention:** tests/unit/t4849_update_reads_folded_upstream.bats covers folded, plain, double- and single-quoted values through `fw update --check` and `_upstream_resolve_repo`. Its last test fails if a `grep "^upstream_repo:" … | sed` reader comes back anywhere in lib/ or bin/fw.
 
 ## Recommendation
 
@@ -367,6 +377,12 @@ bin/fw vendor self --check --task T-4849
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-28 — how to read upstream_repo layout-independently
+- **Chose:** the existing shell reader `get_yaml_field` (lib/yaml.sh) at all four sites.
+- **Why:** it already joins continuation lines with one space (what YAML means for a folded plain or quoted scalar) and strips `"`/`'`. It needs no python and no fallback branch, and a fourth reader copy is no longer needed.
+- **Rejected:** a python/PyYAML parse with grep as the fallback (the AC's suggestion). It adds a python dependency to `fw update` on bare consumer hosts and keeps the broken grep as the path that runs exactly where python is missing. The AC's intent (full value for plain, quoted and folded) is met without it.
+- **Left as is:** `grep -q '^upstream_repo:'` existence checks (lib/upstream.sh:110,135, lib/upgrade.sh:1798). They test whether the key exists, not its value, and a folded key line still matches. The `sed -i` writer at lib/upstream.sh:111 rewrites only the key line, so it would leave a folded continuation orphaned. That is writer-side and out of this reader task. Noted for a follow-up, not changed here.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -383,3 +399,7 @@ bin/fw vendor self --check --task T-4849
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4849-libupdatesh-reads-a-folded-upstreamrepo-.md
 - **Context:** Initial task creation
+
+### 2026-10-27T23:13:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

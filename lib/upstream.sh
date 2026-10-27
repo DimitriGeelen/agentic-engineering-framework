@@ -19,7 +19,9 @@ _upstream_resolve_repo() {
 
     # 1. Check .framework.yaml in PROJECT_ROOT (consumer project)
     if [ -f "${PROJECT_ROOT:-.}/.framework.yaml" ]; then
-        repo=$(grep '^upstream_repo:' "${PROJECT_ROOT}/.framework.yaml" 2>/dev/null | sed 's/upstream_repo: *//' | tr -d '"' || true)
+        # T-4849: folded/quoted-aware read (lib/yaml.sh), not grep+sed.
+        source "$(dirname "${BASH_SOURCE[0]}")/yaml.sh"
+        repo=$(get_yaml_field "${PROJECT_ROOT}/.framework.yaml" upstream_repo)
     fi
 
     # 2. Fallback: detect from framework repo's git remotes (try origin, then any github.com remote)
