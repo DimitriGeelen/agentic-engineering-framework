@@ -341,7 +341,7 @@ bin/fw vendor self --check --task T-4831
 ## Recommendation
 
 **Recommendation:** GO
-**Rationale:** GET /api/instances is live and matches 832's contract (400 bad id, 404 unknown template, 200 with INSTANCES/NO-INSTANCES). Only aef-task-lifecycle carries instances; every other map answers NO-INSTANCES. The remaining question is whether the overlay looks right to you.
+**Rationale:** The instances endpoint (http://192.168.10.107:3000/api/instances?template=aef-task-lifecycle) is live and matches 832's contract (400 bad id, 404 unknown template, 200 with INSTANCES/NO-INSTANCES). Only aef-task-lifecycle carries instances; every other map answers NO-INSTANCES. The remaining question is whether the overlay looks right to you.
 **Evidence:**
 - 7 new tests in tests/web/test_t4831_instances.py pass, as do the existing designer_api and overlay tests (16 total)
 - A test asserts every node the mapping uses exists in the real aef-task-lifecycle map, so a map edit that drops a node fails a test
