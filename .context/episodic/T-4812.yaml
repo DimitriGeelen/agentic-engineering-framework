@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4812: Closed-record append route refused on its own documented shape: the close writes status-update entries after ## Reviewer Verdict, outside ## Updates
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T11:51:04Z
+# ============================================================================
+
+task_id: T-4812
+task_name: "Closed-record append route refused on its own documented shape: the close writes status-update entries after ## Reviewer Verdict, outside ## Updates"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T11:09:01Z
+completed: 2026-10-27T11:50:37Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T12:29:29+01:00
+last_commit: 2026-10-27T12:29:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  close path writes Updates entries inside ## Updates, not after ## Reviewer Verdict
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first: a task closed through `fw task update --status work-completed` (with a Reviewer Verdict block written by the close) leaves its final status-update entry outside ## Updates, and the documented append Edit anchored on the file''s last two lines is refused by agents/context/check-active-task.sh'
+  - 'The close path writes status-update (and other Updates) entries inside ## Updates, before the next `## ` section, instead of at end of file. Find every writer (grep agents/task-create and lib for the status-update entry format) and list them in ## Decisions'
+  - 'After the fix, the same append Edit on a freshly closed task passes the gate; a non-append Edit (changing an AC line) and an append that adds a `## ` section are still refused'
+  - 'Sibling update-task and closed-record tests stay green (t4285*, update_task*); new tests in tests/unit/t4812_closed_record_append.bats; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — where Updates entries go'
+    chose: '(a) writers insert the entry at the end of `## Updates` (before the next `## `) through one shared helper, lib/task_updates.py; EOF append only when the file has no `## Updates`.'
+    rationale: 'fixes the record shape at the source and keeps the gate''s bounds strict. Existing closed records keep their old shape; their append route works by anchoring on the last lines *inside* ## Updates.'
+    alternatives_rejected: ['(b) writing the Reviewer Verdict before ## Updates — touches the reviewer''s replace-in-place logic and every reader of the verdict position; widening the gate to accept EOF appends — would let an append land in any trailing section.']
+  - decision: '2026-10-27 — writers of Updates entries found (grep for `### <ts> — … [agent]`)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/lib/task_updates.py'
+  - '.fabric/components/lib-task_updates.yaml'
+  - '.tasks/active/T-4812-closed-record-append-route-refused-on-it.md'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/inception.sh'
+  - 'lib/task_updates.py'
+  - 'tests/unit/t4812_closed_record_append.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T12:29:29'
+    action: 'T-4812: close path writes Updates entries inside ## Updates, not after ## Reviewer Verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 41
+  commits: 2
+  files_changed: 11
+  lines_added: 795
+  lines_removed: 11
+  footprint_refreshed_at: '2026-10-27T11:51:32Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4812-closed-record-append-route-refused-on-it.md
+generated_by: context-agent-hybrid
