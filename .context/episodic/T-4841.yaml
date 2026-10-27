@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4841: fw task create: an aborted create leaves child processes holding the task-id-allocation lock
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T19:56:24Z
+# ============================================================================
+
+task_id: T-4841
+task_name: "fw task create: an aborted create leaves child processes holding the task-id-allocation lock"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T19:44:44Z
+completed: 2026-10-27T19:56:01Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T20:44:55+01:00
+last_commit: 2026-10-27T20:56:00+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — aborted fw task create leaves children holding the task-id lock (1409 msg 62898926). ACs, RCA, Verification. create-task holds task-id-allocation only around id+write; children never inherit the lock fd. drop empty Human section (no human criteria)
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test starts `fw task create` (or create-task.sh) in a temp project, kills only the parent with SIGTERM while a child it spawned is still running, and shows a second create then blocks on (or times out at) task-id-allocation; this test fails before the fix'
+  - 'After the fix the same test passes: once the parent is gone, a second create acquires the lock without waiting for the orphaned child'
+  - 'No child the create spawns holds the lock fd (closed before spawning, or the lock is released before the post-file-write steps that spawn children)'
+  - 'Id uniqueness holds: tests/unit/task_id_race.bats, t4189_task_id_highwater and t100202_id_quarantine stay green; parallel creates still never reuse an id'
+  - 'Vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — how to keep children off the lock'
+    chose: 'narrow the lock to slug→acquire→generate_id→template write→release, and run generate_id and the template writers in subshells that `eval "$(keylock_subshell_close_cmd)"` first; lib/keylock.sh unchanged.'
+    rationale: 'bash cannot set O_CLOEXEC on an fd, and the existing T-1493 primitive is the codebase''s answer to this class; narrowing also stops serialising the origin/recommendation/focus steps behind the lock (the id is already persisted to .id-highwater inside generate_id).'
+    alternatives_rejected: ['changing lib/keylock.sh to auto-close in every child (no bash mechanism; would alter other callers); releasing only after the file write without closing the fd in children (a child spawned inside the window would still keep the lock after a kill).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.tasks/active/T-4841-fw-task-create-an-aborted-create-leaves-.md'
+  - 'agents/task-create/create-task.sh'
+  - 'tests/unit/t4841_create_lock_on_abort.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T20:44:55'
+    action: 'T-4841: file — aborted fw task create leaves children holding the task-id lock (1409 msg 62898926)'
+  - time: '2026-10-27T20:45:59'
+    action: 'T-4841: ACs, RCA, Verification'
+  - time: '2026-10-27T20:54:07'
+    action: 'T-4841: create-task holds task-id-allocation only around id+write; children never inherit the lock fd'
+  - time: '2026-10-27T20:56:00'
+    action: 'T-4841: drop empty Human section (no human criteria)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, task-create]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 5
+  files_changed: 7
+  lines_added: 653
+  lines_removed: 44
+  footprint_refreshed_at: '2026-10-27T19:56:33Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4841-fw-task-create-an-aborted-create-leaves-.md
+generated_by: context-agent-hybrid
