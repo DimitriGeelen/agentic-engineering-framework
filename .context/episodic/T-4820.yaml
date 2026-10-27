@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4820: Gate deadlock in a linked worktree without focus.yaml: check-active-task refuses every Bash (even cd back), worktree-governance-write refuses creating the focus
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T14:50:45Z
+# ============================================================================
+
+task_id: T-4820
+task_name: "Gate deadlock in a linked worktree without focus.yaml: check-active-task refuses every Bash (even cd back), worktree-governance-write refuses creating the focus"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T13:20:35Z
+completed: 2026-10-27T14:50:16Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T15:02:05+01:00
+last_commit: 2026-10-27T15:02:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  worktree without focus.yaml borrows main checkout's focus — no gate deadlock. tick final Agent AC — siblings green, vendor in sync
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first reproduces the deadlock in a temp repo with a linked worktree (git worktree add) that has no .context/working/focus.yaml: from inside it, agents/context/check-active-task.sh refuses a plain `cd <main checkout>`, and agents/context/check-worktree-governance-write.sh refuses a Write of the worktree''s focus.yaml'
+  - 'A bare `cd PATH` (nothing else on the line) always passes the task gate, and so does the bootstrap focus verb (`fw context focus T-XXX` / `fw work-on T-XXX`) run from a worktree'
+  - '`fw context focus` / `fw context init` run inside a linked worktree read and write the SAME focus file the gates read for that cwd (whichever the design picks: the worktree''s own or the main checkout''s), recorded in ## Decisions; no case left where the gate reads one file and the verb writes another'
+  - 'Do NOT create real worktrees of this repo: tests build a temp repo. New tests in tests/unit/t4820_worktree_focus_deadlock.bats; sibling gate tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — Which focus file a linked worktree uses'
+    chose: 'A worktree''s own `.context/working/focus.yaml` when it exists (T-2463 unchanged). When it does not exist, the main checkout''s file, resolved in the one shared resolver `lib/paths.sh:fw_focus_file` that both the gate and `fw context focus` call. The gate reads `session.yaml` from the directory the focus came from, so the stamp check compares like with like. `fw context init` in such a worktree leaves an existing main focus untouched rather than creating a fork or resetting it. The fallback applies only to the tree''s own `.context`: a sandboxed `CONTEXT_DIR` (T-3141) is never redirected, and session-scoped focus (T-3038) is unchanged.'
+    rationale: 'T-3098 already decided that governance state belongs to the main checkout and refuses creating it in a worktree. Reading main''s file is the only choice that agrees with that refusal. With one resolver, the reader and the writer cannot diverge whichever way `PROJECT_ROOT` was resolved: `fw_focus_file(<worktree>)` and `fw_focus_file(<main>)` name the same file.'
+    alternatives_rejected: ['(a) Let the worktree create its own focus by exempting focus.yaml from T-3098. That forks tracked governance state, which is exactly the G-083 stranding class T-3098 exists for. (b) Always use main''s focus, even when the worktree has one. That would break T-2463''s per-worktree focus and its pinned tests.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/context/check-worktree-governance-write.sh'
+  - '.agentic-framework/agents/context/lib/init.sh'
+  - '.agentic-framework/lib/paths.sh'
+  - '.tasks/active/T-4820-gate-deadlock-in-a-linked-worktree-witho.md'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/check-worktree-governance-write.sh'
+  - 'agents/context/lib/init.sh'
+  - 'lib/paths.sh'
+  - 'tests/unit/t4820_worktree_focus_deadlock.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T15:02:05'
+    action: 'T-4820: worktree without focus.yaml borrows main checkout''s focus — no gate deadlock'
+  - time: '2026-10-27T15:02:41'
+    action: 'T-4820: tick final Agent AC — siblings green, vendor in sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 89 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 89
+  commits: 3
+  files_changed: 13
+  lines_added: 872
+  lines_removed: 8
+  footprint_refreshed_at: '2026-10-27T15:00:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4820-gate-deadlock-in-a-linked-worktree-witho.md
+generated_by: context-agent-hybrid

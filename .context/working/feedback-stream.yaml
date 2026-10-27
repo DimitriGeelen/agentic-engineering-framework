@@ -49937,3 +49937,75 @@ scan_id: R-ec6cfa8f
 task_id: T-4824
 payload:
   task_file: .tasks/active/T-4824-upstream-055s-t-483-un-ticking-a-human-a.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T14:50:33Z'
+scan_id: R-34bff363
+task_id: T-4820
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T14:50:33Z'
+scan_id: R-34bff363
+task_id: T-4820
+payload:
+  task_file: .tasks/active/T-4820-gate-deadlock-in-a-linked-worktree-witho.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T14:52:12Z'
+scan_id: R-b129f5d6
+task_id: T-4821
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T14:52:12Z'
+scan_id: R-b129f5d6
+task_id: T-4821
+payload:
+  task_file: .tasks/active/T-4821-fw-upgrades-claudemd-governance-refresh-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T14:58:54Z'
+scan_id: R-ddad94c3
+task_id: T-4822
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T14:58:54Z'
+scan_id: R-ddad94c3
+task_id: T-4822
+payload:
+  task_file: .tasks/active/T-4822-fw-upgrade-in-a-linked-worktree-regenera.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T14:59:46Z'
+scan_id: R-a6a8df27
+task_id: T-4823
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T14:59:46Z'
+scan_id: R-a6a8df27
+task_id: T-4823
+payload:
+  task_file: .tasks/active/T-4823-fw-upgrade-writes-the-new-pinned-designe.md
