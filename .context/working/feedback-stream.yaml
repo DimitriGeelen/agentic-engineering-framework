@@ -50333,3 +50333,21 @@ scan_id: R-36a995d7
 task_id: T-4825
 payload:
   task_file: .tasks/active/T-4825-focus-drift-gate-reads-a-task-id-inside-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T22:46:46Z'
+scan_id: R-eb2dc09f
+task_id: T-4827
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T22:46:46Z'
+scan_id: R-eb2dc09f
+task_id: T-4827
+payload:
+  task_file: .tasks/active/T-4827-check-active-task-names-the-wrong-segmen.md
