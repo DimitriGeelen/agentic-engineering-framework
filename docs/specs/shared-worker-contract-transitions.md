@@ -499,8 +499,10 @@ or `lost`; an `unknown` is resolved through T7d first). Closing is a dispatch-le
 `closed: {actor, reason, ts}` once, in the same atomic step that checks the last attempt is terminal, appends nothing
 to any attempt's `history` and changes no attempt's `state`, `outcome` or `result`. It is never undone. After it, a
 T1 is `fence_reject(dispatch_closed)`; T5, T7b and T8 on an existing attempt are unaffected (closure is not a fence on
-late evidence, §3.3 precedence). A closed dispatch is continued, if at all, only by a new dispatch naming it in
-`retry_of_dispatch_id` (§8.4). A backend that never closes a dispatch (the hub keeps them open) is conformant
+late evidence, §3.3 precedence). Work on a closed dispatch can only continue in a new dispatch. A new dispatch that
+names it in `retry_of_dispatch_id` resolves it (§8.4). Naming it is a MAY: a backend that re-commissions from its own
+queue without the link is conformant, and the closed dispatch then stays unresolved, never counted as finished
+work (§8.4, CC-19). A backend that never closes a dispatch (the hub keeps them open) is conformant
 unchanged, and the cases that allocate after a terminal attempt (CC-15, CC-19) accept either answer.
 [ring20 closure] [termlink 14d0100a]
 
