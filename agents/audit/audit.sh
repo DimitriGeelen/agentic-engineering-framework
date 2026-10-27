@@ -5064,7 +5064,17 @@ PY
             # shellcheck source=/dev/null
             source "$FRAMEWORK_ROOT/lib/continuous-mode.sh"
             local _live
-            if ! _live=$(fw_continuous_cli status 2>/dev/null); then
+            # T-4809: `start armed` is written by EVERY claude-fw launch — reason
+            # means "supervisor started", the run state is `armed=yes|no` in its
+            # detail. A run that was never armed, or was deliberately disarmed, is
+            # the ordinary interactive session, not drift: same exemption fw
+            # doctor's twin has carried since T-4358 (GH #101).
+            if _live=$(fw_continuous_cli status 2>/dev/null); then
+                :
+            elif [[ "$_live" == *"Reason (live): state-unreadable-or-empty"* \
+                 || "$_live" == *"Reason (live): .continuous-mode.yaml: enabled="*"(not armed)"* ]]; then
+                :
+            else
                 warn "Continuous-run wrapper last recorded ARMED but the turn driver is not" \
                      "$(printf '%s' "$_live" | sed -n 's/^  Reason (live): //p')" \
                      "fw continuous arm --hours N --iterations N --directive '...' (T-3225). Same drift class as the 74-day and 8-day prior incidents (G-099)."

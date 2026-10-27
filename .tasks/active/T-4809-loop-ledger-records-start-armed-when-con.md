@@ -1,10 +1,13 @@
 ---
 id: T-4809
-name: "Loop ledger records 'start armed' when continuous mode is not armed; audit G-099 then reports ARMED"
+name: "Loop ledger records 'start armed' when continuous mode is not armed; audit
+  G-099 then reports ARMED"
 description: >
-  1409 dauerlauf-1 pickup F5 (msg ab944308): the claude-fw loop ledger writes 'start armed' even when armed=no, so audit's G-099 check reports the wrapper last recorded ARMED. Reported by 1409, not yet reproduced in AEF; reproduce first.
+  1409 dauerlauf-1 pickup F5 (msg ab944308): the claude-fw loop ledger writes 'start
+  armed' even when armed=no, so audit's G-099 check reports the wrapper last recorded
+  ARMED. Reported by 1409, not yet reproduced in AEF; reproduce first.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T11:02:21Z
-last_update: 2026-10-27T11:02:21Z
-date_finished: null
+last_update: '2026-10-27T22:31:40Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-27T22:31:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4809: Loop ledger records 'start armed' when continuous mode is not armed; audit G-099 then reports ARMED
@@ -61,9 +81,9 @@ See description. The need: the claude-fw loop ledger records the armed state tha
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first in AEF (1409 reported it, not yet reproduced here): drive the claude-fw loop start path with continuous mode not armed and show the ledger line says armed; a bats test pins it. If it does NOT reproduce, record the evidence in ## Decisions, ask 1409 for their exact ledger line and version, and stop
-- [ ] When it reproduces: the ledger's start record carries the real armed state (from .continuous-mode.yaml / the turn driver), and audit's G-099 check reads it correctly
-- [ ] Existing continuous-run and G-099 tests stay green; vendor in sync
+- [x] Reproduce first in AEF (1409 reported it, not yet reproduced here): drive the claude-fw loop start path with continuous mode not armed and show the ledger line says armed; a bats test pins it. If it does NOT reproduce, record the evidence in ## Decisions, ask 1409 for their exact ledger line and version, and stop
+- [x] When it reproduces: the ledger's start record carries the real armed state (from .continuous-mode.yaml / the turn driver), and audit's G-099 check reads it correctly
+- [x] Existing continuous-run and G-099 tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,7 +133,8 @@ See description. The need: the claude-fw loop ledger records the armed state tha
 
 ## Verification
 
-timeout 900 bats tests/unit/t4809_loop_ledger_armed_state.bats
+timeout 900 bats tests/unit/t4809_loop_ledger_armed_state.bats > /tmp/.t4809-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4809-a.out && test "$(grep -c '# skip' /tmp/.t4809-a.out)" -eq 0
+timeout 900 bats tests/unit/t4358_doctor_turn_driver_interactive.bats tests/unit/t3206_continuous_run_ledger.bats tests/unit/t3213_start_event_confirmation.bats > /tmp/.t4809-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4809-b.out
 bin/fw vendor self --check --task T-4809
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -268,6 +289,14 @@ bin/fw vendor self --check --task T-4809
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `fw audit` (daily cron) WARNs "Continuous-run wrapper last recorded ARMED but the turn driver is not" for every ordinary interactive `claude-fw` session, where continuous mode was never armed or was deliberately disarmed (1409 F5). Reproduced in AEF: tests 1-3 of `tests/unit/t4809_loop_ledger_armed_state.bats` failed on HEAD with exactly that WARN (`state-unreadable-or-empty` and `enabled=False (not armed)`).
+
+**Root cause:** `bin/claude-fw:1301` writes `event=start reason=armed` on every first launch; `reason=armed` means "the supervisor started", and the real continuous-mode state is the `armed=yes|no` token in `detail` (already correct). `agents/audit/audit.sh` `check_continuous_run_turn_driver` (~line 5068) treated every start/iterate as "wrapper ARMED" and WARNed whenever `fw_continuous_cli status` exited non-zero, never-armed and disarmed included. `fw doctor`'s twin (bin/fw ~3436) got the exemption in T-4358 (GH #101); the audit copy, ported from doctor by T-3262, was not updated.
+
+**Why structurally allowed:** the doctor check and its audit mirror are two hand-copied implementations with no shared helper and no test on the audit side (only `t4358_doctor_turn_driver_interactive.bats` for doctor), so T-4358 fixed one copy and nothing noticed the other.
+
+**Prevention:** `tests/unit/t4809_loop_ledger_armed_state.bats` runs the audit function extracted from audit.sh against never-armed, disarmed and iterate-after-unarmed ledgers, plus a control (armed run with exhausted iterations still WARNs) and a pin that the wrapper's start detail carries `armed=$(_continuous_armed ...)`.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -332,6 +361,11 @@ bin/fw vendor self --check --task T-4809
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-27 — fix the reader (audit), not the ledger's reason field
+- **Chose:** keep `start armed` in the ledger; make audit's G-099 check apply the same never-armed / disarmed exemption as `fw doctor` (T-4358), keyed on the turn driver's live reason.
+- **Why:** the ledger already carries the real state (`armed=yes|no` in detail, pinned by test 5); `reason=armed` is read as "supervisor started" by doctor, t3206, t3213, t3209, t4118 and by consumer ledgers already on disk. Keying on the live state (not the start line's `armed=no`) also keeps the WARN when an operator armed mid-session and the run then lapsed.
+- **Rejected:** (a) renaming the reason (e.g. `supervised`) when unarmed: breaks every reader and existing ledgers, and does not fix iterate events; (b) suppressing on `armed=no` in the start detail: would hide the armed-mid-session-then-lapsed drift G-099 exists for.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -348,3 +382,6 @@ bin/fw vendor self --check --task T-4809
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4809-loop-ledger-records-start-armed-when-con.md
 - **Context:** Initial task creation
+
+### 2026-10-27T22:31:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
