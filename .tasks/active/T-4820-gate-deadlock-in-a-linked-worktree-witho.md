@@ -91,7 +91,7 @@ bvp_scores_proposed:
 - [x] A failing bats case first reproduces the deadlock in a temp repo with a linked worktree (git worktree add) that has no .context/working/focus.yaml: from inside it, agents/context/check-active-task.sh refuses a plain `cd <main checkout>`, and agents/context/check-worktree-governance-write.sh refuses a Write of the worktree's focus.yaml
 - [x] A bare `cd PATH` (nothing else on the line) always passes the task gate, and so does the bootstrap focus verb (`fw context focus T-XXX` / `fw work-on T-XXX`) run from a worktree
 - [x] `fw context focus` / `fw context init` run inside a linked worktree read and write the SAME focus file the gates read for that cwd (whichever the design picks: the worktree's own or the main checkout's), recorded in ## Decisions; no case left where the gate reads one file and the verb writes another
-- [ ] Do NOT create real worktrees of this repo: tests build a temp repo. New tests in tests/unit/t4820_worktree_focus_deadlock.bats; sibling gate tests stay green; vendor in sync
+- [x] Do NOT create real worktrees of this repo: tests build a temp repo. New tests in tests/unit/t4820_worktree_focus_deadlock.bats; sibling gate tests stay green; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
