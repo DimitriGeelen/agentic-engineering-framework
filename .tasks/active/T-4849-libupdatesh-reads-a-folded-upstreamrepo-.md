@@ -97,7 +97,7 @@ See description. Follow-up of T-4847. The need: `fw update` finds the upstream r
 ### Agent
 - [x] Reproduce first: a bats test puts a folded (continuation-line) `upstream_repo:` value in a temp project's .framework.yaml and shows lib/update.sh's reader returns empty; it fails before the fix
 - [x] The reader returns the full value for plain, quoted and folded layouts (a YAML parse, with the existing grep as the fallback when python/yaml is unavailable); other line-wise readers of upstream_repo in lib/ and bin/fw get the same treatment, or are listed in Decisions with why not
-- [ ] tests/unit/t3735_config_set_no_fold.bats and t4847_config_set_preserves_lines.bats stay green; vendor in sync
+- [x] tests/unit/t3735_config_set_no_fold.bats and t4847_config_set_preserves_lines.bats stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
