@@ -1,13 +1,6 @@
 ---
 id: T-4789
-name: "OBS: the pre-push audit-failure message is indistinguishable from the lock
-  message at a glance, and both end with the same '--no-verify' bypass line. The failure
-  case says 'ERROR: Push blocked - audit has FAILURES / Fix the issues above before
-  pushing' — but 'above' is ~200 lines of audit output scrolled past, and the FAIL
-  line itself is not repeated near the refusal. Consider echoing the failing check
-  name(s) adjacent to the refusal, the way the lock message helpfully names .context/locks/audit.lock.
-  Cost of the current shape: an agent that pipes to tail sees a refusal with no cause
-  and reads it as transient. Origin: T-3024 session, 2026-08-16."
+name: "Pre-push audit-failure refusal does not name the failing check and reads like the lock message"
 description: >
   Promoted from observation OBS-274
 
@@ -103,9 +96,13 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4789: OBS: the pre-push audit-failure message is indistinguishable from the lock message at a glance, and both end with the same '--no-verify' bypass line. The failure case says 'ERROR: Push blocked - audit has FAILURES / Fix the issues above before pushing' — but 'above' is ~200 lines of audit output scrolled past, and the FAIL line itself is not repeated near the refusal. Consider echoing the failing check name(s) adjacent to the refusal, the way the lock message helpfully names .context/locks/audit.lock. Cost of the current shape: an agent that pipes to tail sees a refusal with no cause and reads it as transient. Origin: T-3024 session, 2026-08-16.
+# T-4789: Pre-push audit-failure refusal does not name the failing check and reads like the lock message
 
 ## Context
+
+Observation text (OBS-274):
+
+> OBS: the pre-push audit-failure message is indistinguishable from the lock message at a glance, and both end with the same '--no-verify' bypass line. The failure case says 'ERROR: Push blocked - audit has FAILURES / Fix the issues above before pushing' — but 'above' is ~200 lines of audit output scrolled past, and the FAIL line itself is not repeated near the refusal. Consider echoing the failing check name(s) adjacent to the refusal, the way the lock message helpfully names .context/locks/audit.lock. Cost of the current shape: an agent that pipes to tail sees a refusal with no cause and reads it as transient. Origin: T-3024 session, 2026-08-16.
 
 Source: observation OBS-274 (.context/inbox.yaml). When the pre-push hook blocks a push because the audit FAILs, its message ("Fix the issues above") points at ~200 lines of scrolled-away output, and it reads almost the same as the lock-held message; both end in the same bypass line. Tonight's pushes showed a bare "Fail: 1" whose cause had to be dug out of the audit YAML by hand.
 
@@ -114,10 +111,10 @@ The need: a blocked push says, right next to the refusal, which check(s) failed 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test drives the pre-push hook with an audit that FAILs one named check and shows the refusal does not name the check; it fails before the fix
-- [ ] The refusal lists each FAIL check name (and its first evidence line, cut short) directly above or below the refusal line; the lock-held refusal says the lock is held and by what, and does not look like an audit failure
-- [ ] The hook text changes go through the repo's own hook sources and their digest files (agents/git/lib/*hook-lines*, tools/gen-*hook*), so `fw git install-hooks` and its integrity checks stay consistent; existing pre-push and hook-digest tests stay green
-- [ ] Vendor in sync
+- [x] Reproduce first: a bats test drives the pre-push hook with an audit that FAILs one named check and shows the refusal does not name the check; it fails before the fix
+- [x] The refusal lists each FAIL check name (and its first evidence line, cut short) directly above or below the refusal line; the lock-held refusal says the lock is held and by what, and does not look like an audit failure
+- [x] The hook text changes go through the repo's own hook sources and their digest files (agents/git/lib/*hook-lines*, tools/gen-*hook*), so `fw git install-hooks` and its integrity checks stay consistent; existing pre-push and hook-digest tests stay green
+- [x] Vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -393,6 +390,14 @@ bin/fw vendor self --check --task T-4789
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-28 — where the failing-check names come from
+- **Chose:** the hook reads the `[FAIL]` titles, first `Evidence:` line and `Scope: worktree` tag back out of the audit output it already captures (`$_t3126_out`), strips ANSI, truncates evidence to 140 chars, caps the list at 10.
+- **Why:** stays inside the hook sources (this task's component); works with any audit that prints the long-standing `[FAIL]` block format, including older vendored audits; when nothing parses it falls back to the old "Fix the issues above" line, so it never says less than before.
+- **Rejected:** a new machine line in agents/audit/audit.sh (e.g. `AUDIT-SCOPE-REF: <title>`) — cleaner contract, but edits another component and would not help consumers whose vendored audit predates it.
+
+### 2026-10-28 — lock-held message
+- **Chose:** no change. The lock branch already says "audit COULD NOT RUN … This is not an audit failure" and names the holder (T-4542); the test pins that it never prints "audit has FAILURES" or a failing-check list.
 
 ## Decision
 
