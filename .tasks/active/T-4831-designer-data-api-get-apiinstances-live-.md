@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:26:50Z
-last_update: 2026-10-27T15:35:48Z
+last_update: 2026-10-27T16:37:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -154,7 +154,7 @@ bvp_scores_proposed:
   1. Open http://192.168.10.107:3000/designer/app and open the aef-task-lifecycle map
   2. Look at the instance overlay (and the picker's instance count)
   **Expected:** active tasks show on the nodes that match their status; other maps show no instances and no error
-  **If not:** Note the map and what is shown; the agent compares it with /api/instances
+  **If not:** Note the map and what is shown; the agent compares it with http://192.168.10.107:3000/api/instances?template=aef-task-lifecycle
 
 ## Verification
 
