@@ -475,8 +475,11 @@ PY
     run python3 "$TICKS" audit --since 2000-01-01
     [ "$status" -eq 2 ]
     [[ "$output" == *"Check display"* ]]
-    # the first commit added Desktop pre-ticked: 2 findings total (added + moved)
-    [[ "$output" == *"2 unprovenanced"* ]]
+    # the first commit added Desktop pre-ticked, but Desktop is unticked now, so that
+    # finding resolves (T-4824); the moved tick on Mobile stands and still FAILs
+    [[ "$output" == *"1 unprovenanced"* ]]
+    [[ "$output" == *"Check display"$'\n'"Mobile"* ]]
+    [[ "$output" != *"Check display"$'\n'"Desktop"* ]]
 }
 
 @test "audit control: editing the BODY of an already-ticked criterion is not a new tick" {

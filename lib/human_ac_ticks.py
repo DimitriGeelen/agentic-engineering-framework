@@ -559,11 +559,43 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD",
     diffs = iter(_diff_trees(root, [(p[0], parent) for p in commits
                                     for parent in (p[1].split() or [None])]))
     blobs = _BlobReader(root)
+    mine: list = []
     try:
-        return _scan(root, commits, diffs, blobs, budget, checkers, findings,
-                     committed_ledger_digests(root, rev), pending), where
+        found = _scan(root, commits, diffs, blobs, budget, checkers, findings,
+                      committed_ledger_digests(root, rev), mine)
+        # T-4824 (055's T-483): the remedy for an unvouched tick is "un-tick it"; a
+        # history-only scan kept failing the old commit after the un-tick, leaving the
+        # operator's `ack` of a tick they did not make as the only exit.
+        gone = _unticked_at(root, rev, blobs, {f["task"] for f in found + mine})
     finally:
         blobs.close()
+    if pending is not None:
+        pending.extend(p for p in mine if (p["task"], p["key"]) not in gone)
+    return [f for f in found if (f["task"], f["key"]) not in gone], where
+
+
+def _unticked_at(root: Path, rev: str, blobs: "_BlobReader", tids: set) -> set:
+    """{(task id, criterion key)} whose EVERY ### Human box, in every file of the task the
+    scan reads (.tasks/), is unticked at `rev`. A criterion that is gone or renamed is not
+    in the set (it keeps its finding); if git cannot answer, the set is empty (fail closed).
+    Every box, not the first: an identical unticked copy above a standing tick must not
+    resolve it (055's T-483 review)."""
+    if not tids:
+        return set()
+    state: dict = {}  # (tid, key) -> any box ticked
+    try:
+        names = _git(root, "ls-tree", "-r", "-z", "--name-only", rev, "--", ".tasks").split("\0")
+        for name in names:
+            if not name.endswith(".md") or not re.search(r"(^|/)T-\d+", os.path.basename(name)):
+                continue
+            tid = _task_id(name)
+            if tid not in tids:
+                continue
+            for key, ticked, _ in boxes(_human_section(blobs.show(rev, name))):
+                state[(tid, key)] = state.get((tid, key), False) or ticked
+    except (subprocess.CalledProcessError, OSError, ValueError):
+        return set()
+    return {k for k, ticked in state.items() if not ticked}
 
 
 def _scan(root, commits, diffs, blobs, budget, checkers, findings,
@@ -624,7 +656,7 @@ def _scan(root, commits, diffs, blobs, budget, checkers, findings,
                     if committed is not None and committed[d] > 0:
                         committed[d] -= 1
                     elif pending is not None:  # T-4769: licensed by an UNCOMMITTED row
-                        pending.append({"commit": sha, "task": tid, "criterion": key[:100]})
+                        pending.append({"commit": sha, "task": tid, "criterion": key[:100], "key": key})
                     continue
                 why = ""
                 if key in cites:  # T-4165: a standing delegation, cited on the criterion
@@ -639,7 +671,7 @@ def _scan(root, commits, diffs, blobs, budget, checkers, findings,
                     kind += f" (delegation refused: {why})"
                 findings.append({"commit": sha, "who": who, "agent": agent, "task": tid,
                                  "path": path, "kind": kind if not vid else kind + " (verdict replayed)",
-                                 "criterion": key[:100], "merge": len(parents) > 1})
+                                 "criterion": key[:100], "key": key, "merge": len(parents) > 1})
     return findings
 
 
