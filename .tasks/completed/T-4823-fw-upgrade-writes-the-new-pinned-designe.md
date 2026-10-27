@@ -7,12 +7,12 @@ description: >
   is easy to leave behind. Fix: the upgrade's staging/git-add hint includes the designer
   build it installed (and its removal of the old one).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug]
-components: []
+components: [lib/upgrade.sh, tests/unit/t4736_upgrade_prunes_root_designer.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T13:20:37Z
-last_update: 2026-10-27T14:24:59Z
-date_finished:
+last_update: 2026-10-27T14:59:26Z
+date_finished: 2026-10-27T14:59:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -414,3 +414,15 @@ covers only the builds that are still kept (locally modified, or not a published
 
 ### 2026-10-27T13:28:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-27T14:59:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a6a8df27
+- **Timestamp:** 2026-10-27T14:59:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

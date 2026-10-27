@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4823: fw upgrade writes the new pinned designer build but does not stage it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T14:59:58Z
+# ============================================================================
+
+task_id: T-4823
+task_name: "fw upgrade writes the new pinned designer build but does not stage it"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T13:20:37Z
+completed: 2026-10-27T14:59:26Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T15:47:03+01:00
+last_commit: 2026-10-27T15:47:38+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade removes a tracked superseded designer build that matches the published one and journals it, so the commit list's git add line stages the new build and the removal (deleted state); locally changed builds still KEPT; regression bats t4823, t4736 updated; vendor synced. tick final Agent AC — simulation 26/26, siblings green, vendor in sync
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first: an upgrade that installs a new pinned designer build into a consumer prints a git add hint that omits the new build (and the removed old one)'
+  - 'The upgrade''s git add hint (and any staging it does itself) includes the designer build it installed and the removal of the build it replaced, consistent with how other upgraded files are handled'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats stays green; new tests in tests/unit/t4823_upgrade_stages_designer.bats; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — tracked superseded designer build: remove and stage, or keep and hint'
+    chose: 'when the new pinned build is in place, remove a superseded root build that is tracked, byte-identical to the published AEF build, and unchanged against HEAD. Journal the removal, so the commit list shows it as `deleted` and the single `git add --` line stages it (git add stages a deletion). A tracked build that is locally modified, or that matches no published build, is still KEPT with its hint.'
+    rationale: 'the field report asks for the upgrade''s own staging line to carry the replacement, "consistent with how other upgraded files are handled". The upgrade already rewrites tracked files (CLAUDE.md, settings, .agentic-framework/) and lists them for commit. A tracked designer build that is byte-for-byte a published AEF release is upgrade-owned in the same way, and the deletion is visible in the list and recoverable with `git checkout`.'
+    alternatives_rejected: ['keep the tracked file and append `git rm` to the commit line. That stages a removal the upgrade did not perform, and the working tree would still disagree with what the line commits. Rejected too: leaving the T-4736 behaviour unchanged, which is the reported bug.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/upgrade_commit_list.py'
+  - '.tasks/active/T-4823-fw-upgrade-writes-the-new-pinned-designe.md'
+  - 'lib/upgrade.sh'
+  - 'lib/upgrade_commit_list.py'
+  - 'tests/unit/t4736_upgrade_prunes_root_designer.bats'
+  - 'tests/unit/t4823_upgrade_stages_designer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T15:47:03'
+    action: 'T-4823: fw upgrade removes a tracked superseded designer build that matches the published one and journals it, so the commit list''s git add line stages the new build and the removal (deleted state); locally changed builds still KEPT; regression bats t4823, t4736 updated; vendor synced'
+  - time: '2026-10-27T15:47:38'
+    action: 'T-4823: tick final Agent AC — simulation 26/26, siblings green, vendor in sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 98 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 98
+  commits: 3
+  files_changed: 9
+  lines_added: 712
+  lines_removed: 13
+  footprint_refreshed_at: '2026-10-27T15:00:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4823-fw-upgrade-writes-the-new-pinned-designe.md
+generated_by: context-agent-hybrid
