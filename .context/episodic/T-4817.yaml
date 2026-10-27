@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4817: Human-AC tick guard parses the contents of quoted arguments as commands (refuses fw sidecar send --body '…git log…')
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T13:06:45Z
+# ============================================================================
+
+task_id: T-4817
+task_name: "Human-AC tick guard parses the contents of quoted arguments as commands (refuses fw sidecar send --body '…git log…')"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T11:29:45Z
+completed: 2026-10-27T13:06:10Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T13:41:50+01:00
+last_commit: 2026-10-27T13:41:50+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tick guard reads a sidecar --body value through the lexer: every quoting of its text is data ('\''…, $'…', escaped backticks), only substitutions bash runs stay scanned; regression bats; RCA; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first: the guard refuses `bin/fw sidecar send --to x --body ''see: git log --oneline -1 -- "$f" in .tasks/active''`, because it tokenises the quoted body as commands (the bare single-quoted form already passed at HEAD; the bug reproduces with the apostrophe idioms, `$''…''` and escaped backticks in double quotes, which is what t4817 tests 1–3 pin; they fail on the pre-fix scanner)'
+  - 'The guard tokenises at shell level first (respecting single and double quotes), so a quoted argument is data, never a command. A real write to a .tasks path in the same command line is still refused, and the T-2742 boundary (scripts and runtime-built paths out of scope) is unchanged'
+  - 'New tests in tests/unit/t4817_tick_guard_quoted_args.bats; the existing tick-guard tests and t4816''s stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — how to decide a --body value is data'
+    chose: 'lex the value word with the existing lexer (`_lex_spans`) and blank everything except the substitutions bash runs (delimiters kept). When such a substitution is kept, the "command names a guarded path" signal is still read from the unblanked command, so T-4499''s refusal of `--body "\`git log --output=$F\` .tasks/…"` stands.'
+    rationale: 'the word''s meaning is set by the shell''s quoting rules, and the lexer already implements them. Any shape-based rule misses some quoting form, which is what happened to T-4499''s bare-`''…''` rule. Keeping the mention signal for live substitutions means no existing refusal gets weaker.'
+    alternatives_rejected: ['(a) widen the shape match to more quote idioms: same class of bug, just with a longer list. (b) add `--body-file` to `fw sidecar send`: that is a workaround the sender must know about, and `fw sidecar` is outside this lane. (c) treat the whole word as data, double quotes included: bash really runs `$(…)` and unescaped backticks there, and the T-4499 tests pin that.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.tasks/active/T-4817-human-ac-tick-guard-parses-the-contents-.md'
+  - 'lib/shell_write_scan.py'
+  - 'tests/unit/t4817_tick_guard_quoted_args.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T13:41:50'
+    action: 'T-4817: tick guard reads a sidecar --body value through the lexer: every quoting of its text is data (''\''''…, $''…'', escaped backticks), only substitutions bash runs stay scanned; regression bats; RCA; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 96 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 96
+  commits: 2
+  files_changed: 6
+  lines_added: 640
+  lines_removed: 27
+  footprint_refreshed_at: '2026-10-27T13:08:43Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4817-human-ac-tick-guard-parses-the-contents-.md
+generated_by: context-agent-hybrid
