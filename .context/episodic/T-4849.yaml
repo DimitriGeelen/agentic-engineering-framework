@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4849: lib/update.sh reads a folded upstream_repo in .framework.yaml as empty (no longer healed by fw config set since T-4847)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T23:34:26Z
+# ============================================================================
+
+task_id: T-4849
+task_name: "lib/update.sh reads a folded upstream_repo in .framework.yaml as empty (no longer healed by fw config set since T-4847)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T22:20:57Z
+completed: 2026-10-27T23:34:03Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T23:21:38+01:00
+last_commit: 2026-10-28T00:22:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — update.sh reads a folded upstream_repo as empty (follow-up of T-4847). upstream_repo readers use get_yaml_field (folded/quoted-aware). tick vendor/sibling AC
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test puts a folded (continuation-line) `upstream_repo:` value in a temp project''s .framework.yaml and shows lib/update.sh''s reader returns empty; it fails before the fix'
+  - 'The reader returns the full value for plain, quoted and folded layouts (a YAML parse, with the existing grep as the fallback when python/yaml is unavailable); other line-wise readers of upstream_repo in lib/ and bin/fw get the same treatment, or are listed in Decisions with why not'
+  - 'tests/unit/t3735_config_set_no_fold.bats and t4847_config_set_preserves_lines.bats stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — how to read upstream_repo layout-independently'
+    chose: 'the existing shell reader `get_yaml_field` (lib/yaml.sh) at all four sites.'
+    rationale: 'it already joins continuation lines with one space (what YAML means for a folded plain or quoted scalar) and strips `"`/`''`. It needs no python and no fallback branch, and a fourth reader copy is no longer needed.'
+    alternatives_rejected: ['a python/PyYAML parse with grep as the fallback (the AC''s suggestion). It adds a python dependency to `fw update` on bare consumer hosts and keeps the broken grep as the path that runs exactly where python is missing. The AC''s intent (full value for plain, quoted and folded) is met without it. - **Left as is:** `grep -q ''^upstream_repo:''` existence checks (lib/upstream.sh:110,135, lib/upgrade.sh:1798). They test whether the key exists, not its value, and a folded key line still matches. The `sed -i` writer at lib/upstream.sh:111 rewrites only the key line, so it would leave a folded continuation orphaned. That is writer-side and out of this reader task. Noted for a follow-up, not changed here.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/update.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/upstream.sh'
+  - '.tasks/active/T-4849-libupdatesh-reads-a-folded-upstreamrepo-.md'
+  - 'bin/fw'
+  - 'lib/update.sh'
+  - 'lib/upgrade.sh'
+  - 'lib/upstream.sh'
+  - 'tests/unit/t4849_update_reads_folded_upstream.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T23:21:38'
+    action: 'T-4849: file — update.sh reads a folded upstream_repo as empty (follow-up of T-4847)'
+  - time: '2026-10-28T00:21:34'
+    action: 'T-4849: upstream_repo readers use get_yaml_field (folded/quoted-aware)'
+  - time: '2026-10-28T00:22:20'
+    action: 'T-4849: tick vendor/sibling AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 73 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, upgrade]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 73
+  commits: 4
+  files_changed: 13
+  lines_added: 596
+  lines_removed: 26
+  footprint_refreshed_at: '2026-10-27T23:34:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4849-libupdatesh-reads-a-folded-upstreamrepo-.md
+generated_by: context-agent-hybrid
