@@ -86,7 +86,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] A failing test first: a task file whose ### Human section holds only the template's HTML comment (with its example `- [ ] [REVIEWER] …` and `- [ ] [REVIEW] …` lines) is scanned by lib/reviewer/static_scan.py as having Human ACs, and a detector reports a finding on that example AC
 - [x] AC parsing in the reviewer skips HTML-comment blocks everywhere it reads ACs (the path that produced the T-4773/T-4783 false finding as well as the T-2156 path), so commented-out examples are never ACs; real ACs before and after a comment are still parsed with their correct indexes
-- [ ] New tests in tests/unit/test_t4815_reviewer_skips_comment_acs.py; the existing reviewer tests stay green; vendor in sync
+- [x] New tests in tests/unit/test_t4815_reviewer_skips_comment_acs.py; the existing reviewer tests stay green; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
