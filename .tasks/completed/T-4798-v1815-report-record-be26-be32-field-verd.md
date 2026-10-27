@@ -4,10 +4,10 @@ name: "v1.8.15 report: record be.26-be.32 field verdicts (ring20 be.31, wc confo
 description: >
   Record ring20's be.31 field report (msg 4b5675f3) and the shared-worker-contract conformance status (msgs f471bdf1, 5960a691, a0044ca0, d2778235, 59742ea8) in docs/reports/field-test-v1.8.15-results.md, same table shape as T-4770/T-4771.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T00:12:35Z
-last_update: 2026-10-27T00:12:35Z
-date_finished: null
+last_update: 2026-10-27T00:13:18Z
+date_finished: 2026-10-27T00:13:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -348,3 +348,20 @@ grep -q "dispatch_closed" docs/reports/field-test-v1.8.15-results.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4798-v1815-report-record-be26-be32-field-verd.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-242baf81
+- **Timestamp:** 2026-10-27T00:13:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-27T00:13:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
