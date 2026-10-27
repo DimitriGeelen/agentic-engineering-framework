@@ -84,7 +84,9 @@ def test_consumer_after_vendor_and_install_gets_findings(consumer, point_at, cli
     resp = client.post("/api/validate", json={"bpmn": BROKEN})
     assert resp.status_code == 200, resp.get_json()
     d = resp.get_json()
-    assert d["ok"] is False and "E-XML-STRUCTURE" in [f["rule"] for f in d["findings"]]
+    # T-4845: ok means the check ran; the map's errors are counted in "errors".
+    assert d["ok"] is True and d["errors"] >= 1
+    assert "E-XML-STRUCTURE" in [f["rule"] for f in d["findings"]]
     assert _pycaches(proj / "vendor", vend / "vendor") == []
 
 

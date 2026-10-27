@@ -52,7 +52,8 @@ def test_warnings_keep_ok_true_and_shape(client):
 
 def test_broken_map_returns_the_rule_id(client):
     d = post(client, {"bpmn": BROKEN}).get_json()
-    assert d["ok"] is False and d["errors"] >= 1
+    # T-4845: ok means the check ran (832 T-1300 §1); the error count is in "errors".
+    assert d["ok"] is True and d["errors"] >= 1
     assert "E-XML-STRUCTURE" in [f["rule"] for f in d["findings"]]
 
 

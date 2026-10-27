@@ -413,7 +413,9 @@ def validate():
         return _err(f"validation failed: {e}", 500)
     errors = sum(1 for f in findings if f["severity"] == "ERROR")
     warnings = sum(1 for f in findings if f["severity"] == "WARN")
-    return jsonify({"ok": errors == 0, "findings": findings,
+    # T-4845: "ok" means the check ran (832 T-1300 §1); the designer treats anything else as
+    # "could not check". Whether the map is clean is "errors", never "ok".
+    return jsonify({"ok": True, "findings": findings,
                     "errors": errors, "warnings": warnings})
 
 
