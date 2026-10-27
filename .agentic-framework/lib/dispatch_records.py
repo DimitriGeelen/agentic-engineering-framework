@@ -825,8 +825,10 @@ class _Adapter:
     def _materialise(self, did, ev):
         """A vector evidence entry as the supervisor would persist it: a signed completion (§6.5).
 
-        The vectors' hand-backs omit `commission`; a real hand-back carries the dispatch it
-        was commissioned for, so the adapter writes it (T-4802 Decisions)."""
+        The vectors' hand-backs carry `commission` (T-4803), and it is passed through as
+        given, so a wrong one reaches outcome rule 1. A hand-back without it (an older copy
+        of the vectors) gets the dispatch id filled in, as a real one would carry it
+        (T-4802 Decisions)."""
         hb = ev.get("handback")
         if isinstance(hb, dict):
             hb = {"commission": did, **hb}
