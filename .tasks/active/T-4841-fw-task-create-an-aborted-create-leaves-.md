@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T19:44:44Z
-last_update: '2026-10-27T19:45:20Z'
+last_update: 2026-10-27T19:46:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,18 +97,26 @@ See description. The need, in 1409's words: an aborted create must release the l
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test starts `fw task create` (or create-task.sh) in a temp project, kills only the parent with SIGTERM while a child it spawned is still running, and shows a second create then blocks on (or times out at) task-id-allocation; this test fails before the fix
-- [ ] After the fix the same test passes: once the parent is gone, a second create acquires the lock without waiting for the orphaned child
-- [ ] No child the create spawns holds the lock fd (closed before spawning, or the lock is released before the post-file-write steps that spawn children)
-- [ ] Id uniqueness holds: tests/unit/task_id_race.bats, t4189_task_id_highwater and t100202_id_quarantine stay green; parallel creates still never reuse an id
-- [ ] Vendor in sync
+- [x] Reproduce first: a bats test starts `fw task create` (or create-task.sh) in a temp project, kills only the parent with SIGTERM while a child it spawned is still running, and shows a second create then blocks on (or times out at) task-id-allocation; this test fails before the fix
+- [x] After the fix the same test passes: once the parent is gone, a second create acquires the lock without waiting for the orphaned child
+- [x] No child the create spawns holds the lock fd (closed before spawning, or the lock is released before the post-file-write steps that spawn children)
+- [x] Id uniqueness holds: tests/unit/task_id_race.bats, t4189_task_id_highwater and t100202_id_quarantine stay green; parallel creates still never reuse an id
+- [x] Vendor in sync
 
 ## RCA
 
 **Symptom:** a `fw task create` killed by timeout left child processes holding .context/locks/task-id-allocation.lock; later creates waited until 1409's worker ended those children by hand.
 **Root cause:** create-task.sh takes the lock with flock on a shell fd near its start and releases it only in the EXIT trap. Every child process inherits the open fd, and flock locks belong to the open file description, so a child that outlives its parent keeps the lock.
-**Why structurally allowed:** the lock tests (task_id_race) cover concurrent creates that finish, never a create killed mid-run while a child is still alive.
-**Prevention:** the kill-parent-keep-child bats case from the ACs.
+Confirmed by reproduction (tests/unit/t4841_create_lock_on_abort.bats test 1 at HEAD: second create timed out, status 124). Precisely: agents/task-create/create-task.sh:338-339 (pre-fix) opened fd 200 via lib/keylock.sh `exec 200>lock` (no O_CLOEXEC) before the inception gate and released it only in the EXIT trap, so git (fw_task_view_dirs in generate_id), python3 template writers, the --origin/recommendation writers and the `--start` focus call all inherited it.
+**Why structurally allowed:** the lock tests (task_id_race) cover concurrent creates that finish, never a create killed mid-run while a child is still alive. T-1493 had already built `keylock_subshell_close_cmd` for exactly this class, but create-task.sh never used it.
+**Prevention:** tests/unit/t4841_create_lock_on_abort.bats — a git stub blocks inside the locked section, only the parent is SIGTERMed, and a second create must succeed while the orphan is still alive; plus a guard that no process holds the lock file after a normal create.
+
+## Decisions
+
+### 2026-10-27 — how to keep children off the lock
+- **Chose:** narrow the lock to slug→acquire→generate_id→template write→release, and run generate_id and the template writers in subshells that `eval "$(keylock_subshell_close_cmd)"` first; lib/keylock.sh unchanged.
+- **Why:** bash cannot set O_CLOEXEC on an fd, and the existing T-1493 primitive is the codebase's answer to this class; narrowing also stops serialising the origin/recommendation/focus steps behind the lock (the id is already persisted to .id-highwater inside generate_id).
+- **Rejected:** changing lib/keylock.sh to auto-close in every child (no bash mechanism; would alter other callers); releasing only after the file write without closing the fd in children (a child spawned inside the window would still keep the lock after a kill).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -158,7 +166,8 @@ See description. The need, in 1409's words: an aborted create must release the l
 
 ## Verification
 
-timeout 900 bats tests/unit/t4841_create_lock_on_abort.bats
+timeout 900 bats tests/unit/t4841_create_lock_on_abort.bats > /tmp/.t4841.out 2>&1 && ! grep -q "^not ok" /tmp/.t4841.out
+test "$(grep -c '# skip' /tmp/.t4841.out)" -eq 0
 timeout 900 bats tests/unit/task_id_race.bats tests/unit/t4189_task_id_highwater.bats tests/unit/t100202_id_quarantine.bats
 bin/fw vendor self --check --task T-4841
 
@@ -351,8 +360,6 @@ bin/fw vendor self --check --task T-4841
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
-
-## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

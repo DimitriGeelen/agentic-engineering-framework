@@ -335,8 +335,7 @@ _main_wt="$(git -C "$(dirname "$TASKS_DIR")" worktree list --porcelain 2>/dev/nu
 if [ -n "$_main_wt" ] && [ -d "$_main_wt/.context/locks" ]; then
     KEYLOCK_DIR="$_main_wt/.context/locks"
 fi
-keylock_acquire "task-id-allocation"
-trap 'keylock_release "task-id-allocation" 2>/dev/null' EXIT
+# T-4841: the lock itself is taken further down, just before generate_id.
 
 # T-2207 (T-2204 Slice B'): filing-time recommendation gate — CLI mirror of
 # T-1716. Fires before ID allocation so a blocked filing leaves no orphan
@@ -423,8 +422,18 @@ if [ "$WORKFLOW_TYPE" = "inception" ] && [ "$I_AM_HUMAN" = "true" ]; then
 fi
 
 # Generate ID and filename
-TASK_ID=$(generate_id)
+#
+# T-4841: hold task-id-allocation only around id allocation plus the task-file
+# write, and never let a child inherit the lock fd. flock locks belong to the
+# open file description, so a child holding an inherited copy (git, python3, a
+# hook) keeps the lock after this script is killed (1409: a create killed by
+# timeout left children blocking every later create). Children run in
+# subshells that close the fd first (keylock_subshell_close_cmd, T-1493); the
+# EXIT trap covers an early exit, the explicit release below the normal path.
 SLUG=$(generate_slug "$NAME")
+keylock_acquire "task-id-allocation"
+trap 'keylock_release "task-id-allocation" 2>/dev/null' EXIT
+TASK_ID=$(eval "$(keylock_subshell_close_cmd)"; generate_id)
 FILENAME="$TASK_ID-$SLUG.md"
 FILEPATH="$TASKS_DIR/active/$FILENAME"
 
@@ -488,6 +497,9 @@ DEFAULT_TEMPLATE=$(_template_path default.md)
 
 # Select template content based on workflow type
 # All vars passed via env to avoid shell interpolation into Python source (T-595)
+# T-4841: subshell with the lock fd closed, so the writers never inherit it.
+(
+eval "$(keylock_subshell_close_cmd)"
 if [ "$WORKFLOW_TYPE" = "inception" ] && [ -n "$INCEPTION_TEMPLATE" ]; then
     TC_TEMPLATE="$INCEPTION_TEMPLATE" \
     TC_TASK_ID="$TASK_ID" TC_STATUS="$STATUS" TC_HORIZON="$HORIZON" \
@@ -603,6 +615,10 @@ date_finished: null
 - **Context:** Initial task creation
 EOF
 fi
+)
+# T-4841: id persisted (.id-highwater) and the file written — release now, so
+# nothing after this point (origin, recommendation, --start focus) holds it.
+keylock_release "task-id-allocation"
 
 # Validate the created file
 if ! grep -q "^id: $TASK_ID" "$FILEPATH"; then
